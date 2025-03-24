@@ -19,10 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -47,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,7 +60,7 @@ public class EditCurriculumController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
-	private SingleSelection organisationEl;
+	private OrgSelectorElementImpl organisationEl;
 	private SingleSelection lecturesEnabledEl;
 	
 	private Curriculum curriculum;
@@ -70,8 +70,6 @@ public class EditCurriculumController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -153,33 +151,16 @@ public class EditCurriculumController extends FormBasicController {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
 		
-		List<String> keyList = new ArrayList<>();
-		List<String> valueList = new ArrayList<>();
-		for(Organisation organisation:organisations) {
-			keyList.add(organisation.getKey().toString());
-			valueList.add(organisation.getDisplayName());
-		}
-		
-		String selectedOrganisationKey = null;
-		if(curriculum != null) {
-			if(curriculum.getOrganisation() == null) {
-				keyList.add(0, "");
-				valueList.add(0, "-");
-				selectedOrganisationKey = "";
-			} else {
-				selectedOrganisationKey = curriculum.getOrganisation().getKey().toString();
-				if(!keyList.contains(selectedOrganisationKey)) {
-					keyList.add(selectedOrganisationKey);
-					valueList.add(curriculum.getOrganisation().getDisplayName());
-				}
-			}
-		}
+		organisationEl = new OrgSelectorElementImpl(getWindowControl(), "curriculum.organisation", organisations);
+		formLayout.add(organisationEl);
+		organisationEl.setLabel("curriculum.organisation", null);
+		organisationEl.showLabel(true);
+		organisationEl.setMultipleSelection(false);
 
-		organisationEl = uifactory.addDropdownSingleselect("curriculum.organisation", formLayout,
-				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
-		organisationEl.setVisible(organisationModule.isEnabled());
-		if(selectedOrganisationKey != null && keyList.contains(selectedOrganisationKey)) {
-			organisationEl.select(selectedOrganisationKey, true);
+		if (curriculum != null) {
+			if (curriculum.getOrganisation() != null) {
+				organisationEl.setSelection(curriculum.getOrganisation().getKey());
+			}
 		}
 	}
 
@@ -212,15 +193,14 @@ public class EditCurriculumController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//create a new one
-		Organisation organisation;
-		if(organisationEl != null && organisationEl.isVisible() && organisationEl.isOneSelected()) {
-			if(StringHelper.isLong(organisationEl.getSelectedKey())) {
-				organisation = organisationService
-						.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
-			} else {
-				organisation = null;
+		Organisation organisation = null;
+		if (organisationEl != null && organisationEl.isVisible() && organisationEl.getSelection() != null) {
+			Optional<Long> orgKey = organisationEl.getSelection().stream().findFirst();
+			if (orgKey.isPresent()) {
+				organisation = organisationService.getOrganisation(new OrganisationRefImpl(orgKey.get()));
 			}
-		} else {
+		}
+		if (organisation == null) {
 			organisation = organisationService.getDefaultOrganisation();
 		}
 		
@@ -246,6 +226,15 @@ public class EditCurriculumController extends FormBasicController {
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		if (curriculum != null) {
+			if (curriculum.getOrganisation() != null) {
+				Long orgKey = curriculum.getOrganisation().getKey();
+				if (!organisationEl.getSelection().contains(orgKey)) {
+					organisationEl.setSelection(curriculum.getOrganisation().getKey());
+				}
+			}
+		}
+
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 }
