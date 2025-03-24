@@ -30,6 +30,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.CalendarKey;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper.LinkProviderCreator;
 import org.olat.core.CoreSpringFactory;
@@ -166,10 +167,18 @@ public class CourseCalendars {
 			if (!collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
 				continue;
 			}
+
+			boolean hasPublicEvents = calendarManager.getGroupCalendar(bGroup)
+					.getKalendar()
+					.getEvents()
+					.stream()
+					.anyMatch(event -> event.getClassification() != KalendarEvent.CLASS_PRIVATE);
+
 			boolean member = courseEnv.isIdentityInCourseGroup(bGroup.getKey());
-			if (member || isOwner || courseEnv.isAdmin()) {
+			if (member || isOwner || courseEnv.isAdmin() || hasPublicEvents) {
 				KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
 				groupCalendarWrapper.setPrivateEventsVisible(member || isOwner);
+
 				// set calendar access
 				int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
 				Long lCalAccess = collabTools.lookupCalendarAccess();
