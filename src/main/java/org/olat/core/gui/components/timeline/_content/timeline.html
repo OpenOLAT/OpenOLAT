@@ -1,10 +1,11 @@
 <div class="o_vertical_timeline o_repo_info_panel o_lightbox_modal_form">
 	<div class="o_vertical_timeline_header">
-		<h4>$r.translate("timeline.title")</h4>
 		#if($r.available("downloadLink"))
 			<div class="o_vertical_timeline_download_btn">
 				$r.render("downloadLink")
 			</div>
+		#else
+			<h4>$r.translate("timeline.title")</h4>
 		#end
 	</div>
 	<div class="o_vertical_timeline_rows #if($timelineComplete)o_vertical_timeline_complete #end">
