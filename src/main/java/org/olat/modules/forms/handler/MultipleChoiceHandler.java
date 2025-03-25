@@ -32,8 +32,8 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
@@ -84,8 +84,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			RenderingHints options) {
-		if (element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
+		if (element instanceof MultipleChoice multipleChoice) {
 			EvaluationFormResponseController ctrl = new MultipleChoiceController(ureq, wControl, multipleChoice);
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
@@ -94,8 +93,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
+		if (element instanceof MultipleChoice multipleChoice) {
 			return new MultipleChoiceEditorController(ureq, wControl, multipleChoice, restrictedEdit);
 		}
 		return null;
@@ -103,8 +101,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
+		if (element instanceof MultipleChoice multipleChoice) {
 			return new MultipleChoiceInspectorController(ureq, wControl, multipleChoice, restrictedEdit);
 		}
 		return null;
@@ -131,8 +128,7 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice)element;
+		if (element instanceof MultipleChoice multipleChoice) {
 			MultipleChoice clone = new MultipleChoice();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setMandatory(multipleChoice.isMandatory());
@@ -154,10 +150,11 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
 			PageElement element, ExecutionIdentity executionIdentity) {
-		if (element instanceof MultipleChoice) {
-			MultipleChoice multipleChoice = (MultipleChoice) element;
-			EvaluationFormResponseController ctrl = new MultipleChoiceController(ureq, wControl, multipleChoice, rootForm);
-			return new EvaluationFormResponseControllerElement(ctrl);
+		if (element instanceof MultipleChoice multipleChoice) {
+			if (multipleChoice.getChoices().size() > 0) {
+				EvaluationFormResponseController ctrl = new MultipleChoiceController(ureq, wControl, multipleChoice, rootForm);
+				return new EvaluationFormResponseControllerElement(ctrl);
+			}
 		}
 		return null;
 	}

@@ -32,8 +32,8 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
@@ -85,8 +85,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			RenderingHints options) {
-		if (element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice) element;
+		if (element instanceof SingleChoice singleChoice) {
 			EvaluationFormResponseController ctrl = new SingleChoiceController(ureq, wControl, singleChoice);
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
@@ -95,8 +94,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice) element;
+		if (element instanceof SingleChoice singleChoice) {
 			return new SingleChoiceEditorController(ureq, wControl, singleChoice, restrictedEdit);
 		}
 		return null;
@@ -104,8 +102,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice) element;
+		if (element instanceof SingleChoice singleChoice) {
 			return new SingleChoiceInspectorController(ureq, wControl, singleChoice, restrictedEdit);
 		}
 		return null;
@@ -131,8 +128,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice)element;
+		if (element instanceof SingleChoice singleChoice) {
 			SingleChoice clone = new SingleChoice();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setMandatory(singleChoice.isMandatory());
@@ -153,10 +149,11 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
 			PageElement element, ExecutionIdentity executionIdentity) {
-		if (element instanceof SingleChoice) {
-			SingleChoice singleChoice = (SingleChoice) element;
-			EvaluationFormResponseController ctrl = new SingleChoiceController(ureq, wControl, singleChoice, rootForm);
-			return new EvaluationFormResponseControllerElement(ctrl);
+		if (element instanceof SingleChoice singleChoice) {
+			if (singleChoice.getChoices().size() > 0) {
+				EvaluationFormResponseController ctrl = new SingleChoiceController(ureq, wControl, singleChoice, rootForm);
+				return new EvaluationFormResponseControllerElement(ctrl);
+			}
 		}
 		return null;
 	}

@@ -50,8 +50,10 @@ public class SingleChoiceResponsesTableHandler implements EvaluationFormReportHa
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice singleChoice) {
-			FormBasicController ctrl = new ChoiceResponsesTableController(ureq, windowControl, singleChoice, filter, reportHelper, rootForm);
-			return new EvaluationFormControllerReportFormItemElement(ctrl);
+			if (singleChoice.getChoices().size() > 0) {
+				FormBasicController ctrl = new ChoiceResponsesTableController(ureq, windowControl, singleChoice, filter, reportHelper, rootForm);
+				return new EvaluationFormControllerReportFormItemElement(ctrl);
+			}
 		}
 		return null;
 	}

@@ -50,9 +50,11 @@ public class SingleChoiceTableHandler implements EvaluationFormReportHandler {
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice singleChoice) {
-			CountDataSource dataSource = new SingleChoiceDataSource(singleChoice, filter);
-			Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
-			return new EvaluationFormControllerReportElement(ctrl);
+			if (singleChoice.getChoices().size() > 0) {
+				CountDataSource dataSource = new SingleChoiceDataSource(singleChoice, filter);
+				Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
+				return new EvaluationFormControllerReportElement(ctrl);
+			}
 		}
 		return null;
 	}

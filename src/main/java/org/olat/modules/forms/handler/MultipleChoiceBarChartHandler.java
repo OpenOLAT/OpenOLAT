@@ -50,9 +50,11 @@ public class MultipleChoiceBarChartHandler  implements EvaluationFormReportHandl
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof MultipleChoice multipleChoice) {
-			BarSeriesDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, filter);
-			Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
-			return new EvaluationFormControllerReportElement(ctrl);
+			if (multipleChoice.getChoices().size() > 0) {
+				BarSeriesDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, filter);
+				Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
+				return new EvaluationFormControllerReportElement(ctrl);
+			}
 		}
 		return null;
 	}
