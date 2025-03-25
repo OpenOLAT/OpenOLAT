@@ -19,13 +19,12 @@
  */
 package org.olat.course.nodes.cal;
 
-import java.text.DateFormat;
 import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.Formatter;
 
 /**
  * <h3>Description:</h3>
@@ -39,37 +38,50 @@ public class CourseCalendarPeekViewModel extends DefaultTableDataModel<KalendarE
 	private int MAX_SUBJECT_LENGTH = 30;
 	
 	private final Translator translator;
-	private final DateFormat dateFormat, timeFormat, dateOnlyFormat;
+	private final Formatter formatter;
 
 	public CourseCalendarPeekViewModel(List<KalendarEvent> events, Translator translator) {
 		super(events);
+		setLocale(translator.getLocale());
 		this.translator = translator;
-		
-		dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, translator.getLocale());
-		timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, translator.getLocale());
-		dateOnlyFormat = DateFormat.getDateInstance(DateFormat.SHORT, translator.getLocale());
+		formatter = Formatter.getInstance(translator.getLocale());
 	}
 
+	@Override
 	public int getColumnCount() {
 		return COLUMNS;
 	}
 
+	@Override
 	public Object getValueAt(int row, int col) {
 		KalendarEvent event = getObject(row);
-		switch (col) {
-			case 0:
-				if (event.isToday() && event.isAllDayEvent()) return translator.translate("calendar.today");
-				if (event.isToday()) return translator.translate("calendar.today") + " " + timeFormat.format(event.getBegin()) + " - "
-						+ timeFormat.format(event.getEnd());
-				if (event.isAllDayEvent()) return dateOnlyFormat.format(event.getBegin());
-				if (event.isWithinOneDay()) return dateOnlyFormat.format(event.getBegin()) + " " + timeFormat.format(event.getBegin()) + " - "
-						+ timeFormat.format(event.getEnd());
-				return dateFormat.format(event.getBegin()) + " - " + dateFormat.format(event.getEnd());
-			case 1:
-				String subj = event.getSubject();
-				if (subj.length() > MAX_SUBJECT_LENGTH) subj = subj.substring(0, MAX_SUBJECT_LENGTH) + "...";
-				return subj;
+		return switch (col) {
+			case 0 -> getDate(event);
+			case 1 -> getSubject(event);
+			default -> "ERROR";	
+		};
+	}
+	
+	private String getSubject(KalendarEvent event) {
+		String subj = event.getSubject();
+		if (subj.length() > MAX_SUBJECT_LENGTH) subj = subj.substring(0, MAX_SUBJECT_LENGTH) + "...";
+		return subj;
+	}
+	
+	private String getDate(KalendarEvent event) {
+		if (event.isToday() && event.isAllDayEvent()) {
+			return translator.translate("calendar.today");
 		}
-		throw new OLATRuntimeException("Unreacheable code.", null);
+		if (event.isToday()) {
+			return translator.translate("calendar.today") + " " + formatter.formatTimeShort(event.getBegin()) + " - " + formatter.formatTimeShort(event.getEnd());
+		}	
+		if (event.isAllDayEvent()) {
+			return formatter.formatDateWithDay(event.getBegin());
+		}
+		if (event.isWithinOneDay()) {
+			return formatter.formatDateWithDay(event.getBegin()) + " " + formatter.formatTimeShort(event.getBegin()) + " - "
+				+ formatter.formatTimeShort(event.getEnd());
+		}
+		return formatter.formatDateWithDay(event.getBegin()) + " - " + formatter.formatDateWithDay(event.getEnd());
 	}
 }
