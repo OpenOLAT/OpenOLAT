@@ -21,10 +21,7 @@ package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.olat.basesecurity.Group;
@@ -39,20 +36,19 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -69,6 +65,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.settings.AccessOverviewController;
+import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -97,7 +94,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private FormLayoutContainer oaiCont;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
-	private MultiSelectionFilterElement organisationsEl;
+	private OrgSelectorElementImpl organisationsEl;
 	private SelectionElement authorCanEl;
 	private SelectionElement enableMetadataIndexingEl;
 
@@ -194,30 +191,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			return repositoryEntryOrganisations;
 		}
 
-		List<Organisation> organisations = new ArrayList<>();
-
-		Set<String> organisationKeys = organisationsEl.getKeys();
-		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
-
-		Set<String> currentOrganisationKeys = new HashSet<>();
-		for(Iterator<Organisation> it=organisations.iterator(); it.hasNext(); ) {
-			String key = it.next().getKey().toString();
-			currentOrganisationKeys.add(key);
-			if(organisationKeys.contains(key) && !selectedOrganisationKeys.contains(key)) {
-				it.remove();
-			}
-		}
-
-		for(String selectedOrganisationKey:selectedOrganisationKeys) {
-			if(!currentOrganisationKeys.contains(selectedOrganisationKey)) {
-				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(selectedOrganisationKey)));
-				if(organisation != null) {
-					organisations.add(organisation);
-				}
-			}
-		}
-
-		return organisations;
+		Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
+				.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
+		return organisationService.getOrganisation(selectedOrganisationRefs); 
 	}
 
 	@Override
@@ -450,10 +426,15 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				organisationList.add(reOrganisation);
 			}
 		}
+		
+		List<Long> selectedOrgKeys = reOrganisations.stream().map(Organisation::getKey).toList();
 
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisationList, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "cif.organisations", formLayout, getWindowControl(), organisationSV);
-		reOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		organisationsEl = new OrgSelectorElementImpl(getWindowControl(), "organisations", organisationList);
+		organisationsEl.setMultipleSelection(true);
+		formLayout.add(organisationsEl);
+		organisationsEl.setLabel("cif.organisations", null);
+		organisationsEl.showLabel(true);
+		organisationsEl.setSelection(selectedOrgKeys);
 	}
 
 	@Override
@@ -487,7 +468,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
-			if(organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
+			if(organisationsEl.isVisible() && organisationsEl.getSelection().isEmpty()) {
 				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
