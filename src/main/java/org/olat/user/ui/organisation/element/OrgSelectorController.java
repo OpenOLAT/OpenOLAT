@@ -20,7 +20,6 @@
 package org.olat.user.ui.organisation.element;
 
 import java.io.Serial;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,28 +46,31 @@ import org.olat.core.util.StringHelper;
 public class OrgSelectorController extends FormBasicController {
 	private static final String PARAMETER_KEY_ORG_SELECTION = "org_sel_";
 
-	private static final int MAX_RESULTS = 50;
+	private static final int PAGE_SIZE = 50;
 
-	private FormLink applyButton;
+	private FormLink selectButton;
 	private TextElement quickSearchEl;
 	private FormLink resetQuickSearchButton;
 	private StaticTextElement selectionNoneEl;
 	private StaticTextElement selectionNumEl;
 
-	private StaticTextElement resultsMoreEl;
+	private FormLink loadMoreLink;
 
 	private Set<Long> selectedKeys;
 	private final boolean multipleSelection;
+	private final boolean liveUpdate;
 	private final List<Row> rows;
+	private int maxUnselectedRows = PAGE_SIZE;
 
 	public record Row(Long key, String path, String title, String location, int size) {}
 
-	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows, 
-								 Set<Long> selectedKeys, boolean multipleSelection) {
+	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows,
+								 Set<Long> selectedKeys, boolean multipleSelection, boolean liveUpdate) {
 		super(ureq, wControl, "org_selector");
 
 		this.selectedKeys = selectedKeys;
 		this.multipleSelection = multipleSelection;
+		this.liveUpdate = liveUpdate;
 
 		rows = orgRows.stream().map(this::row).toList();
 
@@ -86,11 +88,11 @@ public class OrgSelectorController extends FormBasicController {
 		selectionNumEl = uifactory.addStaticTextElement("selector.selection.num",
 				"selector.selection.num", "", formLayout);
 
-		resultsMoreEl = uifactory.addStaticTextElement("selector.results.more", null,
-				translate("selector.results.more", String.valueOf(MAX_RESULTS)), formLayout);
-
-		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON_SMALL);
-		applyButton.setPrimary(true);
+		loadMoreLink = uifactory.addFormLink("selector.load.more", formLayout, Link.LINK);
+		loadMoreLink.setIconLeftCSS("o_icon o_icon_load_more");
+		
+		selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON_SMALL);
+		selectButton.setPrimary(true);
 	}
 
 	private void initSearchLine(FormItemContainer formLayout) {
@@ -129,13 +131,13 @@ public class OrgSelectorController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (applyButton == source) {
-			doApply(ureq);
+		if (selectButton == source) {
+			doSelect(ureq);
 		} else if (quickSearchEl == source) {
 			doQuickSearch(ureq);
 		} else if (resetQuickSearchButton == source) {
 			doResetQuickSearch(ureq);			
-		} else if (flc == source) {
+		} else if (flc == source && liveUpdate) {
 			String unselect = ureq.getParameter("unselect");
 			String select = ureq.getParameter("select");
 			if (unselect != null) {
@@ -156,6 +158,8 @@ public class OrgSelectorController extends FormBasicController {
 					updateUI();
 				}
 			}
+		} else if (loadMoreLink == source) {
+			doLoadMore(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -166,7 +170,7 @@ public class OrgSelectorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doApply(ureq);
+		doSelect(ureq);
 	}
 
 	@Override
@@ -174,7 +178,7 @@ public class OrgSelectorController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private void doApply(UserRequest ureq) {
+	private void doSelect(UserRequest ureq) {
 		HashSet<Long> selectedKeys = new HashSet<>();
 		for (String name : ureq.getParameterSet()) {
 			if (name.startsWith(PARAMETER_KEY_ORG_SELECTION)) {
@@ -187,20 +191,29 @@ public class OrgSelectorController extends FormBasicController {
 	}
 	
 	private void doQuickSearch(UserRequest ureq) {
+		maxUnselectedRows = PAGE_SIZE;
 		updateUI();
 		
 		fireEvent(ureq, RESIZED_EVENT);
 	}
 	
 	private void doResetQuickSearch(UserRequest ureq) {
+		maxUnselectedRows = PAGE_SIZE;
 		quickSearchEl.setValue("");
 		updateUI();
 		
 		fireEvent(ureq, RESIZED_EVENT);
 	}
 	
+	private void doLoadMore(UserRequest ureq) {
+		maxUnselectedRows += PAGE_SIZE;	
+		updateUI();
+
+		fireEvent(ureq, RESIZED_EVENT);
+	}
+	
 	private void updateUI() {
-		resultsMoreEl.setVisible(false);
+		loadMoreLink.setVisible(false);
 
 		List<Row> selectedRows = rows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
 		flc.contextPut("selectedRows", selectedRows);
@@ -216,23 +229,32 @@ public class OrgSelectorController extends FormBasicController {
 		quickSearchEl.getComponent().setDirty(false);
 
 		String searchFieldValue = quickSearchEl.getValue().toLowerCase();
-		if (StringHelper.containsNonWhitespace(searchFieldValue)) {
-			List<Row> unselectedRows = rows.stream()
-					.filter(row -> !selectedKeys.contains(row.key))
-					.filter(row -> row.title.toLowerCase().contains(searchFieldValue))
-					.toList();
-			
-			if (unselectedRows.size() > MAX_RESULTS) {
-				unselectedRows = unselectedRows.subList(0, MAX_RESULTS);
-				resultsMoreEl.setVisible(true);
-			}
+		List<Row> unselectedRows = rows.stream()
+				.filter(row -> !selectedKeys.contains(row.key))
+				.filter(row -> filter(row, searchFieldValue))
+				.toList();
 
-			flc.contextPut("unselectedRows", unselectedRows);
-		} else {
-			flc.contextPut("unselectedRows", Collections.emptyList());
+		if (unselectedRows.size() > maxUnselectedRows) {
+			unselectedRows = unselectedRows.subList(0, maxUnselectedRows);
+			loadMoreLink.setVisible(true);
 		}
+
+		flc.contextPut("unselectedRows", unselectedRows);
 		
-		resultsMoreEl.getComponent().setDirty(true);
+		loadMoreLink.getComponent().setDirty(true);
+	}
+	
+	private boolean filter(Row row, String searchFieldValue) {
+		if (!StringHelper.containsNonWhitespace(searchFieldValue)) {
+			return true;
+		}
+		if (row.title.toLowerCase().contains(searchFieldValue)) {
+			return true;
+		}
+		if (row.path.toLowerCase().contains(searchFieldValue)) {
+			return true;
+		}
+		return false;
 	}
 	
 	public static class OrgsSelectedEvent extends Event {

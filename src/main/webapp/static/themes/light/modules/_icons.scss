@@ -274,6 +274,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_lifecycle { @include o-add-icon('power-off');}
 .o_icon_lifecycle_date { @include o-add-icon('calendar');}
 .o_icon_lightbulb { @include o-add-icon('lightbulb');}
+.o_icon_load_more { @include o-add-icon('circle-arrow-down');}
 .o_icon_location { @include o-add-icon('location-dot');}
 .o_icon_exact_location { @include o-add-icon('location-crosshairs');}
 .o_icon_locked { @include o-add-icon('lock');}

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
@@ -67,8 +68,10 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	private OrgSelectorController orgSelectorCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
+	private Set<Long> orgKeys = new HashSet<>();
 	private Set<Long> selectedKeys = new HashSet<>();
 	private boolean multipleSelection;
+	private boolean liveUpdate;
 	private Translator orgTranslator;
 
 	public OrgSelectorElementImpl(WindowControl wControl, String name, List<Organisation> orgs) {
@@ -88,10 +91,16 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		rootFormAvailable(button);
 	}
 
+	public Set<Long> getKeys() {
+		return orgKeys;
+	}
+	
 	private void initOrgRows(List<Organisation> orgs) {
 		Map<Long, String> orgKeyToName = new HashMap<>();
+		orgKeys = new HashSet<>();
 		for (Organisation org : orgs) {
 			orgKeyToName.put(org.getKey(), org.getDisplayName());
+			orgKeys.add(org.getKey());
 		}
 		orgRows = orgs.stream().map(org -> mapToOrgRow(org, orgKeyToName)).collect(Collectors.toList());
 	}
@@ -178,6 +187,9 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI();
+				if (getAction() == FormEvent.ONCHANGE) {
+					getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
+				}
 				Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), button.getForId());
 				getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 			} else if (event == OrgSelectorController.RESIZED_EVENT) {
@@ -235,7 +247,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	}
 	
 	private void doOpenSelector(UserRequest ureq) {
-		orgSelectorCtrl = new OrgSelectorController(ureq, wControl, orgRows, selectedKeys, multipleSelection);
+		orgSelectorCtrl = new OrgSelectorController(ureq, wControl, orgRows, selectedKeys, multipleSelection, liveUpdate);
 		orgSelectorCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, orgSelectorCtrl.getInitialComponent(),
@@ -251,6 +263,10 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 
 	public boolean isMultipleSelection() {
 		return multipleSelection;
+	}
+
+	public void setLiveUpdate(boolean liveUpdate) {
+		this.liveUpdate = liveUpdate;
 	}
 
 	public record OrgRow(long key, String path, String title, String location) {}

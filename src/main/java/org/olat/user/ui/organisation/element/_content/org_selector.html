@@ -44,6 +44,10 @@
 			</div>
 		</div>
 
+		#if($unselectedRows.size() > 0)
+		<hr>
+		#end
+		
 		<div class="o_org_selector_unselected">
 			<div class="o_org_selector_rows">
 				#foreach($unselectedRow in $unselectedRows)
@@ -63,15 +67,18 @@
 					</div>
 				</div>
 				#end
+				#if($r.available("selector.load.more") && $r.visible("selector.load.more"))
+				<div class="o_org_load_more">
+					$r.render("selector.load.more")
+				</div>
+				#end
 			</div>
 		</div>
-
-		<small>$r.render("selector.results.more")</small>
 	</div>
 
 	<div class="o_button_group o_button_group_right o_button_group_bottom">
-		#if($r.available("apply") && $r.visible("apply"))
-		$r.render("apply")
+		#if($r.available("select") && $r.visible("select"))
+		$r.render("select")
 		#end
 	</div>
 </div>

@@ -502,11 +502,17 @@ dialog.popover {
 }
 
 .o_org_selector_selected {
-	margin-top: 15px;
+	margin-top: 10px;
 }
 
 .o_org_selector_unselected {
-	margin-top: 20px;
+	margin-top: 22px;
+	
+	.o_org_load_more {
+		height: 10px;
+		width: 100%;
+		text-align: center;
+	}
 }
 
 .o_org_selector_rows {
@@ -515,8 +521,8 @@ dialog.popover {
 	.o_org_selector_row {
 		display: flex;
 		width: 100%;
-		margin-top: 5px;
-		margin-bottom: 5px;
+		padding-top: 5px;
+		padding-bottom: 5px;
 
 		.o_org_selector_checkbox {
 			width: 26px;
