@@ -67,7 +67,6 @@ import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -264,14 +263,10 @@ public class ResetCourseDataHelper {
 		dbInstance.commitAndCloseSession();
 		
 		if(resetCourse) {
-			CourseConfig config = userCourseEnv.getCourseEnvironment().getCourseConfig();
-			UserEfficiencyStatementImpl userEfficiencyStatement = efficiencyStatementMgr.getUserEfficiencyStatementFull(courseEntry, assessedIdentity);
-			if(userEfficiencyStatement != null || config.isEfficiencyStatementEnabled()) {
-				// There is an efficiency statement, ignore the course setting and make it up-to-date
-				AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
-				List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);
-				efficiencyStatementMgr.updateUserEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, courseEntry);
-			}
+			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
+			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);
+			efficiencyStatementMgr.updateUserEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, courseEntry);
+			
 			// Flag the certificate, ready for recertification
 			if(lastCertificate != null) {
 				certificatesManager.archiveCertificate(lastCertificate);

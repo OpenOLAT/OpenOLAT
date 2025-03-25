@@ -101,6 +101,7 @@ import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
@@ -448,7 +449,12 @@ public class CourseFactory {
 		if(course != null) {
 			CoreSpringFactory.getImpl(CourseConfigManager.class).deleteConfigOf(course);
 		}
-
+		
+		// Delete efficiency statements if not enabled
+		if (course != null && !course.getCourseConfig().isEfficiencyStatementEnabled()) {
+			CoreSpringFactory.getImpl(EfficiencyStatementManager.class).deleteEfficiencyStatementsFromCourse(entry.getKey());
+		}
+		
 		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(res);
 
 		// delete course group- and rightmanagement

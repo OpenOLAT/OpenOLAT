@@ -19,11 +19,9 @@
  */
 package org.olat.course.config.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -32,7 +30,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -42,15 +39,12 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -60,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EfficiencyStatementController extends FormBasicController {
 
-	private MultipleSelectionElement efficiencyEl;
+	private FormToggle efficiencyStatementEl;
 
 	private DialogBoxController enableEfficiencyDC;
 	private DialogBoxController disableEfficiencyDC;
@@ -68,9 +62,6 @@ public class EfficiencyStatementController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private CourseConfig courseConfig;
 	private final boolean editable;
-
-	@Autowired
-	private EfficiencyStatementManager efficiencyStatementManager;
 
 	public EfficiencyStatementController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			CourseConfig courseConfig, boolean editable) {
@@ -89,12 +80,11 @@ public class EfficiencyStatementController extends FormBasicController {
 		setFormContextHelp("manual_user/learningresources/Course_Settings/#assessment");
 		formLayout.setElementCssClass("o_sel_course_efficiency_statements");
 		
-		boolean effEnabled = courseConfig.isEfficiencyStatementEnabled();
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
-		efficiencyEl = uifactory.addCheckboxesHorizontal("effIsOn", "chkbx.efficency.onoff", formLayout, new String[] {"xx"}, new String[] {""});
-		efficiencyEl.addActionListener(FormEvent.ONCHANGE);
-		efficiencyEl.select("xx", effEnabled);
-		efficiencyEl.setEnabled(editable && !managedEff);
+		efficiencyStatementEl = uifactory.addToggleButton("effIsOn", "efficiency.statement.show", translate("on"), translate("off"), formLayout);
+		efficiencyStatementEl.addActionListener(FormEvent.ONCHANGE);
+		efficiencyStatementEl.toggle(courseConfig.isEfficiencyStatementEnabled());
+		efficiencyStatementEl.setEnabled(editable && !managedEff);
 		
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -110,13 +100,13 @@ public class EfficiencyStatementController extends FormBasicController {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doChangeConfig(ureq);
 			} else {
-				efficiencyEl.select("xx", true);
+				efficiencyStatementEl.toggleOn();
 			}
 		} else if (source == enableEfficiencyDC) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doChangeConfig(ureq);
 			} else {
-				efficiencyEl.select("xx", false);
+				efficiencyStatementEl.toggleOff();
 			}
 		}
 		super.event(ureq, source, event);
@@ -128,7 +118,7 @@ public class EfficiencyStatementController extends FormBasicController {
 	}
 	
 	private void doSave(UserRequest ureq) {
-		boolean confirmUpdateStatement = courseConfig.isEfficiencyStatementEnabled() != efficiencyEl.isSelected(0);
+		boolean confirmUpdateStatement = courseConfig.isEfficiencyStatementEnabled() != efficiencyStatementEl.isOn();
 		if (confirmUpdateStatement) {
 			if (courseConfig.isEfficiencyStatementEnabled()) {
 				// a change from enabled Efficiency to disabled
@@ -152,7 +142,7 @@ public class EfficiencyStatementController extends FormBasicController {
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		
-		boolean enableEfficiencyStatement = efficiencyEl.isSelected(0);
+		boolean enableEfficiencyStatement = efficiencyStatementEl.isOn();
 		boolean updateStatement = courseConfig.isEfficiencyStatementEnabled() != enableEfficiencyStatement;
 		courseConfig.setEfficiencyStatementIsEnabled(enableEfficiencyStatement);
 
@@ -160,18 +150,6 @@ public class EfficiencyStatementController extends FormBasicController {
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		
 		if(updateStatement) {
-			if(enableEfficiencyStatement) {
-				// first create the efficiencies, send event to agency (all courses add link)
-				RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
-				efficiencyStatementManager.updateEfficiencyStatements(courseRe, identitiesWithData);							
-			} else {
-				// delete really the efficiencies of the users.
-				RepositoryEntry courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-				efficiencyStatementManager.deleteEfficiencyStatementsFromCourse(courseRepoEntry.getKey());						
-			}
-			
-			//inform everybody else		
 			EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 			CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigType.efficiencyStatement, course.getResourceableId());
 			eventBus.fireEventToListenersOf(courseConfigEvent, course);

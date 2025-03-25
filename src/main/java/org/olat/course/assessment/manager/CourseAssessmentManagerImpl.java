@@ -742,19 +742,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	private void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnvironment) {
 		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
-		// write only when enabled for this course
-		if (courseEnv.getCourseConfig().isEfficiencyStatementEnabled()) {
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
-			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
-			
-			List<AssessmentNodeData> data = new ArrayList<>(50);
-			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
-			
-			AssessmentHelper.getAssessmentNodeDataList(0, rootNode, scoreAccounting, userCourseEnvironment, true, true,
-					true, data, lastModifications);
-			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, lastModifications, cgm.getCourseEntry());
-		}
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+		
+		List<AssessmentNodeData> data = new ArrayList<>(50);
+		AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
+		
+		AssessmentHelper.getAssessmentNodeDataList(0, rootNode, scoreAccounting, userCourseEnvironment, true, true,
+				true, data, lastModifications);
+		efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, lastModifications, cgm.getCourseEntry());
 	}
 
 	private void awardBadge(UserCourseEnvironment userCourseEnvironment, Identity awardedBy) {

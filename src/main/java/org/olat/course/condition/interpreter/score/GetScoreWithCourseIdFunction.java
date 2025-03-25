@@ -72,7 +72,11 @@ public class GetScoreWithCourseIdFunction extends AbstractFunction {
 		// no integrity check can be done - other course might not exist anymore
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) { return defaultValue(); }
-
+		
+		if (!getUserCourseEnv().getCourseEnvironment().getCourseConfig().isEfficiencyStatementEnabled()) {
+			return defaultValue();
+		}
+		
 		// the real function evaluation which is used during run time
 		EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 		RepositoryEntryRef courseRef = new RepositoryEntryRefImpl(courseRepoEntryKey);
