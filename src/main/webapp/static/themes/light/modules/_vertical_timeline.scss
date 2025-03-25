@@ -119,6 +119,12 @@
                     height: ($o-v-timeline-path-top-height - 2px);
                 }
 
+                .o_vertical_timeline_identity {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
                 .o_vertical_timeline_title {
                     font-size: 18px;
                     line-height: 1.5;

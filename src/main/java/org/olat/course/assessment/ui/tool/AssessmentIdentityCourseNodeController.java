@@ -61,6 +61,7 @@ import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.properties.LogEntry;
 import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserAvatarMapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -158,7 +159,9 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	}
 
 	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
-		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale());
+		UserAvatarMapper userAvatarMapper = new UserAvatarMapper(false);
+		String mapperPath = registerMapper(ureq, userAvatarMapper);
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
 
 		timelineCtrl = new TimelineController(
 				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);

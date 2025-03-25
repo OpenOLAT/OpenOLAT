@@ -31,8 +31,19 @@
 							</div>
 							<div class="o_vertical_timeline_item">
 								<div class="o_vertical_timeline_items_top"></div>
-								#if($r.isNotEmpty($timelineEntry.getTitle()))
-									<div class="o_vertical_timeline_title">$r.escapeHtml($timelineEntry.getTitle())</div>
+								#if($timelineEntry.getPortraitCssClass())
+									<div class="o_vertical_timeline_identity">
+										<div class="o_portrait">
+											<img src="$r.staticLink("images/transparent.gif")" alt="$altText" class="$timelineEntry.getPortraitCssClass()" style="background-image : url($timelineEntry.getUserPortraitPath()) !important; background-repeat: no-repeat !important;">
+										</div>
+											#if($r.isNotEmpty($timelineEntry.getTitle()))
+												<div class="o_vertical_timeline_title">$r.escapeHtml($timelineEntry.getTitle())</div>
+											#end
+									</div>
+								#else
+									#if($r.isNotEmpty($timelineEntry.getTitle()))
+										<div class="o_vertical_timeline_title">$r.escapeHtml($timelineEntry.getTitle())</div>
+									#end
 								#end
 
 								<div class="o_vertical_timeline_day_time">$timelineEntry.getTimePeriod()</div>
