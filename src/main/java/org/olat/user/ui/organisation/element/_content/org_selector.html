@@ -36,7 +36,8 @@
 						<div class="o_org_selector_status">${selectedRow.path()}</div>
 						<div id="org_sel_${selectedRow.key()}_label" class="o_org_selector_title_version">
 							${selectedRow.title()} 
-							#if($selectedRow.location()) &middot ${selectedRow.location()}#end
+							#if($selectedRow.location()) &middot; ${selectedRow.location()} #end
+							#if($selectedRow.numberOfElements()) (${selectedRow.numberOfElements()}) #end
 						</div>
 					</div>
 				</div>
@@ -62,7 +63,8 @@
 						<div class="o_org_selector_status">${unselectedRow.path()}</div>
 						<div id="org_sel_${unselectedRow.key()}_label" class="o_org_selector_title_version">
 							${unselectedRow.title()} 
-							#if($unselectedRow.location()) &middot; ${unselectedRow.location()}#end
+							#if($unselectedRow.location()) &middot; ${unselectedRow.location()} #end
+							#if($unselectedRow.numberOfElements()) (${unselectedRow.numberOfElements()}) #end
 						</div>
 					</div>
 				</div>

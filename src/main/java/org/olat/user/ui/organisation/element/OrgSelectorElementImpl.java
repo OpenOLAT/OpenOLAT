@@ -59,11 +59,14 @@ import org.olat.core.util.Util;
  */
 public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorElement, FormItemCollection, ControllerEventListener {
 
+	private final static Long ROOT_ORG_KEY = -1L;
+	
 	private final OrgSelectorComponent component;
 	private final WindowControl wControl;
 	private final Map<String, FormItem> components = new HashMap<>();
 	private final FormLink button;
 	private List<OrgRow> orgRows;
+	private OrgNode orgRoot;
 
 	private OrgSelectorController orgSelectorCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -76,6 +79,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 
 	public OrgSelectorElementImpl(WindowControl wControl, String name, List<Organisation> orgs) {
 		super(name);
+		initOrgTree(orgs);
 		initOrgRows(orgs);
 		this.wControl = wControl;
 		this.component = new OrgSelectorComponent(name, this);
@@ -102,7 +106,49 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			orgKeyToName.put(org.getKey(), org.getDisplayName());
 			orgKeys.add(org.getKey());
 		}
-		orgRows = orgs.stream().map(org -> mapToOrgRow(org, orgKeyToName)).collect(Collectors.toList());
+		orgRows = orgs.stream().map(org -> mapToOrgRow(org, orgKeyToName))
+				.sorted(this::orgPathComparator)
+				.collect(Collectors.toList());
+	}
+
+	private int orgPathComparator(OrgRow orgRow1, OrgRow orgRow2) {
+		return orgRow1.path.compareTo(orgRow2.path);
+	}
+
+	private void initOrgTree(List<Organisation> orgs) {
+		Map<Long, OrgNode> workingMap = new HashMap<>();
+		workingMap.put(ROOT_ORG_KEY, new OrgNode(null));
+
+		for (Organisation org : orgs) {
+			OrgNode orgNode = new OrgNode(org);
+			workingMap.put(org.getKey(), orgNode);
+		}
+
+		// Set all parents in all nodes:
+		OrgNode root = workingMap.get(ROOT_ORG_KEY);
+		for (OrgNode orgNode : workingMap.values()) {
+			if (orgNode.isRootNode()) {
+				continue;
+			}
+			if (orgNode.data.getParent() == null) {
+				orgNode.setParent(root);
+			} else {
+				OrgNode parent = workingMap.get(orgNode.data.getParent().getKey());
+				orgNode.setParent(parent);
+			}
+		}
+
+		// Set all children in all nodes:
+		for (OrgNode orgNode : workingMap.values()) {
+			if (orgNode.isRootNode()) {
+				continue;
+			}
+			OrgNode parent = orgNode.getParent();
+			parent.getChildren().add(orgNode);
+		}
+		
+		orgRoot = workingMap.get(-1L);
+		orgRoot.calculateNumberOfElements();
 	}
 
 	private OrgRow mapToOrgRow(Organisation org, Map<Long, String> orgKeyToName) {
@@ -112,8 +158,10 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 				.map(Long::parseLong).map(orgKeyToName::get).collect(Collectors.joining(" / "));
 		String title = org.getDisplayName();
 		String location = org.getLocation();
+		OrgNode orgNode = orgRoot.find(org.getKey());
+		int numberOfElements = orgNode != null ? orgNode.getNumberOfElements() : -1;
 		
-		return new OrgRow(key, path, title, location);
+		return new OrgRow(key, path, title, location, numberOfElements);
 	}
 
 	@Override
@@ -269,5 +317,65 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		this.liveUpdate = liveUpdate;
 	}
 
-	public record OrgRow(long key, String path, String title, String location) {}
+	public record OrgRow(long key, String path, String title, String location, int numberOfElements) {}
+
+	public static class OrgNode {
+		private final Organisation data;
+		private OrgNode parent = null;
+		private final List<OrgNode> children = new ArrayList<>();
+		private int numberOfElements;
+
+		public OrgNode(Organisation data) {
+			this.data = data;
+		}
+
+		boolean isRootNode() {
+			return data == null;
+		}
+		
+		public void setParent(OrgNode parent) {
+			this.parent = parent;
+		}
+		
+		public OrgNode getParent() {
+			return parent;
+		}
+
+		public List<OrgNode> getChildren() {
+			return children;
+		}
+		
+		public int calculateNumberOfElements() {
+			numberOfElements = 1; // self
+			for (OrgNode child : children) {
+				numberOfElements += child.calculateNumberOfElements();
+			}
+			return numberOfElements;
+		}
+
+		public int getNumberOfElements() {
+			return numberOfElements;
+		}
+
+		public OrgNode find(Long key) {
+			for (OrgNode child : children) {
+				OrgNode result = child.find(key);
+				if (result != null) {
+					return result;
+				}
+			}
+
+			if (data != null) {
+				if (data.getKey().equals(key)) {
+					return this;
+				}
+				return null;
+			}
+
+			if (ROOT_ORG_KEY.equals(key)) {
+				return this;
+			}
+			return null;
+		}
+	}
 }

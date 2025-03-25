@@ -62,7 +62,7 @@ public class OrgSelectorController extends FormBasicController {
 	private final List<Row> rows;
 	private int maxUnselectedRows = PAGE_SIZE;
 
-	public record Row(Long key, String path, String title, String location, int size) {}
+	public record Row(Long key, String path, String title, String location, String numberOfElements) {}
 
 	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows,
 								 Set<Long> selectedKeys, boolean multipleSelection, boolean liveUpdate) {
@@ -125,8 +125,8 @@ public class OrgSelectorController extends FormBasicController {
 		String path = orgRow.path();
 		String title = orgRow.title();
 		String location = orgRow.location();
-		int size = 1;
-		return new Row(key, path, title, location, size);
+		String numberOfElements = orgRow.numberOfElements() > 1 ? Integer.toString(orgRow.numberOfElements()) : "";
+		return new Row(key, path, title, location, numberOfElements);
 	}
 
 	@Override
