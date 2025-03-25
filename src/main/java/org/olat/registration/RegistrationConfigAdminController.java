@@ -273,6 +273,8 @@ public class RegistrationConfigAdminController extends FormBasicController {
 			boolean enable = registrationEl.isOn();
 			registrationModule.setSelfRegistrationEnabled(enable);
 			updateUI();
+			mainForm.setHideDirtyMarkingMessage(true);
+			markDirty();
 		} else if (source == domainRestrictionEl) {
 			updateUI();
 		} else if (source == registrationLoginElement) {
