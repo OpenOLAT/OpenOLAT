@@ -154,8 +154,6 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 			if(!StringUtils.isBlank(helpMsg)) {
 				loginContent.contextPut("loginhelpmsg",helpMsg);
 			}
-
-			loginContent.contextPut("startLogin", Boolean.FALSE);
 		}
 
 		return loginContent;
