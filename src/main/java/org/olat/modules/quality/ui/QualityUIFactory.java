@@ -78,6 +78,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 
 /**
  * 
@@ -402,8 +403,13 @@ public class QualityUIFactory {
 	}
 	
 	public static SelectionValues getOrganisationSV(UserSession usess, List<Organisation> currentOrganisations) {
+		List<Organisation> allOrganisations = getAllOrganisations(usess, currentOrganisations);
+		return OrganisationUIFactory.createSelectionValues(allOrganisations, usess.getLocale());
+	}
+	
+	public static List<Organisation> getAllOrganisations(UserSession usess, List<Organisation> currentOrganisations) {
 		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-		
+
 		// Get all organisations of the user
 		List<Organisation> userOrganisations = organisationService.getOrganisations(usess.getIdentity(), usess.getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
@@ -415,10 +421,9 @@ public class QualityUIFactory {
 				allOrganisations.add(activeOrganisation);
 			}
 		}
-		
-		return OrganisationUIFactory.createSelectionValues(allOrganisations, usess.getLocale());
+		return allOrganisations;
 	}
-	
+
 	public static List<OrganisationRef> getSelectedOrganisationRefs(MultiSelectionFilterElement organisationsEl) {
 		return organisationsEl.getSelectedKeys().stream()
 				.map(QualityUIFactory::getOrganisationRef)
@@ -443,6 +448,29 @@ public class QualityUIFactory {
 		for (String selectedOrganisationKey: selectedOrganisationKeys) {
 			if (!organisationKeys.contains(selectedOrganisationKey)) {
 				Organisation organisation = organisationService.getOrganisation(getOrganisationRef(selectedOrganisationKey));
+				if (organisation != null) {
+					organisations.add(organisation);
+				}
+			}
+		}
+		return organisations;
+	}
+
+	public static List<Organisation> getSelectedOrganisations(Collection<Long> selectedOrganisationKeys,
+															  List<Organisation> currentOrganisations) {
+		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+
+		// Copy the current organisations
+		List<Organisation> organisations = new ArrayList<>(currentOrganisations);
+
+		// Remove unselected organisations
+		organisations.removeIf(organisation -> !selectedOrganisationKeys.contains(getOrganisationKey(organisation)));
+
+		// Add newly selected organisations
+		Collection<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).toList();
+		for (Long selectedOrganisationKey : selectedOrganisationKeys) {
+			if (!organisationKeys.contains(selectedOrganisationKey)) {
+				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(selectedOrganisationKey));
 				if (organisation != null) {
 					organisations.add(organisation);
 				}
@@ -699,6 +727,18 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (el.getDate() == null) {
+				el.setErrorKey("form.mandatory.hover");
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+
+	public static boolean validateIsMandatory(OrgSelectorElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			if (el.getSelection().isEmpty()) {
 				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}

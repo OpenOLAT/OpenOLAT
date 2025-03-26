@@ -32,7 +32,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -41,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,6 +62,7 @@ import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GeneratorConfigController extends FormBasicController {
 
 	private TextElement titleEl;
-	private MultiSelectionFilterElement organisationsEl;
+	private OrgSelectorElement organisationsEl;
 	private StaticTextElement evaFormNotChoosen;
 	private FormLink evaFormSelectLink;
 	private FormLink evaFormPreviewLink;
@@ -119,10 +118,12 @@ public class GeneratorConfigController extends FormBasicController {
 		
 		titleEl = uifactory.addTextElement("generator.title", 200, generator.getTitle(), formLayout);
 		
-		SelectionValues organisationSV = QualityUIFactory.getOrganisationSV(ureq.getUserSession(), currentOrganisations);
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("generator.organisations", "generator.organisations",
-				formLayout, getWindowControl(), organisationSV);
-		currentOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		List<Organisation> allOrganisations = QualityUIFactory.getAllOrganisations(ureq.getUserSession(), currentOrganisations);
+		organisationsEl = uifactory.addOrgSelectorElement("generator.organisations", "generator.organisations",
+				formLayout, getWindowControl(), allOrganisations);
+		organisationsEl.setMultipleSelection(true);
+		List<Long> selectedOrgKeys = currentOrganisations.stream().map(Organisation::getKey).toList();
+		organisationsEl.setSelection(selectedOrgKeys);
 
 		evaFormNotChoosen = uifactory.addStaticTextElement("generator.form.not.selected", "generator.form",
 				translate("generator.form.not.selected"), formLayout);
@@ -267,7 +268,7 @@ public class GeneratorConfigController extends FormBasicController {
 		generator = generatorService.updateGenerator(generator);
 		
 		if (organisationsEl.isVisible()) {
-			currentOrganisations = QualityUIFactory.getSelectedOrganisations(organisationsEl, currentOrganisations);
+			currentOrganisations = QualityUIFactory.getSelectedOrganisations(organisationsEl.getSelection(), currentOrganisations);
 			generatorService.updateGeneratorOrganisations(generator, currentOrganisations);
 		}
 		
