@@ -65,7 +65,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.settings.AccessOverviewController;
-import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,7 +94,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private FormLayoutContainer oaiCont;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
-	private OrgSelectorElementImpl organisationsEl;
+	private OrgSelectorElement organisationsEl;
 	private SelectionElement authorCanEl;
 	private SelectionElement enableMetadataIndexingEl;
 
@@ -429,11 +429,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		
 		List<Long> selectedOrgKeys = reOrganisations.stream().map(Organisation::getKey).toList();
 
-		organisationsEl = new OrgSelectorElementImpl(getWindowControl(), "organisations", organisationList);
+		organisationsEl = uifactory.addOrgSelectorElement("organisations", "cif.organisations",
+				formLayout, getWindowControl(), organisationList);
 		organisationsEl.setMultipleSelection(true);
-		formLayout.add(organisationsEl);
-		organisationsEl.setLabel("cif.organisations", null);
-		organisationsEl.showLabel(true);
 		organisationsEl.setSelection(selectedOrgKeys);
 	}
 

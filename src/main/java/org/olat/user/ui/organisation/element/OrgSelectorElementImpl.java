@@ -305,6 +305,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		calloutCtrl.activate();
 	}
 
+	@Override
 	public void setMultipleSelection(boolean multipleSelection) {
 		this.multipleSelection = multipleSelection;
 	}

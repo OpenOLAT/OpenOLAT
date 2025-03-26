@@ -47,7 +47,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
-import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,7 +64,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	private FormLink nameLink;
 	private MultipleSelectionElement enabledEl;
 	private MultipleSelectionElement webEnabledEl;
-	private OrgSelectorElementImpl organisationsEl;
+	private OrgSelectorElement organisationsEl;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController launcherNameTranslatorCtrl;
@@ -162,11 +162,9 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	
 	private void initFormOrganisations(FormItemContainer formLayout) {
 		allOrganisations = organisationService.getOrganisations();
-		organisationsEl = new OrgSelectorElementImpl(getWindowControl(), "organisations", allOrganisations);
+		organisationsEl = uifactory.addOrgSelectorElement("organisations", "admin.launcher.organisations",
+				formLayout, getWindowControl(), allOrganisations);
 		organisationsEl.setMultipleSelection(true);
-		formLayout.add(organisationsEl);
-		organisationsEl.setLabel("admin.launcher.organisations", null);
-		organisationsEl.showLabel(true);
 		
 		if (catalogLauncher != null) {
 			List<Long> selectedOrgKeys = catalogService.getCatalogLauncherOrganisations(catalogLauncher).stream().map(Organisation::getKey).toList();

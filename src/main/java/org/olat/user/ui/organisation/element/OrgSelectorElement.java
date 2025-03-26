@@ -36,4 +36,6 @@ public interface OrgSelectorElement extends FormItem {
 	void setSelection(Long orgKey);
 
 	Set<Long> getSelection();
+
+	void setMultipleSelection(boolean multipleSelection);
 }

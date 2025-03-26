@@ -46,7 +46,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
-import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,7 +60,7 @@ public class EditCurriculumController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
-	private OrgSelectorElementImpl organisationEl;
+	private OrgSelectorElement organisationEl;
 	private SingleSelection lecturesEnabledEl;
 	
 	private Curriculum curriculum;
@@ -151,11 +151,8 @@ public class EditCurriculumController extends FormBasicController {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
 		
-		organisationEl = new OrgSelectorElementImpl(getWindowControl(), "curriculum.organisation", organisations);
-		formLayout.add(organisationEl);
-		organisationEl.setLabel("curriculum.organisation", null);
-		organisationEl.showLabel(true);
-		organisationEl.setMultipleSelection(false);
+		organisationEl = uifactory.getInstance().addOrgSelectorElement("curriculum.organisation", 
+				"curriculum.organisation", formLayout, getWindowControl(), organisations);
 
 		if (curriculum != null) {
 			if (curriculum.getOrganisation() != null) {
