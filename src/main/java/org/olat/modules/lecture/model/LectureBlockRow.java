@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.LectureListDetailsController;
@@ -54,6 +55,10 @@ public class LectureBlockRow implements LectureBlockRef {
 	private FormLink teacherChooserLink;
 	private TextElement locationElement;
 	private List<Identity> teachersList;
+
+	private FormLink openOnlineMeetingLink;
+	
+	private final String entryUrl;
 	
 	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
@@ -61,9 +66,12 @@ public class LectureBlockRow implements LectureBlockRef {
 		this.lectureBlock = lectureBlock;
 		this.teachers = teachers;
 		this.entry = entry;
+		this.entryUrl = (entry != null && entry.key() != null)
+				? BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.key() + "]")
+				: null;
 		this.numOfParticipants = numOfParticipants;
 		this.curriculumElement = curriculumElement;
-		
+
 		this.iamTeacher = iamTeacher;
 		this.entryExternalRef = externalRef;
 		this.entryDisplayname = entryDisplayname;
@@ -73,6 +81,14 @@ public class LectureBlockRow implements LectureBlockRef {
 	@Override
 	public Long getKey() {
 		return lectureBlock.getKey();
+	}
+	
+	public String getTitle() {
+		return lectureBlock.getTitle();
+	}
+	
+	public String getLocation() {
+		return lectureBlock.getLocation();
 	}
 	
 	public boolean isIamTeacher() {
@@ -85,6 +101,10 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public String getEntryDisplayname() {
 		return entryDisplayname;
+	}
+	
+	public String getEntryUrl() {
+		return entryUrl;
 	}
 
 	public LectureBlock getLectureBlock() {
@@ -163,6 +183,14 @@ public class LectureBlockRow implements LectureBlockRef {
 		this.teachersList = teachersList;
 	}
 	
+	public FormLink getOpenOnlineMeetingLink() {
+		return openOnlineMeetingLink;
+	}
+
+	public void setOpenOnlineMeetingLink(FormLink openOnlineMeetingLink) {
+		this.openOnlineMeetingLink = openOnlineMeetingLink;
+	}
+
 	public boolean isDetailsControllerAvailable() {
 		if(detailsCtrl != null) {
 			return detailsCtrl.getInitialFormItem().isVisible();

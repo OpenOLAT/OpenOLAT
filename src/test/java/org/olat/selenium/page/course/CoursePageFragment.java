@@ -387,7 +387,7 @@ public class CoursePageFragment {
 		OOGraphene.waitElement(lecturesBy, browser);
 		browser.findElement(lecturesBy).click();
 		
-		By teacherOverviewBy = By.cssSelector("div.o_lectures_teacher_overview");
+		By teacherOverviewBy = By.cssSelector("div.o_sel_repo_lectures_list");
 		OOGraphene.waitElement(teacherOverviewBy, browser);
 		return new LecturesRepositoryPage(browser);
 	}

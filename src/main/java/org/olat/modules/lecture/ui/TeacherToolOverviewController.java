@@ -42,7 +42,7 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ * Coaching -> Events
  * Initial date: 13 juin 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *

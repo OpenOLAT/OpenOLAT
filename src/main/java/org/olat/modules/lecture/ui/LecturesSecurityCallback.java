@@ -57,6 +57,12 @@ public interface LecturesSecurityCallback {
 	
 	public boolean canAddDispensations();
 	
+	public boolean canViewLog();
+	
+	public boolean canViewList();
+	
+	public boolean canAssessmentMode();
+	
 	/**
 	 * @return true if a E-mail to the teaches after creating a notice is mandatory
 	 */
@@ -67,5 +73,9 @@ public interface LecturesSecurityCallback {
 	public boolean canDeleteAbsenceNotices();
 	
 	public LectureRoles viewAs();
+	
+	public boolean isOnlineMeetingModerator();
+	
+	public boolean isOnlineMeetingAdministrator();
 
 }

@@ -74,9 +74,12 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListDetailsParticipantsGroupDataModel.GroupCols;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExcludeRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -101,6 +104,8 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private FormLink editButton;
 	private FormLink openEntryLink;
+	private FormLink openOnlineMeetingButton;
+	
 	private FlexiTableElement tableEl;
 	private StaticTextElement participantsEl;
 	private LectureListDetailsParticipantsGroupDataModel tableModel;
@@ -113,6 +118,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private final boolean allowRepositoryEntry;
 	private final RepositoryEntry repositoryEntry;
 	private final boolean lectureManagementManaged;
+	private final LectureListRepositoryConfig config;
 	private final LecturesSecurityCallback secCallback;
 	
 	private ToolsController toolsCtrl;
@@ -137,9 +143,10 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row,
 			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, Form rootForm,
-			LecturesSecurityCallback secCallback, boolean lectureManagementManaged) {
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
+		this.config = config;
 		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
 		profileConfig = userPortraitService.createProfileConfig();
@@ -170,12 +177,24 @@ public class LectureListDetailsController extends FormBasicController {
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 		
+		LectureBlock lectureBlock = row.getLectureBlock();
+		if(lectureBlock.getTeamsMeeting() != null || lectureBlock.getBBBMeeting() != null) {
+			openOnlineMeetingButton = uifactory.addFormLink("open.online.meeting", "open.online.meeting", "online.room", formLayout, Link.BUTTON);
+			openOnlineMeetingButton.setFormLayout("vertical");
+		}
+		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("title", row.getLectureBlock().getTitle());
-			layoutCont.contextPut("externalRef", row.getLectureBlock().getExternalRef());
+			layoutCont.contextPut("title", lectureBlock.getTitle());
+			if(config.withDetailsExternalRef()) {
+				layoutCont.contextPut("externalRef", lectureBlock.getExternalRef());
+			}
 			
-			String badge = LectureBlockStatusCellRenderer.getStatusBadge(row.getLectureBlock(), getTranslator());
-			layoutCont.contextPut("statusBadge", badge);
+			String badge = LectureBlockStatusCellRenderer.getStatusBadge(lectureBlock, getTranslator());
+			layoutCont.contextPut("lectureBlockStatusBadge", badge);
+			if(config.withRollCall() != Visibility.NO) {
+				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusBadge(lectureBlock, getTranslator());
+				layoutCont.contextPut("rollCallStatusBadge", rollCallBadge);
+			}
 			
 			if(allowRepositoryEntry) {
 				initFormReferencedCourses(layoutCont);
@@ -200,6 +219,7 @@ public class LectureListDetailsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "participantsGroupTable", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setVisible(config.withDetailsParticipantsGroups());
 	}
 	
 	private void initFormReferencedCourses(FormLayoutContainer formLayout) {
@@ -264,12 +284,14 @@ public class LectureListDetailsController extends FormBasicController {
 				formatter.formatTimeShort(startDate), formatter.formatTimeShort(endDate));
 		uifactory.addStaticTextElement("lecture.time", "lecture.time", time, formLayout);
 		
-		if(row.getLectureBlock().getPlannedLecturesNumber() > 1) {
+		if(config.withDetailsUnits() && row.getLectureBlock().getPlannedLecturesNumber() > 1) {
 			String units = Integer.toString(row.getLectureBlock().getPlannedLecturesNumber());
 			uifactory.addStaticTextElement("lecture.units", "lecture.units", units, formLayout);
 		}
+	
+		//TODO online exam
 		
-		String location = row.getLectureBlock().getLocation();
+		String location = row.getLocation();
 		if(StringHelper.containsNonWhitespace(location)) {
 			location = "<i class=\"o_icon o_icon-fw o_icon_location\"> </i> " + StringHelper.escapeHtml(location);
 			uifactory.addStaticTextElement("lecture.location", "lecture.location", location, formLayout);
@@ -394,6 +416,8 @@ public class LectureListDetailsController extends FormBasicController {
 			fireEvent(ureq, new EditLectureBlockRowEvent(row));
 		} else if(openEntryLink == source) {
 			doOpenRepositoryEntry(ureq);
+		} else if(openOnlineMeetingButton == source) {
+			doOpenOnlineMeeting(ureq);
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("detailstool".equals(cmd) && link.getUserObject() instanceof LectureBlockParticipantGroupRow groupRow) {
@@ -416,6 +440,10 @@ public class LectureListDetailsController extends FormBasicController {
 				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
+	}
+	
+	private void doOpenOnlineMeeting(UserRequest ureq) {
+		fireEvent(ureq, new OpenOnlineMeetingEvent(row.getLectureBlock()));
 	}
 	
 	private void doOpenRepositoryEntry(UserRequest ureq) {

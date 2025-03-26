@@ -54,17 +54,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
+ * An overview with the list of events, list of participants and appeals
+ * 
  * Initial date: 17 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LectureRepositoryAdminController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link logLink;
 	private Link archiveLink;
-	private final Link appealsLink;
+	private Link appealsLink;
+	private Link participantsLink;
 	private final Link lecturesLink;
-	private final Link participantsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
@@ -76,6 +78,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private RepositoryEntry entry;
 	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
+	private final LectureListRepositoryConfig config;
 	private final LecturesSecurityCallback secCallback;
 	private final List<ContextEntry> allFilterPath = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 	
@@ -87,9 +90,10 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private BaseSecurityModule securityModule;
 	
 	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry entry, LecturesSecurityCallback secCallback) {
+			RepositoryEntry entry, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.entry = entry;
+		this.config = config;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		
@@ -103,14 +107,17 @@ public class LectureRepositoryAdminController extends BasicController implements
 		segmentView.setDontShowSingleSegment(true);
 
 		lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
-		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
-		appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
-
 		segmentView.addSegment(lecturesLink, true);
-		segmentView.addSegment(participantsLink, false);
-		if(lectureModule.isAbsenceAppealEnabled()) {
+		
+		if(secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach) {
+			participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
+			segmentView.addSegment(participantsLink, false);
+		}
+		if(secCallback.canSeeAppeals() && lectureModule.isAbsenceAppealEnabled()) {
+			appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
 			segmentView.addSegment(appealsLink, false);
 		}
+
 		doOpenLectures(ureq, allFilterPath);
 
 		putInitialPanel(mainVC);
@@ -118,13 +125,16 @@ public class LectureRepositoryAdminController extends BasicController implements
 
 	@Override
 	public void initTools() {
-		archiveLink = LinkFactory.createToolLink("archive.entry", translate("archive.entry"), this);
-		archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");
-		stackPanel.addTool(archiveLink, Align.right);
-		
-		logLink = LinkFactory.createToolLink("log", translate("log"), this);
-		logLink.setIconLeftCSS("o_icon o_icon_log");
-		stackPanel.addTool(logLink, Align.right);
+		// Only for managers and in course
+		if(entry != null && secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach) {
+			archiveLink = LinkFactory.createToolLink("archive.entry", translate("archive.entry"), this);
+			archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");
+			stackPanel.addTool(archiveLink, Align.right);
+			
+			logLink = LinkFactory.createToolLink("log", translate("log"), this);
+			logLink.setIconLeftCSS("o_icon o_icon_log");
+			stackPanel.addTool(logLink, Align.right);
+		}
 	}
 
 	@Override
@@ -132,7 +142,12 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(entries == null || entries.isEmpty()) return;
 		
 		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("LectureBlocks".equalsIgnoreCase(name)) {
+		Long id = entries.get(0).getOLATResourceable().getResourceableId();
+		if("OnlineMeeting".equals(name)
+				|| ("LectureBlock".equalsIgnoreCase(name) && id != null && id.longValue() > 0l)) {
+			doOpenLectures(ureq, entries);
+			segmentView.select(lecturesLink);
+		} else if("LectureBlock".equalsIgnoreCase(name) || "LectureBlocks".equalsIgnoreCase(name)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			if(subEntries.isEmpty()) {
 				subEntries = new ArrayList<>(allFilterPath);
@@ -175,8 +190,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(lecturesCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LectureBlocks");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryConfig();
-			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry, config, secCallback);
+			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, stackPanel, entry, config, secCallback);
 			listenTo(lecturesCtrl);
 			lecturesCtrl.activate(ureq, entries, null);
 		} else {

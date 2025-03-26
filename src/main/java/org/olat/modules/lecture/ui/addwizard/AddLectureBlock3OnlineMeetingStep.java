@@ -26,50 +26,33 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.modules.lecture.ui.EditLectureBlockController.StepsListener;
 
 /**
  * 
- * Initial date: 7 oct. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 20 mars 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AddLectureBlock2SettingsStep extends BasicStep {
+public class AddLectureBlock3OnlineMeetingStep extends BasicStep {
 
 	private final AddLectureContext addLecture;
 	
-	public AddLectureBlock2SettingsStep(UserRequest ureq, AddLectureContext addLecture) {
+	public AddLectureBlock3OnlineMeetingStep(UserRequest ureq, AddLectureContext addLecture) {
 		super(ureq);
 		this.addLecture = addLecture;
 
-		if(addLecture.isWithOnlineMeeting()) {
-			setNextStep(new AddLectureBlock3OnlineMeetingStep(ureq, addLecture));
-		} else {
-			setNextStep(NOSTEP);
-		}
-		setI18nTitleAndDescr("wizard.settings.title", "wizard.settings.title");
+		setNextStep(NOSTEP);
+		setI18nTitleAndDescr("wizard.settings.online.meeting.title", "wizard.settings.online.meeting.title");
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		boolean withOnlineMeeting = addLecture.isWithOnlineMeeting();
-		return new PrevNextFinishConfig(true, withOnlineMeeting, !withOnlineMeeting);
+		return new PrevNextFinishConfig(true, false, true);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new SettingsController(ureq, wControl, form, runContext, addLecture, new AddLectureBlockStepsListener());
-	}
-	
-	public class AddLectureBlockStepsListener implements StepsListener {
-		@Override
-		public void onStepsChanged(UserRequest ureq) {
-			if(addLecture.isWithOnlineMeeting()) {
-				setNextStep(new AddLectureBlock3OnlineMeetingStep(ureq, addLecture));
-			} else {
-				setNextStep(NOSTEP);
-			}
-		}
+		return new OnlineMeetingController(ureq, wControl, form, runContext, addLecture);
 	}
 }

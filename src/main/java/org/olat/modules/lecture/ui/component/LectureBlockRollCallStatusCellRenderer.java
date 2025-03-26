@@ -33,6 +33,7 @@ import org.olat.modules.lecture.ui.AppealRollCallRow;
 import org.olat.modules.lecture.ui.LectureBlockAndRollCallRow;
 
 /**
+ * The original status.
  * 
  * Initial date: 20 juin 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -55,22 +56,18 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(renderer == null) {
-			if(cellValue instanceof LectureBlockAndRollCallRow) {
-				LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)cellValue;
+			if(cellValue instanceof LectureBlockAndRollCallRow rollCallRow) {
 				renderString(target, rollCallRow.getRow());
-			} else if(cellValue instanceof LectureBlockAndRollCall) {
-				renderString(target, (LectureBlockAndRollCall)cellValue);
-			} else if(cellValue instanceof AppealRollCallRow) {
-				AppealRollCallRow rollCallRow = (AppealRollCallRow)cellValue;
+			} else if(cellValue instanceof LectureBlockAndRollCall lectureBlockAndRollCall) {
+				renderString(target, lectureBlockAndRollCall);
+			} else if(cellValue instanceof AppealRollCallRow rollCallRow) {
 				renderString(target, rollCallRow.getLectureBlockAndRollCall());
 			}
-		} else if(cellValue instanceof LectureBlockAndRollCallRow) {
-			LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)cellValue;
+		} else if(cellValue instanceof LectureBlockAndRollCallRow rollCallRow) {
 			render(target, rollCallRow.getRow());
-		} else if(cellValue instanceof LectureBlockAndRollCall) {
-			render(target, (LectureBlockAndRollCall)cellValue);
-		} else if(cellValue instanceof AppealRollCallRow) {
-			AppealRollCallRow rollCallRow = (AppealRollCallRow)cellValue;
+		} else if(cellValue instanceof LectureBlockAndRollCall lectureBlockAndRollCall) {
+			render(target, lectureBlockAndRollCall);
+		} else if(cellValue instanceof AppealRollCallRow rollCallRow) {
 			render(target, rollCallRow.getLectureBlockAndRollCall());
 		}	
 	}

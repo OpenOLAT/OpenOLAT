@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.ui.component;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -27,7 +29,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
-import org.olat.modules.lecture.LectureRollCallStatus;
 
 /**
  * 
@@ -45,8 +46,12 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof LectureBlockStatus status) {
-			target.append(translator.translate(status.name()));
+		if(renderer == null) {
+			if(cellValue instanceof LectureBlockStatus status) {
+				target.append(translator.translate(status.name()));
+			} else if(cellValue instanceof LectureBlock block) {
+				target.append(translator.translate(block.getStatus().name()));
+			}
 		} else if(cellValue instanceof LectureBlock block) {
 			getStatus(target, "o_labeled_light", block, translator);
 		}
@@ -57,44 +62,50 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 		getStatus(sb, "o_lecture_status_badge", block, trans);
 		return sb.toString();
 	}
-
-	public static final String getStatusLabel(LectureBlock block, Translator trans) {
-		StringOutput sb = new StringOutput();
-		getStatus(sb, "o_labeled_light", block, trans);
-		return sb.toString();
-	}
 	
 	public static final String getStatusString(LectureBlock block, Translator trans) {
+		LectureBlockVirtualStatus vStatus = calculateStatus(block);
+		return vStatus == null ? null: trans.translate(vStatus.name());
+	}
+	
+	private static final void getStatus(StringOutput target, String type, LectureBlock block, Translator trans) {
+		LectureBlockVirtualStatus vStatus = calculateStatus(block);
+		if(vStatus != null) {
+			String statusName = vStatus.name().toLowerCase();
+			target.append("<span class=\"").append(type).append(" o_lecture_status_")
+			      .append(statusName).append("\">").append(trans.translate(statusName))
+			      .append("</span>");
+		}
+	}
+	
+	public static final LectureBlockVirtualStatus calculateStatus(LectureBlock block) {
 		LectureBlockStatus status = block.getStatus();
-		if(LectureBlockStatus.done.equals(status)) {
-			LectureRollCallStatus rollCallStatus = block.getRollCallStatus();
-			return trans.translate(rollCallStatus.name());
+		LectureBlockVirtualStatus vStatus;
+		if(status == LectureBlockStatus.cancelled) {
+			vStatus = LectureBlockVirtualStatus.CANCELLED;
+		} else {
+			Date now = new Date();
+			Date start = block.getStartDate();
+			Date end = block.getEndDate();
+			if(end != null && end.before(now)) {
+				vStatus = LectureBlockVirtualStatus.DONE;
+			} else if(start != null && start.before(now) && end != null && end.after(now)) {
+				vStatus = LectureBlockVirtualStatus.RUNNING;
+			} else if(start != null && start.after(now)) {
+				vStatus = LectureBlockVirtualStatus.PLANNED;
+			} else if(status == LectureBlockStatus.done) {
+				vStatus = LectureBlockVirtualStatus.DONE;
+			} else {
+				vStatus = null;
+			}
 		}
-		if(status != null) {
-			return trans.translate(status.name());
-		}
-		return null;
+		return vStatus;
 	}
 	
-	public static final void getStatus(StringOutput target, String type, LectureBlock block, Translator trans) {
-		LectureBlockStatus status = block.getStatus();
-		if(LectureBlockStatus.done.equals(status)) {
-			LectureRollCallStatus rollCallStatus = block.getRollCallStatus();
-			getStatus(target, type, rollCallStatus, trans);
-		} else if(status != null) {
-			getStatus(target, type, status, trans);
-		}
-	}
-	
-	public static final void getStatus(StringOutput target, String type, LectureRollCallStatus status, Translator trans) {
-		target.append("<span class=\"").append(type).append(" o_lecture_rollcall_status_")
-		      .append(status.name()).append("\">").append(trans.translate(status.name()))
-		      .append("</span>");
-	}
-	
-	public static final void getStatus(StringOutput target, String type, LectureBlockStatus status, Translator trans) {
-		target.append("<span class=\"").append(type).append(" o_lecture_status_")
-		      .append(status.name()).append("\">").append(trans.translate(status.name()))
-		      .append("</span>");
+	public enum LectureBlockVirtualStatus {
+		PLANNED,
+		RUNNING,
+		DONE,
+		CANCELLED
 	}
 }

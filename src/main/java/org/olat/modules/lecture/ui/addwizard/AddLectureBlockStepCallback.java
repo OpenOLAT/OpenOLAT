@@ -32,11 +32,15 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +58,15 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TeamsService teamsService;
+	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 	
 	public AddLectureBlockStepCallback(AddLectureContext addLectureCtxt) {
 		CoreSpringFactory.autowireObject(this);
@@ -83,6 +91,7 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 			selectedGroups.add(defGroup);
 		}
 		
+		updateOnlineMeetings(lectureBlock);
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
 		List<Identity> selectedTeachers = addLectureCtxt.getTeachers();
@@ -99,5 +108,32 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 		lectureService.syncCalendars(lectureBlock);
 
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private void updateOnlineMeetings(LectureBlock lectureBlock) {
+		BigBlueButtonMeeting bigBlueButtonMeeting = addLectureCtxt.getBigBlueButtonMeeting();
+		TeamsMeeting teamsMeeting = addLectureCtxt.getTeamsMeeting();
+		if(addLectureCtxt.isWithBigBlueButtonMeeting() && bigBlueButtonMeeting != null) {
+			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting);
+			lectureBlock.setBBBMeeting(bigBlueButtonMeeting);
+			lectureBlock.setTeamsMeeting(null);
+			if(teamsMeeting != null) {
+				teamsService.deleteMeeting(teamsMeeting);
+			}
+		} else if(addLectureCtxt.isWithTeamsMeeting() && teamsMeeting != null) {
+			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
+			lectureBlock.setBBBMeeting(null);
+			lectureBlock.setTeamsMeeting(teamsMeeting);
+			if(bigBlueButtonMeeting != null) {
+				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			}
+		} else {
+			if(bigBlueButtonMeeting != null) {
+				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			}
+			if(teamsMeeting != null) {
+				teamsService.deleteMeeting(teamsMeeting);
+			}
+		}
 	}
 }

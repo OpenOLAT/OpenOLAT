@@ -42,10 +42,12 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
-import org.olat.modules.lecture.ui.TeacherToolOverviewController;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
 import org.olat.repository.RepositoryEntry;
@@ -78,7 +80,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private MultiSearchesController searchesController;
 	private LecturesCockpitController cockpitController;
 	private DispensationsController dispensationsController;
-	private TeacherToolOverviewController teacherToolOverviewController;
+	private LectureListRepositoryController lecturesCtrl;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -135,7 +137,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 				doOpenCockpit(ureq);
 				segmentView.select(cockpitLink);
 			} else if("Teacher".equalsIgnoreCase(type)) {
-				doOpenLectures(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				doOpenLectures(ureq, subEntries);
 				segmentView.select(lecturesLink);
 			} else if("Absences".equalsIgnoreCase(type) && absenceLink != null) {
 				doAbsences(ureq);
@@ -182,7 +185,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 				if (clickedLink == cockpitLink) {
 					doOpenCockpit(ureq);
 				} else if (clickedLink == lecturesLink) {
-					doOpenLectures(ureq);
+					doOpenLectures(ureq, List.of());
 				} else if(clickedLink == absenceLink) {
 					doAbsences(ureq);
 				} else if(clickedLink == dispensationLink) {
@@ -210,21 +213,43 @@ public class LecturesCoachingController extends BasicController implements Activ
 		mainVC.put("segmentCmp", cockpitController.getInitialComponent()); 
 	}
 	
-	private TeacherToolOverviewController doOpenLectures(UserRequest ureq) {
-		if(teacherToolOverviewController == null) {
+	private LectureListRepositoryController doOpenLectures(UserRequest ureq, List<ContextEntry> defaultEntries) {
+		if(lecturesCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Teacher"), null);
-			teacherToolOverviewController = new TeacherToolOverviewController(ureq, swControl, secCallback);
-			listenTo(teacherToolOverviewController);
-			teacherToolOverviewController.setBreadcrumbPanel(stackPanel);
+			LectureListRepositoryConfig config = LectureListRepositoryConfig.coachingConfig("coching-teacher-v1")
+					.withExternalRef(Visibility.HIDE)
+					.withCurriculum(Visibility.HIDE)
+					.withRepositoryEntry(Visibility.SHOW)
+					.withLocation(Visibility.SHOW)
+					.withCompulsoryPresence(Visibility.SHOW)
+					.withNumberOfParticipants(Visibility.HIDE)
+					.withNumberOfLectures(Visibility.HIDE)
+					.withExam(Visibility.HIDE)
+					.withOnlineMeeting(Visibility.SHOW)
+					.withEdit(Visibility.SHOW)
+					.withRollCall(Visibility.SHOW)
+					.withAllMineSwitch(false, false)
+					.withFilterPresetWithoutTeachers(false)
+					.withDetailsParticipantsGroups(true)
+					.withDetailsRepositoryEntry(true)
+					.withDetailsExam(false)
+					.withDetailsUnits(true)
+					.withDetailsExternalRef(true);
+			
+			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, stackPanel, config, secCallback);
+			listenTo(lecturesCtrl);
+			lecturesCtrl.activate(ureq, defaultEntries, null);
+		} else if(defaultEntries != null && !defaultEntries.isEmpty()) {
+			lecturesCtrl.activate(ureq, defaultEntries, null);
 		}
-		addToHistory(ureq, teacherToolOverviewController);
-		mainVC.put("segmentCmp", teacherToolOverviewController.getInitialComponent());
-		return teacherToolOverviewController;
+		addToHistory(ureq, lecturesCtrl);
+		mainVC.put("segmentCmp", lecturesCtrl.getInitialComponent());
+		return lecturesCtrl;
 	}
 	
 	private void doOpenLectures(UserRequest ureq, RepositoryEntry entry) {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(entry);
-		doOpenLectures(ureq).activate(ureq, entries, null);
+		doOpenLectures(ureq, entries);
 	}
 	
 	private void doAbsences(UserRequest ureq) {

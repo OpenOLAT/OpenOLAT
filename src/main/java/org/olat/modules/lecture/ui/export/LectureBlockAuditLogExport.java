@@ -68,7 +68,7 @@ public class LectureBlockAuditLogExport extends AbstractLectureBlockAuditLogExpo
 		Row headerRow = exportSheet.newRow();
 		
 		int pos = 0;
-		headerRow.addCell(pos++, translator.translate("export.header.entry", new String[] { entry.getDisplayname() }));
+		headerRow.addCell(pos++, translator.translate("export.header.entry", entry.getDisplayname()));
 
 		Formatter localeFormatter = Formatter.getInstance(translator.getLocale());
 		String[] args = new String[] {

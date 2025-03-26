@@ -19,6 +19,8 @@
  */
 package org.olat.modules.teams.ui;
 
+import java.util.Collection;
+
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -42,7 +45,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TeamsConfigurationController extends FormBasicController {
 
-	private static final String[] FOR_KEYS = { "courses", "appointments", "groups", "chatexams" };
+	private static final String FOR_COURSES_KEY = "courses";
+	private static final String FOR_APPOINTMENTS_KEY = "appointments";
+	private static final String FOR_GROUPS_KEY = "groups";
+	private static final String FOR_CHATEXAMS_KEY = "chatexams";
+	private static final String FOR_LECTURES_KEY = "lectures";
 	private static final String[] ENABLED_KEY = new String[]{ "on" };
 
 	private MultipleSelectionElement moduleEnabled;
@@ -71,16 +78,18 @@ public class TeamsConfigurationController extends FormBasicController {
 		moduleEnabled.select(ENABLED_KEY[0], teamsModule.isEnabled());
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 		
-		String[] forValues = new String[] {
-			translate("teams.module.enabled.for.courses"), translate("teams.module.enabled.for.appointments"),
-			translate("teams.module.enabled.for.groups"),
-			translate("teams.module.enabled.for.chat.exams")
-		};
-		enabledForEl = uifactory.addCheckboxesVertical("teams.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
-		enabledForEl.select(FOR_KEYS[0], teamsModule.isCoursesEnabled());
-		enabledForEl.select(FOR_KEYS[1], teamsModule.isAppointmentsEnabled());
-		enabledForEl.select(FOR_KEYS[2], teamsModule.isGroupsEnabled());
-		enabledForEl.select(FOR_KEYS[3], teamsModule.isChatExamsEnabled());
+		SelectionValues forPK = new SelectionValues();
+		forPK.add(SelectionValues.entry(FOR_COURSES_KEY, translate("teams.module.enabled.for.courses")));
+		forPK.add(SelectionValues.entry(FOR_LECTURES_KEY, translate("teams.module.enabled.for.lectures")));
+		forPK.add(SelectionValues.entry(FOR_APPOINTMENTS_KEY, translate("teams.module.enabled.for.appointments")));
+		forPK.add(SelectionValues.entry(FOR_GROUPS_KEY, translate("teams.module.enabled.for.groups")));
+		forPK.add(SelectionValues.entry(FOR_CHATEXAMS_KEY, translate("teams.module.enabled.for.chat.exams")));
+		enabledForEl = uifactory.addCheckboxesVertical("teams.module.enabled.for", formLayout, forPK.keys(), forPK.values(), 1);
+		enabledForEl.select(FOR_COURSES_KEY, teamsModule.isCoursesEnabled());
+		enabledForEl.select(FOR_LECTURES_KEY, teamsModule.isLecturesEnabled());
+		enabledForEl.select(FOR_APPOINTMENTS_KEY, teamsModule.isAppointmentsEnabled());
+		enabledForEl.select(FOR_GROUPS_KEY, teamsModule.isGroupsEnabled());
+		enabledForEl.select(FOR_CHATEXAMS_KEY, teamsModule.isChatExamsEnabled());
 		
 		String clientId = teamsModule.getApiKey();
 		boolean showOldConfiguration = StringHelper.containsNonWhitespace(clientId);
@@ -121,10 +130,12 @@ public class TeamsConfigurationController extends FormBasicController {
 		boolean enabled = moduleEnabled.isSelected(0);
 		teamsModule.setEnabled(enabled);
 		if(enabled) {
-			teamsModule.setCoursesEnabled(enabledForEl.isSelected(0));
-			teamsModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
-			teamsModule.setGroupsEnabled(enabledForEl.isSelected(2));
-			teamsModule.setChatExamsEnabled(enabledForEl.isSelected(3));
+			Collection<String> selectedFor = enabledForEl.getSelectedKeys();
+			teamsModule.setCoursesEnabled(selectedFor.contains(FOR_COURSES_KEY));
+			teamsModule.setAppointmentsEnabled(selectedFor.contains(FOR_APPOINTMENTS_KEY));
+			teamsModule.setLecturesEnabled(selectedFor.contains(FOR_LECTURES_KEY));
+			teamsModule.setGroupsEnabled(selectedFor.contains(FOR_GROUPS_KEY));
+			teamsModule.setChatExamsEnabled(selectedFor.contains(FOR_CHATEXAMS_KEY));
 			showInfo("info.saved");
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();

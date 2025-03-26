@@ -23,11 +23,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.lecture.ui.EditLectureBlockController;
+import org.olat.modules.lecture.ui.EditLectureBlockController.StepsListener;
 
 /**
  * 
@@ -37,13 +39,15 @@ import org.olat.modules.lecture.ui.EditLectureBlockController;
  */
 public class SettingsController extends StepFormBasicController {
 
+	private final AddLectureContext addLecture;
 	private final EditLectureBlockController editLectureCtrl;
 	
 	public SettingsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			StepsRunContext runContext, AddLectureContext addLecture) {
+			StepsRunContext runContext, AddLectureContext addLecture, StepsListener stepsListener) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		this.addLecture = addLecture;
 
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), rootForm, addLecture);
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), rootForm, addLecture, stepsListener);
 		listenTo(editLectureCtrl);
 		
 		initForm(ureq);
@@ -66,8 +70,22 @@ public class SettingsController extends StepFormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(editLectureCtrl == source) {
+			if(event == StepsEvent.STEPS_CHANGED || event == StepsEvent.RELOAD) {
+				fireEvent(ureq, event);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		editLectureCtrl.formOK(ureq);
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		if(addLecture.isWithOnlineMeeting()) {
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		} else {
+			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		}
 	}
 }

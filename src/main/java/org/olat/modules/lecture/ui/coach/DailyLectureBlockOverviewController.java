@@ -61,6 +61,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.DailyRollCall;
 import org.olat.modules.lecture.LectureBlock;
@@ -79,11 +80,13 @@ import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockAbsenceAlertCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockAbsenceWarningCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
+import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.RollCallEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -118,11 +121,15 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	
 	public DailyLectureBlockOverviewController(UserRequest ureq, WindowControl wControl, Date currentDate,
 			Identity profiledIdentity, LecturesSecurityCallback secCallback, boolean withSelect) {
@@ -356,7 +363,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
-			}
+			} 
 		} else if(closeLecturesCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doCloseLectures();
@@ -384,8 +391,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("details".equals(cmd)) {
 					List<LectureBlock> lectureBlocks = tableModel.getLectureBlocks(se.getIndex());
@@ -397,8 +403,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			}
 		} else if(source == closeButton) {
 			doConfirmCloseLectures(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				DailyLectureBlockRow row = (DailyLectureBlockRow)link.getUserObject();
 				doOpenTools(ureq, row, link);
@@ -495,6 +500,10 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		List<LectureBlock> blocks = tableModel.getLectureBlocks();
 		lectureService.saveDefaultRollCalls(blocks, getIdentity(), true);
 	}
+	
+	private void doOpenOnlineMeeting(UserRequest ureq, LectureBlock block) {
+		fireEvent(ureq, new OpenOnlineMeetingEvent(block));
+	}
 
 	private class ToolsController extends BasicController {
 		
@@ -505,10 +514,18 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			if(isOnlineMeetingEnabled() && (row.getLectureBlock().getTeamsMeeting() != null || row.getLectureBlock().getBBBMeeting() != null)) {
+				addLink("open.online.meeting", "open.online.meeting", "o_icon o_icon-fw o_vc_icon", mainVC);
+			}
 			addLink("export", "export", "o_icon o_icon-fw o_filetype_xlsx", mainVC);
 			addLink("attendance.list", "attendance.list", "o_icon o_icon-fw o_filetype_pdf", mainVC);
 			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_icon-fw o_filetype_pdf", mainVC);
 			putInitialPanel(mainVC);
+		}
+		
+		private boolean isOnlineMeetingEnabled() {
+			return (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())
+					|| (bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled());
 		}
 		
 		private void addLink(String name, String cmd, String iconCSS, VelocityContainer mainVC) {
@@ -522,8 +539,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				if("export".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
@@ -534,6 +550,9 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 				} else if("attendance.list".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doExportAttendanceList(ureq, block);
+				} else if("open.online.meeting".equals(cmd)) {
+					LectureBlock block = lectureService.getLectureBlock(row);
+					doOpenOnlineMeeting(ureq, block);
 				}
 			}
 		}

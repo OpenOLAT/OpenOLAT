@@ -90,7 +90,7 @@ public class DailyOverviewProfilController extends BasicController {
 	private void updateCurrentDate() {
 		Date currentDate = getCurrentDate();
 		String dateString = Formatter.getInstance(getLocale()).formatDate(currentDate);
-		String msg = translate("cockpit.date", new String[] { dateString });
+		String msg = translate("cockpit.date", dateString);
 		mainVC.contextPut("date", msg);
 		lectureBlocksCtrl.setCurrentDate(currentDate);
 		absencesListCtrl.setCurrentDate(currentDate);
@@ -113,8 +113,7 @@ public class DailyOverviewProfilController extends BasicController {
 				updateCurrentDate();
 			}
 		} else if(source == lectureBlocksCtrl) {
-			if(event instanceof OpenRepositoryEntryEvent) {
-				OpenRepositoryEntryEvent oree = (OpenRepositoryEntryEvent)event;
+			if(event instanceof OpenRepositoryEntryEvent oree) {
 				doOpenEntryLectures(ureq, oree.getEntry());
 			}
 		}

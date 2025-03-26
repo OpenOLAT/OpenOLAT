@@ -46,6 +46,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_GROUP_ENABLED = "vc.bigbluebutton.groups";
 	private static final String PROP_COURSE_ENABLED = "vc.bigbluebutton.courses";
 	private static final String PROP_CHAT_EXAM_ENABLED = "vc.bigbluebutton.chat.exams";
+	private static final String PROP_LECTURES_ENABLED = "vc.bigbluebutton.lectures";
 	private static final String PROP_APPOINTMENTS_ENABLED = "vc.bigbluebutton.appointments";
 	private static final String PROP_AVATAR_ENABLED = "vc.bigbluebutton.avatar";
 	private static final String PROP_SECRET = "vc.bigbluebutton.secret";
@@ -87,6 +88,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String chatExamsEnabled;
 	@Value("${vc.bigbluebutton.appointments:true}")
 	private String appointmentsEnabled;
+	@Value("${vc.bigbluebutton.lectures:true}")
+	private String lecturesEnabled;
 	@Value("${vc.bigbluebutton.avatar:true}")
 	private String avatarEnabled;
 	@Value("${vc.bigbluebutton.secret}")
@@ -146,6 +149,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		coursesEnabled = getStringPropertyValue(PROP_COURSE_ENABLED, coursesEnabled);
 		chatExamsEnabled = getStringPropertyValue(PROP_CHAT_EXAM_ENABLED, chatExamsEnabled);
 		appointmentsEnabled = getStringPropertyValue(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled);
+		lecturesEnabled = getStringPropertyValue(PROP_LECTURES_ENABLED, lecturesEnabled);
 		avatarEnabled = getStringPropertyValue(PROP_AVATAR_ENABLED, avatarEnabled);
 
 		String maxUploadSizeObj = getStringPropertyValue(PROP_MAX_UPLOAD_SIZE, maxUploadSize.toString());
@@ -216,6 +220,15 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	public void setAppointmentsEnabled(boolean enabled) {
 		appointmentsEnabled = enabled ? "true" : "false";
 		setStringProperty(PROP_APPOINTMENTS_ENABLED, appointmentsEnabled, true);
+	}
+	
+	public boolean isLecturesEnabled() {
+		return "true".equals(lecturesEnabled);
+	}
+
+	public void setLecturesEnabled(boolean enabled) {
+		lecturesEnabled = enabled ? "true" : "false";
+		setStringProperty(PROP_LECTURES_ENABLED, lecturesEnabled, true);
 	}
 	
 	public boolean isAvatarEnabled() {

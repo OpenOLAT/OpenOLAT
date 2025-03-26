@@ -1,19 +1,44 @@
 <div class="o_lectures_list o_sel_repo_lectures_list">
+	#if($r.isNotEmpty($titleSize))
 	<div class="o_header_with_buttons">
 		<$titleSize><i class="o_icon o_icon-fw o_icon_events"> </i>  $r.translate("lectures.title")</$titleSize>
-		<div class="o_button_group o_button_group_right">
-			$r.contextHelpWithWrapper("manual_user/learningresources/Lectures_and_absences/")
-		</div>
+		<div class="o_button_group o_button_group_right">$r.contextHelpWithWrapper("manual_user/learningresources/Lectures_and_absences/")</div>
 	</div>
+	#else
+		<div class="o_button_group o_button_group_right">$r.contextHelpWithWrapper("manual_user/learningresources/Lectures_and_absences/")</div>
+	#end
+	
+	#if($r.isNotEmpty($warningRollCall))
+	<div class="o_warning_with_icon">$warningRollCall $r.render("pending.rollcall")</div>
+	#end
+	
 	<div class="o_flex_first_grow o_block">
-		<div class="btn-group">
-		#if($r.available("search.all.levels"))
-			$r.render("search.all.levels")
-			$r.render("search.this.level")
-		#end
-		</div>
-		#if($r.available("add.lecture"))
+		<div>
+			#if($r.visible("search.all.levels"))
 			<div class="btn-group">
+				$r.render("search.all.levels")
+				$r.render("search.this.level")
+			</div>
+			#end
+			#if($r.visible("all.teachers.switch"))
+			<div class="btn-group">
+				$r.render("all.teachers.switch")
+				$r.render("all.teachers.switch.off")
+			</div>
+			#end
+		</div>
+		#if($r.visible("start.desktop"))
+			<div class="btn-group ">
+			#if($r.visible("start.desktop"))
+				$r.render("start.desktop")
+			#end
+			#if($r.visible("start.mobile"))
+				$r.render("start.mobile")
+			#end
+			</div>
+		#end
+		#if($r.available("add.lecture"))
+			<div class="btn-group o_spacer_left">
 			#if($r.available("add.lecture"))
 				$r.render("add.lecture")
 			#end
@@ -22,7 +47,6 @@
 			#end
 			</div>
 		#end
-		</div>
 	</div>
 	$r.render("scope")
 	$r.render("table")

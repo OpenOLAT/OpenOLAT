@@ -85,6 +85,10 @@ public class TeacherRollCallWizardController extends BasicController {
 			doSelect(ureq, calledIdentity);
 		}
 	}
+	
+	public LectureBlock getLectureBlock() {
+		return lectureBlock;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

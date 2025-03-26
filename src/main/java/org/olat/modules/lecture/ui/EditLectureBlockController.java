@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -44,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -52,6 +54,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -77,6 +81,11 @@ import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.group.ui.main.SearchMembersParams.UserType;
 import org.olat.ims.lti13.LTI13Service;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -86,11 +95,16 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.ui.EditTeamsMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
@@ -108,6 +122,9 @@ public class EditLectureBlockController extends FormBasicController {
 
 	private static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
 	private static final String ON_KEY = "on";
+	private static final String NO_MEETING = "no";
+	private static final String TEAMS_MEETING = "teams";
+	private static final String BIGBLUEBUTTON_MEETING = "bigbluebutton";
 	
 	private TextElement titleEl;
 	private TextElement externalRefEl;
@@ -115,6 +132,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement preparationEl;
 	private AutoCompleter locationEl;
 	private DateChooser dateEl;
+	private FormLink editOnlineMeetingButton;
+	private SingleSelection onlineMeetingEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
 	private MultipleSelectionElement compulsoryEl;
@@ -123,8 +142,11 @@ public class EditLectureBlockController extends FormBasicController {
 	private final boolean embedded;
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
+	private TeamsMeeting teamsMeeting;
+	private StepsListener stepsListener;
 	private AddLectureContext addLectureCtxt;
 	private CurriculumElement curriculumElement;
+	private BigBlueButtonMeeting bigBlueButtonMeeting;
 	
 	private List<MemberView> possibleTeachersList;
 
@@ -132,9 +154,17 @@ public class EditLectureBlockController extends FormBasicController {
 	private final boolean lectureManagementManaged;
 	private final List<LocationHistory> locations;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	
+
+	private CloseableModalController cmc;
+	private EditTeamsMeetingController editTeamsMeetingCtrl;
+	private EditBigBlueButtonMeetingController editBigBlueButtonMeetingCtrl;
+
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private TeamsService teamsService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -149,6 +179,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
@@ -173,6 +207,7 @@ public class EditLectureBlockController extends FormBasicController {
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
+		
 		this.curriculumElement = curriculumElement;
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
@@ -180,6 +215,12 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
 			teachers = lectureService.getTeachers(lectureBlock);
+			if(lectureBlock.getBBBMeeting() != null) {
+				bigBlueButtonMeeting = bigBlueButtonManager.getMeeting(lectureBlock.getBBBMeeting());
+			}
+			if(lectureBlock.getTeamsMeeting() != null) {
+				teamsMeeting = teamsService.getMeeting(lectureBlock.getTeamsMeeting());
+			}
 		} else {
 			teachers = List.of();
 		}
@@ -189,7 +230,7 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			AddLectureContext addLecture) {
+			AddLectureContext addLecture, StepsListener stepsListener) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		embedded = true;
@@ -197,6 +238,7 @@ public class EditLectureBlockController extends FormBasicController {
 		readOnly = false;
 		lectureBlock = null;
 		this.addLectureCtxt = addLecture;
+		this.stepsListener = stepsListener;
 		curriculumElement = addLecture.getCurriculumElement() != null ? addLecture.getCurriculumElement() : addLecture.getRootElement();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
@@ -289,6 +331,30 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
 		locationEl.setMinLength(1);
 		
+		// Online meeting
+		SelectionValues meetingPK = new SelectionValues();
+		meetingPK.add(SelectionValues.entry(NO_MEETING, translate("lecture.online.meeting.no")));
+		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
+			meetingPK.add(SelectionValues.entry(BIGBLUEBUTTON_MEETING, translate("lecture.online.meeting.bigbluebutton")));
+		}
+		if(teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
+			meetingPK.add(SelectionValues.entry(TEAMS_MEETING, translate("lecture.online.meeting.teams")));
+		}
+		onlineMeetingEl = uifactory.addRadiosVertical("onlinemeeting", "lecture.online.meeting", formLayout, meetingPK.keys(), meetingPK.values());
+		onlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
+		onlineMeetingEl.setVisible(meetingPK.size() > 1);
+		if(bigBlueButtonMeeting != null) {
+			onlineMeetingEl.select(BIGBLUEBUTTON_MEETING, true);
+		} else if(teamsMeeting != null) {
+			onlineMeetingEl.select(TEAMS_MEETING, true);
+		} else {
+			onlineMeetingEl.select(NO_MEETING, true);
+		}
+		editOnlineMeetingButton = uifactory.addFormLink("edit.online.meeting", formLayout, Link.BUTTON_SMALL);
+		editOnlineMeetingButton.setVisible(false);
+		updateOnlineMeetingUI();
+		
+		// Teachers
 		possibleTeachersList = loadTeachers();
 		SelectionValues teachersPK = new SelectionValues();
 		for(MemberView teacher:possibleTeachersList) {
@@ -430,6 +496,36 @@ public class EditLectureBlockController extends FormBasicController {
 			setFormWarning("warning.edit.lecture");
 		}
 	}
+	
+	private void updateOnlineMeetingUI() {
+		String selectedKey = onlineMeetingEl.isVisible() && onlineMeetingEl.isOneSelected()
+				? onlineMeetingEl.getSelectedKey() : null;		
+		boolean editable = BIGBLUEBUTTON_MEETING.equals(selectedKey) || TEAMS_MEETING.equals(selectedKey);
+		editOnlineMeetingButton.setVisible(editable && !embedded);
+	}
+	
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(editBigBlueButtonMeetingCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(editTeamsMeetingCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editBigBlueButtonMeetingCtrl);
+		removeAsListenerAndDispose(editTeamsMeetingCtrl);
+		removeAsListenerAndDispose(cmc);
+		editBigBlueButtonMeetingCtrl = null;
+		editTeamsMeetingCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
@@ -474,6 +570,20 @@ public class EditLectureBlockController extends FormBasicController {
 			// Do nothing
 		} else if(compulsoryEl == source) {
 			updateUI();
+		} else if(onlineMeetingEl == source) {
+			updateOnlineMeetingUI();
+			if(stepsListener != null) {
+				addLectureCtxt.setWithBigBlueButtonMeeting(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()));
+				addLectureCtxt.setWithTeamsMeeting(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
+				stepsListener.onStepsChanged(ureq);
+				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+			}
+		} else if(editOnlineMeetingButton == source) {
+			if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+				doEditBigBlueButtonMeeting(ureq);
+			} else if(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+				doEditTeamsMeeting(ureq);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -541,7 +651,10 @@ public class EditLectureBlockController extends FormBasicController {
 		if(addLectureCtxt != null) {
 			addLectureCtxt.setTeachers(getSelectedTeachers());
 			addLectureCtxt.setLectureBlock(lectureBlock);
+			addLectureCtxt.setWithBigBlueButtonMeeting(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()));
+			addLectureCtxt.setWithTeamsMeeting(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
 		} else {
+			updateOnlineMeetings();
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 			
 			if(teacherEl.isAtLeastSelected(1)) {
@@ -574,6 +687,31 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		updateLocationsPrefs(ureq);
+	}
+	
+	private void updateOnlineMeetings() {
+		if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting);
+			((LectureBlockImpl)lectureBlock).setBBBMeeting(bigBlueButtonMeeting);
+			((LectureBlockImpl)lectureBlock).setTeamsMeeting(null);
+			if(teamsMeeting != null) {
+				teamsService.deleteMeeting(teamsMeeting);
+			}
+		} else if(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
+			((LectureBlockImpl)lectureBlock).setBBBMeeting(null);
+			((LectureBlockImpl)lectureBlock).setTeamsMeeting(teamsMeeting);
+			if(bigBlueButtonMeeting != null) {
+				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			}
+		} else if(onlineMeetingEl.isOneSelected()) {
+			if(bigBlueButtonMeeting != null) {
+				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			}
+			if(teamsMeeting != null) {
+				teamsService.deleteMeeting(teamsMeeting);
+			}
+		}
 	}
 	
 	private void synchronizeTeachers(StringBuilder audit) {
@@ -647,6 +785,39 @@ public class EditLectureBlockController extends FormBasicController {
 		return "Lectures::Location::" + getIdentity().getKey();
 	}
 	
+	private void doEditBigBlueButtonMeeting(UserRequest ureq) {
+		if(bigBlueButtonMeeting == null) {
+			bigBlueButtonMeeting = bigBlueButtonManager.createMeeting(titleEl.getValue(), dateEl.getDate(), dateEl.getSecondDate(),
+					null, null, null, getIdentity());
+		} else {
+			bigBlueButtonMeeting = bigBlueButtonManager.getMeeting(bigBlueButtonMeeting);
+		}
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, null, getIdentity(), ureq.getUserSession().getRoles());
+		editBigBlueButtonMeetingCtrl = new EditBigBlueButtonMeetingController(ureq, getWindowControl(), bigBlueButtonMeeting, permissions);
+		listenTo(editBigBlueButtonMeetingCtrl);
+
+		String title = translate("edit.online.meeting.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editBigBlueButtonMeetingCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doEditTeamsMeeting(UserRequest ureq) {
+		if(teamsMeeting == null) {
+			teamsMeeting = teamsService.createMeeting(titleEl.getValue(), dateEl.getDate(), dateEl.getSecondDate(), null, null, null, getIdentity());
+		} else {
+			teamsMeeting = teamsService.getMeeting(teamsMeeting);
+		}
+		editTeamsMeetingCtrl = new EditTeamsMeetingController(ureq, getWindowControl(), teamsMeeting);
+		listenTo(editTeamsMeetingCtrl);
+
+		String title = translate("edit.online.meeting.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTeamsMeetingCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	public static class GroupBox {
 		
 		private BusinessGroup businessGroup;
@@ -717,5 +888,11 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	public interface StepsListener {
+		
+		void onStepsChanged(UserRequest ureq);
+
 	}
 }

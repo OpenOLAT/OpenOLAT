@@ -76,6 +76,8 @@ public class LectureBlockAuditLogDAO {
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "entry");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "teacherGroup");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "groups");
+		lectureBlockXStream.omitField(LectureBlockImpl.class, "bbbMeeting");
+		lectureBlockXStream.omitField(LectureBlockImpl.class, "teamsMeeting");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "lastModified");
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "taxonomyLevels");// Can only be modified in REST
 		lectureBlockXStream.omitField(LectureBlockImpl.class, "curriculumElement");

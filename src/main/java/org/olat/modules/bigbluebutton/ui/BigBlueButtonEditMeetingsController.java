@@ -102,8 +102,6 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditBigBlueButtonMeetingController editMeetingCtlr;
 
-	
-	private int count = 0;
 	private final boolean readOnly;
 	private final String subIdent;
 	private final RepositoryEntry entry;

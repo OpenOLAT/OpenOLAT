@@ -154,6 +154,8 @@ public interface FormLink extends FormItem {
 	 * @param true: set link to active state (only render issue); false set to not active (default)
 	 */
 	public void setActive(boolean isActive);
+	
+	public boolean isPrimary();
 
 	/**
 	 * @param true: link is rendered as a primary link; false: rendered as secondary link

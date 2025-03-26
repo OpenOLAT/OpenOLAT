@@ -170,6 +170,10 @@ public class CalendarDetailsController extends BasicController {
 				}
 				if(wrapper.isIntern()) {
 					Link ooLink = LinkFactory.createLink("link-intern-" + CodeHelper.getRAMUniqueID(), "intern.link", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+					String displayName = link.getDisplayName();
+					if("Goto Online Meeting".equals(displayName)) {
+						displayName = translate("goto.online.meeting");
+					}
 					ooLink.setCustomDisplayText(StringHelper.escapeHtml(link.getDisplayName()));
 					ooLink.setUserObject(wrapper);
 					ooLink.setElementCssClass("o_nowrap");
@@ -193,6 +197,7 @@ public class CalendarDetailsController extends BasicController {
 		} else if(source instanceof Link internalLink
 				&& internalLink.getUserObject() instanceof LinkWrapper wrapper) {
 			fireEvent(ureq, Event.DONE_EVENT);
+			System.out.println(wrapper.getUri());
 			ureq.getDispatchResult()
 				.setResultingMediaResource(new RedirectMediaResource(wrapper.getUri()));
 		}

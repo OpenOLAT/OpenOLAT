@@ -22,9 +22,11 @@ package org.olat.modules.lecture.ui.addwizard;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -42,6 +44,12 @@ public class AddLectureContext {
 	
 	private final Curriculum curriculum;
 	private final CurriculumElement rootElement;
+
+	private boolean withTeamsMeeting;
+	private boolean withBigBlueButtonMeeting;
+
+	private TeamsMeeting teamsMeeting;
+	private BigBlueButtonMeeting bigBlueButtonMeeting;
 	
 	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement) {
 		this.curriculum = curriculum;
@@ -86,5 +94,41 @@ public class AddLectureContext {
 
 	public void setLectureBlock(LectureBlock lectureBlock) {
 		this.lectureBlock = lectureBlock;
+	}
+	
+	public boolean isWithOnlineMeeting() {
+		return withTeamsMeeting || withBigBlueButtonMeeting;
+	}
+
+	public boolean isWithTeamsMeeting() {
+		return withTeamsMeeting;
+	}
+
+	public void setWithTeamsMeeting(boolean withTeamsMeeting) {
+		this.withTeamsMeeting = withTeamsMeeting;
+	}
+
+	public boolean isWithBigBlueButtonMeeting() {
+		return withBigBlueButtonMeeting;
+	}
+
+	public void setWithBigBlueButtonMeeting(boolean withBigBlueButtonMeeting) {
+		this.withBigBlueButtonMeeting = withBigBlueButtonMeeting;
+	}
+
+	public TeamsMeeting getTeamsMeeting() {
+		return teamsMeeting;
+	}
+
+	public void setTeamsMeeting(TeamsMeeting teamsMeeting) {
+		this.teamsMeeting = teamsMeeting;
+	}
+
+	public BigBlueButtonMeeting getBigBlueButtonMeeting() {
+		return bigBlueButtonMeeting;
+	}
+
+	public void setBigBlueButtonMeeting(BigBlueButtonMeeting bigBlueButtonMeeting) {
+		this.bigBlueButtonMeeting = bigBlueButtonMeeting;
 	}
 }

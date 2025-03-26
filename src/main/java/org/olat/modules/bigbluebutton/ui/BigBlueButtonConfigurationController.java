@@ -19,6 +19,7 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -62,7 +63,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BigBlueButtonConfigurationController extends FormBasicController {
 
-	private static final String[] FOR_KEYS = { "courses", "appointments", "groups", "chatexams" };
+	private static final String FOR_COURSES_KEY = "courses";
+	private static final String FOR_APPOINTMENTS_KEY = "appointments";
+	private static final String FOR_GROUPS_KEY = "groups";
+	private static final String FOR_CHATEXAMS_KEY = "chatexams";
+	private static final String FOR_LECTURES_KEY = "lectures";
+	
 	private static final String[] ENABLED_KEY = new String[]{ "on" };
 	
 	private MultipleSelectionElement moduleEnabled;
@@ -111,15 +117,18 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		moduleEnabled.select(ENABLED_KEY[0], bigBlueButtonModule.isEnabled());
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 		
-		String[] forValues = new String[] {
-			translate("bigbluebutton.module.enabled.for.courses"), translate("bigbluebutton.module.enabled.for.appointments"),
-			translate("bigbluebutton.module.enabled.for.groups"), translate("bigbluebutton.module.enabled.for.chat.exam")
-		};
-		enabledForEl = uifactory.addCheckboxesVertical("bigbluebutton.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
-		enabledForEl.select(FOR_KEYS[0], bigBlueButtonModule.isCoursesEnabled());
-		enabledForEl.select(FOR_KEYS[1], bigBlueButtonModule.isAppointmentsEnabled());
-		enabledForEl.select(FOR_KEYS[2], bigBlueButtonModule.isGroupsEnabled());
-		enabledForEl.select(FOR_KEYS[3], bigBlueButtonModule.isChatExamsEnabled());
+		SelectionValues forPK = new SelectionValues();
+		forPK.add(SelectionValues.entry(FOR_COURSES_KEY, translate("bigbluebutton.module.enabled.for.courses")));
+		forPK.add(SelectionValues.entry(FOR_LECTURES_KEY, translate("bigbluebutton.module.enabled.for.lectures")));
+		forPK.add(SelectionValues.entry(FOR_APPOINTMENTS_KEY, translate("bigbluebutton.module.enabled.for.appointments")));
+		forPK.add(SelectionValues.entry(FOR_GROUPS_KEY, translate("bigbluebutton.module.enabled.for.groups")));
+		forPK.add(SelectionValues.entry(FOR_CHATEXAMS_KEY, translate("bigbluebutton.module.enabled.for.chat.exam")));
+		enabledForEl = uifactory.addCheckboxesVertical("bigbluebutton.module.enabled.for", formLayout, forPK.keys(), forPK.values(), 1);
+		enabledForEl.select(FOR_COURSES_KEY, bigBlueButtonModule.isCoursesEnabled());
+		enabledForEl.select(FOR_LECTURES_KEY, bigBlueButtonModule.isLecturesEnabled());
+		enabledForEl.select(FOR_APPOINTMENTS_KEY, bigBlueButtonModule.isAppointmentsEnabled());
+		enabledForEl.select(FOR_GROUPS_KEY, bigBlueButtonModule.isGroupsEnabled());
+		enabledForEl.select(FOR_CHATEXAMS_KEY, bigBlueButtonModule.isChatExamsEnabled());
 		
 		permanentForEl = uifactory.addCheckboxesHorizontal("enable.permanent.meeting", formLayout, ENABLED_KEY, enabledValues);
 		permanentForEl.select(ENABLED_KEY[0], bigBlueButtonModule.isPermanentMeetingEnabled());
@@ -307,11 +316,13 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		bigBlueButtonModule.setEnabled(enabled);
 		// update collaboration tools list
 		if(enabled) {
-			bigBlueButtonModule.setCoursesEnabled(enabledForEl.isSelected(0));
-			bigBlueButtonModule.setAppointmentsEnabled(enabledForEl.isSelected(1));
+			Collection<String> selectedFor = enabledForEl.getSelectedKeys();
+			bigBlueButtonModule.setCoursesEnabled(selectedFor.contains(FOR_COURSES_KEY));
+			bigBlueButtonModule.setLecturesEnabled(selectedFor.contains(FOR_LECTURES_KEY));
+			bigBlueButtonModule.setAppointmentsEnabled(selectedFor.contains(FOR_APPOINTMENTS_KEY));
+			bigBlueButtonModule.setGroupsEnabled(selectedFor.contains(FOR_GROUPS_KEY));
+			bigBlueButtonModule.setChatExamsEnabled(selectedFor.contains(FOR_CHATEXAMS_KEY));
 			bigBlueButtonModule.setAvatarEnabled(avatarEl.isAtLeastSelected(1));
-			bigBlueButtonModule.setGroupsEnabled(enabledForEl.isSelected(2));
-			bigBlueButtonModule.setChatExamsEnabled(enabledForEl.isSelected(3));
 			bigBlueButtonModule.setPermanentMeetingEnabled(permanentForEl.isAtLeastSelected(1));
 			bigBlueButtonModule.setRecordingHandlerId(recordingsHandlerEl.getSelectedKey());
 			Integer meetingDeletionDays = StringHelper.containsNonWhitespace(meetingDeletionDaysEl.getValue())

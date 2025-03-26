@@ -253,6 +253,27 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(lectureBlock, loadedBlocks.get(0));
 	}
 	
+	/**
+	 * Check only the syntax by filling almost all parameters
+	 */
+	@Test
+	public void countLectureBlocksAllParameters() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("id-1");
+
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(id);
+		searchParams.setEndDate(new Date());
+		searchParams.setParticipant(id);
+		searchParams.setSearchString("Hello");
+		searchParams.setStartDate(new Date());
+		searchParams.setTeacher(id);
+		searchParams.setMasterCoach(id);
+		searchParams.setManager(id);
+		
+		long count = lectureBlockDao.countLectureBlocks(searchParams);
+		Assert.assertTrue(count >= 0);
+	}
+	
 	@Test
 	public void searchLectureBlocks_lectureManager() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");

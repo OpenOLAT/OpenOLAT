@@ -33,6 +33,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -42,6 +43,8 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.lecture.LectureBlock;
@@ -51,6 +54,8 @@ import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.Reason;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -63,6 +68,7 @@ import org.olat.repository.RepositoryEntry;
 @Table(name="o_lecture_block")
 @NamedQuery(name="lectureBlocksByRepositoryEntry", query="select block from lectureblock block where block.entry.key=:repoEntryKey")
 @NamedQuery(name="lectureBlocksByCurriculumElement", query="select block from lectureblock block where block.curriculumElement.key=:curriculumElementKey")
+@NamedQuery(name="lectureBlockByKey", query = "select block from lectureblock block left join fetch block.reasonEffectiveEnd reason left join fetch block.entry entry left join fetch block.curriculumElement element where block.key=:blockKey")
 public class LectureBlockImpl implements Persistable, LectureBlock {
 
 	private static final long serialVersionUID = -1010006683915268916L;
@@ -145,6 +151,13 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@OneToMany(targetEntity=LectureBlockToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
 	@JoinColumn(name="fk_lecture_block")
 	private Set<LectureBlockToTaxonomyLevel> taxonomyLevels;
+	
+	@OneToOne(targetEntity=BigBlueButtonMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_meeting", nullable=true, insertable=true, updatable=true)
+	private BigBlueButtonMeeting bbbMeeting;
+	@OneToOne(targetEntity=TeamsMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_teams", nullable=true, insertable=true, updatable=true)
+	private TeamsMeeting teamsMeeting;
 	
 	
 	@Override
@@ -445,6 +458,26 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		Date start = getStartDate();
 		Date end = getEndDate();
 		return start != null && start.compareTo(date) <= 0 && end != null && date.compareTo(end) <= 0;
+	}
+	
+	@Override
+	public BigBlueButtonMeeting getBBBMeeting() {
+		return bbbMeeting;
+	}
+
+	@Override
+	public void setBBBMeeting(BigBlueButtonMeeting bbbMeeting) {
+		this.bbbMeeting = bbbMeeting;
+	}
+
+	@Override
+	public TeamsMeeting getTeamsMeeting() {
+		return teamsMeeting;
+	}
+
+	@Override
+	public void setTeamsMeeting(TeamsMeeting teamsMeeting) {
+		this.teamsMeeting = teamsMeeting;
 	}
 
 	@Override

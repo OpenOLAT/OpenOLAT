@@ -403,6 +403,12 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	@Override
+	public BigBlueButtonMeeting createMeeting(String name, Date start, Date end,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
+		return bigBlueButtonMeetingDao.createMeeting(name, start, end, entry, subIdent, businessGroup, creator);
+	}
+
+	@Override
 	public BigBlueButtonMeeting persistMeeting(BigBlueButtonMeeting meeting) {
 		return bigBlueButtonMeetingDao.persistMeeting(meeting);
 	}
@@ -834,7 +840,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		Kalendar calendar = getCalendar(meeting);
 		if(calendar == null) return;
 		
-		String externalId = generateEventExternalId(meeting);
+		String externalId = BigBlueButtonCalendarHelper.generateEventExternalId(meeting);
 		List<KalendarEvent> events = calendar.getEvents();
 		for(KalendarEvent event:events) {
 			if(externalId.equals(event.getExternalId())) {
@@ -847,7 +853,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		Kalendar calendar = getCalendar(meeting);
 		if(calendar == null) return;
 		
-		String externalId = generateEventExternalId(meeting);
+		String externalId = BigBlueButtonCalendarHelper.generateEventExternalId(meeting);
 		List<KalendarEvent> events = calendar.getEvents();
 		for(KalendarEvent event:events) {
 			if(externalId.equals(event.getExternalId())) {
@@ -863,7 +869,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		
 		CalendarManagedFlag[] managedFlags = { CalendarManagedFlag.all };
 		
-		String externalId = generateEventExternalId(meeting);
+		String externalId = BigBlueButtonCalendarHelper.generateEventExternalId(meeting);
 		List<KalendarEvent> events = calendar.getEvents();
 		for(KalendarEvent event:events) {
 			if(externalId.equals(event.getExternalId())) {
@@ -876,7 +882,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 					event.setEnd(DateUtils.toZonedDateTime(meeting.getEndDate()));
 					event.setManagedFlags(managedFlags);
 					if(event.getKalendarEventLinks() == null || event.getKalendarEventLinks().isEmpty()) {
-						KalendarEventLink eventLink = generateEventLink(meeting);
+						KalendarEventLink eventLink = BigBlueButtonCalendarHelper.generateEventLink(meeting);
 						if(eventLink != null) {
 							List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
 							kalendarEventLinks.add(eventLink);
@@ -897,7 +903,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			newEvent.setDescription(meeting.getDescription());
 			newEvent.setManagedFlags(managedFlags);
 			newEvent.setExternalId(externalId);
-			KalendarEventLink eventLink = generateEventLink(meeting);
+			KalendarEventLink eventLink = BigBlueButtonCalendarHelper.generateEventLink(meeting);
 			if(eventLink != null) {
 				List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
 				kalendarEventLinks.add(eventLink);
@@ -905,32 +911,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			}
 			calendarManager.addEventTo(calendar, newEvent);
 		}
-	}
-	
-	private String generateEventExternalId(BigBlueButtonMeeting meeting) {
-		return "bigbluebutton-".concat(meeting.getMeetingId());
-	}
-	
-	private KalendarEventLink generateEventLink(BigBlueButtonMeeting meeting) {
-		String id = meeting.getKey().toString();
-		String displayName = meeting.getName();
-		if(meeting.getEntry() != null) {
-			StringBuilder businessPath = new StringBuilder(128);
-			businessPath.append("[RepositoryEntry:").append(meeting.getEntry().getKey()).append("]");
-			if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
-				businessPath.append("[CourseNode:").append(meeting.getSubIdent()).append("]");
-			}
-			businessPath.append("[Meeting:").append(meeting.getKey()).append("]");
-			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath.toString());
-			return new KalendarEventLink("bigbluebutton", id, displayName, url, "o_CourseModule_icon");
-		} else if(meeting.getBusinessGroup() != null) {
-			StringBuilder businessPath = new StringBuilder(128);
-			businessPath.append("[BusinessGroup:").append(meeting.getBusinessGroup().getKey())
-				.append("][toolbigbluebutton:0][Meeting:").append(meeting.getKey()).append("]");
-			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath.toString());
-			return new KalendarEventLink("bigbluebutton", id, displayName, url, "o_icon_group");
-		}
-		return null;
 	}
 	
 	private Kalendar getCalendar(BigBlueButtonMeeting meeting) {

@@ -59,11 +59,11 @@ public class BigBlueButtonMeetingDAO {
 	
 	public BigBlueButtonMeeting createAndPersistMeeting(String name,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
-		BigBlueButtonMeeting meeting = createMeeting(name, entry, subIdent, businessGroup, creator);
+		BigBlueButtonMeeting meeting = createMeeting(name, null, null, entry, subIdent, businessGroup, creator);
 		return persistMeeting(meeting);
 	}
 	
-	private BigBlueButtonMeeting createMeeting(String name,
+	public BigBlueButtonMeeting createMeeting(String name, Date start, Date end,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
 		BigBlueButtonMeetingImpl meeting = new BigBlueButtonMeetingImpl();
 		meeting.setCreationDate(new Date());
@@ -80,6 +80,8 @@ public class BigBlueButtonMeetingDAO {
 		// ID for OO internal dispatcher (guest access). BBB does not now this ID. 
 		meeting.setIdentifier(UUID.randomUUID().toString());
 		
+		updateDates(meeting, start, 0l, end, 0l);
+		
 		meeting.setEntry(entry);
 		// ID for OO internal context subinformation such as the course node ID
 		meeting.setSubIdent(subIdent);
@@ -95,7 +97,7 @@ public class BigBlueButtonMeetingDAO {
 	}
 	
 	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Date start, Date end, Identity creator) {
-		BigBlueButtonMeetingImpl copy = (BigBlueButtonMeetingImpl)createMeeting(name,
+		BigBlueButtonMeetingImpl copy = (BigBlueButtonMeetingImpl)createMeeting(name, null, null,
 				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator);
 
 		copy.setDescription(meeting.getDescription());
@@ -270,7 +272,7 @@ public class BigBlueButtonMeetingDAO {
 		dbInstance.getCurrentEntityManager().remove(meeting);
 	}
 	
-	private void updateDates(BigBlueButtonMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
+	public void updateDates(BigBlueButtonMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
 		if(start == null) {
 			meet.setStartDate(null);
 			meet.setLeadTime(0);

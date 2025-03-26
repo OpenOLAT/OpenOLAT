@@ -26,7 +26,9 @@ import java.util.Set;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -133,4 +135,12 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	public Set<LectureBlockToTaxonomyLevel> getTaxonomyLevels();
 
 	public boolean isRunningAt(Date date);
+	
+	public BigBlueButtonMeeting getBBBMeeting();
+	
+	public void setBBBMeeting(BigBlueButtonMeeting meeting);
+	
+	public TeamsMeeting getTeamsMeeting();
+	
+	public void setTeamsMeeting(TeamsMeeting meeting);
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.transform.TransformerException;
+
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.SortKey;
@@ -71,19 +75,28 @@ import org.olat.core.gui.components.scope.DateScope;
 import org.olat.core.gui.components.scope.DateScopeDropdown.DateScopeOption;
 import org.olat.core.gui.components.scope.FormDateScopeSelection;
 import org.olat.core.gui.components.scope.ScopeFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -94,6 +107,16 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.ui.mode.AssessmentModeForLectureEditController;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -102,16 +125,23 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
+import org.olat.modules.lecture.LectureBlockRef;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.modules.lecture.ui.addwizard.AddLectureBlock1ResourcesStep;
 import org.olat.modules.lecture.ui.addwizard.AddLectureBlockStepCallback;
@@ -123,9 +153,20 @@ import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
 import org.olat.modules.lecture.ui.component.IdentityCoachesCellRenderer;
 import org.olat.modules.lecture.ui.component.IdentityComparator;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
+import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
+import org.olat.modules.lecture.ui.export.LectureBlockExport;
+import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
+import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.ui.EditTeamsMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -152,23 +193,35 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String CLOSED_TAB_ID = "Closed";
 	private static final String PENDING_TAB_ID = "Pending";
 	private static final String WITHOUT_TEACHERS_TAB_ID = "WithoutTeachers";
-	
-	private static final String FILTER_ROLL_CALL_STATUS = "Status";
-	private static final String FILTER_CURRICULUM = "Curriculum";
+
 	private static final String FILTER_TEACHERS = "Teachers";
+	private static final String FILTER_CURRICULUM = "Curriculum";
+	private static final String FILTER_ROLL_CALL_STATUS = "Status";
+	private static final String FILTER_VIRTUAL_STATUS = "VirtualStatus";
 	
-	private static final String CMD_CURRICULUM_ELEMENT = "element";
-	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
+	private static final String CMD_ROLLCALL = "lrollcall";
+	protected static final String CMD_REPOSITORY_ENTRY = "lentry";
+	protected static final String CMD_CURRICULUM_ELEMENT = "element";
+	protected static final String CMD_OPEN_ONLINE_MEETING = "lopenonlinemeeting";
+	protected static final String TOGGLE_DETAILS_CMD = "toggle-details";
+	
+	private String switchPrefsId = "Events-v1";
 
 	private FormLink allLevelsButton;
 	private FormLink thisLevelButton;
 	private FormLink addLectureButton;
 	private FormLink deleteLecturesButton;
 	private FormLink importLecturesButton;
+	private FormLink allTeachersButton;
+	private FormLink onlyMineButton;
+	private FormLink pendingRollCallLink;
+	private FormLink startButton;
+	private FormLink startWizardButton;
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
 	private final VelocityContainer detailsVC;
 	private FormDateScopeSelection scopeEl;
+	private final BreadcrumbedStackedPanel stackPanel;
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab pastTab;
@@ -183,116 +236,172 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FlexiTableMultiSelectionFilter teachersFilter;
 	private FlexiTableMultiSelectionFilter curriculumFilter;
 	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
+	private FlexiTableMultiSelectionFilter virtualStatusFilter;
 	private final SelectionValues teachersValues = new SelectionValues();
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private TeacherRollCallController rollCallCtrl;
 	private StepsMainRunController importBlockWizard;
 	private EditLectureBlockController addLectureCtrl;
 	private EditLectureBlockController editLectureCtrl;
 	private StepsMainRunController addLectureWizardCtrl;
+	private EditTeamsMeetingController editTeamsMeetingCtrl;
 	private IdentitySmallListController teacherSmallListCtrl; 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private DialogBoxController deleteAssessmentModeDialogBox;
+	private TeacherRollCallWizardController rollCallWizardCtrl;
+	private LectureBlockOnlineMeetingController onlineMeetingCtrl;
 	private AssignNewRepositoryEntryController assignNewEntryCtrl;
+	private ConfirmationController confirmChangeToLocationMeetingCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
+	private AssessmentModeForLectureEditController assessmentModeEditCtrl;
+	private EditBigBlueButtonMeetingController editBigBlueButtonMeetingCtrl;
 
 	private final RepositoryEntry entry;
 	private final Curriculum curriculum;
 	private final boolean lectureManagementManaged;
+	private final boolean authorizedAbsenceEnabled;
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 	private final String avatarMapperBaseURL;
+	private final IdentityComparator identityComparator;
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private TeamsService teamsService;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl,
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
+		this.stackPanel = stackPanel;
 		entry = null;
 		curriculum = null;
 		curriculumElement = null;
 		this.config = config;
 		this.secCallback = secCallback;
+		identityComparator = new IdentityComparator(getLocale());
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		
 		initForm(ureq);
 		updateUI();
+		loadWarning(ureq);
 	}
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
+			RepositoryEntry entry, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
+		this.stackPanel = stackPanel;
 		this.entry = entry;
 		curriculum = null;
 		curriculumElement = null;
 		this.config = config;
 		this.secCallback = secCallback;
+		identityComparator = new IdentityComparator(getLocale());
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		
 		initForm(ureq);
 		updateUI();
+		loadWarning(ureq);
 	}
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
+			CurriculumElement curriculumElement, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
+		this.stackPanel = stackPanel;
 		this.entry = null;
 		curriculum = curriculumElement == null ? null : curriculumElement.getCurriculum();
 		this.curriculumElement = curriculumElement;
 		this.config = config;
 		this.secCallback = secCallback;
+		identityComparator = new IdentityComparator(getLocale());
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		
 		initForm(ureq);
 		updateUI();
+		loadWarning(ureq);
 	}
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
+			Curriculum curriculum, LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
+		this.stackPanel = stackPanel;
 		entry = null;
 		this.curriculum = curriculum;
 		curriculumElement = null;
 		this.config = config;
 		this.secCallback = secCallback;
+		identityComparator = new IdentityComparator(getLocale());
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		
 		initForm(ureq);
 		updateUI();
+		loadWarning(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initButtonsForm(formLayout);
+		initButtonsForm(ureq, formLayout);
 		initScopes(formLayout);
 		initTableForm(formLayout, ureq);
 	}
 	
-	private  void initButtonsForm(FormItemContainer formLayout) {
+	private  void initButtonsForm(UserRequest ureq, FormItemContainer formLayout) {
 		allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
 		allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
 		allLevelsButton.setPrimary(true);
 		thisLevelButton = uifactory.addFormLink("search.this.level", formLayout, Link.BUTTON);
 		thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
+		
+		pendingRollCallLink = uifactory.addFormLink("pending.rollcall", formLayout, Link.LINK);
+
+		startButton = uifactory.addFormLink("start.desktop", formLayout, Link.BUTTON);
+		startButton.setVisible(false);
+		startWizardButton = uifactory.addFormLink("start.mobile", formLayout, Link.BUTTON);
+		startWizardButton.setVisible(false);
+		
+		if(config.withAllMineSwitch()) {
+			boolean all = isAllTeachersSwitch(ureq, config.showMineAsDefault());
+			allTeachersButton = uifactory.addFormLink("all.teachers.switch", formLayout, Link.BUTTON);
+			allTeachersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_coach");
+			allTeachersButton.setPrimary(all);
+			onlyMineButton = uifactory.addFormLink("all.teachers.switch.off", formLayout, Link.BUTTON);
+			onlyMineButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
+			onlyMineButton.setPrimary(!all);
+		}
 	
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
 			if(entry != null || curriculum != null || curriculumElement != null) {
@@ -318,8 +427,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			boolean headless = (entry == null && curriculum == null && curriculumElement == null);
-			String titleSize = headless ? "h2" : "h3";
+			String titleSize = config.getTitleSize() <= 0 ? "" : "h" + config.getTitleSize();
 			layoutCont.contextPut("titleSize", titleSize);
 		}
 	}
@@ -328,45 +436,85 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, TOGGLE_DETAILS_CMD));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalRef));
-		if(entry != null) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.assessmentMode,
-				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
-		}
-		
-		String elementCmd = entry == null ? CMD_CURRICULUM_ELEMENT : null;
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.curriculumElement, elementCmd,
-				new ReferenceRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.entry,
-				new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date,
 				new DateWithDayFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime,
 				new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime,
 				new TimeFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.lecturesNumber));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
-				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_location")));
+		if(config.withNumberOfLectures() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withNumberOfLectures() == Visibility.HIDE, BlockCols.lecturesNumber));
+		}
+		
+		if(config.withExternalRef() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withExternalRef() == Visibility.SHOW,
+					BlockCols.externalRef));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, TOGGLE_DETAILS_CMD));
+		
+		if(config.withCurriculum() != Visibility.NO) {
+			String elementCmd = entry == null ? CMD_CURRICULUM_ELEMENT : null;
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withCurriculum() == Visibility.SHOW, BlockCols.curriculumElement, elementCmd,
+					new ReferenceRenderer()));
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status,
+				new LectureBlockStatusCellRenderer(getTranslator())));
+		
+		if(entry != null && config.withExam() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withExam() == Visibility.SHOW, BlockCols.assessmentMode,
+				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
+		}
+		if(config.withRepositoryEntry() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withRepositoryEntry() == Visibility.SHOW, BlockCols.entry,
+					CMD_REPOSITORY_ENTRY, new ReferenceRenderer()));
+		}
+
+		if(config.withLocation() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withLocation() == Visibility.SHOW, BlockCols.location,
+					new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_location")));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers,
 				new IdentityCoachesCellRenderer(userManager)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.numParticipants));
-		
-		DefaultFlexiColumnModel compulsoryColumn = new DefaultFlexiColumnModel(false, BlockCols.compulsory,
-				new YesNoCellRenderer());
-		compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
-		columnsModel.addFlexiColumnModel(compulsoryColumn);
+		if(config.withNumberOfParticipants() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withNumberOfParticipants() == Visibility.SHOW, BlockCols.numParticipants));
+		}
 
-		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+		if(config.withRollCall() != Visibility.NO) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withRollCall() == Visibility.SHOW, BlockCols.rollCallStatus,
+					new LectureBlockRollCallBasicStatusCellRenderer(getTranslator())));
+		}
+		if(secCallback.viewAs() != LectureRoles.participant && config.withRollCall() != Visibility.NO) {
+			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details);
+			detailsCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, CMD_ROLLCALL, null,
+					"o_icon o_icon_lecture o_icon-lg", translate("details")), null));
+			detailsCol.setIconHeader("o_icon o_icon_lecture o_icon-lg");
+			columnsModel.addFlexiColumnModel(detailsCol);
+		}
+		
+		if(config.withCompulsoryPresence() != Visibility.NO) {
+			DefaultFlexiColumnModel compulsoryColumn = new DefaultFlexiColumnModel(config.withCompulsoryPresence() == Visibility.SHOW, BlockCols.compulsory,
+					new YesNoCellRenderer());
+			compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
+			columnsModel.addFlexiColumnModel(compulsoryColumn);
+		}
+		
+		if(config.withOnlineMeeting() != Visibility.NO && isOnlineMeetingEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withOnlineMeeting() == Visibility.SHOW, BlockCols.onlineMeeting));
+		}
+
+		if(!lectureManagementManaged && secCallback.canNewLectureBlock() && config.withCompulsoryPresence() != Visibility.NO) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
 			editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
 			editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 			editColumn.setExportable(false);
-			editColumn.setAlwaysVisible(true);
+			editColumn.setAlwaysVisible(config.withCompulsoryPresence() == Visibility.SHOW);
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
-		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
+		
+		if(secCallback.viewAs() != LectureRoles.participant) {
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
+		}
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -382,7 +530,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, entry == null ? "curriculum-lecture-block-list-v1" : "repo-lecture-block-list-v3");
+		tableEl.setAndLoadPersistedPreferences(ureq, config.getPrefsId());
 		tableEl.addBatchButton(deleteLecturesButton);
 		
 		initFilters();
@@ -451,18 +599,29 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			filters.add(curriculumFilter);
 		}
 		
-		SelectionValues rollCallStatusValues = new SelectionValues();
-		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.open.name(), translate("search.form.status.open")));
-		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.closed.name(), translate("search.form.status.closed")));
-		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.autoclosed.name(), translate("search.form.status.autoclosed")));
-		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.reopen.name(), translate("search.form.status.reopen")));
-		rollCallStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
-				FILTER_ROLL_CALL_STATUS, rollCallStatusValues, true);
-		filters.add(rollCallStatusFilter);
+		SelectionValues virtualStatusValues = new SelectionValues();
+		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.PLANNED.name(), translate("planned")));
+		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.RUNNING.name(), translate("running")));
+		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.DONE.name(), translate("done")));
+		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.CANCELLED.name(), translate("cancelled")));
+		virtualStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
+				FILTER_VIRTUAL_STATUS, virtualStatusValues, true);
+		filters.add(virtualStatusFilter);
 		
 		teachersFilter = new FlexiTableMultiSelectionFilter(translate("filter.teachers"),
 				FILTER_TEACHERS, teachersValues, true);
 		filters.add(teachersFilter);
+	
+		if(config.withFilterPresetPending() || config.withFilterPresetClosed()) {
+			SelectionValues rollCallStatusValues = new SelectionValues();
+			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.open.name(), translate("search.form.status.open")));
+			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.closed.name(), translate("search.form.status.closed")));
+			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.autoclosed.name(), translate("search.form.status.autoclosed")));
+			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.reopen.name(), translate("search.form.status.reopen")));
+			rollCallStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.rollcall.status"),
+					FILTER_ROLL_CALL_STATUS, rollCallStatusValues, true);
+			filters.add(rollCallStatusFilter);
+		}
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -568,6 +727,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		thisLevelButton.setVisible(canSubelements);
 	}
 	
+	private boolean isOnlineMeetingEnabled() {
+		return (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())
+				|| (bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled());
+	}
+	
 	@Override
 	public boolean isDetailsRow(int row, Object rowObject) {
 		return true;
@@ -608,34 +772,18 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			externalRef = entry.getExternalRef();
 		}
 		
-		IdentityComparator identityComparator = new IdentityComparator(getLocale());
+		LectureBlockRow canStart = null;
+		Date now = ureq.getRequestTimestamp();
 		LecturesBlockSearchParameters searchParams = getSearchParams(ureq);
 		List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithOptionalTeachers(searchParams);
 		
 		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
 		for(LectureBlockWithTeachers block:blocks) {
-			LectureBlock b = block.getLectureBlock();
-			StringBuilder teachers = new StringBuilder();
-			String separator = translate("user.fullname.separator");
-			List<Identity> teachersList = new ArrayList<>(block.getTeachers());
-			if(teachersList.size() > 1) {
-				Collections.sort(teachersList, identityComparator);
-			}
-			
-			for(Identity teacher:teachersList) {
-				if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
-				teachers.append(userManager.getUserDisplayName(teacher));
-			}
-
-			LectureBlockRow row = new LectureBlockRow(b, displayname, externalRef,
-					teachers.toString(), false, block.getCurriculumElementRef(), block.getEntryRef(),
-					block.getNumOfParticipants(), block.isAssessmentMode());
-			row.setTeachersList(teachersList);
+			LectureBlockRow row = forgeRow(now, block, displayname, externalRef);
 			rows.add(row);
-			
-			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-			toolsLink.setUserObject(row);
-			row.setToolsLink(toolsLink);
+			if(canStartRollCall(row)) {
+				canStart = row;
+			}
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -644,7 +792,85 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			deleteLecturesButton.setVisible(!rows.isEmpty());
 		}
 		
+		boolean startRollCall = canStart != null && config.withRollCall() != Visibility.NO;
+		startButton.setVisible(startRollCall);
+		startButton.setUserObject(canStart);
+		startWizardButton.setVisible(startRollCall);
+		startWizardButton.setUserObject(canStart);
+		
 		updateTeachersFilters();
+	}
+	
+	private boolean canStartRollCall(LectureBlockRow blockWithTeachers) {
+		LectureBlock lectureBlock = blockWithTeachers.getLectureBlock();
+		if(blockWithTeachers.isIamTeacher()
+				&& lectureBlock.getStatus() != LectureBlockStatus.done
+				&& lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+			Date start = lectureBlock.getStartDate();
+			Date end = lectureBlock.getEndDate();
+			Date now = new Date();
+			if(start.compareTo(now) <= 0 && end.compareTo(now) >= 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void loadWarning(UserRequest ureq) {
+		if(secCallback.viewAs() == LectureRoles.teacher && pendingTab != null) {
+			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setTeacher(getIdentity());
+			searchParams.setEndDate(ureq.getRequestTimestamp());
+			searchParams.addRollCallStatus(LectureRollCallStatus.open, LectureRollCallStatus.reopen);
+			searchParams.setLectureConfiguredRepositoryEntry(true);
+			
+			long blocks = lectureService.countLectureBlocks(searchParams);
+			if(blocks > 0) {
+				String msg = translate("warning.open.rollcall", Long.toString(blocks));
+				flc.contextPut("warningRollCall", msg);
+			} else {
+				flc.contextRemove("warningRollCall");
+			}
+		}
+	}
+	
+	private LectureBlockRow forgeRow(Date now, LectureBlockWithTeachers block, String displayname, String externalRef) {
+		LectureBlock b = block.getLectureBlock();
+		StringBuilder teachers = new StringBuilder();
+		String separator = translate("user.fullname.separator");
+		List<Identity> teachersList = new ArrayList<>(block.getTeachers());
+		if(teachersList.size() > 1) {
+			Collections.sort(teachersList, identityComparator);
+		}
+		
+		boolean iAmTeacher = false;
+		for(Identity teacher:teachersList) {
+			if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
+			teachers.append(userManager.getUserDisplayName(teacher));
+			iAmTeacher |= getIdentity().getKey().equals(teacher.getKey());
+		}
+		
+		LectureBlockRow row = new LectureBlockRow(b, displayname, externalRef,
+				teachers.toString(), iAmTeacher, block.getCurriculumElementRef(), block.getEntryRef(),
+				block.getNumOfParticipants(), block.isAssessmentMode());
+		row.setTeachersList(teachersList);
+		
+		if(isOnlineMeetingEnabled() && (b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {
+			FormLink onlineMeetingLink =  uifactory.addFormLink("oom_" + b.getKey(), CMD_OPEN_ONLINE_MEETING, "open.online.meeting", tableEl, Link.BUTTON_XSMALL);
+			onlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_vc_icon");
+			if(b.getStartDate() != null && b.getStartDate().compareTo(now) <= 0
+					&& b.getEndDate() != null && b.getEndDate().compareTo(now) >= 0) {
+				onlineMeetingLink.setPrimary(true);
+			}
+			onlineMeetingLink.setUserObject(row);
+			row.setOpenOnlineMeetingLink(onlineMeetingLink);
+		}
+		
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
+		
+		return row;
 	}
 	
 	private void updateTeachersFilters() {
@@ -668,17 +894,29 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setCurriculumElementPath(oneLevelOnly ? null : curriculumElement.getMaterializedPathKeys());
 			searchParams.setCurriculumElement(oneLevelOnly ? curriculumElement : null);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
-			searchParams.setManager(getIdentity());
 		} else if(curriculum != null) {
 			searchParams.setCurriculums(List.of(curriculum));
 			searchParams.setLectureConfiguredRepositoryEntry(false);
-			searchParams.setManager(getIdentity());
 		} else if(entry != null) {
 			searchParams.setRepositoryEntry(entry);
 			searchParams.setLectureConfiguredRepositoryEntry(true);
 		} else {
 			searchParams.setInSomeCurriculum(true);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
+		}
+		
+		if(secCallback.viewAs() == LectureRoles.participant) {
+			searchParams.setParticipant(getIdentity());
+		} else if(secCallback.viewAs() == LectureRoles.teacher) {
+			if(allTeachersButton != null && allTeachersButton.isPrimary()) {
+				if(entry == null) {
+					searchParams.setManager(getIdentity());
+				}
+				// else can see all lecture blocks of the course
+			} else {
+				searchParams.setTeacher(getIdentity());
+			}
+		} else {
 			searchParams.setManager(getIdentity());
 		}
 		
@@ -687,15 +925,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setStartDate(range.getFrom());
 			searchParams.setEndDate(range.getTo());
 		}
-		
-		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);
-		if (filter instanceof FlexiTableExtendedFilter extendedFilter) {
+
+		FlexiTableFilter vFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_VIRTUAL_STATUS);
+		if (vFilter instanceof FlexiTableExtendedFilter extendedFilter) {
 			List<String> filterValues = extendedFilter.getValues();
 			if(filterValues != null && !filterValues.isEmpty()) {
-				List<LectureRollCallStatus> status = filterValues.stream()
-						.map(LectureRollCallStatus::valueOf)
+				List<LectureBlockVirtualStatus> status = filterValues.stream()
+						.map(LectureBlockVirtualStatus::valueOf)
 						.toList();
-				searchParams.setRollCallStatus(status);
+				searchParams.setVirtualStatus(status);
 			}
 		}
 		
@@ -734,8 +972,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setEndDate(DateUtils.getEndOfDay(now));
 		} else if(selectedTab == upcomingTab) {
 			searchParams.setStartDate(DateUtils.getEndOfDay(now));
-		} else if(selectedTab == pastTab || selectedTab == pendingTab) {
+		} else if(selectedTab == pastTab) {
 			searchParams.setEndDate(now);
+		} else if(selectedTab == pendingTab) {
+			searchParams.setEndDate(now);
+			searchParams.addRollCallStatus(LectureRollCallStatus.open, LectureRollCallStatus.reopen);
+			searchParams.setLectureConfiguredRepositoryEntry(true);
 		} else if(selectedTab == withoutTeachersTab) {
 			searchParams.setWithTeachers(Boolean.FALSE);
 		}
@@ -761,6 +1003,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				tableEl.reset(false, false, true);
 			}
 		}
+		loadWarning(ureq);
 	}
 	
 	@Override
@@ -769,15 +1012,21 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			activateFilterTab(ureq, allTab);
 		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
-			if("lecture".equals(type) || "lectureblock".equals(type)) {
+			Long id = entries.get(0).getOLATResourceable().getResourceableId();
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if("lecture".equalsIgnoreCase(type) || "lectureblock".equalsIgnoreCase(type)) {
 				activateFilterTab(ureq, allTab);
-				activateLecture(ureq, entries.get(0).getOLATResourceable().getResourceableId());
+				activateLecture(ureq, id, subEntries);
+			} else if("OnlineMeeting".equalsIgnoreCase(type)) {
+				activateFilterTab(ureq, allTab);
+				activateLecture(ureq, id, entries);
 			} else if(tabsMap.containsKey(type.toLowerCase())) {
 				activateFilterTab(ureq, tabsMap.get(type.toLowerCase()));
 				if(entries.size() > 1) {
-					String subType = entries.get(1).getOLATResourceable().getResourceableTypeName().toLowerCase();
+					String subType = subEntries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
 					if("lecture".equals(subType) || "lectureblock".equals(subType)) {
-						activateLecture(ureq, entries.get(1).getOLATResourceable().getResourceableId());
+						List<ContextEntry> subSubEntries = subEntries.subList(1, entries.size());
+						activateLecture(ureq, id, subSubEntries);
 					}
 				}
 			}
@@ -795,14 +1044,33 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		loadModel(ureq);
 		updateTeachersFilters();
 	}
-	
-	private void activateLecture(UserRequest ureq, Long resourceId) {
-		int index = tableModel.getIndexByKey(resourceId);
+
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param lectureBlockKey The key of the lecture block
+	 * @param subEntries An optional additional business path to resolve (OnlineMeeting, Start roll call)
+	 * @return 
+	 */
+	private void activateLecture(UserRequest ureq, Long lectureBlockKey, List<ContextEntry> subEntries) {
+		int index = tableModel.getIndexByKey(lectureBlockKey);
 		if(index >= 0) {
 			int page = index / tableEl.getPageSize();
 			tableEl.setPage(page);
-			doOpenLectureBlockDetails(ureq, tableModel.getObject(index));
+			LectureBlockRow row = tableModel.getObject(index);
+			doOpenLectureBlockDetails(ureq, row);
 			tableEl.expandDetails(index);
+			
+			if(subEntries != null && !subEntries.isEmpty()) {
+				String subType = subEntries.get(0).getOLATResourceable().getResourceableTypeName();
+				if("OnlineMeeting".equalsIgnoreCase(subType)) {
+					doOpenOnlineMeeting(ureq, row);
+				} else if("Start".equalsIgnoreCase(subType)) {
+					doRollCall(ureq, row);
+				} else if("StartWizard".equalsIgnoreCase(subType)) {
+					doRollCallWizard(ureq, row);
+				}
+			}
 		}
 	}
 
@@ -820,7 +1088,20 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doToggleLevels(ureq, true);
 		} else if (source == scopeEl) {
 			selectScope(ureq);
-		} else if(source == tableEl) {
+		} else if(allTeachersButton == source) {
+			saveAllTeachersSwitch(ureq, true);
+			loadModel(ureq);
+		} else if(onlyMineButton == source) {
+			saveAllTeachersSwitch(ureq, false);
+			loadModel(ureq);
+		} else if(pendingRollCallLink == source) {
+			doPending(ureq);
+		} else if(startButton == source && startButton.getUserObject() instanceof LectureBlockRow row) {
+			doRollCall(ureq, row);
+		} else if(startWizardButton == source && startWizardButton.getUserObject() instanceof LectureBlockRow row) {
+			doRollCallWizard(ureq, row);
+		}
+		else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				LectureBlockRow row = tableModel.getObject(se.getIndex());
@@ -836,9 +1117,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 					}
 				} else if(CMD_CURRICULUM_ELEMENT.equals(cmd)) {
 					doOpenCurriculumElement(ureq, row);
+				} else if(CMD_REPOSITORY_ENTRY.equals(cmd)) {
+					doOpenRepositoryEntry(ureq, row);
 				} else if(IdentityCoachesCellRenderer.CMD_OTHER_TEACHERS.equals(cmd)) {
 					String targetId = IdentityCoachesCellRenderer.getOtherTeachersId(se.getIndex());
 					doShowTeachers(ureq, targetId, row);
+				} else if(CMD_ROLLCALL.equals(cmd)) {
+					doRollCall(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
@@ -853,9 +1138,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.equals("tools")) {
-				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
+			if(cmd != null && cmd.equals("tools")
+					&& link.getUserObject() instanceof LectureBlockRow row) {
 				doOpenTools(ureq, row, link);
+			} else if(CMD_OPEN_ONLINE_MEETING.equals(cmd)
+					&& link.getUserObject() instanceof LectureBlockRef ref) {
+				doOpenOnlineMeeting(ureq, ref);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -883,6 +1171,21 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				}
 				cleanUp();
 			}
+		} else if(rollCallCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.BACK_EVENT) {
+				reloadModel(ureq, rollCallCtrl.getLectureBlock());
+				stackPanel.popController(rollCallCtrl);
+				cleanUp();
+			}
+		} else if(rollCallWizardCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				reloadModel(ureq, rollCallWizardCtrl.getLectureBlock());
+			}
+			getWindowControl().pop();
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
+			getWindowControl().getWindowBackOffice()
+				.getChiefController().getScreenMode().setMode(Mode.standard, businessPath);
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		} else if(toolsCalloutCtrl == source) {
@@ -900,8 +1203,46 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
+		} else if(assessmentModeEditCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event == Event.CANCELLED_EVENT) {
+				loadModel(ureq);
+				stackPanel.popController(assessmentModeEditCtrl);
+				cleanUp();
+			}
+		} else if(deleteAssessmentModeDialogBox == source) {
+			if((DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event))
+					&& deleteAssessmentModeDialogBox.getUserObject() instanceof LectureBlockRef row) {
+				doDeleteAssessmentMode(ureq, row);
+			}
+		} else if(confirmChangeToLocationMeetingCtrl == source) {
+			if(event == Event.DONE_EVENT
+					&& confirmChangeToLocationMeetingCtrl.getUserObject() instanceof LectureBlockRef row) {
+				doChangeToLocationMeeting(ureq, row);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(onlineMeetingCtrl == source) {
+			if(event == Event.BACK_EVENT) {
+				stackPanel.popController(onlineMeetingCtrl);
+			}
+		} else if(editBigBlueButtonMeetingCtrl == source) {
+			if(event == Event.DONE_EVENT
+					&& editBigBlueButtonMeetingCtrl.getUserObject() instanceof LectureBlockRef row) {
+				doFinalizeChangeToOnlineMeeting(ureq, row, editBigBlueButtonMeetingCtrl.getMeeting());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(editTeamsMeetingCtrl == source) {
+			if(event == Event.DONE_EVENT
+					&& editTeamsMeetingCtrl.getUserObject() instanceof LectureBlockRow row) {
+				doFinalizeChangeToOnlineMeeting(ureq, row, editTeamsMeetingCtrl.getMeeting());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source instanceof LectureListDetailsController) {
-			if(event instanceof EditLectureBlockRowEvent editRowEvent) {
+			if(event instanceof OpenOnlineMeetingEvent meetingEvent) {
+				doOpenOnlineMeeting(ureq, meetingEvent.getLectureBlock());
+			} else if(event instanceof EditLectureBlockRowEvent editRowEvent) {
 				doEditLectureBlock(ureq, editRowEvent.getRow());
 			}
 		}
@@ -909,20 +1250,32 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmChangeToLocationMeetingCtrl);
+		removeAsListenerAndDispose(deleteAssessmentModeDialogBox);
+		removeAsListenerAndDispose(editBigBlueButtonMeetingCtrl);
 		removeAsListenerAndDispose(deleteLectureBlocksCtrl);
+		removeAsListenerAndDispose(assessmentModeEditCtrl);
 		removeAsListenerAndDispose(addLectureWizardCtrl);
+		removeAsListenerAndDispose(rollCallWizardCtrl);
 		removeAsListenerAndDispose(assignNewEntryCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(addLectureCtrl);
+		removeAsListenerAndDispose(rollCallCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmChangeToLocationMeetingCtrl = null;
+		deleteAssessmentModeDialogBox = null;
+		editBigBlueButtonMeetingCtrl = null;
 		deleteLectureBlocksCtrl = null;
+		assessmentModeEditCtrl = null;
 		addLectureWizardCtrl = null;
+		rollCallWizardCtrl = null;
 		assignNewEntryCtrl = null;
 		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
 		addLectureCtrl = null;
+		rollCallCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
@@ -935,6 +1288,27 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private void doToggleLevels(UserRequest ureq, boolean thisLevel) {
 		allLevelsButton.setPrimary(!thisLevel);
 		thisLevelButton.setPrimary(thisLevel);
+		loadModel(ureq);
+	}
+	
+	private boolean isAllTeachersSwitch(UserRequest ureq, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(AbstractTeacherOverviewController.class, switchPrefsId);
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveAllTeachersSwitch(UserRequest ureq, boolean all) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(AbstractTeacherOverviewController.class, switchPrefsId, Boolean.valueOf(all));
+		}
+		allTeachersButton.setPrimary(all);
+		onlyMineButton.setPrimary(!all);
+	}
+	
+	private void doPending(UserRequest ureq) {
+		activateFilterTab(ureq, pendingTab);
+		scopeEl.setSelectedKey(null);
 		loadModel(ureq);
 	}
 
@@ -1066,8 +1440,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doCopy(UserRequest ureq, LectureBlockRow row) {
-		String newTitle = translate("lecture.block.copy",row.getLectureBlock().getTitle());
-		lectureService.copyLectureBlock(newTitle, row.getLectureBlock());
+		LectureBlock block = lectureService.getLectureBlock(row);
+		String newTitle = translate("lecture.block.copy", block.getTitle());
+		lectureService.copyLectureBlock(newTitle, block);
 		loadModel(ureq);
 		showInfo("lecture.block.copied");
 	}
@@ -1096,8 +1471,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, LectureBlockRow row) {
-		List<LectureBlock> blocks = Collections.singletonList(row.getLectureBlock());
-		deleteLectureBlocksCtrl = new ConfirmDeleteLectureBlockController(ureq, getWindowControl(), blocks);
+		LectureBlock block = lectureService.getLectureBlock(row);
+		deleteLectureBlocksCtrl = new ConfirmDeleteLectureBlockController(ureq, getWindowControl(), List.of(block));
 		listenTo(deleteLectureBlocksCtrl);
 		
 		String title = translate("delete.lectures.title");
@@ -1109,8 +1484,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private void doExportLog(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(row);
-		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
-		LectureBlockAuditLogExport export = new LectureBlockAuditLogExport(entry, lectureBlock, auditLog, authorizedAbsenceEnabled, getTranslator());
+		RepositoryEntry re = entry == null ? lectureBlock.getEntry() : entry;
+		LectureBlockAuditLogExport export = new LectureBlockAuditLogExport(re, lectureBlock, auditLog, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
@@ -1151,7 +1526,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				avatarMapper, avatarMapperBaseURL, mainForm, secCallback, lectureManagementManaged);
+				avatarMapper, avatarMapperBaseURL, mainForm, config, secCallback, lectureManagementManaged);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -1162,6 +1537,49 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(row.getDetailsController());
 		flc.remove(row.getDetailsController().getInitialFormItem());
 		row.setDetailsController(null);
+	}
+	
+	private void doRollCall(UserRequest ureq, LectureBlockRow row) {
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(row);
+		if(reloadedBlock == null) {
+			loadModel(ureq);
+		} else {
+			RollCallSecurityCallback rollCallSecCallback = getRollCallSecurityCallback(reloadedBlock, row.isIamTeacher());
+			List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("LectureBlock", reloadedBlock.getKey());
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, rollCallSecCallback, true);
+			listenTo(rollCallCtrl);
+			stackPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void doRollCallWizard(UserRequest ureq, LectureBlockRow row) {
+		if(rollCallWizardCtrl != null) return;
+		
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(row);
+		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
+		RollCallSecurityCallback rollCallSecCallback = getRollCallSecurityCallback(reloadedBlock, row.isIamTeacher());
+		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants, rollCallSecCallback);
+		if(entry != null) {
+			rollCallWizardCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(entry.getOlatResource(),
+					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
+		}
+		listenTo(rollCallWizardCtrl);
+		
+		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+		cc.getScreenMode().setMode(Mode.full, null);
+		getWindowControl().pushToMainArea(rollCallWizardCtrl.getInitialComponent());
+		
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_STARTED, getClass(),
+				CoreLoggingResourceable.wrap(reloadedBlock, OlatResourceableType.lectureBlock, reloadedBlock.getTitle()));
+	}
+	
+	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block, boolean iAmTeacher) {
+		boolean admin = secCallback.viewAs() == LectureRoles.lecturemanager;
+		boolean masterCoach = secCallback.viewAs() == LectureRoles.mastercoach;
+		return new RollCallSecurityCallbackImpl(admin, masterCoach, iAmTeacher, block, lectureModule);
 	}
 	
 	private void doOpenCurriculumElement(UserRequest ureq, LectureBlockRow row) {
@@ -1183,6 +1601,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	
+	private void doOpenRepositoryEntry(UserRequest ureq, LectureBlockRow row) {
+		if(row.getCurriculumElement() == null) return;
+		
+		String path = "[RepositoryEntry:" + row.getEntry().key() + "]";
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(path);
+		fireEvent(ureq, new ActivateEvent(entries));
+	}
+	
 	private void doAssignNewEntry(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		RepositoryEntry currentEntry = lectureBlock.getEntry();
@@ -1195,6 +1622,215 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), assignNewEntryCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doOpenOnlineMeeting(UserRequest ureq, LectureBlockRef lectureBlockRef) {
+		onlineMeetingCtrl = new LectureBlockOnlineMeetingController(ureq, getWindowControl(), lectureBlockRef, config, secCallback);
+		listenTo(onlineMeetingCtrl);
+		stackPanel.pushController(translate("online.meeting"), onlineMeetingCtrl);
+	}
+	
+	private void doChangeToOnlineMeeting(UserRequest ureq, LectureBlockRow lectureBlockRef) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(lectureBlockRef);
+		if(lectureBlock.getTeamsMeeting() == null && bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
+			doEditBigBlueButtonMeeting(ureq, lectureBlock);
+		} else if(lectureBlock.getBBBMeeting() == null && teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
+			doEditTeamsMeeting(ureq, lectureBlock);
+		}
+	}
+	
+	private void doEditBigBlueButtonMeeting(UserRequest ureq, LectureBlock lectureBlock) {
+		BigBlueButtonMeeting bigBlueButtonMeeting;
+		if(lectureBlock.getBBBMeeting() == null) {
+			bigBlueButtonMeeting = bigBlueButtonManager.createMeeting(lectureBlock.getTitle(),
+					lectureBlock.getStartDate(), lectureBlock.getEndDate(), null, null, null, getIdentity());
+		} else {
+			bigBlueButtonMeeting = bigBlueButtonManager.getMeeting(lectureBlock.getBBBMeeting());
+		}
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, null, getIdentity(), ureq.getUserSession().getRoles());
+		editBigBlueButtonMeetingCtrl = new EditBigBlueButtonMeetingController(ureq, getWindowControl(), bigBlueButtonMeeting, permissions);
+		editBigBlueButtonMeetingCtrl.setUserObject(lectureBlock);
+		listenTo(editBigBlueButtonMeetingCtrl);
+
+		String title = translate("edit.online.meeting.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editBigBlueButtonMeetingCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doEditTeamsMeeting(UserRequest ureq, LectureBlock lectureBlock) {
+		TeamsMeeting teamsMeeting;
+		if(lectureBlock.getTeamsMeeting() == null) {
+			teamsMeeting = teamsService.createMeeting(lectureBlock.getTitle(),
+					lectureBlock.getStartDate(), lectureBlock.getEndDate(), null, null, null, getIdentity());
+		} else {
+			teamsMeeting = teamsService.getMeeting(lectureBlock.getTeamsMeeting());
+		}
+		editTeamsMeetingCtrl = new EditTeamsMeetingController(ureq, getWindowControl(), teamsMeeting);
+		listenTo(editTeamsMeetingCtrl);
+
+		String title = translate("edit.online.meeting.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTeamsMeetingCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doFinalizeChangeToOnlineMeeting(UserRequest ureq, LectureBlockRef row, BigBlueButtonMeeting meeting) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		TeamsMeeting teamsMeeting = lectureBlock.getTeamsMeeting();
+		lectureBlock.setTeamsMeeting(null);
+		lectureBlock.setBBBMeeting(meeting);
+		lectureService.save(lectureBlock, null);
+		if(teamsMeeting != null) {
+			teamsService.deleteMeeting(teamsMeeting);
+		}
+		loadModel(ureq);
+	}
+	
+	private void doFinalizeChangeToOnlineMeeting(UserRequest ureq, LectureBlockRef row, TeamsMeeting meeting) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		BigBlueButtonMeeting bigBlueButtonMeeting = lectureBlock.getBBBMeeting();
+		lectureBlock.setTeamsMeeting(meeting);
+		lectureBlock.setBBBMeeting(null);
+		lectureService.save(lectureBlock, null);
+		if(bigBlueButtonMeeting != null) {
+			bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+		}
+		loadModel(ureq);
+	}
+	
+	private void doConfirmChangeToLocationMeeting(UserRequest ureq, LectureBlockRow row) {
+		String escapedTitle = StringHelper.escapeHtml(row.getLectureBlock().getTitle());
+		String message = translate("confirmation.change.to.location.meeting.text", escapedTitle);
+		String confirmButton = translate("confirmation.change.to.location.button");
+		translate("confirmation.delete.curriculum");
+		confirmChangeToLocationMeetingCtrl = new ConfirmationController(ureq, getWindowControl(),
+				message, message, confirmButton, ButtonType.danger, translate("cancel"), true);
+		listenTo(confirmChangeToLocationMeetingCtrl);
+		confirmChangeToLocationMeetingCtrl.setUserObject(row);
+
+		String title = translate("confirmation.change.to.location.meeting.title", escapedTitle);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeToLocationMeetingCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doChangeToLocationMeeting(UserRequest ureq, LectureBlockRef row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		TeamsMeeting teamsMeeting = lectureBlock.getTeamsMeeting();
+		BigBlueButtonMeeting bigBlueButtonMeeting = lectureBlock.getBBBMeeting();
+		lectureBlock.setTeamsMeeting(null);
+		lectureBlock.setBBBMeeting(null);
+		lectureService.save(lectureBlock, null);
+		
+		if(teamsMeeting != null) {
+			teamsService.deleteMeeting(teamsMeeting);
+		}
+		if(bigBlueButtonMeeting != null) {
+			bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+		}
+		loadModel(ureq);
+	}
+	
+	private void doExportLectureBlock(UserRequest ureq, LectureBlockRef row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		if(lectureBlock == null) {
+			loadModel(ureq);
+		} else {
+			List<Identity> teachers = lectureService.getTeachers(lectureBlock);
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+			LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
+			ureq.getDispatchResult().setResultingMediaResource(export);
+		}
+	}
+	
+	private void doExportAttendanceList(UserRequest ureq, LectureBlockRef row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		if(lectureBlock == null) {
+			loadModel(ureq);
+		} else {
+			List<Identity> participants = lectureService.getParticipants(lectureBlock);
+			if(participants.size() > 1) {
+				Collections.sort(participants, new IdentityComparator(getLocale()));
+			}
+			List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
+			List<AbsenceNotice> notices = lectureService.getAbsenceNoticeRelatedTo(lectureBlock);
+	
+			try {
+				LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
+				export.setTeacher(userManager.getUserDisplayName(getIdentity()));
+				export.create(participants, rollCalls, notices);
+				ureq.getDispatchResult().setResultingMediaResource(export);
+			} catch (IOException | TransformerException e) {
+				logError("", e);
+			}
+		}
+	}
+	
+	private void doExportAttendanceListForSignature(UserRequest ureq, LectureBlockRef row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		if(lectureBlock == null) {
+			loadModel(ureq);
+		} else {
+			List<Identity> participants = lectureService.getParticipants(lectureBlock);
+			if(participants.size() > 1) {
+				Collections.sort(participants, new IdentityComparator(getLocale()));
+			}
+			try {
+				LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
+				export.setTeacher(userManager.getUserDisplayName(getIdentity()));
+				export.create(participants);
+				ureq.getDispatchResult().setResultingMediaResource(export);
+			} catch (IOException | TransformerException e) {
+				logError("", e);
+			}
+		}
+	}
+	
+	private void doAddAssessmentMode(UserRequest ureq, LectureBlockRef row) {
+		removeControllerListener(assessmentModeEditCtrl);
+		
+		LectureBlock block = lectureService.getLectureBlock(row);
+		if(block == null) {
+			loadModel(ureq);
+		} else {
+			RepositoryEntry blockEntry = block.getEntry();
+			RepositoryEntryLectureConfiguration lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(blockEntry);
+			AssessmentMode newMode = assessmentModeMgr.getAssessmentMode(block);
+			if(newMode == null) {
+				int leadTime = ConfigurationHelper.getLeadTime(lectureConfig, lectureModule);
+				int followupTime = ConfigurationHelper.getFollowupTime(lectureConfig, lectureModule);
+				String ipList = ConfigurationHelper.getAdmissibleIps(lectureConfig, lectureModule);
+				String sebKey = ConfigurationHelper.getSebKeys(lectureConfig, lectureModule);
+				newMode = assessmentModeMgr.createAssessmentMode(block, leadTime, followupTime, ipList, sebKey);
+			}
+			assessmentModeEditCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), blockEntry, newMode);
+			listenTo(assessmentModeEditCtrl);
+			stackPanel.pushController(block.getTitle(), assessmentModeEditCtrl);
+		}
+	}
+	
+	private void doConfirmDeleteAssessmentMode(UserRequest ureq, LectureBlockRef row) {
+		LectureBlock block = lectureService.getLectureBlock(row);
+		if(block == null) {
+			loadModel(ureq);
+		} else {
+			String names = StringHelper.escapeHtml(block.getTitle());
+			String title = translate("confirm.delete.assessment.mode.title");
+			String text = translate("confirm.delete.assessment.mode.text", names);
+			deleteAssessmentModeDialogBox = activateYesNoDialog(ureq, title, text, deleteAssessmentModeDialogBox);
+			deleteAssessmentModeDialogBox.setUserObject(row);
+		}
+	}
+	
+	private void doDeleteAssessmentMode(UserRequest ureq, LectureBlockRef row) {
+		LectureBlock block = lectureService.getLectureBlock(row);
+		if(block != null) {
+			assessmentModeMgr.delete(block);
+			loadModel(ureq);
+		}
 	}
 	
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
@@ -1217,7 +1853,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		private Link copyLink;
 		private Link logLink;
 		private Link reopenLink;
+		private Link exportLink;
 		private Link assignNewEntry;
+		private Link attendanceListLink;
+		private Link openOnlineMeetingLink;
+		private Link changeToOnlineMeetingLink;
+		private Link changeToLocationMeetingLink;
+		private Link attendanceListForSignatureLink;
+		private Link addAssessmentModeLink;
+		private Link editAssessmentModeLink;
+		private Link deleteAssessmentModeLink;
 		
 		private final LectureBlockRow row;
 		
@@ -1228,38 +1873,78 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
 			
 			LectureBlock lectureBlock = row.getLectureBlock();
+			if((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled())
+					|| (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())) {
+				if(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null) {			
+					openOnlineMeetingLink = LinkFactory.createLink("open.online.meeting", CMD_OPEN_ONLINE_MEETING, getTranslator(), mainVC, this, Link.LINK);
+					openOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+					changeToLocationMeetingLink = LinkFactory.createLink("change.to.location.meeting", "change.to.location.meeting", getTranslator(), mainVC, this, Link.LINK);
+					changeToLocationMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_location");
+				} else if(lectureBlock.getEndDate() != null && lectureBlock.getEndDate().after(ureq.getRequestTimestamp())) {
+					changeToOnlineMeetingLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
+					changeToOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
+				}
+			}
+			
+			RepositoryEntryLectureConfiguration entryConfig = null;
+			if(entry != null) {
+				entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
+			} else if(lectureBlock.getEntry() != null) {
+				entryConfig = lectureService.getRepositoryEntryLectureConfiguration(lectureBlock.getEntry());
+			}
+			boolean withAssessment = entryConfig != null && ConfigurationHelper.isAssessmentModeEnabled(entryConfig, lectureModule);
+			
+			if(secCallback.canViewList()) {
+				exportLink = addLink("export", "export", "o_icon o_icon-fw o_filetype_xlsx", mainVC);
+				attendanceListLink = addLink("attendance.list", "attendance.list", "o_icon o_icon-fw o_filetype_pdf", mainVC);
+				attendanceListForSignatureLink = addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_icon-fw o_filetype_pdf", mainVC);
+			}
+			
+			if(secCallback.canAssessmentMode()) {
+				if(row.isAssessmentMode()) {
+					editAssessmentModeLink = addLink("edit.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
+					deleteAssessmentModeLink = addLink("delete.assessment.mode", "delete.assessment.mode", "o_icon o_icon-fw o_icon_delete_item", mainVC);
+				} else if(withAssessment) {
+					addAssessmentModeLink = addLink("add.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
+				}
+			}
 			
 			if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
-				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
-				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				editLink = addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", mainVC);
 			}
 
 			if(secCallback.canReopenLectureBlock() && (lectureBlock.getStatus() == LectureBlockStatus.cancelled
 					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
 					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.autoclosed)) {
-				reopenLink = LinkFactory.createLink("reopen.lecture.blocks", "reopen", getTranslator(), mainVC, this, Link.LINK);
-				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+				reopenLink = addLink("reopen.lecture.blocks", "reopen", "o_icon o_icon-fw o_icon_reopen", mainVC);
 			}
 			
 			if(secCallback.canNewLectureBlock()) {
-				copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
-				copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+				copyLink = addLink("copy", "copy", "o_icon o_icon-fw o_icon_copy", mainVC);
 			}
-			
-			logLink = LinkFactory.createLink("log", "log", getTranslator(), mainVC, this, Link.LINK);
-			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+
+			if(secCallback.canViewLog()) {
+				logLink = addLink("log", "log", "o_icon o_icon-fw o_icon_log", mainVC);
+			}
 			
 			if(secCallback.canNewLectureBlock()) {
 				if(canAssignNewRepositoryEntry()) {
-					assignNewEntry = LinkFactory.createLink("assign.new.entry", "assign.new.entry", getTranslator(), mainVC, this, Link.LINK);
-					assignNewEntry.setIconLeftCSS("o_icon o_icon-fw o_icon_assign_new_item");
+					assignNewEntry = addLink("assign.new.entry", "assign.new.entry", "o_icon o_icon-fw o_icon_assign_new_item", mainVC);
 				}
 				if(!LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
-					deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
-					deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+					deleteLink = addLink("delete", "delete", "o_icon o_icon-fw o_icon_delete_item", mainVC);
 				}
 			}
 			putInitialPanel(mainVC);
+		}
+		
+		private Link addLink(String name, String cmd, String iconCSS, VelocityContainer mainVC) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			return link;
 		}
 		
 		private boolean canAssignNewRepositoryEntry() {
@@ -1290,6 +1975,22 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				doReopen(ureq, row);
 			} else if(assignNewEntry == source) {
 				doAssignNewEntry(ureq, row);
+			} else if(openOnlineMeetingLink == source) {
+				doOpenOnlineMeeting(ureq, row);
+			} else if(changeToOnlineMeetingLink == source) {
+				doChangeToOnlineMeeting(ureq, row);
+			} else if(changeToLocationMeetingLink == source) {
+				doConfirmChangeToLocationMeeting(ureq, row);
+			} else if(exportLink == source) {
+				doExportLectureBlock(ureq, row);
+			} else if(attendanceListLink == source) {
+				doExportAttendanceList(ureq, row);
+			} else if(attendanceListForSignatureLink == source) {
+				doExportAttendanceListForSignature(ureq, row);
+			} else if(addAssessmentModeLink == source || editAssessmentModeLink == source) {
+				doAddAssessmentMode(ureq, row);
+			} else if(deleteAssessmentModeLink == source) {
+				doConfirmDeleteAssessmentMode(ureq, row);
 			}
 		}
 	}

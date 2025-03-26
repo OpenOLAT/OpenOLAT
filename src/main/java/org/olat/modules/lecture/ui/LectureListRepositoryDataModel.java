@@ -21,11 +21,14 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -40,7 +43,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
  *
  */
 public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<LectureBlockRow>
-	implements SortableFlexiTableDataModel<LectureBlockRow> {
+	implements SortableFlexiTableDataModel<LectureBlockRow>, FlexiBusinessPathModel {
 	
 	private static final BlockCols[] COLS = BlockCols.values();
 	
@@ -80,6 +83,16 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 	}
 
 	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if(object instanceof LectureBlockRow block) {
+			if(LectureListRepositoryController.CMD_REPOSITORY_ENTRY.equals(action)) {
+				return block.getEntryUrl();
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		LectureBlockRow block = getObject(row);
 		return getValueAt(block, col);
@@ -101,6 +114,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case startTime -> row.getLectureBlock().getStartDate();
 			case endTime -> row.getLectureBlock().getEndDate();
 			case status -> row.getLectureBlock();
+			case rollCallStatus -> row.getLectureBlock().getRollCallStatus();
 			case teachers -> row;
 			case numParticipants -> row.getNumOfParticipants();
 			case tools -> row.getToolsLink();
@@ -109,8 +123,17 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case teacherChooser -> row.getTeacherChooserLink();
 			case locationElement -> row.getLocationElement();
 			case chosenTeachers -> transformIdentitiesToString(row.getTeachersList());
+			case details -> Boolean.valueOf(getDetails(row));
+			case onlineMeeting -> row.getOpenOnlineMeetingLink();
 			default -> null;
 		};
+	}
+	
+	private boolean getDetails(LectureBlockRow row) {
+		Date end = row.getLectureBlock().getEndDate();
+		Date start = row.getLectureBlock().getStartDate();
+		Date now = new Date();
+		return end.before(now) || (row.isIamTeacher() && start.compareTo(now) <= 0);
 	}
 	
 	private String transformIdentitiesToString(List<Identity> identities) {
@@ -138,7 +161,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		endTime("table.header.end.time"),
 		teachers("table.header.teachers"),
 		tools("action.more"),
-		status("table.header.status"),
+		status("table.header.exec"),
+		rollCallStatus("table.header.rollcall.status"),
 		compulsory("table.header.compulsory.long"),
 		assessmentMode("table.header.assessment.mode"),
 		dateChooser("lecture.date"),
@@ -150,7 +174,9 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		lecturesNumber("table.header.num.lecture.block"),
 		numParticipants("table.header.participants"),
 		curriculumElement("table.header.curriculum.element"),
-		entry("table.header.entry");
+		onlineMeeting("table.header.online.meeting"),
+		entry("table.header.entry"),
+		details("details");
 		
 		private final String i18nKey;
 		

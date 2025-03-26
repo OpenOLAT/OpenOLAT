@@ -103,7 +103,6 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	public static final int LECTURES_OFFSET = 1000;
 	public static final String USER_USAGE_IDENTIFIER = UserListController.usageIdentifyer;
 	
-	private FormLink backLink;
 	private FormLink closeButton;
 	private FlexiTableElement tableEl;
 	private IdentitiesLecturesRollCallTableModel tableModel;
@@ -187,12 +186,10 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("date", getDate());
 			String numOfLectureBlocksI18n = lectureBlocks.size() > 1 ? "rollcall.lecture.blocks" : "rollcall.lecture.block";
-			layoutCont.contextPut("numOfLectureBlocks", translate(numOfLectureBlocksI18n, new String[] { Integer.toString(lectureBlocks.size()) }));
+			layoutCont.contextPut("numOfLectureBlocks", translate(numOfLectureBlocksI18n, Integer.toString(lectureBlocks.size())));
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -392,19 +389,15 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(backLink == source) {
-			fireEvent(ureq, Event.BACK_EVENT);
-		} else if(closeButton == source) {
+		if(closeButton == source) {
 			doConfirmCloseLectures(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				IdentityLecturesRollCallsRow row = (IdentityLecturesRollCallsRow)link.getUserObject();
 				doOpenTools(ureq, row, link);
 			}
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("rollcall".equals(cmd)) {
 					IdentityLecturesRollCallsRow row = tableModel.getObject(se.getIndex());
@@ -590,8 +583,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 			if(this == obj) {
 				return true;
 			}
-			if(obj instanceof RollCallKey) {
-				RollCallKey call = (RollCallKey)obj;
+			if(obj instanceof RollCallKey call) {
 				return identityKey.equals(call.getIdentityKey())
 						&& lectureBlockKey.equals(call.getLectureBlockKey());
 			}

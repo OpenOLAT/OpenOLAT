@@ -157,7 +157,8 @@ public class LectureBlocksStep extends BasicStep {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.dateChooser));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.chosenTeachers));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teacherChooser));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.status,
+					new LectureBlockStatusCellRenderer(getTranslator())));
 
 			tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);

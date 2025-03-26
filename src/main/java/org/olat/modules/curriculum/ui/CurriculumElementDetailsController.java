@@ -84,6 +84,7 @@ import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -474,8 +475,26 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), "o_sel_curriculum_lectures", uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
-				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumElementConfig();
-				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculumElement, config, lecturesSecCallback);
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumElementConfig("curriculum-element-details-v1")
+						.withExternalRef(Visibility.SHOW)
+						.withCurriculum(Visibility.HIDE)
+						.withRepositoryEntry(Visibility.HIDE)
+						.withLocation(Visibility.SHOW)
+						.withCompulsoryPresence(Visibility.HIDE)
+						.withNumberOfParticipants(Visibility.HIDE)
+						.withNumberOfLectures(Visibility.HIDE)
+						.withExam(Visibility.HIDE)
+						.withOnlineMeeting(Visibility.HIDE)
+						.withEdit(Visibility.HIDE)
+						.withRollCall(Visibility.NO)
+						.withAllMineSwitch(false, false)
+						.withFilterPresetWithoutTeachers(true)
+						.withDetailsParticipantsGroups(true)
+						.withDetailsRepositoryEntry(true)
+						.withDetailsExam(false)
+						.withDetailsUnits(true)
+						.withDetailsExternalRef(true);
+				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculumElement, config, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
 				
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");

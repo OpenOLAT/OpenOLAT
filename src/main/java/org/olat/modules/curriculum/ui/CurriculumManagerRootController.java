@@ -48,6 +48,7 @@ import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -235,8 +236,27 @@ public class CurriculumManagerRootController extends BasicController implements 
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Events", 0L);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig();
-		lecturesCtrl = new LectureListRepositoryController(ureq, bwControl, config, lecturesSecCallback);
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculums-overview-v1")
+				.withExternalRef(Visibility.HIDE)
+				.withCurriculum(Visibility.SHOW)
+				.withRepositoryEntry(Visibility.SHOW)
+				.withLocation(Visibility.SHOW)
+				.withCompulsoryPresence(Visibility.HIDE)
+				.withNumberOfParticipants(Visibility.HIDE)
+				.withNumberOfLectures(Visibility.HIDE)
+				.withExam(Visibility.HIDE)
+				.withOnlineMeeting(Visibility.HIDE)
+				.withEdit(Visibility.HIDE)
+				.withRollCall(Visibility.NO)
+				.withAllMineSwitch(false, false)
+				.withFilterPresetWithoutTeachers(true)
+				.withDetailsParticipantsGroups(true)
+				.withDetailsRepositoryEntry(true)
+				.withDetailsExam(false)
+				.withDetailsUnits(true)
+				.withDetailsExternalRef(true);
+		
+		lecturesCtrl = new LectureListRepositoryController(ureq, bwControl, toolbarPanel, config, lecturesSecCallback);
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), lecturesCtrl);
 		return lecturesCtrl;

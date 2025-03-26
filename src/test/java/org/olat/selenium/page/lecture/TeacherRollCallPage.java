@@ -48,10 +48,9 @@ public class TeacherRollCallPage {
 		return this;
 	}
 	
-	public TeacherRollCallPage assertOnClosedTable() {
-		By tableBy = By.cssSelector("fieldset.o_sel_lecture_table_closed table.table");
-		OOGraphene.waitElement(tableBy, browser);
-		return this;
+	public LecturesRepositoryPage assertOnLectureBlocksList() {
+		return new LecturesRepositoryPage(browser)
+				.assertOnLectureBlocksList();
 	}
 	
 	/**

@@ -1,7 +1,11 @@
 <div class="o_header_with_buttons">
 	<h3>$r.escapeHtml($title)#if($r.isNotEmpty($externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($externalRef)</small>#end</h3>
 	<div class="o_button_group o_button_group_right">
-		<div class="o_lecture_badge">$statusBadge</div> #if($r.available("edit")) $r.render("edit") #end
+		<div class="o_lecture_badge"><span>$r.translate("lecture.block.status"):</span> $lectureBlockStatusBadge</div>
+		#if($r.isNotEmpty($rollCallStatusBadge))
+			<div class="o_lecture_badge"><span>$r.translate("rollcall.absence.status"):</span> $rollCallStatusBadge</div>
+		#end
+		#if($r.available("edit")) $r.render("edit") #end
 	</div>
 </div>
 
@@ -19,6 +23,10 @@
 		$r.render("lecture.preparation","vertical")
 	#end
 	$r.render("lecture.compulsory","vertical")
+
+	#if($r.available("open.online.meeting"))
+		<div>$r.render("open.online.meeting", "vertical")</div>
+	#end
 </div>
 
 <div class="o_lecture_resources">

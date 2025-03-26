@@ -747,4 +747,8 @@
 .o_metadata_horizontal {
 	display: flex;
 	column-gap: 45px;
+	
+	.form-group .vertical {
+		display: block;
+	}
 }

@@ -322,6 +322,11 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
+	public boolean isPrimary() {
+		return component.isPrimary();
+	}
+
+	@Override
 	public void setPrimary(boolean isPrimary) {
 		component.setPrimary(isPrimary);
 	}

@@ -245,7 +245,7 @@ public class TeamsMeetingDAO {
 		return query.getResultList();
 	}
 	
-	private void updateDates(TeamsMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
+	public void updateDates(TeamsMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
 		if(start == null) {
 			meet.setStartDate(null);
 			meet.setLeadTime(0);

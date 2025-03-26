@@ -45,7 +45,12 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingController;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -58,10 +63,14 @@ import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
 import org.olat.modules.lecture.ui.component.LectureBlockComparator;
+import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.ChangeDayEvent;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.RollCallEvent;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.ui.TeamsMeetingController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,6 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LecturesCockpitController extends BasicController implements Activateable2 {
 	
+	private final Link backLink;
 	private final VelocityContainer mainVC;
 	private final List<Link> pendingLecturesLink = new ArrayList<>();
 	
@@ -81,22 +91,29 @@ public class LecturesCockpitController extends BasicController implements Activa
 	private DailyLectureBlockOverviewController lectureBlocksCtrl;
 
 	private TeacherRollCallController rollCallCtrl;
+	private TeamsMeetingController teamsMeetingCtrl;
+	private BigBlueButtonMeetingController bigBlueButtonMeetingCtrl;
 	private IdentitiesLecturesRollCallController identitiesRollCallCtrl;
 	
 	private int counter = 0;
 	private final boolean viewAsTeacher;
 	private final LecturesSecurityCallback secCallback;
-	
+
+	@Autowired
+	private TeamsService teamsService;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 	
 	public LecturesCockpitController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("cockpit");
+		backLink = LinkFactory.createLinkBack(mainVC, this);
 		
 		dayChooserCtrl = new DayChooserController(ureq, getWindowControl());
 		listenTo(dayChooserCtrl);
@@ -135,7 +152,7 @@ public class LecturesCockpitController extends BasicController implements Activa
 	
 	private void updateCurrentDate() {
 		String dateString = Formatter.getInstance(getLocale()).formatDate(getCurrentDate());
-		String msg = translate("cockpit.date", new String[] { dateString });
+		String msg = translate("cockpit.date", dateString);
 		mainVC.contextPut("date", msg);
 	}
 
@@ -149,13 +166,13 @@ public class LecturesCockpitController extends BasicController implements Activa
 		if(source == lectureBlocksCtrl) {
 			if(event instanceof OpenRepositoryEntryEvent) {
 				fireEvent(ureq, event);
-			} else if(event instanceof RollCallEvent) {
-				RollCallEvent rce = (RollCallEvent)event;
+			} else if(event instanceof RollCallEvent rce) {
 				doRollCall(ureq, rce.getLectureBlocks());
+			} else if(event instanceof OpenOnlineMeetingEvent oome) {
+				doOpenOnlineMeeting(ureq, oome.getLectureBlock());
 			}
 		} else if(source == dayChooserCtrl) {
-			if(event instanceof ChangeDayEvent) {
-				ChangeDayEvent cde = (ChangeDayEvent)event;
+			if(event instanceof ChangeDayEvent cde) {
 				doChangeCurrentDate(cde.getDate());
 			}
 		} else if(source == absenceNoticesListCtrl) {
@@ -175,8 +192,9 @@ public class LecturesCockpitController extends BasicController implements Activa
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
-			Link link = (Link)source;
+		if(source == backLink) {
+			backToDaily();
+		} else if(source instanceof Link link) {
 			if("pending-day".equals(link.getCommand())) {
 				doChangeCurrentDate((Date)link.getUserObject());
 			}
@@ -184,14 +202,18 @@ public class LecturesCockpitController extends BasicController implements Activa
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bigBlueButtonMeetingCtrl);
 		removeAsListenerAndDispose(identitiesRollCallCtrl);
+		removeAsListenerAndDispose(teamsMeetingCtrl);
 		removeAsListenerAndDispose(rollCallCtrl);
+		bigBlueButtonMeetingCtrl = null;
 		identitiesRollCallCtrl = null;
+		teamsMeetingCtrl = null;
 		rollCallCtrl = null;
 	}
 	
 	private void backToDaily() {
-		mainVC.remove("rollcall");
+		mainVC.remove("component");
 		cleanUp();
 	}
 	
@@ -212,9 +234,9 @@ public class LecturesCockpitController extends BasicController implements Activa
 			LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlocks.get(0));
 			List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 			rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants,
-					getRollCallSecurityCallback(reloadedBlock), true);
+					getRollCallSecurityCallback(reloadedBlock), false);
 			listenTo(rollCallCtrl);
-			mainVC.put("rollcall", rollCallCtrl.getInitialComponent());
+			mainVC.put("component", rollCallCtrl.getInitialComponent());
 		} else {
 			Map<LectureBlock, List<Identity>> startedLectureBlocks = new HashMap<>();
 			Set<Identity> participantsSet = new HashSet<>();
@@ -229,7 +251,27 @@ public class LecturesCockpitController extends BasicController implements Activa
 			identitiesRollCallCtrl = new IdentitiesLecturesRollCallController(ureq, getWindowControl(),
 					participantsList, startedLectureBlocks, secCallback);
 			listenTo(identitiesRollCallCtrl);
-			mainVC.put("rollcall", identitiesRollCallCtrl.getInitialComponent());
+			mainVC.put("component", identitiesRollCallCtrl.getInitialComponent());
+		}
+	}
+	
+	private void doOpenOnlineMeeting(UserRequest ureq, LectureBlockRef lectureBlockRef) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(lectureBlockRef);
+		if(lectureBlock.getBBBMeeting() != null) {
+			BigBlueButtonMeeting meeting = bigBlueButtonManager.getMeeting(lectureBlock.getBBBMeeting());
+			BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(false);
+			bigBlueButtonMeetingCtrl = new BigBlueButtonMeetingController(ureq, getWindowControl(),
+				meeting,  configuration, secCallback.isOnlineMeetingAdministrator(), secCallback.isOnlineMeetingModerator(),
+				!secCallback.canEditConfiguration());
+			listenTo(bigBlueButtonMeetingCtrl);
+			mainVC.put("component", bigBlueButtonMeetingCtrl.getInitialComponent());
+		} else if(lectureBlock.getTeamsMeeting() != null) {
+			TeamsMeeting meeting = teamsService.getMeeting(lectureBlock.getTeamsMeeting());
+			teamsMeetingCtrl = new TeamsMeetingController(ureq, getWindowControl(), meeting,
+				secCallback.isOnlineMeetingAdministrator(), secCallback.isOnlineMeetingModerator(),
+				!secCallback.canEditConfiguration());
+			listenTo(teamsMeetingCtrl);
+			mainVC.put("component", teamsMeetingCtrl.getInitialComponent());
 		}
 	}
 	

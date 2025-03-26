@@ -408,7 +408,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	}
 	
 	private void doOpenCourseLectures(UserRequest ureq, LectureBlockRow row) {
-		Long repoKey = row.getLectureBlock().getEntry().getKey();
+		Long repoKey = row.getEntry().key();
 		String businessPath = "[RepositoryEntry:" + repoKey + "]";
 		if(withRepositoryEntry == LinkToCourse.courseLecture) {
 			businessPath += "[Lectures:0]";

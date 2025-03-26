@@ -93,6 +93,9 @@ public interface BigBlueButtonManager {
 	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent,
 			BusinessGroup businessGroup, Identity creator);
 	
+	public BigBlueButtonMeeting createMeeting(String name, Date start, Date end,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator);
+	
 	public BigBlueButtonMeeting persistMeeting(BigBlueButtonMeeting meeting);
 	
 	/**

@@ -103,45 +103,48 @@
 }
 
 .o_labeled_light {
-	&.o_lecture_status_active {
+	&.o_lecture_status_planned {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-lm-status-active-color;
-	    color: $o-lm-status-active-color;
+		@extend %o_labeled_light_blue;
+	}
+	&.o_lecture_status_active,
+	&.o_lecture_status_running {
+		font-weight: normal;
+		@extend %o_labeled_light_orange;
 	}
 	&.o_lecture_status_done {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-lm-status-done-color;
-	    color: $o-lm-status-done-color;
+	    border-color: #000000;
+	    color: #000000;
 	}
 	&.o_lecture_status_cancelled {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-lm-status-cancelled-color;
-	    color: $o-lm-status-cancelled-color;
+		@extend %o_labeled_light_grey;
 	}
 	
-	&.o_lecture_rollcall_status_open,
+	&.o_lecture_rollcall_status_open {
+		font-weight: normal;
+		@extend %o_labeled_light_blue;
+	}
 	&.o_lecture_rollcall_status_reopen {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-lm-status-active-color;
-	    color: $o-lm-status-active-color;
+		@extend %o_labeled_light_red;
 	}
-	
 	&.o_lecture_rollcall_status_closed,
 	&.o_lecture_rollcall_status_autoclosed {
 		font-weight: normal;
-	    background-color: #fff;
-	    border-color: $o-lm-status-done-color;
-	    color: $o-lm-status-done-color;
+		@extend %o_labeled_light_brown;
 	}
 }
 
 .o_button_group>.o_lecture_badge {
 	display: inline-block;
 	margin-right: 7px;
+	
+	.o_lecture_status_badge {
+		margin: 0 1em 0 0.7em;
+	}
 }
 
 .o_lecture_status_badge {
@@ -150,31 +153,30 @@
 	padding: 1px 25px;
 	border-radius: $border-radius-small;
 	
-	&.o_lecture_status_active {
-	    background-color: 	$o-lm-status-active-color;
-	    color: 				#fff;
+	&.o_lecture_status_planned {
+		@extend %o_labeled_blue;
 	}
-
+	&.o_lecture_status_active,
+	&.o_lecture_status_running {
+		@extend %o_labeled_orange;
+	}
 	&.o_lecture_status_done {
-		background-color: 	$o-lm-status-done-color;
-	    color: 				#fff;
+		background-color: #000000;
+	    color: #fff;
 	}
-	
 	&.o_lecture_status_cancelled {
-	    background-color: $o-lm-status-cancelled-color;
-		color: 				#fff;
+		@extend %o_labeled_light_grey;
 	}
 	
-	&.o_lecture_rollcall_status_open,
+	&.o_lecture_rollcall_status_open {
+		@extend %o_labeled_blue;
+	}
 	&.o_lecture_rollcall_status_reopen {
-	    background-color: 	$o-lm-status-active-color;
-	    color: 				#fff;
+		@extend %o_labeled_red;
 	}
-	
 	&.o_lecture_rollcall_status_closed,
 	&.o_lecture_rollcall_status_autoclosed {
-		background-color: 	$o-lm-status-done-color;
-	    color: 				#fff;
+		@extend %o_labeled_brown;
 	}
 }
 

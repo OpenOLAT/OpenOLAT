@@ -42,7 +42,7 @@ public class RollCallInterceptorPage {
 		OOGraphene.waitElement(formBy, browser);
 		By startBy = By.cssSelector("div.o_sel_lecture_start_wizard button.btn-primary");
 		browser.findElement(startBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return new TeacherRollCallPage(browser)
 				.assertOnRollCall();
 	}

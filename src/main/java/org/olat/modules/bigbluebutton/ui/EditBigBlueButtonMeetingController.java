@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -130,6 +131,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	private final boolean editableInternal;
 	private final boolean administrator;
 	
+	private Object userObject;
+	
 	private BigBlueButtonMeetingsCalendarController calCtr;
 	private CloseableModalController cmc;
 	
@@ -193,15 +196,53 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		reloadSlides();
 	}
 	
+	public EditBigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			BigBlueButtonMeeting meeting, List<BigBlueButtonTemplatePermissions> permissions) {
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
+		withSaveButtons = false;
+		mode = (meeting.isPermanent() && bigBlueButtonModule.isPermanentMeetingEnabled()) ? Mode.permanent : Mode.dates;
+		entry = meeting.getEntry();
+		subIdent = meeting.getSubIdent();
+		businessGroup = meeting.getBusinessGroup();
+		this.meeting = meeting;
+		this.permissions = permissions;
+		templates = bigBlueButtonManager.getTemplates();
+		
+		running = isRunning(meeting, ureq);
+		editable = isEditable(meeting, ureq);
+		editableInternal = isEditableInternal(meeting, ureq);
+		administrator = ureq.getUserSession().getRoles().isAdministrator();
+
+		slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
+		temporaryContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
+		slidesMapper = new SlidesContainerMapper(temporaryContainer, slidesContainer);
+		mapperUri = registerCacheableMapper(null, null, slidesMapper);
+		
+		initForm(ureq);
+		reloadSlides();
+	}
+	
+	public BigBlueButtonMeeting getMeeting() {
+		return meeting;
+	}
+	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	private boolean isEditable(BigBlueButtonMeeting m, UserRequest ureq) {
 		Date now = ureq.getRequestTimestamp();
-		return m == null || m.isPermanent()
+		return m == null || m.isPermanent() || m.getStartWithLeadTime() == null
 				|| (m.getStartWithLeadTime() != null && m.getStartWithLeadTime().compareTo(now) > 0);
 	}
 	
 	private boolean isEditableInternal(BigBlueButtonMeeting m, UserRequest ureq) {
 		Date now = ureq.getRequestTimestamp();
-		return m == null || m.isPermanent()
+		return m == null || m.isPermanent() || m.getEndWithFollowupTime() == null
 				|| (m.getEndWithFollowupTime() != null && now.compareTo(m.getEndWithFollowupTime()) < 0);
 	}
 	
@@ -425,10 +466,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(withSaveButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add("buttons", buttonLayout);
-			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 			if(editable || editableInternal) {
 				uifactory.addFormSubmitButton("save", buttonLayout);
 			}
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
 	}
 	
@@ -705,7 +746,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	public void formOK(UserRequest ureq) {
 		if(meeting == null) {
 			meeting = bigBlueButtonManager
 					.createAndPersistMeeting(nameEl.getValue(), entry, subIdent, businessGroup, getIdentity());

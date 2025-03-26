@@ -1,4 +1,8 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("open.online.meeting"))
+	<li>$r.render("open.online.meeting")</li>
+	<li class="divider"></li>
+	#end
 	#if($r.available("export"))
 	<li>$r.render("export")</li>
 	#end

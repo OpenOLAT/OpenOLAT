@@ -330,6 +330,9 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * @return Returns the uRI.
 	 */
 	public List<KalendarEventLink> getKalendarEventLinks() {
+		if(kalendarEventLinks == null) {
+			kalendarEventLinks = new ArrayList<>(2);
+		}
 		return kalendarEventLinks;
 	}
 

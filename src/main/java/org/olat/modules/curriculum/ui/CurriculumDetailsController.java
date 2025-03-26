@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,8 +186,26 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
-				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig();
-				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculum, config, lecturesSecCallback);
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculum-details-v1")
+						.withExternalRef(Visibility.HIDE)
+						.withCurriculum(Visibility.HIDE)
+						.withRepositoryEntry(Visibility.SHOW)
+						.withLocation(Visibility.SHOW)
+						.withCompulsoryPresence(Visibility.HIDE)
+						.withNumberOfParticipants(Visibility.HIDE)
+						.withNumberOfLectures(Visibility.HIDE)
+						.withExam(Visibility.HIDE)
+						.withOnlineMeeting(Visibility.HIDE)
+						.withEdit(Visibility.HIDE)
+						.withRollCall(Visibility.NO)
+						.withAllMineSwitch(false, false)
+						.withFilterPresetWithoutTeachers(true)
+						.withDetailsParticipantsGroups(true)
+						.withDetailsRepositoryEntry(true)
+						.withDetailsExam(false)
+						.withDetailsUnits(true)
+						.withDetailsExternalRef(true);
+				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculum, config, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
 
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");

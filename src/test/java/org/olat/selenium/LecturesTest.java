@@ -189,7 +189,7 @@ public class LecturesTest extends Deployments {
 			.setAbsence(participant1, "1")
 			.closeRollCall()
 			.confirmCloseRollCall()
-			.assertOnClosedTable();
+			.assertOnLectureBlocksList();
 		
 		//participant check it roll call
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
@@ -341,7 +341,7 @@ public class LecturesTest extends Deployments {
 			.closeRollCall();
 		//check that a roll call at least is closed
 		new TeacherRollCallPage(coachBrowser)
-			.assertOnClosedTable();
+			.assertOnLectureBlocksList();
 		
 		//participant check it roll call
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
@@ -454,7 +454,7 @@ public class LecturesTest extends Deployments {
 			.setAbsence(participant1, "3")
 			.closeRollCall()
 			.confirmCloseRollCall()
-			.assertOnClosedTable();
+			.assertOnLectureBlocksList();
 		
 		//go to the lecture administration in the course
 		lecturesAdmin = teachersLectures
@@ -602,7 +602,7 @@ public class LecturesTest extends Deployments {
 			.setAbsence(participant1, "1")
 			.closeRollCall()
 			.confirmCloseRollCall()
-			.assertOnClosedTable();
+			.assertOnLectureBlocksList();
 		
 		//participant check it roll call
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);

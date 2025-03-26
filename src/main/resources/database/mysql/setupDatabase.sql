@@ -3614,6 +3614,8 @@ create table o_lecture_block (
   fk_entry bigint,
   fk_curriculum_element bigint,
   fk_teacher_group bigint not null,
+  fk_meeting bigint default null,
+  fk_teams bigint default null,
   primary key (id)
 );
 
@@ -6003,6 +6005,8 @@ alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_e
 alter table o_lecture_block add constraint lec_block_curelem_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element(id);
 alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_teacher_group) references o_bs_group (id);
 alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);
+alter table o_lecture_block add constraint lecture_block_bbb_idx foreign key (fk_meeting) references o_bbb_meeting (id);
+alter table o_lecture_block add constraint lecture_block_teams_idx foreign key (fk_teams) references o_teams_meeting (id);
 
 alter table o_lecture_block_roll_call add constraint absence_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
 

@@ -69,6 +69,7 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -125,21 +126,14 @@ public class LectureBlockDAO {
 				inner join fetch block.entry entry
 				where block.key in (:blockKeys)""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), LectureBlock.class)
+				.createQuery(sb, LectureBlock.class)
 				.setParameter("blockKeys", keys)
 				.getResultList();
 	}
 	
 	public LectureBlock loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select block from lectureblock block")
-		  .append(" left join fetch block.reasonEffectiveEnd reason")
-		  .append(" left join fetch block.entry entry")
-		  .append(" left join fetch block.curriculumElement element")
-		  .append(" where block.key=:blockKey");
-
 		List<LectureBlock> blocks = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), LectureBlock.class)
+				.createNamedQuery("lectureBlockByKey", LectureBlock.class)
 				.setParameter("blockKey", key)
 				.getResultList();
 		return blocks == null || blocks.isEmpty() ? null : blocks.get(0);
@@ -261,9 +255,9 @@ public class LectureBlockDAO {
 	public long countLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select count(distinct block.key) from lectureblock block")
-		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch block.entry entry")
-		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch entry.olatResource oRes")
-		  .append(" left join fetch block.teacherGroup tGroup")
+		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join block.entry entry")
+		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join entry.olatResource oRes")
+		  .append(" left join block.teacherGroup tGroup")
 		  .append(" left join block.curriculumElement curEl")
 		  .append(" left join curEl.curriculum cur")
 		  .append(" left join cur.organisation organis");
@@ -836,6 +830,18 @@ public class LectureBlockDAO {
 			sb.and().append(" block.rollCallStatusString in (:rollCallStatus)");
 		}
 		
+		if(searchParams.getVirtualStatus() != null && !searchParams.getVirtualStatus().isEmpty()) {
+			sb.and().append("(");
+			for(int i=0; i<searchParams.getVirtualStatus().size(); i++) {
+				if(i > 0) {
+					sb.append(" or ");
+				}
+				LectureBlockVirtualStatus status = searchParams.getVirtualStatus().get(i);
+				addSearchVirtualStatusToQuery(sb, status);
+			}
+			sb.append(")");
+		}
+		
 		if(searchParams.getWithTeachers() != null) {
 			if(searchParams.getWithTeachers().booleanValue()) {
 				sb.and().append(" coach.key is not null");
@@ -913,6 +919,18 @@ public class LectureBlockDAO {
 		}
 	}
 	
+	private void addSearchVirtualStatusToQuery(QueryBuilder sb, LectureBlockVirtualStatus status) {
+		if(status == LectureBlockVirtualStatus.CANCELLED) {
+			sb.append(" (block.statusString ").in(LectureBlockStatus.cancelled).append(")");
+		} else if(status == LectureBlockVirtualStatus.PLANNED) {
+			sb.append(" (block.statusString ").in(LectureBlockStatus.active).append (" and block.startDate>:now)");
+		} else if(status == LectureBlockVirtualStatus.RUNNING) {
+			sb.append(" (block.statusString ").in(LectureBlockStatus.active).append (" and block.startDate<:now and block.endDate>:now)");
+		} else if(status == LectureBlockVirtualStatus.DONE) {
+			sb.append(" (block.statusString ").in(LectureBlockStatus.active, LectureBlockStatus.done).append (" and block.endDate<:now)");
+		}
+	}
+	
 	private void addSearchParametersToQuery(TypedQuery<?> query, LecturesBlockSearchParameters searchParams) {
 		if(searchParams == null) return;
 		
@@ -947,6 +965,15 @@ public class LectureBlockDAO {
 			List<String> rollCallStatus = searchParams.getRollCallStatus()
 					.stream().map(LectureRollCallStatus::name).toList();
 			query.setParameter("rollCallStatus", rollCallStatus);
+		}
+
+		if(searchParams.getVirtualStatus() != null && !searchParams.getVirtualStatus().isEmpty()) {
+			List<LectureBlockVirtualStatus> statusList = searchParams.getVirtualStatus();
+			if(statusList.contains(LectureBlockVirtualStatus.PLANNED)
+					|| statusList.contains(LectureBlockVirtualStatus.RUNNING)
+					|| statusList.contains(LectureBlockVirtualStatus.DONE)) {
+				query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {

@@ -47,6 +47,7 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * Course
  * 
  * Initial date: 24 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com

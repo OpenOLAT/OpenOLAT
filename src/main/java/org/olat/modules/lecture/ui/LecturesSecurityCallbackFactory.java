@@ -229,6 +229,21 @@ public class LecturesSecurityCallbackFactory {
 		}
 		
 		@Override
+		public boolean canViewLog() {
+			return adminRole || masterCoachRole || teacherRole;
+		}
+
+		@Override
+		public boolean canViewList() {
+			return adminRole || masterCoachRole || teacherRole;
+		}
+
+		@Override
+		public boolean canAssessmentMode() {
+			return adminRole || masterCoachRole || teacherRole;
+		}
+
+		@Override
 		public boolean needToInformTeacher() {
 			if(adminRole || masterCoachRole) {
 				return false;
@@ -253,6 +268,16 @@ public class LecturesSecurityCallbackFactory {
 		@Override
 		public LectureRoles viewAs() {
 			return viewAs;
+		}
+
+		@Override
+		public boolean isOnlineMeetingModerator() {
+			return viewAs == LectureRoles.teacher;
+		}
+
+		@Override
+		public boolean isOnlineMeetingAdministrator() {
+			return adminRole || masterCoachRole;
 		}
 	}
 }

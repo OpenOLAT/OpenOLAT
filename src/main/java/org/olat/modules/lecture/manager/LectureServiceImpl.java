@@ -74,6 +74,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingDAO;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -128,6 +130,8 @@ import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.teams.manager.TeamsMeetingDAO;
+import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -170,6 +174,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Autowired
 	private CalendarModule calendarModule;
 	@Autowired
+	private TeamsMeetingDAO teamsMeetingDao;
+	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private AbsenceNoticeDAO absenceNoticeDao;
@@ -183,6 +189,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private LectureBlockRollCallDAO lectureBlockRollCallDao;
+	@Autowired
+	private BigBlueButtonMeetingDAO bigBlueButtonMeetingDao;
 	@Autowired
 	private LectureBlockReminderDAO lectureBlockReminderDao;
 	@Autowired
@@ -248,6 +256,18 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups) {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		if(block.getTeamsMeeting() != null) {
+			TeamsMeetingImpl meeting = (TeamsMeetingImpl)block.getTeamsMeeting();
+			teamsMeetingDao.updateDates(meeting, block.getStartDate(), meeting.getLeadTime(), block.getEndDate(), meeting.getFollowupTime());
+			block.setTeamsMeeting(teamsMeetingDao.updateMeeting(meeting));
+		}
+		
+		if(block.getBBBMeeting() != null) {
+			BigBlueButtonMeetingImpl meeting = (BigBlueButtonMeetingImpl)block.getBBBMeeting();
+			bigBlueButtonMeetingDao.updateDates(meeting, block.getStartDate(), meeting.getLeadTime(), block.getEndDate(), meeting.getFollowupTime());
+			block.setBBBMeeting(bigBlueButtonMeetingDao.updateMeeting(meeting));
+		}
+		
 		if(groups != null) {
 			List<LectureBlockToGroup> lectureToGroups = lectureBlockToGroupDao.getLectureBlockToGroups(block);
 			for(Group group:groups) {
@@ -1858,7 +1878,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			String externalId = event.getExternalId();
 			if(StringHelper.containsNonWhitespace(externalId) && externalId.startsWith(prefix)) {
 				if(externalIds.containsKey(externalId)) {
-					if(updateEvent(externalIds.get(externalId), event)) {
+					if(updateEvent(externalIds.get(externalId), entry, event)) {
 						calendarMgr.updateEventFrom(cal, event);
 					}
 					externalIds.remove(externalId);
@@ -1914,7 +1934,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		
 		for(KalendarEvent event:cal.getEvents()) {
 			if(eventExternalId.equals(event.getExternalId())) {
-				if(updateEvent(lectureBlock, event)) {
+				if(updateEvent(lectureBlock, entry, event)) {
 					calendarMgr.updateEventFrom(cal, event);
 				}
 				return true;
@@ -1979,21 +1999,17 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		event.setExternalId(generateExternalId(lectureBlock, entry));
 		event.setLocation(lectureBlock.getLocation());
 		updateEventDescription(lectureBlock, event);
+		// Add links to course
+		updateEventLinks(lectureBlock, entry, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
-		// add Link to Course
-		List<KalendarEventLink> links = event.getKalendarEventLinks();
-		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
-		KalendarEventLink courseCalEventLink = new KalendarEventLink(RepositoryEntry.class.getSimpleName(), url, entry.getDisplayname(), url, "o_CourseModule_icon");
-		if (links.stream().noneMatch(l -> l.getProvider().equals(RepositoryEntry.class.getSimpleName()))) {
-			links.add(courseCalEventLink);
-		}
 		return event;
 	}
 	
-	private boolean updateEvent(LectureBlock lectureBlock, KalendarEvent event) {
+	private boolean updateEvent(LectureBlock lectureBlock, RepositoryEntry entry, KalendarEvent event) {
 		event.setSubject(lectureBlock.getTitle());
 		event.setLocation(lectureBlock.getLocation());
 		updateEventDescription(lectureBlock, event);
+		updateEventLinks(lectureBlock, entry, event);
 		event.setBegin(DateUtils.toZonedDateTime(lectureBlock.getStartDate()));
 		event.setEnd(DateUtils.toZonedDateTime(lectureBlock.getEndDate()));
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
@@ -2010,6 +2026,24 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			descr.append(lectureBlock.getPreparation());
 		}
 		event.setDescription(descr.toString());
+	}
+	
+	private void updateEventLinks(LectureBlock lectureBlock, RepositoryEntry entry, KalendarEvent event) {
+		if(entry == null) return;
+		
+		List<KalendarEventLink> links = event.getKalendarEventLinks();
+		if (links.stream().noneMatch(l -> l.getProvider().equals(RepositoryEntry.class.getSimpleName()) && "o_CourseModule_icon".equals(l.getIconCssClass()))) {
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+			KalendarEventLink courseCalEventLink = new KalendarEventLink(RepositoryEntry.class.getSimpleName(), url, entry.getDisplayname(), url, "o_CourseModule_icon");
+			links.add(courseCalEventLink);
+		}
+		if((lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null)
+				&& links.stream().noneMatch(l -> l.getProvider().equals(RepositoryEntry.class.getSimpleName()) && "o_vc_icon".equals(l.getIconCssClass()))) {
+			String businessPath = "[RepositoryEntry:" + entry.getKey() + "][Events:0][OnlineMeeting:" + lectureBlock.getKey() + "]";
+			String meetingUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+			KalendarEventLink link = new KalendarEventLink("RepositoryEntry", "OnlineMeeting" + lectureBlock.getKey(), "Goto Online Meeting", meetingUrl, "o_vc_icon");
+			links.add(link);
+		}
 	}
 	
 	private String generateExternalIdPrefix(RepositoryEntry entry) {

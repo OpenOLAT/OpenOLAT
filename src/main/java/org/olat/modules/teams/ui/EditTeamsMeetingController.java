@@ -84,6 +84,8 @@ public class EditTeamsMeetingController extends FormBasicController {
 	private final Mode mode;
 	private final boolean editable;
 	private TeamsMeeting meeting;
+	
+	private Object userObject;
 
 	private CloseableModalController cmc;
 	private TeamsMeetingsCalendarController calendarCtr;
@@ -120,6 +122,18 @@ public class EditTeamsMeetingController extends FormBasicController {
 		editable = TeamsUIHelper.isEditable(meeting);
 		
 		initForm(ureq);
+	}
+	
+	public TeamsMeeting getMeeting() {
+		return meeting;
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 
 	@Override
@@ -220,10 +234,10 @@ public class EditTeamsMeetingController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		if(editable) {
 			uifactory.addFormSubmitButton("save", buttonLayout);
 		}
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
 	private SelectionValues getPresenters(boolean attendee) {
@@ -256,7 +270,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateTextElement(subjectEl, 255, true);
@@ -314,7 +328,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	public void formOK(UserRequest ureq) {
 		Date startDate = null;
 		Date endDate = null;
 		if(mode == Mode.dates) {

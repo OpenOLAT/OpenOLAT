@@ -30,6 +30,7 @@ import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -56,6 +57,7 @@ public class LecturesBlockSearchParameters {
 	private CurriculumElementRef curriculumElement;
 	private List<LectureRollCallStatus> rollCallStatus;
 	private List<LectureBlockStatus> lectureBlockStatus;
+	private List<LectureBlockVirtualStatus> virtualStatus;
 	private List<LectureBlockRef> lectureBlocks;
 	private boolean inSomeCurriculum;
 	
@@ -101,8 +103,12 @@ public class LecturesBlockSearchParameters {
 		return rollCallStatus;
 	}
 	
-	public void setRollCallStatus(List<LectureRollCallStatus> status) {
-		this.rollCallStatus = status;
+	public List<LectureBlockVirtualStatus> getVirtualStatus() {
+		return virtualStatus;
+	}
+	
+	public void setVirtualStatus(List<LectureBlockVirtualStatus> status) {
+		this.virtualStatus = status;
 	}
 
 	public void addRollCallStatus(LectureRollCallStatus... status) {

@@ -186,10 +186,14 @@ import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.ui.ConfigurationHelper;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
-import org.olat.modules.lecture.ui.TeacherOverviewController;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.BadgeClassesController;
@@ -277,7 +281,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
 	private CourseReminderListController remindersCtrl;
-	private TeacherOverviewController lecturesCtrl;
+	//TODO online private TeacherOverviewController lecturesCtrl;
+	private LectureRepositoryAdminController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
 	private CourseToDoTaskController toDoTaskCtrl;
 	private RepositoryEntryPreviewListController qualityPreviewCtrl;
@@ -1194,7 +1199,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(calendarLink);
 		}
 		
-		if(!assessmentLock && disclaimerAccepted && isLecturesLinkEnabled()) {
+		if(!isGuestOnly && !assessmentLock && disclaimerAccepted 
+				&& userCourseEnv != null && (userCourseEnv.isAdmin() || userCourseEnv.isCoach() || userCourseEnv.isParticipant())
+				&& isLecturesLinkEnabled()) {
 			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
 			lecturesLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Lectures:0]"));
@@ -1331,13 +1338,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	//check the configuration enable the lectures and the user is a teacher 
 	private boolean isLecturesLinkEnabled() {
-		if(lectureModule.isEnabled()) {
-			if(reSecurity.isEntryAdmin()) {
-				return lectureService.isRepositoryEntryLectureEnabled(getRepositoryEntry());
-			} else {
-				//check the configuration enable the lectures and the user is a teacher 
-				return lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
-			}
+		if(lectureModule.isEnabled()
+				&& lectureService.isRepositoryEntryLectureEnabled(getRepositoryEntry())) {
+			return true;
 		}
 		return false;
 	}
@@ -1889,7 +1892,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if (reminderLink != null && reminderLink.isVisible()) {
 					activateSubEntries(ureq, doReminders(ureq), entries);
 				}
-			} else if("Lectures".equalsIgnoreCase(type)) {
+			} else if("Lectures".equalsIgnoreCase(type) || "Events".equalsIgnoreCase(type)) {
 				activateSubEntries(ureq, doLectures(ureq), entries);
 			} else if("LectureBlock".equalsIgnoreCase(type)) {
 				Activateable2 lectures = doLectures(ureq);
@@ -2338,7 +2341,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
 						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
 								readOnlyDetails, readOnlyManaged);
-				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, re, secCallback);
+				LectureListRepositoryConfig config = getLecturesAdminConfig();
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, re, config, secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
@@ -2353,23 +2357,89 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private TeacherOverviewController doLectures(UserRequest ureq) {
+	private LectureListRepositoryConfig getLecturesAdminConfig() {
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig("repository-entry-admin-v1");
+		config = config
+				.withExternalRef(Visibility.SHOW)
+				.withCurriculum(Visibility.HIDE)
+				.withRepositoryEntry(Visibility.HIDE)
+				.withLocation(Visibility.HIDE)
+				.withCompulsoryPresence(Visibility.HIDE)
+				.withNumberOfParticipants(Visibility.SHOW)
+				.withNumberOfLectures(Visibility.SHOW)
+				.withExam(Visibility.SHOW)
+				.withOnlineMeeting(Visibility.HIDE)
+				.withEdit(Visibility.SHOW)
+				.withRollCall(Visibility.NO)
+				.withAllMineSwitch(false, false)
+				.withFilterPresetWithoutTeachers(true)
+				.withDetailsParticipantsGroups(true)
+				.withDetailsRepositoryEntry(false)
+				.withDetailsExam(true)
+				.withDetailsUnits(true)
+				.withDetailsExternalRef(false)
+				;
+		return config;
+	}
+	
+	private Activateable2 doLectures(UserRequest ureq) {
 		if(delayedClose == Delayed.lectures || requestForClose(ureq)) {
 			removeCustomCSS();
 			
-			OLATResourceable ores = OresHelper.createOLATResourceableType("lectures");
+			OLATResourceable ores = OresHelper.createOLATResourceableType("Events");
+			RepositoryEntry re = getRepositoryEntry();
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			TeacherOverviewController ctrl = new TeacherOverviewController(ureq, swControl, toolbarPanel, getRepositoryEntry(),
-					reSecurity.isEntryAdmin(), lectureModule.isShowLectureBlocksAllTeachersDefault());
+			
+			CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
+			boolean teacher = !reSecurity.isParticipant() && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
+			boolean admin = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+			boolean readOnlyManaged = isCourseManagedByCurriculum() || re.getRuntimeType() == RepositoryEntryRuntimeType.template;
+			LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
+					.getSecurityCallback(admin, reSecurity.isMasterCoach(), teacher,
+							readOnlyDetails, readOnlyManaged);
+			LectureListRepositoryConfig config = getLecturesConfig(secCallback, re);
+			LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, re, config, secCallback);
+			listenTo(ctrl);
 			lecturesCtrl = pushController(ureq, translate("command.lectures"), ctrl);
-
-			setActiveTool(lecturesLink);
 			currentToolCtr = lecturesCtrl;
 			return lecturesCtrl;
 		} else {
 			delayedClose = Delayed.lectures;
 			return null;
 		}
+	}
+	
+	private LectureListRepositoryConfig getLecturesConfig(LecturesSecurityCallback secCallback, RepositoryEntry re) {
+		boolean participant = secCallback.viewAs() == LectureRoles.participant;
+		
+		RepositoryEntryLectureConfiguration repositoryEntryConfig = lectureService.getRepositoryEntryLectureConfiguration(re);
+		Visibility withRollCall = ConfigurationHelper.isRollCallEnabled(repositoryEntryConfig, lectureModule) && !participant
+				? Visibility.HIDE : Visibility.NO;
+		boolean defaultShowAll = secCallback.viewAs() == LectureRoles.teacher
+				? lectureModule.isShowLectureBlocksAllTeachersDefault()
+				: true;
+		
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig("repository-entry-" + secCallback.viewAs() + "-v1");
+		config = config
+				.withExternalRef(participant ? Visibility.NO : Visibility.SHOW)
+				.withCurriculum(participant ? Visibility.NO : Visibility.HIDE)
+				.withRepositoryEntry(participant ? Visibility.NO : Visibility.HIDE)
+				.withLocation(Visibility.SHOW)
+				.withCompulsoryPresence(participant ? Visibility.NO : Visibility.SHOW)
+				.withNumberOfParticipants(Visibility.HIDE)
+				.withNumberOfLectures(Visibility.SHOW)
+				.withExam(Visibility.SHOW)
+				.withOnlineMeeting(participant ? Visibility.SHOW : Visibility.HIDE)
+				.withEdit(participant ? Visibility.NO : Visibility.SHOW)
+				.withRollCall(withRollCall)
+				.withAllMineSwitch(secCallback.viewAs() == LectureRoles.teacher, defaultShowAll)
+				.withFilterPresetWithoutTeachers(secCallback.viewAs() != LectureRoles.participant)
+				.withDetailsParticipantsGroups(false)
+				.withDetailsRepositoryEntry(false)
+				.withDetailsExam(!participant)
+				.withDetailsUnits(false)
+				.withDetailsExternalRef(false);
+		return config;
 	}
 	
 	private Activateable2 doQualityPreview(UserRequest ureq) {

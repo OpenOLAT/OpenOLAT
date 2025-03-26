@@ -39,9 +39,20 @@ public class LecturesRepositoryPage {
 	public LecturesRepositoryPage(WebDriver browser) {
 		this.browser = browser;
 	}
+
+	/**
+	 * The main list of lecture blocks used everywhere.
+	 * 
+	 * @return Itself
+	 */
+	public LecturesRepositoryPage assertOnLectureBlocksList() {
+		By listBy = By.cssSelector("div.o_sel_repo_lectures_list table.table");
+		OOGraphene.waitElement(listBy, browser);
+		return this;
+	}
 	
 	public TeacherRollCallPage openRollCall(String lectureBlockTitle) {
-		By selectBy = By.xpath("//table//tr[td[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'details')]");
+		By selectBy = By.xpath("//div[contains(@class,'o_sel_repo_lectures_list')]//table//tr[td/a[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'lrollcall')][i[contains(@class,'o_icon_lecture')]]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		return new TeacherRollCallPage(browser)
