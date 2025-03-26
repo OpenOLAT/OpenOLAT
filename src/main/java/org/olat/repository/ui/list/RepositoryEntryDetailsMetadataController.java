@@ -171,28 +171,30 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				layoutCont.contextPut("groups", groupLinkNames);
 			}
 			
-			boolean passed = false;
-			boolean failed = false;
-			String score = null;
-			ICourse course = CourseFactory.loadCourse(entry);
-			if (course != null && course.getCourseConfig().isEfficiencyStatementEnabled()) {
-				UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(entry, getIdentity());
-				if (statement != null) {
-					Boolean p = statement.getPassed();
-					if (p != null) {
-						passed = p.booleanValue();
-						failed = !p.booleanValue();
-					}
-					
-					Float scoreVal = statement.getScore();
-					if (scoreVal != null) {
-						score = AssessmentHelper.getRoundedScore(scoreVal);
+			if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+				boolean passed = false;
+				boolean failed = false;
+				String score = null;
+				ICourse course = CourseFactory.loadCourse(entry);
+				if (course != null && course.getCourseConfig().isEfficiencyStatementEnabled()) {
+					UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(entry, getIdentity());
+					if (statement != null) {
+						Boolean p = statement.getPassed();
+						if (p != null) {
+							passed = p.booleanValue();
+							failed = !p.booleanValue();
+						}
+						
+						Float scoreVal = statement.getScore();
+						if (scoreVal != null) {
+							score = AssessmentHelper.getRoundedScore(scoreVal);
+						}
 					}
 				}
+				layoutCont.contextPut("passed", passed);
+				layoutCont.contextPut("failed", failed);
+				layoutCont.contextPut("score", score);
 			}
-			layoutCont.contextPut("passed", passed);
-			layoutCont.contextPut("failed", failed);
-			layoutCont.contextPut("score", score);
 		}
 	}
 
