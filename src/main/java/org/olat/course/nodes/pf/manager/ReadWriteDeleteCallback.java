@@ -38,6 +38,6 @@ public class ReadWriteDeleteCallback extends ReadWriteCallback {
 
 	@Override
 	public boolean canDeleteRevisionsPermanently() {
-		return false;
+		return canDelete();
 	}
 }
