@@ -471,6 +471,10 @@ public class EditMemberController extends FormBasicController {
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
 		MailTemplate template = findBestTemplate();
+		if(template == null) {
+			CurriculumElement curriculumElement = curriculumElements.get(0);
+			template = CurriculumMailing.emptyTemplate(curriculum, curriculumElement, getIdentity());
+		}
 		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
 		listenTo(customizeNotificationsCtrl);
 		

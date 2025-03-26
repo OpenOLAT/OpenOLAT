@@ -117,6 +117,12 @@ public class CurriculumMailing {
 		return getMembershipChangedTemplate(curriculum, curriculumElement, doer);
 	}
 	
+	public static MailTemplate emptyTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
+		// Create a mail template which all these data
+		return new CurriculumMailTemplate(curriculum, curriculumElement, "", "", locale);
+	}
+	
 	public static MailTemplate findBestMailTemplate(CurriculumElementMembershipChange change, Identity doer) {
 		CurriculumElement curriculumElement = change.getCurriculumElement();
 		Curriculum curriculum = curriculumElement.getCurriculum();
