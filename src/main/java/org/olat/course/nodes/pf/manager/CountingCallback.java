@@ -101,7 +101,7 @@ public class CountingCallback implements VFSSecurityCallback {
 
 	@Override
 	public boolean canDeleteRevisionsPermanently() {
-		return false;
+		return canDelete();
 	}
 
 	@Override
