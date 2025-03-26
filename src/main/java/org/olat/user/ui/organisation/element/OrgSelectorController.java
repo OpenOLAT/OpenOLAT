@@ -65,12 +65,12 @@ public class OrgSelectorController extends FormBasicController {
 	public record Row(Long key, String path, String title, String location, String numberOfElements) {}
 
 	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows,
-								 Set<Long> selectedKeys, boolean multipleSelection, boolean liveUpdate) {
+								 Set<Long> selectedKeys, boolean multipleSelection) {
 		super(ureq, wControl, "org_selector");
 
 		this.selectedKeys = selectedKeys;
 		this.multipleSelection = multipleSelection;
-		this.liveUpdate = liveUpdate;
+		this.liveUpdate = !multipleSelection;
 
 		rows = orgRows.stream().map(this::row).toList();
 

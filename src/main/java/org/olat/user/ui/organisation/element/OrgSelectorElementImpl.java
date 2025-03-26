@@ -74,7 +74,6 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	private Set<Long> orgKeys = new HashSet<>();
 	private Set<Long> selectedKeys = new HashSet<>();
 	private boolean multipleSelection;
-	private boolean liveUpdate;
 	private Translator orgTranslator;
 
 	public OrgSelectorElementImpl(WindowControl wControl, String name, List<Organisation> orgs) {
@@ -295,7 +294,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	}
 	
 	private void doOpenSelector(UserRequest ureq) {
-		orgSelectorCtrl = new OrgSelectorController(ureq, wControl, orgRows, selectedKeys, multipleSelection, liveUpdate);
+		orgSelectorCtrl = new OrgSelectorController(ureq, wControl, orgRows, selectedKeys, multipleSelection);
 		orgSelectorCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, orgSelectorCtrl.getInitialComponent(),
@@ -312,10 +311,6 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 
 	public boolean isMultipleSelection() {
 		return multipleSelection;
-	}
-
-	public void setLiveUpdate(boolean liveUpdate) {
-		this.liveUpdate = liveUpdate;
 	}
 
 	public record OrgRow(long key, String path, String title, String location, int numberOfElements) {}
