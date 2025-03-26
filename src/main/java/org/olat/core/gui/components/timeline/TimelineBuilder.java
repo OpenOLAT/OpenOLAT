@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import org.olat.core.util.Formatter;
 import org.olat.properties.LogEntry;
 import org.olat.properties.LogEntryTimelineEntry;
+import org.olat.user.UserAvatarMapper;
 
 /**
  * Initial date: Mar 17, 2025
@@ -47,7 +48,8 @@ public class TimelineBuilder {
 	private TimelineBuilder() {
 	}
 
-	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale) {
+	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale,
+																		   UserAvatarMapper userAvatarMapper, String mapperPath) {
 		if (logEntries.isEmpty()) return Collections.emptyList();
 
 		Formatter formatter = Formatter.getInstance(locale);
@@ -66,7 +68,7 @@ public class TimelineBuilder {
 			yearDayMap
 					.computeIfAbsent(year, y -> new TreeMap<>())
 					.computeIfAbsent(localDate, d -> new ArrayList<>())
-					.add(new LogEntryTimelineEntry(logEntry, locale));
+					.add(new LogEntryTimelineEntry(logEntry, locale, userAvatarMapper, mapperPath));
 		}
 
 		for (var yearEntry : yearDayMap.entrySet()) {

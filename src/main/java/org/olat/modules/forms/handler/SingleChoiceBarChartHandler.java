@@ -50,9 +50,11 @@ public class SingleChoiceBarChartHandler implements EvaluationFormReportHandler 
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice singleChoice) {
-			BarSeriesDataSource dataSource = new SingleChoiceDataSource(singleChoice, filter);
-			Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
-			return new EvaluationFormControllerReportElement(ctrl);
+			if (singleChoice.getChoices().size() > 0) {
+				BarSeriesDataSource dataSource = new SingleChoiceDataSource(singleChoice, filter);
+				Controller ctrl = new BarChartController(ureq, windowControl, dataSource);
+				return new EvaluationFormControllerReportElement(ctrl);
+			}
 		}
 		return null;
 	}

@@ -59,6 +59,7 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -91,7 +92,11 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) { return defaultValue(); }
-
+		
+		if (!getUserCourseEnv().getCourseEnvironment().getCourseConfig().isEfficiencyStatementEnabled()) {
+			return defaultValue();
+		}
+		
 		/*
 		 * the real function evaluation which is used during run time
 		 */
@@ -111,6 +116,7 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 	/**
 	 * @see org.olat.course.condition.interpreter.AbstractFunction#defaultValue()
 	 */
+	@Override
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_FALSE;
 	}

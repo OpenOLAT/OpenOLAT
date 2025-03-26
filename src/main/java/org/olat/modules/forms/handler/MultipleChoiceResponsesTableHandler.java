@@ -48,8 +48,10 @@ public class MultipleChoiceResponsesTableHandler implements EvaluationFormReport
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof MultipleChoice multiChoice) {
-			FormBasicController ctrl = new ChoiceResponsesTableController(ureq, windowControl, multiChoice, filter, reportHelper, rootForm);
-			return new EvaluationFormControllerReportFormItemElement(ctrl);
+			if (multiChoice.getChoices().size() > 0) {
+				FormBasicController ctrl = new ChoiceResponsesTableController(ureq, windowControl, multiChoice, filter, reportHelper, rootForm);
+				return new EvaluationFormControllerReportFormItemElement(ctrl);
+			}
 		}
 		return null;
 	}

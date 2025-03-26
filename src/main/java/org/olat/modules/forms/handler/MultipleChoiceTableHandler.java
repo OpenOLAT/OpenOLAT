@@ -50,9 +50,11 @@ public class MultipleChoiceTableHandler implements EvaluationFormReportHandler {
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof MultipleChoice multipleChoice) {
-			CountDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, filter);
-			Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
-			return new EvaluationFormControllerReportElement(ctrl);
+			if (multipleChoice.getChoices().size() > 0) {
+				CountDataSource dataSource = new MultipleChoiceDataSource(multipleChoice, filter);
+				Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
+				return new EvaluationFormControllerReportElement(ctrl);
+			}
 		}
 		return null;
 	}

@@ -439,9 +439,11 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	@Override
 	public boolean hasEfficiencyStatementOrCertificate(boolean update) {
 		if(certification == null || update) {
-			EfficiencyStatementManager efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
-			boolean hasStatement = efficiencyStatementManager
-					.hasUserEfficiencyStatement(getCourseRepositoryEntry().getKey(), identityEnvironment.getIdentity());
+			boolean hasStatement = false;
+			if (courseEnvironment.getCourseConfig().isEfficiencyStatementEnabled()) {
+				hasStatement = CoreSpringFactory.getImpl(EfficiencyStatementManager.class)
+						.hasUserEfficiencyStatement(getCourseRepositoryEntry().getKey(), identityEnvironment.getIdentity());
+			}
 			if(hasStatement) {
 				certification = Boolean.TRUE;
 			} else {

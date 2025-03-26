@@ -274,8 +274,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			if (handler != null) {
 				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(),
 						mainForm, element, executionIdentity);
-				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
-				fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
+				if (executionElement != null) {
+					String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
+					fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
+				}
 			}
 		}
 		fragmentsEl.setFragments(fragments);

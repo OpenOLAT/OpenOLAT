@@ -42,6 +42,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -172,17 +174,20 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 			boolean passed = false;
 			boolean failed = false;
 			String score = null;
-			UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(entry, getIdentity());
-			if (statement != null) {
-				Boolean p = statement.getPassed();
-				if (p != null) {
-					passed = p.booleanValue();
-					failed = !p.booleanValue();
-				}
-				
-				Float scoreVal = statement.getScore();
-				if (scoreVal != null) {
-					score = AssessmentHelper.getRoundedScore(scoreVal);
+			ICourse course = CourseFactory.loadCourse(entry);
+			if (course != null && course.getCourseConfig().isEfficiencyStatementEnabled()) {
+				UserEfficiencyStatement statement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(entry, getIdentity());
+				if (statement != null) {
+					Boolean p = statement.getPassed();
+					if (p != null) {
+						passed = p.booleanValue();
+						failed = !p.booleanValue();
+					}
+					
+					Float scoreVal = statement.getScore();
+					if (scoreVal != null) {
+						score = AssessmentHelper.getRoundedScore(scoreVal);
+					}
 				}
 			}
 			layoutCont.contextPut("passed", passed);

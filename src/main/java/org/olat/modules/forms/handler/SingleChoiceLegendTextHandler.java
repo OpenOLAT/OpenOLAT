@@ -50,9 +50,11 @@ public class SingleChoiceLegendTextHandler implements EvaluationFormReportHandle
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice singleChoice) {
-			LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, filter, reportHelper);
-			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
-			return new EvaluationFormControllerReportElement(ctrl);
+			if (singleChoice.getChoices().size() > 0) {
+				LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, filter, reportHelper);
+				Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
+				return new EvaluationFormControllerReportElement(ctrl);
+			}
 		}
 		return null;
 	}

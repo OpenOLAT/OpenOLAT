@@ -116,7 +116,6 @@ public class AssessmentIdentityCourseController extends BasicController
 	private CourseNode currentCourseNode;
 	private final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
-	private final boolean certificateAndEfficiencyLink;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolSecurityCallback secCallback;
 	private final UserCourseEnvironmentImpl assessedUserCourseEnv;
@@ -182,12 +181,8 @@ public class AssessmentIdentityCourseController extends BasicController
 		}
 			
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
-		certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
-				|| certificateConfig.isManualCertificationEnabled()
-				|| course.getCourseConfig().isEfficiencyStatementEnabled();
 		efficiencyLink = LinkFactory.createLink("show.efficency.statement", "show.efficency.statement", getTranslator(), identityAssessmentVC, this, Link.BUTTON);
 		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
-		efficiencyLink.setVisible(certificateAndEfficiencyLink);
 		initRecertificationMessage();
 		if (learningPath ) {
 			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
@@ -228,8 +223,6 @@ public class AssessmentIdentityCourseController extends BasicController
 				identityAssessmentVC.contextPut("recertificationMsg", message);
 			}
 		}
-		
-		efficiencyLink.setVisible(certificateAndEfficiencyLink);
 	}
 
 	@Override

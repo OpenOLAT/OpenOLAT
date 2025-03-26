@@ -698,7 +698,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		// this will reset score to 0 and passed to false
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
 		
-		List<Identity> assessedIdentities = effManager.findIdentitiesWithEfficiencyStatements(re.getKey());
+		List<Identity> assessedIdentities = effManager.findIdentitiesWithEfficiencyStatements(re);
 		Assert.assertNotNull(assessedIdentities);
 		Assert.assertEquals(1, assessedIdentities.size());
 		Assert.assertEquals(statement.getIdentity(), assessedIdentities.get(0));
@@ -741,10 +741,10 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, deletedStatementsLight2.size());
 		
 		//double check
-		List<Identity> identitesRe1 = effManager.findIdentitiesWithEfficiencyStatements(re1.getKey());
+		List<Identity> identitesRe1 = effManager.findIdentitiesWithEfficiencyStatements(re1);
 		Assert.assertEquals(1, identitesRe1.size());
 		Assert.assertTrue(identitesRe1.contains(participant2));
-		List<Identity> identitesRe2 = effManager.findIdentitiesWithEfficiencyStatements(re2.getKey());
+		List<Identity> identitesRe2 = effManager.findIdentitiesWithEfficiencyStatements(re2);
 		Assert.assertEquals(1, identitesRe2.size());
 		Assert.assertTrue(identitesRe2.contains(participant2));
 		
