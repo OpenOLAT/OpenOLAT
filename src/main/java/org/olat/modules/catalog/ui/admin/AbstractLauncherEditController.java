@@ -21,6 +21,7 @@ package org.olat.modules.catalog.ui.admin;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -29,14 +30,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -49,6 +47,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
+import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,7 +64,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	private FormLink nameLink;
 	private MultipleSelectionElement enabledEl;
 	private MultipleSelectionElement webEnabledEl;
-	private MultiSelectionFilterElement organisationsEl;
+	private OrgSelectorElementImpl organisationsEl;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController launcherNameTranslatorCtrl;
@@ -163,13 +162,15 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	
 	private void initFormOrganisations(FormItemContainer formLayout) {
 		allOrganisations = organisationService.getOrganisations();
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(allOrganisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "admin.launcher.organisations",
-				formLayout, getWindowControl(), organisationSV);
+		organisationsEl = new OrgSelectorElementImpl(getWindowControl(), "organisations", allOrganisations);
+		organisationsEl.setMultipleSelection(true);
+		formLayout.add(organisationsEl);
+		organisationsEl.setLabel("admin.launcher.organisations", null);
+		organisationsEl.showLabel(true);
 		
 		if (catalogLauncher != null) {
-			List<Organisation> launchersOrganisations = catalogService.getCatalogLauncherOrganisations(catalogLauncher);
-			launchersOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+			List<Long> selectedOrgKeys = catalogService.getCatalogLauncherOrganisations(catalogLauncher).stream().map(Organisation::getKey).toList();
+			organisationsEl.setSelection(selectedOrgKeys);
 		}
 	}
 	
@@ -226,9 +227,9 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		
 		Collection<Organisation> organisations = null;
 		if (organisationsEl != null) {
-			Collection<String> selectedKeys = organisationsEl.getSelectedKeys();
+			Set<Long> selectedKeys = organisationsEl.getSelection();
 			organisations = allOrganisations.stream()
-					.filter(org -> selectedKeys.contains(org.getKey().toString()))
+					.filter(org -> selectedKeys.contains(org.getKey()))
 					.collect(Collectors.toSet());
 		}
 		catalogService.updateLauncherOrganisations(catalogLauncher, organisations);
