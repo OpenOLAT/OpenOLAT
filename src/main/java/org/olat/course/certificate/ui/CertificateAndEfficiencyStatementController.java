@@ -219,6 +219,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				ICourse course = CourseFactory.loadCourse(courseRepo);
 				assessedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(statementOwner, course);
 				scoreScalingEnabled = ScoreScalingHelper.isEnabled(course);
+				mainVC.contextPut("efficiencyStatementNotEnabled", !course.getCourseConfig().isEfficiencyStatementEnabled());
 			} catch (Exception e) {
 				logError("Course corrupted", e);
 			}

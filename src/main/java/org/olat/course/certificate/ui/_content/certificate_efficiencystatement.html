@@ -3,6 +3,9 @@
 		#if($r.isTrue($withTitle))
 			<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title") #if($r.isNotEmpty($version))<small>$version</small>#end</h3>	
 		#end
+		#if($efficiencyStatementNotEnabled)
+			<div class="o_info_with_icon">$r.translate("efficiency.statement.not.enabled")</div>
+		#end
 		#if($r.available("home.link") || $r.available("contact.link") || $r.available("statements.list") || $r.visible("download.archive") || $r.available("collectArtefactLink"))
 		<div class="o_button_group o_button_group_right">
  			#if($r.available("download.archive"))
