@@ -26,6 +26,7 @@
 package org.olat.course.condition.interpreter.score;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.course.CourseFactory;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.condition.interpreter.AbstractFunction;
@@ -33,7 +34,9 @@ import org.olat.course.condition.interpreter.ArgumentParseException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 
 /**
@@ -93,8 +96,13 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) { return defaultValue(); }
 		
-		if (!getUserCourseEnv().getCourseEnvironment().getCourseConfig().isEfficiencyStatementEnabled()) {
-			return defaultValue();
+		RepositoryEntry repositoryEntry = CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntry(courseRepoEntryKey);
+		try {
+			if (repositoryEntry != null && !CourseFactory.loadCourse(repositoryEntry).getCourseConfig().isEfficiencyStatementEnabled()) {
+				return defaultValue();
+			}
+		} catch (Exception e) {
+			//
 		}
 		
 		/*
