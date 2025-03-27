@@ -1,0 +1,36 @@
+<div class="o_lecture_timeline_details">
+	<div class="o_header_with_buttons">
+		<h3>$r.escapeHtml($row.title)#if($r.isNotEmpty($row.externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($row.externalRef)</small>#end</h3>
+		<div class="o_button_group o_button_group_right">
+			<div class="o_lecture_badge"><span>$r.translate("lecture.block.status"):</span> $row.lectureBlockStatusBadge</div>
+			#if($r.isNotEmpty($row.rollCallStatusBadge))
+				<div class="o_lecture_badge"><span>$r.translate("rollcall.absence.status"):</span> $row.rollCallStatusBadge</div>
+			#end
+		</div>
+	</div>
+	
+	<div class="o_flex_first_grow o_block">
+		<div>
+			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)</span>
+		#if($r.isNotEmpty($row.location))
+			<br><span><i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($row.location)</span>
+		#end
+		</div>
+		
+		<div>
+			#if($r.isNotNull($row.openOnlineMeetingButton))
+				$r.render($row.openOnlineMeetingButton)
+			#end
+			
+			#if($r.isNotNull($row.rollCallButton) && $r.isNotNull($row.toolsButton))
+			<div class="btn-group">
+				$r.render($row.rollCallButton, "nolayout") $r.render($row.toolsButton, "nolayout")
+			</div>
+			#elseif($r.isNotNull($row.rollCallButton))
+				$r.render($row.rollCallButton, "nolayout")
+			#elseif($r.isNotNull($row.toolsButton))
+				$r.render($row.toolsButton, "nolayout")
+			#end
+		</div>
+	</div>
+</div>

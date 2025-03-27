@@ -44,6 +44,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 
 	private static final ComponentRenderer CLASSIC_RENDERER = new FlexiTableClassicRenderer();
 	private static final ComponentRenderer CUSTOM_RENDERER = new FlexiTableCustomRenderer();
+	private static final ComponentRenderer VTIMELINE_RENDERER = new FlexiTableVerticalTimeLineRenderer();
 	
 	private FlexiTableElementImpl element;
 	private final Map<String,Component> components = new HashMap<>();
@@ -96,11 +97,12 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		switch(element.getRendererType()) {
-			case classic: return CLASSIC_RENDERER;
-			case custom: return CUSTOM_RENDERER;
-			case external: return externalRenderer;
-			default: return CLASSIC_RENDERER;
-		}
+		return switch(element.getRendererType()) {
+			case classic -> CLASSIC_RENDERER;
+			case custom -> CUSTOM_RENDERER;
+			case external -> externalRenderer;
+			case verticalTimeLine -> VTIMELINE_RENDERER;
+			default -> CLASSIC_RENDERER;
+		};
 	}
 }

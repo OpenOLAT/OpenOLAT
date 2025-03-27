@@ -1,72 +1,78 @@
-<div class="o_header_with_buttons">
-	<h3>$r.escapeHtml($title)#if($r.isNotEmpty($externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($externalRef)</small>#end</h3>
-	<div class="o_button_group o_button_group_right">
-		<div class="o_lecture_badge"><span>$r.translate("lecture.block.status"):</span> $lectureBlockStatusBadge</div>
-		#if($r.isNotEmpty($rollCallStatusBadge))
-			<div class="o_lecture_badge"><span>$r.translate("rollcall.absence.status"):</span> $rollCallStatusBadge</div>
-		#end
-		#if($r.available("edit")) $r.render("edit") #end
+<div class="o_lecture_details">
+	<div class="o_header_with_buttons">
+		<h3>$r.escapeHtml($title)#if($r.isNotEmpty($externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($externalRef)</small>#end</h3>
+		<div class="o_button_group o_button_group_right">
+			<div class="o_lecture_badge"><span>$r.translate("lecture.block.status"):</span> $lectureBlockStatusBadge</div>
+			#if($r.isNotEmpty($rollCallStatusBadge))
+				<div class="o_lecture_badge"><span>$r.translate("rollcall.absence.status"):</span> $rollCallStatusBadge</div>
+			#end
+			#if($r.available("edit")) $r.render("edit") #end
+		</div>
 	</div>
-</div>
-
-<div class="o_metadata_horizontal">
-	$r.render("lecture.date","vertical")
-	$r.render("lecture.time","vertical")
-	#if($r.available("lecture.units"))
-		$r.render("lecture.units","vertical")
-	#end
-	#if($r.available("lecture.location"))
-		$r.render("lecture.location","vertical")
-	#end
-	$r.render("lecture.participants","vertical")
-	#if($r.available("lecture.preparation"))
-		$r.render("lecture.preparation","vertical")
-	#end
-	$r.render("lecture.compulsory","vertical")
-
-	#if($r.available("open.online.meeting"))
-		<div>$r.render("open.online.meeting", "vertical")</div>
-	#end
-</div>
-
-<div class="o_lecture_resources">
-	<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
-	#if($r.isNotEmpty($profilesIds))
-		#foreach($profileId in $profilesIds)
-			<div class="o_lecture_resource">$r.render($profileId)</div>
+	
+	<div class="o_metadata_horizontal">
+		$r.render("lecture.date","vertical")
+		$r.render("lecture.time","vertical")
+		#if($r.available("lecture.units"))
+			$r.render("lecture.units","vertical")
 		#end
-	#end
-	#if($r.available("course.empty") || $r.available("entry.open"))
-		<label class="o_lecture_course">$r.translate("referenced.courses")</label>
-		<div class="o_lecture_resource">	
-		#if($r.visible("course.empty"))
-			$r.render("course.empty")
-		#elseif($r.available("entry.open")) 
-			<div class="o_lecture_course_card">
-				<div class="o_thumbnail">
-					<div class="o_thumbnail_file_img">
-						<a href="$entryUrl" onclick="${f.ffXHREvent("select_entry","${entryKey}")}; return false;" title="$r.escapeForHtmlAttribute(${row.displayName()})">
-						#if($r.isNotEmpty($thumbnailUrl))
-							<img src="${thumbnailUrl}" alt="$r.translate("rentry.pic.alt")">
-						#else
-							<div class="o_visual_not_available"></div>
+		#if($r.available("lecture.location"))
+			$r.render("lecture.location","vertical")
+		#end
+		$r.render("lecture.participants","vertical")
+		#if($r.available("lecture.preparation"))
+			$r.render("lecture.preparation","vertical")
+		#end
+		$r.render("lecture.compulsory","vertical")
+	
+		#if($r.available("open.online.meeting"))
+			<div>$r.render("open.online.meeting", "vertical")</div>
+		#end
+		
+		#if($r.available("edit")) 
+			<div class="o_actions">$r.render("edit")</div>
+		#end
+	</div>
+	
+	<div class="o_lecture_resources">
+		<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
+		#if($r.isNotEmpty($profilesIds))
+			#foreach($profileId in $profilesIds)
+				<div class="o_lecture_resource">$r.render($profileId)</div>
+			#end
+		#end
+		#if($r.available("course.empty") || $r.available("entry.open"))
+			<label class="o_lecture_course">$r.translate("referenced.courses")</label>
+			<div class="o_lecture_resource">	
+			#if($r.visible("course.empty"))
+				$r.render("course.empty")
+			#elseif($r.available("entry.open")) 
+				<div class="o_lecture_course_card">
+					<div class="o_thumbnail">
+						<div class="o_thumbnail_file_img">
+							<a href="$entryUrl" onclick="${f.ffXHREvent("select_entry","${entryKey}")}; return false;" title="$r.escapeForHtmlAttribute(${row.displayName()})">
+							#if($r.isNotEmpty($thumbnailUrl))
+								<img src="${thumbnailUrl}" alt="$r.translate("rentry.pic.alt")">
+							#else
+								<div class="o_visual_not_available"></div>
+							#end
+							</a>
+						</div>
+					</div>
+					<div class="o_card_meta">
+						<h4 class="o_card_title">$r.render("entry.open")</h4>
+						#if($r.isNotEmpty(${entryExternalRef}))
+							<small>$r.escapeHtml(${entryExternalRef})</small>
 						#end
-						</a>
 					</div>
 				</div>
-				<div class="o_card_meta">
-					<h4 class="o_card_title">$r.render("entry.open")</h4>
-					#if($r.isNotEmpty(${entryExternalRef}))
-						<small>$r.escapeHtml(${entryExternalRef})</small>
-					#end
-				</div>
+			#end
 			</div>
 		#end
-		</div>
+	</div>
+	
+	$r.render("participantsGroupTable")
+	#if($r.available("lecture.desc"))
+		$r.render("lecture.desc","vertical")
 	#end
 </div>
-
-$r.render("participantsGroupTable")
-#if($r.available("lecture.desc"))
-	$r.render("lecture.desc","vertical")
-#end

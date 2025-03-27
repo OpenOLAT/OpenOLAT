@@ -156,6 +156,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FormLink classicTypeButton;
 	private FormLink customTypeButton;
 	private FormLink externalTypeButton;
+	private FormLink verticalTimeLineTypeButton;
 	private FormLink settingsButton;
 	private AbstractTextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
@@ -285,6 +286,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if (externalTypeButton != null) {
 			externalTypeButton.setActive(FlexiTableRendererType.external == rendererType);
 		}
+		if (verticalTimeLineTypeButton != null) {
+			verticalTimeLineTypeButton.setActive(FlexiTableRendererType.verticalTimeLine == rendererType);
+		}
 		// update render type
 		this.rendererType = rendererType;
 		if(component != null) {
@@ -324,11 +328,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			externalTypeButton.setElementCssClass("o_sel_external");
 			externalTypeButton.setActive(FlexiTableRendererType.external == rendererType);
 			externalTypeButton.setTitle(translator.translate("aria.view.other"));
+			
+			verticalTimeLineTypeButton = new FormLinkImpl(dispatchId + "_vtimelineRTypeButton", "rVTimeLineRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
+			verticalTimeLineTypeButton.setTranslator(translator);
+			verticalTimeLineTypeButton.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
+			verticalTimeLineTypeButton.setElementCssClass("o_sel_vtimeline");
+			verticalTimeLineTypeButton.setActive(FlexiTableRendererType.verticalTimeLine == rendererType);
+			verticalTimeLineTypeButton.setTitle(translator.translate("aria.view.vertical.timeline"));
+			components.put("rTypeVTimeLine", verticalTimeLineTypeButton);
 
 			if(getRootForm() != null) {
 				rootFormAvailable(customTypeButton);
 				rootFormAvailable(classicTypeButton);
 				rootFormAvailable(externalTypeButton);
+				rootFormAvailable(verticalTimeLineTypeButton);
 			}
 		}
 	}
@@ -341,6 +354,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public FormLink getCustomTypeButton() {
 		return customTypeButton;
+	}
+	
+	public FormLink getVerticalTimeLineTypeButton() {
+		return verticalTimeLineTypeButton;
 	}
 
 	@Override
@@ -1340,7 +1357,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			saveCustomSettings(ureq);
 			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
 					FlexiTableRendererType.external, FormEvent.ONCLICK));
-		} else if(getFormDispatchId().equals(dispatchuri) && doSelect(ureq)) {
+		} else if(verticalTimeLineTypeButton != null
+				&& verticalTimeLineTypeButton.getFormDispatchId().equals(dispatchuri)) {
+			setRendererType(FlexiTableRendererType.verticalTimeLine);
+			saveCustomSettings(ureq);
+			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
+					FlexiTableRendererType.custom, FormEvent.ONCLICK));
+		}
+		
+		else if(getFormDispatchId().equals(dispatchuri) && doSelect(ureq)) {
 			//do select
 		}
 	}
@@ -2531,6 +2556,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(extendedSearchButton);
 		rootFormAvailable(customTypeButton);
+		rootFormAvailable(verticalTimeLineTypeButton);
 		rootFormAvailable(classicTypeButton);
 		rootFormAvailable(externalTypeButton);
 		rootFormAvailable(emptyTablePrimaryActionButton);

@@ -106,6 +106,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			case custom: sb.append(" o_rendertype_custom"); break;
 			case classic: sb.append(" o_rendertype_classic"); break;
 			case external: sb.append(" o_rendertype_user"); break;
+			case verticalTimeLine: sb.append(" o_rendertype_vertical_timeline"); break;
 		}
 		sb.append("'");
 		String wrapperSelector = ftE.getWrapperSelector();
@@ -280,6 +281,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		if(ftE.getExternalTypeButton() != null) {
 			ftE.getExternalTypeButton().getComponent().setDirty(false);
+		}
+		if(ftE.getVerticalTimeLineTypeButton() != null) {
+			ftE.getVerticalTimeLineTypeButton().getComponent().setDirty(false);
 		}
 		
 		if(ftE.getFiltersElement() != null) {
@@ -571,6 +575,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 					renderFormItem(renderer, sb, ftE.getExternalTypeButton(), ubu, translator, renderResult, args);
 					break;
 				}
+				case verticalTimeLine: {
+					renderFormItem(renderer, sb, ftE.getVerticalTimeLineTypeButton(), ubu, translator, renderResult, args);
+					break;
+				}
 			}
 		}
 	}
@@ -664,7 +672,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("</div>");
 	}
 	
-	private boolean hasVisibleBulkActions(FlexiTableComponent ftC) {
+	protected boolean hasVisibleBulkActions(FlexiTableComponent ftC) {
 		FlexiTableElementImpl ftE = ftC.getFormItem();
 		List<FormItem> items = ftE.getBatchButtons();
 		if(items != null && !items.isEmpty()) {

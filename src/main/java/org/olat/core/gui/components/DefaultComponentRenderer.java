@@ -112,7 +112,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		if(hasArgs) {
 			String arg = args[0];
 			switch(arg) {
-				case "2_10", "3_9", "6_6", "9_3", "tr", "vertical", "horizontal", "minimal", "tablecell", "inputgroupaddon":
+				case "2_10", "3_9", "6_6", "9_3", "tr", "vertical", "horizontal", "minimal", "tablecell", "inputgroupaddon", "nolayout":
 					component.setLayout(arg);
 					return arg;
 				default:

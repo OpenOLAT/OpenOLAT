@@ -124,6 +124,11 @@ public class DateUtils {
 				&& date1.getDayOfYear() == date2.getDayOfYear();
 	}
 	
+	public static boolean isSameDay(LocalDate date1, LocalDate date2) {
+		return date1.getYear() == date2.getYear()
+				&& date1.getDayOfYear() == date2.getDayOfYear();
+	}
+	
 	public static boolean isSameTime(Date date1, Date date2) {
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);

@@ -21,7 +21,6 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -103,8 +102,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		return switch(COLS[col]) {
 			case id -> row.getKey();
 			case externalId -> row.getLectureBlock().getExternalId();
-			case externalRef -> row.getLectureBlock().getExternalRef();
-			case title ->  row.getLectureBlock().getTitle();
+			case externalRef -> row.getExternalRef();
+			case title ->  row.getTitle();
 			case compulsory -> row.getLectureBlock().isCompulsory();
 			case location -> row.getLectureBlock().getLocation();
 			case lecturesNumber -> row.getLectureBlock().getPlannedLecturesNumber();
@@ -123,17 +122,10 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case teacherChooser -> row.getTeacherChooserLink();
 			case locationElement -> row.getLocationElement();
 			case chosenTeachers -> transformIdentitiesToString(row.getTeachersList());
-			case details -> Boolean.valueOf(getDetails(row));
-			case onlineMeeting -> row.getOpenOnlineMeetingLink();
+			case rollCall -> row.getRollCallLink();
+			case onlineMeeting -> row.getOpenOnlineMeetingSmallButton();
 			default -> null;
 		};
-	}
-	
-	private boolean getDetails(LectureBlockRow row) {
-		Date end = row.getLectureBlock().getEndDate();
-		Date start = row.getLectureBlock().getStartDate();
-		Date now = new Date();
-		return end.before(now) || (row.isIamTeacher() && start.compareTo(now) <= 0);
 	}
 	
 	private String transformIdentitiesToString(List<Identity> identities) {
@@ -176,7 +168,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		curriculumElement("table.header.curriculum.element"),
 		onlineMeeting("table.header.online.meeting"),
 		entry("table.header.entry"),
-		details("details");
+		rollCall("details");
 		
 		private final String i18nKey;
 		

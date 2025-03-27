@@ -19,16 +19,22 @@
  */
 package org.olat.modules.lecture.model;
 
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableTimeLineRow;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.LectureListDetailsController;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 
 /**
  * 
@@ -36,7 +42,7 @@ import org.olat.modules.lecture.ui.LectureListDetailsController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockRow implements LectureBlockRef {
+public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	
 	private final String teachers;
 	private final boolean iamTeacher;
@@ -56,14 +62,20 @@ public class LectureBlockRow implements LectureBlockRef {
 	private TextElement locationElement;
 	private List<Identity> teachersList;
 
+	private FormLink rollCallLink;
 	private FormLink openOnlineMeetingLink;
 	
 	private final String entryUrl;
+	private final ZonedDateTime date;
+	private final Translator translator;
 	
-	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
+	public LectureBlockRow(LectureBlock lectureBlock, ZonedDateTime date,
+			String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
-			long numOfParticipants, boolean assessmentMode) {
+			long numOfParticipants, boolean assessmentMode, Translator translator) {
+		this.translator = translator;
 		this.lectureBlock = lectureBlock;
+		this.date = date;
 		this.teachers = teachers;
 		this.entry = entry;
 		this.entryUrl = (entry != null && entry.key() != null)
@@ -87,10 +99,27 @@ public class LectureBlockRow implements LectureBlockRef {
 		return lectureBlock.getTitle();
 	}
 	
+	public String getExternalRef() {
+		return lectureBlock.getExternalRef();
+	}
+	
 	public String getLocation() {
 		return lectureBlock.getLocation();
 	}
 	
+	@Override
+	public ZonedDateTime getDate() {
+		return date;
+	}
+	
+	public Date getStartDate() {
+		return lectureBlock.getStartDate();
+	}
+	
+	public Date getEndDate() {
+		return lectureBlock.getEndDate();
+	}
+
 	public boolean isIamTeacher() {
 		return iamTeacher;
 	}
@@ -113,6 +142,14 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public void setLectureBlock(LectureBlock lectureBlock) {
 		this.lectureBlock = lectureBlock;
+	}
+	
+	public String getLectureBlockStatusBadge() {
+		return LectureBlockStatusCellRenderer.getStatusBadge(lectureBlock, translator);
+	}
+	
+	public String getRollCallStatusBadge() {
+		return LectureBlockRollCallBasicStatusCellRenderer.getStatusBadge(lectureBlock, translator);
 	}
 	
 	public long getNumOfParticipants() {
@@ -141,14 +178,6 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public void setAssessmentMode(boolean assessmentMode) {
 		this.assessmentMode = assessmentMode;
-	}
-	
-	public FormLink getToolsLink() {
-		return toolsLink;
-	}
-	
-	public void setToolsLink(FormLink toolsLink) {
-		this.toolsLink = toolsLink;
 	}
 	
 	public DateChooser getDateChooser() {
@@ -183,12 +212,60 @@ public class LectureBlockRow implements LectureBlockRef {
 		this.teachersList = teachersList;
 	}
 	
-	public FormLink getOpenOnlineMeetingLink() {
+	public FormLink getToolsLink() {
+		if(toolsLink != null) {
+			toolsLink.setCustomEnabledLinkCSS("");
+		}
+		return toolsLink;
+	}
+	
+	public FormLink getToolsButton() {
+		if(toolsLink != null) {
+			toolsLink.setCustomEnabledLinkCSS("btn btn-default");
+		}
+		return toolsLink;
+	}
+	
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
+	}
+	
+	public FormLink getOpenOnlineMeetingSmallButton() {
+		if(openOnlineMeetingLink != null) {
+			openOnlineMeetingLink.setCustomEnabledLinkCSS("btn btn-xs btn-default");
+		}
+		return openOnlineMeetingLink;
+	}
+	
+	public FormLink getOpenOnlineMeetingButton() {
+		if(openOnlineMeetingLink != null) {
+			openOnlineMeetingLink.setCustomEnabledLinkCSS("btn btn-default");
+		}
 		return openOnlineMeetingLink;
 	}
 
 	public void setOpenOnlineMeetingLink(FormLink openOnlineMeetingLink) {
 		this.openOnlineMeetingLink = openOnlineMeetingLink;
+	}
+	
+	public FormLink getRollCallLink() {
+		if(rollCallLink != null) {
+			rollCallLink.setCustomEnabledLinkCSS("");
+			rollCallLink.setI18nKey(null);
+		}
+		return rollCallLink;
+	}
+	
+	public FormLink getRollCallButton() {
+		if(rollCallLink != null) {
+			rollCallLink.setCustomEnabledLinkCSS("btn btn-default");
+			rollCallLink.setI18nKey(translator.translate("edit.type.absence"));
+		}
+		return rollCallLink;
+	}
+	
+	public void setRollCallButton(FormLink rollCallLink) {
+		this.rollCallLink = rollCallLink;
 	}
 
 	public boolean isDetailsControllerAvailable() {

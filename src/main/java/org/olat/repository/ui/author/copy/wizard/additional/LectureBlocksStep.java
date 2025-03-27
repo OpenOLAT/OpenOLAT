@@ -187,10 +187,10 @@ public class LectureBlocksStep extends BasicStep {
 				List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
 							
 				for(LectureBlockWithTeachers block:blocks) {
-					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), context.getSourceRepositoryEntry().getDisplayname(),
+					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), null, context.getSourceRepositoryEntry().getDisplayname(),
 							context.getSourceRepositoryEntry().getExternalRef(), null, false,
 							block.getCurriculumElementRef(), block.getEntryRef(),
-							block.getNumOfParticipants(), block.isAssessmentMode());
+							block.getNumOfParticipants(), block.isAssessmentMode(), getTranslator());
 					
 					Date startDate = null;
 					Date endDate = null;

@@ -468,3 +468,26 @@
 		}
 	}
 }
+
+.o_table_row_details {
+	.o_lecture_details .o_actions {
+		display: none;
+	}
+}
+
+.o_vertical_timeline_item_details .o_lecture_details {
+	.o_header_with_buttons {
+		display: none;
+	}
+	
+	.o_actions {
+		margin-left: auto;
+	}
+}
+
+.o_table_wrapper.o_table_flexi.o_vertical_timeline .o_vertical_timeline_item.o_lecture_running {
+
+	.o_vertical_timeline_item_content {
+		border-left: 4px solid $o-lm-table-timeline-running-border-color;
+	}
+}

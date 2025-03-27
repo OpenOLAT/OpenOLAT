@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -34,6 +35,7 @@ import javax.xml.transform.TransformerException;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -58,7 +60,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -104,6 +108,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -180,10 +185,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * loaded by the activate method and not on creation of the controller.
  * 
  * Initial date: 17 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class LectureListRepositoryController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
+public class LectureListRepositoryController extends FormBasicController implements FlexiTableComponentDelegate, FlexiTableCssDelegate, Activateable2 {
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String PAST_TAB_ID = "Past";
@@ -277,6 +282,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private TeamsService teamsService;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -483,13 +490,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(config.withRollCall() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withRollCall() == Visibility.SHOW, BlockCols.rollCallStatus,
 					new LectureBlockRollCallBasicStatusCellRenderer(getTranslator())));
-		}
-		if(secCallback.viewAs() != LectureRoles.participant && config.withRollCall() != Visibility.NO) {
-			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details);
-			detailsCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, CMD_ROLLCALL, null,
-					"o_icon o_icon_lecture o_icon-lg", translate("details")), null));
-			detailsCol.setIconHeader("o_icon o_icon_lecture o_icon-lg");
-			columnsModel.addFlexiColumnModel(detailsCol);
+			if(secCallback.viewAs() != LectureRoles.participant) {
+				DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.rollCall);
+				detailsCol.setIconHeader("o_icon o_icon-lg o_icon_lecture");
+				columnsModel.addFlexiColumnModel(detailsCol);
+			}
 		}
 		
 		if(config.withCompulsoryPresence() != Visibility.NO) {
@@ -518,14 +523,27 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic, FlexiTableRendererType.verticalTimeLine);
+		if(secCallback.viewAs() == LectureRoles.participant) {
+			tableEl.setRendererType(FlexiTableRendererType.verticalTimeLine);
+		} else {
+			tableEl.setRendererType(FlexiTableRendererType.classic);
+		}
+		
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyTableMessageKey("empty.table.lectures.blocks.admin");
 		tableEl.setSearchEnabled(true);
+		tableEl.setCssDelegate(this);
 		
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+		
+		VelocityContainer row = new VelocityContainer(null, "vc_row1", velocity_root + "/row_1.html",
+				getTranslator(), this);
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		tableEl.setRowRenderer(row, this);
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
@@ -740,13 +758,46 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> components = new ArrayList<>();
-		if(rowObject instanceof LectureBlockRow lectureRow
-				&& lectureRow.getDetailsController() != null) {
-			components.add(lectureRow.getDetailsController().getInitialFormItem().getComponent());
+		if(rowObject instanceof LectureBlockRow lectureRow) {
+			if(lectureRow.getDetailsController() != null) {
+				components.add(lectureRow.getDetailsController().getInitialFormItem().getComponent());
+			}
+			if(lectureRow.getOpenOnlineMeetingButton() != null) {
+				components.add(lectureRow.getOpenOnlineMeetingButton().getComponent());
+			}
+			if(lectureRow.getRollCallLink() != null) {
+				components.add(lectureRow.getRollCallLink().getComponent());
+			}
+			if(lectureRow.getToolsLink() != null) {
+				components.add(lectureRow.getToolsLink().getComponent());
+			}
 		}
 		return components;
 	}
 	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		if(type == FlexiTableRendererType.verticalTimeLine) {
+			LectureBlockRow row = tableModel.getObject(pos);
+			Date now = new Date();
+			if(row.getStartDate() != null && row.getStartDate().compareTo(now) <= 0
+					&& row.getEndDate() != null && row.getEndDate().compareTo(now) >= 0) {
+				return "o_vertical_timeline_item o_lecture_running";
+			}	
+		}
+		return null;
+	}
+
 	private void selectScope(UserRequest ureq) {
 		boolean asc = !scopeInPast();
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
@@ -850,13 +901,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			iAmTeacher |= getIdentity().getKey().equals(teacher.getKey());
 		}
 		
-		LectureBlockRow row = new LectureBlockRow(b, displayname, externalRef,
+		ZonedDateTime date = DateUtils.toZonedDateTime(block.getLectureBlock().getStartDate(), calendarModule.getDefaultZoneId());
+		
+		LectureBlockRow row = new LectureBlockRow(b, date, displayname, externalRef,
 				teachers.toString(), iAmTeacher, block.getCurriculumElementRef(), block.getEntryRef(),
-				block.getNumOfParticipants(), block.isAssessmentMode());
+				block.getNumOfParticipants(), block.isAssessmentMode(), getTranslator());
 		row.setTeachersList(teachersList);
 		
 		if(isOnlineMeetingEnabled() && (b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {
-			FormLink onlineMeetingLink =  uifactory.addFormLink("oom_" + b.getKey(), CMD_OPEN_ONLINE_MEETING, "open.online.meeting", tableEl, Link.BUTTON_XSMALL);
+			FormLink onlineMeetingLink = uifactory.addFormLink("oom_" + b.getKey(), CMD_OPEN_ONLINE_MEETING, "open.online.meeting", tableEl, Link.LINK_CUSTOM_CSS);
+			onlineMeetingLink.setDomReplacementWrapperRequired(false);
 			onlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_vc_icon");
 			if(b.getStartDate() != null && b.getStartDate().compareTo(now) <= 0
 					&& b.getEndDate() != null && b.getEndDate().compareTo(now) >= 0) {
@@ -866,11 +920,32 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			row.setOpenOnlineMeetingLink(onlineMeetingLink);
 		}
 		
-		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-		toolsLink.setUserObject(row);
-		row.setToolsLink(toolsLink);
+		if(config.withRollCall() != Visibility.NO && secCallback.viewAs() != LectureRoles.participant && hasRollCall(row)) {
+			FormLink rollCallLink = uifactory.addFormLink("rcall_" + b.getKey(), CMD_ROLLCALL, "", tableEl, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
+			rollCallLink.setDomReplacementWrapperRequired(false);
+			rollCallLink.setTitle(translate("edit.type.absence"));
+			rollCallLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_lecture");
+			rollCallLink.setUserObject(row);
+			row.setRollCallButton(rollCallLink);
+		}
+
+		if(secCallback.viewAs() != LectureRoles.participant) {
+			FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "tools", "", null, null, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
+			toolsLink.setDomReplacementWrapperRequired(false);
+			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+			toolsLink.setTitle(translate("action.more"));
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
 		
 		return row;
+	}
+	
+	private boolean hasRollCall(LectureBlockRow row) {
+		Date end = row.getLectureBlock().getEndDate();
+		Date start = row.getLectureBlock().getStartDate();
+		Date now = new Date();
+		return end.before(now) || (row.isIamTeacher() && start.compareTo(now) <= 0);
 	}
 	
 	private void updateTeachersFilters() {
@@ -1100,8 +1175,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doRollCall(ureq, row);
 		} else if(startWizardButton == source && startWizardButton.getUserObject() instanceof LectureBlockRow row) {
 			doRollCallWizard(ureq, row);
-		}
-		else if(source == tableEl) {
+		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				LectureBlockRow row = tableModel.getObject(se.getIndex());
@@ -1122,8 +1196,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				} else if(IdentityCoachesCellRenderer.CMD_OTHER_TEACHERS.equals(cmd)) {
 					String targetId = IdentityCoachesCellRenderer.getOtherTeachersId(se.getIndex());
 					doShowTeachers(ureq, targetId, row);
-				} else if(CMD_ROLLCALL.equals(cmd)) {
-					doRollCall(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
@@ -1144,6 +1216,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			} else if(CMD_OPEN_ONLINE_MEETING.equals(cmd)
 					&& link.getUserObject() instanceof LectureBlockRef ref) {
 				doOpenOnlineMeeting(ureq, ref);
+			} else if(CMD_ROLLCALL.equals(cmd)
+					&& link.getUserObject() instanceof LectureBlockRow row) {
+				doRollCall(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -1701,7 +1776,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doConfirmChangeToLocationMeeting(UserRequest ureq, LectureBlockRow row) {
-		String escapedTitle = StringHelper.escapeHtml(row.getLectureBlock().getTitle());
+		String escapedTitle = StringHelper.escapeHtml(row.getTitle());
 		String message = translate("confirmation.change.to.location.meeting.text", escapedTitle);
 		String confirmButton = translate("confirmation.change.to.location.button");
 		translate("confirmation.delete.curriculum");
