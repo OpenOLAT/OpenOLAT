@@ -6,8 +6,8 @@
 		#end
 		#if($personalTools && $personalTools.size() > 0)
 			<li>
-				<span id="o_navbar_cagegory_tools" class="o_navbar_category">$r.translate("topnav.my.menu.tools")</span>				
-				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_tools'>
+				<h2 id="o_navbar_cagegory_tools" class="o_navbar_category">$r.translate("topnav.my.menu.tools")</h2>				
+				<ul class="list-unstyled">
 				#foreach($personalTool in $personalTools)
 				 	<li>$r.render($personalTool)</li>
 				#end
@@ -16,8 +16,8 @@
 		#end
 		#if($configs && $configs.size() > 0)
 			<li>
-				<span id="o_navbar_cagegory_configurations" class="o_navbar_category">$r.translate("topnav.my.menu.configurations")</span>				
-				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_configurations'>
+				<h2 id="o_navbar_cagegory_configurations" class="o_navbar_category">$r.translate("topnav.my.menu.configurations")</h2>				
+				<ul class="list-unstyled">
 				#foreach($config in $configs)
 				 	<li>$r.render($config)</li>
 				#end
@@ -26,8 +26,8 @@
 		#end
 		#if($helpPlugins && $helpPlugins.size() > 0)
 			<li>
-				<span id="o_navbar_cagegory_help" class="o_navbar_category">$r.translate("topnav.my.menu.help")</span>				
-				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_help'>
+				<h2 id="o_navbar_cagegory_help" class="o_navbar_category">$r.translate("topnav.my.menu.help")</h2>				
+				<ul class="list-unstyled">
 				#foreach($helpPlugin in $helpPlugins)
 				 	<li>$r.render($helpPlugin)</li>
 				#end
@@ -36,8 +36,8 @@
 		#end
 		#if($systems && $systems.size() > 0)
 			<li>
-				<span id="o_navbar_cagegory_systems" class="o_navbar_category">$r.translate("topnav.my.menu.systems")</span>				
-				<ul class="list-unstyled" aria-describedby='o_navbar_cagegory_systems>
+				<h2 id="o_navbar_cagegory_systems" class="o_navbar_category">$r.translate("topnav.my.menu.systems")</h2>				
+				<ul class="list-unstyled">
 				#foreach($system in $systems)
 				 	<li>$r.render($system)</li>
 				#end
