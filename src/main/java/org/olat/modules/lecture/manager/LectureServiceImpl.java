@@ -1848,7 +1848,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
 			syncCourseCalendar(lectureBlock, config.getEntry());
-		} else {
+		} else if(config != null && config.getEntry() != null) {
 			unsyncCourseCalendar(lectureBlock, config.getEntry());
 		}
 	}

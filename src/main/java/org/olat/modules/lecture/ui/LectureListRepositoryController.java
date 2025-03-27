@@ -1100,7 +1100,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				if(entries.size() > 1) {
 					String subType = subEntries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
 					if("lecture".equals(subType) || "lectureblock".equals(subType)) {
-						List<ContextEntry> subSubEntries = subEntries.subList(1, entries.size());
+						List<ContextEntry> subSubEntries = subEntries.subList(1, subEntries.size());
 						activateLecture(ureq, id, subSubEntries);
 					}
 				}

@@ -52,7 +52,7 @@ public class LecturesRepositoryPage {
 	}
 	
 	public TeacherRollCallPage openRollCall(String lectureBlockTitle) {
-		By selectBy = By.xpath("//div[contains(@class,'o_sel_repo_lectures_list')]//table//tr[td/a[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'lrollcall')][i[contains(@class,'o_icon_lecture')]]");
+		By selectBy = By.xpath("//div[contains(@class,'o_sel_repo_lectures_list')]//table//tr[td/a[contains(text(),'" + lectureBlockTitle + "')]]/td/div/a[i[contains(@class,'o_icon_lecture')]]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		return new TeacherRollCallPage(browser)
@@ -66,6 +66,7 @@ public class LecturesRepositoryPage {
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
 		By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
+		OOGraphene.waitElement(toolbarBackBy, browser);
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		return new CoursePageFragment(browser);
