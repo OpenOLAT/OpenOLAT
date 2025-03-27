@@ -857,9 +857,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 				  new NameValuePair("page", Integer.toString(i))))
 		  .append(";\" draggable=\"false\">").append(i+1);
-		if (page == i) {
-			sb.append("<span class='sr-only'>").append(ftC.getTranslator().translate("a11y.active")).append("</span>");
-		}
 		sb.append("</a></li>");
 	}
 
