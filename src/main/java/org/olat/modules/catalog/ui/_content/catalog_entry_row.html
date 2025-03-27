@@ -1,8 +1,8 @@
 <div class="o_repo_entry_list_item #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
 	<div class="o_visual">
-		<a href="javascript:${f.ffXHREvent("select","$row.getOlatResource().getKey()")}" title="$r.escapeForHtmlAttribute($row.displayName)">
+		<a href="$row.getInfoUrl()" "onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())
-			<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
+			<img src="${row.getThumbnailRelPath()}" alt="" />
 		#else
 			<div class="o_visual_not_available"></div>
 		#end
@@ -18,8 +18,9 @@
 			$r.escapeHtml($row.getExternalRef())
 		</div>
 		#end
-		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())</h4>
-		
+		<a href="$row.getInfoUrl()" "onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link">
+			<h4 class="o_title">$r.escapeHtml($row.title)</h4>
+		</a>
 		#if($r.isNotEmpty($row.teaser))
 		<div class="o_flex_block_one_line_left">
 			<div class="o_teaser o_flex_item_max">$r.escapeHtml($row.teaser)</div>
@@ -96,7 +97,9 @@
 		#end
 	
 		<div class="o_actions">
-			$r.render($row.getDetailsLinkName())
+			<a href="$row.getInfoUrl()" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link" class="btn btn-sm btn-default o_details">
+				<span>$r.translate("learn.more")</span> <i class="o_icon o_icon_details" aria-hidden="true"></i>
+			</a>
 			#if($row.getStartLinkName())
 				$r.render($row.getStartLinkName())
 			#end

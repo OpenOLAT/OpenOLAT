@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -34,7 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEntryRow> implements SortableFlexiTableDataModel<CatalogEntryRow> {
+public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEntryRow>
+		implements SortableFlexiTableDataModel<CatalogEntryRow>, FlexiBusinessPathModel {
 	
 	private static final CatalogEntryCols[] COLS = CatalogEntryCols.values();
 	
@@ -72,6 +75,29 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 	}
 	
 	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if (action == null) {
+			return null;
+		}
+		
+		if (object instanceof CatalogEntryRow catalogEntryRow) {
+			if (CatalogEntryListController.CMD_DETAILS.equals(action)) {
+				return catalogEntryRow.getInfoUrl();
+			}
+			if (CatalogEntryListController.CMD_TITLE.equals(action)) {
+				return catalogEntryRow.getInfoUrl();
+			}
+			if ("book".equals(action)) {
+				return catalogEntryRow.getInfoUrl();
+			}
+			if ("start".equals(action)) {
+				return catalogEntryRow.getStartUrl();
+			}
+		}
+		return null;
+	}
+	
+	@Override
 	public Object getValueAt(int row, int col) {
 		CatalogEntryRow category = getObject(row);
 		return getValueAt(category, col);
@@ -82,7 +108,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 		switch(COLS[col]) {
 			case key: return catalogEntryRow.getOlatResource().getKey();
 			case type: return catalogEntryRow;
-			case title: return catalogEntryRow.getSelectLink();
+			case title: return catalogEntryRow.getTitle();
 			case externalId: return catalogEntryRow.getExternalId();
 			case externalRef: return catalogEntryRow.getExternalRef();
 			case lifecycleLabel: return catalogEntryRow.getLifecycleLabel();
@@ -97,8 +123,8 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 			case taxonomyLevels: return catalogEntryRow.getTaxonomyLevelNamePaths();
 			case offers: return catalogEntryRow.getAccessInfo();
 			case availability: return catalogEntryRow;
-			case details: return catalogEntryRow.getDetailsLink();
-			case detailsSmall: return catalogEntryRow.getDetailsSmallLink();
+			case details: return catalogEntryRow;
+			case detailsSmall: return catalogEntryRow;
 			case start: return catalogEntryRow.getStartLink();
 			case startSmall: return catalogEntryRow.getStartSmallLink();
 		}

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -84,13 +83,12 @@ public class CatalogEntryRow {
 	private final License license;
 	private boolean singleCourseImplementation;
 	private RepositoryEntry singleCourse;
+	private String infoUrl;
+	private String startUrl;
 	
 	private String thumbnailRelPath;
-	private FormLink selectLink;
 	private FormItem startLink;
 	private FormItem startSmallLink;
-	private FormLink detailsLink;
-	private FormLink detailsSmallLink;
 	
 	public CatalogEntryRow(CatalogEntry catalogEntry) {
 		repositotyEntryKey = catalogEntry.getRepositoryEntryKey();
@@ -314,16 +312,20 @@ public class CatalogEntryRow {
 		this.thumbnailRelPath = thumbnailRelPath;
 	}
 	
-	public String getSelectLinkName() {
-		return selectLink == null ? null :selectLink.getComponent().getComponentName();
-	}
-	
-	public FormLink getSelectLink() {
-		return selectLink;
+	public String getInfoUrl() {
+		return infoUrl;
 	}
 
-	public void setSelectLink(FormLink selectLink) {
-		this.selectLink = selectLink;
+	public void setInfoUrl(String infoUrl) {
+		this.infoUrl = infoUrl;
+	}
+
+	public String getStartUrl() {
+		return startUrl;
+	}
+
+	public void setStartUrl(String startUrl) {
+		this.startUrl = startUrl;
 	}
 	
 	public String getStartLinkName() {
@@ -344,26 +346,6 @@ public class CatalogEntryRow {
 
 	public void setStartSmallLink(FormItem startSmallLink) {
 		this.startSmallLink = startSmallLink;
-	}
-
-	public String getDetailsLinkName() {
-		return detailsLink.getComponent().getComponentName();
-	}
-
-	public FormLink getDetailsLink() {
-		return detailsLink;
-	}
-
-	public void setDetailsLink(FormLink detailsLink) {
-		this.detailsLink = detailsLink;
-	}
-
-	public FormLink getDetailsSmallLink() {
-		return detailsSmallLink;
-	}
-
-	public void setDetailsSmallLink(FormLink detailsSmallLink) {
-		this.detailsSmallLink = detailsSmallLink;
 	}
 
 	public boolean isSingleCourseImplementation() {

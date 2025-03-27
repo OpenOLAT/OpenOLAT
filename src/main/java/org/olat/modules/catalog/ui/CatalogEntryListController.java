@@ -55,6 +55,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
@@ -154,6 +156,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CatalogEntryListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
+
+	static final String CMD_DETAILS = "details";
+	// The SelectonEvent if fired for every for with the same action?!
+	// So every row needs an own action.
+	static final String CMD_TITLE = "title";
 
 	private static final Logger log = Tracing.createLoggerFor(CatalogEntryListController.class);
 
@@ -280,7 +287,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.type, new ResourceTypeRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.title, CMD_TITLE));
 		if (repositoryModule.isManagedRepositoryEntries()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.externalId));
 		}
@@ -297,7 +304,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.taxonomyLevels, new TaxonomyLevelRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.offers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.availability, new ParticipantsAvailabilityRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.detailsSmall));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.detailsSmall,
+				new StaticFlexiCellRenderer(translate("learn.more"), CMD_DETAILS, "btn btn-xs btn-default o_details tablecell", null, null)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.startSmall));
 
 		dataModel = new CatalogEntryDataModel(columnsModel, getLocale());
@@ -478,6 +486,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 			updateAccessInfo(row, catalogEntry);
 		}
 		
+		row.setInfoUrl(CatalogBCFactory.get(searchParams.isWebPublish()).getOfferUrl(row.getOlatResource()));
+		row.setStartUrl(getStartUrl(row, searchParams.isWebPublish() && row.isGuestAccess()));
+		
 		return row;
 	}
 
@@ -563,30 +574,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private void forgeLinks(CatalogEntryRow row) {
 		updateAccessMaxParticipants(row);
-		forgeSelectLink(row);
 		forgeStartLink(row);
-		forgeDetailsLink(row);
 		forgeThumbnail(row);
 	}
 
-	private void forgeSelectLink(CatalogEntryRow row) {
-		String displayName = StringHelper.escapeHtml(row.getTitle());
-		FormLink selectLink = uifactory.addFormLink("select_" + row.getOlatResource().getKey(), "select", displayName, null, null, Link.NONTRANSLATED);
-		if(row.isClosed()) {
-			selectLink.setIconLeftCSS("o_icon o_CourseModule_icon_closed");
-		}
-		if(row.isMember() || (!searchParams.isGuestOnly() && row.isPublicVisible() && row.isOpenAccess())) {
-			selectLink.setUrl(getStartUrl(row, false));
-		} else {
-			selectLink.setUrl(CatalogBCFactory.get(searchParams.isWebPublish()).getOfferUrl(row.getOlatResource()));
-		}
-		selectLink.setUserObject(row);
-		row.setSelectLink(selectLink);
-	}
-
 	private void forgeStartLink(CatalogEntryRow row) {
-		String url = getStartUrl(row, searchParams.isWebPublish() && row.isGuestAccess());
-		
+		String url = row.getStartUrl();
 		String cmd = "start";
 		String label = "open";
 		if (searchParams.isWebPublish() && row.isGuestAccess()) {
@@ -607,6 +600,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (!searchParams.isGuestOnly() && !row.isMember() && !row.isReservationAvailable() && row.isPublicVisible() && !row.isOpenAccess()) {
 			cmd = "book";
 			if (!row.isAutoBooking()) {
+				url = row.getInfoUrl();
 				label = "book";
 			}
 		}
@@ -635,26 +629,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 			linkSmall.setEnabled(false);
 		}
 	}
-
-	private void forgeDetailsLink(CatalogEntryRow row) {
-		String url = CatalogBCFactory.get(searchParams.isWebPublish()).getOfferUrl(row.getOlatResource());
-		
-		FormLink detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);
-		detailsLink.setIconRightCSS("o_icon o_icon_details");
-		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
-		detailsLink.setTitle("details");
-		detailsLink.setUrl(url);
-		detailsLink.setUserObject(row);
-		row.setDetailsLink(detailsLink);
-		
-		FormLink detailsSmallLink = uifactory.addFormLink("details_small_" + row.getOlatResource().getKey(), "details", "learn.more", null, null, Link.LINK);
-		detailsSmallLink.setCustomEnabledLinkCSS("btn btn-xs btn-default o_details");
-		detailsSmallLink.setTitle("details");
-		detailsSmallLink.setUrl(url);
-		detailsSmallLink.setUserObject(row);
-		
-		row.setDetailsSmallLink(detailsSmallLink);
-	}
 	
 	private void forgeThumbnail(CatalogEntryRow row) {
 		if (row.getRepositotyEntryKey() != null) {
@@ -682,10 +656,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = null;
 		if (rowObject instanceof CatalogEntryRow catalogRow) {
-			cmps = new ArrayList<>(2);
-			if (catalogRow.getDetailsLink() != null) {
-				cmps.add(catalogRow.getDetailsLink().getComponent());
-			}
+			cmps = new ArrayList<>(1);
 			if (catalogRow.getStartLink() != null) {
 				cmps.add(catalogRow.getStartLink().getComponent());
 			}
@@ -798,7 +769,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ("ONCLICK".equals(event.getCommand())) {
-			String key = ureq.getParameter("select");
+			String key = ureq.getParameter(CMD_DETAILS);
 			if (StringHelper.containsNonWhitespace(key) && StringHelper.isLong(key)) {
 				doOpenDetails(ureq, Long.valueOf(key));
 			}
@@ -824,7 +795,13 @@ public class CatalogEntryListController extends FormBasicController implements A
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl) {
-			if (event instanceof FlexiTableFilterTabEvent) {
+			if (event instanceof SelectionEvent se) {
+				String cmd = se.getCommand();
+				CatalogEntryRow row = dataModel.getObject(se.getIndex());
+				if (CMD_DETAILS.equals(cmd) || CMD_TITLE.equals(cmd)) {
+					doOpenDetails(ureq, row);
+				}
+			} else if (event instanceof FlexiTableFilterTabEvent) {
 				loadModel(false);
 			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(false);
@@ -840,9 +817,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 			} else if ("book".equals(cmd)){
 				CatalogEntryRow row = (CatalogEntryRow)link.getUserObject();
 				doBook(ureq, row);
-			} else if ("details".equals(cmd) || "select".equals(cmd)){
-				CatalogEntryRow row = (CatalogEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row);
 			} else if ("select_tax".equals(cmd)){
 				Long key = (Long)link.getUserObject();
 				fireEvent(ureq, new OpenTaxonomyEvent(
