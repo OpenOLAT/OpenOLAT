@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
@@ -103,6 +102,8 @@ public interface CatalogEntry {
 	
 	boolean isSingleCourseImplementation();
 	
-	RepositoryEntry getSingleCourse();
+	public Long getSingleCourseEntryKey();
+	
+	public RepositoryEntryStatusEnum getSingleCourseEntryStartus();
 	
 }

@@ -879,9 +879,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 			businessPath = "[RepositoryEntry:" + row.getRepositotyEntryKey() + "]";
 		} else if (row.getCurriculumElementKey() != null) {
 			if (row.isSingleCourseImplementation()) {
-				if (row.getSingleCourse() != null) {
-					if (RepositoryEntryStatusEnum.isInArray(row.getSingleCourse().getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
-						businessPath = "[RepositoryEntry:" + row.getSingleCourse().getKey() + "]";
+				if (row.getSingleCourseEntryKey() != null) {
+					if (RepositoryEntryStatusEnum.isInArray(row.getSingleCourseEntryStartus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
+						businessPath = "[RepositoryEntry:" + row.getSingleCourseEntryKey() + "]";
 					}
 				}
 			} else {

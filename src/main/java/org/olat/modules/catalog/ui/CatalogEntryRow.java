@@ -29,7 +29,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -81,8 +80,9 @@ public class CatalogEntryRow {
 	private final Long numParticipants;
 	private ParticipantsAvailabilityNum participantsAvailabilityNum;
 	private final License license;
-	private boolean singleCourseImplementation;
-	private RepositoryEntry singleCourse;
+	private final boolean singleCourseImplementation;
+	private final Long singleCourseEntryKey;
+	private final RepositoryEntryStatusEnum singleCourseEntryStartus;
 	private String infoUrl;
 	private String startUrl;
 	
@@ -118,7 +118,8 @@ public class CatalogEntryRow {
 		numParticipants = catalogEntry.getNumParticipants();
 		license = catalogEntry.getLicense();
 		singleCourseImplementation = catalogEntry.isSingleCourseImplementation();
-		singleCourse = catalogEntry.getSingleCourse();
+		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
+		singleCourseEntryStartus = catalogEntry.getSingleCourseEntryStartus();
 		
 		curriculumKey = catalogEntry.getCurriculumKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
@@ -352,14 +353,18 @@ public class CatalogEntryRow {
 		return singleCourseImplementation;
 	}
 
-	public RepositoryEntry getSingleCourse() {
-		return singleCourse;
+	public Long getSingleCourseEntryKey() {
+		return singleCourseEntryKey;
+	}
+
+	public RepositoryEntryStatusEnum getSingleCourseEntryStartus() {
+		return singleCourseEntryStartus;
 	}
 
 	public boolean isUnpublishedSingleCourseImplementation() {
 		return isSingleCourseImplementation() 
-				&& (	getSingleCourse() == null 
-					|| !RepositoryEntryStatusEnum.isInArray(getSingleCourse().getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed()));
+				&& (	singleCourseEntryStartus == null 
+					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStartus, RepositoryEntryStatusEnum.publishedAndClosed()));
 	}
 	
 }
