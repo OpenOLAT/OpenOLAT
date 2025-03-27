@@ -32,12 +32,16 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.timeline.TimelineBuilder;
+import org.olat.core.gui.components.timeline.TimelineController;
+import org.olat.core.gui.components.timeline.TimelineModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -61,6 +65,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.properties.LogEntry;
+import org.olat.properties.LogFormatter;
+import org.olat.user.UserAvatarMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,7 +78,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 
 	private final VelocityContainer myContent;
 	private final AssessmentParticipantViewController assessmentParticipantViewCtrl;
-	private Controller detailsCtrl;
+	private TimelineController timelineCtrl;
 	
 	private final boolean showLog;
 	private final UserCourseEnvironment userCourseEnv;
@@ -206,12 +213,44 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
 		}
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (timelineCtrl == source && "downloadTimeline".equals(event.getCommand())) {
+			doDownloadLog(ureq);
+		}
+	}
+
+	private void doDownloadLog(UserRequest ureq) {
+		String nodeLog = courseAssessmentService.getAuditLog(courseNode, userCourseEnv);
+		String fileTitle = courseNode.getShortTitle() + "-" + userCourseEnv.getIdentityEnvironment().getIdentity().getKey();
+
+		StringMediaResource resource = createLogMediaResource(nodeLog, fileTitle);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+	public static StringMediaResource createLogMediaResource(String nodeLog, String nodeTitle) {
+		StringMediaResource resource = new StringMediaResource();
+
+		resource.setData(nodeLog);
+		resource.setDownloadable(true, createLogFilename(nodeTitle));
+
+		resource.setContentType("text/plain");
+		resource.setEncoding("UTF-8");
+
+		return resource;
+	}
+
+	private static String createLogFilename(String nodeTitle) {
+		String sanitizedTitle = nodeTitle.replaceAll("[^a-zA-Z0-9\\-_]", "_");
+		return sanitizedTitle + "_log.txt";
+	}
 	
 	private void exposeUserDataToVC(UserRequest ureq) {
 		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 		if(resultsVisible) {
 			if (evaluationFormProvider != null && courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
-				detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode, evaluationFormProvider);
+				MSResultDetailsController detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode, evaluationFormProvider);
 				listenTo(detailsCtrl);
 				myContent.put("details", detailsCtrl.getInitialComponent());
 			}
@@ -219,7 +258,13 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			if (showLog) {
 				UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 				String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
-				myContent.contextPut("log", StringHelper.escapeHtml(userLog));
+				if (StringHelper.containsNonWhitespace(userLog)) {
+					LogFormatter logFormatter = new LogFormatter();
+					List<LogEntry> logEntries = logFormatter.parseLog(userLog).validEntries();
+					if(StringHelper.containsNonWhitespace(userLog)) {
+						doShowLogs(ureq, logEntries);
+					}
+				}
 			}
 		}
 		
@@ -229,6 +274,17 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
 				myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
 		}
+	}
+
+	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
+		UserAvatarMapper userAvatarMapper = new UserAvatarMapper(false);
+		String mapperPath = registerMapper(ureq, userAvatarMapper);
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
+
+		timelineCtrl = new TimelineController(
+				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
+		listenTo(timelineCtrl);
+		myContent.put("log", timelineCtrl.getInitialComponent());
 	}
 	
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
