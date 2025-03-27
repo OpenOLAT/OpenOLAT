@@ -891,7 +891,16 @@
 	
 	/** Override some settings from the course table **/
 	.o_coursetable {
+		&.o_rendertype_classic {
+			// Display the start button like an btn-xs in the table (but not in the custom renderer)
+			a.o_catalog_start {
+				@include button-size($padding-xs-vertical, $padding-xs-horizontal, $font-size-small, $line-height-small, $btn-border-radius-small)
+			}
+		}
 		&.o_rendertype_custom {
+			a.o_catalog_start {
+				width: 100%;
+			}
 			.o_table_row {
 				.o_access {
 					display: flex;

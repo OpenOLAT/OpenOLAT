@@ -126,7 +126,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 			case details: return catalogEntryRow;
 			case detailsSmall: return catalogEntryRow;
 			case start: return catalogEntryRow.getStartLink();
-			case startSmall: return catalogEntryRow.getStartSmallLink();
+			case startSmall: return catalogEntryRow.getStartLink();
 		}
 		return null;
 	}

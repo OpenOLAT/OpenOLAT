@@ -88,7 +88,6 @@ public class CatalogEntryRow {
 	
 	private String thumbnailRelPath;
 	private FormItem startLink;
-	private FormItem startSmallLink;
 	
 	public CatalogEntryRow(CatalogEntry catalogEntry) {
 		repositotyEntryKey = catalogEntry.getRepositoryEntryKey();
@@ -339,14 +338,6 @@ public class CatalogEntryRow {
 
 	public void setStartLink(FormItem startLink) {
 		this.startLink = startLink;
-	}
-	
-	public FormItem getStartSmallLink() {
-		return startSmallLink;
-	}
-
-	public void setStartSmallLink(FormItem startSmallLink) {
-		this.startSmallLink = startSmallLink;
 	}
 
 	public boolean isSingleCourseImplementation() {

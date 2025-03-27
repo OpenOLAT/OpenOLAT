@@ -584,16 +584,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 		String label = "open";
 		if (searchParams.isWebPublish() && row.isGuestAccess()) {
 			ExternalLinkItem link = uifactory.addExternalLink("start_" + row.getOlatResource().getKey(), url, "_self", null);
-			link.setCssClass("btn btn-sm btn-primary");
+			link.setCssClass("btn btn-sm btn-primary o_catalog_start");
 			link.setIconRightCSS("o_icon o_icon_start");
 			link.setName(translate("start.guest"));
 			row.setStartLink(link);
-			
-			ExternalLinkItem linkSmall = uifactory.addExternalLink("starts_" + row.getOlatResource().getKey(), url, "_self", null);
-			linkSmall.setCssClass("btn btn-xs btn-primary");
-			linkSmall.setIconRightCSS("o_icon o_icon_start");
-			linkSmall.setName(translate("start.guest"));
-			row.setStartSmallLink(linkSmall);
 			return;
 		}
 		
@@ -605,28 +599,19 @@ public class CatalogEntryListController extends FormBasicController implements A
 			}
 		}
 		
-		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, flc, Link.BUTTON_SMALL);
+		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, null, Link.BUTTON_SMALL);
 		link.setUserObject(row);
 		link.setPrimary(true);
+		link.setElementCssClass("o_catalog_start");
 		link.setIconRightCSS("o_icon o_icon_start");
-		link.setTitle(label);
 		link.setUrl(url);
 		row.setStartLink(link);
-		
-		FormLink linkSmall = uifactory.addFormLink("starts_" + row.getOlatResource().getKey(), cmd, label, null, null, Link.BUTTON_XSMALL);
-		linkSmall.setUserObject(row);
-		linkSmall.setPrimary(true);
-		linkSmall.setIconRightCSS("o_icon o_icon_start");
-		linkSmall.setTitle(label);
-		linkSmall.setUrl(url);
-		row.setStartSmallLink(linkSmall);
 		
 		if (StringHelper.containsNonWhitespace(
 				row.getAccessError()) ||
 				row.isReservationAvailable() ||
 				(row.isMember() && row.isUnpublishedSingleCourseImplementation())) {
 			link.setEnabled(false);
-			linkSmall.setEnabled(false);
 		}
 	}
 	
@@ -654,14 +639,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		List<Component> cmps = null;
 		if (rowObject instanceof CatalogEntryRow catalogRow) {
-			cmps = new ArrayList<>(1);
 			if (catalogRow.getStartLink() != null) {
-				cmps.add(catalogRow.getStartLink().getComponent());
+				List.of(catalogRow.getStartLink().getComponent());
 			}
 		}
-		return cmps;
+		return null;
 	}
 
 	@Override
