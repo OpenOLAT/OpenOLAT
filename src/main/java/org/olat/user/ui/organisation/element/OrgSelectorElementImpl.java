@@ -278,7 +278,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			noOrgSelected = true;
 		}
 		if (button != null) {
-			button.setI18nKey(linkTitle);
+			button.setI18nKey(StringHelper.escapeHtml(linkTitle));
 			if (noOrgSelected) {
 				if (orgTranslator == null) {
 					if (getTranslator() != null) {
