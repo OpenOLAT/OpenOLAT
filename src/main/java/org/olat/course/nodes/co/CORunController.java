@@ -253,7 +253,7 @@ public class CORunController extends BasicController {
 			template.setBodyTemplate(mBody);
 			template.setSubjectTemplate(mSubject);
 			MailContent content = mailManager.evaluateTemplate(template);
-			template.setSubjectTemplate(content.getSubject());
+			template.setSubjectTemplate(StringHelper.unescapeHtml(content.getSubject()));
 			template.setBodyTemplate(content.getBody());
 			coFoCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, template);
 			listenTo(coFoCtr);//dispose as this controller is disposed

@@ -185,7 +185,7 @@ public class BGMailTemplateController extends FormBasicController {
 		// default template evaluated
 		MailContent mailContent = mailManager.evaluateTemplate(template);
 		if(customizingAvailable) {
-			String subject = mailContent.getSubject();
+			String subject = StringHelper.unescapeHtml(mailContent.getSubject());
 			subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, subject, formLayout);
 			subjectElem.setDisplaySize(60);
 			subjectElem.setMandatory(true);
