@@ -298,6 +298,7 @@ public class RepositoryMailing {
 			}
 			context.put(COURSE_URL, reUrl);
 			context.put("courseurl", reUrl);
+			context.put("courseURL", reUrl);
 
 			String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
 			context.put(COURSE_REF, courseRef);
