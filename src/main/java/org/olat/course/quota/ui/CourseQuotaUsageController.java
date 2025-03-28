@@ -58,7 +58,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -117,7 +116,6 @@ public class CourseQuotaUsageController extends FormBasicController
 	private final Map<String, CourseQuotaUsageRow> relPathToRow = new HashMap<>();
 	private final IdentityEnvironment identityEnvironment;
 	private final RepositoryEntry entry;
-	private final Roles roles;
 	private CourseQuotaUsageTreeTableModel courseQuotaUsageTableDataModel;
 
 	private FlexiTableElement tableEl;
@@ -141,7 +139,6 @@ public class CourseQuotaUsageController extends FormBasicController
 	public CourseQuotaUsageController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "courseQuotaUsage");
 		this.entry = entry;
-		this.roles = ureq.getUserSession().getRoles();
 		identityEnvironment = ureq.getUserSession().getIdentityEnvironment();
 
 		TableGuiConfiguration tableGuiPrefs = new TableGuiConfiguration();
@@ -443,7 +440,7 @@ public class CourseQuotaUsageController extends FormBasicController
 		if (nodeWithFiles.isStorageInCourseFolder()) {
 			removeFromCourseFolder(row);
 		} else {
-			Quota quota = nodeWithFiles.getQuota(getIdentity(), roles, entry, quotaManager);
+			Quota quota = nodeWithFiles.getQuota(quotaManager, entry);
 			// set quota values if available
 			if (quota != null) {
 				row.setElementQuota(quota);

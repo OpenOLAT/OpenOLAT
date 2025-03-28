@@ -40,7 +40,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -329,7 +328,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 	}
 	
 	@Override
-	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+	public Quota getQuota(QuotaManager quotaManager, RepositoryEntry entry) {
 		return null;
 	}
 

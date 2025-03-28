@@ -45,7 +45,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -507,7 +506,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+	public Quota getQuota(QuotaManager quotaManager, RepositoryEntry entry) {
 		return null;
 	}
 

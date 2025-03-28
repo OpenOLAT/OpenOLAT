@@ -1774,7 +1774,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
+	public Quota getQuota(QuotaManager quotaManager, RepositoryEntry entry) {
 		return null;
 	}
 
