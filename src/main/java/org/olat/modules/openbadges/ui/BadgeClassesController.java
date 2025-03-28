@@ -379,7 +379,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass badgeClass = createBadgeClass(createBadgeClassContext);
-			openBadgesManager.issueBadge(badgeClass, createBadgeClassContext.getEarners(), getIdentity());
+			openBadgesManager.issueBadgeManually(badgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			loadModel(innerUreq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -426,7 +426,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
-			openBadgesManager.issueBadge(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
+			openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			loadModel(innerUreq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};

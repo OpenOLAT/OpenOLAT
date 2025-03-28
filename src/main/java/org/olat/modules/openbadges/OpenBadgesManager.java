@@ -21,7 +21,6 @@ package org.olat.modules.openbadges;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -147,15 +146,15 @@ public interface OpenBadgesManager {
 	// Assertion
 	//
 
-	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
-										Identity recipient, Identity savedBy);
-
 	void handleCourseReset(RepositoryEntry courseEntry, boolean learningPath, Identity doer);
 
-	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry,
-								  boolean learningPath, List<AssessmentEntry> assessmentEntries);
+	void issueBadgeManually(String uuid, BadgeClass badgeClass, Identity recipient, Identity awardedBy);
 
-	void issueBadgesAutomatically(RepositoryEntry courseEntry, boolean learningPath, Identity awardedBy);
+	void issueBadgeManually(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
+
+	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry);
+
+	void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy);
 
 	interface AssessmentEntriesHandler {
 		void handleAssessmentEntries(Identity participant, List<AssessmentEntry> assessmentEntries);
@@ -166,8 +165,6 @@ public interface OpenBadgesManager {
 											  AssessmentEntriesHandler assessmentEntriesHandler);
 
 	List<ParticipantAndAssessmentEntries> associateParticipantsWithAssessmentEntries(List<AssessmentEntry> assessmentEntries);
-
-	void issueBadge(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
 
 	List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass);
 

@@ -26,12 +26,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.imageio.IIOImage;
 import javax.imageio.metadata.IIOMetadata;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
@@ -42,11 +49,15 @@ import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
+import org.olat.modules.openbadges.criteria.CoursePassedCondition;
+import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
+import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -88,6 +99,18 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	@Autowired
 	BadgeEntryConfigurationDAO badgeEntryConfigurationDAO;
+	
+	@Autowired
+	DB dbInstance;
+	
+	@Autowired
+	AssessmentEntryDAO assessmentEntryDAO;
+	
+	@Autowired
+	GroupDAO groupDAO;
+
+	@Autowired
+	RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 
 	@After
 	public void tearDown() throws Exception {
@@ -270,8 +293,11 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 				verification, new Date(), recipient, null);
 
 
-		// act
-		
+		// act: 
+		// 
+		// Return the badge assertions that the recipient obtained and that are due to rules related to
+		// course 'course' and course node 'courseNodeIdentA'.
+		//
 		List<BadgeAssertion> badgeAssertions = openBadgesManager.getRuleEarnedBadgeAssertions(recipient, course, courseNodeIdentA);
 		
 		// assert
@@ -280,5 +306,172 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertTrue(badgeAssertions.contains(badgeAssertionA));
 		Assert.assertTrue(badgeAssertions.contains(badgeAssertionB));
 		Assert.assertFalse(badgeAssertions.contains(badgeAssertionC));
+	}
+	
+	@Test
+	public void issueBadgeManually() {
+
+		// arrange
+
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badge-manually-doer-1");
+		Identity recipient = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badge-manually-recipient-1");
+		String badgeAUuid = OpenBadgesFactory.createIdentifier();
+
+		BadgeClassImpl badgeD = BadgeTestData.createTestBadgeClass("Badge 1: D", "image.png", null);
+		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Badge 2: A", "image.png", null);
+		BadgeClassImpl badgeE = BadgeTestData.createTestBadgeClass("Badge 3: E", "image.png", null);
+		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Badge 4: B", "image.png", null);
+		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge 5: C", "image.png", null);
+		BadgeClassImpl badgeF = BadgeTestData.createTestBadgeClass("Badge 6: F", "image.png", null);	
+		
+		RepositoryEntry courseC = JunitTestHelper.deployBasicCourse(doer);
+		passCourse(courseC, recipient);
+
+		makeManual(badgeA);
+		makeManual(badgeE);
+		
+		makeAutomaticAndGloballyDependent(badgeB, badgeA);
+
+		makeAutomaticAndGloballyDependent(badgeC, courseC);
+		makeAutomaticAndGloballyDependent(badgeC, badgeB);
+		
+		makeAutomaticAndGloballyDependent(badgeD, courseC);
+		makeAutomaticAndGloballyDependent(badgeD, badgeC);
+		makeAutomaticAndGloballyDependent(badgeD, badgeB);
+		makeAutomaticAndGloballyDependent(badgeD, badgeA);
+		makeAutomaticAndGloballyDependent(badgeF, badgeB);
+		
+		badgeF.setStatus(BadgeClass.BadgeClassStatus.revoked);
+		badgeClassDAO.updateBadgeClass(badgeF);
+
+		dbInstance.commit();
+		
+		// act:
+		//
+ 		// Issue 'badgeA' manually. Due to down-stream badge dependencies, this should automatically issue another
+		// badge B and another badge C.
+		//
+
+		openBadgesManager.issueBadgeManually(badgeAUuid, badgeA, recipient, doer);
+		dbInstance.commit();
+		
+		// assert
+		
+		BadgeAssertion badgeAssertionA = badgeAssertionDAO.getBadgeAssertion(recipient, badgeA);
+		BadgeAssertion badgeAssertionB = badgeAssertionDAO.getBadgeAssertion(recipient, badgeB);
+		BadgeAssertion badgeAssertionC = badgeAssertionDAO.getBadgeAssertion(recipient, badgeC);
+		BadgeAssertion badgeAssertionD = badgeAssertionDAO.getBadgeAssertion(recipient, badgeD);
+		BadgeAssertion badgeAssertionE = badgeAssertionDAO.getBadgeAssertion(recipient, badgeE);
+		BadgeAssertion badgeAssertionF = badgeAssertionDAO.getBadgeAssertion(recipient, badgeF);
+		List<BadgeAssertion> badgeAssertions = badgeAssertionDAO.getBadgeAssertions(recipient);
+		
+		Assert.assertNotNull(badgeAssertionA);
+		Assert.assertNotNull(badgeAssertionB);
+		Assert.assertNotNull(badgeAssertionC);
+		Assert.assertNotNull(badgeAssertionD);
+		Assert.assertNull(badgeAssertionE);
+		Assert.assertNull(badgeAssertionF);
+		Assert.assertEquals(4, badgeAssertions.size());
+	}
+
+	private void passCourse(RepositoryEntry course, Identity participant) {
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntry assessmentEntry = assessmentEntryDAO.createAssessmentEntry(participant, null, 
+				course, subIdent, true, null);
+		assessmentEntry.setPassed(true);
+		assessmentEntryDAO.updateAssessmentEntry(assessmentEntry);
+	}
+
+	private void makeManual(BadgeClassImpl badge) {
+		BadgeCriteria badgeCriteria = new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(false);
+		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
+		badgeClassDAO.updateBadgeClass(badge);
+	}
+	
+	private void makeAutomaticAndGloballyDependent(BadgeClassImpl badge, BadgeClassImpl badgeDependency) {
+		BadgeCriteria badgeCriteria = StringHelper.containsNonWhitespace(badge.getCriteria()) ? BadgeCriteriaXStream.fromXml(badge.getCriteria()) : new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(true);
+		badgeCriteria.getConditions().add(new GlobalBadgesEarnedCondition(List.of(badgeDependency.getKey())));
+		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
+		badgeClassDAO.updateBadgeClass(badge);
+	}
+
+	private void makeAutomaticAndGloballyDependent(BadgeClassImpl badge, RepositoryEntry course) {
+		BadgeCriteria badgeCriteria = StringHelper.containsNonWhitespace(badge.getCriteria()) ? BadgeCriteriaXStream.fromXml(badge.getCriteria()) : new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(true);
+		badgeCriteria.getConditions().add(new CoursesPassedCondition(List.of(course.getKey())));
+		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
+		badgeClassDAO.updateBadgeClass(badge);
+	}
+	
+	@Test
+	public void issueBadgesAutomatically() {
+		
+		// arrange:
+
+		Identity ownerAB = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-automatically-owner-1");
+		Identity ownerC = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-automatically-owner-2");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-automatically-participant");
+		
+		RepositoryEntry courseA = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Badge A", "image.png", courseA);
+		
+		RepositoryEntry courseB = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Badge B", "image.png", courseB);
+		
+		RepositoryEntry courseC = JunitTestHelper.deployBasicCourse(ownerC);
+		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge C", "image.png", courseC);
+		
+		Group group = groupDAO.createGroup();
+		repositoryEntryRelationDAO.createRelation(group, courseA);
+		repositoryEntryRelationDAO.createRelation(group, courseB);
+		groupDAO.addMembershipOneWay(group, ownerAB, "owner");
+
+		makeAutomaticOnPass(badgeA);
+		makeAutomaticOnPass(badgeB);
+		makeAutomaticOnPass(badgeC);
+		makeAutomaticAndDependent(badgeA, badgeB);
+
+		passCourse(courseA, participant);
+		passCourse(courseB, participant);
+		passCourse(courseC, participant);
+		
+		dbInstance.commit();
+		
+		// act:
+		//
+ 		// Issue badges of 'courseA' automatically (simulating that courseA has been passed and that 
+		// the openBadgesManager is called as a result of this). Should lead to a chain reaction.
+		//
+
+		openBadgesManager.issueBadgesAutomatically(courseA, ownerAB);
+		dbInstance.commit();
+		
+		// assert:
+		
+		BadgeAssertion badgeAssertionA = badgeAssertionDAO.getBadgeAssertion(participant, badgeA);
+		BadgeAssertion badgeAssertionB = badgeAssertionDAO.getBadgeAssertion(participant, badgeB);
+		BadgeAssertion badgeAssertionC = badgeAssertionDAO.getBadgeAssertion(participant, badgeC);
+
+		Assert.assertNotNull(badgeAssertionA);
+		Assert.assertNotNull(badgeAssertionB);
+		Assert.assertNull(badgeAssertionC);
+	}
+
+	private void makeAutomaticAndDependent(BadgeClassImpl badge, BadgeClassImpl badgeDependency) {
+		BadgeCriteria badgeCriteria = StringHelper.containsNonWhitespace(badge.getCriteria()) ? BadgeCriteriaXStream.fromXml(badge.getCriteria()) : new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(true);
+		badgeCriteria.getConditions().add(new OtherBadgeEarnedCondition(badgeDependency.getUuid()));
+		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
+		badgeClassDAO.updateBadgeClass(badge);
+	}
+	
+	private void makeAutomaticOnPass(BadgeClassImpl badge) {
+		BadgeCriteria badgeCriteria = StringHelper.containsNonWhitespace(badge.getCriteria()) ? BadgeCriteriaXStream.fromXml(badge.getCriteria()) : new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(true);
+		badgeCriteria.getConditions().add(new CoursePassedCondition());
+		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
+		badgeClassDAO.updateBadgeClass(badge);
 	}
 }

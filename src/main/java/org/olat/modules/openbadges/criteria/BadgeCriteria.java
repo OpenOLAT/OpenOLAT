@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
@@ -138,27 +139,52 @@ public class BadgeCriteria {
 	}
 
 	/**
+	 * Checks that all conditions to issuing a badge have been met for a course and recipient.
+	 * 
+	 * @param courseEntry The course to which the conditions apply.
+	 * @param recipient The person that would obtain the badge.
+	 * @param learningPath Is this course a learning path?
+	 * @param courseBadge Is this a course badge?
+	 * @param assessmentEntries An optional list of assessment entries to be used in conditions that use assessment data. 
+	 *                          Can be empty or null. Can be only root entries if it is not a course badge.
+	 * @return True if the conditions for receiving the badge are all met.
+	 */
+	public boolean allConditionsMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, 
+									boolean courseBadge, List<AssessmentEntry> assessmentEntries) {
+		if (!isAwardAutomatically()) {
+			return true;
+		}
+
+		if (assessmentEntries != null) {
+			assessmentEntries = assessmentEntries.stream()
+					.filter(ae -> ae.getIdentity().equals(recipient))
+					.filter(ae -> courseEntry == null || Objects.equals(courseEntry.getKey(), ae.getRepositoryEntry().getKey()))
+					.toList();
+		} else {
+			assessmentEntries = new ArrayList<>();
+		}
+
+		if (courseBadge) {
+			return allCourseConditionsMet(courseEntry, recipient, learningPath, assessmentEntries);
+		} else {
+			return allGlobalBadgeConditionsMet(recipient, assessmentEntries);
+		}
+	}
+
+	/**
 	 * Checks if all the conditions specific to a course of this BadgeCriteria object are
 	 * satisfied.
 	 *
+	 * @param courseEntry		The course entry to which the conditions apply.
 	 * @param recipient         The recipient to check the conditions for.
-	 * @param learningPath		If true, the assessed course is a learning path
+	 * @param learningPath      If true, the assessed course is a learning path
 	 * @param assessmentEntries The assessment entries for the course and the recipient.
 	 * @return True if all conditions of this badge criteria object are satisfied.
 	 */
-	public boolean allCourseConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+	private boolean allCourseConditionsMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
 		final boolean[] courseBadgeConditionChecked = { false };
-
-		if (!allCourseConditionsMet(recipient, assessmentEntries, courseBadgeConditionChecked)) {
-			return false;
-		}
-		if (!allCourseElementConditionsMet(recipient, assessmentEntries, courseBadgeConditionChecked)) {
-			return false;
-		}
-		if (!learningPathCourseElementConditionsMet(recipient, learningPath, assessmentEntries, courseBadgeConditionChecked)) {
-			return false;
-		}
-		if (!learningPathConditionMet(recipient, learningPath, assessmentEntries, courseBadgeConditionChecked)) {
+		
+		if (!allConditionsApplyingToCoursesOnlyMet(courseEntry, recipient, learningPath, assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
 		if (!allOtherBadgeConditionsMet(recipient, courseBadgeConditionChecked)) {
@@ -172,13 +198,32 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allCourseConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+	private boolean allConditionsApplyingToCoursesOnlyMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+		if (assessmentEntries.isEmpty() && courseEntry != null) {
+			AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
+			assessmentEntries = assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, courseEntry);
+		}
+
+		if (!allCourseConditionsMet(assessmentEntries, courseBadgeConditionChecked)) {
+			return false;
+		}
+		if (!allCourseElementConditionsMet(assessmentEntries, courseBadgeConditionChecked)) {
+			return false;
+		}
+		if (!learningPathCourseElementConditionsMet(learningPath, assessmentEntries, courseBadgeConditionChecked)) {
+			return false;
+		}
+		if (!learningPathConditionMet(learningPath, assessmentEntries, courseBadgeConditionChecked)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private boolean allCourseConditionsMet(List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		boolean passed = false;
 		float score = 0;
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
-			if (!assessmentEntry.getIdentity().equals(recipient)) {
-				continue;
-			}
 			if (assessmentEntry.getEntryRoot() != null && assessmentEntry.getEntryRoot()) {
 				if (assessmentEntry.getPassed() != null) {
 					passed = assessmentEntry.getPassed();
@@ -205,14 +250,10 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allCourseElementConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+	private boolean allCourseElementConditionsMet(List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
-					if (!assessmentEntry.getIdentity().equals(recipient)) {
-						continue;
-					}
-
 					if (courseElementPassedCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
 						if (!satisfiesPassedCondition(assessmentEntry)) {
 							return false;
@@ -224,10 +265,6 @@ public class BadgeCriteria {
 
 			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
-					if (!assessmentEntry.getIdentity().equals(recipient)) {
-						continue;
-					}
-
 					if (courseElementScoreCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
 						if (!satisfiesScoreCondition(assessmentEntry, courseElementScoreCondition)) {
 							return false;
@@ -272,7 +309,7 @@ public class BadgeCriteria {
 		return scoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
 	}
 	
-	private boolean learningPathCourseElementConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+	private boolean learningPathCourseElementConditionsMet(boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		if (!learningPath) {
 			return true;
 		}
@@ -280,10 +317,6 @@ public class BadgeCriteria {
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
-					if (!assessmentEntry.getIdentity().equals(recipient)) {
-						continue;
-					}
-
 					if (completionCriterionMetCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
 						if (assessmentEntry.getFullyAssessed() == null || !assessmentEntry.getFullyAssessed()) {
 							return false;
@@ -297,16 +330,13 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean learningPathConditionMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+	private boolean learningPathConditionMet(boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		if (!learningPath) {
 			return true;
 		}
 
 		double learningPathProgress = 0;
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
-			if (!assessmentEntry.getIdentity().equals(recipient)) {
-				continue;
-			}
 			if (assessmentEntry.getEntryRoot() != null && assessmentEntry.getEntryRoot()) {
 				if (assessmentEntry.getCompletion() != null) {
 					learningPathProgress = assessmentEntry.getCompletion().floatValue() * 100;
@@ -353,7 +383,7 @@ public class BadgeCriteria {
 	 * @return true if all global badge conditions are met for this recipient
 	 * 		   (or if there are no global badge conditions to be met), false if at least one condition is not met.
 	 */
-	public boolean allGlobalBadgeConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
+	private boolean allGlobalBadgeConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
 		boolean globalBadgeConditionChecked = false;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
@@ -392,7 +422,7 @@ public class BadgeCriteria {
 											  CoursesPassedCondition coursesPassedCondition) {
 		List<AssessmentEntry> rootAssessmentEntriesForRecipient = assessmentEntries;
 
-		if (rootAssessmentEntriesForRecipient == null) {
+		if (rootAssessmentEntriesForRecipient == null || rootAssessmentEntriesForRecipient.isEmpty()) {
 			AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
 			rootAssessmentEntriesForRecipient = assessmentEntryDAO.loadRootAssessmentEntriesForAssessedIdentity(recipient);
 		}
@@ -400,9 +430,6 @@ public class BadgeCriteria {
 		HashSet<Long> coursesToPass = new HashSet<>(coursesPassedCondition.getCourseRepositoryEntryKeys());
 		for (AssessmentEntry assessmentEntry : rootAssessmentEntriesForRecipient) {
 			if (assessmentEntry.getEntryRoot() == null || !assessmentEntry.getEntryRoot()) {
-				continue;
-			}
-			if (!assessmentEntry.getIdentity().equals(recipient)) {
 				continue;
 			}
 			if (assessmentEntry.getPassed() != null && assessmentEntry.getPassed()) {

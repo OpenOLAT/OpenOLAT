@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +47,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -148,12 +146,8 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeDropdown.getSelectedKey());
-		Date now = new Date();
 		if (badgeClass != null) {
-			for (Identity recipient : recipients) {
-				String uuid = OpenBadgesFactory.createIdentifier();
-				openBadgesManager.createBadgeAssertion(uuid, badgeClass, now, recipient, getIdentity());
-			}
+			openBadgesManager.issueBadgeManually(badgeClass, recipients, getIdentity());
 		}
 		showInfo("badges.awarded", Long.toString(recipients.size()));
 		fireEvent(ureq, Event.DONE_EVENT);
