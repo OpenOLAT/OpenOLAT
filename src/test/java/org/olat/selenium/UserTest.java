@@ -154,11 +154,8 @@ public class UserTest extends Deployments {
 			.assertOnLoginPage()
 			.loginAs(user.getLogin(), user.getPassword());
 
-		//check the title of the course if any
-		WebElement courseTitle = browser.findElement(By.tagName("h2"));
-		Assert.assertNotNull(courseTitle);
-		Assert.assertTrue(courseTitle.isDisplayed());
-		Assert.assertTrue(courseTitle.getText().contains(newCourse.getTitle()));
+		//check the title of the course if any//check the title of the course if any
+		CoursePageFragment.getCourse(browser).assertOnTitle(newCourse.getTitle());
 	}
 	
 	/**
@@ -226,10 +223,7 @@ public class UserTest extends Deployments {
 			.resume();
 
 		//check the title of the course if any
-		WebElement courseTitle = browser.findElement(By.tagName("h2"));
-		Assert.assertNotNull(courseTitle);
-		Assert.assertTrue(courseTitle.isDisplayed());
-		Assert.assertTrue(courseTitle.getText().contains(newCourse.getTitle()));
+		CoursePageFragment.getCourse(browser).assertOnTitle(newCourse.getTitle());
 	}
 	
 	/**

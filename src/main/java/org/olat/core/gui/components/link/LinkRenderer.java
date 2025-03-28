@@ -150,6 +150,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			  // add layouting
 			  .append(cssSb);
 			
+			// a11y helper to indicate active elements
+			if (link.isActive() || args != null && Arrays.stream(args).anyMatch("a11yactive"::equals)) {
+				sb.append(" aria-current='true' ");
+			}
+			
 			if (link.getTarget() != null) {
 				sb.append(" target=\"").append(link.getTarget()).append("\"");
 			}
@@ -251,16 +256,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(link.getBadge() != null) {
 				renderer.render(link.getBadge(), sb, args);
 			}
-			
-			// a11y helper to indicate active elements
-			if (link.isActive() || args != null && Arrays.stream(args).anyMatch("a11yactive"::equals)) {
-				if (translator != null) {
-					sb.append("<span class='sr-only'>").append(translator.translate("a11y.active")).append("</span>");					
-				} else if (Settings.isDebuging()) {
-					log.warn("A11y issue: missing translator in renderer, please fix your code for link:: " + link.getComponentName() + " with URL::" + link.getUrl() + " and icon::" + link.getIconLeftCSS());
-				}
-			}
-			
+						
 			sb.append("</a>").append("</p>", inForm);
 			
 			//on click() is part of prototype.js

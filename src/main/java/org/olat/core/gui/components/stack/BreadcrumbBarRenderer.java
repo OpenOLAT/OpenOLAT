@@ -100,12 +100,18 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					crumb.setEscapeMode(EscapeMode.html);
 					sb.append("<li class='o_breadcrumb_crumb o_display_none");
 					if (i == 0) {
-						sb.append(" o_first_crumb");
+						sb.append(" o_first_crumb'");
+						if (breadCrumbs.size() == 1) {
+							sb.append(" aria-current='true'");
+						}
 					} else if (i == breadCrumbs.size()-1) {
 						crumb.setEnabled(false);
-						sb.append(" o_last_crumb");
+						sb.append(" o_last_crumb'");
+						sb.append(" aria-current='true'");
+					} else {
+						sb.append("'");						
 					}
-					sb.append("' role='menuitem'>");
+					sb.append(" role='menuitem'>");
 					
 					String displayText = crumb.getCustomDisplayText();
 					crumb.setTitle(displayText);

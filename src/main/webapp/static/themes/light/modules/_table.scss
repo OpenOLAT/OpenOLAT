@@ -122,6 +122,10 @@
 			text-decoration: none;
 		}
 	}
+	td a:not(.btn) {
+		/* fix a11y contrast on stipped and non-stryped cols */
+		color: $o-table-link-color;
+	}
 	
 	/* action cols must have a minimum width to users can touch it */
 	.o_col_action {

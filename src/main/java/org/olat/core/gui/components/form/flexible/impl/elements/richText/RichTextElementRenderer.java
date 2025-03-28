@@ -85,10 +85,11 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 					for(TextMode mode:modes) {
 						sb.append("<a href='javascript:;' class='btn btn-default btn-xs")
 						  .append(" active", currentTextMode == mode).append("' ")
+						  .append(" aria-current='true' ", currentTextMode == mode)
+						  
 						  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, teC.getFormDispatchId(), 1, false, false, true,
 								new NameValuePair("cmd", mode.name()))).append(" role='button'>")
 						  .append(source.getTranslator().translate(mode.name()))
-						  .append(" <span class='sr-only'>" + source.getTranslator().translate("a11y.active") + "</span>",currentTextMode == mode)
 						  .append("</a>");
 					}
 					sb.append("</div></div>");

@@ -20,18 +20,22 @@
 package org.olat.admin.layout;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.landingpages.model.Rules;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 
 /**
@@ -61,7 +65,9 @@ public class LogoInformations {
 	public String getLogoAlt() {
 		String logoAlt = layoutModule.getLogoAlt();
 		if(!StringHelper.containsNonWhitespace(logoAlt)) {
-			logoAlt = "OpenOlat - infinite learning";
+			Locale loc = (userSession != null ? userSession.getLocale() : I18nModule.getDefaultLocale());
+			Translator trans = Util.createPackageTranslator(this.getClass(), loc);
+			logoAlt = trans.translate("logoAlt.default");
 		}
 		return logoAlt;
 	}

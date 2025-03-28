@@ -148,8 +148,12 @@ a.o_disabled.navbar-text {
 			}
 		}
 		.o_navbar-right {
-			.o_navbar_category {
-				font-size: 90%;
+			h2.o_navbar_category {
+				font-size: 100%;
+				color: $o-offcanvas-link-color;
+				margin: 0 0 0.5em 0;
+				border-bottom: 1px solid #888;
+				line-height: 2em;
 			}
 			a {
 				padding: 3px 0px;

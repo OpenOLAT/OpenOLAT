@@ -142,6 +142,7 @@ $o-font-size-xsmall				: ceil(($font-size-base * 0.71)) !default; // ~10px
 $o-table-row-selected-color     : lighten($state-info-bg,5%) !default;
 
 $o-table-header-color			: $text-color !default;
+$o-table-link-color				: o-a11y-color($link-color, $table-bg-accent) !default;
 $o-table-edit-border			: #f90;
 $o-table-edit-bg				: #fefbf6;
 
