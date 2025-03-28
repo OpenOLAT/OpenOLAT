@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -42,7 +43,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -426,15 +426,18 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 	}
 
 	@Override
-	public Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager) {
-		Quota courseElementQuota = null;
-		if (quotaManager != null) {
-			VFSContainer participantFolder = VFSManager.getOrCreateContainer(CourseFactory.loadCourse(entry).getCourseBaseContainer(), "participantfolder");
-			if (participantFolder != null) {
-				courseElementQuota = quotaManager.getCustomQuotaOrDefaultDependingOnRole(identity, roles, participantFolder.getRelPath() + "/" + this.getIdent());
+	public Quota getQuota(QuotaManager quotaManager, RepositoryEntry entry) {
+		Quota quota = null;
+		
+		VFSContainer nodesCont = VFSManager.getOrCreateContainer(CourseFactory.loadCourse(entry).getCourseBaseContainer(), "participantfolder");
+		if (nodesCont != null) {
+			String relPath = nodesCont.getRelPath() + "/" + getIdent();
+			quota = quotaManager.getCustomQuota(relPath);
+			if (quota == null) {
+				quota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES);
 			}
 		}
-		return courseElementQuota;
+		return quota;
 	}
 
 	@Override

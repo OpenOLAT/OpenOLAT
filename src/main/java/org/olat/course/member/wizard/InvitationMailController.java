@@ -19,6 +19,7 @@
  */
 package org.olat.course.member.wizard;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -28,12 +29,15 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.member.wizard.InvitationContext.TransientInvitation;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.ui.wizard.BGMailTemplateController;
+import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.project.manager.ProjectMailing;
 import org.olat.repository.RepositoryMailing;
+import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,7 +64,8 @@ public class InvitationMailController extends StepFormBasicController {
 		this.context = context;
 		
 		if(context.getRepoEntry() != null) {
-			mailTemplate = RepositoryMailing.getInvitationTemplate(context.getRepoEntry(), getIdentity());
+			RepositoryEntryMailTemplate invitationTemplate = RepositoryMailing.getInvitationTemplate(context.getRepoEntry(), getIdentity());
+			mailTemplate = enrichCourseUrl(invitationTemplate);
 		} else if(context.getBusinessGroup() != null) {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, context.getBusinessGroup(), getIdentity());
 		} else if(context.getProject() != null) {
@@ -73,6 +78,26 @@ public class InvitationMailController extends StepFormBasicController {
 		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, true, false, mandatoryEmail, rootForm);
 		
 		initForm(ureq);
+	}
+	
+	@Autowired
+	private InvitationService invitationService;
+	
+	private RepositoryEntryMailTemplate enrichCourseUrl(RepositoryEntryMailTemplate invitationTemplate) {
+		String url = "$courseUrl";
+		if(context.getInvitations().size() == 1) {
+			TransientInvitation transientInvitation = context.getInvitations().get(0);
+			if(transientInvitation.getIdentity() != null && transientInvitation.getIdentity().getKey() != null) {
+				if(context.getRepoEntry() != null) {
+					Invitation invitation = invitationService.findInvitation(context.getRepoEntry(), transientInvitation.getIdentity());
+					if(invitation != null) {
+						url = invitationService.toUrl(invitation, context.getRepoEntry());
+					}
+				}
+			}
+		}
+		invitationTemplate.setCourseUrl(url);
+		return invitationTemplate;
 	}
 
 	@Override

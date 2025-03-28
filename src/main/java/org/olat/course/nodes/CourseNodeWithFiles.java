@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -35,14 +33,12 @@ public interface CourseNodeWithFiles {
 
 	/**
 	 * retrieve quota for a courseNode
-	 *
-	 * @param identity
-	 * @param roles
-	 * @param entry
 	 * @param quotaManager
+	 * @param entry
+	 *
 	 * @return Quota
 	 */
-	Quota getQuota(Identity identity, Roles roles, RepositoryEntry entry, QuotaManager quotaManager);
+	Quota getQuota(QuotaManager quotaManager, RepositoryEntry entry);
 
 	/**
 	 * @return long value, used storage from this courseNode in KB

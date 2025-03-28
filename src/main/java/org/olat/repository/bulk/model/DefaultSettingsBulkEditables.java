@@ -267,7 +267,7 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case oerPub:
 			return repositoryEntry.getCanIndexMetadata() != context.isCanIndexMetadata();
 		case taxonomyLevelsAdd: 
-			return !hasTaxonomyLevelsToAdd(repositoryEntry, context.getTaxonomyLevelAddKeys());
+			return hasTaxonomyLevelsToAdd(repositoryEntry, context.getTaxonomyLevelAddKeys());
 		case taxonomyLevelsRemove:
 			return hasTaxonomyLevelsToRemove(repositoryEntry, context.getTaxonomyLevelRemoveKeys());
 		case organisationsAdd: 
@@ -337,7 +337,7 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			Set<Long> taxonomyAddKeysCopy = new HashSet<>(taxonomyAddKeys);
 			Set<Long> taxonomyCurrentKeys = reKeyToInfo.get(repositoryEntry.getKey()).getTaxonomyLevelKeys();
 			taxonomyAddKeysCopy.removeAll(taxonomyCurrentKeys);
-			return !taxonomyCurrentKeys.isEmpty();
+			return !taxonomyAddKeysCopy.isEmpty();
 		}
 		return false;
 	}
