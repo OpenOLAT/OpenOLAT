@@ -21,6 +21,7 @@ package org.olat.repository;
 
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -30,13 +31,32 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
  */
 public enum RepositoryEntryRuntimeType {
 	standalone,
-	embedded;
-	
+	embedded,
+	curricular,
+	template;
+
 	public static ILoggingAction loggingAction(RepositoryEntryRuntimeType status) {
-		switch(status) {
-			case standalone: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_STANDALONE;
-			case embedded: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_EMBEDDED;
-			default: return null;
+		return switch(status) {
+			case standalone -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_STANDALONE;
+			case embedded -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_EMBEDDED;
+			case curricular -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_CURRICULAR;
+			case template -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_TEMPLATE;
+			default -> null;
+		};
+	}
+
+	public static RepositoryEntryRuntimeType secureValueOf(String value, RepositoryEntryRuntimeType defaultValue) {
+		if (StringHelper.containsNonWhitespace(value)) {
+			for (RepositoryEntryRuntimeType type : RepositoryEntryRuntimeType.values()) {
+				if (type.name().equalsIgnoreCase(value)) {
+					return type;
+				}
+			}
 		}
+		return defaultValue;
+	}
+	
+	public static RepositoryEntryRuntimeType[] notEmbedded() {
+		return new RepositoryEntryRuntimeType[] { curricular, standalone, template };
 	}
 }
