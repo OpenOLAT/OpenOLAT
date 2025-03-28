@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -273,21 +272,21 @@ public class RepositoryMailing {
 		}
 		
 		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+		public void putVariablesInMailContext(Identity identity) {
 			// Put user variables into velocity context
-			fillContextWithStandardIdentityValues(context, identity, locale);
+			fillContextWithStandardIdentityValues(identity, locale);
 			if(identity != null) {
 				User user = identity.getUser();
-				context.put("login", StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(user, locale)));
+				putVariablesInMailContext("login", StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(user, locale)));
 			}
 			
 			String reName = re.getDisplayname();
-			context.put(COURSE_NAME, reName);
-			context.put("coursename", reName);
+			putVariablesInMailContext(COURSE_NAME, reName);
+			putVariablesInMailContext("coursename", reName);
 			
 			String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
-			context.put(COURSE_DESCRIPTION, redescription);
-			context.put("coursedescription", redescription);
+			putVariablesInMailContext(COURSE_DESCRIPTION, redescription);
+			putVariablesInMailContext("coursedescription", redescription);
 
 			String reUrl;
 			if(StringHelper.containsNonWhitespace(url)) {
@@ -296,17 +295,14 @@ public class RepositoryMailing {
 				reUrl = createCourseUrl(re);
 				
 			}
-			context.put(COURSE_URL, reUrl);
-			context.put("courseurl", reUrl);
-			context.put("courseURL", reUrl);
+			putVariablesInMailContext(COURSE_URL, reUrl);
+			putVariablesInMailContext("courseURL", reUrl);
 
 			String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
-			context.put(COURSE_REF, courseRef);
-			context.put("courseref", courseRef);
+			putVariablesInMailContext(COURSE_REF, courseRef);
 			
 			String courseLocation = re.getLocation() == null ? "" : re.getLocation();
-			context.put(COURSE_LOCATION, courseLocation);
-			context.put("courselocation", courseLocation);
+			putVariablesInMailContext(COURSE_LOCATION, courseLocation);
 		}
 		
 		private static String createCourseUrl(RepositoryEntry repositoryEntry) {

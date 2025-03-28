@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -137,27 +136,27 @@ public class CurriculumMailing {
 			}
 
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 				// Put user variables into velocity context
-				fillContextWithStandardIdentityValues(context, identity, locale);
+				fillContextWithStandardIdentityValues(identity, locale);
 				if(identity != null) {
 					User user = identity.getUser();
-					context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
+					putVariablesInMailContext(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
 				}
 				// Put variables from greater context
-				context.put(CURRICULUM_NAME, curriculumName);
-				context.put("curriculumname", curriculumName);
-				context.put(CURRICULUM_DESCRIPTION, curriculumDescription);
-				context.put("curriculumdescription", curriculumDescription);
-				context.put(CURRICULUM_URL, curriculumUrl);
-				context.put("curriculumurl", curriculumUrl);
+				putVariablesInMailContext(CURRICULUM_NAME, curriculumName);
+				putVariablesInMailContext("curriculumname", curriculumName);
+				putVariablesInMailContext(CURRICULUM_DESCRIPTION, curriculumDescription);
+				putVariablesInMailContext("curriculumdescription", curriculumDescription);
+				putVariablesInMailContext(CURRICULUM_URL, curriculumUrl);
+				putVariablesInMailContext("curriculumurl", curriculumUrl);
 				
-				context.put(CURRICULUM_ELEMENT_NAME, curriculumElementName);
-				context.put("curriculumelementname", curriculumElementName);
-				context.put(CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
-				context.put("curriculumelementdescription", curriculumElementDescription);
-				context.put(CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
-				context.put("curriculumelementidentifier", curriculumElementIdentifier);
+				putVariablesInMailContext(CURRICULUM_ELEMENT_NAME, curriculumElementName);
+				putVariablesInMailContext("curriculumelementname", curriculumElementName);
+				putVariablesInMailContext(CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
+				putVariablesInMailContext("curriculumelementdescription", curriculumElementDescription);
+				putVariablesInMailContext(CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
+				putVariablesInMailContext("curriculumelementidentifier", curriculumElementIdentifier);
 			}
 		};
 	}

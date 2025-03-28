@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -101,24 +100,24 @@ public class CourseReminderTemplate extends MailTemplate {
 	}
 
 	@Override
-	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 
 		if (recipient != null) {
 			User user = recipient.getUser();
-			putVariablesInMailContext(vContext, FIRST_NAME, StringHelper.escapeHtml(user.getFirstName()));
-			putVariablesInMailContext(vContext, LAST_NAME, StringHelper.escapeHtml(user.getLastName()));
-			putVariablesInMailContext(vContext, FULL_NAME, StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)));
+			putVariablesInMailContext(FIRST_NAME, StringHelper.escapeHtml(user.getFirstName()));
+			putVariablesInMailContext(LAST_NAME, StringHelper.escapeHtml(user.getLastName()));
+			putVariablesInMailContext(FULL_NAME, StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)));
 			
 			String email = StringHelper.escapeHtml(userManager.getUserDisplayEmail(user, locale));
-			vContext.put("mail", email);
-			vContext.put(EMAIL, email);
+			putVariablesInMailContext("mail", email);
+			putVariablesInMailContext(EMAIL, email);
 			String loginName = securityManager.findAuthenticationName(recipient);
 			if (!StringHelper.containsNonWhitespace(loginName)) {
 				loginName = recipient.getName();
 			}
-			vContext.put(USERNAME, loginName);
+			putVariablesInMailContext(USERNAME, loginName);
 			
 			if (toRecipient == null) {
 				toRecipient = recipient;
@@ -127,8 +126,8 @@ public class CourseReminderTemplate extends MailTemplate {
 		
 		if (toRecipient != null) {
 			User toUser = toRecipient.getUser();
-			putVariablesInMailContext(vContext, RECIPIENT_FIRST_NAME, StringHelper.escapeHtml(toUser.getFirstName()));
-			putVariablesInMailContext(vContext, RECIPIENT_LAST_NAME, StringHelper.escapeHtml(toUser.getLastName()));
+			putVariablesInMailContext(RECIPIENT_FIRST_NAME, StringHelper.escapeHtml(toUser.getFirstName()));
+			putVariablesInMailContext(RECIPIENT_LAST_NAME, StringHelper.escapeHtml(toUser.getLastName()));
 		}
 		
 		// Put variables from greater context
@@ -136,36 +135,22 @@ public class CourseReminderTemplate extends MailTemplate {
 			Formatter formatter = Formatter.getInstance(locale);
 			RepositoryEntryLifecycle entryLifecycle = lifecycleDAO.loadByEntry(entry);
 
-			vContext.put(COURSE_URL, url);
-			vContext.put(COURSE_URL.toLowerCase(), url);
-			vContext.put(COURSE_NAME, entry.getDisplayname());
-			vContext.put(COURSE_NAME.toLowerCase(), entry.getDisplayname());
-			vContext.put(COURSE_DESCRIPTION, entry.getDescription());
-			vContext.put(COURSE_DESCRIPTION.toLowerCase(), entry.getDescription());
-			vContext.put(COURSE_REFERENCE, entry.getExternalRef());
-			vContext.put(COURSE_REFERENCE.toLowerCase(), entry.getExternalRef());
-			vContext.put(COURSE_TEASER, entry.getTeaser());
-			vContext.put(COURSE_TEASER.toLowerCase(), entry.getTeaser());
-			vContext.put(COURSE_OBJECTIVES, entry.getObjectives());
-			vContext.put(COURSE_OBJECTIVES.toLowerCase(), entry.getObjectives());
-			vContext.put(COURSE_REQUIREMENTS, entry.getRequirements());
-			vContext.put(COURSE_REQUIREMENTS.toLowerCase(), entry.getRequirements());
-			vContext.put(COURSE_CERTIFICATION, entry.getCredits());
-			vContext.put(COURSE_CERTIFICATION.toLowerCase(), entry.getCredits());
-			vContext.put(COURSE_AUTHORS, entry.getAuthors());
-			vContext.put(COURSE_AUTHORS.toLowerCase(), entry.getAuthors());
-			vContext.put(COURSE_MAIN_LANGUAGE, entry.getMainLanguage());
-			vContext.put(COURSE_MAIN_LANGUAGE.toLowerCase(), entry.getMainLanguage());
-			vContext.put(COURSE_EXPENDITURE_WORK, entry.getExpenditureOfWork());
-			vContext.put(COURSE_EXPENDITURE_WORK.toLowerCase(), entry.getExpenditureOfWork());
+			putVariablesInMailContext(COURSE_URL, url);
+			putVariablesInMailContext(COURSE_NAME, entry.getDisplayname());
+			putVariablesInMailContext(COURSE_DESCRIPTION, entry.getDescription());
+			putVariablesInMailContext(COURSE_REFERENCE, entry.getExternalRef());
+			putVariablesInMailContext(COURSE_TEASER, entry.getTeaser());
+			putVariablesInMailContext(COURSE_OBJECTIVES, entry.getObjectives());
+			putVariablesInMailContext(COURSE_REQUIREMENTS, entry.getRequirements());
+			putVariablesInMailContext(COURSE_CERTIFICATION, entry.getCredits());
+			putVariablesInMailContext(COURSE_AUTHORS, entry.getAuthors());
+			putVariablesInMailContext(COURSE_MAIN_LANGUAGE, entry.getMainLanguage());
+			putVariablesInMailContext(COURSE_EXPENDITURE_WORK, entry.getExpenditureOfWork());
 			if (entryLifecycle != null) {
-				vContext.put(COURSE_EXECUTION_PERIOD_START, formatter.formatDate(entryLifecycle.getValidFrom()));
-				vContext.put(COURSE_EXECUTION_PERIOD_START.toLowerCase(), formatter.formatDate(entryLifecycle.getValidFrom()));
-				vContext.put(COURSE_EXECUTION_PERIOD_END, formatter.formatDate(entryLifecycle.getValidTo()));
-				vContext.put(COURSE_EXECUTION_PERIOD_END.toLowerCase(), formatter.formatDate(entryLifecycle.getValidTo()));
+				putVariablesInMailContext(COURSE_EXECUTION_PERIOD_START, formatter.formatDate(entryLifecycle.getValidFrom()));
+				putVariablesInMailContext(COURSE_EXECUTION_PERIOD_END, formatter.formatDate(entryLifecycle.getValidTo()));
 			}
-			vContext.put(COURSE_LOCATION, entry.getLocation());
-			vContext.put(COURSE_LOCATION.toLowerCase(), entry.getLocation());
+			putVariablesInMailContext(COURSE_LOCATION, entry.getLocation());
 		}
 	}
 }

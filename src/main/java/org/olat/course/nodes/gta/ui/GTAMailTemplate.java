@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -78,11 +77,11 @@ public class GTAMailTemplate extends MailTemplate {
 	}
 
 	@Override
-	public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		Locale locale = translator.getLocale();
 		//compatibility with the old TA
-		fillContextWithStandardIdentityValues(context, identity, translator.getLocale());
-		putVariablesInMailContext(context, NUMBER_OF_FILES, files == null ? "0" : Integer.toString(files.length));
+		fillContextWithStandardIdentityValues(identity, translator.getLocale());
+		putVariablesInMailContext(NUMBER_OF_FILES, files == null ? "0" : Integer.toString(files.length));
 
 		if(files != null && files.length > 0) {
 			StringBuilder sb = new StringBuilder();
@@ -90,25 +89,25 @@ public class GTAMailTemplate extends MailTemplate {
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(StringHelper.escapeHtml(file.getName()));
 			}
-			context.put(FILENAME, sb.toString());
+			putVariablesInMailContext(FILENAME, sb.toString());
 		} else {
-			context.put(FILENAME, translator.translate("submission.nofile"));
+			putVariablesInMailContext(FILENAME, translator.translate("submission.nofile"));
 		}
 		
 		Date now = new Date();
 		Formatter f = Formatter.getInstance(locale);
-		context.put(DATE, f.formatDate(now));
-		context.put(TIME, f.formatTime(now));
+		putVariablesInMailContext(DATE, f.formatDate(now));
+		putVariablesInMailContext(TIME, f.formatTime(now));
 		
 		if(courseEntry != null) {
-			putVariablesInMailContext(context, COURSE_NAME, courseEntry.getDisplayname());
+			putVariablesInMailContext(COURSE_NAME, courseEntry.getDisplayname());
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey();
 			if(courseNode != null) {
 				url += "/CourseNode/" + courseNode.getIdent();
 			}
 			String link = "<a href='" + url + "'>" + url + "</a>";
-			putVariablesInMailContext(context, COURSE_URL, link);
-			putVariablesInMailContext(context, "courseUrl", link);
+			putVariablesInMailContext(COURSE_URL, link);
+			putVariablesInMailContext("courseUrl", link);
 		}
 		
 		if(courseNode != null) {
@@ -116,9 +115,9 @@ public class GTAMailTemplate extends MailTemplate {
 			if(!StringHelper.containsNonWhitespace(title)) {
 				title = courseNode.getShortTitle();
 			}
-			putVariablesInMailContext(context, COURSE_ELEMENT_NAME, title);
-			putVariablesInMailContext(context, COURSE_ELEMENT_TITLE, title);
-			putVariablesInMailContext(context, COURSE_ELEMENT_SHORT_TITLE, courseNode.getShortTitle());
+			putVariablesInMailContext(COURSE_ELEMENT_NAME, title);
+			putVariablesInMailContext(COURSE_ELEMENT_TITLE, title);
+			putVariablesInMailContext(COURSE_ELEMENT_SHORT_TITLE, courseNode.getShortTitle());
 		}
 	}
 }

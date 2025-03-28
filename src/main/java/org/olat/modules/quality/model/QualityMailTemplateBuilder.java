@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -155,22 +154,20 @@ public class QualityMailTemplateBuilder {
 		
 		MailTemplate mailTempl = new MailTemplate(subject, body, attachments ) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {	
-				context.put(FIRST_NAME, blankIfNull(firstname));
-				context.put("firstname", blankIfNull(firstname));
-				context.put(LAST_NAME, blankIfNull(lastname));
-				context.put("lastname", blankIfNull(lastname));
-				context.put(START, blankIfNull(start));
-				context.put(DEADLINE, blankIfNull(deadline));
-				context.put(TOPICTYPE, blankIfNull(topictype));
-				context.put(TOPIC, blankIfNull(topic));
-				context.put(TITLE, blankIfNull(title));
-				context.put(PREVIOUS_TITLE, blankIfNull(previousTitle));
-				context.put(SERIE_POSITION, blankIfNull(seriePosition));
-				context.put(CONTEXT, blankIfNull(surveyContext));
-				context.put(URL, blankIfNull(url));
-				context.put(INVITATION, blankIfNull(invitation));
-				context.put(RESULT, blankIfNull(result));
+			public void putVariablesInMailContext(Identity identity) {	
+				putVariablesInMailContext(FIRST_NAME, blankIfNull(firstname));
+				putVariablesInMailContext(LAST_NAME, blankIfNull(lastname));
+				putVariablesInMailContext(START, blankIfNull(start));
+				putVariablesInMailContext(DEADLINE, blankIfNull(deadline));
+				putVariablesInMailContext(TOPICTYPE, blankIfNull(topictype));
+				putVariablesInMailContext(TOPIC, blankIfNull(topic));
+				putVariablesInMailContext(TITLE, blankIfNull(title));
+				putVariablesInMailContext(PREVIOUS_TITLE, blankIfNull(previousTitle));
+				putVariablesInMailContext(SERIE_POSITION, blankIfNull(seriePosition));
+				putVariablesInMailContext(CONTEXT, blankIfNull(surveyContext));
+				putVariablesInMailContext(URL, blankIfNull(url));
+				putVariablesInMailContext(INVITATION, blankIfNull(invitation));
+				putVariablesInMailContext(RESULT, blankIfNull(result));
 			}
 		};
 		return mailTempl;

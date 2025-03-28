@@ -168,7 +168,7 @@ public abstract class MailTemplate {
 	
 	/**
 	 * A collection of variable name which can be used in
-	 * {@link #putVariablesInMailContext(VelocityContext,Identity)}. The variable
+	 * {@link #putVariablesInMailContext(Identity)}. The variable
 	 * names are primarily used to show in the context help. The variable names do
 	 * not have to contain the character "$".
 	 *
@@ -182,14 +182,17 @@ public abstract class MailTemplate {
 	 * Method that puts all necessary variables for those templates into the give
 	 * velocity context. This method must match all variables used in the subject
 	 * and body template.
-	 * 
-	 * @param context The context where to put the variables
 	 * @param recipient The current identity which will get the email
+	 * @param context The context where to put the variables
 	 */
-	public abstract void putVariablesInMailContext(VelocityContext vContext, Identity recipient);
+	public abstract void putVariablesInMailContext(Identity recipient);
 	
-	public void addToContext(String name, String value) {
-		context.put(name, value);
+	public void putMissingVariablesToMailContext() {
+		for (String variableName : getVariableNames()) {
+			if (!context.containsKey(variableName)) {
+				putVariablesInMailContext(variableName, "");
+			}
+		}
 	}
 	
 	public VelocityContext getContext() {
@@ -200,7 +203,7 @@ public abstract class MailTemplate {
 		return STANDART_IDENTITIY_VARIABLE_NAMES;
 	}
 	
-	protected static void fillContextWithStandardIdentityValues(VelocityContext vContext, Identity identity, Locale locale) {
+	protected void fillContextWithStandardIdentityValues(Identity identity, Locale locale) {
 		if(identity == null) return;
 		
 		User user = identity.getUser();
@@ -208,20 +211,21 @@ public abstract class MailTemplate {
 			locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
 		}
 		
-		vContext.put("login", StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
-		vContext.put("username", StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
-		vContext.put(USER_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
-		vContext.put("first", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
-		vContext.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
-		vContext.put(FIRST_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
-		vContext.put("last", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
-		vContext.put("lastname", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
-		vContext.put(LAST_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
-		vContext.put(EMAIL, StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(identity, locale)));
+		putVariablesInMailContext("login", StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
+		putVariablesInMailContext(USER_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.NICKNAME, locale)));
+		putVariablesInMailContext("first", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
+		putVariablesInMailContext(FIRST_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, locale)));
+		putVariablesInMailContext("last", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
+		putVariablesInMailContext(LAST_NAME, StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, locale)));
+		putVariablesInMailContext(EMAIL, StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(identity, locale)));
+	}
+	
+	public void putVariablesInMailContext(String key, String value) {
+		putVariablesInMailContext(context, key, value);
 	}
 	
 	protected static void putVariablesInMailContext(VelocityContext vContext, String key, String value) {
-		vContext.put(key, value);
-		vContext.put(key.toLowerCase(), value);
+		vContext.put(key, StringHelper.blankIfNull(value));
+		vContext.put(key.toLowerCase(), StringHelper.blankIfNull(value));
 	}
 }

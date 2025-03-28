@@ -21,7 +21,6 @@ package org.olat.group.ui.wizard;
 
 import java.util.List;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
@@ -51,7 +50,7 @@ public class BGUserMailTemplate extends MailTemplate {
 	}
 
 	@Override
-	public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		//
 	}
 }

@@ -22,7 +22,6 @@ package org.olat.course.assessment.ui.inspection;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
@@ -45,10 +44,10 @@ public class InspectionMailTemplate extends MailTemplate {
 	}
 
 	@Override
-	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		if(recipient != null) {
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(recipient.getUser().getPreferences().getLanguage());
-			fillContextWithStandardIdentityValues(vContext, recipient, locale);
+			fillContextWithStandardIdentityValues(recipient, locale);
 		}
 		
 		long duration;
@@ -68,6 +67,6 @@ public class InspectionMailTemplate extends MailTemplate {
 				}
 			}
 		}
-		vContext.put("duration", Long.toString(duration));
+		putVariablesInMailContext("duration", Long.toString(duration));
 	}
 }

@@ -32,7 +32,6 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -288,15 +287,15 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			}
 			
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				context.put(ENROLLED_IDENTITY_FIRST_NAME, firstNameEnrolledIdentity);
-				context.put("enrolled_identity_firstname", firstNameEnrolledIdentity);
-				context.put(ENROLLED_IDENTITY_LAST_NAME, lastnameEnrolledIdentity);
-				context.put("enrolled_identity_lastname", lastnameEnrolledIdentity);
-				context.put(ENROLLED_IDENTITY_USERNAME, usernameEnrolledIdentity);
-				context.put("enrolled_identity_username", usernameEnrolledIdentity);
-				context.put(PROJECT_TITLE, projectTitle);
-				context.put(CURRENT_DATE, currentDate);
+			public void putVariablesInMailContext(Identity identity) {
+				putVariablesInMailContext(ENROLLED_IDENTITY_FIRST_NAME, firstNameEnrolledIdentity);
+				putVariablesInMailContext("enrolled_identity_firstname", firstNameEnrolledIdentity);
+				putVariablesInMailContext(ENROLLED_IDENTITY_LAST_NAME, lastnameEnrolledIdentity);
+				putVariablesInMailContext("enrolled_identity_lastname", lastnameEnrolledIdentity);
+				putVariablesInMailContext(ENROLLED_IDENTITY_USERNAME, usernameEnrolledIdentity);
+				putVariablesInMailContext("enrolled_identity_username", usernameEnrolledIdentity);
+				putVariablesInMailContext(PROJECT_TITLE, projectTitle);
+				putVariablesInMailContext(CURRENT_DATE, currentDate);
 			}
 		};
 	}
@@ -317,12 +316,12 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			}
 			
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				context.put(PROJECT_TITLE, projectTitle);
-				context.put(CURRENT_DATE, currentDate);
-				context.put(FIRSTNAME_PROJECT_MANAGER, firstnameProjectManager);
-				context.put(LASTNAME_PROJECT_MANAGER, lastnameProjectManager);
-				context.put(USERNAME_PROJECT_MANAGER, usernameProjectManager);
+			public void putVariablesInMailContext(Identity identity) {
+				putVariablesInMailContext(PROJECT_TITLE, projectTitle);
+				putVariablesInMailContext(CURRENT_DATE, currentDate);
+				putVariablesInMailContext(FIRSTNAME_PROJECT_MANAGER, firstnameProjectManager);
+				putVariablesInMailContext(LASTNAME_PROJECT_MANAGER, lastnameProjectManager);
+				putVariablesInMailContext(USERNAME_PROJECT_MANAGER, usernameProjectManager);
 			}
 		};
 	}

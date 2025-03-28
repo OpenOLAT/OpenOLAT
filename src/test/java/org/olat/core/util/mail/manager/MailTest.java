@@ -183,15 +183,15 @@ public class MailTest extends OlatTestCase {
 
 		MailTemplate template = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 				// Put user variables
 				User user = identity.getUser();
-				context.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
-				context.put("lastname", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null)));
-				context.put("login", identity.getName());
+				putVariablesInMailContext("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
+				putVariablesInMailContext("lastname", StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null)));
+				putVariablesInMailContext("login", identity.getName());
 				// Put variables from greater context, eg. course id, group name etc.
-				context.put("coursename", coursename);
-				context.put("courseURL", courseURL);
+				putVariablesInMailContext("coursename", coursename);
+				putVariablesInMailContext("courseURL", courseURL);
 
 			}
 		};
@@ -226,13 +226,13 @@ public class MailTest extends OlatTestCase {
 
 		MailTemplate template = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 				// identity is null in this mode - template parsed only once not for
 				// everybody
 
 				// Put variables from greater context, eg. course id, group name etc.
-				context.put("coursename", coursename);
-				context.put("courseURL", courseURL);
+				putVariablesInMailContext("coursename", coursename);
+				putVariablesInMailContext("courseURL", courseURL);
 
 			}
 		};
@@ -275,11 +275,11 @@ public class MailTest extends OlatTestCase {
 
 		MailTemplate template = new MailTemplate(subject, body, attachments) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 				// Put user variables
 				User user = identity.getUser();
-				context.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
-				context.put("login", identity.getName());
+				putVariablesInMailContext("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
+				putVariablesInMailContext("login", identity.getName());
 			}
 		};
 
@@ -304,11 +304,11 @@ public class MailTest extends OlatTestCase {
 
 		MailTemplate template = new MailTemplate(subject, body, attachments) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 				// Put user variables
 				User user = identity.getUser();
-				context.put("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
-				context.put("login", identity.getName());
+				putVariablesInMailContext("firstname", StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null)));
+				putVariablesInMailContext("login", identity.getName());
 			}
 		};
 
@@ -330,7 +330,7 @@ public class MailTest extends OlatTestCase {
 
 		MailTemplate template = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 			// nothing to do
 			}
 		};

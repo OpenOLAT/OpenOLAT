@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -144,7 +143,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		String body = translate("invitation.extern.mail.body", args);
 		mailTemplate = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+			public void putVariablesInMailContext(Identity recipient) {
 				//
 			}
 		};

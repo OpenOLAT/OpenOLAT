@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
@@ -130,19 +129,19 @@ public class FormMailing {
 			}
 
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				fillContextWithStandardIdentityValues(context, formParticipant, locale);
-				context.put(USER_DISPLAY_NAME, StringHelper.escapeHtml(userManager.getUserDisplayName(formParticipant.getKey())));
-				context.put(COURSE_URL, courseUrl);
-				context.put(COURSE_NAME, courseEntry.getDisplayname());
-				context.put(COURSE_DESCRIPTION, courseEntry.getDescription());
-				context.put(COURSE_NODE_URL, courseNodeUrl);
-				context.put(COURSE_NODE_SHORT_TITLE, courseNode.getShortTitle());
-				context.put(COURSE_NODE_LONG_TITLE, courseNode.getLongTitle());
+			public void putVariablesInMailContext(Identity identity) {
+				fillContextWithStandardIdentityValues(formParticipant, locale);
+				putVariablesInMailContext(USER_DISPLAY_NAME, StringHelper.escapeHtml(userManager.getUserDisplayName(formParticipant.getKey())));
+				putVariablesInMailContext(COURSE_URL, courseUrl);
+				putVariablesInMailContext(COURSE_NAME, courseEntry.getDisplayname());
+				putVariablesInMailContext(COURSE_DESCRIPTION, courseEntry.getDescription());
+				putVariablesInMailContext(COURSE_NODE_URL, courseNodeUrl);
+				putVariablesInMailContext(COURSE_NODE_SHORT_TITLE, courseNode.getShortTitle());
+				putVariablesInMailContext(COURSE_NODE_LONG_TITLE, courseNode.getLongTitle());
 				if (session != null) {
 					Formatter f = Formatter.getInstance(locale);
-					context.put(PARTICIPATION_DATE, f.formatDate(session.getSubmissionDate()));
-					context.put(PARTICIPATION_TIME, f.formatTime(session.getSubmissionDate()));
+					putVariablesInMailContext(PARTICIPATION_DATE, f.formatDate(session.getSubmissionDate()));
+					putVariablesInMailContext(PARTICIPATION_TIME, f.formatTime(session.getSubmissionDate()));
 				}
 			}
 		};

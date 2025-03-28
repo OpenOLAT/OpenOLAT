@@ -34,7 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -425,17 +424,17 @@ public class UserImportController extends BasicController {
 		// create a mail template which all these data
 		return new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity emailedIdentity) {
+			public void putVariablesInMailContext(Identity emailedIdentity) {
 				// Put user variables into velocity context
 				User user = emailedIdentity.getUser();
 				String firstname = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
-				context.put("firstName", firstname);
-				context.put("firstname", firstname);
+				putVariablesInMailContext("firstName", firstname);
+				putVariablesInMailContext("firstname", firstname);
 				String lastname = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
-				context.put("lastName", lastname);
-				context.put("lastname", lastname);
+				putVariablesInMailContext("lastName", lastname);
+				putVariablesInMailContext("lastname", lastname);
 				//the email of the user, needs to stay named 'login'
-				context.put("login", StringHelper.escapeHtml(user.getProperty(UserConstants.EMAIL, null)));
+				putVariablesInMailContext("login", StringHelper.escapeHtml(user.getProperty(UserConstants.EMAIL, null)));
 			}
 		};
 	}

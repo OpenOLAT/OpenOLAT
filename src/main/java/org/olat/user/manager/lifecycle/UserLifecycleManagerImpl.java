@@ -572,8 +572,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	
 	private void sendUserEmailTo(Identity identity, MailTemplate template, String type, boolean externalOnly) {
 		// for backwards compatibility
-		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
-		template.addToContext("type", type);
+		template.putVariablesInMailContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+		template.putVariablesInMailContext("type", type);
 
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
@@ -589,8 +589,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 	
 	private void sendUserEmailCopyTo(String receiver, MailTemplate template, String type, Identity identity) {
 		// for backwards compatibility
-		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
-		template.addToContext("type", type);
+		template.putVariablesInMailContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+		template.putVariablesInMailContext("type", type);
 
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
