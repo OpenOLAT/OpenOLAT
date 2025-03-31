@@ -135,6 +135,11 @@ public class EditTeamsMeetingController extends FormBasicController {
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}
+	
+	public void removeDates() {
+		startDateEl.setVisible(false);
+		endDateEl.setVisible(false);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

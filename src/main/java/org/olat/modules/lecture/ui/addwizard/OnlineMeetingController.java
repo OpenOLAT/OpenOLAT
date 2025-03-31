@@ -74,6 +74,7 @@ public class OnlineMeetingController extends StepFormBasicController {
 					.calculatePermissions(addLecture.getEntry(), null, getIdentity(), ureq.getUserSession().getRoles());
 			bigBlueButtonMeetingCtrl = new EditBigBlueButtonMeetingController(ureq, getWindowControl(), rootForm, bigBlueButtonMeeting, permissions);
 			listenTo(bigBlueButtonMeetingCtrl);
+			bigBlueButtonMeetingCtrl.removeDates();
 		} else if(addLecture.isWithTeamsMeeting()) {
 			TeamsMeeting teamsMeeting = addLecture.getTeamsMeeting();
 			if(teamsMeeting == null) {
@@ -85,6 +86,7 @@ public class OnlineMeetingController extends StepFormBasicController {
 			addLecture.setTeamsMeeting(teamsMeeting);
 			teamsMeetingCtrl = new EditTeamsMeetingController(ureq, getWindowControl(), teamsMeeting);
 			listenTo(teamsMeetingCtrl);
+			teamsMeetingCtrl.removeDates();
 		}
 		
 		initForm(ureq);

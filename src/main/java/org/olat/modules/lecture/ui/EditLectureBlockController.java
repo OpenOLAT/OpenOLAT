@@ -557,15 +557,11 @@ public class EditLectureBlockController extends FormBasicController {
 			if(!onlineMeetingEl.isOneSelected()) {
 				onlineMeetingEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()) && bigBlueButtonMeeting == null) {
+			} else if(!embedded && ((BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()) && bigBlueButtonMeeting == null)
+					|| (TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()) && teamsMeeting == null))) {
 				onlineMeetingEl.setErrorKey("error.configure.online.meeting");
 				allOk &= false;
 			}
-			
-			
-			
-			
-			
 		}
 		return allOk;
 	}
@@ -825,6 +821,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		editTeamsMeetingCtrl = new EditTeamsMeetingController(ureq, getWindowControl(), teamsMeeting);
 		listenTo(editTeamsMeetingCtrl);
+		editTeamsMeetingCtrl.removeDates();
 
 		String title = translate("edit.online.meeting.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTeamsMeetingCtrl.getInitialComponent(), true, title);
