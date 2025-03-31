@@ -142,8 +142,10 @@ public class WebCatalogDispatcher implements Dispatcher {
 		windows.getWindowManager().setAjaxWanted(ureq);
 		if (ureq.isValidDispatchURI()) {
 			Window window = windows.getWindow(ureq);
-			window.dispatchRequest(ureq, true);
-			return;
+			if(window != null) {
+				window.dispatchRequest(ureq, true);
+				return;
+			}
 		}
 		
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
