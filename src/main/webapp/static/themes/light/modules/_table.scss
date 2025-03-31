@@ -380,18 +380,14 @@
 							}
 							
 							.o_vertical_timeline_item_details {
-								background: $o-table-details-bg;
-								border-top: none;
-								padding: $o-table-details-padding;
-								margin: 0 -10px -10px -10px;
+								border-top: $o-table-details-container-border;
+								margin: 0 -10px 0px -10px;
+								padding: 10px 10px 5px 10px;
 							}
 						
 							.o_vertical_timeline_item_details_container {
-								margin: $o-table-details-container-margin;
-								padding: $o-table-details-container-padding;
-								border: $o-table-details-container-border;
-								border-radius: $o-table-details-container-border-radius;
-								background: $o-table-details-container-bg;
+								margin: 0;
+								
 							}
 						}
 					}

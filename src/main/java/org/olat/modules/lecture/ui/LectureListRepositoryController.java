@@ -710,11 +710,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			map.put(PAST_TAB_ID.toLowerCase(), pastTab);
 		}
 		
-		withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
-				TabSelectionBehavior.nothing, List.of());
-		withoutTeachersTab.setFiltersExpanded(true);
-		tabs.add(withoutTeachersTab);
-		map.put(WITHOUT_TEACHERS_TAB_ID.toLowerCase(), withoutTeachersTab);
+		if(config.withFilterPresetWithoutTeachers()) {
+			withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
+					TabSelectionBehavior.nothing, List.of());
+			withoutTeachersTab.setFiltersExpanded(true);
+			tabs.add(withoutTeachersTab);
+			map.put(WITHOUT_TEACHERS_TAB_ID.toLowerCase(), withoutTeachersTab);
+		}
 		
 		if(config.withFilterPresetPending()) {
 			pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("filter.pending"),

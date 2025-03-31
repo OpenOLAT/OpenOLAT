@@ -30,9 +30,9 @@ public class LectureListRepositoryConfig {
 	private final int titleSize;
 	
 	private final boolean withScopes;
-	private final boolean withFilterPresetPending;
-	private final boolean withFilterPresetClosed;
-	private final boolean withFilterPresetRelevant;
+	private boolean withFilterPresetPending;
+	private boolean withFilterPresetClosed;
+	private boolean withFilterPresetRelevant;
 	private boolean withFilterPresetWithoutTeachers;
 
 	private boolean withAllMineSwitch;
@@ -107,17 +107,27 @@ public class LectureListRepositoryConfig {
 	public boolean withFilterPresetPending() {
 		return withFilterPresetPending;
 	}
+	
+	public LectureListRepositoryConfig withFilterPresetPending(boolean presetEnabled) {
+		this.withFilterPresetPending = presetEnabled;
+		return this;
+	}
 
 	public boolean withFilterPresetClosed() {
 		return withFilterPresetClosed;
+	}
+	
+	public LectureListRepositoryConfig withFilterPresetClosed(boolean presetEnabled) {
+		this.withFilterPresetClosed = presetEnabled;
+		return this;
 	}
 
 	public boolean withFilterPresetWithoutTeachers() {
 		return withFilterPresetWithoutTeachers;
 	}
 
-	public LectureListRepositoryConfig withFilterPresetWithoutTeachers(boolean withFilterPresetWithoutTeachers) {
-		this.withFilterPresetWithoutTeachers = withFilterPresetWithoutTeachers;
+	public LectureListRepositoryConfig withFilterPresetWithoutTeachers(boolean presetEnabled) {
+		this.withFilterPresetWithoutTeachers = presetEnabled;
 		return this;
 	}
 
