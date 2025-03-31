@@ -968,7 +968,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			if(reSecurity.isEntryAdmin()) {
 				permissions.add(BigBlueButtonTemplatePermissions.owner);
 			}
-			if(reSecurity.isCourseCoach()) {
+			if(reSecurity.isCoach()) {
 				permissions.add(BigBlueButtonTemplatePermissions.coach);
 			}
 		}
