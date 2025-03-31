@@ -115,21 +115,26 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	}
 
 	private void initOrgTree(List<Organisation> orgs) {
+		orgRoot = buildOrgTree(orgs);
+	}
+
+	public static OrgNode buildOrgTree(List<Organisation> orgs) {
 		Map<Long, OrgNode> workingMap = new HashMap<>();
-		workingMap.put(ROOT_ORG_KEY, new OrgNode(null));
+		OrgNode rootOrgNode = new OrgNode(null);
+		workingMap.put(ROOT_ORG_KEY, rootOrgNode);
 
 		for (Organisation org : orgs) {
 			OrgNode orgNode = new OrgNode(org);
 			workingMap.put(org.getKey(), orgNode);
 		}
 
-		// Set all parents in all nodes:
+		// Set the parent node for all nodes:
 		OrgNode root = workingMap.get(ROOT_ORG_KEY);
 		for (OrgNode orgNode : workingMap.values()) {
-			if (orgNode.isRootNode()) {
+			if (orgNode.data == null) {
 				continue;
 			}
-			if (orgNode.data.getParent() == null) {
+			if (orgNode.data.getParent() == null || !workingMap.containsKey(orgNode.data.getParent().getKey())) {
 				orgNode.setParent(root);
 			} else {
 				OrgNode parent = workingMap.get(orgNode.data.getParent().getKey());
@@ -137,17 +142,18 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			}
 		}
 
-		// Set all children in all nodes:
+		// Add each node to the children list of its parent:
 		for (OrgNode orgNode : workingMap.values()) {
-			if (orgNode.isRootNode()) {
+			if (orgNode.getParent() == null) {
 				continue;
 			}
-			OrgNode parent = orgNode.getParent();
-			parent.getChildren().add(orgNode);
+			orgNode.getParent().getChildren().add(orgNode);
 		}
-		
-		orgRoot = workingMap.get(-1L);
+
+		OrgNode orgRoot = workingMap.get(ROOT_ORG_KEY);
 		orgRoot.calculateNumberOfElements();
+
+		return orgRoot;
 	}
 
 	private OrgRow mapToOrgRow(Organisation org, Map<Long, String> orgKeyToName) {
@@ -325,10 +331,10 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			this.data = data;
 		}
 
-		boolean isRootNode() {
-			return data == null;
+		public Organisation getData() {
+			return data;
 		}
-		
+
 		public void setParent(OrgNode parent) {
 			this.parent = parent;
 		}
