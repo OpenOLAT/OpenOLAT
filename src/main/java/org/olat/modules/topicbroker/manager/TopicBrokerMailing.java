@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -127,12 +126,12 @@ public class TopicBrokerMailing {
 		}
 		
 		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-			fillContextWithStandardIdentityValues(context, recipient, translator.getLocale());
-			putVariablesInMailContext(context, "recipientDisplayName", StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)));
+		public void putVariablesInMailContext(Identity recipient) {
+			fillContextWithStandardIdentityValues(recipient, translator.getLocale());
+			putVariablesInMailContext("recipientDisplayName", StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)));
 			
 			String withdrawDeadline = Formatter.getInstance(translator.getLocale()).formatDate(broker.getWithdrawEndDate());
-			putVariablesInMailContext(context, "withdrawDeadline", withdrawDeadline);
+			putVariablesInMailContext("withdrawDeadline", withdrawDeadline);
 			
 			String enrollmentList = "";
 			if (enrolledSelections != null && !enrolledSelections.isEmpty()) {
@@ -142,16 +141,16 @@ public class TopicBrokerMailing {
 					enrollmentList += "- " +  StringHelper.escapeHtml(selection.getTopic().getTitle()) + "<br>";
 				}
 			}
-			putVariablesInMailContext(context, "enrollmentList", enrollmentList);
+			putVariablesInMailContext("enrollmentList", enrollmentList);
 			
-			putVariablesInMailContext(context, "courseTitle", StringHelper.escapeHtml(courseEntry.getDisplayname()));
-			putVariablesInMailContext(context, "courseTitleSubject", courseEntry.getDisplayname());
-			putVariablesInMailContext(context, "courseElementTitle", StringHelper.escapeHtml(courseNode.getLongTitle()));
-			putVariablesInMailContext(context, "courseElementTitleSubject", courseNode.getLongTitle());
+			putVariablesInMailContext("courseTitle", StringHelper.escapeHtml(courseEntry.getDisplayname()));
+			putVariablesInMailContext("courseTitleSubject", courseEntry.getDisplayname());
+			putVariablesInMailContext("courseElementTitle", StringHelper.escapeHtml(courseNode.getLongTitle()));
+			putVariablesInMailContext("courseElementTitleSubject", courseNode.getLongTitle());
 			
 			String businessPath = "[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]";
 			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-			putVariablesInMailContext(context, "url", url);
+			putVariablesInMailContext("url", url);
 		}
 	}
 

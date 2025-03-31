@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -133,7 +132,7 @@ public class SendMailStepForm extends StepFormBasicController {
 	private MailTemplate createMailTemplate(String subject, String body) {		
 		return new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(Identity identity) {
 				// nothing to do
 			}
 		};

@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -97,34 +96,34 @@ public class IQConfirmationMailTemplate extends MailTemplate {
 	}
 	
 	@Override
-	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		if(assessedIdentity != null) {
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
 			
 			User user = assessedIdentity.getUser();
 			String firstName = StringHelper.escapeHtml(user.getFirstName());
-			String lastName =StringHelper.escapeHtml( user.getLastName());
-			putVariableInMailContext(vContext, FIRST_NAME, firstName);
-			putVariableInMailContext(vContext, LAST_NAME, lastName);
-			putVariableInMailContext(vContext, FIRST_NAME, firstName);
-			putVariableInMailContext(vContext, FIRST_NAME, firstName);
+			String lastName = StringHelper.escapeHtml( user.getLastName());
+			putVariablesInMailContext(FIRST_NAME, firstName);
+			putVariablesInMailContext(LAST_NAME, lastName);
+			putVariablesInMailContext(FIRST_NAME, firstName);
+			putVariablesInMailContext(FIRST_NAME, firstName);
 			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity));
-			putVariableInMailContext(vContext, FULL_NAME, fullName);
+			putVariablesInMailContext(FULL_NAME, fullName);
 			String email = StringHelper.escapeHtml(userManager.getUserDisplayEmail(user, locale));
-			putVariableInMailContext(vContext, EMAIL, email);
+			putVariablesInMailContext(EMAIL, email);
 			String loginName = securityManager.findAuthenticationName(recipient);
-			putVariableInMailContext(vContext, USERNAME, loginName);
+			putVariablesInMailContext(USERNAME, loginName);
 		}
 		
 		if(entry != null) {
-			putVariableInMailContext(vContext, COURSE_URL, url);
-			putVariableInMailContext(vContext, COURSE_NAME, entry.getDisplayname());
-			putVariableInMailContext(vContext, COURSE_DESCRIPTION, entry.getDescription());
+			putVariablesInMailContext(COURSE_URL, url);
+			putVariablesInMailContext(COURSE_NAME, entry.getDisplayname());
+			putVariablesInMailContext(COURSE_DESCRIPTION, entry.getDescription());
 		}
 		
 		if(courseNode != null) {
-			putVariableInMailContext(vContext, COURSE_ELEMENT_NAME, courseNode.getShortName());
+			putVariablesInMailContext(COURSE_ELEMENT_NAME, courseNode.getShortName());
 
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentEvaluation assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
@@ -132,44 +131,39 @@ public class IQConfirmationMailTemplate extends MailTemplate {
 			boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 			
 			if(assessmentConfig.hasAttempts() && assessmentEval.getAttempts() != null) {
-				putVariableInMailContext(vContext, ATTEMPT, assessmentEval.getAttempts().toString());
+				putVariablesInMailContext(ATTEMPT, assessmentEval.getAttempts().toString());
 			} else {
-				putVariableInMailContext(vContext, ATTEMPT, "-");
+				putVariablesInMailContext(ATTEMPT, "-");
 			}
 			
 			Float maxScore = assessmentConfig.getMaxScore();
 			if(maxScore != null) {
-				putVariableInMailContext(vContext, MAX_SCORE, AssessmentHelper.getRoundedScore(maxScore));	
+				putVariablesInMailContext(MAX_SCORE, AssessmentHelper.getRoundedScore(maxScore));	
 			} else {
-				putVariableInMailContext(vContext, MAX_SCORE, "");
+				putVariablesInMailContext(MAX_SCORE, "");
 			}
 
 			// Set defaults value
-			putVariableInMailContext(vContext, SCORE, "");
-			putVariableInMailContext(vContext, PASSED, "");
-			putVariableInMailContext(vContext, GRADING, "");
+			putVariablesInMailContext(SCORE, "");
+			putVariablesInMailContext(PASSED, "");
+			putVariablesInMailContext(GRADING, "");
 			
 			if(resultsVisible) {
 				if(assessmentEval.getScore() != null) {
-					putVariableInMailContext(vContext, SCORE, AssessmentHelper.getRoundedScore(assessmentEval.getScore()));
+					putVariablesInMailContext(SCORE, AssessmentHelper.getRoundedScore(assessmentEval.getScore()));
 				}
 
 				if(assessmentEval.getPassed() != null) {
 					String i18nPassed = passed ? "passed.yes" : "passed.no"; 
-					putVariableInMailContext(vContext, PASSED, translator.translate(i18nPassed));
+					putVariablesInMailContext(PASSED, translator.translate(i18nPassed));
 				}
 				
 				if(assessmentConfig.hasGrade() && assessmentEval.getGrade() != null) {
 					String grade = GradeUIFactory.translatePerformanceClass(translator,
 							assessmentEval.getPerformanceClassIdent(), assessmentEval.getGrade(), assessmentEval.getGradeSystemIdent());
-					putVariableInMailContext(vContext, GRADING, grade);
+					putVariablesInMailContext(GRADING, grade);
 				}
 			}
 		}
-	}
-	
-	private void putVariableInMailContext(VelocityContext vContext, String key, String value) {
-		vContext.put(key, value);
-		vContext.put(key.toLowerCase(), value);
 	}
 }

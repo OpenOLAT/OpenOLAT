@@ -261,7 +261,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			}
 		} else if(businessGroup != null) {
 			String businessGroupUrl = invitationService.toUrl(invitation, businessGroup);
-			template.addToContext("groupurl", businessGroupUrl);
+			template.putVariablesInMailContext("groupurl", businessGroupUrl);
 			if(template instanceof BGMailTemplate mailTemplate && mailTemplate.getInfos() != null) {
 				mailTemplate.getInfos().setGroupUrl(businessGroupUrl);
 			}

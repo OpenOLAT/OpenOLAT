@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -411,7 +410,7 @@ public class CurriculumMailing {
 		}
 
 		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+		public void putVariablesInMailContext(Identity identity) {
 			// build learning resources as list of url as string
 			final String curriculumName = curriculum.getDisplayName();
 			final String curriculumDescription = (StringHelper.containsNonWhitespace(curriculum.getDescription())
@@ -437,23 +436,23 @@ public class CurriculumMailing {
 			}
 			
 			// Put user variables into velocity context
-			fillContextWithStandardIdentityValues(context, identity, locale);
+			fillContextWithStandardIdentityValues(identity, locale);
 			if(identity != null) {
 				User user = identity.getUser();
-				context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
+				putVariablesInMailContext(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
 			}
 			// Put variables from greater context
-			putVariablesInMailContext(context, CURRICULUM_NAME, curriculumName);
-			putVariablesInMailContext(context, CURRICULUM_DESCRIPTION, curriculumDescription);
-			putVariablesInMailContext(context, CURRICULUM_URL, curriculumUrl);
-			putVariablesInMailContext(context, MY_COURSES_URL, myCoursesUrl);
+			putVariablesInMailContext(CURRICULUM_NAME, curriculumName);
+			putVariablesInMailContext(CURRICULUM_DESCRIPTION, curriculumDescription);
+			putVariablesInMailContext(CURRICULUM_URL, curriculumUrl);
+			putVariablesInMailContext(MY_COURSES_URL, myCoursesUrl);
 			
-			putVariablesInMailContext(context, CURRICULUM_ELEMENT_NAME, curriculumElementName);
-			putVariablesInMailContext(context, CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
-			putVariablesInMailContext(context, CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
-			putVariablesInMailContext(context, CURRICULUM_ELEMENT_TYPE_NAME, curriculumElementTypeName);
+			putVariablesInMailContext(CURRICULUM_ELEMENT_NAME, curriculumElementName);
+			putVariablesInMailContext(CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
+			putVariablesInMailContext(CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
+			putVariablesInMailContext(CURRICULUM_ELEMENT_TYPE_NAME, curriculumElementTypeName);
 			// Backwards compatibility
-			putVariablesInMailContext(context, "curriculumTypeName", curriculumElementTypeName);
+			putVariablesInMailContext("curriculumTypeName", curriculumElementTypeName);
 			
 			String feeStr = "-";
 			if(identity != null && cancellationFees != null
@@ -461,7 +460,7 @@ public class CurriculumMailing {
 				Price fee = cancellationFees.get(identity.getKey());
 				feeStr = PriceFormat.fullFormat(fee);
 			}
-			putVariablesInMailContext(context, FEE, feeStr);
+			putVariablesInMailContext(FEE, feeStr);
 		}
 	}
 }

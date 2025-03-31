@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.CoreSpringFactory;
@@ -224,10 +223,10 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 		
 		MailTemplate template = new MailTemplate(subject, text, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
-				vContext.put("fullName", fullName);
-				vContext.put("fullname", fullName);
-				vContext.put("url", url);
+			public void putVariablesInMailContext(Identity recipient) {
+				putVariablesInMailContext("fullName", fullName);
+				putVariablesInMailContext("fullname", fullName);
+				putVariablesInMailContext("url", url);
 			}
 		};
 		MailBundle bundle = mailService.makeMailBundle(new MailContextImpl(), requestBy, template, null, null, result);

@@ -775,7 +775,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		} else {
 			context = new VelocityContext();
 		}
-		template.putVariablesInMailContext(context, null);
+		template.putVariablesInMailContext(null);
 		context.put("server", Settings.getServerContextPathURI());
 
 		MailerResult result = new MailerResult();
@@ -832,12 +832,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 	protected MailContent createWithContext(Identity recipient, MailTemplate template, MailerResult result) {
 		VelocityContext context;
-		if(template != null && template.getContext() != null) {
+		if(template.getContext() != null) {
 			context = new VelocityContext(template.getContext());
 		} else {
 			context = new VelocityContext();
 		}
-		template.putVariablesInMailContext(context, recipient);
+		template.putVariablesInMailContext(recipient);
+		template.putMissingVariablesToMailContext();
 
 		// merge subject template with context variables
 		StringWriter subjectWriter = new StringWriter();

@@ -400,7 +400,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			ores = OresHelper.clone(businessGroup);
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, businessGroup, getIdentity());
 			String businessGroupUrl = invitationService.toUrl(invitation, businessGroup);
-			mailTemplate.addToContext("groupurl", businessGroupUrl);
+			mailTemplate.putVariablesInMailContext("groupurl", businessGroupUrl);
 		} else if(projProject != null) {
 			ores = OresHelper.clone(projProject);
 			mailTemplate = projectMailing.createInvitationTemplate(projProject, getIdentity());

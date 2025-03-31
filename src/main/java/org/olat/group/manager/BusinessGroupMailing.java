@@ -232,22 +232,18 @@ public class BusinessGroupMailing {
 		}
 		
 		@Override
-		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
-			fillContextWithStandardIdentityValues(vContext, recipient, null);
+		public void putVariablesInMailContext(Identity recipient) {
+			fillContextWithStandardIdentityValues(recipient, null);
 			
-			delegate.putVariablesInMailContext(vContext, recipient);
+			delegate.putVariablesInMailContext(recipient);
 			
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
-				vContext.put(COURSE_LIST, infos.getCourseList());
-				vContext.put("courselist", infos.getCourseList());
-			} else if(vContext.get("courselistempty") != null) {
-				vContext.put(COURSE_LIST, vContext.get("courselistempty"));
-				vContext.put("courselist", vContext.get("courselistempty"));
+				putVariablesInMailContext(COURSE_LIST, infos.getCourseList());
+			} else if(getContext().get("courselistempty") instanceof String courseEmptyList) {
+				putVariablesInMailContext(COURSE_LIST, courseEmptyList);
 			}
-			vContext.put(GROUP_NAME, infos.getGroupNameWithUrl());
-			vContext.put("groupname", infos.getGroupNameWithUrl());
-			vContext.put(GROUP_DESCRIPTION, infos.getGroupDescription());
-			vContext.put("groupdescription", infos.getGroupDescription());
+			putVariablesInMailContext(GROUP_NAME, infos.getGroupNameWithUrl());
+			putVariablesInMailContext(GROUP_DESCRIPTION, infos.getGroupDescription());
 		}
 
 		@Override
@@ -281,8 +277,8 @@ public class BusinessGroupMailing {
 		}
 
 		@Override
-		public void addToContext(String name, String value) {
-			delegate.addToContext(name, value);
+		public void putVariablesInMailContext(String name, String value) {
+			delegate.putVariablesInMailContext(name, value);
 		}
 
 		@Override

@@ -268,13 +268,12 @@ public class ReminderServiceImpl implements ReminderService {
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 
 		MailerResult overviewResult = new MailerResult();
-		CourseReminderTemplate template = new CourseReminderTemplate(subject, body, url, entry, locale, lifecycleDao);
-
 		for(Identity identityToRemind:identitiesToRemind) {
 			String status;
 			Long currentRun = runsInfos.get(identityToRemind.getKey());
 			long run = currentRun == null || currentRun.longValue() < 1 ? 1l : currentRun.longValue();
 			
+			CourseReminderTemplate template = new CourseReminderTemplate(subject, body, url, entry, locale, lifecycleDao);
 			MailBundle bundle = mailManager.makeMailBundle(context, identityToRemind, template, null, metaId, overviewResult);
 			if(bundle == null || subject == null || body == null) {
 				status = "error";

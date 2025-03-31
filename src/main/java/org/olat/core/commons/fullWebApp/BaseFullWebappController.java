@@ -137,7 +137,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private Panel contentPanel;
 	private Controller jsServerC;
 	private Controller debugC;
-	private Controller inlineTranslationC;
 	private Controller developmentC;
 	private List<String> bodyCssClasses = new ArrayList<>(3);
 
@@ -785,13 +784,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			debugC.dispose();
 			debugC = null;
 		}
-		if (inlineTranslationC != null) {
-			inlineTranslationC.dispose();
-			inlineTranslationC = null;
-		}
 		if (developmentC != null) {
 			developmentC.dispose();
 			developmentC = null;
+		}
+		if(contentCtrl != null) {
+			contentCtrl.dispose();
+			contentCtrl = null;
 		}
 
 		//deregister for assessment mode

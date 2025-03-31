@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -129,21 +128,21 @@ public class ToDoMailing {
 		}
 
 		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
-			fillContextWithStandardIdentityValues(context, recipient, translator.getLocale());
+		public void putVariablesInMailContext(Identity recipient) {
+			fillContextWithStandardIdentityValues(recipient, translator.getLocale());
 			
 			String userDisplayName = doer != null
 					? userManager.getUserDisplayName(doer)
 					: toDoProvider.getModifiedBy(translator.getLocale(), toDoTask);
-			putVariablesInMailContext(context, "doerDisplayName", userDisplayName);
+			putVariablesInMailContext("doerDisplayName", userDisplayName);
 			
-			putVariablesInMailContext(context, "toDoTitle", ToDoUIFactory.getDisplayName(translator, toDoTask));
+			putVariablesInMailContext("toDoTitle", ToDoUIFactory.getDisplayName(translator, toDoTask));
 			
 			String url = null;
 			String businessPath = toDoProvider.getBusinessPath(toDoTask);
 			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
 			url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
-			putVariablesInMailContext(context, "contextUrl", url);
+			putVariablesInMailContext("contextUrl", url);
 		}
 	}
 

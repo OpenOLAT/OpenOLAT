@@ -104,6 +104,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private final Stack<HistoryPoint> history = new Stack<>();
 	
 	private String csrfToken;
+	private String sessionId;
 	private transient OAuth2Tokens oauth2Tokens;
 
 	public UserSession() {
@@ -111,8 +112,9 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		csrfToken = UUID.randomUUID().toString();
 	}
 	
-	public UserSession(String csrfToken) {
+	public UserSession(String sessionId, String csrfToken) {
 		init();
+		this.sessionId = sessionId;
 		this.csrfToken = csrfToken;
 	}
 
@@ -405,6 +407,13 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	public SessionInfo getSessionInfo() {
 		return sessionInfo;
+	}
+	
+	public String getSessionId() {
+		if(sessionInfo != null && sessionInfo.getSession() != null) {
+			return sessionInfo.getSession().getId();
+		}
+		return sessionId;
 	}
 
 	/**

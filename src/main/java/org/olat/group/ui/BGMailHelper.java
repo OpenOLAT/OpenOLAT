@@ -41,7 +41,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -453,59 +452,59 @@ public class BGMailHelper {
 		}
 
 		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+		public void putVariablesInMailContext(Identity identity) {
 			final Identity identityForVariables = overrideIdentity == null ? identity : overrideIdentity;
 			final Locale locale = translator.getLocale();
 			
-			fillContextWithStandardIdentityValues(context, identityForVariables, locale);
+			fillContextWithStandardIdentityValues(identityForVariables, locale);
 
 			// Put user variables into velocity context
 			if(identityForVariables != null) {
 				//the email of the user, needs to stay named 'login'
-				context.put("login", StringHelper.escapeHtml(identityForVariables.getUser().getProperty(UserConstants.EMAIL, locale)));
+				putVariablesInMailContext("login", StringHelper.escapeHtml(identityForVariables.getUser().getProperty(UserConstants.EMAIL, locale)));
 			}
 			// Put variables from greater context
-			context.put(GROUP_NAME, infos.getGroupName());
-			context.put("groupname", infos.getGroupName());
-			context.put(GROUP_URL, infos.getGroupUrl());
-			context.put("groupurl", infos.getGroupUrl());
-			context.put(GROUP_DESCRIPTION, infos.getGroupDescription());
-			context.put("groupdescription", infos.getGroupDescription());
+			putVariablesInMailContext(GROUP_NAME, infos.getGroupName());
+			putVariablesInMailContext("groupname", infos.getGroupName());
+			putVariablesInMailContext(GROUP_URL, infos.getGroupUrl());
+			putVariablesInMailContext("groupurl", infos.getGroupUrl());
+			putVariablesInMailContext(GROUP_DESCRIPTION, infos.getGroupDescription());
+			putVariablesInMailContext("groupdescription", infos.getGroupDescription());
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
-				context.put(COURSE_LIST, infos.getCourseList());
-				context.put("courselist", infos.getCourseList());
+				putVariablesInMailContext(COURSE_LIST, infos.getCourseList());
+				putVariablesInMailContext("courselist", infos.getCourseList());
 			} else {
-				context.put(COURSE_LIST, translator.translate("notification.mail.no.ressource"));
-				context.put("courselist", translator.translate("notification.mail.no.ressource"));
+				putVariablesInMailContext(COURSE_LIST, translator.translate("notification.mail.no.ressource"));
+				putVariablesInMailContext("courselist", translator.translate("notification.mail.no.ressource"));
 			}
-			context.put(COURSE_LIST_EMPTY, translator.translate("notification.mail.no.ressource"));
-			context.put("reactiontime", infos.getReactionTime());
-			context.put("reactionTime", infos.getReactionTime());
+			putVariablesInMailContext(COURSE_LIST_EMPTY, translator.translate("notification.mail.no.ressource"));
+			putVariablesInMailContext("reactiontime", infos.getReactionTime());
+			putVariablesInMailContext("reactionTime", infos.getReactionTime());
 			
 			if(actor != null) {
 				User actorUser = actor.getUser();
-				putActorVariables(context, 
+				putActorVariables(
 						StringHelper.escapeHtml(actorUser.getProperty(UserConstants.FIRSTNAME, locale)),
 						StringHelper.escapeHtml(actorUser.getProperty(UserConstants.LASTNAME, locale)),
 						StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayEmail(actor, locale)),
 						StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(actor)));
 			} else {
-				putActorVariables(context, "Open", "Olat", WebappHelper.getMailConfig("mailSupport"), "OpenOlat");
+				putActorVariables("Open", "Olat", WebappHelper.getMailConfig("mailSupport"), "OpenOlat");
 			}
 		}
 		
-		private void putActorVariables(VelocityContext context, String firstName, String lastName, String email, String fullName) {
-			context.put(ACTOR, fullName);
-			context.put("actorFirst", firstName);
-			context.put(ACTOR_FIRSTNAME, firstName);
-			context.put("actorFirstName", firstName);
-			context.put("actorfirstname", firstName);
-			context.put("actorLast", lastName);
-			context.put(ACTOR_LASTNAME, lastName);
-			context.put("actorLastName", lastName);
-			context.put("actorlastname", lastName);
-			context.put(ACTOR_EMAIL, email);
-			context.put("actoremail", email);	
+		private void putActorVariables(String firstName, String lastName, String email, String fullName) {
+			putVariablesInMailContext(ACTOR, fullName);
+			putVariablesInMailContext("actorFirst", firstName);
+			putVariablesInMailContext(ACTOR_FIRSTNAME, firstName);
+			putVariablesInMailContext("actorFirstName", firstName);
+			putVariablesInMailContext("actorfirstname", firstName);
+			putVariablesInMailContext("actorLast", lastName);
+			putVariablesInMailContext(ACTOR_LASTNAME, lastName);
+			putVariablesInMailContext("actorLastName", lastName);
+			putVariablesInMailContext("actorlastname", lastName);
+			putVariablesInMailContext(ACTOR_EMAIL, email);
+			putVariablesInMailContext("actoremail", email);	
 		}
 	}
 }

@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -359,16 +358,16 @@ public class CPNotificationsController extends FormBasicController {
 		}
 
 		@Override
-		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
-			vContext.put("cpname", entry.getDisplayname());
+		public void putVariablesInMailContext(Identity recipient) {
+			putVariablesInMailContext("cpname", entry.getDisplayname());
 			
 			if(recipient != null) {
 				User user = recipient.getUser();
-				vContext.put("firstName", StringHelper.escapeHtml(user.getFirstName()));
-				vContext.put("lastName", StringHelper.escapeHtml(user.getLastName()));
+				putVariablesInMailContext("firstName", StringHelper.escapeHtml(user.getFirstName()));
+				putVariablesInMailContext("lastName", StringHelper.escapeHtml(user.getLastName()));
 			} else if(StringHelper.containsNonWhitespace(externalEmail)) {
-				vContext.put("firstName", "");
-				vContext.put("lastName", StringHelper.escapeHtml(externalEmail));
+				putVariablesInMailContext("firstName", "");
+				putVariablesInMailContext("lastName", StringHelper.escapeHtml(externalEmail));
 			}
 		}
 	}

@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -150,23 +149,23 @@ public class ProjectMailing {
 		}
 		
 		@Override
-		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-			fillContextWithStandardIdentityValues(context, identity, locale);
-			putVariablesInMailContext(context, RECIPIENT_DISPLAYNAME, userManager.getUserDisplayName(identity));
+		public void putVariablesInMailContext(Identity identity) {
+			fillContextWithStandardIdentityValues(identity, locale);
+			putVariablesInMailContext(RECIPIENT_DISPLAYNAME, userManager.getUserDisplayName(identity));
 			
-			putVariablesInMailContext(context, SENDER_FIRST_NAME, StringHelper.escapeHtml(sender.getUser().getProperty(UserConstants.FIRSTNAME, locale)));
-			putVariablesInMailContext(context, SENDER_LAST_NAME, StringHelper.escapeHtml(sender.getUser().getProperty(UserConstants.LASTNAME, locale)));
-			putVariablesInMailContext(context, SENDER_DISPLAYNAME, userManager.getUserDisplayName(sender));
-			putVariablesInMailContext(context, SENDER_EMAIL, userManager.getUserDisplayEmail(sender, locale));
+			putVariablesInMailContext(SENDER_FIRST_NAME, StringHelper.escapeHtml(sender.getUser().getProperty(UserConstants.FIRSTNAME, locale)));
+			putVariablesInMailContext(SENDER_LAST_NAME, StringHelper.escapeHtml(sender.getUser().getProperty(UserConstants.LASTNAME, locale)));
+			putVariablesInMailContext(SENDER_DISPLAYNAME, userManager.getUserDisplayName(sender));
+			putVariablesInMailContext(SENDER_EMAIL, userManager.getUserDisplayEmail(sender, locale));
 			
-			putVariablesInMailContext(context, PROJECT_TITLE, StringHelper.escapeHtml(project.getTitle()));
-			putVariablesInMailContext(context, PROJECT_EXTERNAL_REF, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getExternalRef())));
-			putVariablesInMailContext(context, PROJECT_TEASER, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getTeaser())));
-			putVariablesInMailContext(context, PROJECT_DESCRIPTION, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getDescription())));
+			putVariablesInMailContext(PROJECT_TITLE, StringHelper.escapeHtml(project.getTitle()));
+			putVariablesInMailContext(PROJECT_EXTERNAL_REF, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getExternalRef())));
+			putVariablesInMailContext(PROJECT_TEASER, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getTeaser())));
+			putVariablesInMailContext(PROJECT_DESCRIPTION, StringHelper.blankIfNull(StringHelper.escapeHtml(project.getDescription())));
 			if (StringHelper.containsNonWhitespace(url)) {
-				putVariablesInMailContext(context, PROJECT_URL, url);
+				putVariablesInMailContext(PROJECT_URL, url);
 			} else {
-				putVariablesInMailContext(context, PROJECT_URL, bcFactory.getProjectUrl(project));
+				putVariablesInMailContext(PROJECT_URL, bcFactory.getProjectUrl(project));
 			}
 			
 			if (rolesAdd != null) {
@@ -174,7 +173,7 @@ public class ProjectMailing {
 				String translatedRoles = rolesAdd.stream()
 						.map(role -> ProjectUIFactory.translateRoleInSentence(translator, role))
 						.collect(Collectors.joining(", "));
-				putVariablesInMailContext(context, ROLES_ADD, translatedRoles);
+				putVariablesInMailContext(ROLES_ADD, translatedRoles);
 			}
 		}
 	}

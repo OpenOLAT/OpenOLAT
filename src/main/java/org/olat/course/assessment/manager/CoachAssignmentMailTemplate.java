@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.manager;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -54,21 +53,21 @@ public class CoachAssignmentMailTemplate extends MailTemplate {
 	}
 	
 	@Override
-	public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		// Put user variables into velocity context			
 		String reName = courseEntry.getDisplayname();
-		putVariablesInMailContext(context, COURSE_NAME, reName);
+		putVariablesInMailContext(COURSE_NAME, reName);
 		
 		String redescription = (StringHelper.containsNonWhitespace(courseEntry.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(courseEntry.getDescription()) : ""); 
-		putVariablesInMailContext(context, COURSE_DESCRIPTION, redescription);
+		putVariablesInMailContext(COURSE_DESCRIPTION, redescription);
 		
 		String reUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey();
-		putVariablesInMailContext(context, COURSE_URL, reUrl);
+		putVariablesInMailContext(COURSE_URL, reUrl);
 		
 		String courseRef = courseEntry.getExternalRef() == null ? "" : courseEntry.getExternalRef();
-		putVariablesInMailContext(context, COURSE_REF, courseRef);
+		putVariablesInMailContext(COURSE_REF, courseRef);
 
-		putVariablesInMailContext(context, COURSE_ELEMENT_TITLE, courseNode.getLongTitle());
-		putVariablesInMailContext(context, COURSE_ELEMENT_SHORT_TITLE, courseNode.getShortTitle());
+		putVariablesInMailContext(COURSE_ELEMENT_TITLE, courseNode.getLongTitle());
+		putVariablesInMailContext(COURSE_ELEMENT_SHORT_TITLE, courseNode.getShortTitle());
 	}
 }

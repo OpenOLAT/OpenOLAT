@@ -497,7 +497,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		MailTemplate mailTempl = new MailTemplate(subjectTemplate, bodyTemplate, null) {
 
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
+			public void putVariablesInMailContext(Identity recipient) {
 				// nothing to do
 			}
 		};

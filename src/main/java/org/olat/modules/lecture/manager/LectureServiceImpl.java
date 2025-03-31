@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
@@ -2065,7 +2064,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 
 		@Override
-		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+		public void putVariablesInMailContext(Identity recipient) {
 			//
 		}
 	}

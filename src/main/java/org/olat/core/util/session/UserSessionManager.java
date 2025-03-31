@@ -128,7 +128,7 @@ public class UserSessionManager implements GenericEventListener {
 						csrfToken = UUID.randomUUID().toString();
 						session.setAttribute(CSRFSESSIONTOKEN, csrfToken);
 					}
-					us = new UserSession(csrfToken);
+					us = new UserSession(session.getId(), csrfToken);
 					session.setAttribute(USERSESSIONKEY, us); // triggers the
 					// valueBoundEvent -> nothing
 					// more to do here

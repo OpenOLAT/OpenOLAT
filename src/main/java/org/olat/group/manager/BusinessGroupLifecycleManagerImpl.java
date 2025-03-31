@@ -1013,8 +1013,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 	private void sendUserEmailTo(BusinessGroup businessGroup, Identity identity, String metaId, MailTemplate template, String type, MailerResult result) {
 		// for backwards compatibility
-		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
-		template.addToContext("type", type);
+		template.putVariablesInMailContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+		template.putVariablesInMailContext("type", type);
 
 		MailContext context = new MailContextImpl("[BusinessGroup:" + businessGroup.getKey() + "]");
 		MailBundle bundle = mailManager.makeMailBundle(context, identity, template, null, metaId, result);
@@ -1026,8 +1026,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 	private void sendUserEmailCopyTo(BusinessGroup businessGroup, String receiver, MailTemplate template, String type) {
 		// for backwards compatibility
-		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
-		template.addToContext("type", type);
+		template.putVariablesInMailContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+		template.putVariablesInMailContext("type", type);
 
 		MailerResult result = new MailerResult();
 		MailContext context = new MailContextImpl("[BusinessGroup:" + businessGroup.getKey() + "]");

@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -47,6 +49,8 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -70,6 +74,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	private FormLayoutContainer tableContainer;
 
 	private boolean isAdministrativeUser;
+	private final List<Organisation> searchableOrganisations;
 
 	private final String formTitle;
 	private final MembersByNameContext context;
@@ -82,14 +87,20 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public ImportMemberByUsernamesController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, String runContextKey, String formTitle) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.formTitle = formTitle;
+		Roles roles = ureq.getUserSession().getRoles();
 		context = (MembersByNameContext)getOrCreateFromRunContext(runContextKey, MembersByNameContext::new);
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.valuesWithoutGuestAndInvitee());
+		
 		initForm (ureq);
 	}
 	
@@ -209,7 +220,8 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	 */
 	private boolean processInput(String inp) {
 		List<String> identList = getLines(inp);
-		FindNamedIdentityCollection identityCollection = securityManager.findAndCollectIdentitiesBy(identList);
+		
+		FindNamedIdentityCollection identityCollection = securityManager.findAndCollectIdentitiesBy(identList, Identity.STATUS_VISIBLE_LIMIT, searchableOrganisations);
 		
 		identitiesList = identityCollection.getUnique();
 		notFoundNames = identityCollection.getNotFoundNames();

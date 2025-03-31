@@ -19,7 +19,6 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -80,7 +79,7 @@ public class MemberMailController extends StepFormBasicController {
 			
 			mailTemplate = new MailTemplate(subject, body, null) {
 				@Override
-				public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+				public void putVariablesInMailContext(Identity recipient) {
 					//
 				}
 			};

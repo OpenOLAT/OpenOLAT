@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
@@ -818,7 +817,7 @@ public class DENManager {
 		
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity ident) {
+			public void putVariablesInMailContext(Identity ident) {
 				//
 			}
 		};
@@ -847,7 +846,7 @@ public class DENManager {
 		String body = trans.translate("mail.participants.remove.body", bodyArgs);
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity ident) {
+			public void putVariablesInMailContext(Identity ident) {
 				//
 			}
 		};

@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -58,7 +57,7 @@ public class LifecycleMailTemplate extends MailTemplate {
 	}
 
 	@Override
-	public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+	public void putVariablesInMailContext(Identity recipient) {
 		if(recipient != null) {
 			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 			BaseSecurityManager securityManager = CoreSpringFactory.getImpl(BaseSecurityManager.class);
@@ -67,34 +66,34 @@ public class LifecycleMailTemplate extends MailTemplate {
 			User user = recipient.getUser();
 			
 			String firstname = StringHelper.escapeHtml(user.getProperty(UserConstants.FIRSTNAME, null));
-			vContext.put("firstname", firstname);
-			vContext.put(FIRST_NAME, firstname);
+			putVariablesInMailContext("firstname", firstname);
+			putVariablesInMailContext(FIRST_NAME, firstname);
 			String lastname = StringHelper.escapeHtml(user.getProperty(UserConstants.LASTNAME, null));
-			vContext.put("lastname", lastname);
-			vContext.put(LAST_NAME, lastname);
+			putVariablesInMailContext("lastname", lastname);
+			putVariablesInMailContext(LAST_NAME, lastname);
 			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(recipient));
-			vContext.put("fullname", fullName);
-			vContext.put(FULL_NAME, fullName); 
+			putVariablesInMailContext("fullname", fullName);
+			putVariablesInMailContext(FULL_NAME, fullName); 
 			String userDisplayEmail =StringHelper.escapeHtml( userManager.getUserDisplayEmail(user, locale));
-			vContext.put("mail", userDisplayEmail);
-			vContext.put(EMAIL, userDisplayEmail);
+			putVariablesInMailContext("mail", userDisplayEmail);
+			putVariablesInMailContext(EMAIL, userDisplayEmail);
 			String loginName = securityManager.findAuthenticationName(recipient);
 			if(!StringHelper.containsNonWhitespace(loginName)) {
 				loginName = recipient.getName();
 			}
-			vContext.put("username", loginName);
-			vContext.put(USER_NAME, loginName);
+			putVariablesInMailContext("username", loginName);
+			putVariablesInMailContext(USER_NAME, loginName);
 
 			String reactionTime = "";
 			// getDaysUntilDeactivation covers expiration and deactivation
-			if (vContext.get("type").equals("before expiration") || vContext.get("type").equals("before deactivation")) {
+			if (getContext().get("type").equals("before expiration") || getContext().get("type").equals("before deactivation")) {
 				reactionTime = String.valueOf(userLifecycleManager.getDaysUntilDeactivation(recipient, new Date()));
-			} else if (vContext.get("type").equals("before deletion")) {
+			} else if (getContext().get("type").equals("before deletion")) {
 				reactionTime = String.valueOf(userLifecycleManager.getDaysUntilDeletion(recipient, new Date()));
 			}
 
-			vContext.put("reactiontime", reactionTime);
-			vContext.put(REACTION_TIME, reactionTime);
+			putVariablesInMailContext("reactiontime", reactionTime);
+			putVariablesInMailContext(REACTION_TIME, reactionTime);
 		}
 	}
 }

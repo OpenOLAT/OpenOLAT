@@ -75,20 +75,15 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		
 		MapperKey mapperKey = new MapperKey(session, mapid);
 		mapperKeyToMapper.put(mapperKey, mapper);
-		if(session == null || session.getSessionInfo() == null) {
+		if(session == null) {
 			mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + mapid);
 			return mapperKey;
 		}
 		
-		String sessionId = session.getSessionInfo().getSession().getId();
-		if(sessionIdToMapperKeys.containsKey(sessionId)) {
-			sessionIdToMapperKeys.get(sessionId).add(mapperKey);
-		} else {
-			List<MapperKey> mapKeys = new ArrayList<>();
-			mapKeys.add(mapperKey);
-			sessionIdToMapperKeys.put(sessionId, mapKeys);
-		}
-		
+		String sessionId = session.getSessionId();
+		sessionIdToMapperKeys
+			.computeIfAbsent(sessionId, sid -> new ArrayList<>())
+			.add(mapperKey);
 		if(mapper instanceof Serializable sMapper) {
 			mapperDao.persistMapper(sessionId, mapid, sMapper, -1);
 		}
@@ -125,7 +120,13 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		} else if(expirationTime > 0) {
 			mapperCache.put(encryptedMapId, mapper, expirationTime);
 		}
-
+		
+		if(session != null) {
+			sessionIdToMapperKeys
+				.computeIfAbsent(mapperKey.getSessionId(), sid -> new ArrayList<>())
+				.add(mapperKey);
+		}
+		
 		mapperKeyToMapper.put(mapperKey, mapper);
 		mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId);
 		return mapperKey;
