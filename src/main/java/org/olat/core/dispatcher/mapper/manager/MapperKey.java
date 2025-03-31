@@ -21,7 +21,6 @@ package org.olat.core.dispatcher.mapper.manager;
 
 import java.io.Serializable;
 
-import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 
 /**
@@ -44,11 +43,8 @@ public class MapperKey implements Serializable {
 	
 	public MapperKey(UserSession usess, String mapperId) {
 		this.mapperId = mapperId;
-		if(usess != null && usess.getSessionInfo() != null) {
-			SessionInfo infos = usess.getSessionInfo();
-			if(infos.getSession() != null) {
-				sessionId = infos.getSession().getId();
-			}
+		if(usess != null) {
+			sessionId = usess.getSessionId();
 		}
 		
 		if(sessionId == null) {
