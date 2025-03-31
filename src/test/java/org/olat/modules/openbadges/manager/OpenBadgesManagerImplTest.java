@@ -415,12 +415,21 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("issue-badges-automatically-participant");
 		
 		RepositoryEntry courseA = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeEntryConfiguration configA = badgeEntryConfigurationDAO.createConfiguration(courseA);
+		configA.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configA);
 		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Badge A", "image.png", courseA);
 		
 		RepositoryEntry courseB = JunitTestHelper.deployBasicCourse(ownerAB);
+		BadgeEntryConfiguration configB = badgeEntryConfigurationDAO.createConfiguration(courseB);
+		configB.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configB);
 		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Badge B", "image.png", courseB);
 		
 		RepositoryEntry courseC = JunitTestHelper.deployBasicCourse(ownerC);
+		BadgeEntryConfiguration configC = badgeEntryConfigurationDAO.createConfiguration(courseC);
+		configC.setAwardEnabled(true);
+		badgeEntryConfigurationDAO.updateConfiguration(configC);
 		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge C", "image.png", courseC);
 		
 		Group group = groupDAO.createGroup();
