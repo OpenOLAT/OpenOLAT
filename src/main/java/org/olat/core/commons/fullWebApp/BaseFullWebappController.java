@@ -791,6 +791,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			contentCtrl.dispose();
 			contentCtrl = null;
 		}
+		if(resumeSessionCtrl != null) {
+			resumeSessionCtrl.dispose();
+			resumeSessionCtrl = null;
+		}
 
 		//deregister for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()

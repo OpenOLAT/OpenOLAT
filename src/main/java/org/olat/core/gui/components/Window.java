@@ -36,6 +36,8 @@ import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -103,7 +105,7 @@ import org.olat.core.util.component.ComponentVisitor;
  * 
  * @author Felix Jost
  */
-public class Window extends AbstractComponent implements CustomCSSDelegate {
+public class Window extends AbstractComponent implements CustomCSSDelegate, HttpSessionBindingListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(Window.class);
 	private static final DispatchResult NO_DISPATCHRESULT = new DispatchResult(false, false, false);
@@ -313,6 +315,13 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	public boolean canBeRemoved() {
 		return (markToBeRemoved && markToBeRemovedTimestamp > 0 && System.currentTimeMillis() - markToBeRemovedTimestamp > WINDOW_CLOSED_TIMEOUT);
 	}
+	
+	@Override
+	public void valueUnbound(HttpSessionBindingEvent event) {
+		if(wbackofficeImpl != null) {
+			wbackofficeImpl.getChiefController().dispose();
+		}
+    }
 
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
