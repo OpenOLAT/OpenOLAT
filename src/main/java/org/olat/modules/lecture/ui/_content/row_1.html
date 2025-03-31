@@ -9,7 +9,7 @@
 		</div>
 	</div>
 	
-	<div class="o_flex_first_grow o_block">
+	<div class="o_two_col_metadata o_block">
 		<div>
 			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)</span>
 		#if($r.isNotEmpty($row.location))
@@ -17,7 +17,7 @@
 		#end
 		</div>
 		
-		<div>
+		<div class="o_lecture_timeline_details_actions">
 			#if($r.isNotNull($row.openOnlineMeetingButton))
 				$r.render($row.openOnlineMeetingButton)
 			#end

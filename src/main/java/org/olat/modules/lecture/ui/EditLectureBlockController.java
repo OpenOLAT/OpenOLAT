@@ -508,10 +508,9 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editBigBlueButtonMeetingCtrl == source) {
-			cmc.deactivate();
-			cleanUp();
-		} else if(editTeamsMeetingCtrl == source) {
+		if(editBigBlueButtonMeetingCtrl == source || editTeamsMeetingCtrl == source) {
+			validateFormLogic(ureq);
+			markDirty();
 			cmc.deactivate();
 			cleanUp();
 		}
@@ -553,7 +552,21 @@ public class EditLectureBlockController extends FormBasicController {
 			dateEl.setErrorKey("error.start.after.end.date");
 			allOk &= false;
 		}
-
+		
+		if(onlineMeetingEl.isVisible()) {
+			if(!onlineMeetingEl.isOneSelected()) {
+				onlineMeetingEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()) && bigBlueButtonMeeting == null) {
+				onlineMeetingEl.setErrorKey("error.configure.online.meeting");
+				allOk &= false;
+			}
+			
+			
+			
+			
+			
+		}
 		return allOk;
 	}
 
@@ -796,6 +809,7 @@ public class EditLectureBlockController extends FormBasicController {
 				.calculatePermissions(entry, null, getIdentity(), ureq.getUserSession().getRoles());
 		editBigBlueButtonMeetingCtrl = new EditBigBlueButtonMeetingController(ureq, getWindowControl(), bigBlueButtonMeeting, permissions);
 		listenTo(editBigBlueButtonMeetingCtrl);
+		editBigBlueButtonMeetingCtrl.removeDates();
 
 		String title = translate("edit.online.meeting.title");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editBigBlueButtonMeetingCtrl.getInitialComponent(), true, title);

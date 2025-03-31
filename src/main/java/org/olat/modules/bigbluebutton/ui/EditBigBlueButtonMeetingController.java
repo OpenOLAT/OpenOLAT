@@ -509,8 +509,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	public void copySlides(VFSContainer originalContainer) {
 		List<VFSItem> items = originalContainer.getItems(new VFSLeafButSystemFilter());
 		for(VFSItem item:items) {
-			if(item instanceof VFSLeaf) {
-				VFSLeaf slide = (VFSLeaf)item;
+			if(item instanceof VFSLeaf slide) {
 				VFSLeaf newSlide = VFSManager.resolveOrCreateLeafFromPath(temporaryContainer, slide.getName());
 				VFSManager.copyContent(slide, newSlide, true, getIdentity());
 			}
@@ -564,6 +563,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	public void removeDates() {
+		startDateEl.setVisible(false);
+		endDateEl.setVisible(false);
 	}
 	
 	@Override
@@ -728,10 +732,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				validateSlidesSize();
 				uploadSlidesEl.reset();
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof SlideWrapper) {
-				doDeleteSlide((SlideWrapper)link.getUserObject());
+		} else if(source instanceof FormLink link) {
+			if("delete".equals(link.getCmd()) && link.getUserObject() instanceof SlideWrapper slideWrapper) {
+				doDeleteSlide(slideWrapper);
 				reloadSlides();
 			}
 		}

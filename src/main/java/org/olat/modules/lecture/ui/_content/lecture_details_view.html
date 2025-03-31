@@ -73,6 +73,8 @@
 	
 	$r.render("participantsGroupTable")
 	#if($r.available("lecture.desc"))
+	<div class="o_block_top">
 		$r.render("lecture.desc","vertical")
+	</div>
 	#end
 </div>
