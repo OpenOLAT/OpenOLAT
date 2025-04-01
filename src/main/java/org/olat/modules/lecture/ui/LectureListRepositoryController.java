@@ -518,7 +518,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		if(secCallback.viewAs() != LectureRoles.participant) {
-			columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
+			ActionsColumnModel actionsCol = new ActionsColumnModel(BlockCols.tools);
+			actionsCol.setIconHeader("o_icon o_icon-lg o_icon_actions");
+			columnsModel.addFlexiColumnModel(actionsCol);
 		}
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
@@ -903,7 +905,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			iAmTeacher |= getIdentity().getKey().equals(teacher.getKey());
 		}
 		
-		final boolean rollCallEnabled = ConfigurationHelper.isRollCallEnabled(block.getLecturesConfigurations(), lectureModule);
+		final boolean rollCallEnabled = config.withRollCall() != Visibility.NO
+				&& ConfigurationHelper.isRollCallEnabled(block.getLecturesConfigurations(), lectureModule);
 		final ZonedDateTime date = DateUtils.toZonedDateTime(block.getLectureBlock().getStartDate(), calendarModule.getDefaultZoneId());
 		
 		LectureBlockRow row = new LectureBlockRow(b, date, displayname, externalRef,
@@ -923,11 +926,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			row.setOpenOnlineMeetingLink(onlineMeetingLink);
 		}
 		
-		if(rollCallEnabled && config.withRollCall() != Visibility.NO && secCallback.viewAs() != LectureRoles.participant && hasRollCall(row)) {
+		if(rollCallEnabled && secCallback.viewAs() != LectureRoles.participant && hasRollCall(row)) {
 			FormLink rollCallLink = uifactory.addFormLink("rcall_" + b.getKey(), CMD_ROLLCALL, "", tableEl, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
 			rollCallLink.setDomReplacementWrapperRequired(false);
 			rollCallLink.setTitle(translate("edit.type.absence"));
-			rollCallLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_lecture");
+			rollCallLink.setIconLeftCSS("o_icon o_icon-lg o_icon_lecture");
 			rollCallLink.setUserObject(row);
 			row.setRollCallButton(rollCallLink);
 		}
@@ -935,7 +938,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(secCallback.viewAs() != LectureRoles.participant) {
 			FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "tools", "", null, null, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
 			toolsLink.setDomReplacementWrapperRequired(false);
-			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
 			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);

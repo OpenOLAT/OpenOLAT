@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -122,7 +123,6 @@ public class EditLectureBlockController extends FormBasicController {
 
 	private static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
 	private static final String ON_KEY = "on";
-	private static final String NO_MEETING = "no";
 	private static final String TEAMS_MEETING = "teams";
 	private static final String BIGBLUEBUTTON_MEETING = "bigbluebutton";
 	
@@ -134,6 +134,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private DateChooser dateEl;
 	private FormLink editOnlineMeetingButton;
 	private SingleSelection onlineMeetingEl;
+	private FormToggle enabledOnlineMeetingEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
 	private MultipleSelectionElement compulsoryEl;
@@ -333,22 +334,25 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		// Online meeting
 		SelectionValues meetingPK = new SelectionValues();
-		meetingPK.add(SelectionValues.entry(NO_MEETING, translate("lecture.online.meeting.no")));
 		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
 			meetingPK.add(SelectionValues.entry(BIGBLUEBUTTON_MEETING, translate("lecture.online.meeting.bigbluebutton")));
 		}
 		if(teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
 			meetingPK.add(SelectionValues.entry(TEAMS_MEETING, translate("lecture.online.meeting.teams")));
 		}
-		onlineMeetingEl = uifactory.addRadiosVertical("onlinemeeting", "lecture.online.meeting", formLayout, meetingPK.keys(), meetingPK.values());
-		onlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
-		onlineMeetingEl.setVisible(meetingPK.size() > 1);
-		if(bigBlueButtonMeeting != null) {
+
+		enabledOnlineMeetingEl = uifactory.addToggleButton("lecture.online.meeting", "lecture.online.meeting",
+				translate("on"), translate("off"), formLayout);
+		enabledOnlineMeetingEl.toggle(bigBlueButtonMeeting != null || teamsMeeting != null);
+		enabledOnlineMeetingEl.setVisible(!meetingPK.isEmpty());
+		enabledOnlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
+		
+		onlineMeetingEl = uifactory.addRadiosVertical("onlinemeeting.provider", null, formLayout, meetingPK.keys(), meetingPK.values());
+		onlineMeetingEl.setVisible(enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn());
+		if(meetingPK.containsKey(BIGBLUEBUTTON_MEETING) && bigBlueButtonMeeting != null) {
 			onlineMeetingEl.select(BIGBLUEBUTTON_MEETING, true);
-		} else if(teamsMeeting != null) {
+		} else if(meetingPK.containsKey(TEAMS_MEETING) && teamsMeeting != null) {
 			onlineMeetingEl.select(TEAMS_MEETING, true);
-		} else {
-			onlineMeetingEl.select(NO_MEETING, true);
 		}
 		editOnlineMeetingButton = uifactory.addFormLink("edit.online.meeting", formLayout, Link.BUTTON_SMALL);
 		editOnlineMeetingButton.setVisible(false);
@@ -498,19 +502,32 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private void updateOnlineMeetingUI() {
-		String selectedKey = onlineMeetingEl.isVisible() && onlineMeetingEl.isOneSelected()
-				? onlineMeetingEl.getSelectedKey() : null;		
-		boolean editable = BIGBLUEBUTTON_MEETING.equals(selectedKey) || TEAMS_MEETING.equals(selectedKey);
-		editOnlineMeetingButton.setVisible(editable && !embedded);
+		boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn();
+		onlineMeetingEl.setVisible(enableOnlineMeeting);
+		if(!onlineMeetingEl.isOneSelected()) {
+			if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
+				onlineMeetingEl.select(BIGBLUEBUTTON_MEETING, true);
+			} else if(teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
+				onlineMeetingEl.select(TEAMS_MEETING, true);
+			}
+		}
+		editOnlineMeetingButton.setVisible(enableOnlineMeeting && onlineMeetingEl.isOneSelected() && !embedded);
 	}
-	
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editBigBlueButtonMeetingCtrl == source || editTeamsMeetingCtrl == source) {
 			validateFormLogic(ureq);
 			markDirty();
+			if(event == Event.CANCELLED_EVENT) {
+				// Remove temporary meeting
+				if(editBigBlueButtonMeetingCtrl == source && bigBlueButtonMeeting != null && bigBlueButtonMeeting.getKey() == null) {
+					bigBlueButtonMeeting = null;
+				}
+				if(editTeamsMeetingCtrl == source && teamsMeeting != null && teamsMeeting.getKey() == null) {
+					teamsMeeting = null;
+				}
+			}
 			cmc.deactivate();
 			cleanUp();
 		}
@@ -579,7 +596,7 @@ public class EditLectureBlockController extends FormBasicController {
 			// Do nothing
 		} else if(compulsoryEl == source) {
 			updateUI();
-		} else if(onlineMeetingEl == source) {
+		} else if(enabledOnlineMeetingEl == source) {
 			updateOnlineMeetingUI();
 			if(stepsListener != null) {
 				addLectureCtxt.setWithBigBlueButtonMeeting(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()));
@@ -660,8 +677,9 @@ public class EditLectureBlockController extends FormBasicController {
 		if(addLectureCtxt != null) {
 			addLectureCtxt.setTeachers(getSelectedTeachers());
 			addLectureCtxt.setLectureBlock(lectureBlock);
-			addLectureCtxt.setWithBigBlueButtonMeeting(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()));
-			addLectureCtxt.setWithTeamsMeeting(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
+			boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn();
+			addLectureCtxt.setWithBigBlueButtonMeeting(enableOnlineMeeting && BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()));
+			addLectureCtxt.setWithTeamsMeeting(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
 		} else {
 			updateOnlineMeetings();
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
@@ -699,21 +717,22 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private void updateOnlineMeetings() {
-		if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+		boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn() && onlineMeetingEl.isOneSelected();
+		if(enableOnlineMeeting && BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting);
 			((LectureBlockImpl)lectureBlock).setBBBMeeting(bigBlueButtonMeeting);
 			((LectureBlockImpl)lectureBlock).setTeamsMeeting(null);
 			if(teamsMeeting != null) {
 				teamsService.deleteMeeting(teamsMeeting);
 			}
-		} else if(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+		} else if(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
 			((LectureBlockImpl)lectureBlock).setBBBMeeting(null);
 			((LectureBlockImpl)lectureBlock).setTeamsMeeting(teamsMeeting);
 			if(bigBlueButtonMeeting != null) {
 				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
 			}
-		} else if(onlineMeetingEl.isOneSelected()) {
+		} else {
 			if(bigBlueButtonMeeting != null) {
 				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
 			}
@@ -798,8 +817,10 @@ public class EditLectureBlockController extends FormBasicController {
 		if(bigBlueButtonMeeting == null) {
 			bigBlueButtonMeeting = bigBlueButtonManager.createMeeting(titleEl.getValue(), dateEl.getDate(), dateEl.getSecondDate(),
 					null, null, null, getIdentity());
-		} else {
+		} else if(bigBlueButtonMeeting.getKey() != null) {
 			bigBlueButtonMeeting = bigBlueButtonManager.getMeeting(bigBlueButtonMeeting);
+		} else if(!StringHelper.containsNonWhitespace(bigBlueButtonMeeting.getName())) {
+			bigBlueButtonMeeting.setName(titleEl.getValue());
 		}
 		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
 				.calculatePermissions(entry, null, getIdentity(), ureq.getUserSession().getRoles());
@@ -816,8 +837,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private void doEditTeamsMeeting(UserRequest ureq) {
 		if(teamsMeeting == null) {
 			teamsMeeting = teamsService.createMeeting(titleEl.getValue(), dateEl.getDate(), dateEl.getSecondDate(), null, null, null, getIdentity());
-		} else {
+		} else if(teamsMeeting.getKey() != null) {
 			teamsMeeting = teamsService.getMeeting(teamsMeeting);
+		} else if(!StringHelper.containsNonWhitespace(teamsMeeting.getSubject())) {
+			teamsMeeting.setSubject(titleEl.getValue());
 		}
 		editTeamsMeetingCtrl = new EditTeamsMeetingController(ureq, getWindowControl(), teamsMeeting);
 		listenTo(editTeamsMeetingCtrl);

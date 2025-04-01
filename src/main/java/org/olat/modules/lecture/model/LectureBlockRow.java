@@ -223,6 +223,8 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	public FormLink getToolsLink() {
 		if(toolsLink != null) {
 			toolsLink.setCustomEnabledLinkCSS("");
+			toolsLink.setDomReplacementWrapperRequired(false);
+			toolsLink.setFormLayout("nolayout");
 		}
 		return toolsLink;
 	}
@@ -230,6 +232,8 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	public FormLink getToolsButton() {
 		if(toolsLink != null) {
 			toolsLink.setCustomEnabledLinkCSS("btn btn-default");
+			toolsLink.setDomReplacementWrapperRequired(false);
+			toolsLink.setFormLayout("nolayout");
 		}
 		return toolsLink;
 	}
@@ -260,6 +264,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		if(rollCallLink != null) {
 			rollCallLink.setCustomEnabledLinkCSS("");
 			rollCallLink.setI18nKey(null);
+			rollCallLink.setFormLayout("nolayout");
 		}
 		return rollCallLink;
 	}
@@ -268,6 +273,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		if(rollCallLink != null) {
 			rollCallLink.setCustomEnabledLinkCSS("btn btn-default");
 			rollCallLink.setI18nKey(translator.translate("edit.type.absence"));
+			rollCallLink.setFormLayout("nolayout");
 		}
 		return rollCallLink;
 	}

@@ -2334,15 +2334,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				removeCustomCSS();
 
 				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
-				RepositoryEntry re = getRepositoryEntry();
+				RepositoryEntry entry = getRepositoryEntry();
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
-				boolean readOnlyManaged = isCourseManagedByCurriculum() || re.getRuntimeType() == RepositoryEntryRuntimeType.template;
+				boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
 						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
 								readOnlyDetails, readOnlyManaged);
 				LectureListRepositoryConfig config = getLecturesAdminConfig();
-				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, re, config, secCallback);
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, entry, config, secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
@@ -2377,8 +2377,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withDetailsRepositoryEntry(false)
 				.withDetailsExam(true)
 				.withDetailsUnits(true)
-				.withDetailsExternalRef(false)
-				;
+				.withDetailsExternalRef(false);
 		return config;
 	}
 	
@@ -2387,18 +2386,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			removeCustomCSS();
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("Events");
-			RepositoryEntry re = getRepositoryEntry();
+			RepositoryEntry entry = getRepositoryEntry();
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			
 			CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 			boolean teacher = !reSecurity.isParticipant() && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
 			boolean admin = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
-			boolean readOnlyManaged = isCourseManagedByCurriculum() || re.getRuntimeType() == RepositoryEntryRuntimeType.template;
+			boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 			LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
 					.getSecurityCallback(admin, reSecurity.isMasterCoach(), teacher,
 							readOnlyDetails, readOnlyManaged);
-			LectureListRepositoryConfig config = getLecturesConfig(secCallback, re);
-			LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, re, config, secCallback);
+			LectureListRepositoryConfig config = getLecturesConfig(secCallback, entry);
+			LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, entry, config, secCallback);
 			listenTo(ctrl);
 			lecturesCtrl = pushController(ureq, translate("command.lectures"), ctrl);
 			currentToolCtr = lecturesCtrl;
@@ -2409,17 +2408,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private LectureListRepositoryConfig getLecturesConfig(LecturesSecurityCallback secCallback, RepositoryEntry re) {
+	private LectureListRepositoryConfig getLecturesConfig(LecturesSecurityCallback secCallback, RepositoryEntry entry) {
 		boolean participant = secCallback.viewAs() == LectureRoles.participant;
 		
-		RepositoryEntryLectureConfiguration repositoryEntryConfig = lectureService.getRepositoryEntryLectureConfiguration(re);
+		RepositoryEntryLectureConfiguration repositoryEntryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		Visibility withRollCall = ConfigurationHelper.isRollCallEnabled(repositoryEntryConfig, lectureModule) && !participant
 				? Visibility.HIDE : Visibility.NO;
 		boolean defaultShowAll = secCallback.viewAs() == LectureRoles.teacher
 				? lectureModule.isShowLectureBlocksAllTeachersDefault()
 				: true;
 		
-		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig("repository-entry-" + secCallback.viewAs() + "-v1");
+		String prefsId = "repository-entry-" + secCallback.viewAs() + "-v2-rc-" + withRollCall.name().toLowerCase();
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryToolConfig(prefsId);
 		config = config
 				.withExternalRef(participant ? Visibility.NO : Visibility.SHOW)
 				.withCurriculum(participant ? Visibility.NO : Visibility.HIDE)
