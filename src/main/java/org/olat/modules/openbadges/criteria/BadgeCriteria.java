@@ -25,16 +25,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Initial date: 2023-06-21<br>
@@ -42,6 +50,7 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BadgeCriteria {
+	private static final Logger log = Tracing.createLoggerFor(BadgeCriteria.class);
 
 	private String description;
 	private boolean awardAutomatically;
@@ -142,6 +151,7 @@ public class BadgeCriteria {
 	 * Checks that all conditions to issuing a badge have been met for a course and recipient.
 	 * 
 	 * @param courseEntry The course to which the conditions apply.
+	 * @param uce The user course environment for the recipient. Can be null for global badges.
 	 * @param recipient The person that would obtain the badge.
 	 * @param learningPath Is this course a learning path?
 	 * @param courseBadge Is this a course badge?
@@ -149,9 +159,12 @@ public class BadgeCriteria {
 	 *                          Can be empty or null. Can be only root entries if it is not a course badge.
 	 * @return True if the conditions for receiving the badge are all met.
 	 */
-	public boolean allConditionsMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, 
-									boolean courseBadge, List<AssessmentEntry> assessmentEntries) {
+	public boolean allConditionsMet(RepositoryEntry courseEntry, UserCourseEnvironment uce, Identity recipient, 
+									boolean learningPath, boolean courseBadge, List<AssessmentEntry> assessmentEntries) {
 		if (!isAwardAutomatically()) {
+			if (log.isDebugEnabled()) {
+				log.debug("allConditionsMet(): not awarding badge automatically");
+			}
 			return true;
 		}
 
@@ -163,9 +176,13 @@ public class BadgeCriteria {
 		} else {
 			assessmentEntries = new ArrayList<>();
 		}
+		
+		if (log.isDebugEnabled()) {
+			log.debug("allConditionsMet(): {} filtered assessmentEntries", assessmentEntries.size());
+		}
 
 		if (courseBadge) {
-			return allCourseConditionsMet(courseEntry, recipient, learningPath, assessmentEntries);
+			return allCourseConditionsMet(courseEntry, recipient, learningPath, assessmentEntries, uce);
 		} else {
 			return allGlobalBadgeConditionsMet(recipient, assessmentEntries);
 		}
@@ -175,16 +192,19 @@ public class BadgeCriteria {
 	 * Checks if all the conditions specific to a course of this BadgeCriteria object are
 	 * satisfied.
 	 *
-	 * @param courseEntry		The course entry to which the conditions apply.
+	 * @param courseEntry       The course entry to which the conditions apply.
 	 * @param recipient         The recipient to check the conditions for.
 	 * @param learningPath      If true, the assessed course is a learning path
 	 * @param assessmentEntries The assessment entries for the course and the recipient.
+	 * @param uce               The user course environment for the recipient.
 	 * @return True if all conditions of this badge criteria object are satisfied.
 	 */
-	private boolean allCourseConditionsMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+	private boolean allCourseConditionsMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, 
+										   List<AssessmentEntry> assessmentEntries, UserCourseEnvironment uce) {
 		final boolean[] courseBadgeConditionChecked = { false };
 		
-		if (!allConditionsApplyingToCoursesOnlyMet(courseEntry, recipient, learningPath, assessmentEntries, courseBadgeConditionChecked)) {
+		if (!allConditionsApplyingToCoursesOnlyMet(courseEntry, uce, recipient, learningPath, assessmentEntries, 
+				courseBadgeConditionChecked)) {
 			return false;
 		}
 		if (!allOtherBadgeConditionsMet(recipient, courseBadgeConditionChecked)) {
@@ -192,22 +212,31 @@ public class BadgeCriteria {
 		}
 
 		if (!courseBadgeConditionChecked[0]) {
+			if (log.isDebugEnabled()) {
+				log.debug("allCourseConditionsMet(): no course badge conditions have been checked: consider the criteria unmet.");
+			}
 			return false;
 		}
 
 		return true;
 	}
 
-	private boolean allConditionsApplyingToCoursesOnlyMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+	private boolean allConditionsApplyingToCoursesOnlyMet(RepositoryEntry courseEntry, UserCourseEnvironment uce, 
+														  Identity recipient, boolean learningPath, 
+														  List<AssessmentEntry> assessmentEntries, 
+														  boolean[] courseBadgeConditionChecked) {
 		if (assessmentEntries.isEmpty() && courseEntry != null) {
 			AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
 			assessmentEntries = assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, courseEntry);
+			if (log.isDebugEnabled()) {
+				log.debug("allConditionsApplyingToCoursesOnlyMet(): loaded {} assessmentEntries", assessmentEntries.size());
+			}
 		}
 
 		if (!allCourseConditionsMet(assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
-		if (!allCourseElementConditionsMet(assessmentEntries, courseBadgeConditionChecked)) {
+		if (!allCourseElementConditionsMet(courseEntry, uce, courseBadgeConditionChecked)) {
 			return false;
 		}
 		if (!learningPathCourseElementConditionsMet(learningPath, assessmentEntries, courseBadgeConditionChecked)) {
@@ -236,13 +265,33 @@ public class BadgeCriteria {
 
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CoursePassedCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("allCourseConditionsMet(): CoursePassedCondition");
+				}
 				if (!passed) {
+					if (log.isDebugEnabled()) {
+						log.debug("not passed.");
+					}
 					return false;
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("passed.");
+					}
 				}
 				courseBadgeConditionChecked[0] = true;
 			} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("allCourseConditionsMet(): CourseScoreCondition");
+				}
 				if (!courseScoreCondition.satisfiesCondition(score)) {
+					if (log.isDebugEnabled()) {
+						log.debug("score condition not met.");
+					}
 					return false;
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("score condition met.");
+					}
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
@@ -250,63 +299,62 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allCourseElementConditionsMet(List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
+	private boolean allCourseElementConditionsMet(RepositoryEntry courseEntry, UserCourseEnvironment uce, 
+												  boolean[] courseBadgeConditionChecked) {
+		CourseAssessmentService courseAssessmentService = null;
+		
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
-				for (AssessmentEntry assessmentEntry : assessmentEntries) {
-					if (courseElementPassedCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						if (!satisfiesPassedCondition(assessmentEntry)) {
-							return false;
-						}
+				if (courseAssessmentService == null) {
+					courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				}
+				ICourse course = CourseFactory.loadCourse(courseEntry);
+				CourseNode courseNode = course.getRunStructure().getNode(courseElementPassedCondition.getSubIdent());
+				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
+				if (log.isDebugEnabled()) {
+					log.debug("allCourseElementConditionsMet(): CourseElementPassedCondition");
+				}
+				if (assessmentEvaluation.getPassed() == null || !assessmentEvaluation.getPassed()) {
+					if (log.isDebugEnabled()) {
+						log.debug("assessment evaluation not passed for course node '{}' ({}).", 
+								courseNode.getShortTitle(), courseNode.getIdent());
+					}
+					return false;
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("assessment evaluation passed for course node '{}' ({}).",
+								courseNode.getShortTitle(), courseNode.getIdent());
 					}
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
 
 			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
-				for (AssessmentEntry assessmentEntry : assessmentEntries) {
-					if (courseElementScoreCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						if (!satisfiesScoreCondition(assessmentEntry, courseElementScoreCondition)) {
-							return false;
-						}
+				if (log.isDebugEnabled()) {
+					log.debug("allCourseElementConditionsMet(): check CourseElementScoreCondition");
+				}
+				if (courseAssessmentService == null) {
+					courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				}
+				ICourse course = CourseFactory.loadCourse(courseEntry);
+				CourseNode courseNode = course.getRunStructure().getNode(courseElementScoreCondition.getSubIdent());
+				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
+				if (assessmentEvaluation.getScore() == null || !courseElementScoreCondition.satisfiesCondition(assessmentEvaluation.getScore())) {
+					if (log.isDebugEnabled()) {
+						log.debug("assessment evaluation score {} doesn't satisfy condition for course node '{}' ({})",
+								courseElementScoreCondition.getValue(), courseNode.getShortTitle(), courseNode.getIdent());
+					}
+					return false;
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("assessment evaluation score {} satisfies condition for course node '{}' ({})",
+								courseElementScoreCondition.getValue(), courseNode.getShortTitle(), courseNode.getIdent());
 					}
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
 		}
 		return true;
-	}
-
-	private boolean satisfiesPassedCondition(AssessmentEntry assessmentEntry) {
-		if (!AssessmentEntryStatus.done.equals(assessmentEntry.getAssessmentStatus())) {
-			return false;
-		}
-
-		if (assessmentEntry.getUserVisibility() == null || !assessmentEntry.getUserVisibility()) {
-			return false;
-		}
-
-		if (assessmentEntry.getPassed() == null) {
-			return false;
-		}
-
-		return assessmentEntry.getPassed();
-	}
-
-	private boolean satisfiesScoreCondition(AssessmentEntry assessmentEntry, CourseElementScoreCondition scoreCondition) {
-		if (!AssessmentEntryStatus.done.equals(assessmentEntry.getAssessmentStatus())) {
-			return false;
-		}
-
-		if (assessmentEntry.getUserVisibility() == null || !assessmentEntry.getUserVisibility()) {
-			return false;
-		}
-
-		if (assessmentEntry.getScore() == null) {
-			return false;
-		}
-
-		return scoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
 	}
 	
 	private boolean learningPathCourseElementConditionsMet(boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
@@ -316,12 +364,22 @@ public class BadgeCriteria {
 
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("learningPathCourseElementConditionsMet(): check CompletionCriterionMetCondition");
+				}
+
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
 					if (completionCriterionMetCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
 						if (assessmentEntry.getFullyAssessed() == null || !assessmentEntry.getFullyAssessed()) {
+							if (log.isDebugEnabled()) {
+								log.debug("completion criterion not met for course element {}", completionCriterionMetCondition.getSubIdent());
+							}
 							return false;
 						}
 					}
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("completion criterion met for course element {}", completionCriterionMetCondition.getSubIdent());
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
@@ -346,8 +404,18 @@ public class BadgeCriteria {
 
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof LearningPathProgressCondition learningPathProgressCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("learningPathConditionMet(): check LearningPathProgressCondition");
+				}
+
 				if  (!learningPathProgressCondition.satisfiesCondition(learningPathProgress)) {
+					if (log.isDebugEnabled()) {
+						log.debug("learning path progress condition not met.");
+					}
 					return false;
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("learning path progress condition met.");
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
@@ -360,11 +428,20 @@ public class BadgeCriteria {
 		OpenBadgesManager openBadgesManager = null;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("allOtherBadgeConditionsMet(): check OtherBadgeEarnedCondition");
+				}
 				if (openBadgesManager == null) {
 					openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
 				}
 				if (!openBadgesManager.hasBadgeAssertion(recipient, otherBadgeCondition.getBadgeClassUuid())) {
+					if (log.isDebugEnabled()) {
+						log.debug("condition depending on badge {} not met.", otherBadgeCondition.getBadgeClassUuid());
+					}
 					return false;
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("condition depending on badge {} met.", otherBadgeCondition.getBadgeClassUuid());
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
@@ -387,8 +464,21 @@ public class BadgeCriteria {
 		boolean globalBadgeConditionChecked = false;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("allGlobalBadgeConditionsMet(): check GlobalBadgesEarnedCondition");
+				}
 				if (!globalBadgesEarnedConditionMet(recipient, globalBadgesEarnedCondition)) {
+					if (log.isDebugEnabled()) {
+						log.debug("condition depending on badges {} not met.", globalBadgesEarnedCondition
+								.getBadgeClassKeys().stream().map(l -> Long.toString(l))
+								.collect(Collectors.joining(",")));
+					}
 					return false;
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("condition depending on badges {} met with flying colors.", globalBadgesEarnedCondition
+							.getBadgeClassKeys().stream().map(l -> Long.toString(l))
+							.collect(Collectors.joining(",")));
 				}
 				globalBadgeConditionChecked = true;
 			}

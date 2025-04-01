@@ -75,6 +75,8 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -91,6 +93,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -98,6 +102,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -1031,19 +1036,19 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(recipient, badgeClass);
 		if (badgeAssertion == null) {
 			if (log.isDebugEnabled()) {
-				log.debug("No badge assertion exists for user {} and badge {}.", recipient, badgeClass);
+				log.debug("No badge assertion exists for identity {} and badge '{}'.", recipient.getKey(), badgeClass.getName());
 			}
 			return;
 		}
 		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.issued)) {
 			if (log.isDebugEnabled()) {
-				log.debug("No need to update badge assertion for user {} and badge {}.", recipient, badgeClass);
+				log.debug("No need to update badge assertion for identity {} and badge '{}'.", recipient.getKey(), badgeClass.getName());
 			}
 			return;
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug("Recreating badge '{}' for user '{}'.", badgeClass.getName(), recipient.getName());
+			log.debug("Recreating badge '{}' for identity '{}'.", badgeClass.getName(), recipient.getKey());
 		}
 
 		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.issued);
@@ -1122,6 +1127,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return;
 		}
 
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		
 		// Direct course entry badge classes
 		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		if (badgeClasses == null || badgeClasses.isEmpty()) {
@@ -1136,14 +1143,15 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				false, true, true, true,
 				null, null);
 		getParticipantsWithAssessmentEntries(courseEntry, doer, secCallback, (participant, assessmentEntries) -> {
-			handleCourseResetForAllBadges(participant, learningPath, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
+			handleCourseResetForAllBadges(course, participant, learningPath, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
 		});
 	}
 	
-	private void handleCourseResetForAllBadges(Identity participant, boolean learningPath,
-											   List<BadgeClassAndCriteria> badgeClassesAndCriteria, 
+	private void handleCourseResetForAllBadges(ICourse course, Identity participant, boolean learningPath,
+											   List<BadgeClassAndCriteria> badgeClassesAndCriteria,
 											   List<AssessmentEntry> assessmentEntries) {
 		Set<Long> resetBadgeIds = new HashSet<>();
+		UserCourseEnvironment uce = loadUserCourseEnvironment(course, participant);
 		boolean resetBadges = true;
 		while (resetBadges) {
 			resetBadges = false;
@@ -1152,7 +1160,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 					continue;
 				}
 				if (!badgeClassAndCriteria.badgeCriteria.allConditionsMet(badgeClassAndCriteria.badgeClass.getEntry(),
-						participant, learningPath, isCourseBadge(badgeClassAndCriteria.badgeClass), assessmentEntries)) {
+						uce, participant, learningPath, isCourseBadge(badgeClassAndCriteria.badgeClass), assessmentEntries)) {
 					handleCourseReset(participant, badgeClassAndCriteria.badgeClass);
 					resetBadgeIds.add(badgeClassAndCriteria.badgeClass.getKey());
 					resetBadges = true;
@@ -1213,6 +1221,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry) {
+		if (log.isDebugEnabled()) {
+			if (courseEntry != null) {
+				log.debug("issueBadgesAutomatically for recipient {} and entry '{}' ({})", recipient.getKey(),
+						courseEntry.getDisplayname(), courseEntry.getKey());
+			} else {
+				log.debug("issueBadgesAutomatically for recipient {}", recipient.getKey());
+			}
+		}
 		RepositoryEntry reloadedCourseEntry = courseEntry != null ? repositoryEntryDao.loadByKey(courseEntry.getKey()) : null;
 
 		if (reloadedCourseEntry != null && reloadedCourseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
@@ -1226,11 +1242,26 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (badgeIssuingContext.badgeClassesAndCriteria.isEmpty()) {
 			return;
 		}
+		
+		UserCourseEnvironment uce = loadUserCourseEnvironment(reloadedCourseEntry, recipient);
 
 		List<AssessmentEntry> assessmentEntries = reloadedCourseEntry != null ? assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, reloadedCourseEntry) : null;
-		issueAllBadges(recipient, awardedBy, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
+		issueAllBadges(recipient, awardedBy, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
 	}
 	
+	private UserCourseEnvironment loadUserCourseEnvironment(RepositoryEntry entry, Identity recipient) {
+		if (entry == null) {
+			return null;
+		}
+		ICourse course = CourseFactory.loadCourse(entry);
+		return loadUserCourseEnvironment(course, recipient);
+	}
+	
+	private UserCourseEnvironment loadUserCourseEnvironment(ICourse course, Identity recipient) {
+		IdentityEnvironment ienv = new IdentityEnvironment(recipient, Roles.userRoles());
+		return new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+	}
+
 	private BadgeIssuingContext createBadgeIssuingContext(RepositoryEntry courseEntry) {
 		List<BadgeClass> courseBadgeClasses = getBadgeClassesInCoOwnedCourseSet(courseEntry);
 		List<BadgeClass> globalBadgeClasses = getBadgeClasses(null);
@@ -1244,6 +1275,16 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				})
 				.filter(bcic -> bcic.badgeCriteria.isAwardAutomatically())
 				.toList();
+		
+		if (log.isDebugEnabled()) {
+			log.debug("Badge issuing context for entry '{}' ({}) with {} badges:", courseEntry.getKey(), 
+					courseEntry.getDisplayname(), badgeClassesAndCriteria.size());
+			for (BadgeClassAndCriteria bcc : badgeClassesAndCriteria) {
+				log.debug("Badge '{}' (key = {}, uuid = {}, global = {})",
+						bcc.badgeClass.getName(), bcc.badgeClass.getKey(), bcc.badgeClass.getUuid(), 
+						bcc.badgeClass.getEntry() == null);
+			}
+		}
 		return new BadgeIssuingContext(badgeClassesAndCriteria);
 	}
 
@@ -1256,6 +1297,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy) {
+		if (log.isDebugEnabled()) {
+			log.debug("issueBadgesAutomatically for entry '{}' ({}).", courseEntry.getDisplayname(), courseEntry.getKey());
+		}
+
 		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
 		}
@@ -1273,14 +1318,21 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false,
 				false, true, true, true,
 				null, null);
-
+		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		
 		getParticipantsWithAssessmentEntries(courseEntry, awardedBy, secCallback, (participant, assessmentEntries) -> {
-			issueAllBadges(participant, awardedBy, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
+			UserCourseEnvironment uce = loadUserCourseEnvironment(course, participant);
+			issueAllBadges(participant, awardedBy, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
 		});
 	}
 
-	private void issueAllBadges(Identity recipient, Identity awardedBy,
+	private void issueAllBadges(Identity recipient, Identity awardedBy, UserCourseEnvironment uce,
 								List<BadgeClassAndCriteria> badgeClassesAndCriteria, List<AssessmentEntry> assessmentEntries) {
+		if (log.isDebugEnabled()) {
+			log.debug("issueAllBadges() for recipient {}, {} badges, {} assessment entries.", recipient.getKey(), 
+					badgeClassesAndCriteria.size(), assessmentEntries.size());
+		}
 		Date issuedOn = new Date();
 		Set<Long> issuedBadgeIds = new HashSet<>();
 		boolean issueBadges = true;
@@ -1290,8 +1342,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				if (issuedBadgeIds.contains(badgeClassAndCriteria.badgeClass.getKey())) {
 					continue;
 				}
+				if (log.isDebugEnabled()) {
+					log.debug("Calling badgeCriteria.allConditionsMet() for badge '{}':", badgeClassAndCriteria.badgeClass.getName());
+				}
 				if (badgeClassAndCriteria.badgeCriteria.allConditionsMet(badgeClassAndCriteria.badgeClass.getEntry(),
-						recipient, badgeClassAndCriteria.learningPath, isCourseBadge(badgeClassAndCriteria.badgeClass), assessmentEntries)) {
+						uce, recipient, badgeClassAndCriteria.learningPath, isCourseBadge(badgeClassAndCriteria.badgeClass), assessmentEntries)) {
 					String uuid = OpenBadgesFactory.createIdentifier();
 					createBadgeAssertion(uuid, badgeClassAndCriteria.badgeClass, issuedOn, recipient, awardedBy);
 					issuedBadgeIds.add(badgeClassAndCriteria.badgeClass.getKey());
