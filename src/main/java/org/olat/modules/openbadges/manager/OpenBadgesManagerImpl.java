@@ -1002,7 +1002,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		if (log.isDebugEnabled()) {
 			log.debug("Created badge assertion '{}' of badge '{}' for user '{}'", 
-					badgeAssertion.getUuid(), badgeClass.getName(), recipient.toString());
+					badgeAssertion.getUuid(), badgeClass.getName(), recipient.getKey());
 		}
 
 		if (badgeAssertion.getBakedImage() == null) {
@@ -1280,9 +1280,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.debug("Badge issuing context for entry '{}' ({}) with {} badges:", courseEntry.getKey(), 
 					courseEntry.getDisplayname(), badgeClassesAndCriteria.size());
 			for (BadgeClassAndCriteria bcc : badgeClassesAndCriteria) {
-				log.debug("Badge '{}' (key = {}, uuid = {}, global = {})",
+				log.debug("Badge '{}' (key = {}, uuid = {}, global = {}, entry = {})",
 						bcc.badgeClass.getName(), bcc.badgeClass.getKey(), bcc.badgeClass.getUuid(), 
-						bcc.badgeClass.getEntry() == null);
+						bcc.badgeClass.getEntry() == null, bcc.badgeClass.getEntry());
 			}
 		}
 		return new BadgeIssuingContext(badgeClassesAndCriteria);
