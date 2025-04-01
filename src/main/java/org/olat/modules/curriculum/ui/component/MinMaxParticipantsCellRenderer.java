@@ -38,6 +38,13 @@ public class MinMaxParticipantsCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof MinMaxParticipants minMax) {
+			if (renderer != null) {
+				if (minMax.min() != null && minMax.count() != null && minMax.min() > minMax.count()) {
+					target.append("<span title=\"" + trans.translate("warning.min.number.not.reached") + "\"><i class=\"o_icon o_icon_warn\"></i> ");
+				} else if (minMax.max() != null && minMax.count() != null && minMax.max() < minMax.count()) {
+					target.append("<span title=\"" + trans.translate("warning.max.number.exceeded") + "\"><i class=\"o_icon o_icon_warn\"></i> ");
+				}
+			}
 			renderValue(target, minMax.min());
 			target.append("/");
 			renderValue(target, minMax.max());

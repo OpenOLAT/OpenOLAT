@@ -549,7 +549,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		ParticipantsAvailabilityNum participantsAvailabilityNum = acService.getParticipantsAvailability(row.getMaxParticipants(), row.getNumParticipants());
+		ParticipantsAvailabilityNum participantsAvailabilityNum = acService.getParticipantsAvailability(row.getMaxParticipants(), row.getNumParticipants(), false);
 		row.setParticipantsAvailabilityNum(participantsAvailabilityNum);
 		
 		if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fullyBooked) {

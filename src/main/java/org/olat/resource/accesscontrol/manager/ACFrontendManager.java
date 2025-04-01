@@ -1424,7 +1424,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 	
 	@Override
-	public ParticipantsAvailabilityNum getParticipantsAvailability(Long maxParticipants, Long numParticipants) {
+	public ParticipantsAvailabilityNum getParticipantsAvailability(Long maxParticipants, Long numParticipants, boolean distinguishOverbooked) {
 		if (maxParticipants == null) {
 			return new ParticipantsAvailabilityNum(ParticipantsAvailability.manyLeft, Integer.MAX_VALUE);
 		}
@@ -1432,7 +1432,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			numParticipants = Long.valueOf(0);
 		}
 		
-		if (numParticipants >= maxParticipants) {
+		if (numParticipants > maxParticipants) {
+			return distinguishOverbooked
+					? new ParticipantsAvailabilityNum(ParticipantsAvailability.overbooked, 0)
+					: new ParticipantsAvailabilityNum(ParticipantsAvailability.fullyBooked, 0);
+		}
+		if (numParticipants == maxParticipants) {
 			return new ParticipantsAvailabilityNum(ParticipantsAvailability.fullyBooked, 0);
 		}
 		

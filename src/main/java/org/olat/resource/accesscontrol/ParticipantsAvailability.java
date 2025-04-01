@@ -22,7 +22,7 @@ package org.olat.resource.accesscontrol;
 import org.olat.core.gui.translator.Translator;
 
 public enum ParticipantsAvailability { 
-	fullyBooked, fewLeft, manyLeft;
+	overbooked, fullyBooked, fewLeft, manyLeft;
 	
 	public static final record ParticipantsAvailabilityNum(ParticipantsAvailability availability, long numAvailable) {}
 	
@@ -30,6 +30,7 @@ public enum ParticipantsAvailability {
 		if (availabilityNum == null) return null;
 		
 		return switch (availabilityNum.availability) {
+		case overbooked -> translator.translate("book.overbooked");
 		case fullyBooked -> translator.translate("book.fully.booked");
 		case fewLeft -> availabilityNum.numAvailable == 1
 					? translator.translate("book.participants.left.single")
@@ -49,6 +50,7 @@ public enum ParticipantsAvailability {
 		if (availability == null) return null;
 		
 		return switch (availability) {
+		case overbooked -> "o_ac_offer_overbooked_icon";
 		case fullyBooked -> "o_ac_offer_fully_booked_icon";
 		case fewLeft -> "o_ac_offer_almost_fully_booked_icon";
 		case manyLeft -> null;

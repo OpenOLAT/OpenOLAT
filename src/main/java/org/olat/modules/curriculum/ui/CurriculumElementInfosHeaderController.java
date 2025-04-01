@@ -274,7 +274,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		}
 		
 		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(element), true).get(element.getKey());
-		return acService.getParticipantsAvailability(element.getMaxParticipants(), numParticipants);
+		return acService.getParticipantsAvailability(element.getMaxParticipants(), numParticipants, false);
 	}
 	
 	private String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {

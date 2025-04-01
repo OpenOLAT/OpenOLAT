@@ -102,6 +102,7 @@ import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.component.MinMaxParticipantsCellRenderer;
+import org.olat.modules.curriculum.ui.component.ParticipantsAvailabilityNumRenderer;
 import org.olat.modules.curriculum.ui.copy.CopyElement1SettingsStep;
 import org.olat.modules.curriculum.ui.copy.CopyElementCallback;
 import org.olat.modules.curriculum.ui.copy.CopyElementContext;
@@ -116,6 +117,7 @@ import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListControl
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -333,6 +335,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(config.isWithMixMaxColumn()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.minMaxParticipants,
 				new MinMaxParticipantsCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.availability,
+					new ParticipantsAvailabilityNumRenderer(getLocale())));
 		}
 		
 		boolean withOptions = curriculum != null;
@@ -556,12 +560,17 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(row != null) {
 			row.setCurriculumElement(element);
 			row.setCurriculumElementType(element.getType());
-			
+			row.setParticipantsAvailabilityNum(acService.getParticipantsAvailability(
+					row.getMinMaxParticipants().max(),
+					row.getNumOfParticipants() + row.getNumOfPending(), true));
 		}
 	}
 	
 	private CurriculumElementRow forgeRow(CurriculumElementInfos element) {
 		String id = element.getKey().toString();
+		ParticipantsAvailabilityNum participantsAvailability = acService.getParticipantsAvailability(
+				element.curriculumElement().getMaxParticipants(),
+				element.numOfParticipants() + element.numOfPending(), true);
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
@@ -583,7 +592,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), refs,
 				element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
 				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(), element.numOfPending(),
-				toolsLink, resourcesLink, structureLink);
+				participantsAvailability, toolsLink, resourcesLink, structureLink);
 		toolsLink.setUserObject(row);
 		if(structureLink != null) {
 			structureLink.setUserObject(row);

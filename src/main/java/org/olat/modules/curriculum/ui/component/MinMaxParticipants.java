@@ -25,6 +25,6 @@ package org.olat.modules.curriculum.ui.component;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MinMaxParticipants(Long min, Long max) {
+public record MinMaxParticipants(Long min, Long max, Long count) {
 	//
 }

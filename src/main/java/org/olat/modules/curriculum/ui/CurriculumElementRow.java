@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
 import org.olat.modules.curriculum.ui.component.MinMaxParticipants;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
 /**
  * 
@@ -56,6 +57,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private final long numOfMasterCoaches;
 	private final long numOfPending;
 	private MinMaxParticipants minMaxParticipants;
+	private ParticipantsAvailabilityNum participantsAvailabilityNum;
 	private List<PriceMethod> accessPriceMethods;
 	
 	private final FormLink toolsLink;
@@ -84,16 +86,17 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		numOfCurriculumElementOwners = 0l;
 		numOfMasterCoaches = 0l;
 		numOfPending = 0l;
-		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants());
+		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants(), 0l);
+		participantsAvailabilityNum = null;
 		toolsLink = null;
 		resourcesLink = null;
 		structureLink = null;
 	}
 	
-	public CurriculumElementRow(CurriculumElement element, long numOfResources,
-			long numOfParticipants, long numOfCoaches, long numOfOwners,
-			long numOfCurriculumElementOwners, long numOfMasterCoaches, long numOfPending,
-			FormLink toolsLink, FormLink resourcesLink, FormLink structureLink) {
+	public CurriculumElementRow(CurriculumElement element, long numOfResources, long numOfParticipants,
+			long numOfCoaches, long numOfOwners, long numOfCurriculumElementOwners, long numOfMasterCoaches,
+			long numOfPending, ParticipantsAvailabilityNum participantsAvailabilityNum, FormLink toolsLink,
+			FormLink resourcesLink, FormLink structureLink) {
 		this.element = element;
 		curriculum = element.getCurriculum();
 		this.toolsLink = toolsLink;
@@ -104,7 +107,8 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		this.numOfCurriculumElementOwners = numOfCurriculumElementOwners;
 		this.numOfMasterCoaches = numOfMasterCoaches;
 		this.numOfPending = numOfPending;
-		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants());
+		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants(), numOfParticipants);
+		this.participantsAvailabilityNum = participantsAvailabilityNum;
 		this.resourcesLink = resourcesLink;
 		this.structureLink = structureLink;
 		elementType = element.getType();
@@ -122,7 +126,8 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public void setCurriculumElement(CurriculumElement element) {
 		this.element = element;
-		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants());
+		Long count = minMaxParticipants != null? minMaxParticipants.count(): 0l;
+		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants(), count);
 	}
 	
 	public Long getCurriculumKey() {
@@ -287,6 +292,14 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public MinMaxParticipants getMinMaxParticipants() {
 		return minMaxParticipants;
+	}
+
+	public ParticipantsAvailabilityNum getParticipantsAvailabilityNum() {
+		return participantsAvailabilityNum;
+	}
+
+	public void setParticipantsAvailabilityNum(ParticipantsAvailabilityNum participantsAvailabilityNum) {
+		this.participantsAvailabilityNum = participantsAvailabilityNum;
 	}
 
 	public List<PriceMethod> getAccessPriceMethods() {

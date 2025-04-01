@@ -265,7 +265,7 @@ public class CurriculumElementSelectionController extends FormBasicController {
 		CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), refs,
 				element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
 				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(), element.numOfPending(),
-				null, null, null);
+				null, null, null, null);
 		
 		return row;
 	}
