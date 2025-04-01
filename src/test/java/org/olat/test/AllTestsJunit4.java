@@ -185,6 +185,7 @@ import org.junit.runners.Suite;
 	org.olat.repository.manager.RepositoryEntryAuthorQueriesTest.class,
 	org.olat.repository.manager.InPreparationQueriesTest.class,
 	org.olat.repository.manager.RepositoryEntryMyCourseQueriesTest.class,
+	org.olat.repository.manager.RepositoryEntryMyImplementationsQueriesTest.class,
 	org.olat.repository.manager.RepositoryEntryMembershipProcessorTest.class,
 	org.olat.repository.manager.RepositoryEntryToOrganisationDAOTest.class,
 	org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAOTest.class,
