@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -38,6 +40,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -202,8 +205,14 @@ public class BadgeCriteria {
 	private boolean allCourseConditionsMet(RepositoryEntry courseEntry, Identity recipient, boolean learningPath, 
 										   List<AssessmentEntry> assessmentEntries, UserCourseEnvironment uce) {
 		final boolean[] courseBadgeConditionChecked = { false };
-		
-		if (!allConditionsApplyingToCoursesOnlyMet(courseEntry, uce, recipient, learningPath, assessmentEntries, 
+
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		if (uce == null || !course.getResourceableId().equals(uce.getCourseEnvironment().getCourseResourceableId())) {
+			IdentityEnvironment ienv = uce != null ? uce.getIdentityEnvironment() : new IdentityEnvironment(recipient, Roles.userRoles());
+			uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		}
+
+		if (!allConditionsApplyingToCoursesOnlyMet(courseEntry, course, uce, recipient, learningPath, assessmentEntries, 
 				courseBadgeConditionChecked)) {
 			return false;
 		}
@@ -221,9 +230,10 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allConditionsApplyingToCoursesOnlyMet(RepositoryEntry courseEntry, UserCourseEnvironment uce, 
-														  Identity recipient, boolean learningPath, 
-														  List<AssessmentEntry> assessmentEntries, 
+	private boolean allConditionsApplyingToCoursesOnlyMet(RepositoryEntry courseEntry, ICourse course, 
+														  UserCourseEnvironment uce,
+														  Identity recipient, boolean learningPath,
+														  List<AssessmentEntry> assessmentEntries,
 														  boolean[] courseBadgeConditionChecked) {
 		if (assessmentEntries.isEmpty() && courseEntry != null) {
 			AssessmentEntryDAO assessmentEntryDAO = CoreSpringFactory.getImpl(AssessmentEntryDAO.class);
@@ -236,7 +246,7 @@ public class BadgeCriteria {
 		if (!allCourseConditionsMet(assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
-		if (!allCourseElementConditionsMet(courseEntry, uce, courseBadgeConditionChecked)) {
+		if (!allCourseElementConditionsMet(course, uce, courseBadgeConditionChecked)) {
 			return false;
 		}
 		if (!learningPathCourseElementConditionsMet(learningPath, assessmentEntries, courseBadgeConditionChecked)) {
@@ -299,7 +309,7 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean allCourseElementConditionsMet(RepositoryEntry courseEntry, UserCourseEnvironment uce, 
+	private boolean allCourseElementConditionsMet(ICourse course, UserCourseEnvironment uce,
 												  boolean[] courseBadgeConditionChecked) {
 		CourseAssessmentService courseAssessmentService = null;
 		
@@ -308,7 +318,6 @@ public class BadgeCriteria {
 				if (courseAssessmentService == null) {
 					courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				}
-				ICourse course = CourseFactory.loadCourse(courseEntry);
 				CourseNode courseNode = course.getRunStructure().getNode(courseElementPassedCondition.getSubIdent());
 				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				if (log.isDebugEnabled()) {
@@ -336,7 +345,6 @@ public class BadgeCriteria {
 				if (courseAssessmentService == null) {
 					courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				}
-				ICourse course = CourseFactory.loadCourse(courseEntry);
 				CourseNode courseNode = course.getRunStructure().getNode(courseElementScoreCondition.getSubIdent());
 				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				if (assessmentEvaluation.getScore() == null || !courseElementScoreCondition.satisfiesCondition(assessmentEvaluation.getScore())) {
