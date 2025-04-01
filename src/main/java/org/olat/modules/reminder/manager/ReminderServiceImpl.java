@@ -394,10 +394,16 @@ public class ReminderServiceImpl implements ReminderService {
 	}
 	
 	private MailBundle createCopyOnlyMailBundle(MailBundle remindedMailBundle, CourseReminderTemplate template, Identity copyReciever, Locale locale) {
-		template.setToRecipient(remindedMailBundle.getToId());
-		template.setLocale(locale);
+		CourseReminderTemplate copyTemplate = new CourseReminderTemplate(
+				template.getSubjectTemplate(),
+				template.getBodyTemplate(),
+				template.getUrl(),
+				template.getEntry(),
+				locale,
+				lifecycleDao);
+		copyTemplate.setToRecipient(remindedMailBundle.getToId());
 		
-		return mailManager.makeMailBundle(remindedMailBundle.getContext(), copyReciever, template, null, null, new MailerResult());
+		return mailManager.makeMailBundle(remindedMailBundle.getContext(), copyReciever, copyTemplate, null, null, new MailerResult());
 	}
 	
 }

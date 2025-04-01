@@ -22,6 +22,8 @@ package org.olat.modules.reminder.manager;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
@@ -69,6 +71,8 @@ public class CourseReminderTemplate extends MailTemplate {
 					COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END, COURSE_LOCATION);
 	private static final Collection<String> SUBJECT_VARIABLE_NAMES =
 			List.of(COURSE_NAME, COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END, COURSE_AUTHORS, COURSE_LOCATION);
+	private static final Collection<String> ALL_VARIABLE_NAMES = Stream
+			.concat(BODY_VARIABLE_NAMES.stream(), SUBJECT_VARIABLE_NAMES.stream()).collect(Collectors.toSet());
 
 	private final String url;
 	private final RepositoryEntry entry;
@@ -91,6 +95,23 @@ public class CourseReminderTemplate extends MailTemplate {
 
 	public static Collection<String> subjectVariableNames() {
 		return SUBJECT_VARIABLE_NAMES;
+	}
+
+	@Override
+	public Collection<String> getVariableNames() {
+		return ALL_VARIABLE_NAMES;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public RepositoryEntry getEntry() {
+		return entry;
+	}
+
+	public Locale getLocale() {
+		return locale;
 	}
 
 	public void setLocale(Locale locale) {
