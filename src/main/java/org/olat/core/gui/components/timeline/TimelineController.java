@@ -83,7 +83,7 @@ public class TimelineController extends BasicController {
 		}
 
 		if (hasDownloadBtn) {
-			downloadLink = LinkFactory.createCustomLink("download.timeline", "download.timeline", null, Link.NONTRANSLATED + Link.BUTTON, mainVC, this);
+			downloadLink = LinkFactory.createCustomLink("download.timeline", "download.timeline", translator.translate("download"), Link.NONTRANSLATED + Link.BUTTON, mainVC, this);
 			downloadLink.setIconLeftCSS("o_icon o_icon_download");
 			downloadLink.setElementCssClass("o_sel_timeline_download");
 			downloadLink.setGhost(true);
