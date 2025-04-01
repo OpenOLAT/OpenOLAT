@@ -279,7 +279,9 @@ public class QuestionController extends FormBasicController {
 				}
 			}
 			question.setTimeLimit(timeLimit);
-			question.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().id()));
+			if (colorPicker.getColor() != null) {
+				question.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().id()));
+			}
 			question.setAllowSkipping(options.isKeySelected(optionsKV.keys()[0]));
 			question.setAllowNewAttempt(options.isKeySelected(optionsKV.keys()[1]));
 			fireEvent(ureq, Event.DONE_EVENT);
