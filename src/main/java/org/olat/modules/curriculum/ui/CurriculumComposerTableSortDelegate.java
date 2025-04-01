@@ -28,6 +28,8 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
+import org.olat.resource.accesscontrol.ParticipantsAvailability;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
 /**
  * 
@@ -51,6 +53,7 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 				case resources: Collections.sort(rows, new ResourcesComparator()); break;
 				case beginDate: Collections.sort(rows, new BeginDateComparator()); break;
 				case endDate: Collections.sort(rows, new EndDateComparator()); break;
+				case availability: Collections.sort(rows, new AvailabilityComparator()); break;
 				default: super.sort(rows); break;
 			}
 		} else {
@@ -132,6 +135,36 @@ public class CurriculumComposerTableSortDelegate extends SortableFlexiTableModel
 			}
 
 			return c;
+		}
+	}
+	
+	private class AvailabilityComparator implements Comparator<CurriculumElementRow> {
+		@Override
+		public int compare(CurriculumElementRow o1, CurriculumElementRow o2) {
+			if(o1 == null || o2 == null) {
+				return compareNullObjects(o1, o2);
+			}
+			
+			ParticipantsAvailabilityNum an1 = o1.getParticipantsAvailabilityNum();
+			ParticipantsAvailabilityNum an2 = o2.getParticipantsAvailabilityNum();
+			if (an1 == null || an2 == null) {
+				return compareNullLast(an1, an2);
+			}
+			
+			ParticipantsAvailability a1 = an1.availability();
+			ParticipantsAvailability a2 = an2.availability();
+			if (a1 == null || a2 == null) {
+				return compareNullLast(a1, a2);
+			}
+			
+			int c = Integer.compare(a1.ordinal(), a2.ordinal());
+			if (c != 0) {
+				return c;
+			}
+			
+			long n1 = an1.numAvailable();
+			long n2 = an2.numAvailable();
+			return Long.compare(n1, n2);
 		}
 	}
 }

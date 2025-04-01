@@ -86,7 +86,7 @@ public class CurriculumHelper {
 					String.valueOf(maxParticipants));
 		} else if (minParticipants != null && minParticipants != 0) {
 			participants += translator.translate("curriculum.element.participants.min",
-					String.valueOf(maxParticipants));
+					String.valueOf(minParticipants));
 		} else if (maxParticipants != null && maxParticipants != 0) {
 			participants += translator.translate("curriculum.element.participants.max",
 					String.valueOf(maxParticipants));

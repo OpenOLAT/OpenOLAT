@@ -330,14 +330,14 @@ public class CurriculumComposerController extends FormBasicController implements
 				ElementCols.numOfOwners, CurriculumRoles.owner.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				ElementCols.numOfCurriculumElementOwners, CurriculumRoles.curriculumelementowner.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
-				new CurriculumStatusCellRenderer(getTranslator())));
 		if(config.isWithMixMaxColumn()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.minMaxParticipants,
 				new MinMaxParticipantsCellRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.availability,
 					new ParticipantsAvailabilityNumRenderer(getLocale())));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
+				new CurriculumStatusCellRenderer(getTranslator())));
 		
 		boolean withOptions = curriculum != null;
 		DefaultFlexiColumnModel calendarsCol = new DefaultFlexiColumnModel(withOptions, ElementCols.calendars);
