@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 13 mars 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -162,15 +162,15 @@ public class InPreparationQueries {
 		  .append(" from curriculumelement as el")
 		  .append(" inner join fetch el.curriculum as curriculum")
 		  .append(" inner join fetch el.group as baseGroup")
+		  .append(" inner join fetch el.type as type")
 		  .append(" left join fetch el.resource as rsrc")
-		  .append(" left join fetch el.type as type")
 		  .append(" left join repoentrytogroup as rel on (baseGroup.key =  rel.group.key)")
 		  .append(" left join rel.entry as v")
 		  .append(" left join fetch v.olatResource as res")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join fetch v.educationalType as educationalType")
 		  .where()
-		  .append(" el.parent.key is null");
+		  .append(" el.parent.key is null and type.maxRepositoryEntryRelations=1 and type.singleElement=true");
 
 		sb.and().append("(");
 		// check participants
@@ -202,7 +202,12 @@ public class InPreparationQueries {
 			log.debug("{} with type {} (single: {}, relations: {}) and entry: {}", element.getDisplayName(), (type == null ? "-" : type.getDisplayName()),
 					(type == null ? "-" : type.isSingleElement()), (type == null ? "-" : type.getMaxRepositoryEntryRelations()), (entry == null ? "-" : entry.getDisplayname()));
 
-			list.add(new CurriculumElementAndRepositoryEntry(element, entry));
+			CurriculumElementStatus elementStatus = element.getElementStatus();
+			if(entry == null && (elementStatus == CurriculumElementStatus.cancelled || elementStatus == CurriculumElementStatus.finished)) {
+				// Ignore them
+			} else {
+				list.add(new CurriculumElementAndRepositoryEntry(element, entry));
+			}
 		}
 		
 		return list;

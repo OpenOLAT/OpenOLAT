@@ -582,6 +582,21 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	public void setMaterializedPathKeys(String materializedPathKeys) {
 		this.materializedPathKeys = materializedPathKeys;
 	}
+	
+	@Transient
+	@Override
+	public List<Long> getMaterializedPathKeysList() {
+		List<Long> keys = new ArrayList<>();
+		if(materializedPathKeys != null) {
+			String[] segments = materializedPathKeys.split("/");
+			for(int i=0; i<segments.length; i++) {
+				if(StringHelper.isLong(segments[i])) {
+					keys.add(Long.valueOf(segments[i]));
+				}
+			}
+		}
+		return keys;
+	}
 
 	public String getManagedFlagsString() {
 		return managedFlagsString;

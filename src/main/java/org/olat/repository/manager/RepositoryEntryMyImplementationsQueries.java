@@ -20,29 +20,38 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
-import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * 
  * Initial date: 13 mars 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
 public class RepositoryEntryMyImplementationsQueries {
 	
+	public static final List<CurriculumElementStatus> VISIBLE_STATUS = List.of(CurriculumElementStatus.preparation,
+				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+				CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+				CurriculumElementStatus.finished);
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 
 	public List<CurriculumElement> searchImplementations(IdentityRef identity) {
 		String query = """
@@ -57,11 +66,13 @@ public class RepositoryEntryMyImplementationsQueries {
 			inner join fetch el.group baseGroup
 			inner join baseGroup.members membership
 			left join fetch el.type curElementType
-			where el.parent.key is null and el.status in (:status)
-			 and membership.identity.key=:identityKey and membership.role=:role""";
+			where el.status in (:status)
+			 and membership.identity.key=:identityKey and membership.role=:role
+			 and (el.parent.key is not null or curElementType.maxRepositoryEntryRelations<>1 and curElementType.singleElement=false)""";
 		
-		List<String> status = List.of(CurriculumElementStatus.provisional.name(),
-				CurriculumElementStatus.confirmed.name(), CurriculumElementStatus.active.name());
+		List<String> status = VISIBLE_STATUS.stream()
+				.map(CurriculumElementStatus::name)
+				.toList();
 		List<Object[]> objectsList = dbInstance.getCurrentEntityManager().createQuery(query, Object[].class)
 				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
@@ -70,16 +81,27 @@ public class RepositoryEntryMyImplementationsQueries {
 		List<CurriculumElement> elements = new ArrayList<>();
 		for(Object[] objects:objectsList) {
 			CurriculumElement element = (CurriculumElement)objects[0];
-			CurriculumElementType type = element.getType();
-			long numOfEntries = PersistenceHelper.extractPrimitiveLong(objects, 1);
-			Long numOfSubElements = PersistenceHelper.extractPrimitiveLong(objects, 2);
-			if((!type.isSingleElement() && numOfSubElements > 0)
-					|| (type.isSingleElement() && type.getMaxRepositoryEntryRelations() == -1
-							&& numOfSubElements == 0 && numOfEntries > 1)) {
-				elements.add(element);
-			}
+			elements.add(element);
 		}
-		return elements;
+
+		List<CurriculumElement> implementations;
+		if(elements.isEmpty()) {
+			implementations = List.of();
+		} else {
+			Set<Long> implementationsKeys = new HashSet<>();
+			for(CurriculumElement element:elements) {
+				List<Long> segments = element.getMaterializedPathKeysList();
+				if(!segments.isEmpty()) {
+					implementationsKeys.add(segments.get(0));
+				}
+			}
+		
+			List<CurriculumElementRefImpl> implementationsRefs = implementationsKeys.stream()
+					.map(CurriculumElementRefImpl::new)
+					.toList();
+			implementations = curriculumElementDao.loadByKeys(implementationsRefs);
+		}
+		return implementations;
 	}
 
 }

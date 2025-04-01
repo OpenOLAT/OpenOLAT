@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.Group;
@@ -135,6 +136,8 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	
 	public String getMaterializedPathKeys();
+	
+	public List<Long> getMaterializedPathKeysList();
 	
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
 	

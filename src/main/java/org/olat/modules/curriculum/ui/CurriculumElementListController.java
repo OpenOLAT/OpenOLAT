@@ -99,6 +99,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -272,8 +273,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private void loadModel() {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		CurriculumElementStatus[] visibleStatus = RepositoryEntryMyImplementationsQueries.VISIBLE_STATUS.toArray(new CurriculumElementStatus[0]);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
-				.getCurriculumElements(assessedIdentity, roles, curriculumList, CurriculumElementStatus.visibleUser(),
+				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
 						RepositoryEntryRuntimeType.notEmbedded());
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
