@@ -418,34 +418,46 @@ public class CatalogEntryListController extends FormBasicController implements A
 		String searchValue = listParams.isWithSearch() ? tableEl.getQuickSearchString(): headerSearchString;
 		if (StringHelper.containsNonWhitespace(searchValue)) {
 			List<String> searchValues = Arrays.stream(searchValue.toLowerCase().split(" ")).filter(StringHelper::containsNonWhitespace).toList();
-			rows.removeIf(row -> 
-					containsNot(searchValues, row.getTitle())
-					&& containsNot(searchValues, row.getExternalRef())
-					&& containsNot(searchValues, row.getAuthors())
-					&& containsNot(searchValues, row.getTaxonomyLevelNamePaths())
-				);
+			rows.removeIf(row -> !containsAllValues(row, searchValues));
 		}
 	}
 	
-	private boolean containsNot(List<String> searchValues, List<TaxonomyLevelNamePath> taxonomyLevelNamePaths) {
-		if (taxonomyLevelNamePaths == null || taxonomyLevelNamePaths.isEmpty()) {
-			return true;
-		}
-		for (TaxonomyLevelNamePath taxonomyLevelNamePath : taxonomyLevelNamePaths) {
-			if (!containsNot(searchValues, taxonomyLevelNamePath.getDisplayName())) {
+	private boolean containsAllValues(CatalogEntryRow row, List<String> searchValues) {
+		for (String searchValue : searchValues) {
+			if (!containsValue(row, searchValue)) {
 				return false;
 			}
 		}
 		
 		return true;
 	}
-	
-	private boolean containsNot(List<String> searchValues, String candidate) {
+
+	private boolean containsValue(CatalogEntryRow row, String searchValue) {
+		return containsValue(row.getTitle(), searchValue)
+				|| containsValue(row.getExternalRef(), searchValue)
+				|| containsValue(row.getAuthors(), searchValue)
+				|| containsValue(row.getTaxonomyLevelNamePaths(), searchValue);
+	}
+
+	private boolean containsValue(String candidate, String searchValue) {
 		if (StringHelper.containsNonWhitespace(candidate)) {
-			String candidateLowerCase = candidate.toLowerCase();
-			return searchValues.stream().noneMatch(searchValue -> candidateLowerCase.indexOf(searchValue) >= 0);
+			boolean b = candidate.toLowerCase().indexOf(searchValue) >= 0;
+			return b;
 		}
-		return true;
+		return false;
+	}
+
+	private boolean containsValue(List<TaxonomyLevelNamePath> taxonomyLevelNamePaths, String searchValue) {
+		if (taxonomyLevelNamePaths == null || taxonomyLevelNamePaths.isEmpty()) {
+			return false;
+		}
+		for (TaxonomyLevelNamePath taxonomyLevelNamePath : taxonomyLevelNamePaths) {
+			if (containsValue(taxonomyLevelNamePath.getDisplayName(), searchValue)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	private CatalogEntryRow toRow(CatalogEntry catalogEntry) {
