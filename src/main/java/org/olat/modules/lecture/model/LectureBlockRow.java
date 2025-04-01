@@ -53,6 +53,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private long numOfParticipants;
 	private final Reference curriculumElement;
 	private final Reference entry;
+	private final boolean rollCallEnabled;
 	
 	private FormLink toolsLink;
 	private LectureListDetailsController detailsCtrl;
@@ -72,7 +73,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	public LectureBlockRow(LectureBlock lectureBlock, ZonedDateTime date,
 			String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
-			long numOfParticipants, boolean assessmentMode, Translator translator) {
+			long numOfParticipants, boolean assessmentMode, boolean rollcallEnabled, Translator translator) {
 		this.translator = translator;
 		this.lectureBlock = lectureBlock;
 		this.date = date;
@@ -88,6 +89,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		this.entryExternalRef = externalRef;
 		this.entryDisplayname = entryDisplayname;
 		this.assessmentMode = assessmentMode;
+		this.rollCallEnabled = rollcallEnabled;
 	}
 	
 	@Override
@@ -145,11 +147,13 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	}
 	
 	public String getLectureBlockStatusBadge() {
-		return LectureBlockStatusCellRenderer.getStatusBadge(lectureBlock, translator);
+		return LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, translator);
 	}
 	
 	public String getRollCallStatusBadge() {
-		return LectureBlockRollCallBasicStatusCellRenderer.getStatusBadge(lectureBlock, translator);
+		return rollCallEnabled
+				? LectureBlockRollCallBasicStatusCellRenderer.getStatusLabel(lectureBlock, translator)
+				: "";
 	}
 	
 	public long getNumOfParticipants() {
@@ -178,6 +182,10 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	
 	public void setAssessmentMode(boolean assessmentMode) {
 		this.assessmentMode = assessmentMode;
+	}
+	
+	public boolean isRollCallEnabled() {
+		return rollCallEnabled;
 	}
 	
 	public DateChooser getDateChooser() {

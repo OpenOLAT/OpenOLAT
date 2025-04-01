@@ -135,8 +135,8 @@ public class LectureListRepositoryConfig {
 		return withRollCall;
 	}
 
-	public LectureListRepositoryConfig withRollCall(Visibility withRollCall) {
-		this.withRollCall = withRollCall;
+	public LectureListRepositoryConfig withRollCall(Visibility rollCallEnabled) {
+		this.withRollCall = rollCallEnabled;
 		return this;
 	}
 	
@@ -148,8 +148,8 @@ public class LectureListRepositoryConfig {
 		return showMineAsDefault;
 	}
 
-	public LectureListRepositoryConfig withAllMineSwitch(boolean withAllMineSwitch, boolean mineAsDefault) {
-		this.withAllMineSwitch = withAllMineSwitch;
+	public LectureListRepositoryConfig withAllMineSwitch(boolean allMineSwitch, boolean mineAsDefault) {
+		this.withAllMineSwitch = allMineSwitch;
 		this.showMineAsDefault = mineAsDefault;
 		return this;
 	}
@@ -158,8 +158,8 @@ public class LectureListRepositoryConfig {
 		return withExternalRef;
 	}
 
-	public LectureListRepositoryConfig withExternalRef(Visibility withExternalRef) {
-		this.withExternalRef = withExternalRef;
+	public LectureListRepositoryConfig withExternalRef(Visibility externalRef) {
+		this.withExternalRef = externalRef;
 		return this;
 	}
 
@@ -167,8 +167,8 @@ public class LectureListRepositoryConfig {
 		return withCurriculum;
 	}
 
-	public LectureListRepositoryConfig withCurriculum(Visibility withCurriculum) {
-		this.withCurriculum = withCurriculum;
+	public LectureListRepositoryConfig withCurriculum(Visibility curriculum) {
+		this.withCurriculum = curriculum;
 		return this;
 	}
 

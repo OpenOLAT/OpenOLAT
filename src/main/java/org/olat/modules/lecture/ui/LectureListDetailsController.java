@@ -189,10 +189,10 @@ public class LectureListDetailsController extends FormBasicController {
 				layoutCont.contextPut("externalRef", lectureBlock.getExternalRef());
 			}
 			
-			String badge = LectureBlockStatusCellRenderer.getStatusBadge(lectureBlock, getTranslator());
+			String badge = LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, getTranslator());
 			layoutCont.contextPut("lectureBlockStatusBadge", badge);
 			if(config.withRollCall() != Visibility.NO) {
-				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusBadge(lectureBlock, getTranslator());
+				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusLabel(lectureBlock, getTranslator());
 				layoutCont.contextPut("rollCallStatusBadge", rollCallBadge);
 			}
 			

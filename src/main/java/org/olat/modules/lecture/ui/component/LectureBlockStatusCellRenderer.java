@@ -57,9 +57,9 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 		}
 	}
 	
-	public static final String getStatusBadge(LectureBlock block, Translator trans) {
+	public static final String getStatusLabel(LectureBlock block, Translator trans) {
 		StringOutput sb = new StringOutput();
-		getStatus(sb, "o_lecture_status_badge", block, trans);
+		getStatus(sb, "o_labeled_light", block, trans);
 		return sb.toString();
 	}
 	

@@ -142,41 +142,9 @@
 	display: inline-block;
 	margin-right: 7px;
 	
-	.o_lecture_status_badge {
+	.o_labeled_light {
 		margin: 0 1em 0 0.7em;
-	}
-}
-
-.o_lecture_status_badge {
-	float: right;
-	display: inline-block;
-	padding: 1px 25px;
-	border-radius: $border-radius-small;
-	
-	&.o_lecture_status_planned {
-		@extend %o_labeled_blue;
-	}
-	&.o_lecture_status_active,
-	&.o_lecture_status_running {
-		@extend %o_labeled_orange;
-	}
-	&.o_lecture_status_done {
-		background-color: #000000;
-	    color: #fff;
-	}
-	&.o_lecture_status_cancelled {
-		@extend %o_labeled_light_grey;
-	}
-	
-	&.o_lecture_rollcall_status_open {
-		@extend %o_labeled_blue;
-	}
-	&.o_lecture_rollcall_status_reopen {
-		@extend %o_labeled_red;
-	}
-	&.o_lecture_rollcall_status_closed,
-	&.o_lecture_rollcall_status_autoclosed {
-		@extend %o_labeled_brown;
+		font-size: 100%;
 	}
 }
 

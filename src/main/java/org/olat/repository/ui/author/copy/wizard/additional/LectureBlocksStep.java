@@ -56,9 +56,11 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
@@ -127,6 +129,8 @@ public class LectureBlocksStep extends BasicStep {
 		private boolean moveDates = false;
 		
 		@Autowired
+		private LectureModule lectureModule;
+		@Autowired
 		private LectureService lectureService;
 		
 		public LectureBlocksStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
@@ -187,10 +191,12 @@ public class LectureBlocksStep extends BasicStep {
 				List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
 							
 				for(LectureBlockWithTeachers block:blocks) {
+					boolean rollCallEnabled = ConfigurationHelper.isRollCallEnabled(block.getLecturesConfigurations(), lectureModule);
+					
 					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), null, context.getSourceRepositoryEntry().getDisplayname(),
 							context.getSourceRepositoryEntry().getExternalRef(), null, false,
 							block.getCurriculumElementRef(), block.getEntryRef(),
-							block.getNumOfParticipants(), block.isAssessmentMode(), getTranslator());
+							block.getNumOfParticipants(), block.isAssessmentMode(), rollCallEnabled, getTranslator());
 					
 					Date startDate = null;
 					Date endDate = null;

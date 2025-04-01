@@ -523,7 +523,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
-		tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic, FlexiTableRendererType.verticalTimeLine);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.verticalTimeLine, FlexiTableRendererType.classic);
 		if(secCallback.viewAs() == LectureRoles.participant) {
 			tableEl.setRendererType(FlexiTableRendererType.verticalTimeLine);
 		} else {
@@ -903,11 +903,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			iAmTeacher |= getIdentity().getKey().equals(teacher.getKey());
 		}
 		
-		ZonedDateTime date = DateUtils.toZonedDateTime(block.getLectureBlock().getStartDate(), calendarModule.getDefaultZoneId());
+		final boolean rollCallEnabled = ConfigurationHelper.isRollCallEnabled(block.getLecturesConfigurations(), lectureModule);
+		final ZonedDateTime date = DateUtils.toZonedDateTime(block.getLectureBlock().getStartDate(), calendarModule.getDefaultZoneId());
 		
 		LectureBlockRow row = new LectureBlockRow(b, date, displayname, externalRef,
 				teachers.toString(), iAmTeacher, block.getCurriculumElementRef(), block.getEntryRef(),
-				block.getNumOfParticipants(), block.isAssessmentMode(), getTranslator());
+				block.getNumOfParticipants(), block.isAssessmentMode(), rollCallEnabled, getTranslator());
 		row.setTeachersList(teachersList);
 		
 		if(isOnlineMeetingEnabled() && (b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {
@@ -922,7 +923,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			row.setOpenOnlineMeetingLink(onlineMeetingLink);
 		}
 		
-		if(config.withRollCall() != Visibility.NO && secCallback.viewAs() != LectureRoles.participant && hasRollCall(row)) {
+		if(rollCallEnabled && config.withRollCall() != Visibility.NO && secCallback.viewAs() != LectureRoles.participant && hasRollCall(row)) {
 			FormLink rollCallLink = uifactory.addFormLink("rcall_" + b.getKey(), CMD_ROLLCALL, "", tableEl, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
 			rollCallLink.setDomReplacementWrapperRequired(false);
 			rollCallLink.setTitle(translate("edit.type.absence"));

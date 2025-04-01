@@ -57,12 +57,6 @@ public class LectureBlockRollCallBasicStatusCellRenderer implements FlexiCellRen
 			getStatus(target, "o_labeled_light", block.getRollCallStatus(), translator);
 		}
 	}
-	
-	public static final String getStatusBadge(LectureBlock block, Translator trans) {
-		StringOutput sb = new StringOutput();
-		getStatus(sb, "o_lecture_status_badge", block.getRollCallStatus(), trans);
-		return sb.toString();
-	}
 
 	public static final String getStatusLabel(LectureBlock block, Translator trans) {
 		StringOutput sb = new StringOutput();
