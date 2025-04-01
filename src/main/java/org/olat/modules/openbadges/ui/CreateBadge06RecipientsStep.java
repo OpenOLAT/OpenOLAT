@@ -43,12 +43,16 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -225,7 +229,10 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 				boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
 				openBadgesManager.getParticipantsWithAssessmentEntries(courseEntry, getIdentity(), secCallback,
 						(participant, assessmentEntries) -> {
-							if (badgeCriteria.allConditionsMet(courseEntry, participant, learningPath, true, assessmentEntries)) {
+							IdentityEnvironment ienv = new IdentityEnvironment(participant, Roles.userRoles());
+							UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+							if (badgeCriteria.allConditionsMet(courseEntry, uce, participant, learningPath, 
+									true, assessmentEntries)) {
 								BadgeEarnerRow row = new BadgeEarnerRow(participant, userPropertyHandlers, getLocale());
 								rows.add(row);
 								earners.add(participant);
@@ -269,7 +276,7 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 				for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries.values()) {
 					Identity assessedIdentity = participantAndAssessmentEntries.participant();
 					List<AssessmentEntry> rootAssessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-					if (badgeCriteria.allConditionsMet(null, assessedIdentity, false, 
+					if (badgeCriteria.allConditionsMet(null, null, assessedIdentity, false, 
 							false, rootAssessmentEntries)) {
 						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 						rows.add(row);

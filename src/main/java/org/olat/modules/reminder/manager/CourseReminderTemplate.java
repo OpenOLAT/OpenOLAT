@@ -42,8 +42,10 @@ public class CourseReminderTemplate extends MailTemplate {
 	private static final String FULL_NAME = "fullName";
 	private static final String EMAIL = "email";
 	private static final String USERNAME = "username";
-	private static final String RECIPIENT_FIRST_NAME = "recipientFirstName";
-	private static final String RECIPIENT_LAST_NAME = "recipientLastName";
+	private static final String AFFECTED_USER_FIRST_NAME = "firstNameAffectedUser";
+	private static final String AFFECTED_USER_LAST_NAME = "lastNameAffectedUser";
+	private static final String AFFECTED_USER_USERNAME = "usernameAffectedUser";
+	private static final String AFFECTED_USER_EMAIL = "emailAffectedUser";
 	private static final String COURSE_URL = "courseUrl";
 	private static final String COURSE_NAME = "courseName";
 	private static final String COURSE_DESCRIPTION = "courseDescription";
@@ -60,11 +62,11 @@ public class CourseReminderTemplate extends MailTemplate {
 	private static final String COURSE_LOCATION = "courseLocation";
 
 	private static final Collection<String> BODY_VARIABLE_NAMES =
-			List.of(FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL, USERNAME, RECIPIENT_FIRST_NAME, RECIPIENT_LAST_NAME,
-					COURSE_URL, COURSE_NAME, COURSE_DESCRIPTION, COURSE_REFERENCE, COURSE_TEASER, COURSE_OBJECTIVES,
-					COURSE_REQUIREMENTS, COURSE_CERTIFICATION, COURSE_AUTHORS, COURSE_MAIN_LANGUAGE,
-					COURSE_EXPENDITURE_WORK, COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END,
-					COURSE_LOCATION);
+			List.of(FIRST_NAME, LAST_NAME, FULL_NAME, EMAIL, USERNAME, AFFECTED_USER_FIRST_NAME,
+					AFFECTED_USER_LAST_NAME, AFFECTED_USER_USERNAME, AFFECTED_USER_EMAIL, COURSE_URL, COURSE_NAME,
+					COURSE_DESCRIPTION, COURSE_REFERENCE, COURSE_TEASER, COURSE_OBJECTIVES, COURSE_REQUIREMENTS,
+					COURSE_CERTIFICATION, COURSE_AUTHORS, COURSE_MAIN_LANGUAGE, COURSE_EXPENDITURE_WORK,
+					COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END, COURSE_LOCATION);
 	private static final Collection<String> SUBJECT_VARIABLE_NAMES =
 			List.of(COURSE_NAME, COURSE_EXECUTION_PERIOD_START, COURSE_EXECUTION_PERIOD_END, COURSE_AUTHORS, COURSE_LOCATION);
 
@@ -126,8 +128,20 @@ public class CourseReminderTemplate extends MailTemplate {
 		
 		if (toRecipient != null) {
 			User toUser = toRecipient.getUser();
-			putVariablesInMailContext(RECIPIENT_FIRST_NAME, StringHelper.escapeHtml(toUser.getFirstName()));
-			putVariablesInMailContext(RECIPIENT_LAST_NAME, StringHelper.escapeHtml(toUser.getLastName()));
+			putVariablesInMailContext(AFFECTED_USER_FIRST_NAME, StringHelper.escapeHtml(toUser.getFirstName()));
+			putVariablesInMailContext(AFFECTED_USER_LAST_NAME, StringHelper.escapeHtml(toUser.getLastName()));
+			// Keep for backwards compatibility
+			putVariablesInMailContext("recipientFirstName", StringHelper.escapeHtml(toUser.getFirstName()));
+			putVariablesInMailContext("recipientLastName", StringHelper.escapeHtml(toUser.getLastName()));
+			
+			String loginNameAffectedUser = securityManager.findAuthenticationName(toRecipient);
+			if (!StringHelper.containsNonWhitespace(loginNameAffectedUser)) {
+				loginNameAffectedUser = toRecipient.getName();
+			}
+			putVariablesInMailContext(AFFECTED_USER_USERNAME, loginNameAffectedUser);
+			
+			String emailAffectedUser = StringHelper.escapeHtml(userManager.getUserDisplayEmail(toUser, locale));
+			putVariablesInMailContext(AFFECTED_USER_EMAIL, emailAffectedUser);
 		}
 		
 		// Put variables from greater context
