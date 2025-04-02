@@ -280,7 +280,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		
 		allOk &= validateTextElement(subjectEl, 255, true);
 		allOk &= validateTextElement(descriptionEl, 4000, false);
-		if(mode == Mode.dates) {
+		if(mode == Mode.dates && startDateEl.isVisible()) {
 			allOk &= TeamsUIHelper.validateDates(startDateEl, endDateEl);
 		}
 

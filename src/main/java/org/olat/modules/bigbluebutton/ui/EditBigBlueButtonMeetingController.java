@@ -590,20 +590,20 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(mode == Mode.dates) {
 			startDateEl.clearError();
 			endDateEl.clearError();
-			if(startDateEl.getDate() == null) {
+			if(startDateEl.isVisible() && startDateEl.getDate() == null) {
 				startDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!validateFormItem(ureq, startDateEl)) {
 				allOk &= false;
 			}
-			if(endDateEl.getDate() == null) {
+			if(endDateEl.isVisible() && endDateEl.getDate() == null) {
 				endDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!validateFormItem(ureq, endDateEl)) {
 				allOk &= false;
 			}
 			
-			if(startDateEl.getDate() != null && endDateEl.getDate() != null) {
+			if(startDateEl.isVisible() && startDateEl.getDate() != null && endDateEl.isVisible() && endDateEl.getDate() != null) {
 				Date start = startDateEl.getDate();
 				Date end = endDateEl.getDate();
 				if(end.before(start)) {

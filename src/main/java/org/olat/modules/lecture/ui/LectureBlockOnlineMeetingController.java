@@ -76,14 +76,14 @@ public class LectureBlockOnlineMeetingController extends BasicController {
 			BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(false);
 			bigBlueButtonMeetingCtrl = new BigBlueButtonMeetingController(ureq, getWindowControl(),
 				meeting,  configuration, secCallback.isOnlineMeetingAdministrator(), secCallback.isOnlineMeetingModerator(),
-				!secCallback.canEditConfiguration());
+				false);
 			listenTo(bigBlueButtonMeetingCtrl);
 			mainVC.put("component", bigBlueButtonMeetingCtrl.getInitialComponent());
 		} else if(lectureBlock.getTeamsMeeting() != null) {
 			TeamsMeeting meeting = teamsService.getMeeting(lectureBlock.getTeamsMeeting());
 			teamsMeetingCtrl = new TeamsMeetingController(ureq, getWindowControl(), meeting,
 				secCallback.isOnlineMeetingAdministrator(), secCallback.isOnlineMeetingModerator(),
-				!secCallback.canEditConfiguration());
+				false);
 			listenTo(teamsMeetingCtrl);
 			mainVC.put("component", teamsMeetingCtrl.getInitialComponent());
 		}
