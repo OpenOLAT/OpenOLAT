@@ -57,6 +57,8 @@ public class TUConfigurationPage {
 		By configBy = By.cssSelector("fieldset.o_sel_tu_configuration_form div.o_sel_tu_type input[type='radio'][value='directIFrame']");
 		OOGraphene.waitElement(configBy, browser);
 		browser.findElement(configBy).click();
+		By protectedBy = By.cssSelector("fieldset.o_sel_tu_configuration_form div.o_sel_tu_protected input");
+		OOGraphene.waitElementDisappears(protectedBy, 5, browser);
 		return this;
 	}
 	

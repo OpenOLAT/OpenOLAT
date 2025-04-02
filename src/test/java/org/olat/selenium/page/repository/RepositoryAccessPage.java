@@ -146,7 +146,8 @@ public class RepositoryAccessPage {
 		browser.findElement(openBy).click();
 		
 		// save
-		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElement(saveBy, browser);
 		browser.findElement(saveBy).click();
 		
 		// wait second popup
