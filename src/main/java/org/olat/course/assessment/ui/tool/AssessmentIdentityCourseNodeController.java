@@ -149,7 +149,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				if (StringHelper.containsNonWhitespace(nodeLog)) {
 					LogFormatter logFormatter = new LogFormatter();
 					List<LogEntry> logEntries = logFormatter.parseLog(nodeLog).validEntries();
-					if(StringHelper.containsNonWhitespace(nodeLog)) {
+					if(!logEntries.isEmpty()) {
 						doShowLogs(ureq, logEntries);
 					}
 				}

@@ -306,15 +306,31 @@
 	$r.render("coach.reset.button")
 </div>
 #end
-#if($userLog || $groupLog)
-<div class="o_box">
-    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-	#if($groupLog)
-    <pre class="small">$groupLog</pre>
-    #end
-    #if($userLog)
-    <pre class="small">$userLog</pre>
-    #end
-    #o_togglebox_end()
-</div>
+#if($r.available("userLog") || $r.available("groupLog"))
+	<div class="panel panel-default" style="margin-top: 30px;">
+		<div class="panel-heading" data-toggle="collapse" data-target="#collapseLog">
+			<h4 class="panel-title">
+				<i id="collapseLogToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i> $r.translate("log.title")</h4>
+		</div>
+		<div id="collapseLog" class="panel-collapse collapse">
+			<div class="panel-body">
+				#if($r.available("groupLog"))
+					$r.render("groupLog")
+				#end
+				#if($r.available("userLog"))
+					$r.render("userLog")
+				#end
+			</div>
+		</div>
+	</div>
+	<script>
+		jQuery('#collapseLog').on('hide.bs.collapse', function () {
+			jQuery('#collapseLogToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			$r.backgroundCommand("hide","panel","log")
+		})
+		jQuery('#collapseLog').on('show.bs.collapse', function () {
+			jQuery('#collapseLogToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","log")
+		})
+	</script>
 #end

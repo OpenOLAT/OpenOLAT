@@ -107,12 +107,25 @@ $r.render("disclaimer")
 #end
 
 #if($changelogconfig)
-	#if($r.isNotNull($log) && $r.isNotNull($showChangeLog) && $showChangeLog)
-	<div class="o_box">
-	    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-	    <pre class="small">$log</pre>
-	    #o_togglebox_end()
-	</div>    
+	#if($r.available("log") && $r.isNotNull($showChangeLog) && $showChangeLog)
+		<div class="panel panel-default">
+			<div class="panel-heading" data-toggle="collapse" data-target="#collapseLog">
+				<h4 class="panel-title">
+					<i id="collapseLogToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i> $r.translate("log.title")</h4>
+			</div>
+
+			<div id="collapseLog" class="panel-collapse collapse"><div class="panel-body">$r.render("log")</div></div>
+		</div>
+		<script>
+			jQuery('#collapseLog').on('hide.bs.collapse', function () {
+				jQuery('#collapseLogToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$r.backgroundCommand("hide","panel","log")
+			})
+			jQuery('#collapseLog').on('show.bs.collapse', function () {
+				jQuery('#collapseLogToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$r.backgroundCommand("show","panel","log")
+			})
+		</script>
 	#end
 #end
 

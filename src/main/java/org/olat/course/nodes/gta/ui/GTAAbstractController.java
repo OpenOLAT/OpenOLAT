@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +31,9 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.timeline.TimelineBuilder;
+import org.olat.core.gui.components.timeline.TimelineController;
+import org.olat.core.gui.components.timeline.TimelineModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,8 +71,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.properties.LogEntry;
+import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.user.UserAvatarMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -113,6 +120,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	private DueDate peerReviewDueDate;
 	private DueDate lateSubmissionDueDate;
 	private DueDate solutionDueDate;
+
+	private TimelineController timelineCtrl;
 	
 	@Autowired
 	protected GTAManager gtaManager;
@@ -279,7 +288,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		resetTask(ureq, task);
 		
-		nodeLog(task);
+		nodeLog(ureq, task);
 		if(collapseContent) {
 			collapsedContents(task);
 		}
@@ -816,21 +825,39 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignedTask;
 	}
 	
-	protected void nodeLog(@SuppressWarnings("unused") Task assignedTask) {
+	protected void nodeLog(UserRequest ureq, @SuppressWarnings("unused") Task assignedTask) {
+		String logContent = "";
+		List<LogEntry> logEntries = new ArrayList<>();
+		LogFormatter logFormatter = new LogFormatter();
 		if(businessGroupTask) {
 			String groupLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedGroup);
+			logContent = "groupLog";
 			if(StringHelper.containsNonWhitespace(groupLog)) {
-				mainVC.contextPut("groupLog", groupLog);
-			} else {
-				mainVC.contextRemove("groupLog");
+				logEntries = logFormatter.parseLog(groupLog).validEntries();
 			}
 		} else {
 			String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedIdentity);
+			logContent = "userLog";
 			if(StringHelper.containsNonWhitespace(userLog)) {
-				mainVC.contextPut("userLog", StringHelper.escapeHtml(userLog));
-			} else {
-				mainVC.contextRemove("userLog");
+				logEntries = logFormatter.parseLog(userLog).validEntries();
 			}
+		}
+		doShowLogs(ureq, logEntries, logContent, mainVC);
+	}
+
+	protected void doShowLogs(UserRequest ureq, List<LogEntry> logEntries,
+							  String logContent, VelocityContainer contentVC) {
+		if (!logContent.isBlank() && logEntries != null && !logEntries.isEmpty()) {
+			UserAvatarMapper userAvatarMapper = new UserAvatarMapper(false);
+			String mapperPath = registerMapper(ureq, userAvatarMapper);
+			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
+
+			timelineCtrl = new TimelineController(
+					ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
+			listenTo(timelineCtrl);
+			contentVC.put(logContent, timelineCtrl.getInitialComponent());
+		} else {
+			contentVC.remove(logContent);
 		}
 	}
 	
