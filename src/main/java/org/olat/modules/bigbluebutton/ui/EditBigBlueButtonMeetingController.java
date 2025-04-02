@@ -630,7 +630,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			BigBlueButtonMeetingTemplate template = BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates);
 			if(mode == Mode.permanent) {
 				allOk &= BigBlueButtonUIHelper.validatePermanentSlot(templateEl, meeting, template);
-			} else if(mode == Mode.dates && startDateEl.getDate() != null && endDateEl.getDate() != null) {
+			} else if(mode == Mode.dates && startDateEl.isVisible() && endDateEl.isVisible()) {
 				allOk &= BigBlueButtonUIHelper.validateDuration(startDateEl, leadTimeEl, endDateEl, followupTimeEl, template);
 				allOk &= BigBlueButtonUIHelper.validateSlot(startDateEl, leadTimeEl, endDateEl, followupTimeEl, meeting, template);
 			}

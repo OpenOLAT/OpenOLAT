@@ -84,8 +84,10 @@ import org.olat.group.ui.main.SearchMembersParams.UserType;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
@@ -203,6 +205,7 @@ public class EditLectureBlockController extends FormBasicController {
 			RepositoryEntry entry, CurriculumElement curriculumElement,
 			LectureBlock lectureBlock, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		embedded = false;
 		this.entry = entry;
@@ -233,6 +236,7 @@ public class EditLectureBlockController extends FormBasicController {
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			AddLectureContext addLecture, StepsListener stepsListener) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
+		setTranslator(Util.createPackageTranslator(EditBigBlueButtonMeetingController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		embedded = true;
 		entry = addLecture.getEntry();
@@ -574,10 +578,27 @@ public class EditLectureBlockController extends FormBasicController {
 			if(!onlineMeetingEl.isOneSelected()) {
 				onlineMeetingEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!embedded && ((BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()) && bigBlueButtonMeeting == null)
-					|| (TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()) && teamsMeeting == null))) {
-				onlineMeetingEl.setErrorKey("error.configure.online.meeting");
-				allOk &= false;
+			} else if(!embedded) {
+				if(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()) && teamsMeeting == null) {
+					onlineMeetingEl.setErrorKey("error.configure.online.meeting");
+					allOk &= false;
+				} else if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+					if(bigBlueButtonMeeting == null || bigBlueButtonMeeting.getTemplate() == null) {
+						onlineMeetingEl.setErrorKey("error.configure.online.meeting");
+						allOk &= false;
+					} else {
+						long leadTime = bigBlueButtonMeeting.getLeadTime();
+						long followUpTime = bigBlueButtonMeeting.getFollowupTime();
+						BigBlueButtonMeetingTemplate template = bigBlueButtonMeeting.getTemplate();
+						if(!BigBlueButtonUIHelper.validateDuration(dateEl.getDate(), dateEl.getSecondDate(), leadTime,  followUpTime, template)) {
+							onlineMeetingEl.setErrorKey("error.duration", template.getMaxDuration().toString());
+							allOk &= false;
+						} else if(!BigBlueButtonUIHelper.validateSlot(bigBlueButtonMeeting, template, dateEl.getDate(), dateEl.getSecondDate(), leadTime,  followUpTime)) {
+							onlineMeetingEl.setErrorKey("server.overloaded");
+							allOk &= false;
+						}
+					}
+				}
 			}
 		}
 		return allOk;

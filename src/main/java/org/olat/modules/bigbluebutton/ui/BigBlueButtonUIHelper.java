@@ -242,8 +242,8 @@ public class BigBlueButtonUIHelper {
 		long leadTime = getLongOrZero(leadTimeEl);
 		long followupTime = getLongOrZero(followupTimeEl);
 		if (!validateDuration(start, end, leadTime, followupTime, template)) {
-				endDateEl.setErrorKey("error.duration", new String[] { template.getMaxDuration().toString() });
-				allOk &= false;
+			endDateEl.setErrorKey("error.duration", template.getMaxDuration().toString());
+			allOk &= false;
 		}
 		return allOk;
 	}
@@ -257,7 +257,7 @@ public class BigBlueButtonUIHelper {
 		long leadTime = getLongOrZero(leadTimeEl);
 		long followupTime = getLongOrZero(followupTimeEl);
 		if (!validateDuration(start, end, leadTime, followupTime, template)) {
-			startEndDateEl.setErrorKey("error.duration", new String[] { template.getMaxDuration().toString() });
+			startEndDateEl.setErrorKey("error.duration", template.getMaxDuration().toString());
 				allOk &= false;
 		}
 		return allOk;
