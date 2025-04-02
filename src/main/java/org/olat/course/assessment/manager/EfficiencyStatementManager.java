@@ -238,7 +238,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
 			efficiencyProperty = persistOrLoad(efficiencyProperty, repoEntry, assessedIdentity);
 			log.debug("creating new efficiency statement property::{} for id::{} repoEntry:: {}",
-					efficiencyProperty.getKey(), assessedIdentity.getKey() , repoEntry.getKey());
+					(efficiencyProperty == null ? "null" : efficiencyProperty.getKey()), assessedIdentity.getKey() , repoEntry.getKey());
 		} else {
 			// update existing
 			log.debug("updating efficiency statement property::{} for id::{} repoEntry::{}",
