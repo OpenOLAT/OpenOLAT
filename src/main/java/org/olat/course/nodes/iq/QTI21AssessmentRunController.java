@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.iq;
@@ -45,6 +45,9 @@ import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.timeline.TimelineBuilder;
+import org.olat.core.gui.components.timeline.TimelineController;
+import org.olat.core.gui.components.timeline.TimelineModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.components.widget.Widget;
 import org.olat.core.gui.components.widget.WidgetFactory;
@@ -56,6 +59,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -132,8 +136,11 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.message.AssessmentMessageService;
 import org.olat.modules.message.ui.AssessmentMessageDisplayCalloutController;
+import org.olat.properties.LogEntry;
+import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +151,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 /**
  * 
  * Initial date: 19.05.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class QTI21AssessmentRunController extends BasicController implements GenericEventListener, OutcomesListener, AssessmentDocumentsSupplier {
@@ -178,7 +185,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final WindowedResourceableList resourceList;
 	private final DisadvantageCompensation compensation;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
-	
+
+	private TimelineController timelineCtrl;
 	private AssessmentResultController resultCtrl;
 	private AssessmentTestDisplayController displayCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -629,8 +637,25 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if(!anonym && resultsAvailable && userCourseEnv.isParticipant()) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			String userLog = am.getUserNodeLog(courseNode, getIdentity());
-			mainVC.contextPut("log", StringHelper.escapeHtml(userLog));	
+			if (StringHelper.containsNonWhitespace(userLog)) {
+				LogFormatter logFormatter = new LogFormatter();
+				List<LogEntry> logEntries = logFormatter.parseLog(userLog).validEntries();
+				if(!logEntries.isEmpty()) {
+					doShowLogs(ureq, logEntries);
+				}
+			}
 		}
+	}
+
+	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
+		UserAvatarMapper userAvatarMapper = new UserAvatarMapper(false);
+		String mapperPath = registerMapper(ureq, userAvatarMapper);
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
+
+		timelineCtrl = new TimelineController(
+				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
+		listenTo(timelineCtrl);
+		mainVC.put("log", timelineCtrl.getInitialComponent());
 	}
 	
 	private void exposeVisiblityPeriod(boolean resultsAvailable, boolean passed, AssessmentEntryStatus status) {
@@ -796,8 +821,36 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			cleanUp();
 		} else if(calloutCtrl == source) {
 			cleanUp();
+		} else if (timelineCtrl == source && "downloadTimeline".equals(event.getCommand())) {
+			doDownloadLog(ureq);
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doDownloadLog(UserRequest ureq) {
+		String nodeLog = courseAssessmentService.getAuditLog(courseNode, userCourseEnv);
+		String fileTitle = courseNode.getShortTitle() + "-" + getIdentity().getKey();
+
+		StringMediaResource resource = createLogMediaResource(nodeLog, fileTitle);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+
+	public static StringMediaResource createLogMediaResource(String nodeLog, String nodeTitle) {
+		StringMediaResource resource = new StringMediaResource();
+
+		resource.setData(nodeLog);
+		resource.setDownloadable(true, createLogFilename(nodeTitle));
+
+		resource.setContentType("text/plain");
+		resource.setEncoding("UTF-8");
+
+		return resource;
+	}
+
+	private static String createLogFilename(String nodeTitle) {
+		String sanitizedTitle = nodeTitle.replaceAll("[^a-zA-Z0-9\\-_]", "_");
+		return sanitizedTitle + "_log.txt";
 	}
 	
 	private void cleanUp() {

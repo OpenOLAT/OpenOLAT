@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -80,6 +80,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormProvider;
+import org.olat.properties.LogEntry;
+import org.olat.properties.LogFormatter;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 23.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class GTAParticipantController extends GTAAbstractController implements Activateable2 {
@@ -864,20 +866,23 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 
 	@Override
-	protected void nodeLog(Task assignedTask) {
+	protected void nodeLog(UserRequest ureq, Task assignedTask) {
+		String logContent = "";
+		List<LogEntry> logEntries;
+		LogFormatter logFormatter = new LogFormatter();
 		if(isResultVisible(assignedTask)) {
 			if(businessGroupTask) {
 				String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
+				logContent = "userLog";
 				if(StringHelper.containsNonWhitespace(userLog)) {
-					mainVC.contextPut("userLog", StringHelper.escapeHtml(userLog));
-				} else {
-					mainVC.contextRemove("userLog");
+					logEntries = logFormatter.parseLog(userLog).validEntries();
+					super.doShowLogs(ureq, logEntries, logContent, mainVC);
 				}
 			} else {
-				super.nodeLog(assignedTask);
+				super.nodeLog(ureq, assignedTask);
 			}
 		} else {
-			mainVC.contextRemove("userLog");
+			mainVC.remove("userLog");
 		}
 	}
 	

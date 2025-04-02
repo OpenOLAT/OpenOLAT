@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.videotask.ui;
@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,6 +35,9 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.timeline.TimelineBuilder;
+import org.olat.core.gui.components.timeline.TimelineController;
+import org.olat.core.gui.components.timeline.TimelineModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -43,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.functions.VideoCommands;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -88,15 +91,18 @@ import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.event.VideoEvent;
+import org.olat.properties.LogEntry;
+import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.user.UserAvatarMapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 18 janv. 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class VideoTaskRunController extends BasicController implements GenericEventListener, Activateable2, AssessmentDocumentsSupplier {
@@ -117,6 +123,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	private final VideoTaskCourseNode courseNode;
 	private final AssessmentConfig assessmentConfig;
 
+	private TimelineController timelineCtrl;
 	private VideoDisplayController displayCtrl;
 	private VideoTaskDisplayController displayContainerCtrl;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
@@ -185,7 +192,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		}
 
-		exposeUserDataToVC();
+		exposeUserDataToVC(ureq);
 
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 		
@@ -323,7 +330,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		if(segments != null) {
 			selectedSegmentCategories = segments.getCategories().stream()
 					.filter(cat -> categories.contains(cat.getId()))
-					.collect(Collectors.toList());
+					.toList();
 			VideoTaskHelper.sortCategories(selectedSegmentCategories, courseNode, getLocale());
 		} else {
 			selectedSegmentCategories = List.of();
@@ -332,13 +339,30 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		return selectedSegmentCategories.size();
 	}
 	
-	private void exposeUserDataToVC() {
+	private void exposeUserDataToVC(UserRequest ureq) {
 		boolean resultsVisible = assessmentEval.getUserVisible() != null && assessmentEval.getUserVisible().booleanValue();
 		if(resultsVisible && showLog) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
-			myContent.contextPut("log", StringHelper.escapeHtml(userLog));
+			if (StringHelper.containsNonWhitespace(userLog)) {
+				LogFormatter logFormatter = new LogFormatter();
+				List<LogEntry> logEntries = logFormatter.parseLog(userLog).validEntries();
+				if(!logEntries.isEmpty()) {
+					doShowLogs(ureq, logEntries);
+				}
+			}
 		}
+	}
+
+	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
+		UserAvatarMapper userAvatarMapper = new UserAvatarMapper(false);
+		String mapperPath = registerMapper(ureq, userAvatarMapper);
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
+
+		timelineCtrl = new TimelineController(
+				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
+		listenTo(timelineCtrl);
+		myContent.put("log", timelineCtrl.getInitialComponent());
 	}
 	
 	private void checkChats(UserRequest ureq) {
@@ -412,7 +436,35 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 				displayCtrl.showHideProgressTooltip(true);
 				doContinue();
 			}
+		}  else if (timelineCtrl == source && "downloadTimeline".equals(event.getCommand())) {
+			doDownloadLog(ureq);
 		}
+	}
+
+	private void doDownloadLog(UserRequest ureq) {
+		String nodeLog = courseAssessmentService.getAuditLog(courseNode, userCourseEnv);
+		String fileTitle = courseNode.getShortTitle() + "-" + getIdentity().getKey();
+
+		StringMediaResource resource = createLogMediaResource(nodeLog, fileTitle);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+
+	public static StringMediaResource createLogMediaResource(String nodeLog, String nodeTitle) {
+		StringMediaResource resource = new StringMediaResource();
+
+		resource.setData(nodeLog);
+		resource.setDownloadable(true, createLogFilename(nodeTitle));
+
+		resource.setContentType("text/plain");
+		resource.setEncoding("UTF-8");
+
+		return resource;
+	}
+
+	private static String createLogFilename(String nodeTitle) {
+		String sanitizedTitle = nodeTitle.replaceAll("[^a-zA-Z0-9\\-_]", "_");
+		return sanitizedTitle + "_log.txt";
 	}
 
 	private void doContinue() {
