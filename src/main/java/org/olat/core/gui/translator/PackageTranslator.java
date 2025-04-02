@@ -138,14 +138,15 @@ public class PackageTranslator implements Translator {
 		
 		// Error: ! even in default language: missing translation key! 
 		if (val == null) {
-			val = getErrorMessage(key);
-			// Workaround to prevent the warning about shibboleth-attribute
-			if (!packageName.startsWith("org.olat.course.condition")
-					&& missingTranslationLogLevel != null && !missingTranslationLogLevel.equals(Level.OFF)) {
-				log.log(missingTranslationLogLevel, getErrorMessage(key), new OLATRuntimeException("transl dummy", null));
-			}
-			// don't use error message in GUI for production, use key instead (OLAT-5896)
-			if (!Settings.isDebuging()) { 
+			if (Settings.isDebuging()) {
+				val = getErrorMessage(key);
+				// Workaround to prevent the warning about shibboleth-attribute
+				if (!packageName.startsWith("org.olat.course.condition")
+						&& missingTranslationLogLevel != null && !missingTranslationLogLevel.equals(Level.OFF)) {
+					log.log(missingTranslationLogLevel, getErrorMessage(key), new OLATRuntimeException("transl dummy", null));
+				}
+			} else {
+				// don't use error message in GUI for production, use key instead (OLAT-5896)
 				val = key;
 			}
 		}
