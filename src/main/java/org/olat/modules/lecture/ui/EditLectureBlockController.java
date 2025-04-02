@@ -821,6 +821,8 @@ public class EditLectureBlockController extends FormBasicController {
 			bigBlueButtonMeeting = bigBlueButtonManager.getMeeting(bigBlueButtonMeeting);
 		} else if(!StringHelper.containsNonWhitespace(bigBlueButtonMeeting.getName())) {
 			bigBlueButtonMeeting.setName(titleEl.getValue());
+			bigBlueButtonMeeting.setStartDate(dateEl.getDate());
+			bigBlueButtonMeeting.setEndDate(dateEl.getSecondDate());
 		}
 		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
 				.calculatePermissions(entry, null, getIdentity(), ureq.getUserSession().getRoles());
@@ -841,6 +843,8 @@ public class EditLectureBlockController extends FormBasicController {
 			teamsMeeting = teamsService.getMeeting(teamsMeeting);
 		} else if(!StringHelper.containsNonWhitespace(teamsMeeting.getSubject())) {
 			teamsMeeting.setSubject(titleEl.getValue());
+			teamsMeeting.setStartDate(dateEl.getDate());
+			teamsMeeting.setEndDate(dateEl.getSecondDate());
 		}
 		editTeamsMeetingCtrl = new EditTeamsMeetingController(ureq, getWindowControl(), teamsMeeting);
 		listenTo(editTeamsMeetingCtrl);
