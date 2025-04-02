@@ -64,6 +64,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class MailHelper {
 	
 	private static final Comparator<String> CASE_INSENSTIVE = Comparator.comparing(Function.identity(), String.CASE_INSENSITIVE_ORDER);
+	private static final Comparator<String> KEEP_ORDER = (s1, s2) -> 0;
 	
 	private static Map<String, Translator> translators = new HashMap<>();
 	
@@ -174,11 +175,15 @@ public class MailHelper {
 	}
 	
 	public static String getVariableNamesHelp(Collection<String> variableNames, Locale locale) {
+		return getVariableNamesHelp(variableNames, locale, true);
+	}
+	
+	public static String getVariableNamesHelp(Collection<String> variableNames, Locale locale, boolean sorted) {
 		if (variableNames != null && !variableNames.isEmpty()) {
 			Translator translator = getTranslator(locale);
 			String names = variableNames.stream()
 					.distinct()
-					.sorted(CASE_INSENSTIVE)
+					.sorted(sorted? CASE_INSENSTIVE: KEEP_ORDER)
 					.map(name -> "$" + name)
 					.collect(Collectors.joining(", "));
 			return translator.translate("help.variable.names", new String[] {names});
