@@ -41,8 +41,12 @@ public class MembersContext {
 	private final boolean extendedCurriculumRoles;
 	private final boolean sendMailMandatory;
 	
+	// This is a course in curricular mode viewed / edited in a course context (and not in course planner).
+	private final boolean curricularMode;
+
 	private MembersContext(RepositoryEntry repoEntry, BusinessGroup group, Curriculum curriculum,
-			CurriculumElement rootCurriculumElement, boolean overrideManaged, boolean extendedCurriculumRoles, boolean sendMailMandatory) {
+						   CurriculumElement rootCurriculumElement, boolean overrideManaged, 
+						   boolean extendedCurriculumRoles, boolean sendMailMandatory, boolean curricularMode) {
 		this.repoEntry = repoEntry;
 		this.group = group;
 		this.curriculum = curriculum;
@@ -50,22 +54,23 @@ public class MembersContext {
 		this.overrideManaged = overrideManaged;
 		this.extendedCurriculumRoles = extendedCurriculumRoles;
 		this.sendMailMandatory = sendMailMandatory;
+		this.curricularMode = curricularMode;
 	}
 	
 	public static MembersContext valueOf(BusinessGroup businessGroup) {
-		return new MembersContext(null, businessGroup, null, null, false, false, false);
+		return new MembersContext(null, businessGroup, null, null, false, false, false, false);
 	}
 	
-	public static MembersContext valueOf(RepositoryEntry repoEntry, boolean overrideManaged) {
-		return new MembersContext(repoEntry, null, null, null, overrideManaged, false, false);
+	public static MembersContext valueOf(RepositoryEntry repoEntry, boolean overrideManaged, boolean curricularMode) {
+		return new MembersContext(repoEntry, null, null, null, overrideManaged, false, false, curricularMode);
 	}
 	
 	public static MembersContext valueOf(RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged, boolean sendMailMandatory) {
-		return new MembersContext(repoEntry, businessGroup, null, null, overrideManaged, false, sendMailMandatory);
+		return new MembersContext(repoEntry, businessGroup, null, null, overrideManaged, false, sendMailMandatory, false);
 	}
 	
 	public static MembersContext valueOf(Curriculum curriculum, CurriculumElement rootCurriculumElement, boolean overrideManaged, boolean extendedCurriculumRoles) {
-		return new MembersContext(null, null, curriculum, rootCurriculumElement, overrideManaged, extendedCurriculumRoles, false);
+		return new MembersContext(null, null, curriculum, rootCurriculumElement, overrideManaged, extendedCurriculumRoles, false, false);
 	}
 
 	public BusinessGroup getGroup() {
@@ -94,5 +99,9 @@ public class MembersContext {
 	
 	public boolean isSendMailMandatory() {
 		return sendMailMandatory;
+	}
+
+	public boolean isCurricularMode() {
+		return curricularMode;
 	}
 }

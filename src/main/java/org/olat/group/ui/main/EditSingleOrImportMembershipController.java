@@ -241,7 +241,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		rootCurriculumElement = membersContext.getRootCurriculumElement();
 		this.withButtons = false;
 		overrideManaged = membersContext.isOverrideManaged();
-		this.curriculumEditable = true;
+		this.curriculumEditable =!membersContext.isCurricularMode();
 		extendedCurriculumRoles = membersContext.isExtendedCurriculumRoles();
 		
 		memberships = Collections.emptyList();

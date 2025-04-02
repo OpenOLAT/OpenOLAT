@@ -308,7 +308,8 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		MembersContext membersContext = MembersContext.valueOf(repoEntry, overrideManaged);
+		boolean curricularMode = repoEntry != null && RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType());
+		MembersContext membersContext = MembersContext.valueOf(repoEntry, overrideManaged, curricularMode);
 		Step start = new ImportMember_1_MemberStep(ureq, membersContext);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			addMembers(uureq, runContext);
