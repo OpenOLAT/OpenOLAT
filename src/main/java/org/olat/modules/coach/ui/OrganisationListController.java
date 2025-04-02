@@ -67,7 +67,7 @@ public class OrganisationListController extends AbstactCoachListController {
         organisationRole = role;
         organisations = organisationService.getOrganisations(getIdentity(), role);
         
-        Organisation organisation = organisations.get(0);
+		Organisation organisation = (organisations == null || organisations.isEmpty()) ? null : organisations.get(0);
         securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationRights(organisation, organisationRole));
 
         initForm(ureq);

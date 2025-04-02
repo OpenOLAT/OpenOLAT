@@ -878,6 +878,9 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public List<RightProvider> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role) {
+		if (organisation == null) {
+			return Collections.emptyList();
+		}
 		List<String> organisationRights = organisationRoleRightDAO.getGrantedOrganisationRights(organisation.getRoot() != null ? organisation.getRoot() : organisation, role);
 
 		return allRights.stream().filter(right -> organisationRights.contains(right.getRight())).collect(Collectors.toList());
