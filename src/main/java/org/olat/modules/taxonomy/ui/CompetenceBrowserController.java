@@ -293,7 +293,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		}
 	}
 	
-	private static class TaxonomyTreeNodeComparator extends FlexiTreeNodeComparator {
+	public static class TaxonomyTreeNodeComparator extends FlexiTreeNodeComparator {
 		
 		@Override
 		protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {

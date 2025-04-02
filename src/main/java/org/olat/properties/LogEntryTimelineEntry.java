@@ -70,15 +70,38 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 
 	@Override
 	public String getTitle() {
-		// Combine author name and role in brackets (author (role))
-		// since a role can be empty, only display it if there is a role, same goes for orgUnit
-		StringBuilder title = new StringBuilder(logEntry.author());
+		String displayName = logEntry.author(); // fallback
 
-		if (logEntry.orgUnit() != null && !logEntry.orgUnit().isEmpty()) {
-			title.append(" (").append(logEntry.orgUnit()).append(")");
+		Long numericUserId = getNumericUserId();
+		if (numericUserId != null) {
+			String fetchedDisplayName = UserManager.getInstance().getUserDisplayName(numericUserId);
+
+			if (StringHelper.containsNonWhitespace(fetchedDisplayName)) {
+				displayName = fetchedDisplayName;
+			}
 		}
-		if (logEntry.role() != null && !logEntry.role().isEmpty()) {
-			title.append(" (").append(logEntry.role()).append(")");
+
+		List<String> userMetaInfo = new ArrayList<>();
+
+		if (logEntry.orgUnit() != null && !logEntry.orgUnit().isBlank()) {
+			userMetaInfo.add(logEntry.orgUnit());
+		}
+		if (logEntry.role() != null && !logEntry.role().isBlank()) {
+			String translatedRole = switch (logEntry.role().toLowerCase()) {
+				case "coach" -> translator.translate("role.coach");
+				case "participant" -> translator.translate("role.participant");
+				default -> logEntry.role(); // fallback to raw value
+			};
+			userMetaInfo.add(translatedRole);
+		}
+
+		StringBuilder title = new StringBuilder();
+		title.append("<span>").append(displayName).append("</span>");
+
+		if (!userMetaInfo.isEmpty()) {
+			title.append(" <span class=\"small text-muted\">&nbsp;&middot;&nbsp;")
+					.append(String.join(" &middot; ", userMetaInfo))
+					.append("</span>");
 		}
 
 		return title.toString();
@@ -133,7 +156,8 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 	@Override
 	public String getTimePeriod() {
 		String formattedTime = formatter.formatTimeShort(logEntry.timestamp());
-		return translator.translate("log.time.period", formattedTime);
+		String formattedDate = formatter.formatDate(logEntry.timestamp());
+		return translator.translate("log.time.period", formattedTime, formattedDate);
 	}
 
 	@Override

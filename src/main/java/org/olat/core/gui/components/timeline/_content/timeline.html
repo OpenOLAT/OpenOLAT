@@ -1,4 +1,4 @@
-<div class="o_vertical_timeline o_repo_info_panel o_lightbox_modal_form">
+<div class="o_vertical_timeline o_vertical_timeline_info_panel o_lightbox_modal_form">
 	<div class="o_vertical_timeline_header">
 		#if($r.available("downloadLink"))
 			<div></div>
@@ -38,7 +38,7 @@
 											<img src="$r.staticLink("images/transparent.gif")" alt="$altText" class="$timelineEntry.getPortraitCssClass()" style="background-image : url($timelineEntry.getUserPortraitPath()) !important; background-repeat: no-repeat !important;">
 										</div>
 											#if($r.isNotEmpty($timelineEntry.getTitle()))
-												<div class="o_vertical_timeline_title">$r.escapeHtml($timelineEntry.getTitle())
+												<div class="o_vertical_timeline_title">$timelineEntry.getTitle()
 													<div class="o_vertical_timeline_day_time">$timelineEntry.getTimePeriod()</div>
 													#if($r.isNotEmpty($timelineEntry.getTranslatedAction()))
 														<div class="o_vertical_timeline_action">

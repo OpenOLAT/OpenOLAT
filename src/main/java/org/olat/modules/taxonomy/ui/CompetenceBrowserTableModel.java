@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,8 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.taxonomy.ui.CompetenceBrowserController.TaxonomyTreeNodeComparator;
 
 /**
  * Initial date: 29.03.2021<br>
@@ -36,6 +37,8 @@ import org.olat.core.util.StringHelper;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<CompetenceBrowserTableRow> {
+	
+	private static final CompetenceBrowserCols[] COLS = CompetenceBrowserCols.values();
 
 	public CompetenceBrowserTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -44,7 +47,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 	@Override
 	public Object getValueAt(int row, int col) {
 		CompetenceBrowserTableRow tableRow = getObject(row);
-		switch(CompetenceBrowserCols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return tableRow.getKey();
 			case competences: return tableRow.getTaxonomyOrLevel();
 			case identifier: return tableRow.getIdentifier();
@@ -64,7 +67,7 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 				addToFilter(row, filteredRowsWithParents);
 			}
 			
-			filteredRowsWithParents.sort(new FlexiTreeNodeComparator());
+			Collections.sort(filteredRowsWithParents, new TaxonomyTreeNodeComparator());
 			
 			setFilteredObjects(filteredRowsWithParents);
 		} else {

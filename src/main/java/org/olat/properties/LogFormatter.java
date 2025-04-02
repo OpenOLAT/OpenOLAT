@@ -603,9 +603,21 @@ public class LogFormatter {
 		List<LogEntry> filteredEntries = new ArrayList<>();
 		Map<String, String> lastKnownState = new HashMap<>(); // action -> last detail
 
+		LogEntry previousEntry = null;
+
 		for (LogEntry entry : sortedEntries) {
 			String action = entry.action();
 			String details = entry.details();
+
+			// Special case for "reset course element": allow unless immediately repeated (OO-8542)
+			if ("reset course element".equalsIgnoreCase(action)) {
+				if (previousEntry != null && "reset course element".equalsIgnoreCase(previousEntry.action())) {
+					continue; // skip consecutive reset
+				}
+				filteredEntries.add(entry);
+				previousEntry = entry;
+				continue;
+			}
 
 			String previous = lastKnownState.get(action);
 			if (!details.equalsIgnoreCase(previous)) {
@@ -613,6 +625,7 @@ public class LogFormatter {
 				filteredEntries.add(entry);
 				lastKnownState.put(action, details);
 			}
+			previousEntry = entry;
 		}
 
 		return filteredEntries;
