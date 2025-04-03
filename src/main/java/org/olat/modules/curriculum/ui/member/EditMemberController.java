@@ -470,7 +470,7 @@ public class EditMemberController extends FormBasicController {
 	}
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
-		MailTemplate template = findBestTemplate();
+		MailTemplate template = buildTemplate();
 		if(template == null) {
 			CurriculumElement curriculumElement = curriculumElements.get(0);
 			template = CurriculumMailing.emptyTemplate(curriculum, curriculumElement, getIdentity());
@@ -500,19 +500,26 @@ public class EditMemberController extends FormBasicController {
 	
 	private void doApplyWithNotifications(UserRequest ureq) {
 		MailerResult result = new MailerResult();
-		MailTemplate template = findBestTemplate();
+		MailTemplate template = buildTemplate();
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doApply(ureq, mailing);
 	}
 	
-	private MailTemplate findBestTemplate() {
+	private MailTemplate buildTemplate() {
 		List<CurriculumElementMembershipChange> changes = collectChanges();
-		return CurriculumMailing.findBestMailTemplate(changes, member);
+		
+		CurriculumElement element = null;
+		for(CurriculumElementMembershipChange change:changes) {
+			if(element == null && change.getCurriculumElement() != null) {
+				element = change.getCurriculumElement();
+			}
+		}
+		return CurriculumMailing.getMembershipChangedTemplate(curriculum, element, getIdentity());
 	}
 
 	private void doApply(UserRequest ureq, MailPackage mailPackage) {
 		List<CurriculumElementMembershipChange> changes = collectChanges();
-		curriculumService.updateCurriculumElementMemberships(member, ureq.getUserSession().getRoles(), changes, mailPackage);
+		curriculumService.updateCurriculumElementMemberships(getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
 		
 		loadModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);

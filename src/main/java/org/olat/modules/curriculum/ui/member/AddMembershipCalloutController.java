@@ -45,7 +45,7 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 /**
  * 
  * Initial date: 12 nov. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AddMembershipCalloutController extends FormBasicController {
@@ -96,7 +96,7 @@ public class AddMembershipCalloutController extends FormBasicController {
 		confirmationTypeEl = uifactory.addCardSingleSelectVertical("confirmation.membership", formLayout,
 				confirmationPK.keys(), confirmationPK.values(), null, null);
 		confirmationTypeEl.addActionListener(FormEvent.ONCLICK);
-		confirmationTypeEl.select(ConfirmationMembershipEnum.WITH.name(), true);
+		confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
 		confirmationTypeEl.setVisible(confirmationPossible);
 		
 		// confirmation by
