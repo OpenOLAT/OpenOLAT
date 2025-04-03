@@ -19,7 +19,7 @@ alter table o_cur_curriculum_element add column c_mainlanguage varchar(256);
 alter table o_cur_curriculum_element add column c_location varchar(256);
 alter table o_cur_curriculum_element add column c_objectives mediumtext;
 alter table o_cur_curriculum_element add column c_requirements mediumtext;
-alter table o_cur_curriculum_element add column c_credits temediumtextxt;
+alter table o_cur_curriculum_element add column c_credits mediumtext;
 alter table o_cur_curriculum_element add column c_expenditureofwork varchar(256);
 alter table o_cur_curriculum_element add column c_min_participants integer;
 alter table o_cur_curriculum_element add column c_max_participants integer;
