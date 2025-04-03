@@ -230,8 +230,14 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 				List<CurriculumElement> elements = getCurriculumRootElements();
 				log.info("Start numbering {} curriculum elements implementations.", elements.size());
 				
+				int count = 0;
 				for(CurriculumElement element:elements) {
+					element = curriculumService.getCurriculumElement(element);
 					curriculumService.numberRootCurriculumElement(element);
+					dbInstance.commitAndCloseSession();
+					if(++count % 25 == 0) {
+						log.info("Numbering of implementation: {} / {}", count, elements.size());
+					}
 				}
 				
 				log.info("End numbering {} curriculum elements implementations.", elements.size());
