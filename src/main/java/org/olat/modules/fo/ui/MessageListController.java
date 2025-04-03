@@ -117,7 +117,10 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -187,6 +190,8 @@ public class MessageListController extends BasicController implements GenericEve
 	private PortfolioV2Module portfolioModule;
 	@Autowired
 	private ForumMediaHandler forumMediaHandler;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
@@ -659,7 +664,8 @@ public class MessageListController extends BasicController implements GenericEve
 		
 		if(!guestOnly && !m.isGuest() && creator != null && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			// add portrait to map for later disposal and key for rendering in velocity
-			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), creator, PortraitSize.large, true);
+			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), creator, PortraitSize.medium, true);
+			listenTo(portrait);
 			messageView.setPortrait(portrait);
 			mainVC.put("portrait_".concat(keyString), portrait.getInitialComponent());
 		  
@@ -676,8 +682,16 @@ public class MessageListController extends BasicController implements GenericEve
 				visitingCardLink.setIconRightCSS("o_icon o_icon_identity_inactive");
 				visitingCardLink.setTitle("creator.inactive");
 			}
+		} else if (!guestOnly && StringHelper.containsNonWhitespace(m.getPseudonym())) {
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc_".concat(keyString), mainVC, getLocale(), null);
+			userPortrait.setSize(PortraitSize.medium);
+			userPortrait.setPortraitUser(userPortraitService.createAnonymousPortraitUser(getLocale(), m.getPseudonym()));
+		} else if (!guestOnly && m.isGuest()) {
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc_".concat(keyString), mainVC, getLocale(), null);
+			userPortrait.setSize(PortraitSize.medium);
+			userPortrait.setPortraitUser(userPortraitService.createGuestPortraitUser(getLocale()));
 		}
-
+		
 		if(!isThreadClosed) {
 			if((numOfChildren == 0 && userIsMsgCreator && foCallback.mayDeleteOwnMessage()) || foCallback.mayDeleteMessageAsModerator()) {
 				Link deleteLink = LinkFactory.createCustomLink("dl_".concat(keyString), "dl", "msg.delete", Link.BUTTON_SMALL, mainVC, this);

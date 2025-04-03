@@ -74,10 +74,12 @@
 				<div class="o_mark">$r.render("mark_${message.key}")</div>
 			#end
 			#if(!$guestOnly)
-				#if($message.guest || ($message.pseudonym && !${message.pseudonym.isEmpty()}))
-				 	<div class="o_portrait" aria-hidden="true"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous"></div></div>
-				#elseif($r.available("portrait_${message.key}"))
+				#if($r.available("portrait_${message.key}"))
 					$r.render("portrait_${message.key}")
+				#elseif($r.available("portraitc_${message.key}"))
+					<div class="o_portrait">
+					$r.render("portraitc_${message.key}")
+					</div>
 				#end
 			#end
 			
