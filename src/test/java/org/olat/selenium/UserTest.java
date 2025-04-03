@@ -689,7 +689,7 @@ public class UserTest extends Deployments {
 			.searchByUsername(user.getLogin())
 			.selectByUsername(user.getLogin());
 		String pwChangeLink = userViewPage
-			.assertOnUserEditView(user.getLogin())
+			.assertOnUserEditView(user.getFirstName(), user.getLastName())
 			.assertOnUserEditProfil()
 			.openPasswordsTab()
 			.sendPasswordLink();
@@ -955,14 +955,14 @@ public class UserTest extends Deployments {
 			.openCreateUser();
 		userAdminPage
 			.fillUserForm(userVo)
-			.assertOnUserEditView(username);
+			.assertOnUserEditView(userVo.getFirstName(), userVo.getLastName());
 		
 		userAdminPage
 			.openSearchUser()
 			.searchByUsername(username)
 			.assertOnUserInList(username)
 			.selectByUsername(username)
-			.assertOnUserEditView(username)
+			.assertOnUserEditView(userVo.getFirstName(), userVo.getLastName())
 			.assertOnUserEditProfil();
 		
 		//user log in
@@ -1010,7 +1010,7 @@ public class UserTest extends Deployments {
 			.openCreateUser();
 		userAdminPage
 			.fillUserForm(userVo)
-			.assertOnUserEditView(username);
+			.assertOnUserEditView(userVo.getFirstName(), userVo.getLastName());
 		
 		//user log in
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
@@ -1026,7 +1026,7 @@ public class UserTest extends Deployments {
 			.openSearchUser()
 			.searchByUsername(username)
 			.selectByUsername(username)
-			.assertOnUserEditView(username)
+			.assertOnUserEditView(userVo.getFirstName(), userVo.getLastName())
 			.deleteUser()
 			.confirmDeleteUsers();
 		
