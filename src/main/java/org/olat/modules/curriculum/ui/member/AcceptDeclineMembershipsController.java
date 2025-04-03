@@ -104,7 +104,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	private List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;

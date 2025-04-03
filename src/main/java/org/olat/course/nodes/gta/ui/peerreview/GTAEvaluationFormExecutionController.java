@@ -98,7 +98,7 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 		this.courseEnv = courseEnv;
 		this.assignment = assignment;
 		this.editedByCoach = editedByCoach;
-		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 
 		Identity reviewer = assignment.getAssignee();
 		task = gtaManager.getTask(assignment.getTask());

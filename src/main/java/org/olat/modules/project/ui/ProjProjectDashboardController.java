@@ -76,9 +76,9 @@ import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UserPortraitFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -163,7 +163,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		this.project = project;
 		this.secCallback = secCallback;
 		this.createForEnabled = createForEnabled;
-		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		this.projectImageMapper = new ProjProjectImageMapper(projectService);
 		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

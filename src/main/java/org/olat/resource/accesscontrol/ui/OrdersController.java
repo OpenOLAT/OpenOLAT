@@ -89,7 +89,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private final Identity identity;
 	private final OLATResource resource;
 	private final OrdersSettings settings;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	private final String avatarMapperBaseURL;
 
 	private ToolsController toolsCtrl;

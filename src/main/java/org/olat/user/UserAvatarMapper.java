@@ -34,27 +34,23 @@ import org.olat.core.id.Identity;
  *
  */
 public class UserAvatarMapper implements Mapper {
+	
 	private static final String POSTFIX_SMALL = "/portrait_small.jpg";
 	private static final String POSTFIX_LARGE = "/portrait.jpg";
 	
 	private final UserManager userManager;
 	private final DisplayPortraitManager portraitManager;
-	private boolean useLarge;
-
-	public UserAvatarMapper(boolean useLargePortrait) {
-		useLarge = useLargePortrait;
+	
+	public UserAvatarMapper() {
 		portraitManager = CoreSpringFactory.getImpl(DisplayPortraitManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
-	}
-	
-	public void setUseLarge(boolean useLarge) {
-		this.useLarge = useLarge;
 	}
 	
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		MediaResource rsrc = null;
 		if(relPath != null && (relPath.endsWith(POSTFIX_LARGE) || relPath.endsWith(POSTFIX_SMALL))) {
+			boolean smallPortrat = relPath.endsWith(POSTFIX_SMALL);
 			if(relPath.startsWith("/")) {
 				relPath = relPath.substring(1, relPath.length());
 			}
@@ -64,30 +60,28 @@ public class UserAvatarMapper implements Mapper {
 				String idKey = relPath.substring(0, endKeyIndex);
 				Long key = Long.parseLong(idKey);
 				String username = userManager.getUsername(key);
-				if (useLarge) {
-					rsrc = portraitManager.getBigPortraitResource(username);					
-				} else {					
+				if (smallPortrat) {
 					rsrc = portraitManager.getSmallPortraitResource(username);
-					if(rsrc == null) {
-						rsrc = portraitManager.getBigPortraitResource(username);
-					}
+				}
+				if (rsrc == null) {
+					rsrc = portraitManager.getBigPortraitResource(username);
 				}
 			}
 		}
 		return rsrc;
 	}
 	
-	public String createPathFor(String mapperPath, Identity identity) {
-		Long lastModified = getLastModified(identity.getName());
-		return createPathFor(mapperPath, identity, String.valueOf(lastModified), useLarge);
+	public String createPathFor(String mapperPath, Identity identity, boolean large) {
+		Long lastModified = getLastModified(identity.getName(), large);
+		return createPathFor(mapperPath, identity, String.valueOf(lastModified), large);
 	}
 	
 	public static String createPathFor(String mapperPath, IdentityRef identity, String cachePart, boolean large) {
 		return mapperPath + "/" + identity.getKey() + "/" + cachePart + (large ? POSTFIX_LARGE : POSTFIX_SMALL); 
 	}
 	
-	private Long getLastModified(String username) {
-		if (!useLarge) {
+	private Long getLastModified(String username, boolean large) {
+		if (!large) {
 			MediaResource resource = portraitManager.getSmallPortraitResource(username);
 			if (resource != null) {
 				return resource.getLastModified();

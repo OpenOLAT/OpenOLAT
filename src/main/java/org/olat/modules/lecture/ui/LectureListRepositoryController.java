@@ -270,7 +270,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	private final String avatarMapperBaseURL;
 	private final IdentityComparator identityComparator;
 

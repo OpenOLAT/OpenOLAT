@@ -356,7 +356,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	}
 
 	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
-		UserAvatarMapper userAvatarMapper = new UserAvatarMapper(false);
+		UserAvatarMapper userAvatarMapper = new UserAvatarMapper();
 		String mapperPath = registerMapper(ureq, userAvatarMapper);
 		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
 

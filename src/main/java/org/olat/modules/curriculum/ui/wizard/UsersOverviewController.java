@@ -95,7 +95,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	private final String avatarMapperBaseURL;
 	private final MembersContext membersContext;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 
 	@Autowired
 	private UserManager userManager;

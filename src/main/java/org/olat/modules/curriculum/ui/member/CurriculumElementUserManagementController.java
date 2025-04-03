@@ -66,7 +66,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 	private final CurriculumElement curriculumElement;
 	private final String avatarMapperBaseURL;
 	private final CurriculumSecurityCallback secCallback;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	
 	private CurriculumElementHistoryController historyCtrl;
 	private CurriculumElementMemberUsersController membersCtrl;

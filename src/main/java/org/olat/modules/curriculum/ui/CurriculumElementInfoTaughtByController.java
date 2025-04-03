@@ -103,7 +103,7 @@ public class CurriculumElementInfoTaughtByController extends BasicController {
 	public CurriculumElementInfoTaughtByController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement curriculumElement, List<LectureBlock> lectureBlocks) {
 		super(ureq, wControl);
-		avatarMaperBaseUrl = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper(true));
+		avatarMaperBaseUrl = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper());
 		
 		mainVC = createVelocityContainer("curriculum_element_taught_by");
 		putInitialPanel(mainVC);

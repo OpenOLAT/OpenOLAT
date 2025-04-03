@@ -176,7 +176,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.secCallback = secCallback;
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
+		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		
 		initForm(ureq);
 		loadModel();

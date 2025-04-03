@@ -182,7 +182,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.chatViewConfig = chatViewConfig;
 		setToday();
 
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
+		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		
 		allChats = new ArrayList<>();
 		allChats.add(Integer.toString(hashCode()));

@@ -100,7 +100,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 	private final String avatarMapperBaseURL;
 	private final List<CurriculumRoles> rolesToReview;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	
 	@Autowired
 	private ACService acService;

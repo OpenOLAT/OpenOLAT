@@ -114,7 +114,7 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 		Identity identity = securityManager.loadIdentityByKey(userId);
 		if (identity == null) return null;
 
-		return userAvatarMapper.createPathFor(mapperPath, identity);
+		return userAvatarMapper.createPathFor(mapperPath, identity, false);
 	}
 
 	public String getPortraitCssClass() {

@@ -103,7 +103,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 	private final List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;

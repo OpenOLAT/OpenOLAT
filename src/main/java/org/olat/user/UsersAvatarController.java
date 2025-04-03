@@ -82,7 +82,7 @@ public class UsersAvatarController extends FormBasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper(true));
+		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper());
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		
 		initForm(ureq);
@@ -97,7 +97,7 @@ public class UsersAvatarController extends FormBasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper(true));
+		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper());
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		
 		initForm(ureq);

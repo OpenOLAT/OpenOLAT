@@ -197,7 +197,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(ToDoTaskListController.class, getLocale(), getTranslator()));
 		this.avatarMapperKey = avatarMapperKey != null
 				? avatarMapperKey
-				: mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+				: mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		this.createType = createType;
 		this.createOriginId = createOriginId;
 		this.createOriginSubPath = createOriginSubPath;

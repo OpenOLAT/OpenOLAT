@@ -85,7 +85,7 @@ public class UserInfoProfileController extends BasicController {
 		
 		UserAvatarMapper mapper = profileConfig.getAvatarMapper();
 		if (mapper == null) {
-			mapper = new UserAvatarMapper(true);
+			mapper = new UserAvatarMapper();
 		}
 		String avatarMapperBaseURL = profileConfig.getAvatarMapperBaseURL();
 		if (!StringHelper.containsNonWhitespace(avatarMapperBaseURL)) {

@@ -208,7 +208,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		stackPanel.addListener(this);
 		this.canCreateProject = isCreateProjectEnabled() && canCreateProject(ureq);
 		this.canCreateTemplate = isCreateTemplateEnabled() && canCreateProject(ureq);
-		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		this.formatter = Formatter.getInstance(getLocale());
 		this.projectImageMapper = new ProjProjectImageMapper(projectService);
 		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,

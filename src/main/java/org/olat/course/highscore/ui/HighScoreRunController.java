@@ -252,9 +252,9 @@ public class HighScoreRunController extends FormBasicController{
 			long classwidth = modifiedData.getClasswidth();
 			scoreHistogramVC.contextPut("step", classwidth);
 			//find path for ownID image to display in histogram
-			UserAvatarMapper mapper = new UserAvatarMapper(false);
+			UserAvatarMapper mapper = new UserAvatarMapper();
 			String mapperPath = registerMapper(ureq, mapper);
-			String identityMapperPath = mapper.createPathFor(mapperPath, ownIdentity);
+			String identityMapperPath = mapper.createPathFor(mapperPath, ownIdentity, false);
 			scoreHistogramVC.contextPut("mapperUrl", identityMapperPath);
 
 			mainVC.put("scoreHistogram", scoreHistogramVC);

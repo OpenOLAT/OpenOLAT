@@ -149,7 +149,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		this.resSubPath = resSubPath;
 		this.basisViewConfig = basisViewConfig;
 		fromMe = userManager.getUserDisplayName(getIdentity());
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
+		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		
 		coordinator.getEventBus().registerFor(this, getIdentity(), this.chatResource);
 		personalEventOres = OresHelper.createOLATResourceableInstance(InstantMessagingService.PERSONAL_EVENT_ORES_NAME, getIdentity().getKey());

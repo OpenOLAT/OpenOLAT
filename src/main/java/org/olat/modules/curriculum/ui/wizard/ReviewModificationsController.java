@@ -117,7 +117,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	private final MembersContext membersContext;
 	private final CurriculumRoles roleToModify;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 
 	@Autowired
 	private ACService acService;

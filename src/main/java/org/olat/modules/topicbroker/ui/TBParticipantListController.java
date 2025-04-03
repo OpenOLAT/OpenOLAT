@@ -170,7 +170,7 @@ public class TBParticipantListController extends FormBasicController implements 
 				isAdministrativeUser);
 		
 		profileConfig = userPortraitService.createProfileConfig();
-		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+		UserAvatarMapper avatarMapper = new UserAvatarMapper();
 		profileConfig.setAvatarMapper(avatarMapper);
 		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);

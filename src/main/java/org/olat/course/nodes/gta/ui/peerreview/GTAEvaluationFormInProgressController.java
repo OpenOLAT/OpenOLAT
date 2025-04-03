@@ -64,7 +64,7 @@ public class GTAEvaluationFormInProgressController extends BasicController {
 	public GTAEvaluationFormInProgressController(UserRequest ureq, WindowControl wControl, TaskReviewAssignment assignment,
 			GTACourseNode gtaNode, GTAEvaluationFormExecutionOptions options) {
 		super(ureq, wControl, Util.createPackageTranslator(GTAParticipantController.class, ureq.getLocale()));
-		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 
 		task = gtaManager.getTask(assignment.getTask());
 

@@ -63,8 +63,7 @@ public class GuiDemoUserController extends BasicController {
 	public GuiDemoUserController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
-		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		String avatarMapperBaseURL = registerMapper(ureq, new UserAvatarMapper());
 		
 		VelocityContainer mainVC = createVelocityContainer("guidemo-users");
 		putInitialPanel(mainVC);

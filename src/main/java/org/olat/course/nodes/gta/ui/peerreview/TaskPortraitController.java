@@ -62,7 +62,7 @@ public class TaskPortraitController extends BasicController {
 	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Identity identity, Task task) {
 		super(ureq, wControl, Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 
-		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		
 		VelocityContainer mainVC = createVelocityContainer("task_portrait");
 		

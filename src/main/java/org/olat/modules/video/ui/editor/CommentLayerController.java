@@ -40,10 +40,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
@@ -53,7 +53,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,7 +93,7 @@ public class CommentLayerController extends BasicController {
 
 		loadComments();
 
-		MapperKey avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
+		MapperKey avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		mainVC.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
 	}
 

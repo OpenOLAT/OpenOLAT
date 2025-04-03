@@ -141,7 +141,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private boolean readOnly;
 	private final OLATResource resource;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	private final String avatarMapperBaseURL;
 	private final List<AccessMethod> methods;
 	private final boolean isWithInvoice;

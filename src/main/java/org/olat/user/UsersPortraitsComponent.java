@@ -61,7 +61,7 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 			this.sharedMapper = true;
 			
 		} else {
-			avatarMapper = new UserAvatarMapper(true);
+			avatarMapper = new UserAvatarMapper();
 			this.mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), avatarMapper);
 			this.sharedMapper = false;
 		}
@@ -103,9 +103,8 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 
 	public void setSize(PortraitSize size) {
 		this.size = size;
-		if (!sharedMapper) {
-			boolean useLarge = PortraitSize.medium == size || PortraitSize.large == size;
-			avatarMapper.setUseLarge(useLarge);
+		if (userComps != null) {
+			userComps.forEach(comp -> comp.setSize(size));
 		}
 		setDirty(true);
 	}

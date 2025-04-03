@@ -164,7 +164,7 @@ public class CNSParticipantListController extends FormBasicController implements
 		requiredSelections = Integer.valueOf(courseNode.getModuleConfiguration().getStringValue(CNSCourseNode.CONFIG_KEY_REQUIRED_SELECTIONS));
 		
 		profileConfig = userPortraitService.createProfileConfig();
-		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+		UserAvatarMapper avatarMapper = new UserAvatarMapper();
 		profileConfig.setAvatarMapper(avatarMapper);
 		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);

@@ -178,7 +178,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		userPropertyAvatarHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_AVATAR_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper());
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		// lists
 		this.owners = owners;
