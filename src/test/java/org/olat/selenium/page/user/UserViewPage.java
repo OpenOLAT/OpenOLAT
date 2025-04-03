@@ -42,9 +42,11 @@ public class UserViewPage {
 		this.browser = browser;
 	}
 	
-	public UserViewPage assertOnUserEditView(String username) {
-		By userInfoBy = By.xpath("//div[contains(@class,'o_user_infos')]//table//tr/td[contains(text(),'" + username + "')]");
-		OOGraphene.waitElement(userInfoBy, browser);
+	public UserViewPage assertOnUserEditView(String firstName, String lastName) {
+		By firstNameBy = By.xpath("//div[contains(@class,'o_user_info')]//div[contains(@class,'o_user_info_profile_name_wrapper')]/div[contains(@class,'o_user_info_profile_name')][contains(text(),'" + firstName + "')]");
+		OOGraphene.waitElement(firstNameBy, browser);
+		By lastNameBy = By.xpath("//div[contains(@class,'o_user_info')]//div[contains(@class,'o_user_info_profile_name_wrapper')]/div[contains(@class,'o_user_info_profile_name')][contains(text(),'" + lastName + "')]");
+		OOGraphene.waitElement(lastNameBy, browser);
 		return this;
 	}
 	
