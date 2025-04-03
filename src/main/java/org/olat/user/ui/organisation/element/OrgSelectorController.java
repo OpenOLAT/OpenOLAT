@@ -74,6 +74,8 @@ public class OrgSelectorController extends FormBasicController {
 
 		rows = orgRows.stream().map(this::row).toList();
 
+		flc.contextPut("inputType", multipleSelection ? "checkbox" : "radio");
+
 		initForm(ureq);
 		doResetQuickSearch(ureq);
 	}

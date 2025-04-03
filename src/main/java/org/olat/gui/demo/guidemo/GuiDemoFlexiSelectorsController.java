@@ -40,6 +40,7 @@ import org.olat.user.ui.organisation.element.OrgSelectorElement;
 public class GuiDemoFlexiSelectorsController extends FormBasicController {
 
 	private OrgSelectorElement singleOrgList;
+	private OrgSelectorElement multiOrgList;
 
 	public GuiDemoFlexiSelectorsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -61,6 +62,10 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 		singleOrgList = uifactory.addOrgSelectorElement("org.selector", "selectors.org.single", 
 				sectionContainer, getWindowControl(), orgs);
 		singleOrgList.setMultipleSelection(false);
+		
+		multiOrgList = uifactory.addOrgSelectorElement("org.selector.multi", "selectors.org.multi",
+				sectionContainer, getWindowControl(), orgs);
+		multiOrgList.setMultipleSelection(true);
 	}
 	
 	private List<Organisation> getOrgList() {

@@ -1,3 +1,7 @@
+<style>
+	
+</style>
+
 <div class="o_org_selector">
 	<div class="clearfix">
 		<div id="$r.getId('org_search')" class="input-group o_org_selector_search">
@@ -28,7 +32,7 @@
 				#foreach($selectedRow in $selectedRows)
 				<div class="o_org_selector_row">
 					<div class="o_org_selector_checkbox">
-						<input type="checkbox" checked id="org_sel_${selectedRow.key()}" name="org_sel_${selectedRow.key()}" 
+						<input type="$inputType" checked id="org_sel_${selectedRow.key()}" name="org_sel_${selectedRow.key()}" 
 							   onchange="$f.ffXHREvent("unselect", "${selectedRow.key()}");"
 							   value="org_sel_${selectedRow.key()}" title="$r.translate("select")" aria-labelledby="org_sel_${selectedRow.key()}_label">
 					</div>
@@ -54,7 +58,7 @@
 				#foreach($unselectedRow in $unselectedRows)
 				<div class="o_org_selector_row">
 					<div class="o_org_selector_checkbox">
-						<input type="checkbox"
+						<input type="$inputType"
 							   onchange="$f.ffXHREvent("select", "${unselectedRow.key()}");"
 							   id="org_sel_${unselectedRow.key()}" name="org_sel_${unselectedRow.key()}"
 							   value="org_sel_${unselectedRow.key()}" title="$r.translate("select")" aria-labelledby="org_sel_${unselectedRow.key()}_label">
