@@ -25,6 +25,11 @@
 
 package org.olat.user;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -37,6 +42,8 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -52,6 +59,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DisplayPortraitController extends BasicController implements GenericEventListener {
 	
+	private static final DateFormat DATE_PROPERY_FORMATTER = new SimpleDateFormat("MMdd", Locale.GERMAN);
+	
 	private final VelocityContainer mainVC;
 	private final UserPortraitComponent portraitComp;
 
@@ -66,6 +75,11 @@ public class DisplayPortraitController extends BasicController implements Generi
 
 	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
 			PortraitSize portraitSize, boolean canLinkToHomePage) { 
+		this(ureq, wControl, portraitIdent, portraitSize, canLinkToHomePage, false);
+	}
+	
+	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
+			PortraitSize portraitSize, boolean canLinkToHomePage, boolean specialCss) { 
 		super(ureq, wControl);
 		this.portraitIdent = portraitIdent;
 		this.isDeletedUser = portraitIdent != null? portraitIdent.getStatus().equals(Identity.STATUS_DELETED): false;
@@ -77,6 +91,16 @@ public class DisplayPortraitController extends BasicController implements Generi
 		UserSession usess = ureq.getUserSession();
 		isGuestOnly = usess != null && usess.getRoles() != null && usess.getRoles().isGuestOnly();
 		boolean isAnonymous = portraitIdent == null || isGuestOnly;
+		
+		if (specialCss && portraitIdent != null) {
+			String birthday = portraitIdent.getUser().getProperty(UserConstants.BIRTHDAY);
+			if (StringHelper.containsNonWhitespace(birthday) && birthday.length() == 8) {
+				boolean birthdayIsToday = birthday.substring(4).equals(DATE_PROPERY_FORMATTER.format(new Date()));
+				if (birthdayIsToday) {
+					mainVC.contextPut("specialCss", "o_user_portrait_special");
+				}
+			}
+		}
 		
 		mainVC.contextPut("canLinkToHomePage", (canLinkToHomePage && !isDeletedUser & !isAnonymous) ? Boolean.TRUE : Boolean.FALSE);
 		

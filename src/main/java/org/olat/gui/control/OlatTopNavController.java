@@ -133,7 +133,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 	}
 	
 	private Component getPortraitCmp(UserRequest ureq) {
-		Controller ctr = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.small, false);
+		Controller ctr = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.small, false, true);
 		listenTo(ctr);
 		return ctr.getInitialComponent();
 	}

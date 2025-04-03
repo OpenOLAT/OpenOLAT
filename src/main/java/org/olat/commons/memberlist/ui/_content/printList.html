@@ -2,16 +2,8 @@
 #foreach($member in $members)
 	<div class="o_cmember $typecss o_print_break_avoid col-xs-3 col-sm-3 col-md-3">
 		<div class="clearfix">
-			<div class="o_portrait" aria-hidden="true">
-				#if(${member.isPortraitAvailable()})
-					<img src="$avatarBaseURL/${member.getKey()}/portrait_hq_${member.getKey()}.jpg">
-				#elseif(${member.getGender().equals("female")})
-					<img src='$r.staticLink("themes/light/images/portrait/dummy_female_big.png")'>
-				#elseif(${member.getGender().equals("male")})
-					<img src='$r.staticLink("themes/light/images/portrait/dummy_male_big.png")'>
-				#else
-					<img src='$r.staticLink("themes/light/images/portrait/anonymous.png")'>
-				#end
+			<div class="o_portrait">
+				$r.render($member.getPortraitCompName())
 			</div>
 			<div class="o_cmember_info_wrapper">
 				<strong>$r.escapeHtml($member.fullName)</strong>

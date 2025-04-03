@@ -26,6 +26,8 @@ import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -40,33 +42,24 @@ public class Member extends UserPropertiesRow {
 	private final String firstName;
 	private final String lastName;
 	private final String fullName;
-	private final String gender;
 	private final Long key;
-	private boolean portrait;
-	private String portraitCssClass;
 	private final CurriculumElementInfos curriculumElementInfos;
+	private PortraitUser portraitUser;
 	
+	private UserPortraitComponent portraitComp;
 	private FormLink emailLink;
 	private FormLink chatLink;
 	private FormLink idLink;
 	private FormLink removeLink;
 	
 	public Member(Identity identity, String fullName, CurriculumElementInfos curriculumElementInfos,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale, boolean portrait, String portraitCssClass) {
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		this.firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, locale);
 		this.lastName = identity.getUser().getProperty(UserConstants.LASTNAME, locale);
-		String genderEn = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
-		if(genderEn != null) {
-			gender = genderEn.toLowerCase();
-		} else {
-			gender = "-";
-		}
 		this.fullName = fullName;
 		this.key = identity.getKey();
 		this.curriculumElementInfos = curriculumElementInfos;
-		this.portrait = portrait;
-		this.portraitCssClass = portraitCssClass;
 	}
 
 	public String getFirstName() {
@@ -75,18 +68,6 @@ public class Member extends UserPropertiesRow {
 
 	public String getLastName() {
 		return lastName;
-	}
-	
-	public String getGender() {
-		return gender;
-	}
-	
-	public String getPortraitCssClass() {
-		return portraitCssClass;
-	}
-	
-	public boolean isPortraitAvailable() {
-		return portrait; 
 	}
 	
 	public CurriculumElementInfos getCurriculumElementInfos() {
@@ -103,6 +84,26 @@ public class Member extends UserPropertiesRow {
 	
 	public String getCurriculumRootElementIdentifier() {
 		return curriculumElementInfos == null ? "" : curriculumElementInfos.getRootElementIdentifier();
+	}
+
+	public PortraitUser getPortraitUser() {
+		return portraitUser;
+	}
+
+	public void setPortraitUser(PortraitUser portraitUser) {
+		this.portraitUser = portraitUser;
+	}
+
+	public String getPortraitCompName() {
+		return portraitComp == null ? null : portraitComp.getComponentName();
+	}
+	
+	public UserPortraitComponent getPortraitComp() {
+		return portraitComp;
+	}
+
+	public void setPortraitComp(UserPortraitComponent portraitComp) {
+		this.portraitComp = portraitComp;
 	}
 
 	public FormLink getIdLink() {
