@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -66,9 +65,9 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.nodes.members.Member;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -80,9 +79,12 @@ import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -154,11 +156,9 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
-	private UserSessionManager sessionManager;
-	@Autowired
 	private MembersExportManager exportManager;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitService userPortraitService;
 	
 	
 	public MembersAvatarDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, UserCourseEnvironment userCourseEnv, BusinessGroup businessGroup,
@@ -166,7 +166,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			boolean canEmail, boolean canDownload,  boolean deduplicateList,
 			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl, "members", translator);
-		setTranslator(translator);
+		setTranslator(Util.createPackageTranslator(UserPortraitService.class, getLocale(), translator));
 		
 		this.userCourseEnv = userCourseEnv;
 		this.businessGroup = businessGroup;
@@ -281,7 +281,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 
 		List<Member> members = createMemberLinks(ids, duplicateCatcher, container, withEmail);
 		container.contextPut("members", members);
-		container.contextPut("avatarBaseURL", avatarBaseURL);
 		return members;
 	}
 	
@@ -303,6 +302,13 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			String guiId = Integer.toString(++count);
 			String fullname = StringHelper.escapeHtml(member.getFullName());
 			
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			member.setPortraitUser(portraitUser);
+			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + identity.getKey(), formLayout.getFormItemComponent(), getLocale(), avatarBaseURL);
+			userPortraitComp.setDisplayPresence(false);
+			userPortraitComp.setPortraitUser(portraitUser);
+			member.setPortraitComp(userPortraitComp);
+			
 			FormLink idLink = uifactory.addFormLink("id_".concat(guiId), "id", fullname, null, formLayout, Link.NONTRANSLATED);
 			
 			idLink.setUserObject(member);
@@ -313,6 +319,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 				FormLink emailLink = uifactory.addFormLink("mail_".concat(guiId), "mail", "", null, formLayout, Link.NONTRANSLATED);
 				emailLink.setUserObject(member);
 				emailLink.setIconLeftCSS("o_icon o_icon_mail o_icon-lg");
+				emailLink.setTitle(translate("email"));
 				emailLink.setElementCssClass("o_mail");
 				formLayout.add(emailLink.getComponent().getComponentName(), emailLink);
 				member.setEmailLink(emailLink);
@@ -329,30 +336,20 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		if(chatEnabled && editable) {
 			Long me = getIdentity().getKey();
 			if(imModule.isOnlineStatusEnabled()) {
-				Map<Long,Member> loadStatus = new HashMap<>();
-				
 				for(Member member:members) {
 					if(member.getKey().equals(me)) {
 						member.getChatLink().setVisible(false);
-					} else if(sessionManager.isOnline(member.getKey())) {
-						loadStatus.put(member.getKey(), member);
 					} else {
-						member.getChatLink().setIconLeftCSS("o_icon o_icon_status_unavailable");
-					}
-				}
-				
-				if(loadStatus.size() > 0) {
-					List<Long> statusToLoadList = new ArrayList<>(loadStatus.keySet());
-					Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
-					for(Long toLoad:statusToLoadList) {
-						String status = statusMap.get(toLoad);
-						Member member = loadStatus.get(toLoad);
-						if(status == null || Presence.available.name().equals(status)) {
+						Presence presence = member.getPortraitUser().getPresence();
+						if(Presence.available == presence) {
 							member.getChatLink().setIconLeftCSS("o_icon o_icon_status_available");
-						} else if(Presence.dnd.name().equals(status)) {
+							member.getChatLink().setTitle(translate("user.portrait.presence.available"));
+						} else if(Presence.dnd == presence) {
 							member.getChatLink().setIconLeftCSS("o_icon o_icon_status_dnd");
+							member.getChatLink().setTitle(translate("user.portrait.presence.dnd"));
 						} else {
 							member.getChatLink().setIconLeftCSS("o_icon o_icon_status_unavailable");
+							member.getChatLink().setTitle(translate("user.portrait.presence.unavailable"));
 						}
 					}
 				}
@@ -371,17 +368,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	}
 	
 	private Member createMember(Identity identity) {
-		boolean hasPortrait = portraitManager.hasPortrait(identity);
-
-		String portraitCssClass;
-		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
-		if ("male".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
-		} else if ("female".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
-		} else {
-			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
-		}
 		String fullname = userManager.getUserDisplayName(identity);
 		
 		CurriculumElementInfos curriculumElementInfos = null;
@@ -391,7 +377,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 				curriculumElementInfos = infos.getCurriculumInfos().get(0);
 			}
 		}
-		return new Member(identity, fullname, curriculumElementInfos, userPropertyHandlers, getLocale(), hasPortrait, portraitCssClass);
+		return new Member(identity, fullname, curriculumElementInfos, userPropertyHandlers, getLocale());
 	}
 
 	@Override

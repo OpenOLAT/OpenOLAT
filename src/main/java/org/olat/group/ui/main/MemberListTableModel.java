@@ -20,6 +20,7 @@
 package org.olat.group.ui.main;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
@@ -30,7 +31,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.instantMessaging.model.Presence;
+import org.olat.user.UserPortraitComponent;
 
 /**
  * 
@@ -41,10 +45,12 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 	private static final Cols[] COLS = Cols.values();
 	
 	private final boolean onlineStatusEnabled;
+	private final Translator presenceTranslator;
 	private Map<Long,CurriculumMemberInfos> curriculumInfos;
 	
-	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled) {
+	public MemberListTableModel(FlexiTableColumnModel columnModel, Locale locale, boolean onlineStatusEnabled) {
 		super(columnModel);
+		this.presenceTranslator = Util.createPackageTranslator(UserPortraitComponent.class, locale);
 		this.onlineStatusEnabled = onlineStatusEnabled;
 	}
 
@@ -102,14 +108,18 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 			} else if (!onlineStatusEnabled) {
 				// don't show the users status when not configured, only an icon to start a chat/message
 				chatLink.setIconLeftCSS("o_icon o_icon_status_chat");
+				chatLink.setTitle(presenceTranslator.translate("user.info.chat"));
 			}
 			// standard case: available or unavailable (offline or dnd)
 			else if(Presence.available.name().equals(onlineStatus)) {
 				chatLink.setIconLeftCSS("o_icon o_icon_status_available");
+				chatLink.setTitle(presenceTranslator.translate("user.portrait.presence.available"));
 			} else if(Presence.dnd.name().equals(onlineStatus)) {
 				chatLink.setIconLeftCSS("o_icon o_icon_status_dnd");
+				chatLink.setTitle(presenceTranslator.translate("user.portrait.presence.dnd"));
 			} else {
 				chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
+				chatLink.setTitle(presenceTranslator.translate("user.portrait.presence.unavailable"));
 			}
 			if(chatLink.getComponent() != null) {
 				chatLink.getComponent().setDirty(false);

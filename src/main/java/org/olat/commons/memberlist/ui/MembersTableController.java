@@ -74,6 +74,7 @@ import org.olat.instantMessaging.model.Buddy;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -99,6 +100,10 @@ public class MembersTableController extends FormBasicController {
 	private final RepositoryEntry repoEntry; 
 	private Set<MemberRow> duplicateCatcher;
 	private final Map<Long,CurriculumMemberInfos> curriculumInfos;
+	private BusinessGroup businessGroup;
+	private CourseEnvironment courseEnv;
+	private int pageSize = 20;
+	private boolean curriculum;
 
 	@Autowired
 	private UserManager userManager;
@@ -108,12 +113,8 @@ public class MembersTableController extends FormBasicController {
 	private InstantMessagingService imService;
 	@Autowired
 	private BaseSecurity securityManager;
-	
-	private BusinessGroup businessGroup;
-	private CourseEnvironment courseEnv;
-	
-	private int pageSize = 20;
-	private boolean curriculum;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public MembersTableController(UserRequest ureq, WindowControl wControl, List<Identity> members, Set<MemberRow> duplicateCatcher,
 			Map<Long,Date> recentLaunches, Map<Long,Date> initialLaunches, Map<Long,CurriculumMemberInfos> curriculumInfos,
@@ -147,7 +148,7 @@ public class MembersTableController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		SortKey defaultSortKey = initColumns(columnsModel);		
-		membersModel = new MemberListTableModel(columnsModel, imModule.isOnlineStatusEnabled());
+		membersModel = new MemberListTableModel(columnsModel, getLocale(), imModule.isOnlineStatusEnabled());
 		membersModel.setObjects(membersList);
 		membersModel.setCurriculumInfos(curriculumInfos);
 		membersTable = uifactory.addTableElement(getWindowControl(), "table", membersModel, pageSize, false, getTranslator(), formLayout);
@@ -233,8 +234,8 @@ public class MembersTableController extends FormBasicController {
 			}
 			if (!duplicateCatcher.contains(member)) {
 				memberList.add(member);
-				if (!identity.equals(getIdentity())){
-					forgeChatLink(member);
+				if (chatEnabled && !identity.equals(getIdentity())){
+					forgeChatLink(member, identity);
 				}
 			}
 			duplicateCatcher.add(member);
@@ -242,10 +243,9 @@ public class MembersTableController extends FormBasicController {
 		return memberList;
 	}
 	
-	protected void forgeChatLink(MemberRow row) {
+	protected void forgeChatLink(MemberRow row, Identity identity) {
 		FormLink chatLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "im", "", null, null, Link.NONTRANSLATED);
-		chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
-		chatLink.setTitle("open.chat");
+		row.setOnlineStatus(userPortraitService.createPortraitUser(getLocale(), identity).getPresence().name());
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
 	}

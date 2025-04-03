@@ -272,7 +272,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		SortKey defaultSortKey = initColumns(columnsModel);
 		
-		memberListModel = new MemberListTableModel(columnsModel, imModule.isOnlineStatusEnabled());
+		memberListModel = new MemberListTableModel(columnsModel, getLocale(), imModule.isOnlineStatusEnabled());
 		membersTable = uifactory.addTableElement(getWindowControl(), "memberList", memberListModel, 20, false, getTranslator(), formLayout);
 		membersTable.setMultiSelect(true);
 		membersTable.setEmptyTableSettings("nomembers", null, "o_icon_user", null, null, false);

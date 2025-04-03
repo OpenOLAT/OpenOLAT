@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,7 +51,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.members.Member;
@@ -63,7 +61,6 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,8 +120,6 @@ public class MembersListDisplayRunController extends BasicController {
 	@Autowired
 	private MembersExportManager exportManager;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
@@ -133,8 +128,8 @@ public class MembersListDisplayRunController extends BasicController {
 			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
 			boolean canEmail, boolean canDownload, boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl);
-		Translator fallback = userManager.getPropertyHandlerTranslator(getTranslator());		
-		setTranslator(Util.createPackageTranslator(translator, fallback, getLocale()));		
+		Translator fallback = userManager.getPropertyHandlerTranslator(getTranslator());
+		setTranslator(Util.createPackageTranslator(translator, fallback, getLocale()));
 		
 		mainVC = createVelocityContainer("membersTable");
 		
@@ -340,18 +335,7 @@ public class MembersListDisplayRunController extends BasicController {
 	}
 	
 	private Member createMember(Identity identity) {		
-		boolean hasPortrait = portraitManager.hasPortrait(identity);
-
-		String portraitCssClass;
-		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
-		if ("male".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
-		} else if ("female".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
-		} else {
-			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
-		}
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Member(identity, fullname, null, userPropertyHandlers, getLocale(), hasPortrait, portraitCssClass);
+		return new Member(identity, fullname, null, userPropertyHandlers, getLocale());
 	}
 }

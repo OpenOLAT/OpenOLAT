@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,14 +46,18 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.nodes.members.Member;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,13 +83,15 @@ public class MembersPrintController extends BasicController {
 	@Autowired
 	private DisplayPortraitManager portraitManager;
 	@Autowired
+	private UserPortraitService userPortraitService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
 	
 	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Identity> owners,
 			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
 			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean deduplicateList, String title) {
-		super(ureq, wControl);
+		super(ureq, wControl, translator);
 		setTranslator(Util.createPackageTranslator(translator, getTranslator(), getLocale()));
 
 		mainVC = createVelocityContainer("print");
@@ -123,18 +128,28 @@ public class MembersPrintController extends BasicController {
 			duplicateCatcher = new HashSet<>();
 		}
 
+		VelocityContainer listVC = createVelocityContainer("printList");
+		
 		List<Member> memberWrappers = new ArrayList<>(members.size());
 		for(Identity identity:members) {
 			if(duplicateCatcher.contains(identity)) {
 				continue;
 			}
 			duplicateCatcher.add(identity);
-			memberWrappers.add(createMember(identity, curriculumInfos));
+			Member member = createMember(identity, curriculumInfos);
+			
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			member.setPortraitUser(portraitUser);
+			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + identity.getKey(), listVC, getLocale(), avatarBaseURL);
+			userPortraitComp.setSize(PortraitSize.large);
+			userPortraitComp.setDisplayPresence(false);
+			userPortraitComp.setPortraitUser(portraitUser);
+			member.setPortraitComp(userPortraitComp);
+			
+			memberWrappers.add(member);
 		}
 
-		VelocityContainer listVC = createVelocityContainer("printList");
 		listVC.contextPut("label", label);
-		listVC.contextPut("avatarBaseURL", avatarBaseURL);
 		listVC.contextPut("members", memberWrappers);
 		listVC.contextPut("typecss", "o_" + name);
 
@@ -151,17 +166,6 @@ public class MembersPrintController extends BasicController {
 	}
 	
 	private Member createMember(Identity identity, Map<Long,CurriculumMemberInfos> curriculumInfos) {
-		boolean hasPortrait = portraitManager.hasPortrait(identity);
-
-		String portraitCssClass;
-		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
-		if ("male".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
-		} else if ("female".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
-		} else {
-			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
-		}
 		String fullname = userManager.getUserDisplayName(identity);
 		
 		CurriculumElementInfos curriculumElementInfos = null;
@@ -171,7 +175,7 @@ public class MembersPrintController extends BasicController {
 				curriculumElementInfos = infos.getCurriculumInfos().get(0);
 			}
 		}
-		return new Member(identity, fullname, curriculumElementInfos, userPropertyPrintHandlers, getLocale(), hasPortrait, portraitCssClass);
+		return new Member(identity, fullname, curriculumElementInfos, userPropertyPrintHandlers, getLocale());
 	}
 
 	@Override
