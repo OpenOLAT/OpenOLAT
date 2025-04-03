@@ -22,8 +22,11 @@ package org.olat.instantMessaging.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -80,11 +83,17 @@ import org.olat.instantMessaging.ui.component.LastMessageCellRenderer;
 import org.olat.instantMessaging.ui.component.RosterEntryStatusCellRenderer;
 import org.olat.instantMessaging.ui.component.RosterEntryWithUnreadCellRenderer;
 import org.olat.instantMessaging.ui.component.RosterStatusCellRenderer;
-import org.olat.instantMessaging.ui.component.UserAvatarCellRenderer;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.base.Functions;
 
 /**
  * 
@@ -126,9 +135,13 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public SupervisorChatController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String resSubPath,
 			ChatViewConfig basisViewConfig) {
@@ -176,8 +189,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SupervisedChatCols.portrait,
-				new UserAvatarCellRenderer(avatarMapperKey.getUrl())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SupervisedChatCols.portrait));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SupervisedChatCols.online,
 				new RosterEntryStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SupervisedChatCols.participant,
@@ -235,11 +247,15 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	}
 	
 	protected RosterRow reloadModel(RosterRow row) {
-		RosterChannelInfos infos = imService.getRoster(chatResource, resSubPath, row.getChannel(), getIdentity());	
+		RosterChannelInfos infos = imService.getRoster(chatResource, resSubPath, row.getChannel(), getIdentity());
+		List<Long> identitiyKeys = infos.getNonVipEntries().stream().map(RosterEntry::getIdentityKey).toList();
+		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(identitiyKeys).stream()
+				.collect(Collectors.toMap(Identity::getKey, Functions.identity(), (u,v) -> v));
+		
 		RosterRow currentRow = tableModel.getObjectByChannel(row.getChannel());
 		if(currentRow != null) {
 			currentRow.setRoster(infos);
-			forgeRow(currentRow, infos);
+			forgeRow(currentRow, infos, identityKeyToIdentity);
 			tableEl.reset(false, false, true);
 			updateLastActivity();
 		} else {
@@ -251,10 +267,17 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	
 	protected List<RosterRow> loadModel(boolean reset) {
 		List<RosterChannelInfos> rosterInfos = imService.getRosters(chatResource, resSubPath, getIdentity(), false);
+		Set<Long> identitiyKeys = rosterInfos.stream()
+				.flatMap(infos -> infos.getNonVipEntries().stream())
+				.map(RosterEntry::getIdentityKey)
+				.collect(Collectors.toSet());
+		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(identitiyKeys).stream()
+				.collect(Collectors.toMap(Identity::getKey, Functions.identity(), (u,v) -> v));
+		
 		List<RosterRow> rows = new ArrayList<>(rosterInfos.size());
 		for(RosterChannelInfos roster:rosterInfos) {
 			RosterRow row = new RosterRow(roster);
-			forgeRow(row, roster);
+			forgeRow(row, roster, identityKeyToIdentity);
 			rows.add(row);
 		}
 		tableModel.setObjects(rows);
@@ -277,7 +300,29 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		}
 	}
 	
-	private void forgeRow(RosterRow row, RosterChannelInfos roster) {
+	private void forgeRow(RosterRow row, RosterChannelInfos roster, Map<Long, Identity> identityKeyToIdentity) {
+		List<RosterEntry> entries = roster.getNonVipEntries();
+		if(!entries.isEmpty()) {
+			RosterEntry entry = entries.get(0);
+			PortraitUser portraitUser;
+			if (entry.isAnonym()) {
+				portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), entry.getNickName());
+			} else {
+				Identity identity = identityKeyToIdentity.get(entry.getIdentityKey());
+				if (identity != null) {
+					portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+				} else {
+					portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
+				}
+			}
+			UserPortraitComponent portraitComp = UserPortraitFactory
+					.createUserPortrait("portrait_" + roster.getChannel(), null, getLocale(), avatarMapperKey.getUrl());
+			portraitComp.setSize(PortraitSize.small);
+			portraitComp.setDisplayPresence(false);
+			portraitComp.setPortraitUser(portraitUser);
+			row.setPortraitComp(portraitComp);
+		}
+		
 		row.setOnlineStatus(getOnlineStatus(row));
 		
 		List<Long> supervisors = getSupervisorsIdentities(row);

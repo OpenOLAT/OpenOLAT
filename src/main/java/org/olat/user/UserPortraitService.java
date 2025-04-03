@@ -41,6 +41,8 @@ public interface UserPortraitService {
 	
 	public PortraitUser createPortraitUser(Locale locale, Identity identity);
 
+	public PortraitUser createAnonymousPortraitUser(Locale locale, String displayName);
+	
 	public PortraitUser createGuestPortraitUser(Locale locale);
 	
 	public PortraitUser createDeletedPortraitUser(Locale locale);

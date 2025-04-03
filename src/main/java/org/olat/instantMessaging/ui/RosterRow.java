@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.model.RosterChannelInfos;
 import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
+import org.olat.user.UserPortraitComponent;
 
 /**
  * 
@@ -39,6 +40,7 @@ public class RosterRow {
 	private String onlineStatus;
 	private boolean canOpenChat = true;
 	
+	private UserPortraitComponent portraitComp;
 	private FormLink joinLink;
 	private FormLink toolLink;
 	
@@ -96,6 +98,14 @@ public class RosterRow {
 
 	public void setCanOpenChat(boolean canOpenChat) {
 		this.canOpenChat = canOpenChat;
+	}
+
+	public UserPortraitComponent getPortraitComp() {
+		return portraitComp;
+	}
+
+	public void setPortraitComp(UserPortraitComponent portraitComp) {
+		this.portraitComp = portraitComp;
 	}
 
 	public FormLink getJoinLink() {

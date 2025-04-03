@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -104,6 +105,33 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 				initials, initialsCss, displayName, presence);
 	}
 	
+	@Override
+	public PortraitUser createAnonymousPortraitUser(Locale locale, String displayName) {
+		String initials = null;
+		String portraitDisplayName = null;
+		if (StringHelper.containsNonWhitespace(displayName)) {
+			initials = getInitials(displayName);
+			portraitDisplayName = displayName;
+		} else {
+			initials = "?";
+			portraitDisplayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.anonymous");
+		}
+		String initialsCss = "o_user_initials_grey";
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, portraitDisplayName, null);
+	}
+	
+	private String getInitials(String displayName) {
+		String[] nameParts = displayName.trim().replaceAll("[ ]+", " ").split(" ");
+		String initials = "";
+		if (nameParts.length > 0 && nameParts[0].length() > 0) {
+			initials += nameParts[0].substring(0, 1).toUpperCase();
+		}
+		if (nameParts.length > 1 && nameParts[1].length() > 0) {
+			initials += nameParts[1].substring(0, 1).toUpperCase();
+		}
+		return initials;
+	}
+
 	@Override
 	public PortraitUser createGuestPortraitUser(Locale locale) {
 		String initials = "<i class='o_icon o_ac_guest_icon'> </i>";

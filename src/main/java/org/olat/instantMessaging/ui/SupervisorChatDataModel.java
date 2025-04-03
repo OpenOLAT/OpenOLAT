@@ -133,7 +133,7 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 	@Override
 	public Object getValueAt(RosterRow row, int col) {
 		switch(COLS[col]) {
-			case portrait: return row.getRoster();
+			case portrait: return row.getPortraitComp();
 			case online: return row.getOnlineStatus();
 			case participant: return row.getRoster();
 			case lastMessage: return getMessage(row);
