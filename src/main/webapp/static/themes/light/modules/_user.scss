@@ -62,6 +62,34 @@
 		border-radius: 50%;
 		border: $o-user-info-portrait-border	;
 		box-shadow: $o-user-info-portrait-box-shadow	;
+	
+		// https://stackoverflow.com/questions/48975398/how-to-create-a-circle-with-a-gradient-border-and-transparent-inner-area-using-c/48977042#48977042
+		&:is(.o_user_portrait_special *) {
+			position: relative;
+			border: unset;
+			&::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				border-radius: 50%;
+				border: 3px solid rgba(0,0,0,0);
+				background: linear-gradient(180deg, rgb(255, 110, 110) 0%, rgb(255, 199, 0) 33%, rgb(114, 206, 141) 60%, rgb(0, 122, 255) 100%) border-box;
+				mask-clip: padding-box, border-box;
+				mask-size: auto, auto;
+				mask-image: linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px);
+				mask-composite: exclude;
+			}
+			&::after {
+				content: "🎂";
+				position: absolute;
+				left: -8px;
+				bottom: -5px;
+				font-size: 140%;
+			}
+		}
 	}
 	.o_user_portrait_im {
 		place-self: end end;
