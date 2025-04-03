@@ -116,22 +116,24 @@ public class UserInfoProfileController extends BasicController {
 			chatLink.setElementCssClass("o_nowrap");
 			chatLink.setAriaRole("button");
 		}
-		
-		List<Organisation> manageableOrganisations = organisationService.getOrganisations(
-				getIdentity(), ureq.getUserSession().getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.principal,
-				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
-		if (!manageableOrganisations.isEmpty()) {
-			List<Organisation> portraitUserOrganisations = organisationService.getOrganisations(
-					() -> portraitUser.getIdentityKey(), OrganisationRoles.valuesWithoutGuestAndInvitee());
-			if (portraitUserOrganisations.stream().anyMatch(organisation -> manageableOrganisations.contains(organisation))) {
-				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(
-						"[UserAdminSite:0][usearch:0][table:0][Identity:" + portraitUser.getIdentityKey() + "]");
-				ExternalLink userManagementLink = LinkFactory.createExternalLink("user.info.user.management", "user.info.user.management", url);
-				userManagementLink.setName(translate("user.info.user.management"));
-				userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
-				userManagementLink.setElementCssClass("o_nowrap");
-				mainVC.put("user.info.user.management", userManagementLink);
+
+		if (profileConfig.isUserManagementLinkEnabled()) {
+			List<Organisation> manageableOrganisations = organisationService.getOrganisations(
+					getIdentity(), ureq.getUserSession().getRoles(),
+					OrganisationRoles.administrator, OrganisationRoles.principal,
+					OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+			if (!manageableOrganisations.isEmpty()) {
+				List<Organisation> portraitUserOrganisations = organisationService.getOrganisations(
+						portraitUser::getIdentityKey, OrganisationRoles.valuesWithoutGuestAndInvitee());
+				if (portraitUserOrganisations.stream().anyMatch(manageableOrganisations::contains)) {
+					String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(
+							"[UserAdminSite:0][usearch:0][table:0][Identity:" + portraitUser.getIdentityKey() + "]");
+					ExternalLink userManagementLink = LinkFactory.createExternalLink("user.info.user.management", "user.info.user.management", url);
+					userManagementLink.setName(translate("user.info.user.management"));
+					userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+					userManagementLink.setElementCssClass("o_nowrap");
+					mainVC.put("user.info.user.management", userManagementLink);
+				}
 			}
 		}
 	}

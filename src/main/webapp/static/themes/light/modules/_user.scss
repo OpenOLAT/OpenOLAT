@@ -164,7 +164,7 @@
 
 .o_togglebox_content {
 	> .o_user_infos {
-		padding-right: 20px;	
+		padding-right: 20px;
 	}
 }
 
@@ -179,6 +179,48 @@
 	.o_user_infos_inner {
 		flex-grow: 2;
 	}
+
+	.o_userinfo_left {
+		flex: 0 0 auto;
+	}
+
+	.o_userinfo_portrait img {
+		width: 96px;
+		height: 96px;
+		border-radius: 50%;
+	}
+
+	.o_userinfo_right {
+		flex: 1;
+	}
+
+	.o_userinfo_name {
+		font-size: 1.25rem;
+		font-weight: 600;
+		margin-bottom: 0.2rem;
+	}
+
+	.o_userinfo_status {
+		font-size: 0.95rem;
+		color: #4caf50;
+		margin-bottom: 1rem;
+	}
+
+	.o_userinfo_line {
+		margin-bottom: 0.8rem;
+	}
+
+	.o_userinfo_roles .tag {
+		display: inline-block;
+		background-color: #f3f3f3;
+		border-radius: 12px;
+		padding: 4px 10px;
+		margin: 2px 4px 2px 0;
+		border: 1px solid #ccc;
+		font-size: 0.85rem;
+		cursor: pointer;
+	}
+
 }
 
 .o_user_info_profile {
@@ -279,7 +321,6 @@
 }
 
 .o_user_status_badge {
-	float: right;
 	display: inline-block;
 	padding: 1px 25px;
 	border-radius: $border-radius-small;

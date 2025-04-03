@@ -326,9 +326,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Create", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		editCtrl = new UserAdminController(ureq, bwControl, content, newIdentity);
+		editCtrl = new UserAdminController(ureq, bwControl, content, newIdentity, false);
 		editCtrl.setBackButtonEnabled(false);
-		editCtrl.setShowTitle(false);
 		listenTo(editCtrl);
 		content.pushController(translate("menu.ucreate"), editCtrl);
 	}

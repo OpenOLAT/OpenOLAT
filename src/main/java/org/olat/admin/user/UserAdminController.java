@@ -28,8 +28,6 @@ package org.olat.admin.user;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.admin.user.UserShortDescription.Builder;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.course.RepositoryEntriesOverviewController;
 import org.olat.admin.user.groups.BusinessGroupsOverviewController;
@@ -63,11 +61,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
+import org.olat.instantMessaging.model.Presence;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -84,12 +82,13 @@ import org.olat.modules.taxonomy.ui.CompetencesOverviewController;
 import org.olat.properties.Property;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
-import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitUser;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
+import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.admin.ReloadIdentityEvent;
 import org.olat.user.ui.admin.UserAccountController;
@@ -167,13 +166,11 @@ public class UserAdminController extends BasicController implements Activateable
 	private Controller projectsCtrl;
 	private Controller propertiesCtr;
 	private Controller guiPrefsCtrl;
-	private Controller userShortDescrCtr;
 	private UserQuotaController quotaCtr;
 	private UserRolesController rolesCtr;
 	private UserAccountController accountCtrl;
 	private CurriculumListController curriculumCtr;
 	private UserRelationsController relationsCtrl;
-	private DisplayPortraitController portraitCtr;
 	private InviteeBindersAdminController portfolioCtr;
 	private GraderUserOverviewController graderOverviewCtrl;
 	private UserOpenOlatAuthenticationAdminController pwdCtr;
@@ -187,6 +184,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 	private BadgesController badgesCtrl;
+	private UserProfileInfoController userProfileInfoCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -208,6 +206,12 @@ public class UserAdminController extends BasicController implements Activateable
 	private GradingModule gradingModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private UserPortraitService userPortraitService;
+
+	public UserAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity identity) {
+		this(ureq, wControl, stackPanel, identity, true); // default = true
+	}
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -215,7 +219,8 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param wControl
 	 * @param identity
 	 */
-	public UserAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity identity) {
+	public UserAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+							   Identity identity, boolean showTitle) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
@@ -233,7 +238,7 @@ public class UserAdminController extends BasicController implements Activateable
 			}
 			
 			setBackButtonEnabled(true); // default
-			setShowTitle(true);
+			setShowTitle(showTitle);
 			initTabbedPane(editedIdentity, ureq);
 			// Exposer portrait and short description
 			exposeUserDataToVC(ureq, editedIdentity, editedRoles);
@@ -300,6 +305,13 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 	}
 
+	public boolean getShowTitle() {
+		if(myContent != null) {
+			return (Boolean) myContent.getContext().get("showTitle");
+		}
+		return true;
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink) {
@@ -351,6 +363,9 @@ public class UserAdminController extends BasicController implements Activateable
 			}
 		} else if(source == cmc) {
 			cleanUp();
+		} else if (source == userProfileInfoCtrl
+				&& (event.getCommand().equals("org-click") || event.getCommand().equals("role-click"))) {
+			userTabP.setSelectedPane(ureq, 3);
 		}
 	}
 	
@@ -713,43 +728,16 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param identity
 	 */
 	private void exposeUserDataToVC(UserRequest ureq, Identity identity, Roles roles) {
-		removeAsListenerAndDispose(portraitCtr);
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, true);
-		myContent.put("portrait", portraitCtr.getInitialComponent());
-		removeAsListenerAndDispose(userShortDescrCtr);
-		
-		Builder rowsBuilder = Rows.builder();
-		if(identity.getExpirationDate() != null && !Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
-			String inactivationDate = Formatter.getInstance(getLocale()).formatDate(identity.getExpirationDate());
-			rowsBuilder.addRow(translate("user.expiration.date"), inactivationDate);
-		}
-		if(roles.isInvitee()) {
-			rowsBuilder.addRow(translate("user.type"), translate("user.type.invitee"));
-		} else if(roles.isGuestOnly()) {
-			rowsBuilder.addRow(translate("user.type"), translate("user.type.guest"));
-		} else {
-			rowsBuilder.addRow(translate("user.type"), translate("user.type.user"));
-		}
-		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), identity, rowsBuilder.build());
-		myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
-		listenTo(userShortDescrCtr);
-		
-		int status = identity.getStatus().intValue();
-		if(status <= Identity.STATUS_ACTIV) {
-			exposeUserStatus("rightsForm.status.activ", "o_user_status_active");
-		} else if(status == Identity.STATUS_INACTIVE) {
-			exposeUserStatus("rightsForm.status.inactive", "o_user_status_inactive");
-		} else if(status == Identity.STATUS_LOGIN_DENIED) {
-			exposeUserStatus("rightsForm.status.login_denied", "o_user_status_login_denied");
-		} else if(status == Identity.STATUS_PENDING) {
-			exposeUserStatus("rightsForm.status.pending", "o_user_status_pending");
-		} else if(status == Identity.STATUS_DELETED) {
-			exposeUserStatus("rightsForm.status.deleted", "o_user_status_deleted");
-		}
-	}
-	
-	private void exposeUserStatus(String i18nStatus, String cssClass) {
-		myContent.contextPut("userStatusCssClass", cssClass);
-		myContent.contextPut("userStatus", translate(i18nStatus));
+		UserInfoProfileConfig profileConfig = new UserInfoProfileConfig();
+		profileConfig.setChatEnabled(false);
+		profileConfig.setUserManagementLinkEnabled(false);
+
+		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+		portraitUser = userPortraitService.createPortraitUser(portraitUser.getIdentityKey(),
+				portraitUser.getUsername(), portraitUser.isPortraitAvailable(), null, portraitUser.getInitials(),
+				portraitUser.getInitialsCss(), portraitUser.getDisplayName(), Presence.dnd);
+		userProfileInfoCtrl = new UserProfileInfoController(ureq, getWindowControl(), profileConfig, portraitUser, identity, roles, getShowTitle());
+		listenTo(userProfileInfoCtrl);
+		myContent.put("userInfo", userProfileInfoCtrl.getInitialComponent());
 	}
 }

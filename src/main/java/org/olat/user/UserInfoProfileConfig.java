@@ -28,6 +28,7 @@ package org.olat.user;
 public class UserInfoProfileConfig {
 	
 	private boolean chatEnabled;
+	private boolean userManagementLinkEnabled = true;
 	private UserAvatarMapper avatarMapper;
 	private String avatarMapperBaseURL;
 
@@ -53,6 +54,14 @@ public class UserInfoProfileConfig {
 
 	public void setAvatarMapperBaseURL(String avatarMapperBaseURL) {
 		this.avatarMapperBaseURL = avatarMapperBaseURL;
+	}
+
+	public void setUserManagementLinkEnabled(boolean userManagementLinkEnabled) {
+		this.userManagementLinkEnabled = userManagementLinkEnabled;
+	}
+
+	public boolean isUserManagementLinkEnabled() {
+		return userManagementLinkEnabled;
 	}
 	
 }
