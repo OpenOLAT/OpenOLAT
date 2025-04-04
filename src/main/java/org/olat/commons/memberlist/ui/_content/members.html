@@ -28,14 +28,10 @@
 		$r.render("coaches")
 	</div>
 	#end
-	#if($showParticipants)
+	#if($showParticipants && $hasParticipants)
 		<div class="clearfix o_block o_participants o_sel_participants">
 			<h4>$r.translate("members.participants")</h4>
-			#if($hasParticipants)
-				$r.render("participants")
-			#else
-				<div class="o_important">$r.translate("members.noParticipants.message")</div>
-			#end
+			$r.render("participants")
 		</div>
 	#end
 	#if($showWaiting && $hasWaiting)
