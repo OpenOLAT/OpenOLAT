@@ -60,7 +60,6 @@ public class OrgSelectorController extends FormBasicController {
 	private final List<OrgSelectorElementImpl.OrgRow> orgRows;
 	private List<OrgUIRow> orgUIRows;
 	private final boolean multipleSelection;
-	private final boolean liveUpdate;
 	private int maxUnselectedRows = PAGE_SIZE;
 
 	public record OrgUIRow(Long key, String path, String title, String location, String numberOfElements, boolean checked) {}
@@ -71,7 +70,6 @@ public class OrgSelectorController extends FormBasicController {
 
 		this.selectedKeys = selectedKeys;
 		this.multipleSelection = multipleSelection;
-		this.liveUpdate = !multipleSelection;
 		this.orgRows = orgRows;
 
 		buildUIRows();
@@ -146,27 +144,6 @@ public class OrgSelectorController extends FormBasicController {
 			doQuickSearch(ureq);
 		} else if (resetQuickSearchButton == source) {
 			doResetQuickSearch(ureq);			
-		} else if (flc == source && liveUpdate) {
-			String unselect = ureq.getParameter("unselect");
-			String select = ureq.getParameter("select");
-			if (unselect != null) {
-				Long orgKey = Long.valueOf(unselect);
-				if (selectedKeys.contains(orgKey)) {
-					selectedKeys.remove(orgKey);
-					updateUI();
-				}
-			} else if (select != null) {
-				Long orgKey = Long.valueOf(select);
-				if (!selectedKeys.contains(orgKey)) {
-					if (multipleSelection) {
-						selectedKeys.add(orgKey);
-					} else {
-						selectedKeys = new HashSet<>();
-						selectedKeys.add(orgKey);
-					}
-					updateUI();
-				}
-			}
 		} else if (loadMoreLink == source) {
 			doLoadMore(ureq);
 		}
