@@ -624,14 +624,14 @@ dialog.popover {
 		padding-top: 5px;
 		padding-bottom: 5px;
 
-		.o_org_selector_checkbox {
+		.o_org_selector_input {
 			width: 26px;
 			height: 40px;
 			display: flex;
 			align-items: center;
 			justify-content: start;
 
-			input[type=checkbox] {
+			input[type=checkbox], input[type=radio] {
 				margin: 0;
 			}
 		}
