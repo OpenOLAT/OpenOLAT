@@ -10,20 +10,13 @@
 					$r.render("resetQuickSearch")
 				</div>
 			</div>
+			
 			#if($inputType.equals("checkbox"))
-			<div class="o_org_selector_label">
-				#if($r.visible("selector.selection.none"))
-				$r.render("selector.selection.none", "label")
-				<div class="o_org_selection_none">
-					$r.render("selector.selection.none")
-				</div>
-				#end
-
-				#if($r.visible("selector.selection.num"))
-				$r.render("selector.selection.num", "label")
-				#end
+			<div class="o_org_selector_selection_text">
+				$r.translate("selector.selection") <span id="$r.getId('_selection_number_')">($selectedOrgs.size())</span>
 			</div>
 			#end
+			
 		</div>
 	</div>
 
@@ -107,6 +100,8 @@
 	function handleOrgChange(otherGroupId, ownGroupId, orgId, element) {
 		#if($inputType.equals("checkbox"))
 			jQuery(`#${otherGroupId} #${orgId}`).prop('checked', element.checked);
+			var nbSelected = Math.max(jQuery(`#${otherGroupId} input:checked`).length, jQuery(`#${ownGroupId} input:checked`).length);
+			jQuery("#$r.getId('_selection_number_')").html(`(${nbSelected})`);
 		#else
 			if (element.checked) {
 				var value = element.getAttribute('value');

@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -51,8 +50,6 @@ public class OrgSelectorController extends FormBasicController {
 	private FormLink applyButton;
 	private TextElement quickSearchEl;
 	private FormLink resetQuickSearchButton;
-	private StaticTextElement selectionNoneEl;
-	private StaticTextElement selectionNumEl;
 
 	private FormLink loadMoreLink;
 
@@ -87,12 +84,6 @@ public class OrgSelectorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initSearchLine(formLayout);
-
-		selectionNoneEl = uifactory.addStaticTextElement("selector.selection.none",
-				"selector.selection", translate("selector.selection.none"), formLayout);
-
-		selectionNumEl = uifactory.addStaticTextElement("selector.selection.num",
-				"selector.selection.num", "", formLayout);
 
 		loadMoreLink = uifactory.addFormLink("selector.load.more", formLayout, Link.LINK);
 		loadMoreLink.setIconLeftCSS("o_icon o_icon_load_more");
@@ -205,14 +196,6 @@ public class OrgSelectorController extends FormBasicController {
 
 		List<OrgUIRow> selectedOrgs = orgUIRows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
 		flc.contextPut("selectedOrgs", selectedOrgs);
-
-		selectionNoneEl.setVisible(selectedKeys.isEmpty());
-		selectionNumEl.setVisible(!selectedKeys.isEmpty());
-		if (multipleSelection) {
-			selectionNumEl.setLabel("selector.selection.num", new String[] { String.valueOf(selectedKeys.size()) });
-		} else {
-			selectionNumEl.setLabel("selector.selection", null);
-		}
 
 		quickSearchEl.getComponent().setDirty(false);
 
