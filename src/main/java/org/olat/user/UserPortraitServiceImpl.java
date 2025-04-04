@@ -72,7 +72,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		if (identity == null) {
 			return createUnknownPortraitUser(locale);
 		}
-		if (identity.getStatus() != null && identity.getStatus() >= Identity.STATUS_VISIBLE_LIMIT) {
+		if (identity.getStatus() != null && identity.getStatus() >= Identity.STATUS_DELETED) {
 			return createDeletedPortraitUser(locale);
 		}
 		
