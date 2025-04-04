@@ -1,7 +1,3 @@
-<style>
-	
-</style>
-
 <div class="o_org_selector">
 	<div class="clearfix">
 		<div id="$r.getId('org_search')" class="input-group o_org_selector_search">
@@ -50,7 +46,7 @@
 		</div>
 
 		#if($unselectedRows && $unselectedRows.size() > 0)
-		<hr>
+		<hr class="o_org_selector_separator">
 		#end
 		
 		<div class="o_org_selector_unselected">
@@ -82,7 +78,7 @@
 		</div>
 	</div>
 
-	<div class="o_button_group o_button_group_right o_button_group_bottom">
+	<div class="o_button_group o_button_group_left o_button_group_bottom o_button_group_shadow">
 		#if($r.available("select") && $r.visible("select"))
 		$r.render("select")
 		#end

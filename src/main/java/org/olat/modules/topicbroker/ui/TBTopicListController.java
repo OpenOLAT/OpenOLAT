@@ -215,6 +215,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		updateUI();
 	}
 
+	protected abstract String getContextHelpUrl();
+	
 	protected abstract String getFormInfo();
 	
 	protected abstract boolean isShowStatus();
@@ -266,6 +268,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("contextHelpUrl", getContextHelpUrl());
 		flc.contextPut("info", getFormInfo());
 		if (isShowSelections()) {
 			configPanel = new InfoPanel("configs");

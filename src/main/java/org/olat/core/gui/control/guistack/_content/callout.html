@@ -18,7 +18,7 @@ function positionBottomOrTopCallout(target, callout) {
 	// If target is a wide object (e.g. a full-width button in a form on a wide screen), 
 	// let the popup's width grow to that width.
 	if (targetRect && targetRect.width && targetRect.width > 450) {
-		callout.css('max-width', targetRect.width + 'px');
+		callout.css({'max-width': targetRect.width + 'px', 'padding-left': 0, 'padding-right': 0});
 	}
 	var calloutRect = callout.get(0).getBoundingClientRect();
 	var topOffset = {

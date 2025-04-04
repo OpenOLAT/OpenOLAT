@@ -40,6 +40,11 @@ public class TBTopicListEditController extends TBTopicListController {
 			TBGroupRestrictionCandidates groupRestrictionCandidates) {
 		super(ureq, wControl, broker, secCallback, participantCandidates, groupRestrictionCandidates);
 	}
+
+	@Override
+	protected String getContextHelpUrl() {
+		return "manual_user/learningresources/Course_Element_Topic_Broker/#tab-topic-capturing-topics";
+	}
 	
 	@Override
 	protected String getFormInfo() {
@@ -55,4 +60,5 @@ public class TBTopicListEditController extends TBTopicListController {
 	protected boolean isShowSelections() {
 		return false;
 	}
+	
 }

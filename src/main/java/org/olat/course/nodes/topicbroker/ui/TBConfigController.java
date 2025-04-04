@@ -103,8 +103,9 @@ public class TBConfigController extends FormBasicController implements Controlle
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer enrollmentCont = FormLayoutContainer.createDefaultFormLayout("enrollment", getTranslator());
-		enrollmentCont.setRootForm(mainForm);
 		enrollmentCont.setFormTitle(translate("config.enrollment.title"));
+		enrollmentCont.setFormContextHelp("manual_user/learningresources/Course_Element_Topic_Broker/#configuration-tab");
+		enrollmentCont.setRootForm(mainForm);
 		formLayout.add(enrollmentCont);
 		
 		uifactory.addStaticTextElement("config.enrollment.method", translate("strategy.fair"), enrollmentCont);
