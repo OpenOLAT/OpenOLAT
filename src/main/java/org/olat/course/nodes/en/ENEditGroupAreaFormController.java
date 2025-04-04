@@ -197,6 +197,13 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		easyGroupTableModel.setObjects(easyGroupTableRows);
 		easyGroupTableElement.reset(true,true,true);
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(fiSrc != createGroupLink) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
 
 	@Override
 	protected void doDispose() {
