@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,25 +43,23 @@ import org.olat.core.util.StringHelper;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class OrgSelectorController extends FormBasicController {
-	private static final String PARAMETER_KEY_ORG_SELECTION = "org_sel_";
+	private static final String PARAMETER_NAME_ORG = "org_name_";
 
 	private static final int PAGE_SIZE = 50;
 
-	private FormLink selectButton;
+	private FormLink applyButton;
 	private TextElement quickSearchEl;
 	private FormLink resetQuickSearchButton;
-	private StaticTextElement selectionNoneEl;
-	private StaticTextElement selectionNumEl;
 
 	private FormLink loadMoreLink;
 
 	private Set<Long> selectedKeys;
+	private final List<OrgSelectorElementImpl.OrgRow> orgRows;
+	private List<OrgUIRow> orgUIRows;
 	private final boolean multipleSelection;
-	private final boolean liveUpdate;
-	private final List<Row> rows;
 	private int maxUnselectedRows = PAGE_SIZE;
 
-	public record Row(Long key, String path, String title, String location, String numberOfElements) {}
+	public record OrgUIRow(Long key, String path, String title, String location, String numberOfElements, boolean checked) {}
 
 	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows,
 								 Set<Long> selectedKeys, boolean multipleSelection) {
@@ -70,9 +67,9 @@ public class OrgSelectorController extends FormBasicController {
 
 		this.selectedKeys = selectedKeys;
 		this.multipleSelection = multipleSelection;
-		this.liveUpdate = !multipleSelection;
+		this.orgRows = orgRows;
 
-		rows = orgRows.stream().map(this::row).toList();
+		buildUIRows();
 
 		flc.contextPut("inputType", multipleSelection ? "checkbox" : "radio");
 
@@ -80,21 +77,19 @@ public class OrgSelectorController extends FormBasicController {
 		doResetQuickSearch(ureq);
 	}
 
+	private void buildUIRows() {
+		orgUIRows = orgRows.stream().map(this::mapToOrgUIRow).toList();
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initSearchLine(formLayout);
 
-		selectionNoneEl = uifactory.addStaticTextElement("selector.selection.none",
-				"selector.selection", translate("selector.selection.none"), formLayout);
-
-		selectionNumEl = uifactory.addStaticTextElement("selector.selection.num",
-				"selector.selection.num", "", formLayout);
-
 		loadMoreLink = uifactory.addFormLink("selector.load.more", formLayout, Link.LINK);
 		loadMoreLink.setIconLeftCSS("o_icon o_icon_load_more");
 		
-		selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON_SMALL);
-		selectButton.setPrimary(true);
+		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON_SMALL);
+		applyButton.setPrimary(true);
 	}
 
 	private void initSearchLine(FormItemContainer formLayout) {
@@ -122,44 +117,24 @@ public class OrgSelectorController extends FormBasicController {
 		resetQuickSearchButton.setTitle(translate("reset"));
 	}
 
-	private Row row(OrgSelectorElementImpl.OrgRow orgRow) {
+	private OrgUIRow mapToOrgUIRow(OrgSelectorElementImpl.OrgRow orgRow) {
 		Long key = orgRow.key();
 		String path = orgRow.path();
 		String title = orgRow.title();
 		String location = orgRow.location();
 		String numberOfElements = orgRow.numberOfElements() > 1 ? Integer.toString(orgRow.numberOfElements()) : "";
-		return new Row(key, path, title, location, numberOfElements);
+		boolean checked = selectedKeys.contains(key);
+		return new OrgUIRow(key, path, title, location, numberOfElements, checked);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (selectButton == source) {
-			doSelect(ureq);
+		if (applyButton == source) {
+			doApply(ureq);
 		} else if (quickSearchEl == source) {
 			doQuickSearch(ureq);
 		} else if (resetQuickSearchButton == source) {
 			doResetQuickSearch(ureq);			
-		} else if (flc == source && liveUpdate) {
-			String unselect = ureq.getParameter("unselect");
-			String select = ureq.getParameter("select");
-			if (unselect != null) {
-				Long orgKey = Long.valueOf(unselect);
-				if (selectedKeys.contains(orgKey)) {
-					selectedKeys.remove(orgKey);
-					updateUI();
-				}
-			} else if (select != null) {
-				Long orgKey = Long.valueOf(select);
-				if (!selectedKeys.contains(orgKey)) {
-					if (multipleSelection) {
-						selectedKeys.add(orgKey);
-					} else {
-						selectedKeys = new HashSet<>();
-						selectedKeys.add(orgKey);
-					}
-					updateUI();
-				}
-			}
 		} else if (loadMoreLink == source) {
 			doLoadMore(ureq);
 		}
@@ -172,7 +147,7 @@ public class OrgSelectorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSelect(ureq);
+		doApply(ureq);
 	}
 
 	@Override
@@ -180,11 +155,11 @@ public class OrgSelectorController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private void doSelect(UserRequest ureq) {
+	private void doApply(UserRequest ureq) {
 		HashSet<Long> selectedKeys = new HashSet<>();
 		for (String name : ureq.getParameterSet()) {
-			if (name.startsWith(PARAMETER_KEY_ORG_SELECTION)) {
-				String keyString = name.substring(PARAMETER_KEY_ORG_SELECTION.length());
+			if (name.startsWith(PARAMETER_NAME_ORG)) {
+				String keyString = name.substring(PARAMETER_NAME_ORG.length());
 				selectedKeys.add(Long.parseLong(keyString));
 			}
 		}
@@ -215,45 +190,38 @@ public class OrgSelectorController extends FormBasicController {
 	}
 	
 	private void updateUI() {
+		buildUIRows();
+
 		loadMoreLink.setVisible(false);
 
-		List<Row> selectedRows = rows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
-		flc.contextPut("selectedRows", selectedRows);
-
-		selectionNoneEl.setVisible(selectedKeys.isEmpty());
-		selectionNumEl.setVisible(!selectedKeys.isEmpty());
-		if (multipleSelection) {
-			selectionNumEl.setLabel("selector.selection.num", new String[] { String.valueOf(selectedKeys.size()) });
-		} else {
-			selectionNumEl.setLabel("selector.selection", null);
-		}
+		List<OrgUIRow> selectedOrgs = orgUIRows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
+		flc.contextPut("selectedOrgs", selectedOrgs);
 
 		quickSearchEl.getComponent().setDirty(false);
 
 		String searchFieldValue = quickSearchEl.getValue().toLowerCase();
-		List<Row> unselectedRows = rows.stream()
-				.filter(row -> !selectedKeys.contains(row.key))
+		List<OrgUIRow> orgs = orgUIRows.stream()
 				.filter(row -> filter(row, searchFieldValue))
 				.toList();
 
-		if (unselectedRows.size() > maxUnselectedRows) {
-			unselectedRows = unselectedRows.subList(0, maxUnselectedRows);
+		if (orgs.size() > maxUnselectedRows) {
+			orgs = orgs.subList(0, maxUnselectedRows);
 			loadMoreLink.setVisible(true);
 		}
 
-		flc.contextPut("unselectedRows", unselectedRows);
+		flc.contextPut("orgs", orgs);
 		
 		loadMoreLink.getComponent().setDirty(true);
 	}
 	
-	private boolean filter(Row row, String searchFieldValue) {
+	private boolean filter(OrgUIRow orgUIRow, String searchFieldValue) {
 		if (!StringHelper.containsNonWhitespace(searchFieldValue)) {
 			return true;
 		}
-		if (row.title.toLowerCase().contains(searchFieldValue)) {
+		if (orgUIRow.title.toLowerCase().contains(searchFieldValue)) {
 			return true;
 		}
-		if (row.path.toLowerCase().contains(searchFieldValue)) {
+		if (orgUIRow.path.toLowerCase().contains(searchFieldValue)) {
 			return true;
 		}
 		return false;

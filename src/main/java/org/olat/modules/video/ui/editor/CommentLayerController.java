@@ -29,7 +29,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -50,9 +49,12 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
-import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,25 +63,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CommentLayerController extends BasicController {
+	
 	private final VelocityContainer mainVC;
 	private final Link closeLink;
+	
 	private final RepositoryEntry repositoryEntry;
+	private final String avatarMapperUrl;
 	private VideoComments comments;
+	
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private DisplayPortraitManager portraitManager;
-
+	private UserPortraitService userPortraitService;
 
 	public CommentLayerController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 								  String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
-
+		avatarMapperUrl = mapperService.register(null, "avatars-members", new UserAvatarMapper()).getUrl();
+		
 		mainVC = createVelocityContainer("comment_layer");
 
 		closeLink = LinkFactory.createToolLink("close", "", this, "o_icon o_icon_lg o_icon_close");
@@ -92,9 +96,6 @@ public class CommentLayerController extends BasicController {
 		putInitialPanel(mainVC);
 
 		loadComments();
-
-		MapperKey avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
-		mainVC.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
 	}
 
 	@Override
@@ -136,17 +137,16 @@ public class CommentLayerController extends BasicController {
 		BaseSecurity manager = BaseSecurityManager.getInstance();
 		Identity identity = manager.findIdentityByName(comment.getAuthor());
 		if (identity != null) {
-			Long identityKey = identity.getKey();
-			String displayName = userManager.getUserDisplayName(identity);
-			mainVC.contextPut("name", displayName);
-			if (portraitManager.getSmallPortraitResource(identityKey) != null) {
-				mainVC.contextPut("avatarKey", identityKey);
-			} else {
-				mainVC.contextRemove("avatarKey");
-			}
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale(), avatarMapperUrl);
+			portraitComp.setSize(PortraitSize.small);
+			portraitComp.setDisplayPresence(false);
+			portraitComp.setPortraitUser(portraitUser);
+			
+			mainVC.contextPut("name", portraitUser.getDisplayName());
 		} else {
-			mainVC.contextRemove("name");
-			mainVC.contextRemove("avatarKey");
+			mainVC.remove("portrait");
+			mainVC.remove("portraitFullscreen");
 		}
 		if (StringHelper.containsNonWhitespace(comment.getText())) {
 			mainVC.contextPut("text", comment.getText());

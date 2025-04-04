@@ -426,7 +426,7 @@ public class VFSMetadataDAO {
 	}
 	
 	public void updateMetadata(long fileSize, Date lastModified, String relativePath, String filename) {
-		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileSize=:fileSize, deleted=false where filename=:filename and relativePath=:relativePath";
+		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileSize=:fileSize where filename=:filename and relativePath=:relativePath";
 		dbInstance.getCurrentEntityManager()
 			.createQuery(updateQuery)
 			.setParameter("filename", filename)

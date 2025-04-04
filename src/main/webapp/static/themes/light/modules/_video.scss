@@ -1107,15 +1107,17 @@
 }
 
 .o_video_comment_author_box {
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
-	margin-bottom: 10px;
-}
-
-.o_video_comment_author_box .o_portrait img.o_video_comment_author_portrait_tiny {
-	width: 18px;
-	height: 18px;
+	@extend %o_nowrap;
+	
+	display: flex;
+	column-gap: 5px;
+	align-items: center;
+	
+	.o_portrait {
+		&.o_video_portrait_fullscreen {
+			display: none;
+		}
+	}
 }
 
 .o_video_comment_player .mejs__overlay-button {
@@ -1133,11 +1135,6 @@
 
 	.o_video_comment_author_box {
 		margin-bottom: 20px;
-
-		.o_portrait img.o_video_comment_author_portrait_tiny {
-			width: 32px;
-			height: 32px;
-		}
 	}
 
 	.o_video_comment_box {

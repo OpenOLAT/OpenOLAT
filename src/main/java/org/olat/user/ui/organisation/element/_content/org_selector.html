@@ -1,70 +1,79 @@
 <div class="o_org_selector">
 	<div class="clearfix">
-		<div id="$r.getId('org_search')" class="input-group o_org_selector_search">
-			<div class="input-group-btn">
-				$r.render("quickSearchButton")
+		<div class="o_org_selector_search">
+			<div id="$r.getId('org_search')" class="input-group">
+				<div class="input-group-btn">
+					$r.render("quickSearchButton")
+				</div>
+				$r.render("quickSearch")
+				<div class="input-group-btn">
+					$r.render("resetQuickSearch")
+				</div>
 			</div>
-			$r.render("quickSearch")
-			<div class="input-group-btn">
-				$r.render("resetQuickSearch")
+			
+			#if($inputType.equals("checkbox"))
+			<div class="o_org_selector_selection_text">
+				$r.translate("selector.selection") <span id="$r.getId('_selection_number_')">($selectedOrgs.size())</span>
 			</div>
+			#end
+			
 		</div>
 	</div>
 
 	<div class="clearfix o_filter_search_list_values o_org_selector_selection">
-		#if($r.visible("selector.selection.none"))
-		$r.render("selector.selection.none", "label")
-		<div class="o_org_selection_none">
-			$r.render("selector.selection.none")
-		</div>
-		#end
-
-		#if($r.visible("selector.selection.num"))
-		$r.render("selector.selection.num", "label")
-		#end
-
-		<div class="o_org_selector_selected">
+		<div id="$r.getId('_selected_orgs_')" class="o_org_selector_selected">
 			<div class="o_org_selector_rows">
-				#foreach($selectedRow in $selectedRows)
+				#if($inputType.equals("checkbox"))
+				#foreach($selectedOrg in $selectedOrgs)
 				<div class="o_org_selector_row">
-					<div class="o_org_selector_checkbox">
-						<input type="$inputType" checked id="org_sel_${selectedRow.key()}" name="org_sel_${selectedRow.key()}" 
-							   onchange="$f.ffXHREvent("unselect", "${selectedRow.key()}");"
-							   value="org_sel_${selectedRow.key()}" title="$r.translate("select")" aria-labelledby="org_sel_${selectedRow.key()}_label">
+					<div class="o_org_selector_input">
+						<input type="$inputType"
+							   checked
+							   onchange="handleOrgChange('$r.getId("_orgs_")', '$r.getId("_selected_orgs_")', `org_id_${this.value}`, this);"
+							   id="sel_org_id_${selectedOrg.key()}" 
+							   name="sel_org_name_${selectedOrg.key()}" value="${selectedOrg.key()}" 
+							   aria-labelledby="sel_org_label_${selectedOrg.key()}"
+							   title="$r.translate("select")" >
 					</div>
 					<div class="o_org_selector_text">
-						<div class="o_org_selector_status">$r.escapeHtml(${selectedRow.path()})</div>
-						<div id="org_sel_${selectedRow.key()}_label" class="o_org_selector_title_version">
-							$r.escapeHtml(${selectedRow.title()}) 
-							#if($selectedRow.location()) &middot; $r.escapeHtml(${selectedRow.location()}) #end
-							#if($selectedRow.numberOfElements()) (${selectedRow.numberOfElements()}) #end
+						<div class="o_org_selector_status">$r.escapeHtml(${selectedOrg.path()})</div>
+						<div id="sel_org_label_${selectedOrg.key()}" class="o_org_selector_title_version">
+							$r.escapeHtml(${selectedOrg.title()}) 
+							#if($selectedOrg.location()) &middot; $r.escapeHtml(${selectedOrg.location()}) #end
+							#if($selectedOrg.numberOfElements()) (${selectedOrg.numberOfElements()}) #end
 						</div>
 					</div>
 				</div>
 				#end
+				#end
 			</div>
 		</div>
 
-		#if($unselectedRows && $unselectedRows.size() > 0)
+		#if($inputType.equals("checkbox"))
+		#if($selectedOrgs && $selectedOrgs.size() > 0 && $orgs && $orgs.size() > 0)
 		<hr class="o_org_selector_separator">
 		#end
+		#end
 		
-		<div class="o_org_selector_unselected">
+		<div id="$r.getId('_orgs_')" class="o_org_selector_all">
 			<div class="o_org_selector_rows">
-				#foreach($unselectedRow in $unselectedRows)
+				#foreach($org in $orgs)
 				<div class="o_org_selector_row">
-					<div class="o_org_selector_checkbox">
+					<div class="o_org_selector_input">
 						<input type="$inputType"
-							   onchange="$f.ffXHREvent("select", "${unselectedRow.key()}");"
-							   id="org_sel_${unselectedRow.key()}" name="org_sel_${unselectedRow.key()}"
-							   value="org_sel_${unselectedRow.key()}" title="$r.translate("select")" aria-labelledby="org_sel_${unselectedRow.key()}_label">
+							   #if($org.checked()) checked #end
+							   onchange="handleOrgChange('$r.getId("_selected_orgs_")', '$r.getId("_orgs_")', `sel_org_id_${this.value}`, this);"
+							   id="org_id_${org.key()}" 
+							   name="org_name_${org.key()}" value="${org.key()}"
+							   aria-labelledby="org_label_${org.key()}"
+							   title="$r.translate("select")" >
 					</div>
 					<div class="o_org_selector_text">
-						<div class="o_org_selector_status">$r.escapeHtml(${unselectedRow.path()})</div>
-						<div id="org_sel_${unselectedRow.key()}_label" class="o_org_selector_title_version">
-							$r.escapeHtml(${unselectedRow.title()})
-							#if($unselectedRow.location()) &middot; $r.escapeHtml(${unselectedRow.location()}) #end
-							#if($unselectedRow.numberOfElements()) (${unselectedRow.numberOfElements()}) #end
+						<div class="o_org_selector_status">$r.escapeHtml(${org.path()})</div>
+						<div id="org_label_${org.key()}" class="o_org_selector_title_version">
+							$r.escapeHtml(${org.title()})
+							#if($org.location()) &middot; $r.escapeHtml(${org.location()}) #end
+							#if($org.numberOfElements()) (${org.numberOfElements()}) #end
 						</div>
 					</div>
 				</div>
@@ -79,14 +88,32 @@
 	</div>
 
 	<div class="o_button_group o_button_group_left o_button_group_bottom o_button_group_shadow">
-		#if($r.available("select") && $r.visible("select"))
-		$r.render("select")
+		#if($r.available("apply") && $r.visible("apply"))
+		$r.render("apply")
 		#end
 	</div>
 </div>
 
 <script>
 	"use strict";
+	
+	function handleOrgChange(otherGroupId, ownGroupId, orgId, element) {
+		#if($inputType.equals("checkbox"))
+			jQuery(`#${otherGroupId} #${orgId}`).prop('checked', element.checked);
+			var nbSelected = Math.max(jQuery(`#${otherGroupId} input:checked`).length, jQuery(`#${ownGroupId} input:checked`).length);
+			jQuery("#$r.getId('_selection_number_')").html(`(${nbSelected})`);
+		#else
+			if (element.checked) {
+				var value = element.getAttribute('value');
+				jQuery(`#${otherGroupId} input`).prop('checked', false);
+				jQuery(`#${otherGroupId} input[value="${value}"]`).prop('checked', true);
+
+				jQuery(`#${ownGroupId} input`).prop('checked', false);
+				jQuery(`#${ownGroupId} input[value="${value}"]`).prop('checked', true);
+			}
+		#end
+	}
+
 	jQuery(function() {
 		var searchField = jQuery('#$r.getId("org_search") input');
 		if (!searchField.length) {

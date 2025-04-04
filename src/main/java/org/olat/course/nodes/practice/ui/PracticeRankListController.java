@@ -22,7 +22,6 @@ package org.olat.course.nodes.practice.ui;
 import java.util.List;
 
 import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -42,6 +40,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,7 +57,7 @@ public class PracticeRankListController extends FormBasicController {
 	private MultipleSelectionElement showEl;
 	
 	private boolean shared;
-	private final MapperKey avatarMapperKey;
+	private final String avatarMapperUrl;
 	private final RepositoryEntry courseEntry;
 	private final PracticeCourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
@@ -65,15 +67,17 @@ public class PracticeRankListController extends FormBasicController {
 	@Autowired
 	private PracticeService practiceService;
 	@Autowired
+	private UserPortraitService userPortraitService;
+	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
+
 	public PracticeRankListController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			RepositoryEntry courseEntry, PracticeCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "rank_list", rootForm);
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.userCourseEnv = userCourseEnv;
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
+		avatarMapperUrl = mapperService.register(null, "avatars-members", new UserAvatarMapper()).getUrl();
 		
 		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 		shared = assessmentEntry != null && assessmentEntry.getShare() != null && assessmentEntry.getShare().booleanValue();
@@ -86,11 +90,6 @@ public class PracticeRankListController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
-		}
-		
 		SelectionValues showValues = new SelectionValues();
 		showValues.add(SelectionValues.entry("share", translate("share.score.value")));
 		
@@ -99,9 +98,17 @@ public class PracticeRankListController extends FormBasicController {
 		showEl.setVisible(!shared);
 	}
 
-	private void loadModel() {	
+	private void loadModel() {
 		List<RankedIdentity> identities = practiceService.getRankList(getIdentity(), courseEntry, courseNode.getIdent(), 5);
 		flc.contextPut("rankList", identities);
+		
+		userPortraitService.createPortraitUsers(getLocale(), identities.stream().map(RankedIdentity::getIdentity).toList())
+			.forEach(portraitUser -> {
+				UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), flc.getFormItemComponent(), getLocale(), avatarMapperUrl);
+				userPortraitComp.setSize(PortraitSize.small);
+				userPortraitComp.setDisplayPresence(false);
+				userPortraitComp.setPortraitUser(portraitUser);
+			});
 	}
 
 	@Override

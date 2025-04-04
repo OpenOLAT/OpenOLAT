@@ -431,11 +431,19 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			child.deleteSilently(); 
 		}
 		
+		VFSMetadata metaInfo = null;
 		if(canMeta() == VFSStatus.YES) {
-			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
+			metaInfo = getMetaInfo();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(metaInfo);
 		}
 		// now delete the directory itself
-		return deleteBasefile();
+		VFSSuccess vfsSuccess = deleteBasefile();
+		
+		if (metaInfo != null) {
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).updateParentLastModified(metaInfo);
+		}
+		
+		return vfsSuccess;
 	}
 	
 	private VFSSuccess deleteBasefile() {

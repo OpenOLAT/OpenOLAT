@@ -52,10 +52,6 @@ public class RankedIdentity {
 		return identity;
 	}
 	
-	public Long getAvatarKey() {
-		return identity.getKey();
-	}
-	
 	public String getFullname() {
 		StringBuilder sb = new StringBuilder();
 		if(StringHelper.containsNonWhitespace(identity.getUser().getFirstName())) {

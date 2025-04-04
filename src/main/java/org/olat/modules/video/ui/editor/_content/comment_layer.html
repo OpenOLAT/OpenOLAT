@@ -4,15 +4,10 @@
 		$r.render("close")
 	</div>
 	<div id="o_video_comment_box" class="o_video_comment_box o_video_colored_border ${color}">
-		<div class="o_video_comment_author_box" title="$r.escapeHtmlForAttribute($name)">
+		<div class="o_video_comment_author_box">
 			<div class="o_portrait">
-				#if ($avatarKey)
-				<img src="$r.staticLink("images/transparent.gif")" alt="$r.escapeHtmlForAttribute($name)"
-				     class="o_portrait_avatar_small o_video_comment_author_portrait_tiny"
-				     style="background-image: url('${avatarBaseURL}/${avatarKey}/portrait_small.jpg');">
-				#else
-				<img src="$r.staticLink("images/transparent.gif")" alt="$r.escapeHtmlForAttribute($name)"
-				     class="o_portrait_dummy_small o_video_comment_author_portrait_tiny">
+				#if($r.available("portrait"))
+					$r.render("portrait")
 				#end
 			</div>
 			$r.escapeHtml($name)

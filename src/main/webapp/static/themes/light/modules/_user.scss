@@ -47,6 +47,7 @@
 			object-fit: cover;
 			max-width: 100%;
 			aspect-ratio: 1;
+			overflow: hidden;
 		}
 		.o_user_portrait_initials {
 			border-radius: 50%;
@@ -542,14 +543,19 @@ dialog.popover {
 		margin: -9px -14px 0 -14px;
 		padding: 9px 14px 9px 14px;
 	}
-	
+
+	.o_org_selector_selection_text {
+		margin-top: 14px;
+		font-weight: bold;
+	}
+
 	.o_org_selector_selection.o_filter_search_list_values {
 		margin-right: -14px;
 	}
 	
 	hr.o_org_selector_separator {
-		margin-top: 14px;
-		margin-bottom: 9px;
+		margin-top: 9px;
+		margin-bottom: 10px;
 	}
 	
 	.o_button_group_shadow {
@@ -561,7 +567,7 @@ dialog.popover {
 .o_org_selector_selection {
 	overflow-y: auto;
 	min-height: 140px;
-	max-height: 240px;
+	max-height: 243px;
 	padding-right: 4px;
 
 	label.control-label {
@@ -596,12 +602,12 @@ dialog.popover {
 }
 
 .o_org_selector_selected {
-	margin-top: 10px;
+	padding-top: 10px;
 }
 
-.o_org_selector_unselected {
-	margin-top: 22px;
-	
+.o_org_selector_all {
+	padding-bottom: 10px;
+
 	.o_org_load_more {
 		height: 10px;
 		width: 100%;
@@ -618,14 +624,14 @@ dialog.popover {
 		padding-top: 5px;
 		padding-bottom: 5px;
 
-		.o_org_selector_checkbox {
+		.o_org_selector_input {
 			width: 26px;
 			height: 40px;
 			display: flex;
 			align-items: center;
 			justify-content: start;
 
-			input[type=checkbox] {
+			input[type=checkbox], input[type=radio] {
 				margin: 0;
 			}
 		}
