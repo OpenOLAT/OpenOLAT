@@ -182,14 +182,32 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	private void processFileSizeUpdateEvent(AsyncFileSizeUpdateEvent event) {
-		File file = toFile(event.getRelativePath(), event.getFilename());
+		String relativePath = event.getRelativePath();
+		String filename = event.getFilename();
+		updateFileSize(relativePath, filename);
+	}
+
+	@Override
+	public void updateParentLastModified(VFSMetadata metadata) {
+		if (metadata == null) {
+			return;
+		}
+		
+		VFSMetadata parentMetadata = getParentMetadata(metadata);
+		if (parentMetadata != null) {
+			updateFileSize(parentMetadata.getRelativePath(), parentMetadata.getFilename());
+		}
+	}
+
+	private void updateFileSize(String relativePath, String filename) {
+		File file = toFile(relativePath, filename);
 		if(file.exists()) {
 			try {
 				Date lastModified = new Date(file.lastModified());
-				metadataDao.updateMetadata(file.length(), lastModified, event.getRelativePath(), event.getFilename());
+				metadataDao.updateMetadata(file.length(), lastModified, relativePath, filename);
 				dbInstance.commit();
 			} catch (Exception e) {
-				log.error("Cannot update file size of: {} {}", event.getRelativePath(), event.getFilename(), e);
+				log.error("Cannot update file size of: {} {}", relativePath, filename, e);
 			}
 		}
 	}
@@ -218,6 +236,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public VFSMetadata getMetadata(VFSMetadataRef ref) {
 		return metadataDao.loadMetadata(ref.getKey());
+	}
+	
+	private VFSMetadata getParentMetadata(VFSMetadata metadata) {
+		if (metadata instanceof VFSMetadataImpl impl) {
+			return impl.getParent();
+		}
+		return null;
 	}
 
 	@Override
@@ -370,7 +395,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		long size = directory ? 0l : file.length();
 		
 		VFSMetadata parent = getMetadataFor(file.getParentFile());
-		return metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
+		VFSMetadata metadata = metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
+		updateParentLastModified(metadata);
+		return metadata;
 	}
 	
 	@Override
@@ -673,7 +700,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		deleteThumbnailsOfMetadata(data);
 		deleteRevisionsOfMetadata(data);
-
+		
 		data = dbInstance.getCurrentEntityManager().getReference(VFSMetadataImpl.class, data.getKey());
 		metadataDao.removeMetadata(data);
 		if(children.isEmpty()) {
@@ -957,10 +984,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					copyRevisions(sourceMetadata, targetMetadata, savedBy);
 				}
 				metadataDao.updateMetadata(targetMetadata);
+				
+				updateParentLastModified(sourceMetadata);
 			}
 		}
 	}
-	
+
 	private boolean copyRevisions(VFSMetadata sourceMetadata, VFSMetadata targetMetadata, Identity savedBy) {
 		List<VFSRevision> sourceRevisions = getRevisions(sourceMetadata);
 
@@ -999,6 +1028,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			currentMetadata = dbInstance.getCurrentEntityManager()
 				.getReference(VFSMetadataImpl.class, currentMetadata.getKey());
 			metadataDao.removeMetadata(currentMetadata);
+			
+			updateParentLastModified(currentMetadata);
 		}
 		
 		String prevUri = metadata.getUri();

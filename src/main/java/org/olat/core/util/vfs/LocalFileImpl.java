@@ -254,13 +254,22 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 
 	@Override
 	public VFSSuccess deleteSilently() {
+		VFSMetadata metaInfo = null;
 		if(canMeta() == VFSStatus.YES) {
+			metaInfo = getMetaInfo();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(metaInfo);
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		} else {
 			// some lock can create a metadata object with canMeta() == NO
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getBasefile());
 		}
-		return deleteBasefile();
+		VFSSuccess vfsSuccess = deleteBasefile();
+		
+		if (metaInfo != null) {
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).updateParentLastModified(metaInfo);
+		}
+		
+		return vfsSuccess;
 	}
 	
 	private VFSSuccess deleteBasefile() {

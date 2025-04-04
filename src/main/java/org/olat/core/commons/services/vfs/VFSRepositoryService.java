@@ -135,6 +135,8 @@ public interface VFSRepositoryService {
 	
 	public VFSMetadata updateMetadata(VFSMetadata data);
 	
+	public void updateParentLastModified(VFSMetadata metadata);
+	
 	/**
 	 * The file is marked as deleted, but stay in the file system.
 	 * In other words: The file was moved to trash.
