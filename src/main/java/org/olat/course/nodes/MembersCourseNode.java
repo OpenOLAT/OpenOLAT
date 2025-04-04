@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -36,6 +37,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeEditController;
@@ -47,6 +49,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 
 /**
@@ -154,7 +157,61 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new MembersPeekViewController(ureq, wControl, userCourseEnv, getModuleConfiguration());
 	}
+
 	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
+		postImportCopy(envMapper);
+	}
+	
+	@Override
+	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
+		super.postImport(importDirectory, course, envMapper, processType);
+		postImportCopy(envMapper);
+	}
+	
+	private void postImportCopy(CourseEnvironmentMapper envMapper) {
+		ModuleConfiguration mc = getModuleConfiguration();
+		//remap group keys
+		List<Long> coachesGroupKeys = mc.getList(CONFIG_KEY_COACHES_GROUP_ID, Long.class);
+		if(coachesGroupKeys == null || coachesGroupKeys.isEmpty()) {
+			String coachesGroupNames = (String)mc.get(CONFIG_KEY_COACHES_GROUP);
+			coachesGroupKeys = envMapper.toGroupKeyFromOriginalNames(coachesGroupNames);
+		} else {
+			coachesGroupKeys = envMapper.toGroupKeyFromOriginalKeys(coachesGroupKeys);
+		}
+		mc.set(CONFIG_KEY_COACHES_GROUP_ID, coachesGroupKeys);
+
+		List<Long> participantsGroupKeys = mc.getList(CONFIG_KEY_PARTICIPANTS_GROUP_ID, Long.class);
+		if(participantsGroupKeys == null || participantsGroupKeys.isEmpty()) {
+			String participantsGroupNames = (String)mc.get(CONFIG_KEY_PARTICIPANTS_GROUP);
+			participantsGroupKeys = envMapper.toGroupKeyFromOriginalNames(participantsGroupNames);
+		} else {
+			participantsGroupKeys = envMapper.toGroupKeyFromOriginalKeys(participantsGroupKeys);
+		}
+		mc.set(CONFIG_KEY_PARTICIPANTS_GROUP_ID, participantsGroupKeys);
+		
+		//remap area keys
+		String coachesAreaNames = (String)mc.get(CONFIG_KEY_COACHES_AREA);
+		List<Long> coachesAreaKeys = mc.getList(CONFIG_KEY_COACHES_AREA_IDS, Long.class);
+		if(coachesAreaKeys == null || coachesAreaKeys.isEmpty()) {
+			coachesAreaKeys = envMapper.toAreaKeyFromOriginalNames(coachesAreaNames);
+		} else {
+			coachesAreaKeys = envMapper.toAreaKeyFromOriginalKeys(coachesAreaKeys);
+		}
+		mc.set(CONFIG_KEY_COACHES_AREA_IDS, coachesAreaKeys);
+		
+		String participantsAreaNames = (String)mc.get(CONFIG_KEY_PARTICIPANTS_AREA);
+		List<Long> participantsAreaKeys = mc.getList(CONFIG_KEY_PARTICIPANTS_AREA_ID, Long.class);
+		if(participantsAreaKeys == null || participantsAreaKeys.isEmpty()) {
+			participantsAreaKeys = envMapper.toAreaKeyFromOriginalNames(participantsAreaNames);
+		} else {
+			participantsAreaKeys = envMapper.toAreaKeyFromOriginalKeys(participantsAreaKeys);
+		}
+		mc.set(CONFIG_KEY_PARTICIPANTS_AREA_ID, participantsAreaKeys);
+	}
+
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
