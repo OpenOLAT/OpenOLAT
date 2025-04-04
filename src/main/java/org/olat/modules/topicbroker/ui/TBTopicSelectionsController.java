@@ -41,6 +41,11 @@ public class TBTopicSelectionsController extends TBTopicListController {
 	}
 
 	@Override
+	protected String getContextHelpUrl() {
+		return null;
+	}
+
+	@Override
 	protected String getFormInfo() {
 		return null;
 	}

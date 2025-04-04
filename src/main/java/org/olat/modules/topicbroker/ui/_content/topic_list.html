@@ -5,6 +5,9 @@
 			#if($statusLabel)
 				<div>$statusLabel</div>
 			#end
+			#if($r.isNotEmpty($contextHelpUrl))
+				$r.contextHelpWithWrapper($contextHelpUrl)
+			#end
 		</legend>
 		#if ($info)
 			<div class="o_hint">$info</div>
