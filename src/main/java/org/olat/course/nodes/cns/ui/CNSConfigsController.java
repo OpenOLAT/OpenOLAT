@@ -53,6 +53,7 @@ public class CNSConfigsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Selection/#tab-configuration");
 		formLayout.setElementCssClass("o_sel_cns_configuration_form");
 		
 		requiredSelectionsEl = uifactory.addTextElement("config.required.selections", 10,
