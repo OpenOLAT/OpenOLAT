@@ -117,14 +117,13 @@ $r.render("disclaimer")
 			<div id="collapseLog" class="panel-collapse collapse"><div class="panel-body">$r.render("log")</div></div>
 		</div>
 		<script>
-			jQuery('#collapseLog').on('hide.bs.collapse', function () {
-				jQuery('#collapseLogToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				$r.backgroundCommand("hide","panel","log")
-			})
-			jQuery('#collapseLog').on('show.bs.collapse', function () {
-				jQuery('#collapseLogToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-				$r.backgroundCommand("show","panel","log")
-			})
+		"use strict";
+		jQuery('#collapseLog').on('hide.bs.collapse', function () {
+			jQuery('#collapseLogToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseLog').on('show.bs.collapse', function () {
+			jQuery('#collapseLogToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
 		</script>
 	#end
 #end
