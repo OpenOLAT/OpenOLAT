@@ -239,8 +239,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	private VFSMetadata getParentMetadata(VFSMetadata metadata) {
-		if (metadata instanceof VFSMetadataImpl impl) {
-			return impl.getParent();
+		if (metadata instanceof VFSMetadataImpl impl && impl.getParent() != null) {
+			return getMetadata(() -> impl.getParent().getKey());
 		}
 		return null;
 	}
