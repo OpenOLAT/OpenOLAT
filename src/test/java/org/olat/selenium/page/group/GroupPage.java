@@ -326,7 +326,7 @@ public class GroupPage {
 	}
 	
 	public GroupPage assertParticipantList() {
-		By participantListBy = By.className("o_sel_participants");
+		By participantListBy = By.cssSelector(".o_header_with_buttons > h2 > i.o_icon_group");
 		OOGraphene.waitElement(participantListBy, browser);
 		return this;
 	}
