@@ -385,10 +385,31 @@ public class FormUIFactory {
 		formLayout.add(iconSelectorElement);
 		return iconSelectorElement;
 	}
+
+	public OrgSelectorElement addOrgSelectorElement(String name, FormItemContainer formLayout,
+													WindowControl wControl, List<Organisation> organisations) {
+		return addOrgSelectorElement(name, name, formLayout, wControl, organisations);
+	}
 	
 	public OrgSelectorElement addOrgSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
 													WindowControl wControl, List<Organisation> organisations) {
 		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations);
+		setLabelIfNotNull(i18nLabel, orgSelectorElement);
+		formLayout.add(orgSelectorElement);
+		return orgSelectorElement;
+	}
+
+	public OrgSelectorElement addOrgSelectorElement(String name, FormItemContainer formLayout,
+													WindowControl wControl, List<Organisation> organisations,
+													boolean multipleSelection) {
+		return addOrgSelectorElement(name, name, formLayout, wControl, organisations, multipleSelection);
+	}
+
+	public OrgSelectorElement addOrgSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
+													WindowControl wControl, List<Organisation> organisations,
+													boolean multipleSelection) {
+		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations);
+		orgSelectorElement.setMultipleSelection(multipleSelection);
 		setLabelIfNotNull(i18nLabel, orgSelectorElement);
 		formLayout.add(orgSelectorElement);
 		return orgSelectorElement;

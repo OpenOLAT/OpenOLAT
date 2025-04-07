@@ -31,11 +31,49 @@ import org.olat.core.gui.components.form.flexible.FormItem;
  */
 public interface OrgSelectorElement extends FormItem {
 
+	/**
+	 * Sets the selection using a collection of org keys.
+	 * 
+	 * @param orgKeys A collection of org keys to set as selected.
+	 */
 	void setSelection(Collection<Long> orgKeys);
 
+	/**
+	 * Selects a single org.
+
+	 * @param orgKey The org key of the selection.
+	 */
 	void setSelection(Long orgKey);
 
+	/**
+	 * Returns a single selection or null if nothing is selected. Only call this if multiple selections are
+	 * turned off.
+	 *
+	 * @return The org key of the single selection or null if nothing is selected.
+	 */
+	Long getSingleSelection();
+
+	/**
+	 * The set of selected org keys.
+	 *
+	 * @return A set of org keys.
+	 */
 	Set<Long> getSelection();
 
+	/**
+	 * The org selector is in single or in multiple selection mode.
+	 * The default mode is single selection mode. 
+	 * In single selection mode, org items have the semantics and style of radio buttons. 
+	 * In multiple selection mode, the org items have the semantics and style of check boxes.
+	 *
+	 * @param multipleSelection If true, the org selector is in multiple selection mode.
+	 */
 	void setMultipleSelection(boolean multipleSelection);
+
+	/**
+	 * Returns true if and only if exactly one selection exists.
+	 *
+	 * @return True if exactly one org is selected.
+	 */
+	boolean isExactlyOneSelected();
 }

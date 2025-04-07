@@ -160,7 +160,9 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		Long key = org.getKey();
 		String path = Arrays.stream(org.getMaterializedPathKeys().split("/")).map(String::trim)
 				.filter(StringHelper::containsNonWhitespace)
-				.map(Long::parseLong).map(orgKeyToName::get).collect(Collectors.joining(" / "));
+				.map(Long::parseLong).map(orgKeyToName::get)
+				.filter(StringHelper::containsNonWhitespace)
+				.collect(Collectors.joining(" / "));
 		String title = org.getDisplayName();
 		String location = org.getLocation();
 		OrgNode orgNode = orgRoot.find(org.getKey());
@@ -181,6 +183,17 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	@Override
 	public void setSelection(Long orgKey) {
 		setSelection(Set.of(orgKey));
+	}
+
+	@Override
+	public Long getSingleSelection() {
+		if (multipleSelection) {
+			throw new AssertionError("Trying to read a single selection with multiple selection turned on.");
+		}
+		if (selectedKeys != null && selectedKeys.size() == 1) {
+			return selectedKeys.iterator().next();
+		}
+		return null;
 	}
 
 	@Override
@@ -313,6 +326,11 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	@Override
 	public void setMultipleSelection(boolean multipleSelection) {
 		this.multipleSelection = multipleSelection;
+	}
+
+	@Override
+	public boolean isExactlyOneSelected() {
+		return selectedKeys != null && selectedKeys.size() == 1;
 	}
 
 	public boolean isMultipleSelection() {

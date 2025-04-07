@@ -151,7 +151,7 @@ public class EditCurriculumController extends FormBasicController {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
 		
-		organisationEl = uifactory.getInstance().addOrgSelectorElement("curriculum.organisation", 
+		organisationEl = uifactory.addOrgSelectorElement("curriculum.organisation", 
 				"curriculum.organisation", formLayout, getWindowControl(), organisations);
 
 		if (curriculum != null) {

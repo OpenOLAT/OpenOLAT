@@ -28,7 +28,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -37,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SelectOrganisationController extends FormBasicController {
 	
-	private SingleSelection organisationEl;
+	private OrgSelectorElement organisationEl;
 	
 	private final List<Organisation> organisations;
 	private final Identity editedIdentity;
@@ -68,17 +68,10 @@ public class SelectOrganisationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<String> theKeys = new ArrayList<>();
-		List<String> theValues = new ArrayList<>();
-		
-		for(Organisation organisation:organisations) {
-			theKeys.add(organisation.getKey().toString());
-			theValues.add(organisation.getDisplayName());
-		}
-		organisationEl = uifactory.addDropdownSingleselect("select.organisation", formLayout,
-				theKeys.toArray(new String[theKeys.size()]), theValues.toArray(new String[theValues.size()]));
-		if (organisationEl.getKeys().length > 0) {
-			organisationEl.select(organisationEl.getKey(0), true);
+		organisationEl = uifactory.addOrgSelectorElement("select.organisation", formLayout,
+				getWindowControl(), organisations);
+		if (!organisations.isEmpty()) {
+			organisationEl.setSelection(organisations.get(0).getKey());
 			if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
 				organisationEl.addActionListener(FormEvent.ONCHANGE);
 			}
@@ -92,10 +85,10 @@ public class SelectOrganisationController extends FormBasicController {
 	
 	public Organisation getSelectedOrganisation() {
 		Organisation organisation = null;
-		if(organisationEl.isOneSelected()) {
-			String selectedKey = organisationEl.getSelectedKey();
+		if(organisationEl.isExactlyOneSelected()) {
+			Long selection = organisationEl.getSingleSelection();
 			for(Organisation org:organisations) {
-				if(org.getKey().toString().equals(selectedKey)) {
+				if(selection != null && selection.equals(org.getKey())) {
 					organisation = org;
 				}
 			}
@@ -104,8 +97,8 @@ public class SelectOrganisationController extends FormBasicController {
 	}
 
 	private void updateEmailDomainUI() {
-		if (editedIdentity != null && organisationModule.isEmailDomainEnabled() && organisationEl.isOneSelected()) {
-			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationEl.getSelectedKey()));
+		if (editedIdentity != null && organisationModule.isEmailDomainEnabled() && organisationEl.isExactlyOneSelected()) {
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> organisationEl.getSingleSelection());
 			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, editedIdentity.getUser().getEmail());
 			if (!emailDomainAllowed) {
 				organisationEl.setWarningKey("error.email.domain.not.allowed");
@@ -128,7 +121,7 @@ public class SelectOrganisationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		organisationEl.clearError();
-		if(!organisationEl.isOneSelected()) {
+		if(!organisationEl.isExactlyOneSelected()) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}

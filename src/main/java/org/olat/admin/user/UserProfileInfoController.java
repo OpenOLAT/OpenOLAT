@@ -132,7 +132,8 @@ public class UserProfileInfoController extends UserInfoController {
 			Organisation org = organisationService.getOrganisation(userOrgs.get(i));
 			if (org == null) continue;
 
-			FormLink link = uifactory.addFormLink("org_link_" + org.getKey(), "org_roles", org.getDisplayName(), null, orgLinkCont, Link.NONTRANSLATED | Link.NONTRANSLATED);
+			FormLink link = uifactory.addFormLink("org_link_" + org.getKey(), "org_roles", 
+					StringHelper.escapeHtml(org.getDisplayName()), null, orgLinkCont, Link.NONTRANSLATED);
 			link.setUserObject("org-click");
 
 			// Add separator

@@ -56,7 +56,6 @@ public class OrgSelectorController extends FormBasicController {
 	private Set<Long> selectedKeys;
 	private final List<OrgSelectorElementImpl.OrgRow> orgRows;
 	private List<OrgUIRow> orgUIRows;
-	private final boolean multipleSelection;
 	private int maxUnselectedRows = PAGE_SIZE;
 
 	public record OrgUIRow(Long key, String path, String title, String location, String numberOfElements, boolean checked) {}
@@ -66,7 +65,6 @@ public class OrgSelectorController extends FormBasicController {
 		super(ureq, wControl, "org_selector");
 
 		this.selectedKeys = selectedKeys;
-		this.multipleSelection = multipleSelection;
 		this.orgRows = orgRows;
 
 		buildUIRows();
