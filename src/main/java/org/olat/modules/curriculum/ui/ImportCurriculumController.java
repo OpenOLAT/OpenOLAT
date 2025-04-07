@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,7 +31,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -45,6 +43,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.manager.CurriculumImportHandler;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,7 +56,7 @@ public class ImportCurriculumController extends FormBasicController {
 	
 	private FileElement uploadFileEl;
 	private TextElement displayNameEl;
-	private SingleSelection organisationEl;
+	private OrgSelectorElement organisationEl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -94,15 +93,8 @@ public class ImportCurriculumController extends FormBasicController {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
 		
-		List<String> keyList = new ArrayList<>();
-		List<String> valueList = new ArrayList<>();
-		for(Organisation organisation:organisations) {
-			keyList.add(organisation.getKey().toString());
-			valueList.add(organisation.getDisplayName());
-		}
-
-		organisationEl = uifactory.addDropdownSingleselect("curriculum.organisation", formLayout,
-				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
+		organisationEl = uifactory.addOrgSelectorElement("curriculum.organisation", formLayout,
+				getWindowControl(), organisations);
 		organisationEl.setVisible(organisationModule.isEnabled());
 	}
 
@@ -144,8 +136,8 @@ public class ImportCurriculumController extends FormBasicController {
 		File archive = uploadFileEl.getUploadFile();
 		
 		Organisation organisation;
-		if(organisationEl.isOneSelected()) {
-			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
+		if(organisationEl.isExactlyOneSelected()) {
+			Long organisationKey = organisationEl.getSingleSelection();
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		} else {
 			organisation = organisationService.getDefaultOrganisation();

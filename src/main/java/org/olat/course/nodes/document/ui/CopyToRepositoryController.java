@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -40,7 +39,6 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -63,6 +61,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.WebDocumentHandler;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,7 +75,7 @@ public class CopyToRepositoryController extends FormBasicController {
 	private static final Logger log = Tracing.createLoggerFor(CopyToRepositoryController.class);
 
 	private TextElement displayNameEl;
-	private SingleSelection organisationEl;
+	private OrgSelectorElement organisationEl;
 	
 	private final LocalFileImpl vfsLeaf;
 	private final VFSMetadata vfsMetadata;
@@ -130,15 +129,8 @@ public class CopyToRepositoryController extends FormBasicController {
 		Roles roles = usess.getRoles();
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles, OrganisationRoles.administrator);
 		
-		List<String> keyList = new ArrayList<>();
-		List<String> valueList = new ArrayList<>();
-		for(Organisation organisation:organisations) {
-			keyList.add(organisation.getKey().toString());
-			valueList.add(organisation.getDisplayName());
-		}
-
-		organisationEl = uifactory.addDropdownSingleselect("config.copy.organisation", formLayout,
-				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
+		organisationEl = uifactory.addOrgSelectorElement("config.copy.organisation", formLayout, 
+				getWindowControl(), organisations);
 		organisationEl.setVisible(organisationModule.isEnabled());
 	}
 	
@@ -165,8 +157,8 @@ public class CopyToRepositoryController extends FormBasicController {
 		String displayname = displayNameEl.getValue();
 		
 		Organisation organisation;
-		if( organisationEl.isOneSelected()) {
-			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
+		if( organisationEl.isExactlyOneSelected()) {
+			Long organisationKey = organisationEl.getSingleSelection();
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		} else {
 			organisation = organisationService.getDefaultOrganisation();
