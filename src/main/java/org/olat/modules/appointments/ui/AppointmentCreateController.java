@@ -711,7 +711,6 @@ public class AppointmentCreateController extends FormBasicController {
 					providerUrlEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else {
-					providerUrlEl.setValue(StringHelper.xssScan(providerUrlEl.getValue()));
 					allOk &= validateUrl(providerUrlEl);
 				}
 			}
