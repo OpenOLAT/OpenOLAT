@@ -80,7 +80,6 @@ public class ContextualSubscriptionListController extends FormBasicController im
 
 	// default filter value, last seven days
 	private Date selectedFilterDate = DateUtils.addDays(new Date(), -7);
-	private Map<Subscriber, SubscriptionInfo> subsInfoMap;
 
 	private FormToggle subscribeToggle;
 	private Subscriber subscriber;
@@ -161,7 +160,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
 
 		if (subscriber != null) {
-			subsInfoMap = initSubsInfoMap(selectedFilterDate);
+			Map<Subscriber, SubscriptionInfo> subsInfoMap = initSubsInfoMap(selectedFilterDate);
 
 			List<ContextualSubscriptionListRow> rows = new ArrayList<>();
 			if (subsInfoMap.get(subscriber) != null) {
@@ -190,12 +189,6 @@ public class ContextualSubscriptionListController extends FormBasicController im
 					compareDate, Collections.singletonList(subscriber));
 		}
 		return Collections.emptyMap();
-	}
-
-	private boolean isSubSInfoMapEmpty() {
-		if (initSubsInfoMap(DateUtils.addWeeks(new Date(), -4)).isEmpty()) {
-			return true;
-		} else return initSubsInfoMap(DateUtils.addMonth(new Date(), -6)).isEmpty();
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
@@ -232,11 +225,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	}
 
 	private void toggleFilterTabs(UserRequest ureq) {
-		if (dataModel != null && isSubSInfoMapEmpty()) {
-			initFilterTabs(ureq);
-		} else {
-			tableEl.setFilterTabs(true, Collections.emptyList());
-		}
+		initFilterTabs(ureq);
 	}
 
 	@Override
@@ -246,10 +235,8 @@ public class ContextualSubscriptionListController extends FormBasicController im
 				notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData);
 			} else {
 				notificationsManager.unsubscribe(getIdentity(), subscriptionContext);
-				dataModel.setObjects(Collections.emptyList());
 			}
 			loadModel();
-			toggleFilterTabs(ureq);
 			initEmptyTableSettings();
 			fireEvent(ureq, event);
 		} else if (source == tableEl) {
