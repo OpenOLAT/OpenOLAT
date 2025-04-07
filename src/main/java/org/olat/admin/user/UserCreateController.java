@@ -27,7 +27,6 @@ package org.olat.admin.user;
 
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +74,7 @@ import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -154,7 +154,7 @@ class NewUserForm extends FormBasicController {
 	private TextElement usernameTextElement;
 	private TextElement psw1TextElement;
 	private TextElement psw2TextElement;
-	private SingleSelection organisationsElement;
+	private OrgSelectorElement organisationsElement;
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
 	private DateChooser expirationDateEl;
@@ -238,26 +238,19 @@ class NewUserForm extends FormBasicController {
 		// select default language in form
 		languageSingleSelection.select(I18nModule.getDefaultLocale().toString(), true);
 		
-		List<String> organisationKeys = new ArrayList<>();
-		List<String> organisationValues = new ArrayList<>();
-		for(Organisation organisation:manageableOrganisations) {
-			organisationKeys.add(organisation.getKey().toString());
-			organisationValues.add(organisation.getDisplayName());
-		}
-		organisationsElement = uifactory.addDropdownSingleselect("new.form.organisations", formLayout,
-				organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]), null);
-		organisationsElement.setVisible(organisationKeys.size() > 1);
+		organisationsElement = uifactory.addOrgSelectorElement("new.form.organisations", formLayout, getWindowControl(), manageableOrganisations);
+		organisationsElement.setVisible(manageableOrganisations.size() > 1);
 		organisationsElement.addActionListener(FormEvent.ONCHANGE);
 		boolean selected = false;
-		for(String organisationKey:organisationKeys) {
-			if(preselectedOrganisation.getKey().toString().equals(organisationKey)) {
-				organisationsElement.select(organisationKey, true);
+		for(Organisation organisation:manageableOrganisations) {
+			if(preselectedOrganisation.getKey().equals(organisation.getKey())) {
+				organisationsElement.setSelection(organisation.getKey());
 				selected = true;
 			}
 		}
 		
-		if(!selected && !organisationKeys.isEmpty()) {
-			organisationsElement.select(organisationKeys.get(0), true);
+		if(!selected && !manageableOrganisations.isEmpty()) {
+			organisationsElement.setSelection(manageableOrganisations.get(0).getKey());
 		}
 
 		expirationDateEl = uifactory.addDateChooser("rightsForm.expiration.date", null, formLayout);
@@ -295,8 +288,8 @@ class NewUserForm extends FormBasicController {
 	}
 	
 	private void updateEmailDomainUI() {
-		if (organisationModule.isEmailDomainEnabled() && organisationsElement.isOneSelected()) {
-			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationsElement.getSelectedKey()));
+		if (organisationModule.isEmailDomainEnabled() && organisationsElement.isExactlyOneSelected()) {
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> organisationsElement.getSingleSelection());
 			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, emailTextElement.getValue());
 			if (!emailDomainAllowed) {
 				emailTextElement.setWarningKey("error.email.domain.not.allowed");
@@ -376,7 +369,7 @@ class NewUserForm extends FormBasicController {
 		// organization
 		organisationsElement.clearError();
 		organisationsElement.clearWarning();
-		if(organisationsElement.isVisible() && !organisationsElement.isOneSelected()) {
+		if(organisationsElement.isVisible() && !organisationsElement.isExactlyOneSelected()) {
 			organisationsElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -461,10 +454,10 @@ class NewUserForm extends FormBasicController {
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
 		Organisation userOrganisation = null;
-		if(organisationsElement.isOneSelected()) {
-			String selectedOrganisationKey = organisationsElement.getSelectedKey();
+		if(organisationsElement.isExactlyOneSelected()) {
+			Long selectedOrganisationKey = organisationsElement.getSingleSelection();
 			for(Organisation organisation: manageableOrganisations) {
-				if(selectedOrganisationKey.equals(organisation.getKey().toString())) {
+				if(selectedOrganisationKey.equals(organisation.getKey())) {
 					userOrganisation = organisation;
 					break;
 				}
