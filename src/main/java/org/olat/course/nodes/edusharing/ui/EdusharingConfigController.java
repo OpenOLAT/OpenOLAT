@@ -108,9 +108,10 @@ public class EdusharingConfigController extends FormBasicController {
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		
 		SelectionValues versionKV = new SelectionValues();
-		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_CURRENT, translate("edit.version.current")));
-		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_LATEST, translate("edit.version.latest")));
-		versionEl = uifactory.addRadiosHorizontal("edit.version", formLayout, versionKV.keys(), versionKV.values());
+		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_CURRENT, translate("edit.version.current"), translate("edit.version.current.desc"), null, null, true));
+		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_LATEST, translate("edit.version.latest"), translate("edit.version.latest.desc"), null, null, true));
+		versionEl = uifactory.addCardSingleSelectHorizontal("edit.version", "edit.version", formLayout, versionKV);
+		versionEl.setElementCssClass("o_radio_cards_md");
 		versionEl.addActionListener(FormEvent.ONCHANGE);
 		String version = config.getStringValue(EdusharingCourseNode.CONFIG_VERSION, EdusharingCourseNode.CONFIG_VERSION_VALUE_CURRENT);
 		versionEl.select(version, true);
