@@ -1,12 +1,8 @@
 <div class="o_users_avatars">
 	#foreach($identity in $identities)
 		<div class="o_user_avatar">
-			<div class="o_portrait" aria-hidden="true">
-				#if($identity.isPortraitAvailable())
-					<img src="$r.staticLink("images/transparent.gif")" class="$identity.getPortraitCssClass()" style="background-image: url('$avatarBaseURL/${identity.getIdentityKey()}/portrait.jpg') !important;" alt="$r.escapeHtml("$identity.getDisplayName()")" />
-				#else
-					<img src="$r.staticLink("images/transparent.gif")" class="$identity.getPortraitCssClass()" alt="$r.escapeHtml("$identity.getDisplayName()")" />
-				#end
+			<div class="o_portrait">
+				$r.render($identity.getUserPortraitComp())
 			</div>
 			<div class="o_properties">
 				<div class="o_prop o_name">

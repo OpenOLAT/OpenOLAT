@@ -61,7 +61,7 @@ public class IdentityDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public List<Identity> loadByRefs(Collection<IdentityRef> identityRefs) {
+	public List<Identity> loadByRefs(Collection<? extends IdentityRef> identityRefs) {
 		if (identityRefs == null || identityRefs.isEmpty()) {
 			return Collections.emptyList();
 		}

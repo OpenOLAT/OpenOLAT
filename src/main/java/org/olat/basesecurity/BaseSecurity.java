@@ -225,7 +225,7 @@ public interface BaseSecurity {
 	 */
 	public List<Identity> loadIdentityByKeys(Collection<Long> identityKeys);
 	
-	public List<Identity> loadIdentityByRefs(Collection<IdentityRef> identityRefs);
+	public List<Identity> loadIdentityByRefs(Collection<? extends IdentityRef> identityRefs);
 	
 	
 	/**
