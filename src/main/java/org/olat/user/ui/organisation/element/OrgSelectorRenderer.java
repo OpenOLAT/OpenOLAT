@@ -39,7 +39,6 @@ public class OrgSelectorRenderer extends DefaultComponentRenderer {
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, 
 								Translator translator, RenderResult renderResult, String[] args) {
 		renderButton(renderer, sb, source);
-		renderExpander(renderer, sb, source);
 	}
 
 	private void renderButton(Renderer renderer, StringOutput sb, Component source) {
@@ -47,18 +46,6 @@ public class OrgSelectorRenderer extends DefaultComponentRenderer {
 		OrgSelectorElementImpl orgSelectorElement = orgSelectorComponent.getFormItem();
 		FormLink button = orgSelectorElement.getButton();
 		
-		if (orgSelectorElement.isEnabled()) {
-			renderer.render(button.getComponent(), sb, null);
-		} else {
-			sb.append("<span class=\"o_org_selector_button\">");
-			sb.append(button.getI18nKey());
-			sb.append("</span>");
-		}
-	}
-
-	private void renderExpander(Renderer renderer, StringOutput sb, Component source) {
-		sb.append("<script>\n");
-		sb.append("\"use strict\";\n");
-		sb.append("</script>\n");
+		renderer.render(button.getComponent(), sb, null);
 	}
 }

@@ -158,17 +158,24 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 
 	private OrgRow mapToOrgRow(Organisation org, Map<Long, String> orgKeyToName) {
 		Long key = org.getKey();
-		String path = Arrays.stream(org.getMaterializedPathKeys().split("/")).map(String::trim)
+		String path = StringHelper.containsNonWhitespace(org.getMaterializedPathKeys()) ? 
+				Arrays.stream(org.getMaterializedPathKeys().split("/")).map(String::trim)
 				.filter(StringHelper::containsNonWhitespace)
 				.map(Long::parseLong).map(orgKeyToName::get)
 				.filter(StringHelper::containsNonWhitespace)
-				.collect(Collectors.joining(" / "));
+				.collect(Collectors.joining(" / ")) : "";
 		String title = org.getDisplayName();
 		String location = org.getLocation();
 		OrgNode orgNode = orgRoot.find(org.getKey());
 		int numberOfElements = orgNode != null ? orgNode.getNumberOfElements() : -1;
 		
 		return new OrgRow(key, path, title, location, numberOfElements);
+	}
+
+	@Override
+	public void setEnabled(boolean isEnabled) {
+		button.setEnabled(isEnabled);
+		super.setEnabled(isEnabled);
 	}
 
 	@Override
