@@ -56,7 +56,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
@@ -84,7 +83,10 @@ import org.olat.modules.fo.Pseudonym;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.events.ErrorEditMessage;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -140,6 +142,8 @@ public class MessageEditController extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public enum EditMode {
 		newThread,
@@ -297,10 +301,17 @@ public class MessageEditController extends FormBasicController {
 		replyMsgLayout.contextPut("message", parentMessage);
 		replyMsgLayout.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 
-		Identity creator = parentMessage.getCreator();
-		if(creator != null) {
-			replyMsgLayout.contextPut("identity", creator);
-			portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), creator, PortraitSize.large, true);
+		if (!guestOnly && StringHelper.containsNonWhitespace(parentMessage.getPseudonym())) {
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc", replyMsgLayout.getFormItemComponent(), getLocale(), null);
+			userPortrait.setSize(PortraitSize.medium);
+			userPortrait.setPortraitUser(userPortraitService.createAnonymousPortraitUser(getLocale(), parentMessage.getPseudonym()));
+		} else if (!guestOnly && parentMessage.isGuest()) {
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc", replyMsgLayout.getFormItemComponent(), getLocale(), null);
+			userPortrait.setSize(PortraitSize.medium);
+			userPortrait.setPortraitUser(userPortraitService.createGuestPortraitUser(getLocale()));
+		} else if (parentMessage.getCreator() != null) {
+			replyMsgLayout.contextPut("identity", parentMessage.getCreator());
+			portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), parentMessage.getCreator(), PortraitSize.medium, true);
 			replyMsgLayout.put("portrait", portraitCtr.getInitialComponent());
 		}
 	}
