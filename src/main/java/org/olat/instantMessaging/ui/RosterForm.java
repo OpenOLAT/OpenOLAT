@@ -19,6 +19,12 @@
  */
 package org.olat.instantMessaging.ui;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -31,7 +37,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.instantMessaging.model.Buddy;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,11 +62,16 @@ public class RosterForm extends FormBasicController {
 	private final String fullName;
 	private final boolean defaultAnonym;
 	private final boolean offerAnonymMode;
+	private final RosterFormDisplay rosterDisplay;
 	private final MapperKey avatarMapperKey;
 	private static final String[] anonKeys = new String[]{ "name", "anon"};
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	public RosterForm(UserRequest ureq, WindowControl wControl, Roster buddyList, boolean defaultAnonym, boolean offerAnonymMode,
 			RosterFormDisplay rosterDisplay, MapperKey avatarMapperKey) {
@@ -62,6 +80,7 @@ public class RosterForm extends FormBasicController {
 		this.defaultAnonym = defaultAnonym;
 		this.offerAnonymMode = offerAnonymMode;
 		this.buddyList = buddyList;
+		this.rosterDisplay = rosterDisplay;
 		this.avatarMapperKey = avatarMapperKey;
 		fullName = userManager.getUserDisplayName(getIdentity());
 
@@ -70,10 +89,6 @@ public class RosterForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutcont = (FormLayoutContainer)formLayout;
-			layoutcont.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
-		}
 		// for simplicity we initialize the form even when the anonymous mode is disabled
 		// and just hide the form elements in the GUI
 		String[] theValues = new String[]{ translate("yes"), translate("no") };
@@ -96,6 +111,30 @@ public class RosterForm extends FormBasicController {
 			layoutCont.contextPut("roster", buddyList);
 			// hide the form elements in the GUI when no anonym mode is possible
 			layoutCont.contextPut("offerAnonymMode", Boolean.valueOf(offerAnonymMode));
+			if (rosterDisplay == RosterFormDisplay.supervised) {
+				Set<Long> buddyIdentityKeys = buddyList.getBuddies().stream().map(Buddy::getIdentityKey).collect(Collectors.toSet());
+				Map<Long, Identity> buddyIdentityKeyToIdentity = securityManager.loadIdentityByKeys(buddyIdentityKeys).stream()
+						.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
+				
+				for (Buddy buddy : buddyList.getBuddies()) {
+					PortraitUser portraitUser;
+					if (buddy.isAnonym()) {
+						portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), buddy.getName());
+					} else {
+						Identity identity = buddyIdentityKeyToIdentity.get(buddy.getIdentityKey());
+						if (identity != null) {
+							portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+						} else {
+							portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
+						}
+					}
+					UserPortraitComponent portraitComp = UserPortraitFactory
+							.createUserPortrait("portrait_" + buddy.getIdentityKey(), layoutCont.getFormItemComponent(), getLocale(), avatarMapperKey.getUrl());
+					portraitComp.setSize(PortraitSize.xsmall);
+					portraitComp.setDisplayPresence(false);
+					portraitComp.setPortraitUser(portraitUser);
+				}
+			}
 		}
 	}
 	

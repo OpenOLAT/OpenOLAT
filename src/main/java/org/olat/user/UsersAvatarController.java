@@ -19,15 +19,16 @@
  */
 package org.olat.user;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -36,10 +37,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
-import org.olat.core.util.session.UserSessionManager;
-import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,51 +51,41 @@ public class UsersAvatarController extends FormBasicController {
 	
 	private static final String USER_PROPS_LIST_ID = UsersAvatarController.class.getName();
 
-	private final Set<Identity> identities;
+	private final Collection<Identity> identities;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final String avatarBaseURL;
-	private final boolean chatEnabled;
-	private final boolean usersPreloaded;
 
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
-	@Autowired
-	private UserSessionManager sessionManager;
-	@Autowired
-	private InstantMessagingModule imModule;
-	@Autowired
-	private InstantMessagingService imService;
+	private UserPortraitService userPortraitService;
 
-	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Set<Identity> identities) {
+	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Collection<Identity> identities) {
 		super(ureq, wControl, "users_avatars");
 		this.identities = identities;
-		this.usersPreloaded = true;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper());
-		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
+		avatarBaseURL = registerCacheableMapper(null, "users-avatars", new UserAvatarMapper());
 		
 		initForm(ureq);
 	}
 
-	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Form mainForm, Set<Identity> identities) {
+	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Form mainForm, Collection<? extends IdentityRef> identityRefs) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "users_avatars", mainForm);
-		this.identities = identities;
-		this.usersPreloaded = false;
+		this.identities = securityManager.loadIdentityByRefs(identityRefs);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper());
-		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
+		avatarBaseURL = registerCacheableMapper(null, "users-avatars", new UserAvatarMapper());
 		
 		initForm(ureq);
 	}
@@ -106,9 +93,7 @@ public class UsersAvatarController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		List<IdentityItem> identityItems = identities.stream().map(this::createMemberView).collect(Collectors.toList());
-		appendOnlineStatus(identityItems);
 		flc.contextPut("identities", identityItems);
-		flc.contextPut("avatarBaseURL", avatarBaseURL);
 		
 		flc.contextPut("userPropertyHandlers", userPropertyHandlers);
 		Map<String, Integer> handlerLookupMap = new HashMap<>(userPropertyHandlers.size());
@@ -121,69 +106,29 @@ public class UsersAvatarController extends FormBasicController {
 
 	private IdentityItem createMemberView(Identity identity) {
 		IdentityItem item = new IdentityItem(identity, userPropertyHandlers, getLocale());
-		String userDisplayName = usersPreloaded 
-				? userManager.getUserDisplayName(identity)
-				: userManager.getUserDisplayName(identity.getKey());
-		item.setDisplayName(userDisplayName);
 		
-		boolean portraitAvailable = portraitManager.hasPortrait(identity);
-		item.setPortraitAvailable(portraitAvailable);
-		
-		String portraitCssClass;
-		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
-		if ("male".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
-		} else if ("female".equalsIgnoreCase(gender)) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
-		} else {
-			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
+		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+		item.setDisplayName(portraitUser.getDisplayName());
+		if (!identity.equals(getIdentity())) {
+			item.setOnlineIconCss(getPresenceIconCss(portraitUser.getPresence()));
 		}
-		item.setPortraitCssClass(portraitCssClass);
+		
+		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
+				"user_avatar_" + identity.getKey(), flc.getFormItemComponent(), getLocale(), avatarBaseURL);
+		userPortraitComp.setDisplayPresence(false);
+		userPortraitComp.setPortraitUser(portraitUser);
+		item.setUserPortraitComp(userPortraitComp);
 		
 		return item;
 	}
 	
-	private void appendOnlineStatus(List<IdentityItem> members) {
-		if (chatEnabled) {
-			Long me = getIdentity().getKey();
-			if (imModule.isOnlineStatusEnabled()) {
-				Map<Long, IdentityItem> loadStatus = new HashMap<>();
-				
-				for (IdentityItem member : members) {
-					if (member.getIdentityKey().equals(me)) {
-						// No icon for my self
-					} else if (sessionManager.isOnline(member.getIdentityKey())) {
-						loadStatus.put(member.getIdentityKey(), member);
-					} else {
-						member.setOnlineIconCss("o_icon o_icon_status_unavailable");
-					}
-				}
-				
-				if(loadStatus.size() > 0) {
-					List<Long> statusToLoadList = new ArrayList<>(loadStatus.keySet());
-					Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
-					for(Long toLoad : statusToLoadList) {
-						String status = statusMap.get(toLoad);
-						IdentityItem member = loadStatus.get(toLoad);
-						if(status == null || Presence.available.name().equals(status)) {
-							member.setOnlineIconCss("o_icon o_icon_status_available");
-						} else if(Presence.dnd.name().equals(status)) {
-							member.setOnlineIconCss("o_icon o_icon_status_dnd");
-						} else {
-							member.setOnlineIconCss("o_icon o_icon_status_unavailable");
-						}
-					}
-				}
-			} else {
-				for (IdentityItem member:members) {
-					if(member.getIdentityKey().equals(me)) {
-						// No icon for my self
-					} else {
-						member.setOnlineIconCss("o_icon o_icon_status_chat");
-					}
-				}
-			}
-		}
+	private String getPresenceIconCss(Presence presence) {
+		return switch (presence) {
+		case available -> "o_icon o_icon_status_available";
+		case dnd -> "o_icon o_icon_status_dnd";
+		case unavailable -> "o_icon o_icon_status_unavailable";
+		default -> "";
+		};
 	}
 
 	@Override
@@ -198,9 +143,8 @@ public class UsersAvatarController extends FormBasicController {
 		}
 		
 		private String displayName;
-		private boolean portraitAvailable;
-		private String portraitCssClass;
 		private String onlineIconCss;
+		private UserPortraitComponent userPortraitComp;
 
 		public String getDisplayName() {
 			return displayName;
@@ -210,20 +154,12 @@ public class UsersAvatarController extends FormBasicController {
 			this.displayName = displayName;
 		}
 
-		public boolean isPortraitAvailable() {
-			return portraitAvailable;
+		public UserPortraitComponent getUserPortraitComp() {
+			return userPortraitComp;
 		}
 
-		public void setPortraitAvailable(boolean portraitAvailable) {
-			this.portraitAvailable = portraitAvailable;
-		}
-
-		public String getPortraitCssClass() {
-			return portraitCssClass;
-		}
-
-		public void setPortraitCssClass(String portraitCssClass) {
-			this.portraitCssClass = portraitCssClass;
+		public void setUserPortraitComp(UserPortraitComponent userPortraitComp) {
+			this.userPortraitComp = userPortraitComp;
 		}
 
 		public String getOnlineIconCss() {

@@ -61,6 +61,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,7 +89,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private SingleSelection selectType;
 	private TextElement displaynameEl;
 	private TextElement externalRef;
-	private SingleSelection organisationEl;
+	private OrgSelectorElement organisationEl;
 	
 	@Autowired
 	private LicenseService licenseService;
@@ -166,18 +167,12 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 		externalRef.setInlineValidationOn(true);
 		
-		List<String> organisationKeys = new ArrayList<>();
-		List<String> organisationValues = new ArrayList<>();
-		for(Organisation organisation:manageableOrganisations) {
-			organisationKeys.add(organisation.getKey().toString());
-			organisationValues.add(organisation.getDisplayName());
+		organisationEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations",
+				formLayout, getWindowControl(), manageableOrganisations);
+		if(!manageableOrganisations.isEmpty()) {
+			organisationEl.setSelection(manageableOrganisations.get(0).getKey());
 		}
-		organisationEl = uifactory.addDropdownSingleselect("cif.organisations", "cif.organisations",
-				formLayout, organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]));
-		if(!organisationKeys.isEmpty()) {
-			organisationEl.select(organisationKeys.get(0), true);
-		}
-		organisationEl.setVisible(organisationKeys.size() > 1);
+		organisationEl.setVisible(manageableOrganisations.size() > 1);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -316,7 +311,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		allOk &= validateResources();	
 		
 		organisationEl.clearError();
-		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
+		if(organisationEl.isVisible() && !organisationEl.isExactlyOneSelected()) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -424,8 +419,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		
 		if(handler != null) {
 			Organisation organisation;
-			if(organisationEl.isOneSelected()) {
-				Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
+			if(organisationEl.isExactlyOneSelected()) {
+				Long organisationKey = Long.valueOf(organisationEl.getSingleSelection());
 				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 			} else {
 				organisation = organisationService.getDefaultOrganisation();

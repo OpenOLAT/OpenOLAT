@@ -632,7 +632,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public List<Identity> loadIdentityByRefs(Collection<IdentityRef> identityRefs) {
+	public List<Identity> loadIdentityByRefs(Collection<? extends IdentityRef> identityRefs) {
 		return identityDao.loadByRefs(identityRefs);
 	}
 

@@ -46,6 +46,13 @@ public interface OrgSelectorElement extends FormItem {
 	void setSelection(Long orgKey);
 
 	/**
+	 * Set an optional text to display if no item is selected.
+	 * 
+	 * @param noSelectionText Text to display on the button if no item is selected.
+	 */
+	void setNoSelectionText(String noSelectionText);
+
+	/**
 	 * Returns a single selection or null if nothing is selected. Only call this if multiple selections are
 	 * turned off.
 	 *

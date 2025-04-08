@@ -56,6 +56,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -79,7 +80,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private FileElement uploadFileEl;
 	private StaticTextElement typeEl;
 	private TextElement displaynameEl;
-	private SingleSelection organisationEl;
+	private OrgSelectorElement organisationEl;
 	private MultipleSelectionElement referencesEl;
 	
 	@Autowired
@@ -133,18 +134,12 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setVisible(false);
 		displaynameEl.setElementCssClass("o_sel_author_imported_name");
 		
-		List<String> organisationKeys = new ArrayList<>();
-		List<String> organisationValues = new ArrayList<>();
-		for(Organisation organisation:manageableOrganisations) {
-			organisationKeys.add(organisation.getKey().toString());
-			organisationValues.add(organisation.getDisplayName());
+		organisationEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations",
+				formLayout, getWindowControl(), manageableOrganisations);
+		if(!manageableOrganisations.isEmpty()) {
+			organisationEl.setSelection(manageableOrganisations.get(0).getKey());
 		}
-		organisationEl = uifactory.addDropdownSingleselect("cif.organisations", "cif.organisations",
-				formLayout, organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]));
-		if(!organisationKeys.isEmpty()) {
-			organisationEl.select(organisationKeys.get(0), true);
-		}
-		organisationEl.setVisible(organisationKeys.size() > 1);
+		organisationEl.setVisible(manageableOrganisations.size() > 1);
 
 		String[] refValues = new String[]{ translate("references.expl") };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
@@ -203,7 +198,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		
 
 		organisationEl.clearError();
-		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
+		if(organisationEl.isVisible() && !organisationEl.isExactlyOneSelected()) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -262,8 +257,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		
 		if(handler != null) {
 			Organisation organisation;
-			if(organisationEl.isOneSelected()) {
-				Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
+			if(organisationEl.isExactlyOneSelected()) {
+				Long organisationKey = organisationEl.getSingleSelection();
 				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 			} else {
 				organisation = organisationService.getDefaultOrganisation();

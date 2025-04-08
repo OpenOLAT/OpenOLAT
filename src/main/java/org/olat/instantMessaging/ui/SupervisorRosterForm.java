@@ -26,10 +26,13 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -39,10 +42,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.StringHelper;
@@ -58,6 +63,11 @@ import org.olat.instantMessaging.model.RosterChannelInfos;
 import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
 import org.olat.instantMessaging.ui.component.RosterEntryWithUnreadCellRenderer;
 import org.olat.instantMessaging.ui.event.SelectChannelEvent;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,9 +104,13 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	@Autowired
 	private Coordinator coordinator;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	public SupervisorRosterForm(UserRequest ureq, WindowControl wControl,
 			OLATResourceable chatResource, String resSubPath, String initialChannel,
@@ -140,7 +154,6 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	private FormLayoutContainer initRosterContainer(FormItemContainer formLayout, FormLink link, String name) {
 		String entriesPage = velocity_root + "/roster_supervisor_entries.html";
 		FormLayoutContainer container = FormLayoutContainer.createCustomFormLayout(name, getTranslator(), entriesPage);
-		container.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
 		formLayout.add(container);
 		
 		link.setIconLeftCSS(ICON_CLOSE);
@@ -202,9 +215,16 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		final List<SupervisedRoster> completed = new ArrayList<>(rosterInfos.size());
 		final List<SupervisedRoster> requested = new ArrayList<>(rosterInfos.size());
 		
+		Set<Long> nonVipIdentityKeys = rosterInfos.stream()
+				.flatMap(rosterInfo -> rosterInfo.getNonVipEntries().stream())
+				.map(RosterEntry::getIdentityKey)
+				.collect(Collectors.toSet());
+		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(nonVipIdentityKeys).stream()
+				.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
+		
 		for(RosterChannelInfos rosterInfo:rosterInfos) {
 			List<SupervisedRosterEntry> rosterEntries = rosterInfo.getNonVipEntries().stream()
-					.map(entry -> forgeEntryRow(entry, rosterInfo))
+					.map(entry -> forgeEntryRow(entry, rosterInfo, identityKeyToIdentity))
 					.collect(Collectors.toList());
 
 			SupervisedRoster sRoster = new SupervisedRoster(rosterInfo, rosterEntries, rosterInfo.getEntries().size());
@@ -215,7 +235,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 				actives.add(sRoster);
 			} else if(status == RosterStatus.completed || status == RosterStatus.ended) {
 				completed.add(sRoster);
-			} 
+			}
 		}
 
 		Collections.sort(actives, rosterComparator);
@@ -235,13 +255,31 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		updateSelectedChannel();
 	}
 	
-	private SupervisedRosterEntry forgeEntryRow(RosterEntry entry, RosterChannelInfos infos) {
-		String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
-		FormLink link = uifactory.addFormLink("entry_" + (++count), "entry", name, null, null, Link.LINK | Link.NONTRANSLATED);
+	private SupervisedRosterEntry forgeEntryRow(RosterEntry entry, RosterChannelInfos infos, Map<Long, Identity> identityKeyToIdentity) {
+		PortraitUser portraitUser;
+		if (entry.isAnonym()) {
+			portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), entry.getNickName());
+		} else {
+			Identity identity = identityKeyToIdentity.get(entry.getIdentityKey());
+			if (identity != null) {
+				portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			} else {
+				portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
+			}
+		}
+		UserPortraitComponent portraitComp = UserPortraitFactory
+				.createUserPortrait("portrait_" + (++count), null, getLocale(), avatarMapperKey.getUrl());
+		portraitComp.setSize(PortraitSize.xsmall);
+		portraitComp.setDisplayPresence(false);
+		portraitComp.setPortraitUser(portraitUser);
+		
+		FormLink link = uifactory.addFormLink("entry_" + (++count), "entry", portraitUser.getDisplayName(), null, null, Link.LINK | Link.NONTRANSLATED);
 		link.setEscapeMode(EscapeMode.html);
+		
 		setOnlineStatus(entry.getIdentityKey(), link);
+		
 		long unreadMessages = infos.getUnreadMessages() == null ? 0l : infos.getUnreadMessages().longValue();
-		return new SupervisedRosterEntry(entry, link, unreadMessages);
+		return new SupervisedRosterEntry(entry, portraitComp, link, unreadMessages);
 	}
 	
 	private void setOnlineStatus(Long identityKey, FormLink entryLink) {
@@ -267,6 +305,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		
 		for(SupervisedRoster roster:rosters) {
 			for(SupervisedRosterEntry entry:roster.getRosterEntries()) {
+				container.add(new ComponentWrapperElement(entry.getUserPortraitComp()));
 				container.add(entry.getEntryLink());
 				identities.add(entry.getEntry().getIdentityKey());
 			}
@@ -571,11 +610,13 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	public static class SupervisedRosterEntry {
 		
 		private final RosterEntry entry;
+		private final UserPortraitComponent userPortraitComp;
 		private final FormLink entryLink;
 		private long unreadMessages = 0l;
 		
-		public SupervisedRosterEntry(RosterEntry entry, FormLink entryLink, long unreadMessages) {
+		public SupervisedRosterEntry(RosterEntry entry, UserPortraitComponent userPortraitComp, FormLink entryLink, long unreadMessages) {
 			this.entry = entry;
+			this.userPortraitComp = userPortraitComp;
 			this.entryLink = entryLink;
 			this.unreadMessages = unreadMessages;
 			entryLink.setUserObject(this);
@@ -585,14 +626,14 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 			return entry.isAnonym() ? entry.getNickName() : entry.getFullName();
 		}
 		
-		public Long getAvatarKey() {
-			return entry.getIdentityKey();
-		}
-		
 		public RosterEntry getEntry() {
 			return entry;
 		}
 		
+		public UserPortraitComponent getUserPortraitComp() {
+			return userPortraitComp;
+		}
+
 		public FormLink getEntryLink() {
 			return entryLink;
 		}

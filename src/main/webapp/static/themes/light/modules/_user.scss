@@ -548,6 +548,12 @@ dialog.popover {
 		margin-top: 14px;
 		font-weight: bold;
 	}
+	
+	.o_org_selector_selection_links {
+		margin-top: 7px;
+		display: flex;
+		gap: 14px;
+	}
 
 	.o_org_selector_selection.o_filter_search_list_values {
 		margin-right: -14px;

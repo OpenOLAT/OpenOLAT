@@ -31,17 +31,17 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -59,6 +59,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.floatingresizabledialog.FloatingResizableDialogController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -93,8 +94,13 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.ui.TeamsMeetingEvent;
 import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -114,7 +120,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final VelocityContainer mainVC;
 	private final VelocityContainer chatMsgFieldContent;
 
-	private Map<Long,Long> avatarKeyCache = new HashMap<>();
 	private Deque<ChatMessage> messageHistory = new LinkedBlockingDeque<>();
 
 	private Link lastWeek;
@@ -143,6 +148,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final boolean persistent;
 	private final Long privateReceiverKey;
 	private InstantMessage errorMessage;
+	private int count = 0;
 
 	@Autowired
 	private Coordinator coordinator;
@@ -159,7 +165,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private UserSessionManager sessionManager;
 	@Autowired
@@ -268,7 +274,6 @@ public class ChatController extends BasicController implements GenericEventListe
 			mainVC.contextPut("resourceInfos", chatViewConfig.getResourceInfos());
 			mainVC.contextPut("resourceIconCssClass", chatViewConfig.getResourceIconCssClass());
 		}
-		mainVC.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
 		
 		todayLink = LinkFactory.createButton("im.today", mainVC, this);
 		lastWeek = LinkFactory.createButton("im.lastweek", mainVC, this);
@@ -411,7 +416,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			if(message == null) {
 				sendMessageForm.setErrorTextField();
 			} else {
-				appendToMessageHistory(message, true);
+				appendToMessageHistory(message, true, getIdentity());
 				sendMessageForm.resetTextField();
 	
 				if(supervisorRosterCtrl != null
@@ -422,7 +427,7 @@ public class ChatController extends BasicController implements GenericEventListe
 				updateSendMessageForm();
 			}
 		} else {
-			//ignore empty manObjectessage entry and refocus on entry field
+			//ignore empty message entry and refocus on entry field
 			chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 			chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
 		}
@@ -562,20 +567,35 @@ public class ChatController extends BasicController implements GenericEventListe
 		messageHistory.clear();
 		List<InstantMessage> lastMessages = imService
 				.getMessages(getIdentity(), getOlatResourceable(), resSubPath, channel, from, 0, maxResults, true);
+		
+		Set<Long> messageIdentityKeys = lastMessages.stream()
+				.map(InstantMessage::getFromKey)
+				.collect(Collectors.toSet());
+		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(messageIdentityKeys).stream()
+				.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
+		
 		if(errorMessage != null) {
 			lastMessages.add(errorMessage);
 		}
 		Collections.sort(lastMessages, new InstantMessageComparator());
 		
 		for(int i=lastMessages.size(); i-->0; ) {
-			appendToMessageHistory(lastMessages.get(i), false);
+			appendToMessageHistory(lastMessages.get(i), false, identityKeyToIdentity.get(lastMessages.get(i).getFromKey()));
 		}
 		
 		if(supervisorRosterCtrl != null && channel != null) {
 			List<RosterEntry> allEntries = supervisorRosterCtrl.getRosterEntries(channel);
+			
+			Set<Long> nonVipIdentityKeys = allEntries.stream()
+					.filter(e -> !e.isVip() && !getIdentity().getKey().equals(e.getIdentityKey()))
+					.map(RosterEntry::getIdentityKey)
+					.collect(Collectors.toSet());
+			Map<Long, Identity> nonVipIdentityKeyToIdentity = securityManager.loadIdentityByKeys(nonVipIdentityKeys).stream()
+					.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
+			
 			List<ChatRosterEntry> entries = allEntries.stream()
 					.filter(e -> !e.isVip() && !getIdentity().getKey().equals(e.getIdentityKey()))
-					.map(e -> new ChatRosterEntry(e, sessionManager.isOnline(e.getIdentityKey())))
+					.map(e -> createChatRosterEntry(e, nonVipIdentityKeyToIdentity))
 					.collect(Collectors.toList());
 			mainVC.contextPut("rosterNonVipEntries", entries);
 			
@@ -585,6 +605,27 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		
 		updateSendMessageForm();
+	}
+	
+	private ChatRosterEntry createChatRosterEntry(RosterEntry entry, Map<Long, Identity> identityKeyToIdentity) {
+		PortraitUser portraitUser;
+		if (entry.isAnonym()) {
+			portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), entry.getNickName());
+		} else {
+			Identity identity = identityKeyToIdentity.get(entry.getIdentityKey());
+			if (identity != null) {
+				portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			} else {
+				portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
+			}
+		}
+		UserPortraitComponent portraitComp = UserPortraitFactory
+				.createUserPortrait("portrait_" + (++count), mainVC, getLocale(), avatarMapperKey.getUrl());
+		portraitComp.setSize(PortraitSize.xsmall);
+		portraitComp.setDisplayPresence(false);
+		portraitComp.setPortraitUser(portraitUser);
+		
+		return new ChatRosterEntry(entry, portraitComp, sessionManager.isOnline(entry.getIdentityKey()));
 	}
 	
 	private void updateSendMessageForm() {
@@ -603,27 +644,28 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	public static class ChatRosterEntry {
 		
-		private String onlineCssStatus;
-		private Long avatarKey;
-		private String name;
+		private final String onlineCssStatus;
+		private final String name;
+		private final UserPortraitComponent portraitComp;
 		
-		public ChatRosterEntry(RosterEntry entry, boolean online) {
-			name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
-			avatarKey = entry.getIdentityKey();
-			onlineCssStatus = online ? "o_icon_status_available" : "o_icon_status_unavailable";
+		public ChatRosterEntry(RosterEntry entry, UserPortraitComponent portraitComp, boolean online) {
+			this.name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
+			this.portraitComp = portraitComp;
+			this.onlineCssStatus = online ? "o_icon_status_available" : "o_icon_status_unavailable";
 		}
-
-		public String getOnlineCssStatus() {
-			return onlineCssStatus;
-		}
-
-		public Long getAvatarKey() {
-			return avatarKey;
-		}
-
+		
 		public String getName() {
 			return name;
 		}
+		
+		public String getPortraitCompName() {
+			return portraitComp.getComponentName();
+		}
+		
+		public String getOnlineCssStatus() {
+			return onlineCssStatus;
+		}
+		
 	}
 	
 	/**
@@ -768,7 +810,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		boolean appended = false;
 		if(Objects.equals(channel, event.getChannel())) {
 			InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
-			appended = appendToMessageHistory(message, false);
+			appended = appendToMessageHistory(message, false, securityManager.loadIdentityByKey(message.getFromKey()));
 		}
 		
 		if(supervisorRosterCtrl != null && StringHelper.containsNonWhitespace(event.getChannel())) {
@@ -808,7 +850,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatPanelCtr.executeCloseCommand();
 	}
 	
-	private boolean appendToMessageHistory(InstantMessage message, boolean focus) {
+	private boolean appendToMessageHistory(InstantMessage message, boolean focus, Identity identity) {
 		if(message == null) {
 			return false;
 		}
@@ -862,15 +904,14 @@ public class ChatController extends BasicController implements GenericEventListe
 		boolean anonym = message.isAnonym();
 		ChatMessage msg = new ChatMessage(message.getKey(), creationDate, from, fromKey, m, link, message.getType(),
 				first, anonym, getIdentity().getKey().equals(message.getFromKey()));
-		if(!anonym ) {
-			msg.setAvatarKey(getAvatarKey(message.getFromKey()));
-		}
 		if(link != null) {
 			link.setUserObject(msg);
 		}
 		
 		messageHistory.addLast(msg);
-
+		
+		putUserPortraitComp(chatMsgFieldContent, message, identity);
+		
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 		chatMsgFieldContent.contextPut("focus", Boolean.valueOf(focus));
 		return true;
@@ -902,37 +943,22 @@ public class ChatController extends BasicController implements GenericEventListe
 		return translate(i18nKey, time, from);
 	}
 	
-	private Long getAvatarKey(Long identityKey) {
-		Long avatarKey = avatarKeyCache.get(identityKey);
-		if(avatarKey == null && buddyList != null) {
-			Buddy buddy = buddyList.get(identityKey);
-			if(buddy != null) {
-				// check if avatar image exists at all
-				if (portraitManager.getSmallPortraitResource(buddy.getIdentityKey())  != null) {
-					avatarKey = buddy.getIdentityKey();
-				} else {
-					avatarKey = Long.valueOf(-1);
-				}
-				avatarKeyCache.put(identityKey, avatarKey);
+	private void putUserPortraitComp(VelocityContainer vc, InstantMessage message, Identity identity) {
+		PortraitUser portraitUser;
+		if (message.isAnonym()) {
+			portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), message.getFromNickName());
+		} else {
+			if (identity != null) {
+				portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			} else {
+				portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
 			}
 		}
-		if(avatarKey == null) {
-			IdentityShort id = securityManager.loadIdentityShortByKey(identityKey);
-			if(id != null) {
-				// check if avatar image exists at all
-				if (portraitManager.getSmallPortraitResource(id.getKey())  != null) {
-					avatarKey = id.getKey();
-				} else {
-					avatarKey = Long.valueOf(-1);
-				}				
-				avatarKeyCache.put(identityKey, avatarKey);
-			}
-		}
-		if (avatarKey == null) {
-			// use not-available when still not set to something
-			avatarKey = Long.valueOf(-1);
-		}
-		return avatarKey;
+		UserPortraitComponent portraitComp = UserPortraitFactory
+				.createUserPortrait("message_portrait_" + message.getKey(), vc, getLocale(), avatarMapperKey.getUrl());
+		portraitComp.setSize(PortraitSize.small);
+		portraitComp.setDisplayPresence(false);
+		portraitComp.setPortraitUser(portraitUser);
 	}
 	
 	private String prepareMsgBody(String body) {

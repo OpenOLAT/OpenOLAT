@@ -74,10 +74,14 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	private Set<Long> orgKeys = new HashSet<>();
 	private Set<Long> selectedKeys = new HashSet<>();
 	private boolean multipleSelection;
+	private String noSelectionText;
 	private Translator orgTranslator;
 
 	public OrgSelectorElementImpl(WindowControl wControl, String name, List<Organisation> orgs) {
 		super(name);
+		if (orgs == null) {
+			orgs = new ArrayList<>();
+		}
 		initOrgTree(orgs);
 		initOrgRows(orgs);
 		this.wControl = wControl;
@@ -158,11 +162,12 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 
 	private OrgRow mapToOrgRow(Organisation org, Map<Long, String> orgKeyToName) {
 		Long key = org.getKey();
-		String path = Arrays.stream(org.getMaterializedPathKeys().split("/")).map(String::trim)
+		String path = StringHelper.containsNonWhitespace(org.getMaterializedPathKeys()) ? 
+				Arrays.stream(org.getMaterializedPathKeys().split("/")).map(String::trim)
 				.filter(StringHelper::containsNonWhitespace)
 				.map(Long::parseLong).map(orgKeyToName::get)
 				.filter(StringHelper::containsNonWhitespace)
-				.collect(Collectors.joining(" / "));
+				.collect(Collectors.joining(" / ")) : "";
 		String title = org.getDisplayName();
 		String location = org.getLocation();
 		OrgNode orgNode = orgRoot.find(org.getKey());
@@ -172,8 +177,14 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	}
 
 	@Override
+	public void setEnabled(boolean isEnabled) {
+		button.setEnabled(isEnabled);
+		super.setEnabled(isEnabled);
+	}
+
+	@Override
 	public void setSelection(Collection<Long> orgKeys) {
-		if (!multipleSelection && orgKeys.size() > 1) {
+		if (!multipleSelection && orgKeys != null && orgKeys.size() > 1) {
 			throw new AssertionError("Trying to select multiple organisations with multiple selection turned off");
 		}
 		selectedKeys = orgKeys == null ? new HashSet<>() : new HashSet<>(orgKeys);
@@ -182,7 +193,16 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 
 	@Override
 	public void setSelection(Long orgKey) {
+		if (orgKey == null) {
+			setSelection(Set.of());
+			return;
+		}
 		setSelection(Set.of(orgKey));
+	}
+
+	@Override
+	public void setNoSelectionText(String noSelectionText) {
+		this.noSelectionText = noSelectionText;
 	}
 
 	@Override
@@ -299,19 +319,28 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		if (button != null) {
 			button.setI18nKey(StringHelper.escapeHtml(linkTitle));
 			if (noOrgSelected) {
-				if (orgTranslator == null) {
-					if (getTranslator() != null) {
-						orgTranslator = Util.createPackageTranslator(OrgSelectorElementImpl.class, getTranslator().getLocale());
-					}
-				}
-				if (orgTranslator != null) {
-					button.setI18nKey(orgTranslator.translate("selector.none"));
-				}
+				setNoSelectionButtonText();
 			}
 			component.setDirty(true);
 		}
 	}
-	
+
+	private void setNoSelectionButtonText() {
+		if (StringHelper.containsNonWhitespace(noSelectionText)) {
+			button.setI18nKey(StringHelper.escapeHtml(noSelectionText));
+			return;
+		}
+
+		if (orgTranslator == null) {
+			if (getTranslator() != null) {
+				orgTranslator = Util.createPackageTranslator(OrgSelectorElementImpl.class, getTranslator().getLocale());
+			}
+		}
+		if (orgTranslator != null) {
+			button.setI18nKey(orgTranslator.translate("selector.none"));
+		}
+	}
+
 	private void doOpenSelector(UserRequest ureq) {
 		orgSelectorCtrl = new OrgSelectorController(ureq, wControl, orgRows, selectedKeys, multipleSelection);
 		orgSelectorCtrl.addControllerListener(this);
