@@ -250,11 +250,10 @@
 	margin-left: 25px;
 }
 
-.o_im_entries .o_portrait img,
-.o_supervisor_chat_rosters .o_portrait img,
-.o_supervised_chat_roster img {
-	width: 20px;
-	height: 20px;
+.o_supervised_chat_roster .o_portrait,
+.o_im_entries .o_portrait,
+.o_supervisor_chat_rosters .o_portrait {
+	transform: translateY(2px);
 }
 
 .o_im_buddieslist {

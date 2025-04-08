@@ -22,17 +22,9 @@
 			#elseif($r.isFalse($message.typeStatus))
 				## link to visiting card
 				#if(!$message.anonym) <a href="$r.relLink("url/Identity/${message.fromKey}")" class="o_im_from">#end
-								
-				<div class="o_portrait"><div class="o_portrait_image">
-				#if($message.anonym) 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translateEscapeHtmlAttribute("portrait.alt",$message.from)" title="$r.translateEscapeHtmlAttribute("portrait.alt",$message.from)" class="o_portrait_anonymous_small" aria-hidden="true">
-				#elseif ($message.avatarKey != "-1") 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translateEscapeHtmlAttribute("portrait.alt",$message.from)" title="$r.translateEscapeHtmlAttribute("portrait.alt",$message.from)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')">
-				#else
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translateEscapeHtmlAttribute("portrait.alt",$message.from)" title="$r.translateEscapeHtmlAttribute("portrait.alt",$message.from)" class="o_portrait_dummy_small" aria-hidden="true">
-				#end 
-				</div></div>
-								
+				
+				<div class="o_portrait">$r.render("message_portrait_$message.messageKey")</div>
+				
 				<div class="o_im_from_name">$r.escapeHtml(${message.from}) <small class="o_date">${message.creationDate}</small></div>				
 				## end link to visiting card
 				#if(!$message.anonym) </a> #end
