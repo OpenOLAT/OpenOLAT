@@ -475,7 +475,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			courseProgress.setMax(100);
 			courseProgress.setWidthInPercent(true);
 			courseProgress.setLabelAlignment(LabelAlignment.none);
-			if (course.getCourseConfig().isToolbarEnabled() && toolbarPanel != null) {
+			if (toolbarPanel != null && toolbarPanel.isToolbarEnabled()) {
 				// Normally progress is showed in the toolbar. 
 				courseProgress.setRenderStyle(RenderStyle.radial);
 				courseProgress.setPercentagesEnabled(true);		
