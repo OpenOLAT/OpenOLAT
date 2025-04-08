@@ -20,7 +20,7 @@
 		</div>
 	</div>
 
-	<div class="clearfix o_filter_search_list_values o_org_selector_selection">
+	<div id="$r.getId('_org_selector_selection_')"  class="clearfix o_filter_search_list_values o_org_selector_selection">
 		<div id="$r.getId('_selected_orgs_')" class="o_org_selector_selected">
 			<div class="o_org_selector_rows">
 				#if($inputType.equals("checkbox"))
@@ -114,7 +114,30 @@
 		#end
 	}
 
+	#if($inputType.equals("radio"))
+	function makeSelectedRowVisible(containerId, checkedInputId) {
+		var container = jQuery(`#${containerId}`);
+		if (container.length !== 1) {
+			return;
+		}
+
+		var checkedInput = jQuery(`#${checkedInputId} input:checked`);
+		if (checkedInput.length !== 1) {
+			return;
+		}
+
+		var containerRect = container.get(0).getBoundingClientRect();
+		var checkedInputRect = checkedInput.get(0).getBoundingClientRect();
+		var desiredScrollTop = checkedInputRect.top - (containerRect.top + containerRect.height / 2 - checkedInputRect.height / 2) - 10;
+		desiredScrollTop = Math.max(desiredScrollTop, 0);
+		container.scrollTop(desiredScrollTop);
+	}
+	#end
+
 	jQuery(function() {
+		#if($inputType.equals("radio"))
+		setTimeout(function() { makeSelectedRowVisible('$r.getId("_org_selector_selection_")', '$r.getId("_orgs_")'); }, 0);
+		#end
 		var searchField = jQuery('#$r.getId("org_search") input');
 		if (!searchField.length) {
 			return;

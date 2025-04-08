@@ -45,6 +45,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -206,13 +207,16 @@ public class BadgeCriteria {
 										   List<AssessmentEntry> assessmentEntries, UserCourseEnvironment uce) {
 		final boolean[] courseBadgeConditionChecked = { false };
 
-		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntryDAO repositoryEntryDao = CoreSpringFactory.getImpl(RepositoryEntryDAO.class);
+		RepositoryEntry reloadedCourseEntry = repositoryEntryDao.loadByKey(courseEntry.getKey());
+		
+		ICourse course = CourseFactory.loadCourse(reloadedCourseEntry);
 		if (uce == null || !course.getResourceableId().equals(uce.getCourseEnvironment().getCourseResourceableId())) {
 			IdentityEnvironment ienv = uce != null ? uce.getIdentityEnvironment() : new IdentityEnvironment(recipient, Roles.userRoles());
 			uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 		}
 
-		if (!allConditionsApplyingToCoursesOnlyMet(courseEntry, course, uce, recipient, learningPath, assessmentEntries, 
+		if (!allConditionsApplyingToCoursesOnlyMet(reloadedCourseEntry, course, uce, recipient, learningPath, assessmentEntries, 
 				courseBadgeConditionChecked)) {
 			return false;
 		}
