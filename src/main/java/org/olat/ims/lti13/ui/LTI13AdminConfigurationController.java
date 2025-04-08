@@ -43,6 +43,7 @@ import org.olat.ims.lti13.DeploymentConfigurationPermission;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.user.ui.organisation.OrganisationAdminController;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,7 +58,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	
 	private MultipleSelectionElement moduleEnabled;
 	private TextElement platformIssEl;
-	private SingleSelection organisationsEl;
+	private OrgSelectorElement organisationsEl;
 	private SingleSelection entryOwnerPermissionEl;
 	private SingleSelection businessGroupCoachPermissionEl;
 	private MultipleSelectionElement rolesEntryEl;
@@ -178,22 +179,18 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	private void initOrganisationsEl(FormItemContainer formLayout) {
 		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
 		String defaultLtiOrgKey = lti13Module.getDefaultOrganisationKey();
+		boolean orgsContainDefaultOrg = 
+				StringHelper.containsNonWhitespace(defaultLtiOrgKey) && 
+						organisations.stream().anyMatch(org -> org.getKey().equals(Long.valueOf(defaultLtiOrgKey)));
 		
-		SelectionValues keyValues = new SelectionValues();
-		for(Organisation organisation:organisations) {
-			keyValues.add(SelectionValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
-		}
-		organisationsEl = uifactory.addDropdownSingleselect("organisations", "lti13.default.organisation", formLayout,
-				keyValues.keys(), keyValues.values());
+		organisationsEl = uifactory.addOrgSelectorElement("organisations", "lti13.default.organisation", 
+				formLayout, getWindowControl(), organisations);
 		
-		if(StringHelper.containsNonWhitespace(defaultLtiOrgKey) && keyValues.containsKey(defaultLtiOrgKey)) {
-			organisationsEl.select(defaultLtiOrgKey, true);
+		if(orgsContainDefaultOrg) {
+			organisationsEl.setSelection(Long.valueOf(defaultLtiOrgKey));
 		} else {
 			Organisation organisation = organisationService.getDefaultOrganisation();
-			String organisationKey = organisation.getKey().toString();
-			if(keyValues.containsKey(organisationKey)) {
-				organisationsEl.select(organisationKey, true);
-			}
+			organisationsEl.setSelection(organisation.getKey());
 		}
 	}
 
@@ -203,7 +200,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		
 		organisationsEl.clearError();
 		if(moduleEnabled.isAtLeastSelected(1)) {
-			if(!organisationsEl.isOneSelected()) {
+			if(!organisationsEl.isExactlyOneSelected()) {
 				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
@@ -237,7 +234,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
 		lti13Module.setEnabled(enabled);
 		
-		String selectedOrganisationKey = organisationsEl.getSelectedKey();
+		String selectedOrganisationKey = String.valueOf(organisationsEl.getSingleSelection());
 		lti13Module.setDefaultOrganisationKey(selectedOrganisationKey);
 		lti13Module.setDeploymentRepositoryEntryRolesConfigurationList(rolesEntryEl.getSelectedKeys());
 		lti13Module.setDeploymentBusinessGroupRolesConfigurationList(rolesBusinessGroupEl.getSelectedKeys());
