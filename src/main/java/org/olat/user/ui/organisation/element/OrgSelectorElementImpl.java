@@ -22,6 +22,7 @@ package org.olat.user.ui.organisation.element;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -309,6 +310,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		
 		String linkTitle = orgRows.stream()
 				.filter(orgRow -> selectedKeys.contains(orgRow.key()))
+				.sorted(Comparator.comparing(OrgRow::title))
 				.map(OrgRow::title)
 				.collect(Collectors.joining(", "));
 
