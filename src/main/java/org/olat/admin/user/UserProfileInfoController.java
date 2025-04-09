@@ -56,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserProfileInfoController extends UserInfoController {
 
+	private static final String USER_PROFILE_ELEMENTS_CSS = "o_user_card_elements";
 	private static final List<OrganisationRoles> DISPLAY_ROLE_ORDER = List.of(
 			OrganisationRoles.invitee,
 			OrganisationRoles.user,
@@ -136,7 +137,7 @@ public class UserProfileInfoController extends UserInfoController {
 
 	private void addUserId(FormLayoutContainer itemsCont) {
 		StaticTextElement userIdEl = uifactory.addStaticTextElement("userid", "user.identity", String.valueOf(identity.getKey()), itemsCont);
-		userIdEl.setElementCssClass("o_user_card_elements");
+		userIdEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 	}
 
 	private void addUserOrganisations(FormLayoutContainer itemsCont, Roles fullRoles) {
@@ -162,7 +163,7 @@ public class UserProfileInfoController extends UserInfoController {
 
 			FormLink link = uifactory.addFormLink("org_link_" + org.getKey(), "org_roles",
 					orgName, null, orgLinkCont, Link.NONTRANSLATED);
-			link.setElementCssClass("o_user_card_elements");
+			link.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 			link.setUserObject("org-click");
 		}
 	}
@@ -170,7 +171,7 @@ public class UserProfileInfoController extends UserInfoController {
 
 	private void addStatus(FormLayoutContainer itemsCont) {
 		if (Boolean.TRUE.equals(showTitle)) {
-			int status = identity.getStatus().intValue();
+			int status = identity.getStatus();
 			String statusKey = "";
 			String cssClass = "";
 
@@ -193,7 +194,7 @@ public class UserProfileInfoController extends UserInfoController {
 
 			String statusValue = "<span class=\"o_user_status_badge " + cssClass + "\">" + translate(statusKey) + "</span>";
 			StaticTextElement statusEl = uifactory.addStaticTextElement("status", "user.status", statusValue, itemsCont);
-			statusEl.setElementCssClass("o_user_card_elements");
+			statusEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 		}
 	}
 
@@ -233,7 +234,7 @@ public class UserProfileInfoController extends UserInfoController {
 
 			String badge = "<span class=\"o_labeled_light\">" + StringHelper.escapeHtml(label) + "</span>";
 			FormLink link = uifactory.addFormLink("role_link_" + i++, "role_click", badge, null, roleLinkCont, Link.NONTRANSLATED);
-			link.setElementCssClass("o_user_card_elements");
+			link.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 			link.setUserObject("role-click");
 		}
 	}
@@ -242,23 +243,28 @@ public class UserProfileInfoController extends UserInfoController {
 		String email = identity.getUser().getEmail();
 		String userMail = StringHelper.containsNonWhitespace(email) ? email : translate("user.no.data");
 		StaticTextElement userMailEl = uifactory.addStaticTextElement("usermail", "user.mail", userMail, itemsCont);
-		userMailEl.setElementCssClass("o_user_card_elements");
+		userMailEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 	}
 
 	private void addAccountType(FormLayoutContainer itemsCont, Roles fullRoles) {
-		String accountType = fullRoles.isInvitee()
-				? translate("user.type.invitee")
-				: fullRoles.isGuestOnly()
-				? translate("user.type.guest")
-				: translate("user.type.user");
+		String accountType;
+
+		if (fullRoles.isInvitee()) {
+			accountType = translate("user.type.invitee");
+		} else {
+			if (fullRoles.isGuestOnly())
+				accountType = translate("user.type.guest");
+			else
+				accountType = translate("user.type.user");
+		}
 
 		StaticTextElement accountTypeEl = uifactory.addStaticTextElement("ac", "user.account.type.label", accountType, itemsCont);
-		accountTypeEl.setElementCssClass("o_user_card_elements");
+		accountTypeEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 	}
 
 	private void addUsername(FormLayoutContainer itemsCont) {
 		StaticTextElement usernameEl = uifactory.addStaticTextElement("username", "user.username", identity.getName(), itemsCont);
-		usernameEl.setElementCssClass("o_user_card_elements");
+		usernameEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 	}
 
 	@Override
