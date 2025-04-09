@@ -229,7 +229,7 @@ public class UserProfileInfoController extends UserInfoController {
 			String label = translate("role." + role.name());
 			boolean multiOrg = fullRoles.getOrganisationsWithRole(role).size() > 1;
 			if (multiOrg) {
-				label += " (#" + fullRoles.getOrganisationsWithRole(role).size() + ")";
+				label += " (" + fullRoles.getOrganisationsWithRole(role).size() + ")";
 			}
 
 			String badge = "<span class=\"o_labeled_light\">" + StringHelper.escapeHtml(label) + "</span>";
