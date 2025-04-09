@@ -27,11 +27,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -39,6 +36,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OrganisationExceptionalObligationController extends FormBasicController
 		implements ExceptionalObligationController {
 	
-	private MultiSelectionFilterElement organisationsEl;
+	private OrgSelectorElement organisationsEl;
 	
 	@Autowired
 	private OrganisationService organisationService;
@@ -63,8 +61,7 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 
 	@Override
 	public List<ExceptionalObligation> getExceptionalObligations() {
-		return organisationsEl.getSelectedKeys().stream()
-				.map(Long::valueOf)
+		return organisationsEl.getSelection().stream()
 				.map(OrganisationRefImpl::new)
 				.map(this::createExceptionalObligation)
 				.collect(Collectors.toList());
@@ -81,9 +78,8 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations",
-				"config.exceptional.obligation.organisations", formLayout, getWindowControl(), organisationSV);
+		organisationsEl = uifactory.addOrgSelectorElement("organisations",
+				"config.exceptional.obligation.organisations", formLayout, getWindowControl(), organisations, true);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setElementCssClass("o_button_group_right o_block_top");
