@@ -48,7 +48,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -56,7 +55,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -92,6 +90,7 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.repository.wizard.RepositoryWizardService;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -118,7 +117,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private FormLayoutContainer privateDatesCont;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection educationalTypeEl;
-	private MultiSelectionFilterElement organisationEl;
+	private OrgSelectorElement organisationEl;
 	
 	protected RepositoryEntry repositoryEntry;
 	private final RepositoryHandler handler;
@@ -300,38 +299,34 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 	
 	private void initOrganisations(UserRequest ureq, FormItemContainer formLayout) {
-		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(manageableOrganisations, getLocale());
-		organisationEl = uifactory.addCheckboxesFilterDropdown("cif.organisations", "cif.organisations",
-				formLayout, getWindowControl(), organisationSV);
+		organisationEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations",
+				formLayout, getWindowControl(), manageableOrganisations, true);
 		organisationEl.setVisible(manageableOrganisations.size() > 1 && organisationModule.isEnabled());
 		
 		if (organisationEl.isVisible()) {
-			List<String> organisationKeys = getDefaultOrganisationKeys(ureq);
-			if (!organisationKeys.isEmpty()) {
-				organisationKeys.forEach(key -> organisationEl.select(key, true));
-			}
-			if (organisationEl.getSelectedKeys().isEmpty()) {
-				organisationEl.select(organisationSV.keyValues().get(0).getKey(), true);
+			List<Long> organisationKeys = getDefaultOrganisationKeys(ureq);
+			organisationEl.setSelection(organisationKeys);
+			if (organisationEl.getSelection().isEmpty()) {
+				organisationEl.setSelection(manageableOrganisations.get(0).getKey());
 			}
 		}
 	}
 	
-	private List<String> getDefaultOrganisationKeys(UserRequest ureq) {
+	private List<Long> getDefaultOrganisationKeys(UserRequest ureq) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
 			Object pref = guiPrefs.get(CreateRepositoryEntryController.class, GUIPREF_KEY_REPOSITORY_ENTRY_ORGS);
 			if (pref instanceof String preList) {
-				return Arrays.asList(preList.split("::"));
+				return Arrays.stream(preList.split("::")).map(Long::valueOf).toList();
 			}
 		}
 		return List.of();
-		
 	}
 	
-	private void setDefaultOrganisationKeys(UserRequest ureq, Collection<String> organisationKeys) {
+	private void setDefaultOrganisationKeys(UserRequest ureq, Collection<Long> organisationKeys) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			String joindeKeys = organisationKeys.stream().collect(Collectors.joining("::"));
+			String joindeKeys = organisationKeys.stream().map(String::valueOf).collect(Collectors.joining("::"));
 			guiPrefs.putAndSave(CreateRepositoryEntryController.class, GUIPREF_KEY_REPOSITORY_ENTRY_ORGS, joindeKeys);
 		}
 	}
@@ -475,7 +470,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		
 		organisationEl.clearError();
-		if(organisationEl.isVisible() && organisationEl.getSelectedKeys().isEmpty()) {
+		if(organisationEl.isVisible() && organisationEl.getSelection().isEmpty()) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -532,10 +527,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		String displayname = displaynameEl.getValue();
 		
 		Organisation organisation;
-		if(organisationEl.isVisible() && !organisationEl.getSelectedKeys().isEmpty()) {
-			OrganisationRef organisationRef = organisationEl.getSelectedKeys().stream()
+		if(organisationEl.isVisible() && !organisationEl.getSelection().isEmpty()) {
+			OrganisationRef organisationRef = organisationEl.getSelection().stream()
 					.limit(1)
-					.map(Long::valueOf)
 					.map(OrganisationRefImpl::new)
 					.findFirst().get();
 			organisation = organisationService.getOrganisation(organisationRef);
@@ -547,15 +541,14 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		repositoryEntry = handler.createResource(getIdentity(), displayname, "", createObject, organisation, getLocale());
 
-		if(organisationEl.isVisible() && !organisationEl.getSelectedKeys().isEmpty()) {
-			List<OrganisationRefImpl> additionalOrganisationRefs = organisationEl.getSelectedKeys().stream()
-					.map(Long::valueOf)
+		if(organisationEl.isVisible() && !organisationEl.getSelection().isEmpty()) {
+			List<OrganisationRefImpl> additionalOrganisationRefs = organisationEl.getSelection().stream()
 					.filter(key -> !key.equals(organisation.getKey()))
 					.map(OrganisationRefImpl::new)
 					.toList();
 			organisationService.getOrganisation(additionalOrganisationRefs)
 					.forEach(org -> repositoryService.addOrganisation(repositoryEntry, org));
-			setDefaultOrganisationKeys(ureq, organisationEl.getSelectedKeys());
+			setDefaultOrganisationKeys(ureq, organisationEl.getSelection());
 		}
 		
 		String ref = externalRef.getValue().trim();
