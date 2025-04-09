@@ -99,6 +99,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		rootFormAvailable(button);
 	}
 
+	@Override
 	public Set<Long> getKeys() {
 		return orgKeys;
 	}
@@ -195,10 +196,23 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	@Override
 	public void setSelection(Long orgKey) {
 		if (orgKey == null) {
-			setSelection(Set.of());
+			setSelection(new HashSet<>());
 			return;
 		}
-		setSelection(Set.of(orgKey));
+		setSelection(new HashSet<>(Set.of(orgKey)));
+	}
+
+	@Override
+	public void select(Long orgKey, boolean selected) {
+		if (selectedKeys == null) {
+			selectedKeys = new HashSet<>();
+		}
+		if (selected) {
+			selectedKeys.add(orgKey);
+		} else {
+			selectedKeys.remove(orgKey);
+		}
+		updateButtonUI();
 	}
 
 	@Override
@@ -220,6 +234,11 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	@Override
 	public Set<Long> getSelection() {
 		return selectedKeys;
+	}
+
+	@Override
+	public Set<Long> getSelectedKeys() {
+		return getSelection();
 	}
 
 	public FormLink getButton() {
@@ -270,7 +289,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if (orgSelectorCtrl == source) {
 			if (event instanceof OrgSelectorController.OrgsSelectedEvent orgsSelectedEvent) {
-				selectedKeys = orgsSelectedEvent.getKeys();
+				selectedKeys = new HashSet<>(orgsSelectedEvent.getKeys());
 				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI();
