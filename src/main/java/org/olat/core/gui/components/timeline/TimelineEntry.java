@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.timeline;
 
+import org.olat.user.UserPortraitComponent;
 
 /**
  * Initial date: Mar 17, 2025
@@ -26,6 +27,8 @@ package org.olat.core.gui.components.timeline;
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public interface TimelineEntry {
+	
+	UserPortraitComponent getUserPortraitComp();
 
 	/**
 	 * Returns the primary title or heading of this timeline entry

@@ -25,13 +25,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.timeline.TimelineModel.TimelineDay;
+import org.olat.core.gui.components.timeline.TimelineModel.TimelineYear;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
-import org.olat.core.gui.components.timeline.TimelineModel.*;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -94,6 +95,8 @@ public class TimelineController extends BasicController {
 		boolean timelineComplete = !showFirstOnly || (totalEventsFull <= totalEventsDisplayed);
 		mainVC.contextPut("timelineComplete", timelineComplete);
 		mainVC.contextPut("years", timelineYears);
+		
+		putPortraitsToVC(mainVC, timelineYears);
 	}
 
 	private int getTotalEvents(List<TimelineYear> years) {
@@ -104,6 +107,18 @@ public class TimelineController extends BasicController {
 			}
 		}
 		return count;
+	}
+
+	private void putPortraitsToVC(VelocityContainer mainVC, List<TimelineYear> years) {
+		for (TimelineYear year : years) {
+			for (TimelineDay day : year.getDays()) {
+				for (TimelineEntry timelineEntry : day.getEntries()) {
+					if (timelineEntry.getUserPortraitComp() != null) {
+						mainVC.put(timelineEntry.getUserPortraitComp().getComponentName(), timelineEntry.getUserPortraitComp());
+					}
+				}
+			}
+		}
 	}
 
 	@Override

@@ -850,7 +850,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		if (withGrading && !logContent.isBlank() && logEntries != null && !logEntries.isEmpty()) {
 			UserAvatarMapper userAvatarMapper = new UserAvatarMapper();
 			String mapperPath = registerMapper(ureq, userAvatarMapper);
-			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), userAvatarMapper, mapperPath);
+			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), mapperPath);
 
 			timelineCtrl = new TimelineController(
 					ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);

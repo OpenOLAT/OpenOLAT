@@ -26,15 +26,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.properties.LogEntry;
 import org.olat.properties.LogEntryTimelineEntry;
-import org.olat.user.UserAvatarMapper;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 
 /**
  * Initial date: Mar 17, 2025
@@ -43,16 +54,15 @@ import org.olat.user.UserAvatarMapper;
  */
 public class TimelineBuilder {
 
-	private static final int FIRST_ONLY_LIMIT = 5;
-
 	private TimelineBuilder() {
 	}
 
-	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale,
-																		   UserAvatarMapper userAvatarMapper, String mapperPath) {
+	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale, String mapperPath) {
 		if (logEntries.isEmpty()) return Collections.emptyList();
 
 		Formatter formatter = Formatter.getInstance(locale);
+		
+		Map<String, UserPortraitComponent> userIdToProfileUser = getUserIdToUserPortraitComp(logEntries, locale,mapperPath);
 
 		List<LogEntry> sortedEntries = logEntries.stream()
 				.sorted(Comparator.comparing(LogEntry::timestamp))
@@ -68,7 +78,7 @@ public class TimelineBuilder {
 			yearDayMap
 					.computeIfAbsent(year, y -> new TreeMap<>())
 					.computeIfAbsent(localDate, d -> new ArrayList<>())
-					.add(new LogEntryTimelineEntry(logEntry, locale, userAvatarMapper, mapperPath));
+					.add(new LogEntryTimelineEntry(logEntry, locale, userIdToProfileUser.get(logEntry.userId())));
 		}
 
 		for (var yearEntry : yearDayMap.entrySet()) {
@@ -90,6 +100,28 @@ public class TimelineBuilder {
 		}
 
 		return years;
+	}
+
+	private static Map<String, UserPortraitComponent> getUserIdToUserPortraitComp(List<LogEntry> logEntries, Locale locale, String avatarMapperUrl) {
+		Set<Long> IdentityKeys = logEntries.stream()
+			.map(LogEntry::userId)
+			.filter(StringHelper::isLong)
+			.map(Long::valueOf)
+			.collect(Collectors.toSet());
+		
+		List<Identity> identities = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKeys(IdentityKeys);
+		List<PortraitUser> portraitUsers = CoreSpringFactory.getImpl(UserPortraitService.class).createPortraitUsers(locale, identities);
+		
+		Map<String, UserPortraitComponent> userIdToUserPortraitComp = new HashMap<>(portraitUsers.size());
+		for (PortraitUser portraitUser : portraitUsers) {
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("logEntryPortrait_" + portraitUser.getIdentityKey(), null, locale, avatarMapperUrl);
+			userPortrait.setSize(PortraitSize.small);
+			userPortrait.setDisplayPresence(false);
+			userPortrait.setPortraitUser(portraitUser);
+			userIdToUserPortraitComp.put(portraitUser.getIdentityKey().toString(), userPortrait);
+		}
+		
+		return userIdToUserPortraitComp;
 	}
 }
 

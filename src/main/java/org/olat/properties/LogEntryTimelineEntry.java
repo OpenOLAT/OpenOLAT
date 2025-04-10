@@ -19,7 +19,6 @@
  */
 package org.olat.properties;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,19 +26,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.timeline.TimelineEntry;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.user.DisplayPortraitManager;
-import org.olat.user.UserAvatarMapper;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.GenderPropertyHandler;
+import org.olat.user.UserPortraitComponent;
 
 /**
  * Initial date: Mar 18, 2025
@@ -51,38 +43,29 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 	private final LogEntry logEntry;
 	private final Formatter formatter;
 	private final Translator translator;
-	private final BaseSecurity securityManager;
-	private final DisplayPortraitManager displayPortraitManager;
-	private final UserAvatarMapper userAvatarMapper;
-	private final String mapperPath;
+	private final UserPortraitComponent userPortraitComp;
 
-
-	public LogEntryTimelineEntry(LogEntry logEntry, Locale locale, UserAvatarMapper userAvatarMapper, String mapperPath) {
+	public LogEntryTimelineEntry(LogEntry logEntry, Locale locale, UserPortraitComponent userPortraitComp) {
 		this.logEntry = logEntry;
 		this.formatter = Formatter.getInstance(locale);
 		this.translator = Util.createPackageTranslator(LogEntryTimelineEntry.class, locale);
-		this.userAvatarMapper = userAvatarMapper;
-		this.mapperPath = mapperPath;
+		this.userPortraitComp = userPortraitComp;
+	}
 
-		this.securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		this.displayPortraitManager = CoreSpringFactory.getImpl(DisplayPortraitManager.class);
+	@Override
+	public UserPortraitComponent getUserPortraitComp() {
+		return userPortraitComp;
 	}
 
 	@Override
 	public String getTitle() {
-		String displayName = logEntry.author(); // fallback
-
-		Long numericUserId = getNumericUserId();
-		if (numericUserId != null) {
-			String fetchedDisplayName = UserManager.getInstance().getUserDisplayName(numericUserId);
-
-			if (StringHelper.containsNonWhitespace(fetchedDisplayName)) {
-				displayName = fetchedDisplayName;
-			}
-		}
-
-		List<String> userMetaInfo = new ArrayList<>();
-
+		String displayName = userPortraitComp != null
+				? userPortraitComp.getPortraitUser().getDisplayName()
+				: logEntry.author();
+		displayName = StringHelper.escapeHtml(displayName);
+		
+		List<String> userMetaInfo = new ArrayList<>(2);
+		
 		if (logEntry.orgUnit() != null && !logEntry.orgUnit().isBlank()) {
 			userMetaInfo.add(logEntry.orgUnit());
 		}
@@ -105,52 +88,6 @@ public class LogEntryTimelineEntry implements TimelineEntry {
 		}
 
 		return title.toString();
-	}
-
-	public String getUserPortraitPath() {
-		Long userId = getNumericUserId();
-		if (userId == null) return null;
-
-		Identity identity = securityManager.loadIdentityByKey(userId);
-		if (identity == null) return null;
-
-		return userAvatarMapper.createPathFor(mapperPath, identity, false);
-	}
-
-	public String getPortraitCssClass() {
-		Long userId = getNumericUserId();
-		if (userId == null) return DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS;
-
-		Identity identity = securityManager.loadIdentityByKey(userId);
-		if (identity == null) return DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS;
-
-		File image = displayPortraitManager.getSmallLogo(identity);
-		String gender = "-";
-		GenderPropertyHandler genderHandler = (GenderPropertyHandler) UserManager.getInstance()
-				.getUserPropertiesConfig()
-				.getPropertyHandler(UserConstants.GENDER);
-
-		if (genderHandler != null && identity.getUser() != null) {
-			gender = genderHandler.getInternalValue(identity.getUser());
-		}
-
-		if (image != null) {
-			return DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS;
-		} else if ("male".equalsIgnoreCase(gender)) {
-			return DisplayPortraitManager.DUMMY_MALE_SMALL_CSS_CLASS;
-		} else if ("female".equalsIgnoreCase(gender)) {
-			return DisplayPortraitManager.DUMMY_FEMALE_SMALL_CSS_CLASS;
-		} else {
-			return DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS;
-		}
-	}
-
-	private Long getNumericUserId() {
-		String userId = logEntry.userId();
-		if (StringHelper.containsNonWhitespace(userId) && userId.matches("\\d+")) {
-			return Long.valueOf(userId);
-		}
-		return null;
 	}
 
 	@Override

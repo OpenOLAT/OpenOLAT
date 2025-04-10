@@ -20,6 +20,7 @@
 package org.olat.user.ui.organisation.element;
 
 import java.io.Serial;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,7 +77,7 @@ public class OrgSelectorController extends FormBasicController {
 	}
 
 	private void buildUIRows() {
-		orgUIRows = orgRows.stream().map(this::mapToOrgUIRow).toList();
+		orgUIRows = orgRows.stream().map(this::mapToOrgUIRow).sorted(Comparator.comparing(OrgUIRow::path)).toList();
 	}
 
 	@Override

@@ -814,7 +814,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public void doCreateOffer(UserRequest ureq) {
 		guardModalController(methodSelectionCtrl);
 		if (!readOnly && !managedBookings) {
-			methodSelectionCtrl = new MethodSelectionController(ureq, getWindowControl(), openAccessSupported, guestSupported, methods);
+			methodSelectionCtrl = new MethodSelectionController(ureq, getWindowControl(), openAccessSupported, isAddGuest(), methods);
 			listenTo(methodSelectionCtrl);
 			String title = translate("offer.add");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), methodSelectionCtrl.getInitialComponent(), true, title);
