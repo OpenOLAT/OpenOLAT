@@ -319,14 +319,20 @@ public class BadgeCriteria {
 		
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+				if (log.isDebugEnabled()) {
+					log.debug("allCourseElementConditionsMet(): CourseElementPassedCondition");
+				}
 				if (courseAssessmentService == null) {
 					courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				}
 				CourseNode courseNode = course.getRunStructure().getNode(courseElementPassedCondition.getSubIdent());
-				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-				if (log.isDebugEnabled()) {
-					log.debug("allCourseElementConditionsMet(): CourseElementPassedCondition");
+				if (courseNode == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("course node not found and - as a consequence - condition not met.");
+					}
+					return false;
 				}
+				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				if (assessmentEvaluation.getPassed() == null || !assessmentEvaluation.getPassed()) {
 					if (log.isDebugEnabled()) {
 						log.debug("assessment evaluation not passed for course node '{}' ({}).", 
@@ -350,6 +356,12 @@ public class BadgeCriteria {
 					courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				}
 				CourseNode courseNode = course.getRunStructure().getNode(courseElementScoreCondition.getSubIdent());
+				if (courseNode == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("course node not found and - as a consequence - condition not met.");
+					}
+					return false;
+				}
 				AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				if (assessmentEvaluation.getScore() == null || !courseElementScoreCondition.satisfiesCondition(assessmentEvaluation.getScore())) {
 					if (log.isDebugEnabled()) {
