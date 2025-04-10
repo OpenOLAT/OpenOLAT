@@ -58,7 +58,7 @@ public class PersonalFolderVFSContextInfoResolver implements VFSContextInfoResol
 		String type = null;
 		// Is either a transcoding or the master video
 		if (vfsMetadataRelativePath.startsWith("homes")) {
-			type = Util.createPackageTranslator(PersonalFolderVFSContextInfoResolver.class, locale).translate("vfs.context.homes");
+			type = Util.createPackageTranslator(PersonalFolderVFSContextInfoResolver.class, locale).translate("webdav.name");
 		}		
 		return type;	
 	}
