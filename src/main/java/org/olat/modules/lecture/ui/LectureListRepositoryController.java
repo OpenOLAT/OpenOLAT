@@ -172,6 +172,7 @@ import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.EditTeamsMeetingController;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -298,6 +299,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
@@ -558,21 +561,23 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void initScopes(FormItemContainer formLayout) {
-		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
-		
 		DateScopeOption preselectedOption = null;
 		List<DateScopeOption> cyclesScopes = new ArrayList<>();
-		for(RepositoryEntryLifecycle cycle:cycles) {
-			String label = cycle.getLabel();
-			if(StringHelper.containsNonWhitespace(cycle.getSoftKey())) {
-				label = cycle.getSoftKey();
-			}
-			DateScope scope = ScopeFactory.createDateScope("cycle_" + cycle.getKey(), label, null, cycle.getDateRange());
-			DateScopeOption option = new DateScopeOption(getSelectionName(cycle), scope);
-			cyclesScopes.add(option);
-			
-			if(preselectedOption == null || cycle.isDefaultPublicCycle()) {
-				preselectedOption = option;
+
+		if (lifecycleModule.isEnabled()) {
+			List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
+			for (RepositoryEntryLifecycle cycle : cycles) {
+				String label = cycle.getLabel();
+				if (StringHelper.containsNonWhitespace(cycle.getSoftKey())) {
+					label = cycle.getSoftKey();
+				}
+				DateScope scope = ScopeFactory.createDateScope("cycle_" + cycle.getKey(), label, null, cycle.getDateRange());
+				DateScopeOption option = new DateScopeOption(getSelectionName(cycle), scope);
+				cyclesScopes.add(option);
+
+				if (preselectedOption == null || cycle.isDefaultPublicCycle()) {
+					preselectedOption = option;
+				}
 			}
 		}
 		

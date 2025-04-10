@@ -45,6 +45,7 @@ import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.RepositoryEntriesListTableModel.LectureRepoCols;
 import org.olat.modules.lecture.ui.event.SelectLectureRepositoryEntryEvent;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
@@ -67,6 +68,8 @@ public class RepositoryEntriesListController extends FormBasicController {
 	
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 	
 	public RepositoryEntriesListController(UserRequest ureq, WindowControl wControl,
 			Identity teacher, LecturesSecurityCallback secCallback) {
@@ -88,10 +91,12 @@ public class RepositoryEntriesListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureRepoCols.displayname, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleLabel));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleSoftKey));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleStart));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleEnd));
+		if (lifecycleModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleLabel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleSoftKey));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleStart));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, LectureRepoCols.lifecycleEnd));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureRepoCols.access, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureRepoCols.numOfParticipants));
 

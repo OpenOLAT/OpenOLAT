@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui.settings;
@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -56,12 +57,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 29 Oct 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class RepositoryEntryLifecycleController extends FormBasicController {
-
-	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
 	private TextElement location;
 	private SingleSelection dateTypesEl;
@@ -80,6 +79,8 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -154,11 +155,30 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	}
 	
 	private void initLifecycle(FormItemContainer formLayout) {
-		String[] dateValues = new String[] {
-				translate("cif.dates.none"),
-				translate("cif.dates.private"),
-				translate("cif.dates.public")	
-		};
+		String[] dateValues;
+		String[] dateKeys;
+		if (lifecycleModule.isEnabled()) {
+			dateKeys = new String[]{
+					"none",
+					"private",
+					"public"
+			};
+			dateValues = new String[]{
+					translate("cif.dates.none"),
+					translate("cif.dates.private"),
+					translate("cif.dates.public")
+			};
+		} else {
+			dateKeys = new String[]{
+					"none",
+					"private",
+			};
+			dateValues = new String[]{
+					translate("cif.dates.none"),
+					translate("cif.dates.private")
+			};
+		}
+
 		dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKeys, dateValues);
 		dateTypesEl.setHelpText(translate("cif.dates.help"));
 		dateTypesEl.setElementCssClass("o_sel_repo_lifecycle_type");
@@ -166,7 +186,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			dateTypesEl.select("none", true);
 		} else if(repositoryEntry.getLifecycle().isPrivateCycle()) {
 			dateTypesEl.select("private", true);
-		} else {
+		} else if (lifecycleModule.isEnabled()) {
 			dateTypesEl.select("public", true);
 		}
 		dateTypesEl.addActionListener(FormEvent.ONCHANGE);

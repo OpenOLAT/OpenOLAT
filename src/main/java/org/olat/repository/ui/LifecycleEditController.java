@@ -40,10 +40,9 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
- * 
  * Initial date: 18.03.2013<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class LifecycleEditController extends FormBasicController {
 
@@ -52,10 +51,10 @@ public class LifecycleEditController extends FormBasicController {
 	private TextElement softKeyEl;
 	private DateChooser validFromEl;
 	private DateChooser validToEl;
-	
+
 	private RepositoryEntryLifecycle lifecycle;
 	private final RepositoryEntryLifecycleDAO reLifecycleDao;
-	
+
 	public LifecycleEditController(UserRequest ureq, WindowControl wControl, RepositoryEntryLifecycle lifecycle) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
@@ -63,21 +62,22 @@ public class LifecycleEditController extends FormBasicController {
 		// lifecycle may be null for creating a new entry
 		this.lifecycle = lifecycle;
 		reLifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
-		
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String label = lifecycle == null ? "" : lifecycle.getLabel();
-		labelEl = uifactory.addTextElement("lifecycle.label", "lifecycle.label", 128, label, formLayout);
-		
 		String softKey = lifecycle == null ? "" : lifecycle.getSoftKey();
 		softKeyEl = uifactory.addTextElement("lifecycle.softkey", "lifecycle.softkey", 128, softKey, formLayout);
-		
+		softKeyEl.setMandatory(true);
+
+		String label = lifecycle == null ? "" : lifecycle.getLabel();
+		labelEl = uifactory.addTextElement("lifecycle.label", "lifecycle.label", 128, label, formLayout);
+
 		Date from = lifecycle == null ? null : lifecycle.getValidFrom();
 		validFromEl = uifactory.addDateChooser("lifecycle.validFrom", "lifecycle.validFrom", from, formLayout);
-		
+
 		Date to = lifecycle == null ? null : lifecycle.getValidTo();
 		validToEl = uifactory.addDateChooser("lifecycle.validTo", "lifecycle.validTo", to, formLayout);
 
@@ -87,7 +87,13 @@ public class LifecycleEditController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
+		String submitBtnI18nKey;
+		if (lifecycle != null) {
+			submitBtnI18nKey = "save";
+		} else {
+			submitBtnI18nKey = "add";
+		}
+		uifactory.addFormSubmitButton("ok", submitBtnI18nKey, buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
@@ -96,15 +102,15 @@ public class LifecycleEditController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 
 		labelEl.clearError();
-		if(!StringHelper.containsNonWhitespace(labelEl.getValue())) {
+		if (!StringHelper.containsNonWhitespace(labelEl.getValue())) {
 			labelEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
-		} else if(labelEl.getValue() != null && labelEl.getValue().length() > 250) {
+		} else if (labelEl.getValue() != null && labelEl.getValue().length() > 250) {
 			labelEl.setErrorKey("form.error.toolong", "250");
 			allOk &= false;
 		}
-		
-		if(softKeyEl.getValue() != null && softKeyEl.getValue().length() > 64) {
+
+		if (softKeyEl.getValue() != null && softKeyEl.getValue().length() > 64) {
 			softKeyEl.setErrorKey("form.error.toolong", "64");
 			allOk &= false;
 		}
@@ -132,7 +138,7 @@ public class LifecycleEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(lifecycle == null) {
+		if (lifecycle == null) {
 			String label = labelEl.getValue();
 			String softKey = softKeyEl.getValue();
 			Date from = validFromEl.getDate();

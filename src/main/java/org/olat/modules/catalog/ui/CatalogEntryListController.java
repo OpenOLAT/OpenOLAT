@@ -99,6 +99,7 @@ import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
@@ -119,6 +120,7 @@ import org.olat.registration.RegistrationModule;
 import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.SelfRegistrationAdvanceOrderInput;
 import org.olat.registration.TemporaryKey;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -221,6 +223,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private LoginModule loginModule;
 	@Autowired
 	private I18nModule i18nModule;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 
 	public CatalogEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
 			CatalogEntrySearchParams searchParams, CatalogEntryListParams listParams) {
@@ -292,10 +296,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.externalId));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.lifecycleLabel));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.lifecycleSoftkey));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
+		if (lifecycleModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.lifecycleLabel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.lifecycleSoftkey));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleStart, new DateFlexiCellRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.author));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.mainLanguage));
@@ -368,6 +374,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 		List<FlexiTableExtendedFilter> flexiTableFilters = new ArrayList<>(catalogFilters.size());
 		for (CatalogFilter catalogFilter : catalogFilters) {
 			CatalogFilterHandler handler = catalogService.getCatalogFilterHandler(catalogFilter.getType());
+
+			if (handler instanceof LifecyclePublicHandler && !lifecycleModule.isEnabled()) {
+				continue;
+			}
 			if (handler != null && handler.isEnabled(searchParams.isGuestOnly())) {
 				TaxonomyLevel launcherTaxonomyLevel = searchParams.getLauncherTaxonomyLevels() != null && searchParams.getLauncherTaxonomyLevels().size() == 1
 						? searchParams.getLauncherTaxonomyLevels().get(0)

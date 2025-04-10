@@ -22,6 +22,7 @@ package org.olat.repository.manager;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 10.06.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class RepositoryEntryLifecycleDAOTest extends OlatTestCase {
@@ -144,4 +145,71 @@ public class RepositoryEntryLifecycleDAOTest extends OlatTestCase {
 		Assert.assertFalse(publicLifeCycles.isEmpty());
 		Assert.assertTrue(publicLifeCycles.contains(publicRelf));
 	}
+
+	@Test
+	public void countRepositoryEntriesWithLifecycle() {
+		String label = "Lifecycle for counting";
+		String softKey = UUID.randomUUID().toString();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -1);
+		Date from = cal.getTime();
+		cal.add(Calendar.DATE, +2);
+		Date to = cal.getTime();
+		RepositoryEntryLifecycle lifecycle = reLifeCycleDao.create(label, softKey, false, from, to);
+		Assert.assertNotNull(lifecycle);
+		Assert.assertNotNull(lifecycle.getKey());
+
+		// Assign lifecycle to a new repository entry
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("re-count-test", false);
+		re.setLifecycle(lifecycle);
+		dbInstance.getCurrentEntityManager().merge(re);
+
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry("re-count-test-2", false);
+		re2.setLifecycle(lifecycle);
+		dbInstance.getCurrentEntityManager().merge(re2);
+		dbInstance.commitAndCloseSession();
+
+		// Check usage count
+		long usageCount = reLifeCycleDao.countRepositoryEntriesWithLifecycle(lifecycle);
+		Assert.assertEquals(2, usageCount);
+	}
+
+	@Test
+	public void countRepositoryEntriesForMultipleLifecycles() {
+		String label = "Lifecycle for bulk count";
+		String softKey = UUID.randomUUID().toString();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -1);
+		Date from = cal.getTime();
+		cal.add(Calendar.DATE, +2);
+		Date to = cal.getTime();
+
+		RepositoryEntryLifecycle lifecycle = reLifeCycleDao.create(label, softKey, false, from, to);
+		Assert.assertNotNull(lifecycle);
+		Assert.assertNotNull(lifecycle.getKey());
+
+		// Assign lifecycle to multiple repository entries
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry("re-count-1", false);
+		re1.setLifecycle(lifecycle);
+		dbInstance.getCurrentEntityManager().merge(re1);
+
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry("re-count-2", false);
+		re2.setLifecycle(lifecycle);
+		dbInstance.getCurrentEntityManager().merge(re2);
+
+		RepositoryEntryLifecycle unusedLifecycle = reLifeCycleDao.create("Unused", UUID.randomUUID().toString(), false, from, to);
+
+		dbInstance.commitAndCloseSession();
+
+		// Perform count
+		List<RepositoryEntryLifecycle> lifecyclesToCheck = List.of(lifecycle, unusedLifecycle);
+		Map<Long, Long> counts = reLifeCycleDao.countRepositoryEntriesForLifecycles(lifecyclesToCheck);
+
+		Assert.assertNotNull(counts);
+		Assert.assertEquals(2L, counts.get(lifecycle.getKey()).longValue());
+		Assert.assertEquals(0L, counts.get(unusedLifecycle.getKey()).longValue());
+	}
+
 }

@@ -94,6 +94,7 @@ import org.olat.modules.quality.generator.QualityPreviewStatus;
 import org.olat.modules.quality.generator.ui.PreviewDataModel.PreviewCols;
 import org.olat.modules.quality.ui.DataCollectionController;
 import org.olat.modules.quality.ui.QualityUIFactory;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -143,6 +144,8 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 
 	protected AbstractPreviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -187,12 +190,15 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 				.nextMonths(1)
 				.toEndOfYear()
 				.christmasToNewYear();
-		reLifecycleDao.loadPublicLifecycle().stream()
-				.filter(ls -> ls.getValidFrom() != null && ls.getValidFrom().before(customScopeLimit.getTo()))
-				.filter(ls -> ls.getValidTo() != null && ls.getValidTo().after(customScopeLimit.getFrom()))
-				.forEach(ls -> additionalDateScopeBuilder.add(ScopeFactory.createDateScope(
-						"ls" + ls.getKey(), ls.getLabel(), null, 
-						new DateRange(DateUtils.getStartOfDay(ls.getValidFrom()), DateUtils.getEndOfDay(ls.getValidTo())))));
+
+		if (lifecycleModule.isEnabled()) {
+			reLifecycleDao.loadPublicLifecycle().stream()
+					.filter(ls -> ls.getValidFrom() != null && ls.getValidFrom().before(customScopeLimit.getTo()))
+					.filter(ls -> ls.getValidTo() != null && ls.getValidTo().after(customScopeLimit.getFrom()))
+					.forEach(ls -> additionalDateScopeBuilder.add(ScopeFactory.createDateScope(
+							"ls" + ls.getKey(), ls.getLabel(), null,
+							new DateRange(DateUtils.getStartOfDay(ls.getValidFrom()), DateUtils.getEndOfDay(ls.getValidTo())))));
+		}
 		scopeEl.setAdditionalDateScopes(additionalDateScopeBuilder.build());
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

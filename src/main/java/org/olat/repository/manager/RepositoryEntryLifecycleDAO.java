@@ -20,7 +20,9 @@
 package org.olat.repository.manager;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.repository.RepositoryEntryRef;
@@ -93,4 +95,47 @@ public class RepositoryEntryLifecycleDAO {
 		
 		dbInstance.getCurrentEntityManager().remove(reloadedLifecycle);
 	}
+
+	public long countRepositoryEntriesWithLifecycle(RepositoryEntryLifecycle lifecycle) {
+		String query = "select count(r) from repositoryentry r where r.lifecycle.key = :lifecycleKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("lifecycleKey", lifecycle.getKey())
+				.getSingleResult();
+	}
+
+	public Map<Long, Long> countRepositoryEntriesForLifecycles(List<RepositoryEntryLifecycle> lifecycles) {
+		if (lifecycles == null || lifecycles.isEmpty()) return Map.of();
+
+		List<Long> lifecycleKeys = lifecycles.stream()
+				.map(RepositoryEntryLifecycle::getKey)
+				.toList();
+
+		String query = """
+		select r.lifecycle.key, count(r) 
+		from repositoryentry r 
+		where r.lifecycle.key in :lifecycleKeys 
+		group by r.lifecycle.key
+		""";
+
+		List<Object[]> rawResults = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Object[].class)
+				.setParameter("lifecycleKeys", lifecycleKeys)
+				.getResultList();
+
+		Map<Long, Long> result = new HashMap<>();
+		for (Object[] row : rawResults) {
+			Long lifecycleKey = (Long) row[0];
+			Long count = (Long) row[1];
+			result.put(lifecycleKey, count);
+		}
+
+		// Fill missing lifecycles with count 0
+		for (Long lifecycleKey : lifecycleKeys) {
+			result.putIfAbsent(lifecycleKey, 0L);
+		}
+
+		return result;
+	}
+
 }

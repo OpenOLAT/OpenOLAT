@@ -86,6 +86,7 @@ import org.olat.login.LoginModule;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -197,6 +198,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private CatalogManager catalogManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 	
 	public CatalogNodeManagerController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
 			CatalogEntry catalogEntry, TooledStackedPanel stackPanel, boolean localTreeAdmin) {
@@ -373,26 +376,28 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				sortEnabled, OrderBy.externalRef.name());
 		leafColumns.add(columnModel);
 		columnsModel.addFlexiColumnModel(columnModel);
-		
-		columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
-				sortEnabled, OrderBy.lifecycleLabel.name());
-		leafColumns.add(columnModel);
-		columnsModel.addFlexiColumnModel(columnModel);
-		
-		columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
-				sortEnabled, OrderBy.lifecycleSoftkey.name());
-		leafColumns.add(columnModel);
-		columnsModel.addFlexiColumnModel(columnModel);
-		
-		columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
-				sortEnabled, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
-		leafColumns.add(columnModel);
-		columnsModel.addFlexiColumnModel(columnModel);
-		
-		columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
-				sortEnabled, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
-		leafColumns.add(columnModel);
-		columnsModel.addFlexiColumnModel(columnModel);
+
+		if (lifecycleModule.isEnabled()) {
+			columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
+					sortEnabled, OrderBy.lifecycleLabel.name());
+			leafColumns.add(columnModel);
+			columnsModel.addFlexiColumnModel(columnModel);
+
+			columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
+					sortEnabled, OrderBy.lifecycleSoftkey.name());
+			leafColumns.add(columnModel);
+			columnsModel.addFlexiColumnModel(columnModel);
+
+			columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
+					sortEnabled, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
+			leafColumns.add(columnModel);
+			columnsModel.addFlexiColumnModel(columnModel);
+
+			columnModel = new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
+					sortEnabled, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale()));
+			leafColumns.add(columnModel);
+			columnsModel.addFlexiColumnModel(columnModel);
+		}
 		
 		columnModel = new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
 				sortEnabled, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale()));

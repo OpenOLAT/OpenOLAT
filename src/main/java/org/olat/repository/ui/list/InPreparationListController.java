@@ -77,6 +77,7 @@ import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
@@ -132,6 +133,8 @@ public class InPreparationListController extends FormBasicController implements 
 	private CurriculumService curriculumService;
 	@Autowired
 	private InPreparationQueries inPreparationQueries;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 	
 	public InPreparationListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "inpreparation");
@@ -158,10 +161,14 @@ public class InPreparationListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleLabel));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleSoftkey));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd));
+
+		if (lifecycleModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleLabel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleSoftkey));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd));
+		}
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.educationalType,
 				new EducationalTypeRenderer()));

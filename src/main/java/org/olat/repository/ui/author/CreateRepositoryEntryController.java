@@ -74,6 +74,7 @@ import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -105,7 +106,6 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	public static final Event CREATION_WIZARD = new Event("start_wizard");
 	
 	private static final String GUIPREF_KEY_REPOSITORY_ENTRY_ORGS = "repository.entry.orgs";
-	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 	private static final String CMD_WIZARD = "wizard";
 	
 	private TextElement displaynameEl;
@@ -158,6 +158,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private RepositoryEntryLicenseHandler licenseHandler;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private LifecycleModule lifecycleModule;
 	
 	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler, boolean wizardsEnabled) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -332,11 +334,29 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 	
 	private void initLifecycle(FormItemContainer formLayout) {
-		String[] dateValues = new String[] {
-				translate("cif.dates.none"),
-				translate("cif.dates.private"),
-				translate("cif.dates.public")
-		};
+		String[] dateValues;
+		String[] dateKeys;
+		if (lifecycleModule.isEnabled()) {
+			dateKeys = new String[]{
+					"none",
+					"private",
+					"public"
+			};
+			dateValues = new String[]{
+					translate("cif.dates.none"),
+					translate("cif.dates.private"),
+					translate("cif.dates.public")
+			};
+		} else {
+			dateKeys = new String[]{
+					"none",
+					"private",
+			};
+			dateValues = new String[]{
+					translate("cif.dates.none"),
+					translate("cif.dates.private")
+			};
+		}
 		dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKeys, dateValues);
 		dateTypesEl.setHelpText(translate("cif.dates.help"));
 		dateTypesEl.select(courseModule.getCourseExecutionDefault(), true);
