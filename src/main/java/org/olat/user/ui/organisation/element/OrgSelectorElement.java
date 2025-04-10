@@ -32,6 +32,13 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 public interface OrgSelectorElement extends FormItem {
 
 	/**
+	 * Returns the keys of the org items available in the org selector.
+	 * 
+	 * @return A set of org keys.
+	 */
+	Set<Long> getKeys();
+
+	/**
 	 * Sets the selection using a collection of org keys.
 	 * 
 	 * @param orgKeys A collection of org keys to set as selected.
@@ -45,6 +52,14 @@ public interface OrgSelectorElement extends FormItem {
 	 */
 	void setSelection(Long orgKey);
 
+	/**
+	 * Sets a selection by switching an item off using its orgKey.
+
+	 * @param orgKey The org key of the selection to modify.
+	 * @param selected If true, turns the selection on, if false turns it off.
+	 */
+	void select(Long orgKey, boolean selected);
+	
 	/**
 	 * Set an optional text to display if no item is selected.
 	 * 
@@ -67,6 +82,8 @@ public interface OrgSelectorElement extends FormItem {
 	 */
 	Set<Long> getSelection();
 
+	Set<Long> getSelectedKeys();
+	
 	/**
 	 * The org selector is in single or in multiple selection mode.
 	 * The default mode is single selection mode. 
