@@ -45,16 +45,16 @@ public class ProjectPage {
 		WebElement titleEl = browser.findElement(titleBy);
 		titleEl.sendKeys(title);
 		
-		By organisationBy = By.cssSelector("div.o_sel_proj_project_organisation a.o_msf_button");
+		By organisationBy = By.cssSelector("div.o_sel_proj_project_organisation a.o_org_selector_button");
 		browser.findElement(organisationBy).click();
-		OOGraphene.waitCallout(browser, ".o_sel_multiselect");
+		OOGraphene.waitCallout(browser, ".o_sel_org_selector");
 		
-		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[contains(@class,'o_sel_multiselect')]//label[text()[contains(.,'" + organisation + "')]]/input[@type='checkbox']");
+		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[contains(@class,'o_org_selector_row') and descendant::div[contains(text(),'" + organisation + "')]]//input[@type='checkbox']");
 		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
 		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		
-		By updateBy = By.cssSelector(".popover a.o_sel_flexiql_update");
+		By updateBy = By.cssSelector(".popover a.o_sel_org_apply");
 		browser.findElement(updateBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElementDisappears(updateBy, 5, browser);
