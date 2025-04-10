@@ -88,6 +88,7 @@ public class OrgSelectorController extends FormBasicController {
 		loadMoreLink.setIconLeftCSS("o_icon o_icon_load_more");
 		
 		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON_SMALL);
+		applyButton.setElementCssClass("o_sel_org_apply");
 		applyButton.setPrimary(true);
 	}
 
