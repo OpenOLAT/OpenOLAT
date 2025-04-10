@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -46,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -63,6 +61,7 @@ import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectService;
 import org.olat.user.UserManager;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,8 +89,8 @@ public class ProjProjectEditController extends FormBasicController {
 	private FileElement backgroundImageEl;
 	private FormLayoutContainer orgCont;
 	private FormLayoutContainer templateOrgCont;
-	private MultiSelectionFilterElement organisationsEl;
-	private MultiSelectionFilterElement templateOrganisationsEl;
+	private OrgSelectorElement organisationsEl;
+	private OrgSelectorElement templateOrganisationsEl;
 	
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
@@ -316,16 +315,15 @@ public class ProjProjectEditController extends FormBasicController {
 			}
 		}
 		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(templateOrganisations, getLocale());
-		templateOrganisationsEl = uifactory.addCheckboxesFilterDropdown("project.template.organisations", "project.template.organisations", templateOrgCont, getWindowControl(), orgSV);
+		templateOrganisationsEl = uifactory.addOrgSelectorElement("project.template.organisations", "project.template.organisations", templateOrgCont, getWindowControl(), templateOrganisations, true);
 		templateOrganisationsEl.setMandatory(true);
 		templateOrganisationsEl.setEnabled(manager && !readOnly);
 		
 		// Select the current organisations
-		projectOrganisations.forEach(organisation -> templateOrganisationsEl.select(organisation.getKey().toString(), true));
+		projectOrganisations.forEach(organisation -> templateOrganisationsEl.select(organisation.getKey(), true));
 		
 		// If it is a new project, select all organisations (usually one, the organisation with role user)
-		if (templateOrganisationsEl.getSelectedKeys().isEmpty() && !manager) {
+		if (templateOrganisationsEl.getSelection().isEmpty() && !manager) {
 			templateOrganisationsEl.getKeys().forEach(key -> templateOrganisationsEl.select(key, true));
 		}
 	}
@@ -367,17 +365,16 @@ public class ProjProjectEditController extends FormBasicController {
 			}
 		}
 		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addOrgSelectorElement("organisations", "project.organisations", orgCont, getWindowControl(), organisations, true);
 		organisationsEl.setElementCssClass("o_sel_proj_project_organisation");
 		organisationsEl.setMandatory(true);
 		organisationsEl.setEnabled(manager && !readOnly);
 		
 		// Select the current organisations
-		projectOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		projectOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey(), true));
 		
 		// If it is a new project, select all organisations (usually one, the organisation with role user)
-		if (organisationsEl.getSelectedKeys().isEmpty() && !manager) {
+		if (organisationsEl.getSelection().isEmpty() && !manager) {
 			organisationsEl.getKeys().forEach(key -> organisationsEl.select(key, true));
 		}
 	}
@@ -388,8 +385,7 @@ public class ProjProjectEditController extends FormBasicController {
 		organisations = organisationService.getOrganisations(owner, OrganisationRoles.user);
 		
 		orgCont.remove("organisations");
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addOrgSelectorElement("organisations", "project.organisations", orgCont, getWindowControl(), organisations, true);
 		organisationsEl.setMandatory(true);
 		organisationsEl.setEnabled(true);
 		organisationsEl.getKeys().forEach(key -> organisationsEl.select(key, true));
@@ -480,7 +476,7 @@ public class ProjProjectEditController extends FormBasicController {
 		if (templateOrganisationsEl != null) {
 			templateOrganisationsEl.clearError();
 			if (templateOrganisationsEl.isVisible()) {
-				if (templateOrganisationsEl.getSelectedKeys().isEmpty()) {
+				if (templateOrganisationsEl.getSelection().isEmpty()) {
 					templateOrganisationsEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
@@ -489,7 +485,7 @@ public class ProjProjectEditController extends FormBasicController {
 		
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
-			if (organisationsEl.getSelectedKeys().isEmpty()) {
+			if (organisationsEl.getSelection().isEmpty()) {
 				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
@@ -522,9 +518,9 @@ public class ProjProjectEditController extends FormBasicController {
 			
 			if (templateOrganisationsEl != null) {
 				if (templateOrganisationsEl.isVisible()) {
-					Collection<String> selectedOrgKeys = templateOrganisationsEl.getSelectedKeys();
+					Collection<Long> selectedOrgKeys = templateOrganisationsEl.getSelection();
 					List<Organisation> selectedOrganisations = organisations.stream()
-							.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
+							.filter(org -> selectedOrgKeys.contains(org.getKey()))
 							.collect(Collectors.toList());
 					projectService.updateTemplateOrganisations(getIdentity(), targetProject, selectedOrganisations);
 				} else {
@@ -547,9 +543,9 @@ public class ProjProjectEditController extends FormBasicController {
 		
 		Collection<Organisation> selectedOrganisations = null;
 		if (organisationsEl != null) {
-			Collection<String> selectedOrgKeys = organisationsEl.getSelectedKeys();
+			Collection<Long> selectedOrgKeys = organisationsEl.getSelection();
 			selectedOrganisations = organisations.stream()
-					.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
+					.filter(org -> selectedOrgKeys.contains(org.getKey()))
 					.collect(Collectors.toList());
 		}
 		// Call always the update method to init the default organisation.
