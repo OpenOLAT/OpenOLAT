@@ -15,6 +15,18 @@
 			<div class="o_org_selector_selection_text">
 				$r.translate("selector.selection") <span id="$r.getId('_selection_number_')">($selectedOrgs.size())</span>
 			</div>
+			<div class="o_org_selector_selection_links">
+				<a class="o_org_selector_selection_link" href="javascript:;" 
+				   onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" 
+				   onclick="selectAll('$r.getId("_org_selector_selection_")')" draggable="false">
+					$r.translate("form.checkall")
+				</a>
+				<a class="o_org_selector_selection_link" href="javascript:;"
+				   onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;"
+				   onclick="resetSelection('$r.getId("_org_selector_selection_")')" draggable="false">
+				$r.translate("reset.selection")
+				</a>
+			</div>
 			#end
 			
 		</div>
@@ -113,6 +125,19 @@
 			}
 		#end
 	}
+	
+	#if($inputType.equals("checkbox"))
+	function selectAll(containerId) {
+		jQuery(`#${containerId} input`).prop('checked', true);
+		var nbSelected = Math.max(jQuery(`#${containerId} .o_org_selector_selection input:checked`).length, jQuery(`#${containerId} .o_org_selector_all input:checked`).length);
+		jQuery("#$r.getId('_selection_number_')").html(`(${nbSelected})`);
+	}
+	
+	function resetSelection(containerId) {
+		jQuery(`#${containerId} input`).prop('checked', false);
+		jQuery("#$r.getId('_selection_number_')").html(`(0)`);
+	}
+	#end
 
 	#if($inputType.equals("radio"))
 	function makeSelectedRowVisible(containerId, checkedInputId) {
