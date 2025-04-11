@@ -348,11 +348,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 	}
 
-	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, boolean links) { 
-		if(efficiencyStatement != null) {
-			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
-		} else if(courseRepo != null) {
+	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, boolean links) {
+		if(courseRepo != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(courseRepo.getDisplayname()));
+		} else if(efficiencyStatement != null) {
+			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
 		}
 		
 		mainVC.contextPut("user", statementOwner.getUser());
