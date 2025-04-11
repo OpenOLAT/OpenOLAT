@@ -112,7 +112,6 @@ public class UsersPortraitsComponent extends AbstractComponent {
 		UserPortraitComponent userPortraitComp = UserPortraitFactory
 				.createUserPortrait("o_" + CodeHelper.getRAMUniqueID(), null, locale);
 		userPortraitComp.setPortraitUser(portraitUser);
-		userPortraitComp.setDisplayPresence(false);
 		userPortraitComp.setSize(size);
 		return userPortraitComp;
 	}

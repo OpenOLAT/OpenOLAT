@@ -116,7 +116,6 @@ public class TimelineBuilder {
 		for (PortraitUser portraitUser : portraitUsers) {
 			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("logEntryPortrait_" + portraitUser.getIdentityKey(), null, locale);
 			userPortrait.setSize(PortraitSize.small);
-			userPortrait.setDisplayPresence(false);
 			userPortrait.setPortraitUser(portraitUser);
 			userIdToUserPortraitComp.put(portraitUser.getIdentityKey().toString(), userPortrait);
 		}

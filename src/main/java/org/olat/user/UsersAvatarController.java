@@ -110,7 +110,6 @@ public class UsersAvatarController extends FormBasicController {
 		
 		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
 				"user_avatar_" + identity.getKey(), flc.getFormItemComponent(), getLocale());
-		userPortraitComp.setDisplayPresence(false);
 		userPortraitComp.setPortraitUser(portraitUser);
 		item.setUserPortraitComp(userPortraitComp);
 		

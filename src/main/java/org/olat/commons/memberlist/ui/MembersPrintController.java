@@ -120,7 +120,6 @@ public class MembersPrintController extends BasicController {
 			member.setPortraitUser(portraitUser);
 			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + identity.getKey(), listVC, getLocale());
 			userPortraitComp.setSize(PortraitSize.large);
-			userPortraitComp.setDisplayPresence(false);
 			userPortraitComp.setPortraitUser(portraitUser);
 			member.setPortraitComp(userPortraitComp);
 			

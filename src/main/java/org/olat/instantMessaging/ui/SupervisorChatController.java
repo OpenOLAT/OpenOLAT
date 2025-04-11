@@ -311,7 +311,6 @@ public class SupervisorChatController extends FormBasicController implements Gen
 			UserPortraitComponent portraitComp = UserPortraitFactory
 					.createUserPortrait("portrait_" + roster.getChannel(), null, getLocale());
 			portraitComp.setSize(PortraitSize.small);
-			portraitComp.setDisplayPresence(false);
 			portraitComp.setPortraitUser(portraitUser);
 			row.setPortraitComp(portraitComp);
 		}

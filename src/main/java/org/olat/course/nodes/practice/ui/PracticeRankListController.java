@@ -101,7 +101,6 @@ public class PracticeRankListController extends FormBasicController {
 					UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
 							"portrait_" + portraitUser.getIdentityKey(), flc.getFormItemComponent(), getLocale());
 					userPortraitComp.setSize(PortraitSize.small);
-				userPortraitComp.setDisplayPresence(false);
 				userPortraitComp.setPortraitUser(portraitUser);
 			});
 	}

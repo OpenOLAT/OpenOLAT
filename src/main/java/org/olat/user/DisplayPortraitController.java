@@ -108,7 +108,6 @@ public class DisplayPortraitController extends BasicController implements Generi
 		
 		portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale());
 		portraitComp.setSize(portraitSize);
-		portraitComp.setDisplayPresence(false);
 		
 		loadPortrait();
 		

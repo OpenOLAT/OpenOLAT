@@ -128,7 +128,6 @@ public class RosterForm extends FormBasicController {
 					UserPortraitComponent portraitComp = UserPortraitFactory
 							.createUserPortrait("portrait_" + buddy.getIdentityKey(), layoutCont.getFormItemComponent(), getLocale());
 					portraitComp.setSize(PortraitSize.xsmall);
-					portraitComp.setDisplayPresence(false);
 					portraitComp.setPortraitUser(portraitUser);
 				}
 			}

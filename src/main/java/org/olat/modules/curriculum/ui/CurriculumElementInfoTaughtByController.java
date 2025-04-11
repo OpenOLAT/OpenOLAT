@@ -159,7 +159,6 @@ public class CurriculumElementInfoTaughtByController extends BasicController {
 		UserPortraitComponent portraitComp = UserPortraitFactory
 				.createUserPortrait("up_" + portraitUser.getIdentityKey(), mainVC, getLocale());
 		portraitComp.setPortraitUser(portraitUser);
-		portraitComp.setDisplayPresence(false);
 		taughtByRow.setPortraitComp(portraitComp);
 	}
 

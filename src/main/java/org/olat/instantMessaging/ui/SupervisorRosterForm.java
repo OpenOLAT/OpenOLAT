@@ -265,7 +265,6 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 		}
 		UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait_" + (++count), null, getLocale());
 		portraitComp.setSize(PortraitSize.xsmall);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 		
 		FormLink link = uifactory.addFormLink("entry_" + (++count), "entry", portraitUser.getDisplayName(), null, null, Link.LINK | Link.NONTRANSLATED);

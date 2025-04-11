@@ -373,7 +373,6 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		
 		UserPortraitComponent portraitComp= UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), null, getLocale());
 		portraitComp.setSize(PortraitSize.small);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 		row.setPortraitComp(portraitComp);
 		

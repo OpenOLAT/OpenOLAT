@@ -611,7 +611,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		UserPortraitComponent portraitComp = UserPortraitFactory
 				.createUserPortrait("portrait_" + (++count), mainVC, getLocale());
 		portraitComp.setSize(PortraitSize.xsmall);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 		
 		return new ChatRosterEntry(entry, portraitComp, sessionManager.isOnline(entry.getIdentityKey()));
@@ -946,7 +945,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		UserPortraitComponent portraitComp = UserPortraitFactory
 				.createUserPortrait("message_portrait_" + message.getKey(), vc, getLocale());
 		portraitComp.setSize(PortraitSize.small);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 	}
 	

@@ -134,7 +134,6 @@ public class CommentLayerController extends BasicController {
 			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
 			UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale());
 			portraitComp.setSize(PortraitSize.small);
-			portraitComp.setDisplayPresence(false);
 			portraitComp.setPortraitUser(portraitUser);
 			
 			mainVC.contextPut("name", portraitUser.getDisplayName());

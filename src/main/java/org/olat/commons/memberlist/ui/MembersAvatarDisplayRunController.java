@@ -303,7 +303,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			member.setPortraitUser(portraitUser);
 			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
 					"portrait_" + identity.getKey(), formLayout.getFormItemComponent(), getLocale());
-			userPortraitComp.setDisplayPresence(false);
 			userPortraitComp.setPortraitUser(portraitUser);
 			member.setPortraitComp(userPortraitComp);
 			

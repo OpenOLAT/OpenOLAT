@@ -125,18 +125,25 @@ public class GuiDemoUserController extends BasicController {
 		// User portrait
 		UserPortraitComponent userPortrait1 = UserPortraitFactory.createUserPortrait("user-portrait-1", mainVC, getLocale());
 		userPortrait1.setSize(PortraitSize.xsmall);
+		userPortrait1.setDisplayPresence(true);
 		userPortrait1.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(0)));
 		
 		UserPortraitComponent userPortrait2 = UserPortraitFactory.createUserPortrait("user-portrait-2", mainVC, getLocale());
 		userPortrait2.setSize(PortraitSize.small);
+		userPortrait2.setDisplayPresence(true);
+
 		userPortrait2.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(1)));
 		
 		UserPortraitComponent userPortrait3 = UserPortraitFactory.createUserPortrait("user-portrait-3", mainVC, getLocale());
 		userPortrait3.setSize(PortraitSize.medium);
+		userPortrait3.setDisplayPresence(true);
+
 		userPortrait3.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(2)));
 		
 		UserPortraitComponent userPortrait4 = UserPortraitFactory.createUserPortrait("user-portrait-4", mainVC, getLocale());
 		userPortrait4.setSize(PortraitSize.large);
+		userPortrait4.setDisplayPresence(true);
+
 		userPortrait4.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(3)));
 		
 		

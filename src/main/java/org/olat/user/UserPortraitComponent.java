@@ -43,7 +43,7 @@ public class UserPortraitComponent extends AbstractComponent {
 	private final String portraitMapperUrl;
 	private PortraitUser portraitUser;
 	private PortraitSize size = PortraitSize.medium;
-	private boolean displayPresence = true;
+	private boolean displayPresence = false;
 
 	protected UserPortraitComponent(String name, Locale locale) {
 		super(name);
