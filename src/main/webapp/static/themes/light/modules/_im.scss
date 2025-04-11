@@ -249,12 +249,19 @@
 
 }
 
+.o_supervised_chat_roster {
+	display: inline-flex;
+	flex-wrap: wrap;
+	column-gap: 5px;
+}
 .o_supervised_chat_roster>ul {
-	display: inline-block;
+	display: inline-flex;
+	flex-wrap: wrap;
+	column-gap: 10px;
 }
 
 .o_supervised_chat_roster>ul>li {
-	display: inline-block;
+	display: inline-flex;
 }
 
 .o_supervisor_chat_rosters {

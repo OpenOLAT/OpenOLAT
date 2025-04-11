@@ -968,6 +968,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			if(StringHelper.containsNonWhitespace(name)) {
 				entry.setName(name);
 			}
+			rosterCtrl.buddyAdded(entry, identityKey);
 			rosterCtrl.updateModel();
 		}
 		

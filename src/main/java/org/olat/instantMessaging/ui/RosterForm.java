@@ -114,24 +114,33 @@ public class RosterForm extends FormBasicController {
 						.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
 				
 				for (Buddy buddy : buddyList.getBuddies()) {
-					PortraitUser portraitUser;
-					if (buddy.isAnonym()) {
-						portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), buddy.getName());
-					} else {
-						Identity identity = buddyIdentityKeyToIdentity.get(buddy.getIdentityKey());
-						if (identity != null) {
-							portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
-						} else {
-							portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
-						}
-					}
-					UserPortraitComponent portraitComp = UserPortraitFactory
-							.createUserPortrait("portrait_" + buddy.getIdentityKey(), layoutCont.getFormItemComponent(), getLocale());
-					portraitComp.setSize(PortraitSize.xsmall);
-					portraitComp.setPortraitUser(portraitUser);
+					Identity identity = buddyIdentityKeyToIdentity.get(buddy.getIdentityKey());
+					addPortraitToVc(buddy, identity);
 				}
 			}
 		}
+	}
+	
+	public void buddyAdded(Buddy buddy, Long identityKey) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		addPortraitToVc(buddy, identity);
+	}
+	
+	private void addPortraitToVc(Buddy buddy, Identity identity) {
+		PortraitUser portraitUser;
+		if (buddy.isAnonym()) {
+			portraitUser = userPortraitService.createAnonymousPortraitUser(getLocale(), buddy.getName());
+		} else {
+			if (identity != null) {
+				portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
+			} else {
+				portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
+			}
+		}
+		UserPortraitComponent portraitComp = UserPortraitFactory
+				.createUserPortrait("portrait_" + buddy.getIdentityKey(), flc.getFormItemComponent(), getLocale());
+		portraitComp.setSize(PortraitSize.xsmall);
+		portraitComp.setPortraitUser(portraitUser);
 	}
 	
 	private static final String[] anonymPrefix = new String[] {
@@ -172,4 +181,5 @@ public class RosterForm extends FormBasicController {
 	protected void updateModel() {
 		flc.setDirty(true);
 	}
+	
 }
