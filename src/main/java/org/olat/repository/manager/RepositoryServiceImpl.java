@@ -1270,7 +1270,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if (lti13SharedToolDeploymentDAO.getSharedToolDeploymentCount(entry) > 0) {
 			return RuntimeTypeCheckDetails.ltiDeploymentExists;
 		}
-		if (curriculumElementDAO.countElements(entry) > 0) {
+		if (RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType()) && curriculumElementDAO.countElements(entry) > 0) {
 			return RuntimeTypeCheckDetails.curriculumElementExists;
 		}
 		if (acOfferDAO.offerExists(entry.getOlatResource())) {
