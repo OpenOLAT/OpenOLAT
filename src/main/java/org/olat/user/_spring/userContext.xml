@@ -139,7 +139,6 @@
 	</bean>
 
 	<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager"/>
-	<bean class="org.olat.user.DisplayPortraitManager"/>
 	
 	<!-- Organisation admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
