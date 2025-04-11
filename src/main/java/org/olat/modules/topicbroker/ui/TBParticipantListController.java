@@ -91,7 +91,6 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -170,10 +169,6 @@ public class TBParticipantListController extends FormBasicController implements 
 				isAdministrativeUser);
 		
 		profileConfig = userPortraitService.createProfileConfig();
-		UserAvatarMapper avatarMapper = new UserAvatarMapper();
-		profileConfig.setAvatarMapper(avatarMapper);
-		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		initForm(ureq);
 		initBulkLinks();

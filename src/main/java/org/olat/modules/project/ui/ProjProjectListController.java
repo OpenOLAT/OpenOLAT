@@ -19,7 +19,6 @@
  */
 package org.olat.modules.project.ui;
 
-import static java.util.Collections.singletonList;
 import static org.olat.modules.project.ProjectSecurityCallbackFactory.createDefaultCallback;
 
 import java.util.ArrayList;
@@ -35,8 +34,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -110,7 +107,6 @@ import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -182,7 +178,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	private final boolean canCreateProject;
 	private final boolean canCreateTemplate;
-	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	private final ProjProjectImageMapper projectImageMapper;
 	private final String projectMapperUrl;
@@ -199,8 +194,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private UserPortraitService userPortraitService;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private MapperService mapperService;
 
 	public ProjProjectListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "project_list");
@@ -208,7 +201,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		stackPanel.addListener(this);
 		this.canCreateProject = isCreateProjectEnabled() && canCreateProject(ureq);
 		this.canCreateTemplate = isCreateTemplateEnabled() && canCreateProject(ureq);
-		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		this.formatter = Formatter.getInstance(getLocale());
 		this.projectImageMapper = new ProjProjectImageMapper(projectService);
 		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
@@ -684,7 +676,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), members);
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
@@ -906,13 +898,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		toolsCtrl = null;
 		editCtrl = null;
 		cmc = null;
-	}
-	
-	@Override
-	protected void doDispose() {
-		super.doDispose();
-		mapperService.cleanUp(singletonList(avatarMapperKey));
-		stackPanel.removeListener(this);
 	}
 
 	@Override

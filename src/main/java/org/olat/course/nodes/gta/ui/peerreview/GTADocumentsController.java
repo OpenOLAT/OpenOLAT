@@ -31,7 +31,6 @@ import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -92,7 +91,6 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	private final boolean anonym;
 	private final String placeholderName;
 	private final VFSContainer container;
-	private final MapperKey avatarMapperKey;
 	
 	private Controller docEditorCtrl;
 
@@ -109,13 +107,12 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
-	public GTADocumentsController(UserRequest ureq, WindowControl wControl, MapperKey avatarMapperKey,
-			VFSContainer container, String placeholderName, boolean anonym) {
+	public GTADocumentsController(UserRequest ureq, WindowControl wControl, VFSContainer container,
+			String placeholderName, boolean anonym) {
 		super(ureq, wControl, "documents", Util.createPackageTranslator(GTAParticipantController.class, ureq.getLocale()));
 		this.anonym = anonym;
 		this.container = container;
 		this.placeholderName = placeholderName;
-		this.avatarMapperKey = avatarMapperKey;
 		roles = ureq.getUserSession().getRoles();
 		
 		initForm(ureq);
@@ -256,7 +253,7 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	
 	private void forgeUsersPortraits(UserRequest ureq, GTADocumentRow row, Identity initializedBy) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(initializedBy));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + (++count), flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + (++count), flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);

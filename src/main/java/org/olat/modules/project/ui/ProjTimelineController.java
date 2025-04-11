@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -149,7 +148,6 @@ public class ProjTimelineController extends FormBasicController
 	private final ProjectBCFactory bcFactory;
 	private final ProjProject project;
 	private final List<Identity> members;
-	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	private final ProjTimelineActivityRowsFactory activityRowsFactory;
 	private int counter;
@@ -164,13 +162,12 @@ public class ProjTimelineController extends FormBasicController
 	private CalendarManager calendarManager;
 
 	public ProjTimelineController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
-			ProjProject project, List<Identity> members, MapperKey avatarMapperKey) {
+			ProjProject project, List<Identity> members) {
 		super(ureq, wControl, "timeline");
 		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
 		this.bcFactory = bcFactory;
 		this.project = project;
 		this.members = members;
-		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 		this.activityRowsFactory = new ProjTimelineActivityRowsFactory(getTranslator(), formatter, userManager, this);
 		
@@ -748,7 +745,7 @@ public class ProjTimelineController extends FormBasicController
 
 	@Override
 	public void addAvatarIcon(UserRequest ureq, ProjTimelineRow row, Identity member) {
-		UsersPortraitsComponent portraitComp = UserPortraitFactory.createUsersPortraits(ureq, "portrair_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent portraitComp = UserPortraitFactory.createUsersPortraits(ureq, "portrair_" + counter++, flc.getFormItemComponent());
 		portraitComp.setUsers(userPortraitService.createPortraitUsers(getLocale(), List.of(member)));
 		portraitComp.setSize(PortraitSize.small);
 		row.setIconItem(new ComponentWrapperElement(portraitComp));

@@ -70,7 +70,6 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.member.RemoveMembershipsTableModel.RemoveMembershipCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -98,12 +97,10 @@ public class RemoveMembershipsController extends FormBasicController implements 
 
 	private List<Identity> members;
 	private final Curriculum curriculum;
-	private final String avatarMapperBaseURL;
 	private final GroupMembershipStatus nextStatus;
 	private final List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;
@@ -130,8 +127,6 @@ public class RemoveMembershipsController extends FormBasicController implements 
 		this.selectedCurriculumElement = selectedCurriculumElement;
 
 		detailsVC = createVelocityContainer("member_details");
-		
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "res-cur-avatars", avatarMapper);
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
@@ -370,7 +365,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 			flc.remove(row.getDetailsController().getInitialFormItem());
 		}
 
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, false, false, false, true, false,
 				true, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
@@ -416,10 +411,4 @@ public class RemoveMembershipsController extends FormBasicController implements 
 		row.setDetailsController(null);
 	}
 	
-	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		return profileConfig;
-	}
 }

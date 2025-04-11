@@ -25,8 +25,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -94,7 +92,6 @@ import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
@@ -138,7 +135,6 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	private final CourseNode courseNode;
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback secCallback;
-	private final MapperKey avatarMapperKey;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -152,8 +148,6 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private MapperService mapperService;
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
@@ -176,7 +170,6 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.secCallback = secCallback;
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		
 		initForm(ureq);
 		loadModel();
@@ -378,7 +371,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		AssessmentInspectionRow row = new AssessmentInspectionRow(portraitUser.getDisplayName(), inspectionEntry.inspection(),
 				inspectionEntry.assessmentStatus(), cNode.getShortTitle(), courseNodeConfig.getIconCSSClass());
 		
-		UserPortraitComponent portraitComp= UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), null, getLocale(), avatarMapperKey.getUrl());
+		UserPortraitComponent portraitComp= UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), null, getLocale());
 		portraitComp.setSize(PortraitSize.small);
 		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);

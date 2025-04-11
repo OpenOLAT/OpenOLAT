@@ -65,7 +65,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
-import org.olat.instantMessaging.model.Presence;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -733,9 +732,6 @@ public class UserAdminController extends BasicController implements Activateable
 		profileConfig.setUserManagementLinkEnabled(false);
 
 		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
-		portraitUser = userPortraitService.createPortraitUser(portraitUser.getIdentityKey(),
-				portraitUser.getUsername(), portraitUser.isPortraitAvailable(), null, portraitUser.getInitials(),
-				portraitUser.getInitialsCss(), portraitUser.getDisplayName(), Presence.dnd);
 		userProfileInfoCtrl = new UserProfileInfoController(ureq, getWindowControl(), profileConfig, portraitUser, identity, roles, getShowTitle());
 		listenTo(userProfileInfoCtrl);
 		myContent.put("userInfo", userProfileInfoCtrl.getInitialComponent());

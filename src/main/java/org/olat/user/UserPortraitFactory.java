@@ -21,9 +21,7 @@ package org.olat.user;
 
 import java.util.Locale;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
@@ -34,26 +32,16 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
  */
 public class UserPortraitFactory {
 	
-	public static UserPortraitComponent createUserPortrait(String name, VelocityContainer vc, Locale locale,
-			String avatarMapperUrl) {
-		UserPortraitComponent usersPortraitsComponent = new UserPortraitComponent(name, locale, avatarMapperUrl);
+	public static UserPortraitComponent createUserPortrait(String name, VelocityContainer vc, Locale locale) {
+		UserPortraitComponent usersPortraitsComponent = new UserPortraitComponent(name, locale);
 		if (vc != null) {
 			vc.put(usersPortraitsComponent.getComponentName(), usersPortraitsComponent);
 		}
 		return usersPortraitsComponent;
 	}
-
 	
 	public static UsersPortraitsComponent createUsersPortraits(UserRequest ureq, String name, VelocityContainer vc) {
-		return createUsersPortraits(ureq, name, vc, null, null);
-	}
-	
-	public static UsersPortraitsComponent createUsersPortraits(UserRequest ureq, String name, VelocityContainer vc,
-			ComponentEventListener listener, MapperKey mapperKey) {
-		UsersPortraitsComponent usersPortraitsComponent = new UsersPortraitsComponent(ureq, name, mapperKey);
-		if (listener != null) {
-			usersPortraitsComponent.addListener(listener);
-		}
+		UsersPortraitsComponent usersPortraitsComponent = new UsersPortraitsComponent(ureq, name);
 		if (vc != null) {
 			vc.put(usersPortraitsComponent.getComponentName(), usersPortraitsComponent);
 		}

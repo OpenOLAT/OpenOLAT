@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.user.manger;
+package org.olat.user.manager;
 
 
 import java.io.File;
@@ -47,8 +47,6 @@ import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitService;
-import org.olat.user.manager.ManifestBuilder;
-import org.olat.user.manager.UserPortraitStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

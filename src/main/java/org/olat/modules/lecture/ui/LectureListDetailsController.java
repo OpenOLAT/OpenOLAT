@@ -88,7 +88,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
 import org.olat.user.UserPortraitService;
@@ -141,8 +140,7 @@ public class LectureListDetailsController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, Form rootForm,
+	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
@@ -150,8 +148,6 @@ public class LectureListDetailsController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
 		profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		repositoryEntry = row.getEntry() != null ? repositoryService.loadByKey(row.getEntry().key()) : null;
 		if(repositoryEntry != null) {

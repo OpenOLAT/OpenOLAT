@@ -38,7 +38,6 @@ import org.olat.instantMessaging.model.Presence;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
 import org.olat.user.UserPortraitComponent;
@@ -62,8 +61,6 @@ public class GuiDemoUserController extends BasicController {
 
 	public GuiDemoUserController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		String avatarMapperBaseURL = registerMapper(ureq, new UserAvatarMapper());
 		
 		VelocityContainer mainVC = createVelocityContainer("guidemo-users");
 		putInitialPanel(mainVC);
@@ -126,19 +123,19 @@ public class GuiDemoUserController extends BasicController {
 		
 		
 		// User portrait
-		UserPortraitComponent userPortrait1 = UserPortraitFactory.createUserPortrait("user-portrait-1", mainVC, getLocale(), avatarMapperBaseURL);
+		UserPortraitComponent userPortrait1 = UserPortraitFactory.createUserPortrait("user-portrait-1", mainVC, getLocale());
 		userPortrait1.setSize(PortraitSize.xsmall);
 		userPortrait1.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(0)));
 		
-		UserPortraitComponent userPortrait2 = UserPortraitFactory.createUserPortrait("user-portrait-2", mainVC, getLocale(), avatarMapperBaseURL);
+		UserPortraitComponent userPortrait2 = UserPortraitFactory.createUserPortrait("user-portrait-2", mainVC, getLocale());
 		userPortrait2.setSize(PortraitSize.small);
 		userPortrait2.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(1)));
 		
-		UserPortraitComponent userPortrait3 = UserPortraitFactory.createUserPortrait("user-portrait-3", mainVC, getLocale(), avatarMapperBaseURL);
+		UserPortraitComponent userPortrait3 = UserPortraitFactory.createUserPortrait("user-portrait-3", mainVC, getLocale());
 		userPortrait3.setSize(PortraitSize.medium);
 		userPortrait3.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(2)));
 		
-		UserPortraitComponent userPortrait4 = UserPortraitFactory.createUserPortrait("user-portrait-4", mainVC, getLocale(), avatarMapperBaseURL);
+		UserPortraitComponent userPortrait4 = UserPortraitFactory.createUserPortrait("user-portrait-4", mainVC, getLocale());
 		userPortrait4.setSize(PortraitSize.large);
 		userPortrait4.setPortraitUser(userPortraitService.createPortraitUser(getLocale(), identities.get(3)));
 		

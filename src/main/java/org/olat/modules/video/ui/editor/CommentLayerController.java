@@ -28,7 +28,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
-import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -51,7 +50,6 @@ import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -68,13 +66,10 @@ public class CommentLayerController extends BasicController {
 	private final Link closeLink;
 	
 	private final RepositoryEntry repositoryEntry;
-	private final String avatarMapperUrl;
 	private VideoComments comments;
 	
 	@Autowired
 	private VideoManager videoManager;
-	@Autowired
-	private MapperService mapperService;
 	@Autowired
 	private UserPortraitService userPortraitService;
 
@@ -82,7 +77,6 @@ public class CommentLayerController extends BasicController {
 								  String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
-		avatarMapperUrl = mapperService.register(null, "avatars-members", new UserAvatarMapper()).getUrl();
 		
 		mainVC = createVelocityContainer("comment_layer");
 
@@ -138,7 +132,7 @@ public class CommentLayerController extends BasicController {
 		Identity identity = manager.findIdentityByName(comment.getAuthor());
 		if (identity != null) {
 			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
-			UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale(), avatarMapperUrl);
+			UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale());
 			portraitComp.setSize(PortraitSize.small);
 			portraitComp.setDisplayPresence(false);
 			portraitComp.setPortraitUser(portraitUser);

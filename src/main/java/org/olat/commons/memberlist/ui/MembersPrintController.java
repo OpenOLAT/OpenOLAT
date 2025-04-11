@@ -43,7 +43,6 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.members.Member;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
@@ -59,7 +58,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersPrintController extends BasicController {
 	
-	private final String avatarBaseURL;
 	private final VelocityContainer mainVC;
 	
 	private final List<UserPropertyHandler> userPropertyPrintHandlers;
@@ -79,9 +77,6 @@ public class MembersPrintController extends BasicController {
 
 		mainVC = createVelocityContainer("print");
 		mainVC.contextPut("courseTitle", title);
-
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper());
-		mainVC.contextPut("avatarBaseURL", avatarBaseURL);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -123,7 +118,7 @@ public class MembersPrintController extends BasicController {
 			
 			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
 			member.setPortraitUser(portraitUser);
-			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + identity.getKey(), listVC, getLocale(), avatarBaseURL);
+			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + identity.getKey(), listVC, getLocale());
 			userPortraitComp.setSize(PortraitSize.large);
 			userPortraitComp.setDisplayPresence(false);
 			userPortraitComp.setPortraitUser(portraitUser);

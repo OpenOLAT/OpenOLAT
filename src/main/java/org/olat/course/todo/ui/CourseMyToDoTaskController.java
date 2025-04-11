@@ -66,7 +66,7 @@ public class CourseMyToDoTaskController extends ToDoTaskListController {
 	private CourseToDoService courseToDoService;
 
 	public CourseMyToDoTaskController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		super(ureq, wControl, "course_my_todos", null, null, null, null);
+		super(ureq, wControl, "course_my_todos", null, null, null);
 		this.repositoryEntry = repositoryEntry;
 		this.secCallback = new CourseMyToDoTaskSecurityCallback();
 		

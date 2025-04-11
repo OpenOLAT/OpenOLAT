@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -61,8 +60,8 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	private final ProjectBCFactory bcFactory;
 	
 	public ProjToDoWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, "todo_widget", avatarMapperKey, project, secCallback, lastVisitDate);
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+		super(ureq, wControl, "todo_widget", project, secCallback, lastVisitDate);
 		this.bcFactory = bcFactory;
 		
 		initForm(ureq);

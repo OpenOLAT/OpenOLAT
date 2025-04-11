@@ -41,8 +41,6 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.util.StringHelper;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
 import org.olat.user.UserInfoProfileConfig;
@@ -81,7 +79,6 @@ public class UserProfileInfoController extends UserInfoController {
 	private final Identity identity;
 	private final Boolean showTitle;
 	private final Roles editedRoles;
-	private DisplayPortraitController portraitCtr;
 
 	@Autowired
 	private UserManager userManager;
@@ -103,9 +100,6 @@ public class UserProfileInfoController extends UserInfoController {
 	protected void initFormItems(FormLayoutContainer itemsCont, Controller listener, UserRequest ureq) {
 		super.initFormItems(itemsCont, listener, ureq);
 
-		// 1. Portrait
-		addPortrait(itemsCont, ureq);
-
 		// 2. User ID
 		addUserId(itemsCont);
 
@@ -126,13 +120,6 @@ public class UserProfileInfoController extends UserInfoController {
 
 		// 8. Username
 		addUsername(itemsCont);
-	}
-
-	private void addPortrait(FormLayoutContainer itemsCont, UserRequest ureq) {
-		removeAsListenerAndDispose(portraitCtr);
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, false);
-		listenTo(portraitCtr);
-		itemsCont.put("portrait", portraitCtr.getInitialComponent());
 	}
 
 	private void addUserId(FormLayoutContainer itemsCont) {

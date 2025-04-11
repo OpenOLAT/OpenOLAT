@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -86,7 +84,6 @@ import org.olat.instantMessaging.ui.component.RosterStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
@@ -114,7 +111,6 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	protected RepositoryEntry entry;
 	private final OLATResourceable chatResource;
 	protected final String resSubPath;
-	private final MapperKey avatarMapperKey;
 	private final ChatViewConfig basisViewConfig;
 	private final OLATResourceable personalEventOres;
 	
@@ -132,8 +128,6 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	private Coordinator coordinator;
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private MapperService mapperService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -162,7 +156,6 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		this.resSubPath = resSubPath;
 		this.basisViewConfig = basisViewConfig;
 		fromMe = userManager.getUserDisplayName(getIdentity());
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		
 		coordinator.getEventBus().registerFor(this, getIdentity(), this.chatResource);
 		personalEventOres = OresHelper.createOLATResourceableInstance(InstantMessagingService.PERSONAL_EVENT_ORES_NAME, getIdentity().getKey());
@@ -316,7 +309,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 				}
 			}
 			UserPortraitComponent portraitComp = UserPortraitFactory
-					.createUserPortrait("portrait_" + roster.getChannel(), null, getLocale(), avatarMapperKey.getUrl());
+					.createUserPortrait("portrait_" + roster.getChannel(), null, getLocale());
 			portraitComp.setSize(PortraitSize.small);
 			portraitComp.setDisplayPresence(false);
 			portraitComp.setPortraitUser(portraitUser);

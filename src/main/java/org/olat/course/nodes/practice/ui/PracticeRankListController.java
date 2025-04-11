@@ -21,7 +21,6 @@ package org.olat.course.nodes.practice.ui;
 
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,7 +39,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.PortraitSize;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -57,13 +55,10 @@ public class PracticeRankListController extends FormBasicController {
 	private MultipleSelectionElement showEl;
 	
 	private boolean shared;
-	private final String avatarMapperUrl;
 	private final RepositoryEntry courseEntry;
 	private final PracticeCourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
 
-	@Autowired
-	private MapperService mapperService;
 	@Autowired
 	private PracticeService practiceService;
 	@Autowired
@@ -77,7 +72,6 @@ public class PracticeRankListController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.userCourseEnv = userCourseEnv;
-		avatarMapperUrl = mapperService.register(null, "avatars-members", new UserAvatarMapper()).getUrl();
 		
 		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 		shared = assessmentEntry != null && assessmentEntry.getShare() != null && assessmentEntry.getShare().booleanValue();
@@ -104,8 +98,9 @@ public class PracticeRankListController extends FormBasicController {
 		
 		userPortraitService.createPortraitUsers(getLocale(), identities.stream().map(RankedIdentity::getIdentity).toList())
 			.forEach(portraitUser -> {
-				UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), flc.getFormItemComponent(), getLocale(), avatarMapperUrl);
-				userPortraitComp.setSize(PortraitSize.small);
+					UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
+							"portrait_" + portraitUser.getIdentityKey(), flc.getFormItemComponent(), getLocale());
+					userPortraitComp.setSize(PortraitSize.small);
 				userPortraitComp.setDisplayPresence(false);
 				userPortraitComp.setPortraitUser(portraitUser);
 			});

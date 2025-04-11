@@ -20,8 +20,6 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,7 +52,6 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.ProgressEvent;
-import org.olat.user.UserAvatarMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,7 +69,6 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 	private final boolean edit;
 	private final boolean editedByCoach;
 	private final GTACourseNode gtaNode;
-	private final MapperKey avatarMapperKey;
 	private TaskReviewAssignment assignment;
 	private final EvaluationFormSurvey survey;
 	private final CourseEnvironment courseEnv;
@@ -85,8 +81,6 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
-	private MapperService mapperService;
-	@Autowired
 	private GTAPeerReviewManager peerReviewManager;
 	
 	public GTAEvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, TaskReviewAssignment assignment,
@@ -98,7 +92,6 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 		this.courseEnv = courseEnv;
 		this.assignment = assignment;
 		this.editedByCoach = editedByCoach;
-		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 
 		Identity reviewer = assignment.getAssignee();
 		task = gtaManager.getTask(assignment.getTask());
@@ -148,7 +141,7 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 			GTACourseNode gtaNode, String placeholderName, boolean anonym) {
 		Identity user = anonym ? null : task.getIdentity();
 		GTAAssessedIdentityInformationsController userInfosCtrl = new GTAAssessedIdentityInformationsController(ureq, getWindowControl(),
-				avatarMapperKey, assignment.getStatus(), gtaNode, user, placeholderName, anonym);
+				assignment.getStatus(), gtaNode, user, placeholderName, anonym);
 		listenTo(userInfosCtrl);
 		mainVC.put("assessed.identity.infos", userInfosCtrl.getInitialComponent());
 	}
@@ -156,7 +149,7 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 	private void initReviewerHeader(UserRequest ureq, TaskReviewAssignment assignment, String placeholderName, boolean anonym) {
 		Identity user = anonym ? null : assignment.getAssignee();
 		GTAReviewerIdentityInformationsController userInfosCtrl = new GTAReviewerIdentityInformationsController(ureq, getWindowControl(),
-				avatarMapperKey, user, placeholderName, anonym);
+				user, placeholderName, anonym);
 		listenTo(userInfosCtrl);
 		mainVC.put("reviewer.infos", userInfosCtrl.getInitialComponent());
 	}
@@ -165,7 +158,7 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 		VFSContainer submitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, task.getIdentity());
 		submitContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		GTADocumentsController documentsCtrl = new GTADocumentsController(ureq, getWindowControl(),
-				avatarMapperKey, submitContainer, fullName, anonym);
+				submitContainer, fullName, anonym);
 		listenTo(documentsCtrl);
 		mainVC.put("documents", documentsCtrl.getInitialComponent());
 	}

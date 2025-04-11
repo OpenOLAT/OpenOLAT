@@ -66,7 +66,6 @@ public class DisplayPortraitController extends BasicController implements Generi
 	private final Identity portraitIdent;
 	private final boolean isDeletedUser;
 	private final boolean isGuestOnly;
-	private final String avatarBaseURL;
 	private OLATResourceable listenerOres;
 	
 	@Autowired
@@ -103,13 +102,11 @@ public class DisplayPortraitController extends BasicController implements Generi
 		
 		mainVC.contextPut("canLinkToHomePage", (canLinkToHomePage && !isDeletedUser & !isAnonymous) ? Boolean.TRUE : Boolean.FALSE);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members",  new UserAvatarMapper());
-		
 		if (portraitIdent != null && portraitIdent.getKey() != null) {
 			mainVC.contextPut("identityKey", portraitIdent.getKey().toString());
 		}
 		
-		portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale(), avatarBaseURL);
+		portraitComp = UserPortraitFactory.createUserPortrait("portrait", mainVC, getLocale());
 		portraitComp.setSize(portraitSize);
 		portraitComp.setDisplayPresence(false);
 		

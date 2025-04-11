@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import java.util.List;
 
 import org.olat.admin.user.imp.TransientIdentity;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -56,7 +55,6 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 	private final boolean anonym;
 	private final GTACourseNode gtaNode;
 	private final String placeholderName;
-	private final MapperKey avatarMapperKey;
 	private final TaskReviewAssignmentStatus assignmentStatus;
 	
 	@Autowired
@@ -64,14 +62,14 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 	@Autowired
 	private UserPortraitService userPortraitService;
 	
-	GTAAssessedIdentityInformationsController(UserRequest ureq, WindowControl wControl, MapperKey avatarMapperKey,
-			TaskReviewAssignmentStatus assignmentStatus, GTACourseNode gtaNode, Identity user, String placeholderName, boolean anonym) {
+	public GTAAssessedIdentityInformationsController(UserRequest ureq, WindowControl wControl,
+			TaskReviewAssignmentStatus assignmentStatus, GTACourseNode gtaNode, Identity user, String placeholderName,
+			boolean anonym) {
 		super(ureq, wControl, "assessed_identity_informations", Util.createPackageTranslator(GTAParticipantController.class, ureq.getLocale()));
 		this.user = user;
 		this.anonym = anonym;
 		this.gtaNode = gtaNode;
 		this.placeholderName = placeholderName;
-		this.avatarMapperKey = avatarMapperKey;
 		this.assignmentStatus = assignmentStatus;
 		initForm(ureq);
 	}
@@ -89,7 +87,7 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 			// Portrait
 			Identity userToPortrait = anonym ? new TransientIdentity() : user;
 			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(userToPortrait));
-			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
+			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent());
 			usersPortraitCmp.setAriaLabel(placeholderName);
 			usersPortraitCmp.setSize(PortraitSize.large);
 			usersPortraitCmp.setMaxUsersVisible(5);

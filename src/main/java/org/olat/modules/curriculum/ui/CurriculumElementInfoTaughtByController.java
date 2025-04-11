@@ -58,7 +58,6 @@ import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.UserPortraitComponent;
@@ -84,7 +83,6 @@ public class CurriculumElementInfoTaughtByController extends BasicController {
 	private LightboxController lightboxCtrl;
 	private AboutMeController aboutMeCtrl;
 	
-	private final String avatarMaperBaseUrl;
 	private final List<TaughtByRow> taughtByRows;
 
 	@Autowired
@@ -103,7 +101,6 @@ public class CurriculumElementInfoTaughtByController extends BasicController {
 	public CurriculumElementInfoTaughtByController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement curriculumElement, List<LectureBlock> lectureBlocks) {
 		super(ureq, wControl);
-		avatarMaperBaseUrl = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper());
 		
 		mainVC = createVelocityContainer("curriculum_element_taught_by");
 		putInitialPanel(mainVC);
@@ -160,7 +157,7 @@ public class CurriculumElementInfoTaughtByController extends BasicController {
 	
 	private void forgePortrait(TaughtByRow taughtByRow, PortraitUser portraitUser) {
 		UserPortraitComponent portraitComp = UserPortraitFactory
-				.createUserPortrait("up_" + portraitUser.getIdentityKey(), mainVC, getLocale(), avatarMaperBaseUrl);
+				.createUserPortrait("up_" + portraitUser.getIdentityKey(), mainVC, getLocale());
 		portraitComp.setPortraitUser(portraitUser);
 		portraitComp.setDisplayPresence(false);
 		taughtByRow.setPortraitComp(portraitComp);

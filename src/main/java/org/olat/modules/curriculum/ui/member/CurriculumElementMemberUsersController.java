@@ -81,7 +81,6 @@ import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.UserAvatarMapper;
 
 /**
  * 
@@ -116,9 +115,9 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	private final Map<CurriculumRoles,FlexiFiltersTab> rolesToTab = new EnumMap<>(CurriculumRoles.class);
 	
 	public CurriculumElementMemberUsersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback, UserAvatarMapper avatarMapper, String avatarMapperBaseURL) {
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, toolbarPanel, "curriculum_element_members",
-				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
+				curriculumElement, secCallback);
 		
 		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
 		

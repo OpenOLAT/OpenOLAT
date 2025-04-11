@@ -64,7 +64,7 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 
 	public DataCollectionToDoListController(UserRequest ureq, WindowControl wControl, DataCollectionSecurityCallback secCallback,
 			QualityDataCollectionRef dataCollection) {
-		super(ureq, wControl, "todos", null, DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null);
+		super(ureq, wControl, "todos", DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null);
 		this.secCallback = secCallback;
 		this.dataCollection = dataCollection;
 		

@@ -57,12 +57,12 @@ public class TimelineBuilder {
 	private TimelineBuilder() {
 	}
 
-	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale, String mapperPath) {
+	public static List<TimelineModel.TimelineYear> buildLogEntriesTimeline(List<LogEntry> logEntries, Locale locale) {
 		if (logEntries.isEmpty()) return Collections.emptyList();
 
 		Formatter formatter = Formatter.getInstance(locale);
 		
-		Map<String, UserPortraitComponent> userIdToProfileUser = getUserIdToUserPortraitComp(logEntries, locale,mapperPath);
+		Map<String, UserPortraitComponent> userIdToProfileUser = getUserIdToUserPortraitComp(logEntries, locale);
 
 		List<LogEntry> sortedEntries = logEntries.stream()
 				.sorted(Comparator.comparing(LogEntry::timestamp))
@@ -102,7 +102,7 @@ public class TimelineBuilder {
 		return years;
 	}
 
-	private static Map<String, UserPortraitComponent> getUserIdToUserPortraitComp(List<LogEntry> logEntries, Locale locale, String avatarMapperUrl) {
+	private static Map<String, UserPortraitComponent> getUserIdToUserPortraitComp(List<LogEntry> logEntries, Locale locale) {
 		Set<Long> IdentityKeys = logEntries.stream()
 			.map(LogEntry::userId)
 			.filter(StringHelper::isLong)
@@ -114,7 +114,7 @@ public class TimelineBuilder {
 		
 		Map<String, UserPortraitComponent> userIdToUserPortraitComp = new HashMap<>(portraitUsers.size());
 		for (PortraitUser portraitUser : portraitUsers) {
-			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("logEntryPortrait_" + portraitUser.getIdentityKey(), null, locale, avatarMapperUrl);
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("logEntryPortrait_" + portraitUser.getIdentityKey(), null, locale);
 			userPortrait.setSize(PortraitSize.small);
 			userPortrait.setDisplayPresence(false);
 			userPortrait.setPortraitUser(portraitUser);

@@ -22,7 +22,6 @@ package org.olat.modules.project.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -84,7 +83,6 @@ public class ProjNoteController extends FormBasicController {
 	
 	private final ProjectBCFactory bcFactory;
 	private final ProjProjectSecurityCallback secCallback;
-	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	private ProjNoteInfo noteInfo;
 	
@@ -96,12 +94,11 @@ public class ProjNoteController extends FormBasicController {
 	private UserPortraitService userPortraitService;
 
 	public ProjNoteController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
-			ProjProjectSecurityCallback secCallback, ProjNoteInfo noteInfo, boolean edit, MapperKey avatarMapperKey) {
+			ProjProjectSecurityCallback secCallback, ProjNoteInfo noteInfo, boolean edit) {
 		super(ureq, wControl, "note");
 		this.bcFactory = bcFactory;
 		this.noteInfo = noteInfo;
 		this.secCallback = secCallback;
-		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		projectService.createActivityRead(getIdentity(), noteInfo.getNote().getArtefact());
@@ -145,7 +142,7 @@ public class ProjNoteController extends FormBasicController {
 	
 	private void updateHeaderUI(UserRequest ureq) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(noteInfo.getMembers()));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "members", null, null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "members", null);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);

@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui.peerreview;
 
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -38,7 +36,6 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.ui.GTAParticipantController;
-import org.olat.user.UserAvatarMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,17 +51,13 @@ public class GTAEvaluationFormInProgressController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private Task task;
-	private final MapperKey avatarMapperKey;
 
 	@Autowired
 	private GTAManager gtaManager;
-	@Autowired
-	private MapperService mapperService;
 	
 	public GTAEvaluationFormInProgressController(UserRequest ureq, WindowControl wControl, TaskReviewAssignment assignment,
 			GTACourseNode gtaNode, GTAEvaluationFormExecutionOptions options) {
 		super(ureq, wControl, Util.createPackageTranslator(GTAParticipantController.class, ureq.getLocale()));
-		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 
 		task = gtaManager.getTask(assignment.getTask());
 
@@ -88,7 +81,7 @@ public class GTAEvaluationFormInProgressController extends BasicController {
 			GTACourseNode gtaNode, String placeholderName, boolean anonym) {
 		Identity user = anonym ? null : task.getIdentity();
 		GTAAssessedIdentityInformationsController userInfosCtrl = new GTAAssessedIdentityInformationsController(ureq, getWindowControl(),
-				avatarMapperKey, assignment.getStatus(), gtaNode, user, placeholderName, anonym);
+				assignment.getStatus(), gtaNode, user, placeholderName, anonym);
 		listenTo(userInfosCtrl);
 		mainVC.put("assessed.identity.infos", userInfosCtrl.getInitialComponent());
 	}
@@ -96,7 +89,7 @@ public class GTAEvaluationFormInProgressController extends BasicController {
 	private void initReviewerHeader(UserRequest ureq, TaskReviewAssignment assignment, String placeholderName, boolean anonym) {
 		Identity user = anonym ? null : assignment.getAssignee();
 		GTAReviewerIdentityInformationsController userInfosCtrl = new GTAReviewerIdentityInformationsController(ureq, getWindowControl(),
-				avatarMapperKey, user, placeholderName, anonym);
+				user, placeholderName, anonym);
 		listenTo(userInfosCtrl);
 		mainVC.put("reviewer.infos", userInfosCtrl.getInitialComponent());
 	}
@@ -104,7 +97,7 @@ public class GTAEvaluationFormInProgressController extends BasicController {
 	private void initNoDocuments(UserRequest ureq, String fullName, boolean anonym) {
 		VFSContainer submitContainer = new VirtualContainer("Hello");
 		GTADocumentsController documentsCtrl = new GTADocumentsController(ureq, getWindowControl(),
-				avatarMapperKey, submitContainer, fullName, anonym);
+				submitContainer, fullName, anonym);
 		documentsCtrl.setEmptyMessage("empty.evaluation.docs.not.submitted");
 		listenTo(documentsCtrl);
 		mainVC.put("documents", documentsCtrl.getInitialComponent());

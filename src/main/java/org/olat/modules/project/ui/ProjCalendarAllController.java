@@ -45,7 +45,6 @@ import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -174,7 +173,6 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
-	private final MapperKey avatarMapperKey;
 	private final String avatarUrl;
 	private final Formatter formatter;
 	private String appointmentReadWriteKalendarId;
@@ -192,15 +190,13 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private UserPortraitService userPortraitService;
 	
 	public ProjCalendarAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
-			MapperKey avatarMapperKey) {
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
 		super(ureq, wControl, "calendar_all");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
-		this.avatarMapperKey = avatarMapperKey;
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
@@ -643,7 +639,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate("involved"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(10);

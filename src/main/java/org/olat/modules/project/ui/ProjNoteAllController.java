@@ -21,7 +21,6 @@ package org.olat.modules.project.ui;
 
 import java.util.Date;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,8 +52,8 @@ public class ProjNoteAllController extends ProjNoteListController {
 
 	public ProjNoteAllController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback,
-			Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, stackPanel, "note_all", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
+			Date lastVisitDate) {
+		super(ureq, wControl, stackPanel, "note_all", bcFactory, project, secCallback, lastVisitDate);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

@@ -21,6 +21,8 @@ package org.olat.user;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -37,16 +39,16 @@ public class UserPortraitComponent extends AbstractComponent {
 	
 	private static final ComponentRenderer RENDERER = new UserPortraitRenderer();
 	
-	private final String avatarMapperUrl;
 	private final Translator compTranslator;
+	private final String portraitMapperUrl;
 	private PortraitUser portraitUser;
 	private PortraitSize size = PortraitSize.medium;
 	private boolean displayPresence = true;
 
-	protected UserPortraitComponent(String name, Locale locale, String avatarMapperUrl) {
+	protected UserPortraitComponent(String name, Locale locale) {
 		super(name);
-		this.avatarMapperUrl = avatarMapperUrl;
-		this.compTranslator = Util.createPackageTranslator(UserPortraitComponent.class, locale);
+		compTranslator = Util.createPackageTranslator(UserPortraitComponent.class, locale);
+		portraitMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(null, "user-portrait-mapper", new UserPortraitMapper()).getUrl();
 	}
 
 	@Override
@@ -58,13 +60,13 @@ public class UserPortraitComponent extends AbstractComponent {
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-	
-	String getAvatarMapperUrl() {
-		return avatarMapperUrl;
-	}
 
 	Translator getCompTranslator() {
 		return compTranslator;
+	}
+	
+	String getPortraitMapperUrl() {
+		return portraitMapperUrl;
 	}
 
 	public PortraitUser getPortraitUser() {

@@ -65,7 +65,7 @@ public class ToDoUserToolListController extends ToDoTaskListController {
 	private ToDoModule toDoModule;
 	
 	protected ToDoUserToolListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "user_tool", null, PersonalToDoProvider.TYPE, ureq.getIdentity().getKey(), null);
+		super(ureq, wControl, "user_tool", PersonalToDoProvider.TYPE, ureq.getIdentity().getKey(), null);
 		canCreateToDoTasks = toDoModule.canCreatePersonalToDoTasks(ureq.getUserSession().getRoles());
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();

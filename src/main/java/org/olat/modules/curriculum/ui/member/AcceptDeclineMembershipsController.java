@@ -73,7 +73,6 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.ui.OrderModification;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -98,13 +97,11 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	private final VelocityContainer detailsVC;
 	
 	private final Curriculum curriculum;
-	private final String avatarMapperBaseURL;
 	private final GroupMembershipStatus nextStatus;
 	private List<ResourceReservation> reservations;
 	private List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;
@@ -133,8 +130,6 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		this.selectedCurriculumElement = selectedCurriculumElement;
 
 		detailsVC = createVelocityContainer("member_details");
-		
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "res-cur-avatars", avatarMapper);
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
@@ -374,7 +369,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		}
 		
 		CurriculumRoles role = CurriculumRoles.participant;
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		List<CurriculumRoles> rolesToSee = List.of(role);
 		boolean withOrders = (nextStatus == GroupMembershipStatus.declined);
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true,
@@ -433,10 +428,4 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		row.setDetailsController(null);
 	}
 	
-	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		return profileConfig;
-	}
 }

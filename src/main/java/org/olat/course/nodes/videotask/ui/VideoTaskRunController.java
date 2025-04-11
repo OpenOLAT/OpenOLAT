@@ -96,7 +96,6 @@ import org.olat.properties.LogEntry;
 import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.user.UserAvatarMapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -356,9 +355,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	}
 
 	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
-		UserAvatarMapper userAvatarMapper = new UserAvatarMapper();
-		String mapperPath = registerMapper(ureq, userAvatarMapper);
-		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), mapperPath);
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale());
 
 		timelineCtrl = new TimelineController(
 				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);

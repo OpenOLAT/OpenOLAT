@@ -25,7 +25,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -63,7 +62,6 @@ public class RosterForm extends FormBasicController {
 	private final boolean defaultAnonym;
 	private final boolean offerAnonymMode;
 	private final RosterFormDisplay rosterDisplay;
-	private final MapperKey avatarMapperKey;
 	private static final String[] anonKeys = new String[]{ "name", "anon"};
 	
 	@Autowired
@@ -74,14 +72,13 @@ public class RosterForm extends FormBasicController {
 	private UserPortraitService userPortraitService;
 
 	public RosterForm(UserRequest ureq, WindowControl wControl, Roster buddyList, boolean defaultAnonym, boolean offerAnonymMode,
-			RosterFormDisplay rosterDisplay, MapperKey avatarMapperKey) {
+			RosterFormDisplay rosterDisplay) {
 		super(ureq, wControl, rosterDisplay == RosterFormDisplay.supervised ? "roster_supervised" : "roster");
 
 		this.defaultAnonym = defaultAnonym;
 		this.offerAnonymMode = offerAnonymMode;
 		this.buddyList = buddyList;
 		this.rosterDisplay = rosterDisplay;
-		this.avatarMapperKey = avatarMapperKey;
 		fullName = userManager.getUserDisplayName(getIdentity());
 
 		initForm(ureq);
@@ -129,7 +126,7 @@ public class RosterForm extends FormBasicController {
 						}
 					}
 					UserPortraitComponent portraitComp = UserPortraitFactory
-							.createUserPortrait("portrait_" + buddy.getIdentityKey(), layoutCont.getFormItemComponent(), getLocale(), avatarMapperKey.getUrl());
+							.createUserPortrait("portrait_" + buddy.getIdentityKey(), layoutCont.getFormItemComponent(), getLocale());
 					portraitComp.setSize(PortraitSize.xsmall);
 					portraitComp.setDisplayPresence(false);
 					portraitComp.setPortraitUser(portraitUser);

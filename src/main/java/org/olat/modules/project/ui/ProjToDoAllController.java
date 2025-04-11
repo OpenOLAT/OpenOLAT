@@ -21,7 +21,6 @@ package org.olat.modules.project.ui;
 
 import java.util.Date;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,8 +50,8 @@ public class ProjToDoAllController extends ProjToDoListController {
 	private final String avatarUrl;
 
 	public ProjToDoAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, "todo_all", avatarMapperKey, project, secCallback, lastVisitDate);
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+		super(ureq, wControl, "todo_all", project, secCallback, lastVisitDate);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

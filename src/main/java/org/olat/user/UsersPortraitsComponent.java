@@ -22,13 +22,9 @@ package org.olat.user;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.control.Disposable;
 import org.olat.core.util.CodeHelper;
 
 /**
@@ -37,40 +33,20 @@ import org.olat.core.util.CodeHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UsersPortraitsComponent extends AbstractComponent implements Disposable {
+public class UsersPortraitsComponent extends AbstractComponent {
 	
 	private static final ComponentRenderer RENDERER = new UsersPortraitsRenderer();
 	
 	private final Locale locale;
-	private UserAvatarMapper avatarMapper;
-	private final MapperKey mapperKey;
-	private final boolean sharedMapper;
 	private String ariaLabel;
 	private PortraitSize size = PortraitSize.medium;
 	private PortraitLayout layout = PortraitLayout.overlappingPortraits;
 	private int maxUsersVisible = 10;
 	private List<UserPortraitComponent> userComps;
 
-	UsersPortraitsComponent(UserRequest ureq, String name, MapperKey mapperKey) {
+	UsersPortraitsComponent(UserRequest ureq, String name) {
 		super(name);
 		locale = ureq.getLocale();
-		
-		if (mapperKey != null) {
-			this.mapperKey = mapperKey;
-			this.sharedMapper = true;
-			
-		} else {
-			avatarMapper = new UserAvatarMapper();
-			this.mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), avatarMapper);
-			this.sharedMapper = false;
-		}
-	}
-	
-	@Override
-	public void dispose() {
-		if (!sharedMapper) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(List.of(mapperKey));
-		}
 	}
 	
 	@Override
@@ -81,10 +57,6 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
-	}
-	
-	MapperKey getMapperKey() {
-		return mapperKey;
 	}
 
 	public String getAriaLabel() {
@@ -138,7 +110,7 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 
 	private UserPortraitComponent createPortraitUserComponent(PortraitUser portraitUser) {
 		UserPortraitComponent userPortraitComp = UserPortraitFactory
-				.createUserPortrait("o_" + CodeHelper.getRAMUniqueID(), null, locale, mapperKey.getUrl());
+				.createUserPortrait("o_" + CodeHelper.getRAMUniqueID(), null, locale);
 		userPortraitComp.setPortraitUser(portraitUser);
 		userPortraitComp.setDisplayPresence(false);
 		userPortraitComp.setSize(size);

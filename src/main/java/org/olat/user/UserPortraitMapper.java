@@ -30,11 +30,11 @@ import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * 
- * Initial date: 03.12.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: Apr 11, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class UserAvatarMapper implements Mapper {
+public class UserPortraitMapper implements Mapper {
 	
 	private UserPortraitService userPortraitService;
 	

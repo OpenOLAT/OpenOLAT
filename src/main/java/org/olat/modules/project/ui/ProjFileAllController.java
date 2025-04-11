@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Date;
 
 import org.olat.core.commons.services.doceditor.DocTemplates;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -44,7 +43,6 @@ import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ui.component.ProjAvatarComponent;
 import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,9 +69,8 @@ public class ProjFileAllController extends ProjFileListController {
 	private AVModule avModule;
 	
 	public ProjFileAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
-			MapperKey avatarMapperKey) {
-		super(ureq, wControl, "file_all", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+		super(ureq, wControl, "file_all", bcFactory, project, secCallback, lastVisitDate);
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);

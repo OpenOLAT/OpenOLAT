@@ -302,11 +302,11 @@ public class MessageEditController extends FormBasicController {
 		replyMsgLayout.contextPut("guestOnly", Boolean.valueOf(guestOnly));
 
 		if (!guestOnly && StringHelper.containsNonWhitespace(parentMessage.getPseudonym())) {
-			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc", replyMsgLayout.getFormItemComponent(), getLocale(), null);
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc", replyMsgLayout.getFormItemComponent(), getLocale());
 			userPortrait.setSize(PortraitSize.medium);
 			userPortrait.setPortraitUser(userPortraitService.createAnonymousPortraitUser(getLocale(), parentMessage.getPseudonym()));
 		} else if (!guestOnly && parentMessage.isGuest()) {
-			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc", replyMsgLayout.getFormItemComponent(), getLocale(), null);
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc", replyMsgLayout.getFormItemComponent(), getLocale());
 			userPortrait.setSize(PortraitSize.medium);
 			userPortrait.setPortraitUser(userPortraitService.createGuestPortraitUser(getLocale()));
 		} else if (parentMessage.getCreator() != null) {

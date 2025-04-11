@@ -83,7 +83,6 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.ui.BillingAddressCellRenderer;
 import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -113,11 +112,9 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	private BillingAddressSelectionController addressSelectionCtrl;
 	private OrganisationsSmallListController organisationsSmallListCtrl;
 	
-	private final String avatarMapperBaseURL;
 	private final MembersContext membersContext;
 	private final CurriculumRoles roleToModify;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 
 	@Autowired
 	private ACService acService;
@@ -140,7 +137,6 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		roleToModify = membersContext.getRoleToModify();
 		
 		detailsVC = createVelocityContainer("member_details");
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "imp-cur-avatars", avatarMapper);
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
@@ -431,7 +427,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		elements.add(membersContext.getCurriculumElement());
 		Curriculum curriculum = membersContext.getCurriculum();
 		
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		List<CurriculumRoles> rolesToModify = List.of(membersContext.getRoleToModify());
 		boolean withConfirmation = membersContext.hasModificationsWithConfirmation();
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToModify, false, false, false, true, withConfirmation,
@@ -469,13 +465,6 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		removeAsListenerAndDispose(row.getDetailsController());
 		flc.remove(row.getDetailsController().getInitialFormItem());
 		row.setDetailsController(null);
-	}
-	
-	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		return profileConfig;
 	}
 	
 	private void doShowOrganisations(UserRequest ureq, String elementId, UserRow row) {

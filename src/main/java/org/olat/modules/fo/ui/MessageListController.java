@@ -683,11 +683,11 @@ public class MessageListController extends BasicController implements GenericEve
 				visitingCardLink.setTitle("creator.inactive");
 			}
 		} else if (!guestOnly && StringHelper.containsNonWhitespace(m.getPseudonym())) {
-			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc_".concat(keyString), mainVC, getLocale(), null);
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc_".concat(keyString), mainVC, getLocale());
 			userPortrait.setSize(PortraitSize.medium);
 			userPortrait.setPortraitUser(userPortraitService.createAnonymousPortraitUser(getLocale(), m.getPseudonym()));
 		} else if (!guestOnly && m.isGuest()) {
-			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc_".concat(keyString), mainVC, getLocale(), null);
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("portraitc_".concat(keyString), mainVC, getLocale());
 			userPortrait.setSize(PortraitSize.medium);
 			userPortrait.setPortraitUser(userPortraitService.createGuestPortraitUser(getLocale()));
 		}

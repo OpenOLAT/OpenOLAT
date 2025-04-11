@@ -53,7 +53,6 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.UserAvatarMapper;
 
 /**
  * 
@@ -67,10 +66,8 @@ public class CurriculumElementNonMembersController extends AbstractMembersContro
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	public CurriculumElementNonMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL) {
-		super(ureq, wControl, toolbarPanel, "curriculum_element_non_members",
-				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
+		super(ureq, wControl, toolbarPanel, "curriculum_element_non_members", curriculumElement, secCallback);
 		
 		initForm(ureq);
 		updateUI();
