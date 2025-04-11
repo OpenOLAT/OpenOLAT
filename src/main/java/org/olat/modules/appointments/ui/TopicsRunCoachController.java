@@ -21,7 +21,6 @@ package org.olat.modules.appointments.ui;
 
 import static java.util.Collections.emptyList;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,6 +73,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentSearchParams;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
@@ -97,8 +98,9 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.ui.TeamsMeetingEvent;
 import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -149,7 +151,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
-	private DisplayPortraitManager displayPortraitManager;
+	private UserPortraitService userPortraitService;
 
 	public TopicsRunCoachController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			RepositoryEntry entry, String subIdent, AppointmentsSecurityCallback secCallback,
@@ -828,11 +830,11 @@ public class TopicsRunCoachController extends FormBasicController {
 		}
 		
 		if(avatarUrl == null && bigBlueButtonModule.isAvatarEnabled()) {
-			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
-			if(portraitFile != null) {
+			VFSLeaf portraitImage = userPortraitService.getPortraitImage(getIdentity(), PortraitSize.medium);
+			if(portraitImage instanceof LocalFileImpl portraitFile) {
 				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
 				avatarUrl = Settings.createServerURI()
-						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), 5 * 60 * 60)
+						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile.getBasefile()), 5 * 60 * 60)
 						+ "/" + portraitFile.getName();
 			}
 		}

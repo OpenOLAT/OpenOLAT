@@ -29,7 +29,7 @@ public interface PortraitUser {
 	
 	public boolean isPortraitAvailable();
 	
-	public String getPortraitCacheIdentifier();
+	public String getPortraitImagePath();
 	
 	public String getInitials();
 	

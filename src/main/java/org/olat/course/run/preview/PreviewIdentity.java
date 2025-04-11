@@ -105,6 +105,21 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
+	public String getPortraitPath() {
+		return null;
+	}
+
+	@Override
+	public String getLogoPath() {
+		return null;
+	}
+
+	@Override
+	public String getInitialsCssClass() {
+		return null;
+	}
+
+	@Override
 	public User getUser() {
 		return this;
 	}

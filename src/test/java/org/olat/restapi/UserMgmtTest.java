@@ -123,10 +123,11 @@ import org.olat.restapi.support.vo.GroupVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
-import org.olat.user.DisplayPortraitManager;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.restapi.ManagedUserVO;
 import org.olat.user.restapi.PreferencesVO;
 import org.olat.user.restapi.RolesVO;
@@ -186,7 +187,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitService userPortraitService;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -2136,11 +2137,11 @@ public class UserMgmtTest extends OlatRestTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		
-		//check if big and small portraits exist
-		File bigPortrait = portraitManager.getBigPortrait(id1.getIdentity());
-		assertNotNull(bigPortrait);
-		assertTrue(bigPortrait.exists());
-		assertTrue(bigPortrait.exists());
+		//check if portraits exist
+		Identity identity1 = securityManager.loadIdentityByKey(id1.getIdentity().getKey());
+		VFSLeaf bigPortraitImage = userPortraitService.getPortraitImage(identity1, PortraitSize.medium);
+		assertNotNull(bigPortraitImage);
+		assertTrue(bigPortraitImage.exists());
 		
 		//check get portrait
 		URI getRequest = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/portrait").build();
@@ -2156,9 +2157,9 @@ public class UserMgmtTest extends OlatRestTestCase {
 		
 		assertEquals(-1, b);//up to end of file
 		assertTrue(count > 1000);//enough bytes
-		bigPortrait = portraitManager.getBigPortrait(id1.getIdentity());
-		assertNotNull(bigPortrait);
-		assertEquals(count, bigPortrait.length());
+		bigPortraitImage = userPortraitService.getPortraitImage(identity1, PortraitSize.medium);
+		assertNotNull(bigPortraitImage);
+		assertEquals(count, bigPortraitImage.getSize());
 
 		//check get portrait as Base64
 		UriBuilder getRequest2 = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).queryParam("withPortrait", "true");
@@ -2172,9 +2173,9 @@ public class UserMgmtTest extends OlatRestTestCase {
 		assertNotNull(datas);
 		assertTrue(datas.length > 0);
 		
-		File smallPortrait = portraitManager.getSmallPortrait(id1.getIdentity());
-		assertNotNull(smallPortrait);
-		assertEquals(datas.length, smallPortrait.length());
+		VFSLeaf smallPortraitImage = userPortraitService.getPortraitImage(identity1, PortraitSize.xsmall);
+		assertNotNull(smallPortraitImage);
+		assertEquals(datas.length, smallPortraitImage.getSize());
 		
 		try {
 			ImageIO.read(new ByteArrayInputStream(datas));

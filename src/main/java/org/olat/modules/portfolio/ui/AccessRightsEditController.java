@@ -49,7 +49,7 @@ import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

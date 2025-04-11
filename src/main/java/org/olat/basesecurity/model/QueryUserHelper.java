@@ -86,6 +86,21 @@ public class QueryUserHelper implements User {
 	}
 
 	@Override
+	public String getPortraitPath() {
+		return null;
+	}
+
+	@Override
+	public String getLogoPath() {
+		return null;
+	}
+
+	@Override
+	public String getInitialsCssClass() {
+		return null;
+	}
+
+	@Override
 	public Preferences getPreferences() {
 		return null;
 	}

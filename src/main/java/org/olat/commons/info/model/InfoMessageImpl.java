@@ -95,6 +95,10 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@Column(name="businesspath", nullable=true, insertable=true, updatable=false)
 	private String businessPath;
 
+	@Column(name="notificationmodewithmail", nullable = false)
+	private boolean notificationModeWithMail;
+	@Column(name="recipientmodeindividual", nullable = false)
+	private boolean recipientModeIndividual;
 	@Column(name="published", nullable = false)
 	private boolean published;
 	@Column(name="publishdate", nullable=false)
@@ -216,6 +220,24 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@Override
 	public void setPublished(boolean published) {
 		this.published = published;
+	}
+
+	@Override
+	public boolean isNotificationModeWithMail() {
+		return notificationModeWithMail;
+	}
+
+	@Override
+	public void setNotificationModeWithMail(boolean notificationModeWithMail) {
+		this.notificationModeWithMail = notificationModeWithMail;
+	}
+
+	public boolean isRecipientModeIndividual() {
+		return recipientModeIndividual;
+	}
+
+	public void setRecipientModeIndividual(boolean recipientModeIndividual) {
+		this.recipientModeIndividual = recipientModeIndividual;
 	}
 
 	@Override

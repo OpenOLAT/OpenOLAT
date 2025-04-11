@@ -59,6 +59,12 @@ public interface User extends CreateInfo, Persistable {
 	 * @return The real value, don't show it on any user interface
 	 */
 	public String getSmsTelMobile();
+	
+	public String getPortraitPath();
+	
+	public String getLogoPath();
+	
+	public String getInitialsCssClass();
 
 	/**
 	 * Get the users prefereces object

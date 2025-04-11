@@ -265,6 +265,13 @@ public class UserImpl implements User {
 	private String swissEduPersonStudyBranch2;
 	@Column(name="u_swissedupersonstudybranch3", nullable=true, insertable=true, updatable=true)
 	private String swissEduPersonStudyBranch3;
+	
+	@Column(name="u_portrait_path", nullable=true, insertable=true, updatable=true)
+	private String portraitPath;
+	@Column(name="u_logo_path", nullable=true, insertable=true, updatable=true)
+	private String logoPath;
+	@Column(name="u_initials_css_class", nullable=true, insertable=true, updatable=true)
+	private String initialsCssClass;
 
 	@Embedded
 	private PreferencesImpl preferences;
@@ -366,6 +373,39 @@ public class UserImpl implements User {
 	public void setSmsTelMobile(String smsTelMobile) {
 		this.smsTelMobile = smsTelMobile;
 	}
+
+	@Override
+	public String getPortraitPath() {
+		return portraitPath;
+	}
+
+
+	public void setPortraitPath(String portraitPath) {
+		this.portraitPath = portraitPath;
+	}
+
+
+	@Override
+	public String getLogoPath() {
+		return logoPath;
+	}
+
+
+	public void setLogoPath(String logoPath) {
+		this.logoPath = logoPath;
+	}
+
+
+	@Override
+	public String getInitialsCssClass() {
+		return initialsCssClass;
+	}
+
+
+	public void setInitialsCssClass(String initialsCssClass) {
+		this.initialsCssClass = initialsCssClass;
+	}
+
 
 	public boolean isWebdav() {
 		return webdav;

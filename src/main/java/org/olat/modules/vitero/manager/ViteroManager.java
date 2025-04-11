@@ -19,7 +19,6 @@
  */
 package org.olat.modules.vitero.manager;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.ConnectException;
@@ -61,6 +60,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.vitero.ViteroModule;
@@ -75,8 +76,9 @@ import org.olat.modules.vitero.model.ViteroStatus;
 import org.olat.modules.vitero.model.ViteroUser;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -173,7 +175,7 @@ public class ViteroManager implements UserDataDeletable {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private DB dbInstance;
 	
@@ -689,8 +691,8 @@ public class ViteroManager implements UserDataDeletable {
 	protected boolean storePortrait(Identity identity, int userId)
 	throws VmsNotAvailableException {
 		try {
-			File portrait = portraitManager.getBigPortrait(identity);
-			if(portrait != null && portrait.exists()) {
+			VFSLeaf portraitImage = userPortraitService.getPortraitImage(identity, PortraitSize.medium);
+			if(portraitImage instanceof LocalFileImpl portrait && portrait.exists()) {
 				Mtom mtomWs = getMtomWebService();
 				
 				CompleteAvatarWrapper avatar = new CompleteAvatarWrapper();
@@ -699,7 +701,7 @@ public class ViteroManager implements UserDataDeletable {
 				avatar.setUserid(BigInteger.valueOf(userId));
 				avatar.setFilename(portrait.getName());
 				
-				DataHandler portraitHandler = new DataHandler(new FileDataSource(portrait));
+				DataHandler portraitHandler = new DataHandler(new FileDataSource(portrait.getBasefile()));
 				avatar.setFile(portraitHandler);
 
 				mtomWs.storeAvatar(avatar);

@@ -41,9 +41,9 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.properties.LogEntry;
 import org.olat.properties.LogEntryTimelineEntry;
+import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserPortraitComponent;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 

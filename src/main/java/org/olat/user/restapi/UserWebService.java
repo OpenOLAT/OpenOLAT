@@ -87,13 +87,16 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.ErrorVO;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -136,7 +139,7 @@ public class UserWebService {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -817,7 +820,7 @@ public class UserWebService {
 	@HEAD
 	@Path("{identityKey}/portrait")
 	@Operation(summary = "Retrieves the portrait of an user", description = "Retrieves the portrait of an user")
-	@ApiResponse(responseCode = "200", description = "The portrait as image")
+	@ApiResponse(responseCode = "200", description = "The identity has a portrait image")
 	@ApiResponse(responseCode = "404", description = "The identity or the portrait not found")
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortraitHead(@PathParam("identityKey") Long identityKey) {
@@ -826,12 +829,12 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = portraitManager.getBigPortrait(identity);
+		VFSLeaf portrait = userPortraitService.getPortraitImage(identity, null);
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		Date lastModified = new Date(portrait.lastModified());
+		Date lastModified = new Date(portrait.getLastModified());
 		return Response.ok().lastModified(lastModified).build();
 	}
 	
@@ -853,19 +856,19 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		File portrait = null;
+		VFSLeaf portrait = null;
 		if("master".equals(size)) {
-			portrait = portraitManager.getMasterPortrait(identity);
+			portrait = userPortraitService.getPortraitImage(identity, null);
 		} else if("big".equals(size)) {
-			portrait = portraitManager.getBigPortrait(identity);
+			portrait = userPortraitService.getPortraitImage(identity, PortraitSize.medium);
 		} else if("small".equals(size)) {
-			portrait = portraitManager.getSmallPortrait(identity);
+			portrait = userPortraitService.getPortraitImage(identity, PortraitSize.xsmall);
 		}
 
 		if(portrait == null || !portrait.exists()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		Date lastModified = new Date(portrait.lastModified());
+		Date lastModified = new Date(portrait.getLastModified());
 		return Response.ok().lastModified(lastModified).build();
 	}
 	
@@ -888,17 +891,16 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = portraitManager.getBigPortrait(identity);
-		if(portrait == null || !portrait.exists()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+		VFSLeaf portrait = userPortraitService.getPortraitImage(identity, PortraitSize.medium);
+		if (portrait instanceof LocalFileImpl portraitFile && portrait.exists()) {Date lastModified = new Date(portrait.getLastModified());
+			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+			if(response == null) {
+				response = Response.ok(portraitFile.getBasefile()).lastModified(lastModified).cacheControl(cc);
+			}
+			return response.build();
 		}
-
-		Date lastModified = new Date(portrait.lastModified());
-		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-		if(response == null) {
-			response = Response.ok(portrait).lastModified(lastModified).cacheControl(cc);
-		}
-		return response.build();
+		
+		return Response.serverError().status(Status.NOT_FOUND).build();
 	}
 	
 	/**
@@ -931,7 +933,7 @@ public class UserWebService {
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
 			String filename = partsReader.getFilename();
-			portraitManager.setPortrait(tmpFile, filename, identity);
+			userPortraitService.storePortraitImage(authIdentity, identity, tmpFile, filename);
 			return Response.ok().build();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
@@ -961,7 +963,7 @@ public class UserWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 	
-		portraitManager.deletePortrait(identity);
+		userPortraitService.deletePortraitImage(identity);
 		return Response.ok().build();
 	}
 

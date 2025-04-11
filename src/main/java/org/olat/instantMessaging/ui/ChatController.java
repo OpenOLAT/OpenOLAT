@@ -25,7 +25,6 @@
 */
 package org.olat.instantMessaging.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -70,6 +69,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageTypeEnum;
@@ -93,12 +94,11 @@ import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.ui.TeamsMeetingEvent;
 import org.olat.modules.teams.ui.TeamsUIHelper;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,8 +170,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	private UserSessionManager sessionManager;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
-	@Autowired
-	private DisplayPortraitManager displayPortraitManager;
 
 	protected ChatController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable ores, String resSubPath, String channel, ChatViewConfig chatViewConfig,
@@ -458,12 +456,12 @@ public class ChatController extends BasicController implements GenericEventListe
 	
 	private String getAvatarUrl() {
 		if(meetingAvatarUrl == null) {
-			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
-			if(portraitFile != null) {
+			VFSLeaf portraitImage = userPortraitService.getPortraitImage(getIdentity(), PortraitSize.medium);
+			if(portraitImage instanceof LocalFileImpl portraitFile) {
 				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
 				meetingAvatarUrl = Settings.createServerURI()
-						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), 5 * 60 * 60)
-						+ "/" + portraitFile.getName();
+						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile.getBasefile()), 5 * 60 * 60)
+						+ "/" + portraitImage.getName();
 			}
 		}
 		return meetingAvatarUrl;

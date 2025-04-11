@@ -51,7 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

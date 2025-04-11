@@ -54,7 +54,7 @@ import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

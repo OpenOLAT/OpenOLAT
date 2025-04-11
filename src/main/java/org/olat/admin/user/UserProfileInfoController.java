@@ -42,11 +42,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.util.StringHelper;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -130,7 +130,7 @@ public class UserProfileInfoController extends UserInfoController {
 
 	private void addPortrait(FormLayoutContainer itemsCont, UserRequest ureq) {
 		removeAsListenerAndDispose(portraitCtr);
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, UserPortraitComponent.PortraitSize.large, false);
+		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, false);
 		listenTo(portraitCtr);
 		itemsCont.put("portrait", portraitCtr.getInitialComponent());
 	}

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -67,6 +66,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -86,7 +86,8 @@ import org.olat.modules.bigbluebutton.manager.SlidesContainerMapper;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRecordingTableModel.BRecordingsCols;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -137,7 +138,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
-	private DisplayPortraitManager displayPortraitManager;
+	private UserPortraitService userPortraitService;
 	
 	public BigBlueButtonMeetingController(UserRequest ureq, WindowControl wControl,
 			BigBlueButtonMeeting meeting, BigBlueButtonMeetingDefaultConfiguration configuration,
@@ -172,12 +173,12 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	private void initAvatarUrl() {
 		if(!bigBlueButtonModule.isAvatarEnabled()) return;
 		
-		File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
-		if(portraitFile != null) {
+		VFSLeaf portraitImage = userPortraitService.getPortraitImage(getIdentity(), PortraitSize.medium);
+		if(portraitImage instanceof LocalFileImpl portraitFile) {
 			String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
 			avatarUrl = Settings.createServerURI()
-					+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), EXPIRATION_TIME)
-					+ "/" + portraitFile.getName();
+					+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile.getBasefile()), EXPIRATION_TIME)
+					+ "/" + portraitImage.getName();
 		}
 	}
 	

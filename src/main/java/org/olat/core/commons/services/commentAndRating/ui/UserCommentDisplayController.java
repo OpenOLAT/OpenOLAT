@@ -56,9 +56,9 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

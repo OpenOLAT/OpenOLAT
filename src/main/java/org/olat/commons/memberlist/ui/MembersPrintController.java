@@ -26,14 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -41,21 +36,16 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.course.nodes.members.Member;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -77,16 +67,9 @@ public class MembersPrintController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
-	@Autowired
 	private UserPortraitService userPortraitService;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
-	
 	
 	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Identity> owners,
 			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
@@ -97,7 +80,7 @@ public class MembersPrintController extends BasicController {
 		mainVC = createVelocityContainer("print");
 		mainVC.contextPut("courseTitle", title);
 
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members-high-quality", new UserAvatarHQMapper());
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper());
 		mainVC.contextPut("avatarBaseURL", avatarBaseURL);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -183,30 +166,4 @@ public class MembersPrintController extends BasicController {
 		//
 	}
 	
-	private class UserAvatarHQMapper implements Mapper {
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(relPath != null) {
-				if(relPath.startsWith("/")) {
-					relPath = relPath.substring(1, relPath.length());
-				}
-				
-				int endKeyIndex = relPath.indexOf('/');
-				if(endKeyIndex > 0) {
-					String idKey = relPath.substring(0, endKeyIndex);
-					Long key = Long.parseLong(idKey);
-					Identity identity = securityManager.loadIdentityByKey(key);
-					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(identity);
-					if(portrait.canMeta() == VFSStatus.YES) {
-						portrait = vfsRepositoryService.getThumbnail(portrait, 300, 300, false);
-					}
-					
-					if(portrait != null) {
-						return new VFSMediaResource(portrait);
-					}
-				}
-			}
-			return new NotFoundMediaResource();
-		}
-	}
 }
