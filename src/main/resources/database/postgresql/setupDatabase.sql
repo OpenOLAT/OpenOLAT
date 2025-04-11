@@ -791,6 +791,8 @@ create table o_info_message (
   businesspath varchar(2048),
   publishdate timestamp default null,
   published bool not null default false,
+  notificationmodewithmail bool not null default false,
+  recipientmodeindividual bool not null default false,
   sendmailto varchar(255),
   fk_author_id int8,
   fk_modifier_id int8,

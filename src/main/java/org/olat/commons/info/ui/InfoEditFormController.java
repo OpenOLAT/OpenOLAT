@@ -75,7 +75,6 @@ public class InfoEditFormController extends FormBasicController {
 	private static final int MESSAGE_MAX_LENGTH = 32000;
 	private static final String NLS_CONTACT_ATTACHMENT = "contact.attachment";
 	private static final String NLS_CONTACT_ATTACHMENT_EXPL = "contact.attachment.maxsize";
-	private static final String PUBLICATION_DATE_SELECT_IMMEDIATELY = "edit.publication.immediately";
 
 	private TextElement titleEl;
 	private FileElement attachmentEl;
@@ -173,16 +172,16 @@ public class InfoEditFormController extends FormBasicController {
 		}
 
 		// selection for publication type: immediately or individual with a date chooser
-		String publicationSelection = infoMessage.isPublished() || infoMessage.getPublishDate() == null ? PUBLICATION_DATE_SELECT_IMMEDIATELY : WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL;
+		String publicationSelection = infoMessage.isPublished() || infoMessage.getPublishDate() == null ? WizardConstants.PUBLICATION_DATE_SELECT_IMMEDIATELY : WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL;
 		SelectionValues publicationSV = new SelectionValues();
-		publicationSV.add(entry(PUBLICATION_DATE_SELECT_IMMEDIATELY, translate(PUBLICATION_DATE_SELECT_IMMEDIATELY)));
+		publicationSV.add(entry(WizardConstants.PUBLICATION_DATE_SELECT_IMMEDIATELY, translate(WizardConstants.PUBLICATION_DATE_SELECT_IMMEDIATELY)));
 		publicationSV.add(entry(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL, translate(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL)));
 		publicationSelectEl = uifactory.addRadiosVertical("edit.publication.type", formLayout, publicationSV.keys(), publicationSV.values());
 		publicationSelectEl.select(publicationSelection, true);
 		publicationSelectEl.addActionListener(FormEvent.ONCHANGE);
 
 		Date publicationDate = null;
-		if (!publicationSelection.equals(PUBLICATION_DATE_SELECT_IMMEDIATELY)) {
+		if (!publicationSelection.equals(WizardConstants.PUBLICATION_DATE_SELECT_IMMEDIATELY)) {
 			publicationDate = infoMessage.getPublishDate();
 		}
 		publicationDateEl = uifactory.addDateChooser("publicationDate", "edit.publication.date", publicationDate, formLayout);

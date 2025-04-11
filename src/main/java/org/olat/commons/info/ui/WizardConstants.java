@@ -28,6 +28,11 @@ package org.olat.commons.info.ui;
  */
 public class WizardConstants {
 
+	public static final String ONLY_NOTIFY_SUBS = "only.notify.subs";
+	public static final String SEND_TO_SUBS_AND_MAILS = "send.to.subs.mail";
+	public static final String ALL_COURSE_MEMBERS = "all.course.members";
+	public static final String INDIVIDUAL_RECIPIENT = "individual";
+	public static final String RECIPIENT_MODE = "recipient.mode";
 	public static final String SEND_MAIL = "send";
 	public static final String SEND_MAIL_SUBSCRIBERS = "subscribers";
 	public static final String SEND_GROUPS = "groups";
@@ -40,6 +45,7 @@ public class WizardConstants {
 	public static final String PUBLICATION_DATE_TYPE ="pubSelection";
 	public static final String PUBLICATION_DATE ="pubDate";
 	public static final String PUBLICATION_DATE_SELECT_INDIVIDUAL = "edit.publication.individual";
+	public static final String PUBLICATION_DATE_SELECT_IMMEDIATELY = "edit.publication.immediately";
 	public static final String PUBLICATION_NOTIFICATION_TYPE = "publicationNotificationType";
 
 }

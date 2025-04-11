@@ -107,7 +107,7 @@ public class InfoDisplayController extends FormBasicController {
 	private final OLATResourceable ores;
 	private final String resSubPath;
 	private final String businessPath;
-	private String attachmentMapper;
+	private final String attachmentMapper;
 	private Map<String, VFSLeaf> infoKeysToAttachment;
 	
 	private int maxResults = 0;
@@ -503,6 +503,7 @@ public class InfoDisplayController extends FormBasicController {
 			InfoMessage currentMsg = reloadMessageIfEditing(msg);
 
 			String notificationType = (String) runContext.get(WizardConstants.PUBLICATION_NOTIFICATION_TYPE);
+			String recipientType = (String) runContext.get(WizardConstants.RECIPIENT_MODE);
 			boolean isSubscribersSelected = runContext.get(WizardConstants.SEND_MAIL_SUBSCRIBERS) != null && (boolean) runContext.get(WizardConstants.SEND_MAIL_SUBSCRIBERS);
 			@SuppressWarnings("unchecked")
 			Set<String> selectedOptions = runContext.get(WizardConstants.SEND_MAIL) != null ? (Set<String>) runContext.get(WizardConstants.SEND_MAIL) : new HashSet<>();
@@ -513,27 +514,28 @@ public class InfoDisplayController extends FormBasicController {
 			@SuppressWarnings("unchecked")
 			Collection<String> fileNamesToDelete = (Set<String>)runContext.get(WizardConstants.PATH_TO_DELETE);
 
-			// Delete files, which should be deleted
-			deleteFiles(fileNamesToDelete, msg.getAttachmentPath());
-
-			setPublishDate(msg, runContext, currentMsg);
-
-			// final check, if msg is getting edited, then apply currentMsg (editing msg) to msg
-			// saving and handling everything after this with msg
-			if (currentMsg != null) {
-				msg = currentMsg;
+			if (notificationType != null) {
+				currentMsg.setNotificationModeWithMail(notificationType.equals(WizardConstants.SEND_TO_SUBS_AND_MAILS));
 			}
+			if (recipientType != null) {
+				currentMsg.setRecipientModeIndividual(recipientType.equals(WizardConstants.INDIVIDUAL_RECIPIENT));
+			}
+
+			// Delete files, which should be deleted
+			deleteFiles(fileNamesToDelete, currentMsg.getAttachmentPath());
+
+			setPublishDate(currentMsg, runContext);
 
 			// notificationType can only be null, when wizard gets finished in first step
 			// And altering this area is only necessary for sending out mails, if that was selected
-			if (notificationType != null && notificationType.equals(SendMailStepController.SEND_TO_SUBS_AND_MAILS)) {
-				msg = handleNotificationsAndMail(msg, ureq, isSubscribersSelected, selectedOptions, selectedGroupOptions, selectedCurriculumOptions);
+			if (notificationType != null && notificationType.equals(WizardConstants.SEND_TO_SUBS_AND_MAILS)) {
+				currentMsg = handleNotificationsAndMail(currentMsg, ureq, isSubscribersSelected, selectedOptions, selectedGroupOptions, selectedCurriculumOptions);
 			} else {
-				infoMessageManager.saveInfoMessageAndNotify(msg);
+				infoMessageManager.saveInfoMessageAndNotify(currentMsg);
 			}
 
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_CREATED, getClass(),
-					LoggingResourceable.wrap(msg.getOLATResourceable(), OlatResourceableType.infoMessage));
+					LoggingResourceable.wrap(currentMsg.getOLATResourceable(), OlatResourceableType.infoMessage));
 
 			return StepsMainRunController.DONE_MODIFIED;
 		}
@@ -551,7 +553,7 @@ public class InfoDisplayController extends FormBasicController {
 					return currentMsg;
 				}
 			}
-			return null;
+			return msg;
 		}
 
 		private void deleteFiles(Collection<String> fileNamesToDelete, String attachmentPath) {
@@ -564,20 +566,19 @@ public class InfoDisplayController extends FormBasicController {
 			}
 		}
 
-		private void setPublishDate(InfoMessage msg, StepsRunContext runContext, InfoMessage currentMsg) {
-			// if individual date was set, save it into the infoMessage object
-			if (runContext.get(WizardConstants.PUBLICATION_DATE_TYPE) == WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL) {
-				DateChooser publishDate = (DateChooser) runContext.get(WizardConstants.PUBLICATION_DATE);
-				if (publishDate.getDate().after(new Date())) {
-					msg.setPublishDate(publishDate.getDate());
-					msg.setPublished(false);
+		private void setPublishDate(InfoMessage currentMsg, StepsRunContext runContext) {
+			String pubDateType = (String) runContext.get(WizardConstants.PUBLICATION_DATE_TYPE);
+
+			if (pubDateType.equals(WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL)) {
+				DateChooser publishDateEl = (DateChooser) runContext.get(WizardConstants.PUBLICATION_DATE);
+				Date selectedPubDate = publishDateEl.getDate();
+				if (selectedPubDate != null && selectedPubDate.after(new Date())) {
+					currentMsg.setPublishDate(selectedPubDate);
+					currentMsg.setPublished(false);
 				}
-			} else if (currentMsg == null) {
-				// if not, then "immediately" was selected, so directly publish it with current date
-				// but only if currentMsg is null, that means it is not in the editing process
-				// don't change publishDate if a msg gets edited (OO-8242)
-				msg.setPublishDate(new Date());
-				msg.setPublished(true);
+			} else if (pubDateType.equals(WizardConstants.PUBLICATION_DATE_SELECT_IMMEDIATELY) && !currentMsg.isPublished()) {
+				currentMsg.setPublishDate(new Date());
+				currentMsg.setPublished(true);
 			}
 		}
 
