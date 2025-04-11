@@ -124,6 +124,17 @@
 	}
 }
 
+.o_im_welcome_image {
+	width: $o-portrait-small-size;
+	height: $o-portrait-small-size;
+	border-radius: 50%;
+	border: none;
+	background-color: #eee;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
 .o_supervisor_chat_roster a.active {
 	font-weight: bold;
 }

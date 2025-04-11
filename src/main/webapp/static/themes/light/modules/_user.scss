@@ -1,4 +1,4 @@
-/* User portrait: avtar or initials */
+/* User portrait: image or initials */
 
 @mixin o-user_portrait_size($size, $initials-font-size, $im-margin-size, $im-scale) {
 	width: $size;
@@ -135,6 +135,9 @@
 	}
 }
 
+.o_portrait {
+	display: inline-block;
+}
 
 /* Users portraits */
 @mixin o-users_portrait_offset($size){
