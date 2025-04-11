@@ -77,6 +77,34 @@ public interface InfoMessage {
 	void setPublished(boolean published);
 
 	/**
+	 * Configuration of the infoMessage object, depending on whether the notification is sent via email or not.
+	 *
+	 * @return true if with mail, false otherwise
+	 */
+	boolean isNotificationModeWithMail();
+
+	/**
+	 * Configuration of the infoMessage object, depending on whether the notification is sent via email or not.
+	 *
+	 * @param notificationModeWithMail if true, then with mail, otherwise without
+	 */
+	void setNotificationModeWithMail(boolean notificationModeWithMail);
+
+	/**
+	 * Configuration of the infoMessage object, depending on whether the recipient mode is set to all or individual
+	 *
+	 * @return true if mode is set to individual, false otherwise
+	 */
+	boolean isRecipientModeIndividual();
+
+	/**
+	 * Configuration of the infoMessage object, depending on whether the recipient mode is set to all or individual
+	 *
+	 * @param recipientModeIndividual if true, then mode is individual, otherwise 'all' is set
+	 */
+	void setRecipientModeIndividual(boolean recipientModeIndividual);
+
+	/**
 	 * retrieve Date on which the infoMessage got published
 	 *
 	 * @return date

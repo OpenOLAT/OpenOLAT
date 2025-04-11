@@ -916,6 +916,8 @@ create table if not exists o_info_message (
   businesspath varchar(2048),
   publishdate datetime default null,
   published bool not null default false,
+  notificationmodewithmail bool not null default false,
+  recipientmodeindividual bool not null default false,
   sendmailto varchar(255),
   fk_author_id bigint,
   fk_modifier_id bigint,

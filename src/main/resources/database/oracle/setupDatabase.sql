@@ -886,6 +886,8 @@ CREATE TABLE o_info_message (
   businesspath varchar2(2048 char),
   publishdate date default null,
   published number default 0 not null,
+  notificationmodewithmail number default 0 not null,
+  recipientmodeindividual number default 0 not null,
   sendmailto varchar(255),
   fk_author_id number(20),
   fk_modifier_id number(20),
