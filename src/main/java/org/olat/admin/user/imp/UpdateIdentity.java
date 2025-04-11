@@ -221,6 +221,21 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public String getPortraitPath() {
+			return null;
+		}
+
+		@Override
+		public String getLogoPath() {
+			return null;
+		}
+
+		@Override
+		public String getInitialsCssClass() {
+			return null;
+		}
+
+		@Override
 		public Preferences getPreferences() {
 			return user.getPreferences();
 		}

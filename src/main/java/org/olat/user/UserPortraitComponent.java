@@ -35,8 +35,6 @@ import org.olat.core.util.Util;
  */
 public class UserPortraitComponent extends AbstractComponent {
 	
-	public enum PortraitSize { xsmall, small, medium, large }
-	
 	private static final ComponentRenderer RENDERER = new UserPortraitRenderer();
 	
 	private final String avatarMapperUrl;

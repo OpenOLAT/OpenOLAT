@@ -90,9 +90,9 @@ import org.olat.user.DisplayPortraitController;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
+import org.olat.user.PortraitSize;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.ui.admin.UserAccountController;
 import org.springframework.beans.factory.annotation.Autowired;
 

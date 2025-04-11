@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openmeetings.restapi;
 
-import java.io.File;
 import java.util.Date;
 
 import jakarta.ws.rs.GET;
@@ -36,9 +35,12 @@ import jakarta.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
+import org.olat.user.UserPortraitService;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Hidden;
@@ -87,16 +89,16 @@ public class OpenMeetingsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getBigPortrait(identity);
-		if(portrait == null || !portrait.exists()) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+		VFSLeaf portraitImage = CoreSpringFactory.getImpl(UserPortraitService.class).getPortraitImage(identity, PortraitSize.medium);
+		if (portraitImage instanceof LocalFileImpl portrait && portrait.exists()) {
+			Date lastModified = new Date(portrait.getBasefile().lastModified());
+			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+			if(response == null) {
+				response = Response.ok(portrait.getBasefile()).lastModified(lastModified).cacheControl(cc);
+				return response.build();
+			}
 		}
-
-		Date lastModified = new Date(portrait.lastModified());
-		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-		if(response == null) {
-			response = Response.ok(portrait).lastModified(lastModified).cacheControl(cc);
-		}
-		return response.build();
+		
+		return Response.serverError().status(Status.NOT_FOUND).build();
 	}
 }

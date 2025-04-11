@@ -48,7 +48,6 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

@@ -19,24 +19,23 @@
  */
 package org.olat.user;
 
-import org.olat.instantMessaging.model.Presence;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public interface PortraitUser {
+public enum PortraitSize { 
 	
-	public Long getIdentityKey();
+	// Maybe it would be better to have a PortraitSize and a PortraitComponentSize:
+	// - The size of the image is twice as large as the size of the component.
+	// - More PortraitSizes would be possible. (Naming: 30, 60, ... instead of names)
+	xsmall, small, medium, large;
 	
-	public String getUsername();
+	private static final Set<String> NAMES = Arrays.stream(PortraitSize.values())
+			.map(PortraitSize::name)
+			.collect(Collectors.toSet());
 	
-	public boolean isPortraitAvailable();
-	
-	public String getPortraitImagePath();
-	
-	public String getInitials();
-	
-	public String getInitialsCss();
-	
-	public String getDisplayName();
-	
-	public Presence getPresence();
+	public static boolean isValid(String name) {
+		return NAMES.contains(name);
+	}
 	
 }

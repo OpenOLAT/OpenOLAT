@@ -30,7 +30,6 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.util.CodeHelper;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 
 /**
  * 

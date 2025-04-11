@@ -76,8 +76,8 @@ import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

@@ -48,8 +48,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 

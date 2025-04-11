@@ -19,11 +19,13 @@
  */
 package org.olat.user;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.instantMessaging.model.Presence;
 
 /**
@@ -37,7 +39,7 @@ public interface UserPortraitService {
 	public UserInfoProfileConfig createProfileConfig();
 	
 	public PortraitUser createPortraitUser(Long identityKey, String username, boolean portraitAvailable,
-			String portraitCacheIdentifier, String initials, String initialsCss, String displayName, Presence presence);
+			String portraitPath, String initials, String initialsCss, String displayName, Presence presence);
 	
 	public PortraitUser createPortraitUser(Locale locale, Identity identity);
 
@@ -50,5 +52,19 @@ public interface UserPortraitService {
 	public PortraitUser createUnknownPortraitUser(Locale locale);
 	
 	public List<PortraitUser> createPortraitUsers(Locale locale, Collection<Identity> identities);
+	
+	public void storePortraitImage(Identity doer, Identity identity, File file, String filename);
+	
+	public void deletePortraitImage(Identity identity);
+	
+	public VFSLeaf getPortraitImage(Identity identity, PortraitSize portraitSize);
+
+	public void storeLogoImage(Identity doer, Identity identity, File file, String filename);
+	
+	public void deleteLogoImage(Identity identity);
+	
+	public VFSLeaf getLogoImage(Identity identity, PortraitSize portraitSize);
+	
+	public VFSLeaf getImage(String imagePath, PortraitSize portraitSize);
 
 }

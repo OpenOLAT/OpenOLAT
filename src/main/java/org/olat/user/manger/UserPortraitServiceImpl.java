@@ -17,19 +17,38 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.user;
+package org.olat.user.manger;
+
 
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Presence;
+import org.olat.user.PortraitSize;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserDataDeletable;
+import org.olat.user.UserDataExportable;
+import org.olat.user.UserImpl;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitService;
+import org.olat.user.manager.ManifestBuilder;
+import org.olat.user.manager.UserPortraitStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,12 +59,16 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class UserPortraitServiceImpl implements UserPortraitService {
+public class UserPortraitServiceImpl implements UserPortraitService, UserDataDeletable, UserDataExportable {
+	
+	private static final Logger log = Tracing.createLoggerFor(UserPortraitServiceImpl.class);
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitStorage userPortraitStorage;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
@@ -61,9 +84,9 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 	
 	@Override
 	public PortraitUser createPortraitUser(Long identityKey, String username, boolean portraitAvailable,
-			String portraitCacheIdentifier, String initials, String initialsCss, String displayName,
+			String portraitPath, String initials, String initialsCss, String displayName,
 			Presence presence) {
-		return new PortraitUserImpl(identityKey, username, portraitAvailable, portraitCacheIdentifier, initials,
+		return new PortraitUserImpl(identityKey, username, portraitAvailable, portraitPath, initials,
 				initialsCss, displayName, presence);
 	}
 	
@@ -80,9 +103,8 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		String initials = userManager.getInitials(identity.getUser());
 		String initialsCss = userManager.getInitialsColorCss(identity.getKey());
 		
-		File portraitFile = portraitManager.getMasterPortrait(identity);
-		boolean portraitAvailable = portraitFile != null;
-		String portraitCacheIdentifier= portraitFile != null? String.valueOf(portraitFile.lastModified()): null;
+		String portraitPath = identity.getUser().getPortraitPath();
+		boolean portraitAvailable = StringHelper.containsNonWhitespace(portraitPath);
 
 		Presence presence = null;
 		if (imModule.isEnabled() && imModule.isPrivateEnabled()) {
@@ -101,7 +123,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 			}
 		}
 		
-		return createPortraitUser(identity.getKey(), identity.getName(), portraitAvailable, portraitCacheIdentifier,
+		return createPortraitUser(identity.getKey(), identity.getName(), portraitAvailable, portraitPath,
 				initials, initialsCss, displayName, presence);
 	}
 	
@@ -201,7 +223,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		}
 
 		@Override
-		public String getPortraitCacheIdentifier() {
+		public String getPortraitImagePath() {
 			return portraitCacheIdentifier;
 		}
 
@@ -225,6 +247,119 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 			return presence;
 		}
 		
+	}
+	
+	@Override
+	public void storePortraitImage(Identity doer, Identity identity, File file, String filename) {
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
+		User user = reloadedIdentity.getUser();
+		String currentPortraitPath = user.getPortraitPath();
+		
+		String portraitPath = userPortraitStorage.store(doer, file, filename);
+		if (portraitPath == null) {
+			return;
+		}
+		
+		if (user instanceof UserImpl impl) {
+			impl.setPortraitPath(portraitPath);
+			userManager.updateUser(identity, impl);
+			
+			if (StringHelper.containsNonWhitespace(currentPortraitPath)) {
+				userPortraitStorage.delete(currentPortraitPath);
+			}
+		}
+	}
+	
+	@Override
+	public void deletePortraitImage(Identity identity) {
+		User user = userManager.loadUserByKey(identity.getUser().getKey());
+		
+		if (user instanceof UserImpl impl) {
+			if (StringHelper.containsNonWhitespace(user.getPortraitPath())) {
+				userPortraitStorage.delete(user.getPortraitPath());
+				
+				impl.setPortraitPath(null);
+				userManager.updateUser(identity, impl);
+			}
+		}
+	}
+	
+	@Override
+	public VFSLeaf getPortraitImage(Identity identity, PortraitSize portraitSize) {
+		return getImage(identity.getUser().getPortraitPath(), portraitSize);
+	}
+	
+	@Override
+	public void storeLogoImage(Identity doer, Identity identity, File file, String filename) {
+		Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
+		User user = reloadedIdentity.getUser();
+		String currentLogoPath = user.getLogoPath();
+		
+		String logoPath = userPortraitStorage.store(doer, file, filename);
+		if (logoPath == null) {
+			return;
+		}
+		
+		if (user instanceof UserImpl impl) {
+			impl.setLogoPath(logoPath);
+			userManager.updateUser(identity, impl);
+			
+			if (StringHelper.containsNonWhitespace(currentLogoPath)) {
+				userPortraitStorage.delete(currentLogoPath);
+			}
+		}
+	}
+	
+	@Override
+	public void deleteLogoImage(Identity identity) {
+		User user = userManager.loadUserByKey(identity.getUser().getKey());
+		
+		if (user instanceof UserImpl impl) {
+			if (StringHelper.containsNonWhitespace(user.getLogoPath())) {
+				userPortraitStorage.delete(user.getLogoPath());
+				
+				impl.setLogoPath(null);
+				userManager.updateUser(identity, impl);
+			}
+		}
+	}
+	
+	@Override
+	public VFSLeaf getLogoImage(Identity identity, PortraitSize portraitSize) {
+		return getImage(identity.getUser().getLogoPath(), portraitSize);
+	}
+	
+	@Override
+	public VFSLeaf getImage(String imagePath, PortraitSize logoSize) {
+		return userPortraitStorage.getImage(imagePath, logoSize);
+	}
+
+	@Override
+	public int deleteUserDataPriority() {
+		// must have higher priority than HomePageConfigManager
+		return 650;
+	}
+	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		deletePortraitImage(identity);
+		deleteLogoImage(identity);
+		log.debug("User portrait and logo deleted for identity={}", identity.getKey());
+	}
+	
+	@Override
+	public String getExporterID() {
+		return "user.portrait";
+	}
+	
+	@Override
+	public void export(Identity identity, ManifestBuilder manifest, File archiveDirectory, Locale locale) {
+		VFSLeaf portraitImage = getPortraitImage(identity, null);
+		if (portraitImage instanceof LocalFileImpl portraitFile && portraitImage.exists()) {
+			File archivePortrait = new File(archiveDirectory, "portrait");
+			manifest.appendFile("portrait/" + portraitImage.getName());
+			FileUtils.copyFileToDir(portraitFile.getBasefile(), archivePortrait, false, null, "Archive portrait");
+		}
 	}
 
 }

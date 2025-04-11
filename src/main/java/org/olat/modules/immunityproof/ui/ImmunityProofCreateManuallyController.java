@@ -47,7 +47,7 @@ import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
 import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

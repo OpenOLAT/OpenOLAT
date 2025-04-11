@@ -177,6 +177,21 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
+	public String getPortraitPath() {
+		return null;
+	}
+
+	@Override
+	public String getLogoPath() {
+		return null;
+	}
+
+	@Override
+	public String getInitialsCssClass() {
+		return null;
+	}
+
+	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return super.equals(persistable);
 	}

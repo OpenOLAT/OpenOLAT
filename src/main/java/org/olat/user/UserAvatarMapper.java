@@ -21,11 +21,12 @@ package org.olat.user;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 
 /**
  * 
@@ -35,64 +36,54 @@ import org.olat.core.id.Identity;
  */
 public class UserAvatarMapper implements Mapper {
 	
-	private static final String POSTFIX_SMALL = "/portrait_small.jpg";
-	private static final String POSTFIX_LARGE = "/portrait.jpg";
+	private UserPortraitService userPortraitService;
 	
-	private final UserManager userManager;
-	private final DisplayPortraitManager portraitManager;
-	
-	public UserAvatarMapper() {
-		portraitManager = CoreSpringFactory.getImpl(DisplayPortraitManager.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
+	private UserPortraitService getUserPortraitService() {
+		if (userPortraitService == null) {
+			userPortraitService = CoreSpringFactory.getImpl(UserPortraitService.class);
+		}
+		return userPortraitService;
 	}
 	
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		MediaResource rsrc = null;
-		if(relPath != null && (relPath.endsWith(POSTFIX_LARGE) || relPath.endsWith(POSTFIX_SMALL))) {
-			boolean smallPortrat = relPath.endsWith(POSTFIX_SMALL);
-			if(relPath.startsWith("/")) {
-				relPath = relPath.substring(1, relPath.length());
-			}
-			
-			int endKeyIndex = relPath.indexOf('/');
-			if(endKeyIndex > 0) {
-				String idKey = relPath.substring(0, endKeyIndex);
-				Long key = Long.parseLong(idKey);
-				String username = userManager.getUsername(key);
-				if (smallPortrat) {
-					rsrc = portraitManager.getSmallPortraitResource(username);
-				}
-				if (rsrc == null) {
-					rsrc = portraitManager.getBigPortraitResource(username);
-				}
-			}
-		}
-		return rsrc;
-	}
-	
-	public String createPathFor(String mapperPath, Identity identity, boolean large) {
-		Long lastModified = getLastModified(identity.getName(), large);
-		return createPathFor(mapperPath, identity, String.valueOf(lastModified), large);
-	}
-	
-	public static String createPathFor(String mapperPath, IdentityRef identity, String cachePart, boolean large) {
-		return mapperPath + "/" + identity.getKey() + "/" + cachePart + (large ? POSTFIX_LARGE : POSTFIX_SMALL); 
-	}
-	
-	private Long getLastModified(String username, boolean large) {
-		if (!large) {
-			MediaResource resource = portraitManager.getSmallPortraitResource(username);
-			if (resource != null) {
-				return resource.getLastModified();
-			}
+		if (!StringHelper.containsNonWhitespace(relPath)) {
+			return null;
 		}
 		
-		MediaResource resource = portraitManager.getBigPortraitResource(username);
-		if (resource != null) {
-			return resource.getLastModified();
+		if (relPath.startsWith("/")) {
+			relPath = relPath.substring(1, relPath.length());
 		}
 		
-		return Long.valueOf(0);
+		int sizePathIndex = relPath.lastIndexOf("/");
+		if (sizePathIndex < 0) {
+			return null;
+		}
+		
+		String sizePath = relPath.substring(sizePathIndex + 1);
+		int sizeSuffixIndex = sizePath.indexOf(".");
+		if (sizeSuffixIndex < 0) {
+			return null;
+		}
+		sizePath = sizePath.substring(0, sizeSuffixIndex);
+		PortraitSize portraitSize = null;
+		if (PortraitSize.isValid(sizePath)) {
+			portraitSize = PortraitSize.valueOf(sizePath);
+		} else {
+			return null;
+		}
+		
+		String imagePath = relPath.substring(0, sizePathIndex);
+		
+		VFSLeaf imageLeaf = getUserPortraitService().getImage(imagePath, portraitSize);
+		if (imageLeaf == null) {
+			return null;
+		}
+		
+		return new VFSMediaResource(imageLeaf);
+	}
+	
+	public static String createPathFor(String mapperPath, String imagePath, PortraitSize portraitSize) {
+		return mapperPath + "/" + imagePath + "/" + portraitSize.name() + ".jpg"; 
 	}
 }

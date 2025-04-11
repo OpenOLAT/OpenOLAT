@@ -25,7 +25,6 @@
 
 package org.olat.user;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -50,12 +49,12 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.instantMessaging.ImPreferences;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,7 +67,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HomePageDisplayController extends BasicController {
 	
-	private static final int LOGO_MAX_HEIGHT = DisplayPortraitManager.HEIGHT_BIG / 2;
 	private static final String usageIdentifyer = HomePageConfig.class.getCanonicalName();
 	
 	private Link imLink;
@@ -86,7 +84,7 @@ public class HomePageDisplayController extends BasicController {
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
-	private DisplayPortraitManager displayPortraitManager;
+	private UserPortraitService userPortraitService;
 
 	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, Identity homeIdentity, HomePageConfig hpc) {
 		super(ureq, wControl);
@@ -160,12 +158,12 @@ public class HomePageDisplayController extends BasicController {
 	
 	private void exposeLogo(UserSession usess, Identity homeIdentity, VelocityContainer mainVC) {
 		if(userModule.isLogoByProfileEnabled()) {
-			File logo = displayPortraitManager.getBigLogo(homeIdentity);
-			if (logo != null) {
+			VFSLeaf logoImage = userPortraitService.getLogoImage(homeIdentity, PortraitSize.large);
+			if (logoImage != null && logoImage.exists()) {
 				ImageComponent logoCmp = new ImageComponent(usess, "logo");
-				logoCmp.setMedia(logo);
-				logoCmp.setMaxWithAndHeightToFitWithin(200, LOGO_MAX_HEIGHT);
-				mainVC.put("logo", logoCmp);				
+				logoCmp.setMedia(logoImage);
+				logoCmp.setMaxWithAndHeightToFitWithin(200, 50);
+				mainVC.put("logo", logoCmp);
 			}
 		}
 	}

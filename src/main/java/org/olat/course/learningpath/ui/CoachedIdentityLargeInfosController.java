@@ -37,7 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 
 /**
  * 

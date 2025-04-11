@@ -19,7 +19,6 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.io.File;
 import java.util.Date;
 
 import org.olat.basesecurity.AuthHelper;
@@ -53,6 +52,8 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -74,7 +75,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -110,7 +112,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
-	private DisplayPortraitManager displayPortraitManager;
+	private UserPortraitService userPortraitService;
 
 	public BigBlueButtonGuestJoinController(UserRequest ureq, WindowControl wControl, BigBlueButtonMeeting meeting) {
 		super(ureq, wControl, "guest_join");
@@ -416,12 +418,12 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 	
 	private String getAvatarUrl() {
 		if(avatarUrl == null) {
-			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
-			if(portraitFile != null) {
+			VFSLeaf portraitImage = userPortraitService.getPortraitImage(getIdentity(), PortraitSize.medium);
+			if(portraitImage instanceof LocalFileImpl portraitFIle) {
 				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
 				avatarUrl = Settings.createServerURI()
-						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), 5 * 60 * 60)
-						+ "/" + portraitFile.getName();
+						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFIle.getBasefile()), 5 * 60 * 60)
+						+ "/" + portraitImage.getName();
 			}
 		}
 		return avatarUrl;

@@ -20,7 +20,6 @@
 
 package org.olat.user;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +72,8 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -144,7 +145,7 @@ public class ProfileFormController extends FormBasicController {
 	@Autowired
 	private HomePageConfigManager hpcm;
 	@Autowired
-	private DisplayPortraitManager dps;
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -285,7 +286,7 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.setVisible(!inviteeOnly);
 		formLayout.add(groupContainer);
 
-		File portraitFile = dps.getLargestPortrait(identityToModify);
+		VFSLeaf portraitLeaf = userPortraitService.getPortraitImage(identityToModify, null);
 		// Init upload controller
 		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("image/gif");
@@ -303,8 +304,8 @@ public class ProfileFormController extends FormBasicController {
 		portraitUpload.setDeleteEnabled(true);
 		portraitUpload.setEnabled(portraitEnable && canModify);
 		portraitUpload.setVisible(!inviteeOnly);
-		if(portraitFile != null) {
-			portraitUpload.setInitialFile(portraitFile);
+		if(portraitLeaf instanceof LocalFileImpl initialFile) {
+			portraitUpload.setInitialFile(initialFile.getBasefile());
 		}
 		portraitUpload.limitToMimeType(mimeTypes, null, null);
 		
@@ -315,7 +316,7 @@ public class ProfileFormController extends FormBasicController {
 			groupContainer.setVisible(!inviteeOnly);
 			formLayout.add(groupContainer);
 
-			File logoFile = dps.getLargestLogo(identityToModify);
+			VFSLeaf logoImage = userPortraitService.getLogoImage(identityToModify, null);
 			logoUpload = uifactory.addFileElement(getWindowControl(), getIdentity(), "logo.select", "logo.select", groupContainer);
 			logoUpload.setMaxUploadSizeKB(10000, null, null);
 			logoUpload.setPreview(ureq.getUserSession(), true);
@@ -324,8 +325,8 @@ public class ProfileFormController extends FormBasicController {
 			logoUpload.setDeleteEnabled(true);
 			logoUpload.setEnabled(canModify);
 			logoUpload.setVisible(!inviteeOnly);
-			if(logoFile != null) {
-				logoUpload.setInitialFile(logoFile);
+			if(logoImage instanceof LocalFileImpl logoFile) {
+				logoUpload.setInitialFile(logoFile.getBasefile());
 			}
 			logoUpload.limitToMimeType(mimeTypes, null, null);
 		}
@@ -672,16 +673,15 @@ public class ProfileFormController extends FormBasicController {
 
 	@Override
 	protected void formOK(final UserRequest ureq) {
-		// update each user field
 		updateUserProperties();
+		updateAboutMeText();
+		
+		identityToModify = updateUserProfile();
+		
 		handlePortraitUpdates();
 		handleLogoUpdates();
-		// Store the "about me" text.
-		updateAboutMeText();
-
-		// update the user profile data
-		identityToModify = updateUserProfile();
-
+		identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -696,38 +696,24 @@ public class ProfileFormController extends FormBasicController {
 	}
 
 	private void handlePortraitUpdates() {
-		if (portraitDeleted) {
-			File img = dps.getLargestPortrait(identityToModify);
-			if (img != null) {
-				dps.deletePortrait(identityToModify);
-				notifyPortraitChanged();
-			}
-		}
-
-		File uploadedImage = portraitUpload.getUploadFile();
-		String uploadedFilename = portraitUpload.getUploadFileName();
-		if (uploadedImage != null) {
-			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify);
+		if (portraitUpload.getUploadFile() != null) {
+			userPortraitService.storePortraitImage(getIdentity(), identityToModify,
+					portraitUpload.getUploadFile(), portraitUpload.getUploadFileName());
+			notifyPortraitChanged();
+		} else if (portraitDeleted) {
+			userPortraitService.deletePortraitImage(identityToModify);
 			notifyPortraitChanged();
 		}
 	}
 
 	private void handleLogoUpdates() {
-		if (logoDeleted) {
-			File img = dps.getLargestLogo(identityToModify);
-			if (img != null) {
-				dps.deleteLogo(identityToModify);
-				notifyPortraitChanged();
-			}
-		}
-
-		if (logoUpload != null) {
-			File uploadedLogo = logoUpload.getUploadFile();
-			String uploadedLogoname = logoUpload.getUploadFileName();
-			if (uploadedLogo != null) {
-				dps.setLogo(uploadedLogo, uploadedLogoname, identityToModify);
-				notifyPortraitChanged();
-			}
+		if (logoUpload != null && logoUpload.getUploadFile() != null) {
+			userPortraitService.storeLogoImage(getIdentity(), identityToModify,
+					logoUpload.getUploadFile(), logoUpload.getUploadFileName());
+			notifyPortraitChanged();
+		} else if (logoDeleted) {
+			userPortraitService.deleteLogoImage(identityToModify);
+			notifyPortraitChanged();
 		}
 	}
 

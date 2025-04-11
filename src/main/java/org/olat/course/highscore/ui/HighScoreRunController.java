@@ -62,9 +62,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -254,7 +254,7 @@ public class HighScoreRunController extends FormBasicController{
 			//find path for ownID image to display in histogram
 			UserAvatarMapper mapper = new UserAvatarMapper();
 			String mapperPath = registerMapper(ureq, mapper);
-			String identityMapperPath = mapper.createPathFor(mapperPath, ownIdentity, false);
+			String identityMapperPath = UserAvatarMapper.createPathFor(mapperPath, ownIdentity.getUser().getPortraitPath(), PortraitSize.xsmall);
 			scoreHistogramVC.contextPut("mapperUrl", identityMapperPath);
 
 			mainVC.put("scoreHistogram", scoreHistogramVC);

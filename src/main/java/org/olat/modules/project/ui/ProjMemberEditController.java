@@ -36,7 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 
 /**
  * 

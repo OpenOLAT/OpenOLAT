@@ -28,7 +28,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.model.Presence;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 
 /**
  * 
@@ -60,8 +59,7 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 		
 		if (portraitUser.isPortraitAvailable()) {
 			sb.append("<img class=\"o_user_portrait_image\" src=\"");
-			boolean large = PortraitSize.large == opc.getSize() || PortraitSize.medium == opc.getSize();
-			sb.append(UserAvatarMapper.createPathFor(opc.getAvatarMapperUrl(), () -> portraitUser.getIdentityKey(), portraitUser.getPortraitCacheIdentifier(), large));
+			sb.append(UserAvatarMapper.createPathFor(opc.getAvatarMapperUrl(), portraitUser.getPortraitImagePath(), opc.getSize()));
 			sb.append("\" alt=\"");
 			sb.append(opc.getCompTranslator().translate("user.portrait.alt", StringHelper.escapeHtml(portraitUser.getDisplayName())));
 			sb.append("\"");

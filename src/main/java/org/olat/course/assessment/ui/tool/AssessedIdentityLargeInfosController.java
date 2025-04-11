@@ -43,7 +43,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

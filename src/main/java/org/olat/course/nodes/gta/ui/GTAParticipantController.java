@@ -83,8 +83,8 @@ import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.properties.LogEntry;
 import org.olat.properties.LogFormatter;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

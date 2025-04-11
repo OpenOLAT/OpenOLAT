@@ -27,7 +27,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitLayout;
 
 /**

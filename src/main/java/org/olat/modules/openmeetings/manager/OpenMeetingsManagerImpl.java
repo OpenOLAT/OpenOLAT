@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openmeetings.manager;
 
-import java.io.File;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +53,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
@@ -64,8 +64,9 @@ import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.modules.openmeetings.model.RoomReturnInfo;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
-import org.olat.user.DisplayPortraitManager;
+import org.olat.user.PortraitSize;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -90,7 +91,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
-	private DisplayPortraitManager portraitManager;
+	private UserPortraitService userPortraitService;
 
 	private CacheWrapper<String,Long> sessionCache;
 	private OpenMeetingsLanguages languagesMapping;
@@ -259,8 +260,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 	}
 	
 	private String getPortraitURL(Identity identity) {
-		File portrait = portraitManager.getBigPortrait(identity);
-		if(portrait == null || !portrait.exists()) {
+		VFSLeaf portraitImage = userPortraitService.getPortraitImage(identity, PortraitSize.medium);
+		if(portraitImage == null || !portraitImage.exists()) {
 			return "";
 		}
 		
@@ -391,10 +392,12 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 		return new OpenMeetingsException(e, type);
 	}
 	
+	@Override
 	public OpenMeetingsRoom openRoom(OpenMeetingsRoom room) throws OpenMeetingsException {
 		return closeOpenMeetingsRoom(room, false);
 	}
 	
+	@Override
 	public OpenMeetingsRoom closeRoom(OpenMeetingsRoom room) throws OpenMeetingsException {
 		return closeOpenMeetingsRoom(room, true);
 	}
