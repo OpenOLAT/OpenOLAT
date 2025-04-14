@@ -53,7 +53,6 @@ public class UsersAvatarController extends FormBasicController {
 
 	private final Collection<Identity> identities;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final String avatarBaseURL;
 
 	@Autowired
 	private BaseSecurityModule securityModule;
@@ -72,8 +71,6 @@ public class UsersAvatarController extends FormBasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(null, "users-avatars", new UserAvatarMapper());
-		
 		initForm(ureq);
 	}
 
@@ -84,8 +81,6 @@ public class UsersAvatarController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
-		
-		avatarBaseURL = registerCacheableMapper(null, "users-avatars", new UserAvatarMapper());
 		
 		initForm(ureq);
 	}
@@ -114,8 +109,7 @@ public class UsersAvatarController extends FormBasicController {
 		}
 		
 		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
-				"user_avatar_" + identity.getKey(), flc.getFormItemComponent(), getLocale(), avatarBaseURL);
-		userPortraitComp.setDisplayPresence(false);
+				"user_avatar_" + identity.getKey(), flc.getFormItemComponent(), getLocale());
 		userPortraitComp.setPortraitUser(portraitUser);
 		item.setUserPortraitComp(userPortraitComp);
 		

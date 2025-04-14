@@ -37,8 +37,6 @@ import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -117,7 +115,6 @@ import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.olat.modules.todo.ui.ToDoUIFactory.VariousDate;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -153,7 +150,6 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String CMD_EXPAND_PREFIX = "o_ex_";
 	private static final String CMD_DOIT_PREFIX = "o_do_";
 	
-	private final MapperKey avatarMapperKey;
 	private FormLink bulkDeleteButton;
 	protected FlexiFiltersTab tabMy;
 	protected FlexiFiltersTab tabAll;
@@ -184,20 +180,15 @@ public abstract class ToDoTaskListController extends FormBasicController
 	@Autowired
 	protected ToDoService toDoService;
 	@Autowired
-	private MapperService mapperService;
-	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private UserPortraitService userPortraitService;
 
 	protected ToDoTaskListController(UserRequest ureq, WindowControl wControl, String pageName,
-			MapperKey avatarMapperKey, String createType, Long createOriginId, String createOriginSubPath) {
+			String createType, Long createOriginId, String createOriginSubPath) {
 		super(ureq, wControl, pageName);
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(ToDoTaskListController.class, getLocale(), getTranslator()));
-		this.avatarMapperKey = avatarMapperKey != null
-				? avatarMapperKey
-				: mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		this.createType = createType;
 		this.createOriginId = createOriginId;
 		this.createOriginSubPath = createOriginSubPath;
@@ -938,7 +929,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members, String ariaI18nKey) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate(ariaI18nKey));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(10);

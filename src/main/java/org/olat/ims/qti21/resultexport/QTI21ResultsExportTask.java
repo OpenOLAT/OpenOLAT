@@ -80,7 +80,6 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 	private boolean withNonParticipants;
 	
 	private String title;
-	private String filename;
 	private String description;
 	private List<Long> identitiesKeys;
 	
@@ -89,7 +88,7 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 	private OLATResourceable courseRes;
 	
 	public QTI21ResultsExportTask(OLATResourceable courseRes, CourseNode courseNode,
-			List<Identity> identities, String title, String description, String filename,
+			List<Identity> identities, String title, String description,
 			boolean withNonParticipants, boolean withPdfs, Locale locale) {
 		this.courseRes = OresHelper.clone(courseRes);
 		this.courseNodeIdent = courseNode.getIdent();
@@ -100,7 +99,6 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		this.withPdfs = withPdfs;
 		this.title = title;
 		this.locale = locale;
-		this.filename = filename;
 		this.description = description;
 	}
 	
@@ -140,7 +138,6 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		VFSContainer subFolder = exportManager
 				.getExportContainer(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNodeIdent);
 		
-
 		ExportMetadata metadata = exportManager.getExportMetadataByTask((PersistentTask)task);
 		String vfsName = metadata.getFilename();
 		exportZip = subFolder.createChildLeaf(vfsName);

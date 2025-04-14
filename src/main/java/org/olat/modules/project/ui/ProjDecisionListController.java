@@ -31,7 +31,6 @@ import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -137,7 +136,6 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
-	private final MapperKey avatarMapperKey;
 	
 	@Autowired
 	protected ProjectService projectService;
@@ -147,13 +145,12 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	private UserPortraitService userPortraitService;
 
 	public ProjDecisionListController(UserRequest ureq, WindowControl wControl, String pageName, ProjectBCFactory bcFactory,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
 		super(ureq, wControl, pageName);
 		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
-		this.avatarMapperKey = avatarMapperKey;
 	}
 	
 	protected abstract boolean isFullTable();
@@ -373,7 +370,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 
 	private void forgeUsersPortraits(UserRequest ureq, ProjDecisionRow row, Set<Identity> members) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);

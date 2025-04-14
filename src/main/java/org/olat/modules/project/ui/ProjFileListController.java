@@ -51,7 +51,6 @@ import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -184,7 +183,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
-	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 
 	@Autowired
@@ -205,14 +203,12 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private AVModule avModule;
 
 	public ProjFileListController(UserRequest ureq, WindowControl wControl, String pageName, ProjectBCFactory bcFactory,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
-			MapperKey avatarMapperKey) {
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
 		super(ureq, wControl, pageName);
 		this.bcFactory = bcFactory;
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
-		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
@@ -586,7 +582,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 
 	private void forgeUsersPortraits(UserRequest ureq, ProjFileRow row, Set<Identity> members) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);

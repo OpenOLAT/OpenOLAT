@@ -177,7 +177,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -271,8 +270,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
-	private final String avatarMapperBaseURL;
 	private final IdentityComparator identityComparator;
 
 	@Autowired
@@ -312,7 +309,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.config = config;
 		this.secCallback = secCallback;
 		identityComparator = new IdentityComparator(getLocale());
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -332,7 +328,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.config = config;
 		this.secCallback = secCallback;
 		identityComparator = new IdentityComparator(getLocale());
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -352,7 +347,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.config = config;
 		this.secCallback = secCallback;
 		identityComparator = new IdentityComparator(getLocale());
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -372,7 +366,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.config = config;
 		this.secCallback = secCallback;
 		identityComparator = new IdentityComparator(getLocale());
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -1612,7 +1605,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				avatarMapper, avatarMapperBaseURL, mainForm, config, secCallback, lectureManagementManaged);
+				mainForm, config, secCallback, lectureManagementManaged);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

@@ -147,7 +147,7 @@ public class QTI21NewExportController extends FormBasicController {
 			Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(ureq.getRequestTimestamp(), 10));
 	
 			QTI21ResultsExportTask task = new QTI21ResultsExportTask(resource, courseNode, identities.getIdentities(),
-					title, description, filename, identities.isWithNonParticipants(), withPdfs, getLocale());
+					title, description, identities.isWithNonParticipants(), withPdfs, getLocale());
 			
 			exportManager.startExport(task, title, description,
 					filename, ArchiveType.QTI21, expirationDate, false,

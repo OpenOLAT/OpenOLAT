@@ -42,7 +42,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
-import org.olat.user.UserAvatarMapper;
 
 /**
  * 
@@ -64,9 +63,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 	private final TooledStackedPanel toolbarPanel;
 
 	private final CurriculumElement curriculumElement;
-	private final String avatarMapperBaseURL;
 	private final CurriculumSecurityCallback secCallback;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	
 	private CurriculumElementHistoryController historyCtrl;
 	private CurriculumElementMemberUsersController membersCtrl;
@@ -81,8 +78,6 @@ public class CurriculumElementUserManagementController extends BasicController i
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.curriculumElement = curriculumElement;
-
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		
 		mainVC = createVelocityContainer("curriculum_element_user_mgmt");
 		
@@ -147,7 +142,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ACTIVE_SCOPE), null);
 		membersCtrl = new CurriculumElementMemberUsersController(ureq, swControl, toolbarPanel,
-				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
+				curriculumElement, secCallback);
 		listenTo(membersCtrl);
 		
 		mainVC.put(MAIN_CONTROLLER, membersCtrl.getInitialComponent());
@@ -159,7 +154,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(PENDING_SCOPE), null);
 		pendingCtrl = new CurriculumElementPendingUsersController(ureq, swControl, toolbarPanel,
-				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
+				curriculumElement, secCallback);
 		listenTo(pendingCtrl);
 		
 		mainVC.put(MAIN_CONTROLLER, pendingCtrl.getInitialComponent());
@@ -171,7 +166,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(NON_MEMBERS_SCOPE), null);
 		nonMembersCtrl = new CurriculumElementNonMembersController(ureq, swControl, toolbarPanel,
-				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
+				curriculumElement, secCallback);
 		listenTo(nonMembersCtrl);
 		
 		mainVC.put(MAIN_CONTROLLER, nonMembersCtrl.getInitialComponent());

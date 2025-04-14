@@ -94,12 +94,14 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.DigitalSignatureValidation;
 import org.olat.ims.qti21.model.InMemoryAssessmentItemSession;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.ReferenceHistoryWithInfos;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -107,6 +109,7 @@ import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.event.DeleteAssessmentTestSessionEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
@@ -116,6 +119,7 @@ import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -223,6 +227,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private ReferenceHistoryInfosDAO referenceHistoryInfosDao;
 	
 
 	private JqtiExtensionManager jqtiExtensionManager;
@@ -232,6 +240,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	private CacheWrapper<File,ResolvedAssessmentTest> assessmentTestsCache;
 	private CacheWrapper<File,ResolvedAssessmentItem> assessmentItemsCache;
 	private CacheWrapper<AssessmentTestSession,TestSessionController> testSessionControllersCache;
+	private CacheWrapper<String,AssessmentTestInfos> assessmentTestInfosCache;
 	
 	private final ConcurrentMap<String,URI> resourceToTestURI = new ConcurrentHashMap<>();
 	
@@ -260,6 +269,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         assessmentTestsCache = cacher.getCache("QTIWorks", "assessmentTests");
         assessmentItemsCache = cacher.getCache("QTIWorks", "assessmentItems");
         testSessionControllersCache = cacher.getCache("QTIWorks", "testSessionControllers");
+        assessmentTestInfosCache = cacher.getCache("QTIWorks", "assessmentTestInfos");
 	}
 
     @Override
@@ -368,7 +378,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         if(assessmentObjectSystemId == null) {
         	return null;
         }
-		return  internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
+		return internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
 	}
 	
 	private ResolvedAssessmentTest internalLoadAndResolveAssessmentTest(File resourceDirectory, URI assessmentObjectSystemId) {
@@ -427,13 +437,58 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			return false;
 		}
 	}
+
+	@Override
+	public AssessmentTestInfos getAssessmentTestInfos(RepositoryEntry testEntry) {
+		String softKey = testEntry.getSoftkey();
+		AssessmentTestInfos infos = assessmentTestInfosCache.get(softKey);
+		if(infos == null) {
+			FileResourceManager frm = FileResourceManager.getInstance();
+			File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+			ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
+			AssessmentTest assessmentTest = resolvedAssessmentTest.getTestLookup().extractIfSuccessful();
+			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
+			Double estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+			Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
+			if(maxScore != null && minScore == null && "OpenOLAT".equals(assessmentTest.getToolName())) {
+				minScore = 0d;
+			}
+			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+			
+			Double timeLimits = (assessmentTest != null && assessmentTest.getTimeLimits() != null)
+					? assessmentTest.getTimeLimits().getMaximum()
+					: null;
+			
+			infos = new AssessmentTestInfos(estimatedMaxScore, maxScore, minScore, cutValue, manualCorrections, timeLimits);
+			assessmentTestInfosCache.put(softKey, infos);
+		}
+		return infos;
+	}
 	
 	@Override
+	public AssessmentTestInfos getAssessmentTestInfos(String testSoftKey) {
+		AssessmentTestInfos infos = assessmentTestInfosCache.get(testSoftKey);
+		if(infos == null) {
+			RepositoryEntry entry = repositoryEntryDao.loadBySoftKey(testSoftKey);
+			if(entry != null) {
+				infos = getAssessmentTestInfos(entry);
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public boolean needManualCorrection(RepositoryEntry testEntry) {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		return AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
+		AssessmentTestInfos testInfos = getAssessmentTestInfos(testEntry);
+		return testInfos != null && testInfos.manualCorrections();
+	}
+
+	@Override
+	public void evictAssessmentTestInfos(RepositoryEntry entry) {
+		if(entry != null && entry.getSoftkey() != null) {
+			assessmentTestInfosCache.remove(entry.getSoftkey());
+		}
 	}
 
 	@Override
@@ -1220,17 +1275,14 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		assessmentEntry.setAssessmentId(candidateSession.getKey());
 		
 		if(pushScoring) {
-			File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-			ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-			
 			BigDecimal finalScore = candidateSession.getFinalScore();
 			assessmentEntry.setScore(finalScore);
 			// Tests resources are not scaled
 			assessmentEntry.setWeightedScore(null);
 			assessmentEntry.setScoreScale(null);
-	
-			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+			
+			AssessmentTestInfos assessmentTestInfos = getAssessmentTestInfos(testEntry);
+			Double cutValue = assessmentTestInfos == null ? null : assessmentTestInfos.cutValue();
 			
 			Boolean passed = assessmentEntry.getPassed();
 			if(candidateSession.getManualScore() != null && finalScore != null && cutValue != null) {
@@ -1629,5 +1681,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		
 		TestSessionController result = testSessionControllersCache.get(testSession);
 		return result == null ? testSessionController : result;
+	}
+
+	@Override
+	public List<ReferenceHistoryWithInfos> getReferenceHistoryWithInfos(RepositoryEntry courseEntry, String subIdent) {
+		return referenceHistoryInfosDao.getReferenceHistoryWithInfos(courseEntry, subIdent);
 	}
 }

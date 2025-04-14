@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.tag.TagInfo;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -56,9 +55,9 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 	@Autowired
 	protected ProjectService projectService;
 
-	public ProjToDoListController(UserRequest ureq, WindowControl wControl, String pageName, MapperKey avatarMapperKey,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
-		super(ureq, wControl, pageName, avatarMapperKey, ProjToDoProvider.TYPE, project.getKey(), null);
+	public ProjToDoListController(UserRequest ureq, WindowControl wControl, String pageName, ProjProject project,
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+		super(ureq, wControl, pageName, ProjToDoProvider.TYPE, project.getKey(), null);
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;

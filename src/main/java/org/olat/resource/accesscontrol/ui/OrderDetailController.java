@@ -74,7 +74,6 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheck
 import org.olat.resource.accesscontrol.ui.OrderItemsDataModel.OrderItemCol;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
 import org.olat.user.UserPortraitService;
@@ -120,7 +119,7 @@ public class OrderDetailController extends FormBasicController {
 	private UserPortraitService userPortraitService;
 
 	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly, boolean showCostCenter) {
+			boolean readOnly, boolean showCostCenter) {
 		super(ureq, wControl, "order");
 		this.readOnly = readOnly;
 		// Reload to have the last status and transactions
@@ -134,8 +133,6 @@ public class OrderDetailController extends FormBasicController {
 		
 		delivery = order.getDelivery();
 		profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		initForm(ureq);
 		loadModel();
@@ -143,7 +140,7 @@ public class OrderDetailController extends FormBasicController {
 	}
 	
 	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly, Form rootForm) {
+			boolean readOnly, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "order", rootForm);
 		this.readOnly = readOnly;
 		// Reload to have the last status and transactions
@@ -156,8 +153,6 @@ public class OrderDetailController extends FormBasicController {
 		
 		delivery = order.getDelivery();
 		profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		initForm(ureq);
 		loadModel();

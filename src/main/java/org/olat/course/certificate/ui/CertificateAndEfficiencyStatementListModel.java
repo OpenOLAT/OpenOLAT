@@ -159,7 +159,7 @@ public class CertificateAndEfficiencyStatementListModel
 
 	public enum Cols implements FlexiSortableColumnDef {
 
-		displayName("table.header.course", true),
+		displayName("table.header.title", true),
 		curriculumElIdent("table.header.curriculum.element", true),
 		score("table.header.score", true),
 		grade("grade.system.labels.fallback", true),

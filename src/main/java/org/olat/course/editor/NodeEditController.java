@@ -108,6 +108,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	public static final Event NODECONFIG_CHANGED_REFRESH_EVENT = new Event("nodeconfigrefresh");
 	public static final Event REMINDER_VISIBILITY_EVENT = new Event("reminder-visibility");
+	public static final Event NODECONFIG_PUBLISH_EVENT = new Event("nodeconfigpublish");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL, PANE_TAB_REMINDER, PANE_TAB_REMINDER_TODO };
 	
 	@Autowired
@@ -215,6 +216,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT);
+			} else if (event == NodeEditController.NODECONFIG_PUBLISH_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_PUBLISH_EVENT);
 			} else if (event == REMINDER_VISIBILITY_EVENT && reminderProvider != null) {
 				doUpdateReminderUI(urequest, true);
 			}

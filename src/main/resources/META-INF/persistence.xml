@@ -149,6 +149,7 @@
 		<class>org.olat.repository.model.RepositoryTemplateToGroupRelation</class>
 		<class>org.olat.resource.OLATResourceImpl</class>
 		<class>org.olat.resource.references.ReferenceImpl</class>
+		<class>org.olat.resource.references.ReferenceHistoryImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferToOrganisationImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderImpl</class>

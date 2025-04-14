@@ -21,8 +21,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -35,7 +33,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -50,24 +47,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaskPortraitController extends BasicController {
 
-	private final MapperKey avatarMapperKey;
-	
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private MapperService mapperService;
 	@Autowired
 	private UserPortraitService userPortraitService;
 	
 	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Identity identity, Task task) {
 		super(ureq, wControl, Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
-
-		avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper());
 		
 		VelocityContainer mainVC = createVelocityContainer("task_portrait");
 		
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(identity));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "task_identity", mainVC, null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "task_identity", mainVC);
 		usersPortraitCmp.setSize(PortraitSize.medium);
 		usersPortraitCmp.setMaxUsersVisible(1);
 		usersPortraitCmp.setUsers(portraitUsers);

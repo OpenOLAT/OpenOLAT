@@ -403,58 +403,6 @@ ul.o_dropdown {
 	gap: $o-widgets-gap;
 }
 
-/* Portrait image */
-.o_portrait {
-	display: inline-block;
-	img {
-		border-radius: $o-portrait-radius;
-		border: $o-portrait-border;
-		background-color: $gray-lighter;
-		background-position: 50% 50%; 
-		background-repeat: no-repeat;
-		background-size: cover;
-	}
-}
-.o_block_inline, .o_block_inline_right, .o_block_inline_left, .o_block_inline_both {
-	.o_portait, .o_portrait_image {
-		display: inline-block;
-	}
-}
-
-/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALLDisplayPortraitManager.WIDTH_PORTRAIT_BIG
-
-Dummy is used for registered users which have no personal avatar image. 
-- dummy is used if gender is not known
-- dummy_female is used for femal users
-- dummy_male is used for male users
-
-Anonymous is used for guest users and in anonymous chat / forum postings
-
-The "important!" avoids hiding the image by bootstrap.
-*/
-.o_portrait_avatar,
-.o_portrait_dummy,
-.o_portrait_dummy_female_big,
-.o_portrait_dummy_male_big,
-.o_portrait_anonymous 			{width: $o-portrait-size; height: $o-portrait-size;}
-.o_portrait_dummy				{background-image: url('#{$o-images-path}portrait/dummy.png') !important;}
-.o_portrait_dummy_female_big	{background-image: url('#{$o-images-path}portrait/dummy_female_big.png') !important;}
-.o_portrait_dummy_male_big		{background-image: url('#{$o-images-path}portrait/dummy_male_big.png') !important;}
-.o_portrait_anonymous 			{background-image: url('#{$o-images-path}portrait/anonymous.png') !important; }
-
-.o_portrait_avatar_small,
-.o_portrait_dummy_small,
-.o_portrait_dummy_female_small,
-.o_portrait_dummy_male_small,
-.o_portrait_anonymous_small 	{width: $o-portrait-small-size; height: $o-portrait-small-size;}
-.o_portrait_dummy_small			{background-image: url('#{$o-images-path}portrait/dummy_small.png') !important;}
-.o_portrait_dummy_female_small	{background-image: url('#{$o-images-path}portrait/dummy_female_small.png') !important;}
-.o_portrait_dummy_male_small	{background-image: url('#{$o-images-path}portrait/dummy_male_small.png') !important;}
-.o_portrait_anonymous_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
-.o_portrait_openolat_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
-
-
-
 /* Date component, used in info course element, blog etc */
 .o_datecomp {
 	position: relative; 
@@ -778,8 +726,15 @@ ul.o_certificates li {
 .o_tm_green { background-color: #99FF00; }
 
 /* Assessment */
+.o_qti_statistics_filters {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	column-gap: 0.5em;
+}
+
 div.o_assessment_user_type_filter {
-	padding: 0.5em;
+	padding: 6px 0.5em;
 	border: 1px solid $gray-lighter;
 	border-radius: $panel-border-radius;
 	

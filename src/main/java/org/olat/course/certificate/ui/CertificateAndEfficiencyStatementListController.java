@@ -403,7 +403,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-		
+		Map<Long, String> courseEntryKeyToDisplayName = repositoryManager.lookupRepositoryEntries(courseEntryKeys)
+				.stream()
+				.collect(Collectors.toMap(RepositoryEntry::getKey, RepositoryEntry::getDisplayname));
 		Map<Long, AssessmentEntryScoring> courseEntryKeysToScoring = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
@@ -444,7 +446,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				tableRows.add(curriculumElementRow);
 				curriculumElToRows.put(element.getCurriculumElement(), curriculumElementRow);
 				
-				forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement, olatResourceKeyToCertificate, tableRows);
+				forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement,
+						olatResourceKeyToCertificate, courseEntryKeyToDisplayName, tableRows);
 			} else {	
 				// Create first taxonomy level rows, if existent
 				Map<TaxonomyLevel, CertificateAndEfficiencyStatementRow> taxonomyLevelToRows = taxonomyLevelToCurriculumElements.get(parent);
@@ -477,7 +480,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					tableRows.add(curriculumElementRow);
 					curriculumElToRows.put(element.getCurriculumElement(), curriculumElementRow);
 					
-					forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement, olatResourceKeyToCertificate, tableRows);				
+					forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement,
+							olatResourceKeyToCertificate, courseEntryKeyToDisplayName, tableRows);
 				}
 			}
 		}		
@@ -534,6 +538,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			CertificateAndEfficiencyStatementRow parentRow, 
 			Map<Long, UserEfficiencyStatementLight> olatResourceKeyToStatement, 
 			Map<Long, CertificateLight> olatResourceKeyToCertificate,
+			Map<Long, String> courseEntryKeyToDisplayName,
 			List<CertificateAndEfficiencyStatementRow> tableRows) {
 		Set<UserEfficiencyStatementLight> efficiencyStatements = new HashSet<>();
 		
@@ -551,8 +556,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		if (efficiencyStatements.size() > 1) {
 			for (UserEfficiencyStatementLight efficiencyStatement : efficiencyStatements) {
 				CertificateAndEfficiencyStatementRow statementRow = new CertificateAndEfficiencyStatementRow();
-				statementRow.setParent(parentRow);				
-				statementRow.setDisplayName(efficiencyStatement.getTitle());
+				statementRow.setParent(parentRow);
+				String title = courseEntryKeyToDisplayName.getOrDefault(
+						efficiencyStatement.getCourseRepoKey(),
+						efficiencyStatement.getTitle());
+				statementRow.setDisplayName(title);
 				statementRow.setPassed(efficiencyStatement.getPassed());
 				statementRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
 				statementRow.setResourceKey(efficiencyStatement.getResourceKey());
@@ -601,6 +609,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
+		Map<Long, String> courseEntryKeyToDisplayName = repositoryManager.lookupRepositoryEntries(courseEntryKeys)
+				.stream()
+				.collect(Collectors.toMap(RepositoryEntry::getKey, RepositoryEntry::getDisplayname));
 		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
@@ -611,7 +622,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
 			CertificateAndEfficiencyStatementRow wrapper = new CertificateAndEfficiencyStatementRow();
-			wrapper.setDisplayName(efficiencyStatement.getTitle());
+			String title = courseEntryKeyToDisplayName.getOrDefault(
+					efficiencyStatement.getCourseRepoKey(),
+					efficiencyStatement.getTitle());
+			wrapper.setDisplayName(title);
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
 			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(),

@@ -83,16 +83,7 @@ public class UserInfoProfileController extends BasicController {
 		
 		mainVC.contextPut("name", StringHelper.escapeHtml(portraitUser.getDisplayName()));
 		
-		UserAvatarMapper mapper = profileConfig.getAvatarMapper();
-		if (mapper == null) {
-			mapper = new UserAvatarMapper();
-		}
-		String avatarMapperBaseURL = profileConfig.getAvatarMapperBaseURL();
-		if (!StringHelper.containsNonWhitespace(avatarMapperBaseURL)) {
-			avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", mapper);
-		}
-		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("user.portrait", mainVC, getLocale(),
-				avatarMapperBaseURL);
+		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("user.portrait", mainVC, getLocale());
 		userPortraitComp.setPortraitUser(portraitUser);
 		userPortraitComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
 

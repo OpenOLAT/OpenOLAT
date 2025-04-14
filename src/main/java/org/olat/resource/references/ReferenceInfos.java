@@ -24,7 +24,7 @@ import org.olat.repository.RepositoryEntry;
 /**
  * 
  * Initial date: 17.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ReferenceInfos {

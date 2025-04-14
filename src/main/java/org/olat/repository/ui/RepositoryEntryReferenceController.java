@@ -28,6 +28,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
@@ -48,6 +49,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoryEntryReferenceProvider.Confirm;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.SettingsContentProvider;
 import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
@@ -77,6 +79,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private Link replaceImportLink;
 	private Link importUrlLink;
 	private Link replaceImportUrlLink;
+	private Link referencesHistoryLink;
 	private final Link editLink;
 	private final Link editSettingsLink;
 	private final Dropdown commandsDropdown;
@@ -86,6 +89,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	private CreateEntryController createCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private ImportURLRepositoryEntryController importUrlCtrl;
+	private Controller referencesHistoryCtrl;
 	private Controller editSettingsCtrl;
 	
 	private RepositoryEntry repositoryEntry;
@@ -220,6 +224,11 @@ public class RepositoryEntryReferenceController extends BasicController {
 			}
 		}
 		
+		referencesHistoryLink = LinkFactory.createCustomLink("references.history", "references.history", "references.history", Link.LINK, mainVC, this);
+		referencesHistoryLink.setIconLeftCSS("o_icon o_icon-fw o_icon_history");
+		commandsDropdown.addComponent(new Spacer("historySpace"));
+		commandsDropdown.addComponent(referencesHistoryLink);
+		
 		editLink = LinkFactory.createButton("edit.resource", mainVC, this);
 		editLink.setElementCssClass("o_sel_re_reference_edit");
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
@@ -243,6 +252,10 @@ public class RepositoryEntryReferenceController extends BasicController {
 			referencePanel.setMessage(warningMessage);
 			referencePanel.setMesssageIconCssClass("o_warning_with_icon");
 		}
+		
+		boolean hasHistory = referenceProvider.hasReferencesHistory();
+		referencesHistoryLink.setVisible(hasHistory);
+		referencesHistoryLink.setEnabled(hasHistory);
 		
 		if (repositoryEntry != null) {
 			
@@ -270,7 +283,6 @@ public class RepositoryEntryReferenceController extends BasicController {
 				}
 			}	
 		}
-		
 		
 		boolean enabled = false;
 		for(Component command:commandsDropdown.getComponents()) {
@@ -310,6 +322,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 			doCreateRepositoryEntry(ureq, (RepositoryHandler)((Link)source).getUserObject());
 		} else if (source == editSettingsLink) {
 			doEditSettings(ureq);
+		} else if(source == referencesHistoryLink) {
+			doShowReferencesHistory(ureq);
 		}
 	}
 
@@ -380,17 +394,22 @@ public class RepositoryEntryReferenceController extends BasicController {
 				cmc.deactivate();
 				cleanUp();
 			}
+		} else if(source == referencesHistoryCtrl) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(referencesHistoryCtrl);
 		removeAsListenerAndDispose(importUrlCtrl);
 		removeAsListenerAndDispose(importCtrl);
 		removeAsListenerAndDispose(createCtrl);
 		removeAsListenerAndDispose(searchCtrl);
 		removeAsListenerAndDispose(cmc);
+		referencesHistoryCtrl = null;
 		importUrlCtrl = null;
 		importCtrl = null;
 		createCtrl = null;
@@ -427,49 +446,80 @@ public class RepositoryEntryReferenceController extends BasicController {
 	}
 
 	private void doSelectRepositoryEntry(UserRequest ureq) {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(searchCtrl);
-		
-		// The commandLabel is used to get the stored prefs, but it is never displayed in the gui?!
-		searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				referenceProvider.getResourceTypes().stream().toArray(String[]::new), "keep.prefs");
-		listenTo(searchCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(),
-				true, referenceProvider.getSelectionTitle());
-		listenTo(cmc);
-		cmc.activate();
+		Confirm confirmation = referenceProvider.confirmCanReplace();
+		if(confirmation.canReplace()) {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(searchCtrl);
+			
+			// The commandLabel is used to get the stored prefs, but it is never displayed in the gui?!
+			searchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+					referenceProvider.getResourceTypes().stream().toArray(String[]::new), "keep.prefs");
+			listenTo(searchCtrl);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(),
+					true, referenceProvider.getSelectionTitle());
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			getWindowControl().setWarning(confirmation.errorMessage());
+		}
 	}
 	
 	private void doCreateRepositoryEntry(UserRequest ureq, RepositoryHandler handler) {
-		removeAsListenerAndDispose(createCtrl);
-		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false);
-		listenTo(createCtrl);
-		
-		String title = translate(handler.getCreateLabelI18nKey());
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(), true, title);
-		cmc.setCustomWindowCSS("o_sel_author_create_popup");
-		listenTo(cmc);
-		cmc.activate();
+		Confirm confirmation = referenceProvider.confirmCanReplace();
+		if(confirmation.canReplace()) {
+			removeAsListenerAndDispose(createCtrl);
+			createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false);
+			listenTo(createCtrl);
+			
+			String title = translate(handler.getCreateLabelI18nKey());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(), true, title);
+			cmc.setCustomWindowCSS("o_sel_author_create_popup");
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			getWindowControl().setWarning(confirmation.errorMessage());
+		}
 	}
 	
 	private void doImportRepositoryEntry(UserRequest ureq) {
-		removeAsListenerAndDispose(importCtrl);
-		importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl(), referenceProvider.getResourceTypes().stream().toArray(String[]::new));
-		listenTo(importCtrl);
-		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCtrl.getInitialComponent(), true, "");
-		listenTo(cmc);
-		cmc.activate();
+		Confirm confirmation = referenceProvider.confirmCanReplace();
+		if(confirmation.canReplace()) {
+			removeAsListenerAndDispose(importCtrl);
+			importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl(), referenceProvider.getResourceTypes().stream().toArray(String[]::new));
+			listenTo(importCtrl);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), importCtrl.getInitialComponent(), true, "");
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			getWindowControl().setWarning(confirmation.errorMessage());
+		}
 	}
 	
 	private void doImportUrlRepositoryEntry(UserRequest ureq) {
-		removeAsListenerAndDispose(importCtrl);
-		importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl(), referenceProvider.getResourceTypes().stream().toArray(String[]::new));
-		listenTo(importUrlCtrl);
+		Confirm confirmation = referenceProvider.confirmCanReplace();
+		if(confirmation.canReplace()) {
+			removeAsListenerAndDispose(importCtrl);
+			importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl());
+			listenTo(importUrlCtrl);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), importUrlCtrl.getInitialComponent(), true, "");
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			getWindowControl().setWarning(confirmation.errorMessage());
+		}
+	}
+	
+	private void doShowReferencesHistory(UserRequest ureq) {
+		removeAsListenerAndDispose(referencesHistoryCtrl);
+		referencesHistoryCtrl = referenceProvider.getReferencesHistoryController(ureq, getWindowControl());
+		listenTo(referencesHistoryCtrl);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), importUrlCtrl.getInitialComponent(), true, "");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), referencesHistoryCtrl.getInitialComponent(), true, "");
 		listenTo(cmc);
 		cmc.activate();
 	}

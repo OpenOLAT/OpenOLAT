@@ -91,7 +91,6 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -164,10 +163,6 @@ public class CNSParticipantListController extends FormBasicController implements
 		requiredSelections = Integer.valueOf(courseNode.getModuleConfiguration().getStringValue(CNSCourseNode.CONFIG_KEY_REQUIRED_SELECTIONS));
 		
 		profileConfig = userPortraitService.createProfileConfig();
-		UserAvatarMapper avatarMapper = new UserAvatarMapper();
-		profileConfig.setAvatarMapper(avatarMapper);
-		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		initForm(ureq);
 		initFilters();

@@ -80,7 +80,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 	private ToDoService toDoService;
 
 	public QualityToDoListController(UserRequest ureq, WindowControl wControl, MainSecurityCallback secCallback) {
-		super(ureq, wControl, "todos", null, GeneralToDoTaskProvider.TYPE, null, null);
+		super(ureq, wControl, "todos", GeneralToDoTaskProvider.TYPE, null, null);
 		this.secCallback = secCallback;
 		this.toDoSecCallback = new QualityToDoTaskSecurityCallback();
 		

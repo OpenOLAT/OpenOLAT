@@ -112,6 +112,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.ui.AssessmentResultController;
@@ -140,13 +141,9 @@ import org.olat.properties.LogEntry;
 import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -648,9 +645,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 
 	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
-		UserAvatarMapper userAvatarMapper = new UserAvatarMapper();
-		String mapperPath = registerMapper(ureq, userAvatarMapper);
-		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), mapperPath);
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale());
 
 		timelineCtrl = new TimelineController(
 				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
@@ -1006,13 +1001,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			Long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit();
 			return timeLimits.longValue() > 0 ? timeLimits.longValue() : null;
 		}
-		
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
-			return assessmentTest.getTimeLimits().getMaximum().longValue();
+
+		AssessmentTestInfos assessmentTestInfos = qtiService.getAssessmentTestInfos(testEntry);
+		if(assessmentTestInfos != null && assessmentTestInfos.timeLimits() != null ) {
+			return assessmentTestInfos.timeLimits().longValue();
 		}
 		return null;
 	}

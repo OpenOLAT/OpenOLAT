@@ -70,7 +70,6 @@ import org.olat.modules.curriculum.ui.wizard.ReviewEditedMembershipsTableModel.R
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -97,10 +96,8 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 	
 	private final EditMembersContext membersContext;
 
-	private final String avatarMapperBaseURL;
 	private final List<CurriculumRoles> rolesToReview;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 	
 	@Autowired
 	private ACService acService;
@@ -123,7 +120,6 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		this.membersContext = membersContext;
 		
 		detailsVC = createVelocityContainer("member_details");
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "imp-cur-avatars", avatarMapper);
 
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
@@ -372,7 +368,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		List<CurriculumElement> elements = membersContext.getAllCurriculumElements();
 		Curriculum curriculum = membersContext.getCurriculum();
 		
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToReview, false, false, false, true, false,
 				false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
@@ -390,12 +386,5 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		removeAsListenerAndDispose(row.getDetailsController());
 		flc.remove(row.getDetailsController().getInitialFormItem());
 		row.setDetailsController(null);
-	}
-	
-	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		return profileConfig;
 	}
 }

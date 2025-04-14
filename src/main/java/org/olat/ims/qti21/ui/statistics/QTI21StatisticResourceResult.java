@@ -47,10 +47,10 @@ import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -150,8 +150,8 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 				cutValue = Double.valueOf(minPassedScore.doubleValue());
 			}
 		} else {
-			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-			cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+			AssessmentTestInfos assessmentTestInfos = qtiService.getAssessmentTestInfos(testEntry);
+			cutValue = assessmentTestInfos == null ? null :  assessmentTestInfos.cutValue();
 		}
 		return cutValue;
 	}
@@ -272,6 +272,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
 		buildRecursively(test, rootTreeNode);
+		rootTreeNode.opened();
 		return subTreeModel;
 	}
 	
@@ -370,7 +371,8 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	private Controller createAssessmentTestController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, boolean printMode) {
-		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, stackPanel, this, withFilter, printMode, true);
+		boolean withReferencesHistory = courseNode != null;
+		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, stackPanel, this, withFilter, withReferencesHistory, printMode, true);
 		if(courseNode != null) {
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 					.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());

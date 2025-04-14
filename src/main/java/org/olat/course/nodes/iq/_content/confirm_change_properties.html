@@ -1,0 +1,40 @@
+<fieldset>
+	<legend>$!off_title</legend>
+	#if ($off_warn)
+	<div class="o_warning">$off_warn</div>
+	#end
+	<table class="table">
+		<thead>
+			<th scope="col">$r.translate("change.properties.property")</th>
+			<th scope="col">$current</th>
+			<th scope="col">$new</th>
+			<th scope="col">$r.translate("change.properties.message")</th>
+		</thead>
+		<tbody>
+			<tr>
+				<th scope="row">$r.translate("change.properties.question.types")</th>
+				<td>$currentScoring</td>
+				<td>$newScoring</td>
+				<td>#if($r.isNotEmpty($messageScoring))<i class="o_icon o_icon_warn"> </i> $messageScoring#end</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("change.properties.score")</th>
+				<td>$currentMaxScore</td>
+				<td>$newMaxScore</td>
+				<td>#if($r.isNotEmpty($messageMaxScore))<i class="o_icon o_icon_warn"> </i> $messageMaxScore#end</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("change.properties.status")</th>
+				<td>$currentCutValue</td>
+				<td>$newCutValue</td>
+				<td>#if($r.isNotEmpty($messageCutValue))<i class="o_icon o_icon_warn"> </i> $messageCutValue#end</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("change.properties.runs")</th>
+				<td>$currentRuns</td>
+				<td>$newRuns</td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
+</fieldset>

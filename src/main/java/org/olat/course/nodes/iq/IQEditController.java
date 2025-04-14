@@ -363,6 +363,8 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 				updateGradingTab();
 				gradingInfosCtrl.reloadRepositoryEntry(getIQReference(moduleConfiguration, false));
 				confirmationMailCtrl.loadDefaultEmailText();
+			} else if(event == NodeEditController.NODECONFIG_PUBLISH_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_PUBLISH_EVENT);
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {

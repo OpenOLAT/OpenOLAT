@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import java.util.List;
 
 import org.olat.admin.user.imp.TransientIdentity;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -49,20 +48,18 @@ public class GTAReviewerIdentityInformationsController extends FormBasicControll
 	private final boolean anonym;
 	private final String placeholderName;
 	private final Identity user;
-	private final MapperKey avatarMapperKey;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private UserPortraitService userPortraitService;
 	
-	GTAReviewerIdentityInformationsController(UserRequest ureq, WindowControl wControl, MapperKey avatarMapperKey,
-			Identity user, String placeholderName, boolean anonym) {
+	GTAReviewerIdentityInformationsController(UserRequest ureq, WindowControl wControl, Identity user,
+			String placeholderName, boolean anonym) {
 		super(ureq, wControl, "reviewer_informations");
 		this.user = user;
 		this.anonym = anonym;
 		this.placeholderName = placeholderName;
-		this.avatarMapperKey = avatarMapperKey;
 		initForm(ureq);
 	}
 
@@ -74,7 +71,7 @@ public class GTAReviewerIdentityInformationsController extends FormBasicControll
 			
 			Identity userToPortrait = anonym ? new TransientIdentity() : user;
 			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(userToPortrait));
-			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
+			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent());
 			usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 			usersPortraitCmp.setSize(PortraitSize.large);
 			usersPortraitCmp.setMaxUsersVisible(5);

@@ -75,7 +75,6 @@ import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.UserAvatarMapper;
 
 /**
  * 
@@ -103,10 +102,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	private final boolean membersManaged;
 	
 	public CurriculumElementPendingUsersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL) {
-		super(ureq, wControl, toolbarPanel, "curriculum_element_pending",
-				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
+		super(ureq, wControl, toolbarPanel, "curriculum_element_pending", curriculumElement, secCallback);
 	
 		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
 

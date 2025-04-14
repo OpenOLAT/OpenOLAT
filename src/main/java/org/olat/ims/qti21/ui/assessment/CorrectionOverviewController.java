@@ -32,12 +32,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.SimpleStackedPanel;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,7 +51,9 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.ui.ReferenceHistoryFilterController;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.assessment.ui.event.ReferencesHistorySelectionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,20 +71,20 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class CorrectionOverviewController extends BasicController implements TooledController {
 	
-	private RepositoryEntry testEntry;
 	private RepositoryEntry courseEntry;
 	private CorrectionOverviewModel model;
 	private final CourseEnvironment courseEnv;
 	private final AssessmentToolOptions asOptions;
-
+	private final IQTESTCourseNode courseNode;
 	
 	private final Link identitiesLink;
 	private final Link assessmentItemsLink;
+	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 	private ButtonGroupComponent segmentButtonsCmp;
-	private final StackedPanel mainPanel;
 	
 	private CorrectionIdentityListController identityListCtrl;
+	private ReferenceHistoryFilterController referencesHistoryCtrl;
 	private CorrectionAssessmentItemListController assessmentItemsCtrl;
 	
 	@Autowired
@@ -98,8 +99,33 @@ public class CorrectionOverviewController extends BasicController implements Too
 		this.courseEnv = courseEnv;
 		this.asOptions = asOptions;
 		this.stackPanel = stackPanel;
-		testEntry = courseNode.getReferencedRepositoryEntry();
+		this.courseNode = courseNode;
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		initModel(testEntry);
+		
+		segmentButtonsCmp = new ButtonGroupComponent("segments");
+		assessmentItemsLink = LinkFactory.createLink("correction.assessment.items", getTranslator(), this);
+		assessmentItemsLink.setElementCssClass("o_sel_correction_assessment_items");
+		segmentButtonsCmp.addButton(assessmentItemsLink, true);
+		identitiesLink = LinkFactory.createLink("correction.assessed.identities", getTranslator(), this);
+		identitiesLink.setElementCssClass("o_sel_correction_identities");
+		segmentButtonsCmp.addButton(identitiesLink, false);
+
+		mainVC = createVelocityContainer("overview_corrections");
+		
+		if(courseNode != null) {
+			referencesHistoryCtrl = new ReferenceHistoryFilterController(ureq, getWindowControl(),
+					courseEntry, courseNode, testEntry);
+			listenTo(referencesHistoryCtrl);
+			mainVC.put("referencesHistory", referencesHistoryCtrl.getInitialComponent());
+		}
+	
+		putInitialPanel(mainVC);
+		doOpenAssessmentItemList(ureq);
+	}
+	
+	private void initModel(RepositoryEntry testEntry) {
 		File fUnzippedDirRoot = FileResourceManager.getInstance()
 				.unzipFileResource(testEntry.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
@@ -113,17 +139,6 @@ public class CorrectionOverviewController extends BasicController implements Too
 		List<Identity> assessedIdentities = initializeAssessedIdentities();
 		model = new CorrectionOverviewModel(courseEntry, courseNode, testEntry,
 				resolvedAssessmentTest, manifestBuilder, assessedIdentities, getTranslator());
-		
-		segmentButtonsCmp = new ButtonGroupComponent("segments");
-		assessmentItemsLink = LinkFactory.createLink("correction.assessment.items", getTranslator(), this);
-		assessmentItemsLink.setElementCssClass("o_sel_correction_assessment_items");
-		segmentButtonsCmp.addButton(assessmentItemsLink, true);
-		identitiesLink = LinkFactory.createLink("correction.assessed.identities", getTranslator(), this);
-		identitiesLink.setElementCssClass("o_sel_correction_identities");
-		segmentButtonsCmp.addButton(identitiesLink, false);
-
-		mainPanel = putInitialPanel(new SimpleStackedPanel("overview"));
-		doOpenAssessmentItemList(ureq);
 	}
 	
 	@Override
@@ -165,6 +180,10 @@ public class CorrectionOverviewController extends BasicController implements Too
 			} else if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+		} else if(referencesHistoryCtrl == source) {
+			if(event instanceof ReferencesHistorySelectionEvent rhse) {
+				doSelectReference(ureq, rhse.getEntry());
+			}
 		}
 	}
 
@@ -179,6 +198,22 @@ public class CorrectionOverviewController extends BasicController implements Too
 		}
 	}
 	
+	private void doSelectReference(UserRequest ureq, RepositoryEntry testEntry) {
+		removeAsListenerAndDispose(assessmentItemsCtrl);
+		removeAsListenerAndDispose(identityListCtrl);
+		assessmentItemsCtrl = null;
+		identityListCtrl = null;
+		
+		initModel(testEntry);
+		
+		if(segmentButtonsCmp.getSelectedButton() == identitiesLink) {
+			doOpenIdentityList(ureq);
+		} else {
+			doOpenAssessmentItemList(ureq);
+			segmentButtonsCmp.setSelectedButton(assessmentItemsLink);
+		}
+	}
+	
 	private void doOpenAssessmentItemList(UserRequest ureq) {
 		if(assessmentItemsCtrl == null) {
 			assessmentItemsCtrl = new CorrectionAssessmentItemListController(ureq, getWindowControl(), stackPanel, model);
@@ -187,7 +222,7 @@ public class CorrectionOverviewController extends BasicController implements Too
 			assessmentItemsCtrl.reloadModel();
 		}
 		stackPanel.popUpToController(this);
-		mainPanel.setContent(assessmentItemsCtrl.getInitialComponent());
+		mainVC.put("content", assessmentItemsCtrl.getInitialComponent());
 	}
 	
 	private void doOpenIdentityList(UserRequest ureq) {
@@ -198,6 +233,6 @@ public class CorrectionOverviewController extends BasicController implements Too
 			identityListCtrl.reloadModel();
 		}
 		stackPanel.popUpToController(this);
-		mainPanel.setContent(identityListCtrl.getInitialComponent());
+		mainVC.put("content", identityListCtrl.getInitialComponent());
 	} 
 }

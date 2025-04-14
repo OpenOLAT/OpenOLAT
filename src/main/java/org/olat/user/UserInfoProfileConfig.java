@@ -29,8 +29,6 @@ public class UserInfoProfileConfig {
 	
 	private boolean chatEnabled;
 	private boolean userManagementLinkEnabled = true;
-	private UserAvatarMapper avatarMapper;
-	private String avatarMapperBaseURL;
 
 	public boolean isChatEnabled() {
 		return chatEnabled;
@@ -38,22 +36,6 @@ public class UserInfoProfileConfig {
 
 	public void setChatEnabled(boolean chatEnabled) {
 		this.chatEnabled = chatEnabled;
-	}
-
-	public UserAvatarMapper getAvatarMapper() {
-		return avatarMapper;
-	}
-
-	public void setAvatarMapper(UserAvatarMapper avatarMapper) {
-		this.avatarMapper = avatarMapper;
-	}
-
-	public String getAvatarMapperBaseURL() {
-		return avatarMapperBaseURL;
-	}
-
-	public void setAvatarMapperBaseURL(String avatarMapperBaseURL) {
-		this.avatarMapperBaseURL = avatarMapperBaseURL;
 	}
 
 	public void setUserManagementLinkEnabled(boolean userManagementLinkEnabled) {

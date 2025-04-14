@@ -135,10 +135,9 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
-import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExport;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -268,22 +267,14 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 					|| (CoreSpringFactory.getImpl(DueDateService.class).getDueDate(getDueDateConfig(IQEditController.CONFIG_KEY_END_TEST_DATE), courseEntry, identity) != null)) {
 				timeLimit = true;
 			} else {
-				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-				if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+				QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+				AssessmentTestInfos assessmentTestInfos = qti21Service.getAssessmentTestInfos(testEntry);
+				if(assessmentTestInfos != null && assessmentTestInfos.timeLimits() != null) {
 					timeLimit = true;
 				}
 			}
 		}
 		return timeLimit;
-	}
-	
-	public Double getQTI21EvaluatedMaxScore(RepositoryEntry testEntry) {
-		Double estimatedMaxScore = null;
-		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
-			ResolvedAssessmentTest resolvedAssessmentTest = loadResolvedAssessmentTest(testEntry);
-			estimatedMaxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
-		}
-		return estimatedMaxScore;
 	}
 	
 	/**
@@ -302,9 +293,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
 				timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
 			} else {
-				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-				if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
-					timeLimit = assessmentTest.getTimeLimits().getMaximum().intValue();
+				QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+				AssessmentTestInfos assessmentTestInfos = qti21Service.getAssessmentTestInfos(testEntry);
+				if(assessmentTestInfos != null && assessmentTestInfos.timeLimits() != null) {
+					timeLimit = assessmentTestInfos.timeLimits().intValue();
 				}
 			}
 		}
@@ -374,7 +366,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type) {
 		if(!isStatisticTypeAllowed(type)) return null;
 		
-		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
+		RepositoryEntry qtiTestEntry = options.getReferenceEntry() == null
+				? getReferencedRepositoryEntry()
+				: options.getReferenceEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiTestEntry, courseEntry, getIdent());
@@ -722,11 +716,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			assessmentStatus = AssessmentEntryStatus.done;
 			visibility = Boolean.TRUE;
 		}
+		QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
-
-		AssessmentTest assessmentTest = loadAssessmentTest(session.getTestEntry());
-		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		AssessmentTestInfos assessmentTestInfos = qti21Service.getAssessmentTestInfos(session.getTestEntry());
+		Double cutValue = assessmentTestInfos == null ? null : assessmentTestInfos.cutValue();
 
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
@@ -773,6 +767,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	
 	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv,
 			boolean updateScoring, Identity coachingIdentity, Role by, Locale locale) {
+		QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentEntry currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		
@@ -785,8 +780,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		String performanceClassIdent = currentAssessmentEntry.getPerformanceClassIdent();
 		Boolean passed = currentAssessmentEntry.getPassed();
 		if(updateScoring) {
-			AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
-			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+			AssessmentTestInfos assessmentTestInfos = qti21Service.getAssessmentTestInfos(testSession.getTestEntry());
+			Double cutValue = assessmentTestInfos == null ? null : assessmentTestInfos.cutValue();
 	
 			BigDecimal finalScore = testSession.getFinalScore();
 			score = finalScore == null ? null : finalScore.floatValue();
@@ -844,10 +839,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 		}
 		
-		File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qti21Service.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		AssessmentTestInfos assessmentTestInfos = qti21Service.getAssessmentTestInfos(testEntry);
+		Double cutValue = assessmentTestInfos == null ? null : assessmentTestInfos.cutValue();
 		
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
 		Map<Long, List<AssessmentTestSession>> identityKeyToSessions = CoreSpringFactory.getImpl(QTI21Service.class)

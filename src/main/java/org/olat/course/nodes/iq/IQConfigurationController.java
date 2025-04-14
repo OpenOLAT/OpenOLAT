@@ -19,10 +19,11 @@
  */
 package org.olat.course.nodes.iq;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -43,17 +45,23 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishProcess;
+import org.olat.course.editor.PublishSetInformations;
+import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.scoring.ScoreScalingHelper;
-import org.olat.fileresource.FileResourceManager;
+import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.PublishTreeModel;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
@@ -61,9 +69,8 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
-import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
-import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.event.RestartEvent;
@@ -75,11 +82,11 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryReferenceController;
 import org.olat.repository.ui.RepositoryEntryReferenceProvider.ReferenceContentProvider;
+import org.olat.resource.OLATResource;
+import org.olat.resource.references.ReferenceHistory;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -103,6 +110,7 @@ public class IQConfigurationController extends BasicController implements Refere
 	private QTI21EditForm mod21ConfigForm;
 	
 	private final ICourse course;
+	private final boolean newReference;
 	private final ModuleConfiguration moduleConfiguration;
 	private final AbstractAccessableCourseNode courseNode;
 	private final boolean selfAssessment;
@@ -115,6 +123,8 @@ public class IQConfigurationController extends BasicController implements Refere
 	private QTI21Service qti21service;
 	@Autowired
 	private GradingService gradingService;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -159,14 +169,46 @@ public class IQConfigurationController extends BasicController implements Refere
 				.withIconCss("o_icon o_FileResource-IMSQTI21_icon")
 				.build();
 		String selectionTitle = translate("select.test");
-		CourseNodeReferenceProvider referenceProvider = new CourseNodeReferenceProvider(repositoryService,
+		RepositoryEntry iqEntry = getIQReference();
+		newReference = iqEntry == null;
+		IQCourseNodeReferenceProvider referenceProvider = new IQCourseNodeReferenceProvider(repositoryService,
 				RESOURCE_TYPES, emptyStateConfig, selectionTitle, this);
-		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, getIQReference(), referenceProvider);
+		referenceCtrl = new RepositoryEntryReferenceController(ureq, wControl, iqEntry, referenceProvider);
 		listenTo(referenceCtrl);
 		myContent.put("reference", referenceCtrl.getInitialComponent());
 		
 		putInitialPanel(myContent);
 		updateEditController(ureq, false);
+	}
+	
+	public class IQCourseNodeReferenceProvider extends CourseNodeReferenceProvider {
+		
+		public IQCourseNodeReferenceProvider(RepositoryService repositoryService, List<String> resourceTypes,
+			EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider) {
+			super(repositoryService, resourceTypes, emptyStateConfig, selectionTitle, referenceContentProvider);
+		}
+
+		@Override
+		public boolean hasReferencesHistory() {
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			List<ReferenceHistory> refs = referenceManager.getReferencesHistoryOf(courseEntry.getOlatResource(), courseNode.getIdent());
+			return refs.size() > 1;
+		}
+		
+		@Override
+		public Controller getReferencesHistoryController(UserRequest ureq, WindowControl wControl) {
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			return new ReferencesHistoryController(ureq, wControl, courseEntry, courseNode.getIdent(), getIQReference());
+		}
+
+		@Override
+		public Confirm confirmCanReplace() {
+			if(newReference || canPublish()) {
+				return new Confirm(true, null);
+			}
+			String warning = translate("warning.publish");
+			return new Confirm(false, warning);
+		}
 	}
 	
 	@Override
@@ -238,20 +280,14 @@ public class IQConfigurationController extends BasicController implements Refere
 			Double maxValue = null;
 			Double cutValue = null;
 			
-			FileResourceManager frm = FileResourceManager.getInstance();
-			File unzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
-			ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-			if (assessmentTest != null) {
-				AssessmentTestBuilder testBuilder = new AssessmentTestBuilder(assessmentTest);
-				maxValue = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+			AssessmentTestInfos assessmentTestInfos = qti21service.getAssessmentTestInfos(re);
+			if (assessmentTestInfos != null) {
+				maxValue = assessmentTestInfos.estimatedMaxScore();
 				if(maxValue == null) {
-					maxValue = testBuilder.getMaxScore();
+					maxValue = assessmentTestInfos.maxScore();
 				}
-				cutValue = testBuilder.getCutValue();
-				if(maxValue != null && "OpenOLAT".equals(assessmentTest.getToolName())) {
-					minValue = 0d;
-				}
+				cutValue = assessmentTestInfos.cutValue();
+				minValue = assessmentTestInfos.minScore();
 			}
 			Float min = minValue == null ? null : minValue.floatValue();
 			Float max = maxValue == null ? null : maxValue.floatValue();
@@ -343,7 +379,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		} else if(source == confirmChangeResourceCtrl) {
 			if(event == Event.DONE_EVENT) {
 				RepositoryEntry newEntry = confirmChangeResourceCtrl.getNewTestEntry();
-				doChangeResource(urequest, newEntry);
+				doChangeResource(urequest, newEntry, true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -405,7 +441,7 @@ public class IQConfigurationController extends BasicController implements Refere
 				listenTo(cmc);
 				cmc.activate();
 			} else {
-				doChangeResource(ureq, newEntry);
+				doChangeResource(ureq, newEntry, false);
 			}
 		} catch (Exception e) {
 			logError("", e);
@@ -413,10 +449,42 @@ public class IQConfigurationController extends BasicController implements Refere
 		}
 	}
 	
-	private void doChangeResource(UserRequest ureq, RepositoryEntry newEntry) {
+	private boolean canPublish() {
+		CourseEditorTreeModel cetm = course.getEditorTreeModel();
+		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
+		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
+ 
+		boolean hasErrors = false;
+		if (publishTreeModel.hasPublishableChanges()) {
+			List<String> nodeToPublish = new ArrayList<>();
+			visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
+
+			//only add selection if changes were possible
+			for(Iterator<String> selectionIt=nodeToPublish.iterator(); selectionIt.hasNext(); ) {
+				String ident = selectionIt.next();
+				TreeNode node = publishProcess.getPublishTreeModel().getNodeById(ident);
+				if(!publishTreeModel.isSelectable(node)) {
+					selectionIt.remove();
+				}
+			}
+
+			publishProcess.createPublishSetFor(nodeToPublish);
+			
+			PublishSetInformations set = publishProcess.testPublishSet(getLocale());
+			StatusDescription[] status = set.getWarnings();
+			for(int i = 0; i < status.length; i++) {
+				if(status[i].isError()) {
+					hasErrors |= true;
+				}
+			}
+		}
+		return !hasErrors;
+	}
+	
+	private void doChangeResource(UserRequest ureq, RepositoryEntry newEntry, boolean publish) {
 		try {
 			boolean needManualCorrection = checkManualCorrectionNeeded(newEntry);
-			doIQReference(ureq, newEntry, needManualCorrection);
+			doIQReference(ureq, newEntry, needManualCorrection, publish);
 			updateEditController(ureq, true);
 		} catch (Exception e) {
 			logError("", e);
@@ -472,20 +540,13 @@ public class IQConfigurationController extends BasicController implements Refere
 	
 	private PassedType getPassedType(RepositoryEntry re, QTI21DeliveryOptions deliveryOptions) {
 		if(deliveryOptions == null) return PassedType.none;
-	
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File unzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		
-		Double cutValue = null;
-		if(assessmentTest != null) {
-			cutValue = new AssessmentTestBuilder(assessmentTest).getCutValue();
-		}
+
+		AssessmentTestInfos assessmentTestInfos = qti21service.getAssessmentTestInfos(re);
+		Double cutValue = assessmentTestInfos == null ? null : assessmentTestInfos.cutValue();
 		return deliveryOptions.getPassedType(cutValue);
 	}
 	
-	private void doIQReference(UserRequest urequest, RepositoryEntry re, boolean manualCorrection) {
+	private void doIQReference(UserRequest urequest, RepositoryEntry re, boolean manualCorrection, boolean publish) {
 		if (re == null) {
 			return;
 		}
@@ -501,8 +562,6 @@ public class IQConfigurationController extends BasicController implements Refere
 		} else if(!ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			showError("error.qti12");
 		} else {
-			referenceCtrl.setRepositoryEntry(urequest, re);
-		
 			IQEditController.setIQReference(re, moduleConfiguration);
 			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			
@@ -511,7 +570,17 @@ public class IQConfigurationController extends BasicController implements Refere
 			} else {
 				myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "auto");
 			}
-			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			
+			OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+			referenceManager.addReferenceToHistory(courseResource, re.getOlatResource(), courseNode.getIdent(), getIdentity());
+
+			referenceCtrl.setRepositoryEntry(urequest, re);
+			
+			if(publish) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_PUBLISH_EVENT);
+			} else {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
 	}
 
@@ -535,5 +604,16 @@ public class IQConfigurationController extends BasicController implements Refere
 		}
 		cleanUpQti21PreviewSession();
         super.doDispose();
+	}
+	
+	private static void visitPublishModel(TreeNode node, INodeFilter filter, Collection<String> nodeToPublish) {
+		int numOfChildren = node.getChildCount();
+		for (int i = 0; i < numOfChildren; i++) {
+			INode child = node.getChildAt(i);
+			if (child instanceof TreeNode && filter.isVisible(child)) {
+				nodeToPublish.add(child.getIdent());
+				visitPublishModel((TreeNode)child, filter, nodeToPublish);
+			}
+		}
 	}
 }

@@ -1,7 +1,11 @@
-#if($r.available("filter") && !$printMode)
-<div class="o_flex_first_grow">
-	<div></div>
-	$r.render("filter")
+#if(($r.available("filter") || $r.available("referencesHistory")) && !$printMode)
+<div class="o_qti_statistics_filters">
+	#if($r.available("filter"))
+		$r.render("filter")
+	#end
+	#if($r.available("referencesHistory"))
+		$r.render("referencesHistory")
+	#end
 </div>
 #end
 

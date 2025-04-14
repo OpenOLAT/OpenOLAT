@@ -75,7 +75,6 @@ import org.olat.properties.LogEntry;
 import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.user.UserAvatarMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -848,10 +847,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected void doShowLogs(UserRequest ureq, List<LogEntry> logEntries,
 							  String logContent, VelocityContainer contentVC) {
 		if (withGrading && !logContent.isBlank() && logEntries != null && !logEntries.isEmpty()) {
-			UserAvatarMapper userAvatarMapper = new UserAvatarMapper();
-			String mapperPath = registerMapper(ureq, userAvatarMapper);
-			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale(), mapperPath);
-
+			List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale());
+			
 			timelineCtrl = new TimelineController(
 					ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
 			listenTo(timelineCtrl);

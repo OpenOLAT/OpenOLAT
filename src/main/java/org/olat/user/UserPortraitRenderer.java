@@ -59,7 +59,7 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 		
 		if (portraitUser.isPortraitAvailable()) {
 			sb.append("<img class=\"o_user_portrait_image\" src=\"");
-			sb.append(UserAvatarMapper.createPathFor(opc.getAvatarMapperUrl(), portraitUser.getPortraitImagePath(), opc.getSize()));
+			sb.append(UserPortraitMapper.createPathFor(opc.getPortraitMapperUrl(), portraitUser.getPortraitImagePath(), opc.getSize()));
 			sb.append("\" alt=\"");
 			sb.append(opc.getCompTranslator().translate("user.portrait.alt", StringHelper.escapeHtml(portraitUser.getDisplayName())));
 			sb.append("\"");

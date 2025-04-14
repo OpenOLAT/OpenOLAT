@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -41,7 +40,6 @@ import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectStatus;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,9 +63,8 @@ public class ProjFileWidgetController extends ProjFileListController {
 	private AVModule avModule;
 
 	public ProjFileWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
-			MapperKey avatarMapperKey) {
-		super(ureq, wControl, "file_widget", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+		super(ureq, wControl, "file_widget", bcFactory, project, secCallback, lastVisitDate);
 		
 		initForm(ureq);
 	}

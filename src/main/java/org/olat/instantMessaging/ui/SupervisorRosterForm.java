@@ -33,7 +33,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -85,7 +84,6 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	private final String resSubPath;
 	private final OLATResourceable chatResource;
 	private final OLATResourceable personalEventOres;
-	private final MapperKey avatarMapperKey;
 	private String selectedChannel;
 	private List<SupervisedRoster> activeRosters = List.of();
 	private List<SupervisedRoster> completedRosters = List.of();
@@ -113,14 +111,12 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	private UserPortraitService userPortraitService;
 
 	public SupervisorRosterForm(UserRequest ureq, WindowControl wControl,
-			OLATResourceable chatResource, String resSubPath, String initialChannel,
-			MapperKey avatarMapperKey) {
+			OLATResourceable chatResource, String resSubPath, String initialChannel) {
 		super(ureq, wControl, "roster_supervisor");
 		
 		this.chatResource = chatResource;
 		this.resSubPath = resSubPath;
 		this.selectedChannel = initialChannel;
-		this.avatarMapperKey = avatarMapperKey;
 		rosterComparator = new SupervisedRosterComparator(getLocale());
 		
 		coordinator.getEventBus().registerFor(this, getIdentity(), UserSessionManager.ORES_USERSESSION);
@@ -267,10 +263,8 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 				portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
 			}
 		}
-		UserPortraitComponent portraitComp = UserPortraitFactory
-				.createUserPortrait("portrait_" + (++count), null, getLocale(), avatarMapperKey.getUrl());
+		UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait_" + (++count), null, getLocale());
 		portraitComp.setSize(PortraitSize.xsmall);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 		
 		FormLink link = uifactory.addFormLink("entry_" + (++count), "entry", portraitUser.getDisplayName(), null, null, Link.LINK | Link.NONTRANSLATED);

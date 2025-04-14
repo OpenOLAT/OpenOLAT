@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti21.ui;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -28,9 +27,6 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -42,16 +38,14 @@ import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSess
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> implements FlexiTableCssDelegate {
+public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> {
 	
 	private static final TSCols[] COLS = TSCols.values();
 	
-	private final Translator translator;
 	private AssessmentTestSession lastSession;
 	
-	public QTI21AssessmentTestSessionTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public QTI21AssessmentTestSessionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
 	}
 	
 	public AssessmentTestSession getLastTestSession() {
@@ -59,65 +53,39 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 	}
 
 	@Override
-	public String getWrapperCssClass(FlexiTableRendererType type) {
-		return null;
-	}
-
-	@Override
-	public String getTableCssClass(FlexiTableRendererType type) {
-		return null;
-	}
-
-	@Override
-	public String getRowCssClass(FlexiTableRendererType type, int pos) {
-		QTI21AssessmentTestSessionDetails session = getObject(pos);
-		if(session.isError() || session.getTestSession().isExploded()) {
-			return "o_test_session_error";	
-		}
-		if(session.getTestSession().isCancelled()) {
-			return "o_test_session_cancelled";	
-		}
-		return null;
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		QTI21AssessmentTestSessionDetails session = getObject(row);
 
-		switch(COLS[col]) {
-			case id: return session.getTestSession().getKey();
-			case terminationTime: return getTerminationTime(session);
-			case lastModified: return session.getTestSession().getLastModified();
-			case duration: {
-				if(session.getTestSession().getFinishTime() != null) {
-					return Formatter.formatDuration(session.getTestSession().getDuration().longValue());
-				}
-				return "<span class='o_ochre'>" + translator.translate("assessment.test.open") + "</span>";
-			}
-			case test: return session.getTestSession().getTestEntry().getDisplayname();
-			case numOfItemSessions: return session.getNumOfItems();
-			case responded: return session.getNumOfItemsResponded();
-			case corrected: return session.getNumOfItemsCorrected();
-			case score: return getScore(session);
-			case manualScore: {
-				if(session.getTestSession().getFinishTime() != null) {
-					return AssessmentHelper.getRoundedScore(session.getTestSession().getManualScore());
-				}
-				return "";
-			}
-			case finalScore: {
-				if(session.getTestSession().getFinishTime() != null) {
-					BigDecimal finalScore = session.getTestSession().getFinalScore();
-					return AssessmentHelper.getRoundedScore(finalScore);
-				}
-				return "";
-			}
-			case open: return Boolean.valueOf(!isTestSessionOpen(session));
-			case correct: return isCorrectionAllowed(session);
-			case invalidate: return !isTestSessionOpen(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
-			case tools: return session.getToolsLink();
-			default: return "ERROR";
+		return switch(COLS[col]) {
+			case run -> session.getRun();
+			case id -> session.getTestSession().getKey();
+			case terminationTime -> getTerminationTime(session);
+			case lastModified -> session.getTestSession().getLastModified();
+			case duration -> getDuration(session);
+			case status -> session.getSessionStatus();
+			case test -> session.getTestSession().getTestEntry().getDisplayname();
+			case testEntry -> session.getTestSession().getTestEntry();
+			case numOfItemSessions -> session.getNumOfItems();
+			case responded -> session.getNumOfItemsResponded();
+			case corrected -> session.getNumOfItemsCorrected();
+			case score -> getScore(session);
+			case manualScore -> session.getTestSession().getFinishTime() != null
+					? session.getTestSession().getManualScore() : null;
+			case finalScore -> session.getTestSession().getFinishTime() != null
+					?  session.getTestSession().getFinalScore() : null;
+			case results -> Boolean.valueOf(!isTestSessionOpen(session));
+			case correct -> isCorrectionAllowed(session);
+			case invalidate -> !isTestSessionOpen(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
+			case tools -> session.getToolsLink();
+			default -> "ERROR";
+		};
+	}
+	
+	private String getDuration(QTI21AssessmentTestSessionDetails session) {
+		if(session.getTestSession().getFinishTime() != null) {
+			return Formatter.formatDuration(session.getTestSession().getDuration().longValue());
 		}
+		return null;
 	}
 	
 	private String getScore(QTI21AssessmentTestSessionDetails session) {
@@ -129,13 +97,11 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 				  .append("</span> ");	
 			}
 			sb.append(AssessmentHelper.getRoundedScore(session.getScore()));
-		} else {
-			sb.append("<span class='o_ochre'>").append(translator.translate("assessment.test.notReleased")).append("</span>");
 		}
 		return sb.toString();
 	}
 	
-	private Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
+	protected Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
 		AssessmentTestSession testSession = session.getTestSession();
 		if(lastSession != null && lastSession.equals(testSession)) {
 			return Boolean.valueOf(testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
@@ -183,11 +149,15 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		score("table.header.score"),
 		manualScore("table.header.manualScore"),
 		finalScore("table.header.finalScore"),
-		open("table.header.action"),
+		results("table.header.results.report"),
 		correct("table.header.correct"),
 		tools("action.more"),
 		invalidate("table.header.invalidate"),
-		id("table.header.id");
+		id("table.header.id"),
+		run("table.header.run"),
+		status("table.header.status"),
+		testEntry("table.header.test.entry"),
+		;
 		
 		private final String i18nKey;
 		

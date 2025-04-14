@@ -95,7 +95,6 @@ import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.PresetDelegate;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,8 +140,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private boolean readOnly;
 	private final OLATResource resource;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
-	private final String avatarMapperBaseURL;
 	private final List<AccessMethod> methods;
 	private final boolean isWithInvoice;
 
@@ -174,7 +171,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		methods = acService.getAvailableMethods();
 		
 		isWithInvoice = resource != null 
@@ -622,8 +618,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order,
-				avatarMapper, avatarMapperBaseURL, readOnly, mainForm);
+		detailController = new OrderDetailController(ureq, bwControl, order, readOnly, mainForm);
 		listenTo(detailController);
 	
 		row.setDetailsController(detailController);

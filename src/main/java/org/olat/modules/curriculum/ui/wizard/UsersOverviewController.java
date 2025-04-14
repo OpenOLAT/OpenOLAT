@@ -66,7 +66,6 @@ import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -92,10 +91,8 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	private CloseableCalloutWindowController calloutCtrl;
 	private OrganisationsSmallListController organisationsSmallListCtrl;
 	
-	private final String avatarMapperBaseURL;
 	private final MembersContext membersContext;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final UserAvatarMapper avatarMapper = new UserAvatarMapper();
 
 	@Autowired
 	private UserManager userManager;
@@ -119,8 +116,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		this.membersContext = membersContext;
 		
 		detailsVC = createVelocityContainer("member_details");
-		avatarMapperBaseURL = registerCacheableMapper(ureq, "imp-cur-avatars", avatarMapper);
-
+		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AbstractMembersController.usageIdentifyer, isAdministrativeUser);
 
@@ -322,7 +318,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		elements.add(membersContext.getCurriculumElement());
 		Curriculum curriculum = membersContext.getCurriculum();
 		
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		List<CurriculumRoles> rolesToSee = membersContext.getRoleToModify() == null
 				? List.of() : List.of(membersContext.getRoleToModify());
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, false, false,
@@ -339,13 +335,6 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		removeAsListenerAndDispose(row.getDetailsController());
 		flc.remove(row.getDetailsController().getInitialFormItem());
 		row.setDetailsController(null);
-	}
-	
-	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		return profileConfig;
 	}
 	
 	private void doShowOrganisations(UserRequest ureq, String elementId, UserRow row) {

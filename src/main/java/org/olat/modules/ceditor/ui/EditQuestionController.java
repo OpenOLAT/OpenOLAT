@@ -63,7 +63,7 @@ public class EditQuestionController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("quiz_edit_question");
 		mainVC.put("editor", itemEditorCtrl.getInitialComponent());
-		mainVC.contextPut("iconClass", itemEditorCtrl.getType().getCssClass());
+		mainVC.contextPut("iconClass", itemEditorCtrl.getType() != null ? itemEditorCtrl.getType().getCssClass() : "");
 		mainVC.contextPut("title", itemEditorCtrl.getTitle());
 		putInitialPanel(mainVC);
 	}

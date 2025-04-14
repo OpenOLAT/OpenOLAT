@@ -77,7 +77,7 @@ public class CourseNodeToDoTaskController extends ToDoTaskListController {
 
 	public CourseNodeToDoTaskController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 			CourseNodeReminderProvider reminderProvider, boolean editor) {
-		super(ureq, wControl, "node_todos", null, null, null, null);
+		super(ureq, wControl, "node_todos", null, null, null);
 		this.repositoryEntry = repositoryEntry;
 		this.reminderProvider = reminderProvider;
 		this.editor = editor;

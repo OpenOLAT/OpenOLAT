@@ -19,7 +19,13 @@
  */
 package org.olat.course.statistic;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -33,6 +39,8 @@ public class StatisticResourceNode extends GenericTreeNode {
 	private static final long serialVersionUID = -1528483744004133623L;
 	private final CourseNode courseNode;
 	private final StatisticResourceResult result;
+	
+	private boolean opened;
 	
 	public StatisticResourceNode(CourseNode courseNode, StatisticResourceResult result) {
 		super("sn" + courseNode.getIdent());
@@ -54,4 +62,42 @@ public class StatisticResourceNode extends GenericTreeNode {
 	public StatisticResourceResult getResult() {
 		return result;
 	}
+
+	@Override
+	public int getChildCount() {
+		if(opened) {
+			return super.getChildCount();
+		}
+		return 1;
+	}
+
+	@Override
+	public INode getChildAt(int childIndex) {
+		if(opened) {
+			return super.getChildAt(childIndex);
+		}
+		return null;
+	}
+	
+	public void opened() {
+		opened = true;
+	}
+	
+	public void openNode() {
+		if(!opened) {
+			opened = true;
+			TreeModel subTreeModel = result.getSubTreeModel();
+			if(subTreeModel != null) {
+				TreeNode subRootNode = subTreeModel.getRootNode();
+				List<INode> subNodes = new ArrayList<>();
+				for(int i=0; i<subRootNode.getChildCount(); i++) {
+					subNodes.add(subRootNode.getChildAt(i));
+				}
+				for(INode subNode:subNodes) {
+					addChild(subNode);
+				}
+			}
+		}
+	}
+	
 }

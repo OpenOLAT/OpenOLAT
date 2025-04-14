@@ -49,9 +49,12 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.ui.event.ReferencesHistorySelectionEvent;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +73,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 	private final StatisticType type;
 	private final NodeAccessType nodeAccessType;
 	private final StatisticResourceOption options;
+	private final UserCourseEnvironment userCourseEnv;
 	
 	@Autowired
 	private RepositoryService repositoryService;
@@ -80,6 +84,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 
 		this.type = type;
 		this.stackPanel = stackPanel;
+		this.userCourseEnv = userCourseEnv;
 		nodeAccessType = NodeAccessType.of(userCourseEnv);
 		options = new StatisticResourceOption();
 
@@ -147,21 +152,19 @@ public class StatisticCourseNodesController extends BasicController implements A
 			if(result != null) {
 				StatisticResourceNode courseNodeTreeNode = new StatisticResourceNode(courseNode, result);
 				rootTreeNode.addChild(courseNodeTreeNode);
-				
-				TreeModel subTreeModel = result.getSubTreeModel();
-				if(subTreeModel != null) {
-					TreeNode subRootNode = subTreeModel.getRootNode();
-					List<INode> subNodes = new ArrayList<>();
-					for(int i=0; i<subRootNode.getChildCount(); i++) {
-						subNodes.add(subRootNode.getChildAt(i));
-					}
-					for(INode subNode:subNodes) {
-						courseNodeTreeNode.addChild(subNode);
-					}
-				}
 			}
 		}, course.getRunStructure().getRootNode(), true).visitAll();
 		return gtm;
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(currentCtrl == source) {
+			if(event instanceof ReferencesHistorySelectionEvent rhse) {
+				doSelectReference(ureq, rhse.getCourseNode(), rhse.getEntry());
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -195,6 +198,29 @@ public class StatisticCourseNodesController extends BasicController implements A
 		}
 	}
 
+	private void doSelectReference(UserRequest ureq, QTICourseNode courseNode, RepositoryEntry testEntry) {
+		TreeNode rootNode = courseTree.getTreeModel().getRootNode();
+		for(int i=0; i<rootNode.getChildCount(); i++) {
+			INode node = rootNode.getChildAt(i);
+			if(node instanceof StatisticResourceNode sNode && courseNode.getIdent().equals(sNode.getCourseNode().getIdent())) {
+				testEntry = repositoryService.loadBy(testEntry);
+				StatisticResourceOption refOptions = new StatisticResourceOption();
+				refOptions.setParticipantsGroups(options.getParticipantsGroups());
+				refOptions.setReferenceEntry(testEntry);
+				
+				StatisticResourceResult result = courseNode.createStatisticNodeResult(ureq, getWindowControl(), userCourseEnv, refOptions, type);
+				if(result != null) {
+					StatisticResourceNode courseNodeTreeNode = new StatisticResourceNode(courseNode, result);
+					rootNode.remove(sNode);
+					rootNode.insert(courseNodeTreeNode, i);
+					courseTree.setTreeModel(courseTree.getTreeModel());
+					doSelectNode(ureq, courseNodeTreeNode);
+				}
+				break;
+			}
+		}
+	}
+
 	private void doSelectNode(UserRequest ureq, TreeNode selectedNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		currentCtrl = null;
@@ -202,11 +228,13 @@ public class StatisticCourseNodesController extends BasicController implements A
 		if(selectedNode != null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstanceWithoutCheck(selectedNode.getIdent(), 0l), null);
 			if(selectedNode instanceof StatisticResourceNode node) {
+				node.openNode();
 				node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType, ureq.getIdentity());
 				currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);
 			} else {
 				StatisticResourceNode node = getStatisticNodeInParentLine(selectedNode);
 				if(node != null) {
+					node.openNode();
 					node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType, ureq.getIdentity());
 					currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
 				}

@@ -22,7 +22,6 @@ package org.olat.modules.project.ui;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -55,8 +54,8 @@ public class ProjNoteWidgetController extends ProjNoteListController {
 	
 	public ProjNoteWidgetController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback,
-			Date lastVisitDate, MapperKey avatarMapperKey) {
-		super(ureq, wControl, stackPanel, "note_widget", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
+			Date lastVisitDate) {
+		super(ureq, wControl, stackPanel, "note_widget", bcFactory, project, secCallback, lastVisitDate);
 		initForm(ureq);
 		loadModel(ureq, true);
 	}

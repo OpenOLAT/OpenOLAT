@@ -22,7 +22,6 @@ package org.olat.modules.project.ui;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,9 +52,8 @@ public class ProjDecisionWidgetController extends ProjDecisionListController {
 	private FormLink showAllLink;
 	
 	public ProjDecisionWidgetController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
-			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
-			MapperKey avatarMapperKey) {
-		super(ureq, wControl, "decision_widget", bcFactory, project, secCallback, lastVisitDate, avatarMapperKey);
+			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
+		super(ureq, wControl, "decision_widget", bcFactory, project, secCallback, lastVisitDate);
 		initForm(ureq);
 		loadModel(ureq, true);
 	}

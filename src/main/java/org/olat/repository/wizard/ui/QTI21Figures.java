@@ -19,7 +19,6 @@
  */
 package org.olat.repository.wizard.ui;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -30,18 +29,13 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.iq.QTI21EditForm;
 import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
-import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.wizard.ui.RepositoryEntryOverviewController.Figure;
 import org.olat.repository.wizard.ui.RepositoryEntryOverviewController.MoreFigures;
-
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -63,20 +57,14 @@ public class QTI21Figures implements MoreFigures {
 		Double maxValue = null;
 		Double cutValue = null;
 		
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File unzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qti21Service.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		if(assessmentTest != null) {
-			AssessmentTestBuilder testBuilder = new AssessmentTestBuilder(assessmentTest);
-			maxValue = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
+		AssessmentTestInfos assessmentTestInfos = qti21Service.getAssessmentTestInfos(entry);
+		if(assessmentTestInfos != null) {
+			maxValue = assessmentTestInfos.estimatedMaxScore();
 			if(maxValue == null) {
-				maxValue = testBuilder.getMaxScore();
+				maxValue = assessmentTestInfos.maxScore();
 			}
-			cutValue = testBuilder.getCutValue();
-			if(maxValue != null && "OpenOLAT".equals(assessmentTest.getToolName())) {
-				minValue = 0d;
-			}
+			cutValue = assessmentTestInfos.cutValue();
+			minValue = assessmentTestInfos.minScore();
 		}
 		String formatedMinValue = minValue == null ? "-" : AssessmentHelper.getRoundedScore(minValue);
 		String formatedMaxValue = maxValue == null ? "-" : AssessmentHelper.getRoundedScore(maxValue);

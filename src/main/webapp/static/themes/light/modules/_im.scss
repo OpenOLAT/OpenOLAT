@@ -124,6 +124,17 @@
 	}
 }
 
+.o_im_welcome_image {
+	width: $o-portrait-small-size;
+	height: $o-portrait-small-size;
+	border-radius: 50%;
+	border: none;
+	background-color: #eee;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
 .o_supervisor_chat_roster a.active {
 	font-weight: bold;
 }
@@ -238,12 +249,19 @@
 
 }
 
+.o_supervised_chat_roster {
+	display: inline-flex;
+	flex-wrap: wrap;
+	column-gap: 5px;
+}
 .o_supervised_chat_roster>ul {
-	display: inline-block;
+	display: inline-flex;
+	flex-wrap: wrap;
+	column-gap: 10px;
 }
 
 .o_supervised_chat_roster>ul>li {
-	display: inline-block;
+	display: inline-flex;
 }
 
 .o_supervisor_chat_rosters {

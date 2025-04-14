@@ -32,7 +32,6 @@ import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -150,7 +149,6 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	protected final ProjProject project;
 	protected final ProjProjectSecurityCallback secCallback;
 	private final Date lastVisitDate;
-	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	
 	@Autowired
@@ -161,8 +159,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private UserPortraitService userPortraitService;
 
 	public ProjNoteListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			String pageName, ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
-			MapperKey avatarMapperKey) {
+			String pageName, ProjectBCFactory bcFactory, ProjProject project, ProjProjectSecurityCallback secCallback,
+			Date lastVisitDate) {
 		super(ureq, wControl, pageName);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
@@ -170,7 +168,6 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
-		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
@@ -375,7 +372,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 
 	private void forgeUsersPortraits(UserRequest ureq, ProjNoteRow row, Set<Identity> members) {
 		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent());
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
@@ -665,7 +662,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		
 		ProjNoteInfo noteInfo = noteInfos.get(0);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ProjNote.TYPE, noteRef.getKey()), null);
-		noteCtrl = new ProjNoteController(ureq, swControl, bcFactory, secCallback, noteInfo, edit, avatarMapperKey);
+		noteCtrl = new ProjNoteController(ureq, swControl, bcFactory, secCallback, noteInfo, edit);
 		listenTo(noteCtrl);
 		String title = Formatter.truncate(ProjectUIFactory.getDisplayName(getTranslator(), noteInfo.getNote()), 50);
 		stackPanel.pushController(title, noteCtrl);

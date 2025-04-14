@@ -80,7 +80,6 @@ import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCo
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -111,8 +110,6 @@ public abstract class AbstractMembersController extends FormBasicController impl
 
 	protected int counter = 0;
 	protected final boolean chatEnabled;
-	protected final String avatarMapperBaseURL;
-	protected final UserAvatarMapper avatarMapper;
 	protected final CurriculumSecurityCallback secCallback;
 	protected final List<UserPropertyHandler> userPropertyHandlers;
 
@@ -143,8 +140,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	private UserPortraitService userPortraitService;
 	
 	public AbstractMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, String page,
-			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL) {
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, page, Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -160,8 +156,6 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 
-		this.avatarMapperBaseURL = avatarMapperBaseURL;
-		this.avatarMapper = avatarMapper;
 		detailsVC = createVelocityContainer("member_details");
 		
 		descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
@@ -487,7 +481,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		List<CurriculumElement> elements = new ArrayList<>(descendants);
 		elements.add(curriculumElement);
 		
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, false, true,
 				true, true, true);
@@ -513,7 +507,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	
 	protected void doEditMember(UserRequest ureq, Identity member) {
 		String fullname = userManager.getUserDisplayName(member);
-		UserInfoProfileConfig profileConfig = createProfilConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		List<CurriculumElement> elements = new ArrayList<>(descendants);
 		elements.add(curriculumElement);
 		
@@ -566,10 +560,4 @@ public abstract class AbstractMembersController extends FormBasicController impl
 				: List.of();
 	}
 	
-	protected final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		return profileConfig;
-	}
 }

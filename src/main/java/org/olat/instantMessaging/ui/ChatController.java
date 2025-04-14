@@ -43,8 +43,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.basesecurity.model.IdentityRefImpl;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -96,7 +94,6 @@ import org.olat.modules.teams.ui.TeamsMeetingEvent;
 import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
@@ -134,7 +131,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	private Date today;
 	private List<String> allChats;
 	private final Formatter formatter;
-	private final MapperKey avatarMapperKey;
 
 	private final boolean highlightVip;
 	private final OLATResourceable ores;
@@ -158,8 +154,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	private TeamsService teamsService;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private MapperService mapperService;
 	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
@@ -185,8 +179,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.persistent = persistent;
 		this.chatViewConfig = chatViewConfig;
 		setToday();
-
-		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper());
 		
 		allChats = new ArrayList<>();
 		allChats.add(Integer.toString(hashCode()));
@@ -281,7 +273,6 @@ public class ChatController extends BasicController implements GenericEventListe
 	private void initChatMessageField(String pn) {
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 		chatMsgFieldContent.contextPut("panelName", pn);
-		chatMsgFieldContent.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
 		chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
 		if(StringHelper.containsNonWhitespace(chatViewConfig.getWelcome())) {
 			chatMsgFieldContent.contextPut("welcome", chatViewConfig.getWelcome());
@@ -301,7 +292,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		String nickName;
 		if(rosterDisplay == RosterFormDisplay.supervisor) {
 			supervisorRosterCtrl = new SupervisorRosterForm(ureq, getWindowControl(),
-					ores, resSubPath, channel, avatarMapperKey);
+					ores, resSubPath, channel);
 			listenTo(supervisorRosterCtrl);
 			mainVC.put("roster", supervisorRosterCtrl.getInitialComponent());
 			nickName = userManager.getUserDisplayName(getIdentity());
@@ -310,7 +301,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable(), resSubPath, channel);
 			buddyList.addBuddies(buddies);
 
-			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode, rosterDisplay, avatarMapperKey);
+			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode, rosterDisplay);
 			listenTo(rosterCtrl);
 			mainVC.put("roster", rosterCtrl.getInitialComponent());
 			nickName = rosterCtrl.getNickName();
@@ -618,9 +609,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			}
 		}
 		UserPortraitComponent portraitComp = UserPortraitFactory
-				.createUserPortrait("portrait_" + (++count), mainVC, getLocale(), avatarMapperKey.getUrl());
+				.createUserPortrait("portrait_" + (++count), mainVC, getLocale());
 		portraitComp.setSize(PortraitSize.xsmall);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 		
 		return new ChatRosterEntry(entry, portraitComp, sessionManager.isOnline(entry.getIdentityKey()));
@@ -953,9 +943,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			}
 		}
 		UserPortraitComponent portraitComp = UserPortraitFactory
-				.createUserPortrait("message_portrait_" + message.getKey(), vc, getLocale(), avatarMapperKey.getUrl());
+				.createUserPortrait("message_portrait_" + message.getKey(), vc, getLocale());
 		portraitComp.setSize(PortraitSize.small);
-		portraitComp.setDisplayPresence(false);
 		portraitComp.setPortraitUser(portraitUser);
 	}
 	
@@ -979,6 +968,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			if(StringHelper.containsNonWhitespace(name)) {
 				entry.setName(name);
 			}
+			rosterCtrl.buddyAdded(entry, identityKey);
 			rosterCtrl.updateModel();
 		}
 		

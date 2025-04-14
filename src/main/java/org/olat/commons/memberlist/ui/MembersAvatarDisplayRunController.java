@@ -80,7 +80,6 @@ import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.PortraitUser;
-import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
@@ -102,8 +101,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<UserPropertyHandler> userPropertyAvatarHandlers;
-
-	private final String avatarBaseURL;
 
 	private Link pdfLink;
 	private Link printLink;
@@ -178,8 +175,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		userPropertyAvatarHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_AVATAR_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper());
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
+		
 		// lists
 		this.owners = owners;
 		this.coaches = coaches;
@@ -304,8 +301,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			
 			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
 			member.setPortraitUser(portraitUser);
-			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("portrait_" + identity.getKey(), formLayout.getFormItemComponent(), getLocale(), avatarBaseURL);
-			userPortraitComp.setDisplayPresence(false);
+			UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait(
+					"portrait_" + identity.getKey(), formLayout.getFormItemComponent(), getLocale());
 			userPortraitComp.setPortraitUser(portraitUser);
 			member.setPortraitComp(userPortraitComp);
 			

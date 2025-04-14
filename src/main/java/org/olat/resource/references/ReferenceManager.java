@@ -74,6 +74,8 @@ public class ReferenceManager {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private ReferenceHistoryDAO referenceHistoryDao;
+	@Autowired
 	private RepositoryEntryDAO repositoryEntryDAO;
 	@Autowired
 	private OLATResourceManager olatResourceManager;
@@ -97,6 +99,10 @@ public class ReferenceManager {
 		ref.setUserdata(userdata);
 		ref.setCreationDate(new Date());
 		dbInstance.getCurrentEntityManager().persist(ref);
+	}
+	
+	public void addReferenceToHistory(OLATResource source, OLATResource target, String userdata, Identity doer) {
+		referenceHistoryDao.addReferenceHistory(source, target, userdata, doer);
 	}
 
 	/**
@@ -318,15 +324,25 @@ public class ReferenceManager {
 		
 	}
 	
+	public List<ReferenceHistory> getReferencesHistoryOf(OLATResource source, String userdata) {
+		return referenceHistoryDao.loadHistory(source, userdata);
+	}
+	
+	public int deleteReferencesHistoryOf(OLATResource olatResource, String userdata) {
+		return referenceHistoryDao.deleteAllReferencesHistoryOf(olatResource, userdata);
+	}
+	
 	/**
 	 * Delete all references of an OLAT-resource as source or target.
 	 * @param olatResource  an OLAT-Resource
 	 */
 	public int deleteAllReferencesOf(OLATResource olatResource) {
 		String dq = "delete from references as refs where refs.source.key=:resourceKey or refs.target.key=:resourceKey";
-		return dbInstance.getCurrentEntityManager().createQuery(dq)
+		int count = dbInstance.getCurrentEntityManager().createQuery(dq)
 				.setParameter("resourceKey", olatResource.getKey())
 				.executeUpdate();
+		count += referenceHistoryDao.deleteAllReferencesHistoryOf(olatResource);
+		return count;
 	}
 	
 	/**

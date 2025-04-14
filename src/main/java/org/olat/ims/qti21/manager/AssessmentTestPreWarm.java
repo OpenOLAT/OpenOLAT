@@ -60,6 +60,7 @@ public class AssessmentTestPreWarm implements PreWarm {
 			try {
 				File fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
 				qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+				qtiService.getAssessmentTestInfos(entry);
 			} catch (RuntimeException e) {
 				log.error("Loading the AssessmentTest of repository entry: " + entry.getKey() + " (" + entry.getDisplayname() + ")", e);
 			}
