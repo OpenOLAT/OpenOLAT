@@ -22,6 +22,7 @@ package org.olat.course.statistic;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -31,6 +32,7 @@ import org.olat.basesecurity.Group;
 public class StatisticResourceOption {
 	
 	private List<Group> groups;
+	private RepositoryEntry referenceEntry;
 
 	public List<Group> getParticipantsGroups() {
 		return groups;
@@ -38,5 +40,13 @@ public class StatisticResourceOption {
 	
 	public void setParticipantsGroups(List<Group> groups) {
 		this.groups = groups;
+	}
+
+	public RepositoryEntry getReferenceEntry() {
+		return referenceEntry;
+	}
+
+	public void setReferenceEntry(RepositoryEntry referenceEntry) {
+		this.referenceEntry = referenceEntry;
 	}
 }

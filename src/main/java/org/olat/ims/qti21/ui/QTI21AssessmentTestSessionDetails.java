@@ -32,25 +32,34 @@ import org.olat.ims.qti21.AssessmentTestSession;
  */
 public class QTI21AssessmentTestSessionDetails {
 	
+	private final int run;
 	private final boolean error;
 	private final int numOfItems;
 	private final int numOfItemsResponded;
 	private final int numOfItemsCorrected;
 	private final BigDecimal automaticScore;
 	private final AssessmentTestSession testSession;
+	private final SessionStatus sessionStatus;
 	
 	private FormLink toolsLink;
 	
 	public QTI21AssessmentTestSessionDetails(AssessmentTestSession testSession,
-			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected, BigDecimal automaticScore, boolean error) {
+			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected, BigDecimal automaticScore,
+			SessionStatus sessionStatus, boolean error, int run) {
+		this.run = run;
 		this.error = error;
 		this.testSession = testSession;
 		this.numOfItems = numOfItems;
 		this.numOfItemsResponded = numOfItemsResponded;
 		this.numOfItemsCorrected = numOfItemsCorrected;
 		this.automaticScore = automaticScore;
+		this.sessionStatus = sessionStatus;
 	}
 	
+	public int getRun() {
+		return run;
+	}
+
 	public int getNumOfItems() {
 		return numOfItems;
 	}
@@ -88,11 +97,23 @@ public class QTI21AssessmentTestSessionDetails {
 		return error;
 	}
 
+	public SessionStatus getSessionStatus() {
+		return sessionStatus;
+	}
+
 	public FormLink getToolsLink() {
 		return toolsLink;
 	}
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public enum SessionStatus {
+		RUNNING,
+		SUSPENDED,
+		FINISHED,
+		CANCELLED,
+		ERROR
 	}
 }

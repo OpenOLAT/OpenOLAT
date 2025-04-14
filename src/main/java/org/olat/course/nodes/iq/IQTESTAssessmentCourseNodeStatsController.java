@@ -64,8 +64,8 @@ public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseN
 		StatisticResourceResult statisticNodeResult = courseNode.createStatisticNodeResult(ureq, wControl, userCourseEnv, new StatisticResourceOption(), StatisticType.TEST);
 		if (statisticNodeResult instanceof QTI21StatisticResourceResult) {
 			QTI21StatisticResourceResult qti21StatisticResourceResult = (QTI21StatisticResourceResult)statisticNodeResult;
-			qti21StatisticResourceResult.getTreeModel();
-			return new QTI21AssessmentTestStatisticsController(ureq, wControl, null, qti21StatisticResourceResult, false, false, false);
+			// Don't load the model for the details qti21StatisticResourceResult.getTreeModel();
+			return new QTI21AssessmentTestStatisticsController(ureq, wControl, null, qti21StatisticResourceResult, false, false, false, false);
 		}
 		return null;
 	}

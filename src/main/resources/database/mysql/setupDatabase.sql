@@ -330,6 +330,7 @@ create table if not exists o_note (
    notetext longtext,
    primary key (note_id)
 );
+
 create table if not exists o_references (
    reference_id bigint not null,
    version mediumint unsigned not null,
@@ -339,6 +340,17 @@ create table if not exists o_references (
    userdata varchar(64),
    primary key (reference_id)
 );
+
+create table o_references_history (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   userdata varchar(64),
+   fk_source bigint not null,
+   fk_target bigint not null,
+   fk_identity bigint,
+   primary key (id)
+);
+
 create table if not exists o_user (
    user_id bigint not null,
    version mediumint unsigned not null,
@@ -4948,6 +4960,7 @@ alter table o_bs_membership ENGINE = InnoDB;
 alter table o_repositoryentry ENGINE = InnoDB;
 alter table o_repositoryentry_stats ENGINE = InnoDB;
 alter table o_references ENGINE = InnoDB;
+alter table o_references_history ENGINE = InnoDB;
 alter table o_gp_business ENGINE = InnoDB;
 alter table o_gp_bgarea ENGINE = InnoDB;
 alter table o_gp_bgtoarea_rel ENGINE = InnoDB;
@@ -5360,6 +5373,10 @@ alter table o_catentry add constraint FKF4433C2CDDD69946 foreign key (fk_repoent
 -- references
 alter table o_references add constraint FKE971B4589AC44FBF foreign key (source_id) references o_olatresource (resource_id);
 alter table o_references add constraint FKE971B458CF634A89 foreign key (target_id) references o_olatresource (resource_id);
+
+alter table o_references_history add constraint ref_hist_source_idx foreign key (fk_source) references o_olatresource (resource_id);
+alter table o_references_history add constraint ref_hist_target_idx foreign key (fk_target) references o_olatresource (resource_id);
+alter table o_references_history add constraint ref_hist_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- resources
 create index name_idx on o_olatresource (resname);

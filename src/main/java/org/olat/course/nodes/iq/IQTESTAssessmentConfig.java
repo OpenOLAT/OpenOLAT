@@ -30,15 +30,12 @@ import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -112,21 +109,19 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
 			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 		} else {
+			
 			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-					ResolvedAssessmentTest resolvedAssessmentTest = courseNode.loadResolvedAssessmentTest(testEntry);
-					if(resolvedAssessmentTest != null) {
-						Double max = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
-						if(max == null) {
-							AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractAssumingSuccessful();
-							if(assessmentTest != null) {
-								max = QtiNodesExtractor.extractMaxScore(assessmentTest);
-							}
+					AssessmentTestInfos infos = CoreSpringFactory.getImpl(QTI21Service.class).getAssessmentTestInfos(testEntry);
+					if(infos != null) {
+						if(infos.estimatedMaxScore() != null) {
+							maxScore = Float.valueOf(infos.estimatedMaxScore().floatValue());
+						} else if(infos.maxScore() != null) {
+							maxScore = Float.valueOf(infos.maxScore().floatValue());
+							
 						}
-						if(max != null) {
-							maxScore = Float.valueOf(max.floatValue());
-						}		
+						
 					}
 				} else {
 					maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
@@ -159,13 +154,16 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+					AssessmentTestInfos infos = CoreSpringFactory.getImpl(QTI21Service.class).getAssessmentTestInfos(testEntry);
+					minScore = infos == null || infos.minScore() == null ? null : Float.valueOf(infos.minScore().floatValue());
+					/*
 					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
 					if(assessmentTest != null) {
 						Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
 						if(min != null) {
 							minScore = Float.valueOf(min.floatValue());
 						}
-					}
+					}*/
 				} else {
 					minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 				}
@@ -227,25 +225,25 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-					if(assessmentTest != null) {
-						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
-						QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
-						if (deliveryOptions != null) {
-							if (hasGrade() && Mode.none != getScoreMode()) {
-								if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())) {
-									return Mode.setByNode;
-								}
-								return Mode.none;
-							} else {
-								Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-								PassedType passedType = deliveryOptions.getPassedType(cutValue);
-								if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
-									mode = Mode.setByNode;
-								}
+
+					QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+					QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
+					if (deliveryOptions != null) {
+						if (hasGrade() && Mode.none != getScoreMode()) {
+							if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, courseNode.getIdent())) {
+								return Mode.setByNode;
+							}
+							return Mode.none;
+						} else {
+							AssessmentTestInfos infos = qti21Service.getAssessmentTestInfos(testEntry);
+							Double cutValue = infos == null ? null : infos.cutValue();
+							PassedType passedType = deliveryOptions.getPassedType(cutValue);
+							if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
+								mode = Mode.setByNode;
 							}
 						}
 					}
+
 				} else {
 					mode = Mode.setByNode;
 				}
@@ -267,13 +265,8 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-					if(assessmentTest != null) {
-						Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
-						if(cut != null) {
-							cutValue = Float.valueOf(cut.floatValue());
-						}
-					}
+					AssessmentTestInfos infos = CoreSpringFactory.getImpl(QTI21Service.class).getAssessmentTestInfos(testEntry);
+					cutValue = infos == null || infos.cutValue() == null ? null : Float.valueOf(infos.cutValue().floatValue());
 				} else {
 					cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 				}
@@ -303,11 +296,8 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 			RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 			if (testEntry != null) {
 				if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-					AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-					if(assessmentTest != null) {
-						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
-						auto = !qti21Service.needManualCorrection(testEntry);
-					}
+					AssessmentTestInfos infos = CoreSpringFactory.getImpl(QTI21Service.class).getAssessmentTestInfos(testEntry);
+					auto = infos != null && !infos.manualCorrections();
 				}
 			}
 		}
@@ -363,12 +353,9 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 		RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
 		if (testEntry != null) {
 			if (QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
-				if (assessmentTest != null) {
-					QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
-					QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
-					return deliveryOptions.getMaxAttempts();
-				}
+				QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
+						.getDeliveryOptions(testEntry);
+				return deliveryOptions == null ? 0 : deliveryOptions.getMaxAttempts();
 			}
 		}
 		return 0;

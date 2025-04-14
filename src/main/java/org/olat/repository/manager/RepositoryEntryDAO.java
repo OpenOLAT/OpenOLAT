@@ -65,6 +65,17 @@ public class RepositoryEntryDAO {
 		return entries.get(0);
 	}
 	
+	public RepositoryEntry loadBySoftKey(String softKey) {
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryBySoftKey", RepositoryEntry.class)
+				.setParameter("softKey", softKey)
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
 	public List<RepositoryEntry> loadByKeys(Collection<Long> keys) {
 		if(keys == null || keys.isEmpty()) return new ArrayList<>(1);
 		

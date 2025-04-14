@@ -782,6 +782,18 @@ public class AssessmentTestSessionDAO {
 		return found != null && !found.isEmpty() && found.get(0) != null && found.get(0) >= 0;
 	}
 	
+	public List<RepositoryEntry> getTestRepositoryEntries(RepositoryEntryRef courseEntry, String subIdent) {
+		String query = """
+				select testEntry from repositoryentry as testEntry
+				where testEntry.key in (select session.testEntry.key from qtiassessmenttestsession session
+				 where session.repositoryEntry.key=:courseEntryKey and session.subIdent=:subIdent
+				)""";
+		return dbInstance.getCurrentEntityManager().createQuery(query, RepositoryEntry.class)
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();	
+	}
+	
 	public int deleteTestSession(AssessmentTestSession testSession) {
 		StringBuilder responseSb  = new StringBuilder();
 		responseSb.append("delete from qtiassessmentresponse response where response.assessmentTestSession.key=:sessionKey");

@@ -93,6 +93,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.ReferenceHistoryWithInfos;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.logviewer.LogExcelExport;
@@ -213,8 +214,15 @@ public class QTI21ResultsExport {
 	}
 	
 	public void exportExcelResults(ZipOutputStream zout) {
-		for(RepositoryEntry testEntry:testEntries) {
-			exportExcelResults(testEntry, zout);
+		int count = 1;
+		
+		// Maintain the order
+		List<ReferenceHistoryWithInfos> refs = qtiService.getReferenceHistoryWithInfos(entry, courseNode.getIdent());
+		for(ReferenceHistoryWithInfos ref:refs) {
+			RepositoryEntry testEntry = ref.testEntry();
+			if(testEntries.contains(testEntry)) {
+				exportExcelResults(testEntry, count++, zout);
+			}
 		}
 	}
 	
@@ -230,7 +238,7 @@ public class QTI21ResultsExport {
 		ZipUtil.addDirectoryToZip(qtiJs.toPath(), exportFolderName + "/js/jquery", zout);
 	}
 	
-	private void exportExcelResults(RepositoryEntry testEntry, ZipOutputStream zout) {
+	private void exportExcelResults(RepositoryEntry testEntry, int pos, ZipOutputStream zout) {
 		ArchiveOptions options = new ArchiveOptions();
 		if(!withNonParticipants) {
 			options.setIdentities(identities);
@@ -245,6 +253,7 @@ public class QTI21ResultsExport {
 		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(translator.getLocale(), searchParams);
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + testEntry.getDisplayname())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
+				+ "_" + pos
 				+ ".xlsx";
 		qaf.exportCourseElement(exportFolderName + "/" + label, zout);
 	}

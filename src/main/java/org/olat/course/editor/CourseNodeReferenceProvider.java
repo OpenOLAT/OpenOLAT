@@ -23,7 +23,10 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -98,6 +101,21 @@ public class CourseNodeReferenceProvider implements RepositoryEntryReferenceProv
 	@Override
 	public boolean canImport() {
 		return true;
+	}
+	
+	@Override
+	public Confirm confirmCanReplace() {
+		return new Confirm(true, null);
+	}
+
+	@Override
+	public boolean hasReferencesHistory() {
+		return false;
+	}
+
+	@Override
+	public Controller getReferencesHistoryController(UserRequest ureq, WindowControl wControl) {
+		return null;
 	}
 
 	@Override

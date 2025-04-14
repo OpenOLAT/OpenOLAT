@@ -29,9 +29,11 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.DigitalSignatureValidation;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.ReferenceHistoryWithInfos;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -150,6 +152,12 @@ public interface QTI21Service {
 	public boolean updateAssesmentObject(File resourceFile, ResolvedAssessmentObject<?> resolvedAssessmentObject);
 	
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject);
+	
+	public AssessmentTestInfos getAssessmentTestInfos(RepositoryEntry entry);
+	
+	public AssessmentTestInfos getAssessmentTestInfos(String testSoftKey);
+	
+	public void evictAssessmentTestInfos(RepositoryEntry entry);
 	
 	/**
 	 * 
@@ -588,5 +596,8 @@ public interface QTI21Service {
 	public void putCachedTestSessionController(AssessmentTestSession testSession, TestSessionController testSessionController);
 	
 	public TestSessionController getCachedTestSessionController(AssessmentTestSession testSession, TestSessionController testSessionController);
+	
+	
+	public List<ReferenceHistoryWithInfos> getReferenceHistoryWithInfos(RepositoryEntry courseEntry, String subIdent);
 
 }

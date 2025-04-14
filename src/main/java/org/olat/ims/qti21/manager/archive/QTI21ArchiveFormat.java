@@ -268,8 +268,6 @@ public class QTI21ArchiveFormat {
 		}
 	}
 	
-
-	
 	public void exportWorkbook(OutputStream exportStream) {
 		RepositoryEntry testEntry = searchParams.getTestEntry();
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -344,6 +342,7 @@ public class QTI21ArchiveFormat {
 		//first header
 		Row header1Row = exportSheet.newRow();
 		int col = writeUserEmptyHeaders();
+		col++; // Status
 
 		// course node points and passed
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
@@ -403,6 +402,7 @@ public class QTI21ArchiveFormat {
 		//second header
 		Row header2Row = exportSheet.newRow();
 		int col = writeUserHeaders(header2Row, workbook);
+		header2Row.addCell(col++, translator.translate("archive.table.header.status"), headerStyle);
 
 		// course node points and passed
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
@@ -531,6 +531,7 @@ public class QTI21ArchiveFormat {
 		Row dataRow = exportSheet.newRow();
 		
 		int col = writeUserData(num, entry, dataRow);
+		dataRow.addCell(col++, evaluateStatusOfSession(testSession), null);
 		
 		// course node points and passed
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(searchParams.getCourseEntry(), courseNode);
@@ -646,6 +647,25 @@ public class QTI21ArchiveFormat {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * The session load are "Not exploded", with finished time.
+	 * 
+	 * @param session
+	 * @return Status translated
+	 */
+	private String evaluateStatusOfSession(AssessmentTestSession session) {
+		if(session.isExploded()) {
+			return translator.translate("assessment.test.session.status.error");
+		}
+		if(session.isCancelled()) {
+			return translator.translate("assessment.test.session.status.cancelled");
+		}
+		if(session.getFinishTime() != null || session.getTerminationTime() != null) {
+			return translator.translate("assessment.test.session.status.finished");
+		}
+		return translator.translate("assessment.test.session.status.running");
 	}
 	
 	private int writeUserData(int num, AssessmentEntry entry, Row dataRow) {

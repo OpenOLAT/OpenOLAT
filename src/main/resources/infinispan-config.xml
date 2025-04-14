@@ -127,6 +127,15 @@
 			<expiration max-idle="7200000" interval="15000" />
 		</local-cache>
 		
+		<local-cache name="QTIWorks-assessmentTestInfos" simple-cache="true" statistics="true">
+			<encoding media-type="application/x-java-object"/>
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="50000" when-full="REMOVE" />
+			<!-- A week -->
+			<expiration max-idle="604800000" interval="900000" />
+		</local-cache>
+		
 		<local-cache name="LTI-states" simple-cache="true" statistics="true">
 			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />

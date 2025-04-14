@@ -27,6 +27,7 @@ package org.olat.course.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -91,6 +92,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
@@ -683,6 +685,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// if the user changed the name of the node, we need to update the tree also.
 				// the event is too generic to find out what happened -> update tree in all cases (applies to ajax mode only)
 				nodeChanged(ureq, course, event);
+			} else if(event == NodeEditController.NODECONFIG_PUBLISH_EVENT) {
+				nodeChangedAndPublish(ureq, course);
 			}
 		} else if (source == statusCtr) {
 			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
@@ -914,6 +918,74 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				selectedTab = activateableNodeEditCntrllr.getTabbedPane().getSelectedPane();
 			}
 			initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"), selectedTab);
+		}
+	}
+	private void nodeChangedAndPublish(UserRequest ureq, ICourse course) {
+		nodeChanged(ureq, course, null);
+		nodePublish(ureq, course);
+	}
+	
+	private void nodePublish(UserRequest ureq, ICourse course) {
+		CourseEditorTreeModel cetm = course.getEditorTreeModel();
+		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
+		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
+ 
+		if (publishTreeModel.hasPublishableChanges()) {
+			List<String> nodeToPublish = new ArrayList<>();
+			visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
+
+			//only add selection if changes were possible
+			for(Iterator<String> selectionIt=nodeToPublish.iterator(); selectionIt.hasNext(); ) {
+				String ident = selectionIt.next();
+				TreeNode node = publishProcess.getPublishTreeModel().getNodeById(ident);
+				if(!publishTreeModel.isSelectable(node)) {
+					selectionIt.remove();
+				}
+			}
+
+			publishProcess.createPublishSetFor(nodeToPublish);
+			
+			PublishSetInformations set = publishProcess.testPublishSet(getLocale());
+			StatusDescription[] status = set.getWarnings();
+			//publish not possible when there are errors
+			StringBuilder errMsg = new StringBuilder();
+			for(int i = 0; i < status.length; i++) {
+				if(status[i].isError()) {
+					errMsg.append(status[i].getLongDescription(getLocale()));
+					logError("Status error by publish: " + status[i].getLongDescription(getLocale()), null);
+				}
+			}
+			
+			if(errMsg.length() > 0) {
+				getWindowControl().setWarning(errMsg.toString());
+				return;
+			}
+			
+			PublishEvents publishEvents = publishProcess.getPublishEvents();
+			try {
+				publishProcess.applyPublishSet(getIdentity(), getLocale(), false);
+				updateAfterPublishing(ureq, course, true);
+			} catch(Exception e) {
+				logError("",  e);
+			}
+			
+			if(!publishEvents.getPostPublishingEvents().isEmpty()) {
+				OLATResourceable courseOres = OresHelper.clone(course);
+				for(MultiUserEvent event:publishEvents.getPostPublishingEvents()) {
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, courseOres);
+				}
+			}
+		}
+	}
+	
+	private static void visitPublishModel(TreeNode node, INodeFilter filter, Collection<String> nodeToPublish) {
+		int numOfChildren = node.getChildCount();
+		for (int i = 0; i < numOfChildren; i++) {
+			INode child = node.getChildAt(i);
+			if (child instanceof TreeNode && filter.isVisible(child)) {
+				nodeToPublish.add(child.getIdent());
+				visitPublishModel((TreeNode)child, filter, nodeToPublish);
+			}
 		}
 	}
 	

@@ -960,6 +960,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		manifestBuilder.appendAssessmentItem(itemFilename);
 		doSaveManifest();
+		
+		qtiService.evictAssessmentTestInfos(testEntry);
 		return itemRef;
 	}
 	
@@ -1092,6 +1094,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		File testFile = new File(testUri);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
 		assessmentChanged(ureq);
+		qtiService.evictAssessmentTestInfos(testEntry);
 
 		//reload the test
 		updateTreeModel(false);
@@ -1183,6 +1186,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+		qtiService.evictAssessmentTestInfos(testEntry);
 	
 		ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_EDIT_RESOURCE, getClass());
 		
@@ -1474,6 +1478,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				doSaveAssessmentTest(ureq, flyingObjects);
 				manifestBuilder.appendAssessmentItem(itemFilename);
 				doSaveManifest();
+				
+				// Cache
+				qtiService.evictAssessmentTestInfos(testEntry);
 			} catch (Exception e) {
 				logError("", e);
 			}

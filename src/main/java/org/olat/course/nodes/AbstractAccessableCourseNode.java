@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
@@ -40,6 +41,8 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.references.ReferenceManager;
 
 /**
  * Initial Date: May 28, 2004
@@ -71,6 +74,11 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		super.cleanupOnDelete(course);
 		course.getCourseEnvironment()
 				.getAssessmentManager().deleteIndividualAssessmentDocuments(this);
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager()
+				.getCourseEntry();
+		CoreSpringFactory.getImpl(ReferenceManager.class)
+				.deleteReferencesHistoryOf(courseEntry.getOlatResource(), getIdent());
 	}
 
 	/**
