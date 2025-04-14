@@ -25,6 +25,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -48,7 +49,8 @@ import org.olat.modules.ceditor.ui.TableRunController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TablePageElementHandler implements PageElementHandler, PageElementStore<TableElement>, SimpleAddPageElementHandler {
+public class TablePageElementHandler implements PageElementHandler, PageElementStore<TableElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler {
 	
 	@Override
 	public String getType() {
@@ -97,6 +99,14 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		return new TablePart();
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof TablePart tablePart) {
+			return tablePart.copy();
+		}
+		return null;
 	}
 
 	@Override

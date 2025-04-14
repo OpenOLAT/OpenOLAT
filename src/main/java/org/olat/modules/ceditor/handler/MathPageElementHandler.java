@@ -27,6 +27,7 @@ import org.olat.core.gui.components.math.MathLiveComponent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -49,7 +50,8 @@ import org.olat.modules.ceditor.ui.MathLiveRunComponent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MathPageElementHandler implements PageElementHandler, PageElementStore<MathElement>, SimpleAddPageElementHandler {
+public class MathPageElementHandler implements PageElementHandler, PageElementStore<MathElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler {
 
 	@Override
 	public String getType() {
@@ -104,6 +106,14 @@ public class MathPageElementHandler implements PageElementHandler, PageElementSt
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		return new MathPart();
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof MathPart mathPart) {
+			return mathPart.copy();
+		}
+		return null;
 	}
 
 	@Override

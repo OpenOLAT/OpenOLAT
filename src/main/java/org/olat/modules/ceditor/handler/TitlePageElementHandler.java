@@ -28,6 +28,7 @@ import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -52,7 +53,8 @@ import org.olat.modules.ceditor.ui.TitleInspectorController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TitlePageElementHandler implements PageElementHandler, PageElementStore<TitleElement>, SimpleAddPageElementHandler {
+public class TitlePageElementHandler implements PageElementHandler, PageElementStore<TitleElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler {
 
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 	
@@ -116,6 +118,14 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 		settings.setLayoutSettings(BlockLayoutSettings.getPredefined());
 		title.setTitleSettings(settings);
 		return title;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof TitlePart titlePart) {
+			return titlePart.copy();
+		}
+		return null;
 	}
 
 	@Override

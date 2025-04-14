@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -50,7 +51,7 @@ import org.olat.modules.ceditor.ui.CodeRunController;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CodeElementHandler implements PageElementHandler, PageElementStore<CodeElement>,
-		SimpleAddPageElementHandler, ComponentEventListener {
+		SimpleAddPageElementHandler, CloneElementHandler, ComponentEventListener {
 
 	public CodeElementHandler() {
 	}
@@ -105,6 +106,14 @@ public class CodeElementHandler implements PageElementHandler, PageElementStore<
 		String content = Util.createPackageTranslator(CodeEditorController.class, locale).translate("code.example");
 		codePart.setContent(content);
 		return codePart;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof CodePart codePart) {
+			return codePart.copy();
+		}
+		return null;
 	}
 
 	@Override

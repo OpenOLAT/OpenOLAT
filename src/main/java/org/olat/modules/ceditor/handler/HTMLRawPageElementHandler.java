@@ -26,6 +26,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -50,7 +51,8 @@ import org.olat.modules.ceditor.ui.TextRunComponent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawPageElementHandler implements PageElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler {
+public class HTMLRawPageElementHandler implements PageElementHandler, PageElementStore<HTMLElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler {
 
 	private final CustomLinkTreeModel linkTreeModel;
 	private final CustomLinkTreeModel toolLinkTreeModel;
@@ -115,6 +117,14 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		return new HTMLPart();
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof HTMLPart htmlPart) {
+			return htmlPart.copy();
+		}
+		return null;
 	}
 
 	@Override

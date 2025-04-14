@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
@@ -44,7 +45,8 @@ import org.olat.modules.ceditor.ui.SpacerEditorController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SpacerElementHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class SpacerElementHandler implements PageElementHandler, 
+		SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 
@@ -96,5 +98,13 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 		SpacerPart part = new SpacerPart();
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof SpacerPart spacerPart) {
+			return spacerPart.copy();
+		}
+		return null;
 	}
 }
