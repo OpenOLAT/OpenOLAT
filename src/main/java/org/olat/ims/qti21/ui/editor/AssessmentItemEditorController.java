@@ -296,7 +296,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 	}
 	
 	public String getTitle() {
-		return resolvedAssessmentItem.getRootNodeLookup().getRootNodeHolder().getRootNode().getTitle();
+		return resolvedAssessmentItem != null ? resolvedAssessmentItem.getRootNodeLookup().getRootNodeHolder().getRootNode().getTitle() : "";
 	}
 	
 	public AssessmentItem getAssessmentItem() {
@@ -304,7 +304,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 	}
 	
 	public QTI21QuestionType getType() {
-		return itemBuilder.getQuestionType();
+		return itemBuilder != null ? itemBuilder.getQuestionType() : null;
 	}
 	
 	private QTI21QuestionType initItemEditor(UserRequest ureq) {
