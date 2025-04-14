@@ -28,6 +28,7 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -51,7 +52,8 @@ import org.olat.repository.RepositoryEntry;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class ImageComparisonElementHandler implements PageElementHandler, PageElementStore<ImageComparisonElement>, SimpleAddPageElementHandler, ComponentEventListener {
+public class ImageComparisonElementHandler implements PageElementHandler, PageElementStore<ImageComparisonElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler, ComponentEventListener {
 
 	private final RepositoryEntry entry;
 
@@ -109,6 +111,14 @@ public class ImageComparisonElementHandler implements PageElementHandler, PageEl
 		imageComparisonSettings.setInitialSliderPosition(50.0);
 		imageComparisonPart.setSettings(imageComparisonSettings);
 		return imageComparisonPart;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof ImageComparisonPart imageComparisonPart) {
+			return imageComparisonPart.copy();
+		}
+		return null;
 	}
 
 	@Override

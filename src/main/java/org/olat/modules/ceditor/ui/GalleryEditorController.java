@@ -63,6 +63,7 @@ import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.model.GalleryElement;
 import org.olat.modules.ceditor.model.GallerySettings;
 import org.olat.modules.ceditor.model.jpa.GalleryPart;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
@@ -217,6 +218,15 @@ public class GalleryEditorController extends FormBasicController implements Page
 			toolLink.setUserObject(galleryRow);
 			galleryRow.setToolLink(toolLink);
 		}
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source instanceof ContentEditorFragment && event instanceof ChangePartEvent) {
+			loadModel();
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

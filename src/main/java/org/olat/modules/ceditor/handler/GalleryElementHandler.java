@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -54,7 +55,8 @@ import org.olat.repository.RepositoryEntry;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class GalleryElementHandler implements PageElementHandler, PageElementStore<GalleryElement>, SimpleAddPageElementHandler, ComponentEventListener {
+public class GalleryElementHandler implements PageElementHandler, PageElementStore<GalleryElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler, ComponentEventListener {
 
 	private final RepositoryEntry entry;
 
@@ -117,6 +119,14 @@ public class GalleryElementHandler implements PageElementHandler, PageElementSto
 		gallerySettings.setRows(2);
 		galleryPart.setSettings(gallerySettings);
 		return galleryPart;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof GalleryPart galleryPart) {
+			return galleryPart.copy();
+		}
+		return null;
 	}
 
 	@Override

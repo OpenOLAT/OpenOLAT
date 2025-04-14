@@ -51,11 +51,13 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
+import org.olat.modules.ceditor.model.jpa.AbstractPart;
 import org.olat.modules.ceditor.ui.component.ContentEditorComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
@@ -611,6 +613,12 @@ public class PageEditorV2Controller extends BasicController {
 		ContentEditorFragment clonedFragment = null;
 		if (clonedElement != null) {
 			clonedFragment = doAddPageElement(ureq, clonedElement, fragment, PageElementTarget.below, 0);
+			if (clonedElement instanceof AbstractPart clonedPart && element instanceof PagePart oldPart) {
+				clonedPart.afterCopy(oldPart);
+				if (clonedFragment instanceof ContentEditorFragmentComponent fragmentComponent) {
+					fragmentComponent.dispatchToEditor(ureq, new ChangePartEvent(clonedElement));
+				}
+			}
 		}
 		return clonedFragment;
 	}

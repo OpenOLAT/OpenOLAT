@@ -346,6 +346,8 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	public void dispatchToEditor(UserRequest ureq, Event event) {
 		if (editorPart != null) {
 			editorPart.dispatchEvent(ureq, this, event);
+		} else if (viewPart instanceof Controller controller) {
+			controller.dispatchEvent(ureq, this, event);
 		}
 	}
 

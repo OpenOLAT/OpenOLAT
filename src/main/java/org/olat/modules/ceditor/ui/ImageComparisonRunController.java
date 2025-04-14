@@ -47,6 +47,7 @@ import org.olat.modules.ceditor.model.ImageComparisonOrientation;
 import org.olat.modules.ceditor.model.ImageComparisonSettings;
 import org.olat.modules.ceditor.model.ImageComparisonType;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
+import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
@@ -183,7 +184,12 @@ public class ImageComparisonRunController extends BasicController implements Pag
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source instanceof ContentEditorFragment && event instanceof ChangePartEvent changePartEvent) {
+			if (changePartEvent.getElement() instanceof ImageComparisonPart updatedImageComparisonPart) {
+				imageComparisonPart = updatedImageComparisonPart;
+				updateUI();
+			}
+		}
 	}
 
 	@Override
