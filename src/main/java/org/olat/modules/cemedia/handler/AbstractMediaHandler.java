@@ -48,6 +48,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -72,7 +73,7 @@ import org.olat.modules.cemedia.ui.medias.UploadMedia;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractMediaHandler implements MediaHandler, PageElementHandler {
+public abstract class AbstractMediaHandler implements MediaHandler, PageElementHandler, CloneElementHandler {
 
 	private static final Logger log = Tracing.createLoggerFor(AbstractMediaHandler.class);
 	
@@ -217,6 +218,14 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	@Override
 	public boolean hasDownload(MediaVersion mediaVersion) {
 		return true;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof MediaPart mediaPart) {
+			return mediaPart.copy();
+		}
+		return null;
 	}
 
 	public final class Informations implements MediaInformations {
