@@ -525,6 +525,39 @@ span.o_qti_gaptext_score_alternative {
 	}
 }
 
+.o_labeled_light {
+	&.o_assessment_test_session_status_running {
+		font-weight: normal;
+		background-color: #FFFFFF;
+		border-color: #ff8c00;
+		color: #522D00;
+	}
+	&.o_assessment_test_session_status_suspended {
+		font-weight: normal;
+		background-color: #FFFFFF;
+		border-color: #003E80;
+		color: #044A95;
+	}
+	&.o_assessment_test_session_status_finished {
+		font-weight: normal;
+		background-color: #FFFFFF;
+		border-color: #0D591B;
+		color: #1B652C;
+	}
+	&.o_assessment_test_session_status_error {
+		font-weight: normal;
+		background-color: #FFFFFF;
+		border-color: #b30018;
+		color: #1B652C;
+	}
+	&.o_assessment_test_session_status_cancelled {
+		font-weight: normal;
+		background-color: #FFFFFF;
+		border-color: #454545;
+		color: #595959;
+	}
+}
+
 
 /* Drawing */
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {

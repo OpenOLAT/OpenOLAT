@@ -24,18 +24,19 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NamedFileMediaResource;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -51,6 +53,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -59,6 +62,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -80,8 +84,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmChangeResourceController extends FormBasicController {
 	
-	private FormLink replaceButton;
+	private static final String KEY_CONTROLLED_REPLACEMENT = "controlled";
+	private static final String KEY_REPLACEMENT_ONLY = "only";
 	
+	private SingleSelection optionsEl;
+	private StaticTextElement impactEl;
 	private MultipleSelectionElement acknowledgeEl;
 	
 	private final ICourse course;
@@ -102,7 +109,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	
 	public ConfirmChangeResourceController(UserRequest ureq, WindowControl wControl, ICourse course, QTICourseNode courseNode,
 			RepositoryEntry newTestEntry, RepositoryEntry currentTestEntry, List<Identity> assessedIdentities, int numOfAssessedIdentities) {
-		super(ureq, wControl, "confirm_change");
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.course = course;
 		this.courseNode = courseNode;
 		this.newTestEntry = newTestEntry;
@@ -122,24 +129,124 @@ public class ConfirmChangeResourceController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			if(numOfAssessedIdentities == 1) {
-				layoutCont.contextPut("infos1", translate("confirmation.change.warning.1", Integer.toString(numOfAssessedIdentities)));
-			} else {
-				layoutCont.contextPut("infos1", translate("confirmation.change.warning.1.plural", Integer.toString(numOfAssessedIdentities)));
-			}
+		// Tests names
+		FormLayoutContainer entriesCont = uifactory.addDefaultFormLayout("entries", null, formLayout);
+		String currentNames = buildNames(currentTestEntry);
+		uifactory.addStaticTextElement("change.current.test", currentNames, entriesCont);
+		String newNames = buildNames(newTestEntry);
+		uifactory.addStaticTextElement("change.new.test", newNames, entriesCont);
+		
+		// Options
+		initFormOptions(formLayout);
+		// Table of properties
+		initFormProperties(formLayout);
+		// Confirmation
+		initFormConfirmation(formLayout, ureq);
+	}
+	
+	private void initFormOptions(FormItemContainer formLayout) {
+		FormLayoutContainer optionsCont = uifactory.addDefaultFormLayout("options", null, formLayout);
+		optionsCont.setFormTitle(translate("change.options.title"));
+		
+		SelectionValues optionsPK = new SelectionValues();
+		optionsPK.add(SelectionValues.entry(KEY_CONTROLLED_REPLACEMENT, translate("change.option.controlled"), null,
+				"o_icon o_icon-fw o_icon_left_right", null, true));
+		optionsPK.add(SelectionValues.entry(KEY_REPLACEMENT_ONLY, translate("change.option.replacement.only"), null,
+				"o_icon o_icon-fw o_icon_revoke", null, true));
+		optionsEl = uifactory.addCardSingleSelectHorizontal("change.options", optionsCont,
+				optionsPK.keys(), optionsPK.values(), optionsPK.descriptions(), optionsPK.icons());
+		optionsEl.addActionListener(FormEvent.ONCHANGE);
+		optionsEl.select(KEY_CONTROLLED_REPLACEMENT, true);
+		
+		impactEl = uifactory.addStaticTextElement("change.impact", "", optionsCont);
+		impactEl.setDomWrapperElement(DomWrapperElement.div);
+		updateUI();
+	}
+	
+	private void initFormProperties(FormItemContainer formLayout) {
+		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		String page = velocity_root + "/confirm_change_properties.html";
+		FormLayoutContainer propertiesCont = uifactory.addCustomFormLayout("properties", null, page, formLayout);
+		propertiesCont.setFormTitle(translate("change.properties.title"));
+		
+		// Headers
+		propertiesCont.contextPut("current", translate("change.properties.current",
+				StringHelper.escapeHtml(currentTestEntry.getDisplayname())));
+		propertiesCont.contextPut("new", translate("change.properties.new",
+				StringHelper.escapeHtml(newTestEntry.getDisplayname())));
+		
+		AssessmentTestInfos currentTestInfos = qtiService.getAssessmentTestInfos(currentTestEntry);
+		AssessmentTestInfos newTestInfos = qtiService.getAssessmentTestInfos(newTestEntry);
+		
+		// Manual scoring
+		String currentScoring = manualValue(currentTestInfos.manualCorrections());
+		String newScoring = manualValue(newTestInfos.manualCorrections());
+		propertiesCont.contextPut("currentScoring", currentScoring);
+		propertiesCont.contextPut("newScoring", newScoring);
+		if(!Objects.equals(currentScoring, newScoring)) {
+			propertiesCont.contextPut("messageScoring", translate("warning.change.scoring"));
+			propertiesCont.setFormWarning(translate("warning.change.important"));
 		}
 		
-		FormLayoutContainer confirmCont = uifactory.addDefaultFormLayout("confirm", null, formLayout);
+		// Max score
+		String currentMaxScore = roundedValue(currentTestInfos.maxScore());
+		propertiesCont.contextPut("currentMaxScore", translateRoundedValue(currentMaxScore, "change.max.score"));
+		String newMaxScore = roundedValue(newTestInfos.maxScore());
+		propertiesCont.contextPut("newMaxScore", translateRoundedValue(newMaxScore, "change.max.score"));
+		if(!Objects.equals(currentMaxScore, newMaxScore)) {
+			propertiesCont.contextPut("messageMaxScore", translate("warning.change.max.score"));
+		}
+		
+		// Cut value
+		String currentCutValue = roundedValue(currentTestInfos.cutValue());
+		propertiesCont.contextPut("currentCutValue", translateRoundedValue(currentCutValue, "change.cut.value"));
+		String newCutValue = roundedValue(newTestInfos.cutValue());
+		propertiesCont.contextPut("newCutValue", translateRoundedValue(newCutValue, "change.cut.value"));
+		if(!Objects.equals(currentCutValue, newCutValue)) {
+			propertiesCont.contextPut("messageCutValue", translate("warning.change.cut.value"));
+		}
+		
+		// Runs
+		Long currentRuns = qtiService.getAssessmentTestSessionsCount(courseEntry, courseNode.getIdent(), currentTestEntry);
+		propertiesCont.contextPut("currentRuns", currentRuns == null ? "0" : currentRuns.toString());
+		Long newRuns = qtiService.getAssessmentTestSessionsCount(courseEntry, courseNode.getIdent(), newTestEntry);
+		propertiesCont.contextPut("newRuns", newRuns == null ? "0" : newRuns.toString());
+	}
+
+	private String manualValue(boolean manualScoring) {
+		return manualScoring ? translate("change.manual.score") : translate("change.auto.score");
+	}
+	
+	private String roundedValue(Double val) {
+		return val == null ? "" : AssessmentHelper.getRoundedScore(val);
+	}
+	
+	private String translateRoundedValue(String val, String i18nKey) {
+		return StringHelper.containsNonWhitespace(val) ? translate(i18nKey, val) : "";
+	}
+	
+	private void initFormConfirmation(FormItemContainer formLayout, UserRequest ureq) {
+		FormLayoutContainer confirmCont = uifactory.addDefaultFormLayout("confirmation", null, formLayout);
 		
 		SelectionValues onKV = new SelectionValues();
 		onKV.add(SelectionValues.entry("on", translate("confirmation.change.acknowledge")));
 		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation.change", confirmCont, onKV.keys(), onKV.values());
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, confirmCont);
-		replaceButton = uifactory.addFormLink("reset.replace.file", buttonsCont, Link.BUTTON);
-		replaceButton.setElementCssClass("btn btn-default btn-danger");
+		uifactory.addFormSubmitButton("replace.publish", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private String buildNames(RepositoryEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(StringHelper.escapeHtml(entry.getDisplayname()));
+		if(StringHelper.containsNonWhitespace(entry.getExternalRef())) {
+			sb.append("<span class='mute'> \u00B7 ")
+			  .append(StringHelper.escapeHtml(entry.getExternalRef()))
+			  .append("</span>");
+		}
+		return sb.toString();
 	}
 	
 	private File prepareArchive(UserRequest ureq) {
@@ -169,20 +276,38 @@ public class ConfirmChangeResourceController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		optionsEl.clearError();
+		if(!optionsEl.isOneSelected()) {
+			optionsEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
 		return allOk;
+	}
+	
+	private void updateUI() {
+		if(optionsEl.isOneSelected() && KEY_REPLACEMENT_ONLY.equals(optionsEl.getSelectedKey())) {
+			impactEl.setValue(translate("change.impact.replacement.only", Integer.toString(numOfAssessedIdentities)));
+		} else {
+			impactEl.setValue(translate("change.impact.controlled", Integer.toString(numOfAssessedIdentities)));
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if(optionsEl.isOneSelected()) {
+			if(KEY_REPLACEMENT_ONLY.equals(optionsEl.getSelectedKey())) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(KEY_CONTROLLED_REPLACEMENT.equals(optionsEl.getSelectedKey())) {
+				doControlledReplace(ureq);
+			}
+		}
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(replaceButton == source) {
-			if(validateFormLogic(ureq)) {
-				doReplace(ureq);
-			}
+		if(optionsEl == source) {
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -192,7 +317,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private void doReplace(UserRequest ureq) {
+	private void doControlledReplace(UserRequest ureq) {
 		// reset the data
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();

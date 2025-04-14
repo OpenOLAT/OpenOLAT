@@ -1,15 +1,26 @@
 <ul class="o_dropdown list-unstyled">
-#if($r.available("download.pdf"))
-	<li>$r.render("download.pdf")</li>
-#end
-#if($r.available("open.log.viewer"))
-	<li>$r.render("open.log.viewer")</li>
-#end
-#if($r.available("download.log"))
-	<li>$r.render("download.log")</li>
-#end
-#if($r.available("revalidate.test"))
-	<li class="divider"></li>
+	#if($r.available("correction"))
+	<li>$r.render("correction")</li>
+	#elseif($r.available("preview"))
+	<li>$r.render("preview")</li>
+	#end
+	
+	#if($r.available("view.results"))
+	<li>$r.render("view.results")</li>
+	#elseif($r.available("pull"))
+	<li>$r.render("pull")</li>
+	#end
+
+	#if($r.available("revalidate.test"))
 	<li>$r.render("revalidate.test")</li>
-#end
+	#elseif($r.available("invalidate"))
+	<li>$r.render("invalidate")</li>
+	#end
+
+	<li class="divider"></li>
+	#if($r.available("download.pdf"))
+	<li>$r.render("download.pdf")</li>
+	#end
+	<li>$r.render("open.log.viewer")</li>
+	<li>$r.render("download.log")</li>
 </ul>

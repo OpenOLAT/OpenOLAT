@@ -1748,7 +1748,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle)
+			.chooseSelfTest(qtiTestTitle)
 			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.showScoreOnHomepage(true)
 			.saveConfiguration();

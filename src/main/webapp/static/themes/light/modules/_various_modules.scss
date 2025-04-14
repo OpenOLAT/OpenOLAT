@@ -862,8 +862,15 @@ ul.o_certificates li {
 .o_tm_green { background-color: #99FF00; }
 
 /* Assessment */
+.o_qti_statistics_filters {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	column-gap: 0.5em;
+}
+
 div.o_assessment_user_type_filter {
-	padding: 0.5em;
+	padding: 6px 0.5em;
 	border: 1px solid $gray-lighter;
 	border-radius: $panel-border-radius;
 	

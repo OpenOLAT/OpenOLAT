@@ -70,6 +70,8 @@ public class GenericTreeModel implements TreeModel {
 	 * @return the treenode with the node id or null if not found
 	 */
 	private TreeNode findNode(String nodeId, TreeNode node) {
+		if(node == null || nodeId == null) return null;
+		
 		if (node.getIdent().equals(nodeId))
 			return node;
 		int childcnt = node.getChildCount();

@@ -49,6 +49,17 @@ public interface RepositoryEntryReferenceProvider {
 	
 	public boolean canImport();
 	
+	public boolean hasReferencesHistory();
+	
+	public Controller getReferencesHistoryController(UserRequest ureq, WindowControl wControl);
+	
+	/**
+	 * Confirmation afterwards that the repository entry can be replaced.
+	 * 
+	 * @return confirmation true/false and eventual an error message if false
+	 */
+	public Confirm confirmCanReplace();
+	
 	public String getWarningMessage();
 	
 	public static interface ReferenceContentProvider {
@@ -72,6 +83,10 @@ public interface RepositoryEntryReferenceProvider {
 		public void refreshSettings(Component cmp, RepositoryEntry repositoryEntry);
 		
 		public Controller getEditSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry);
+		
+	}
+	
+	public record Confirm(boolean canReplace, String errorMessage) {
 		
 	}
 }

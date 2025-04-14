@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,16 +105,20 @@ import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionDetails.SessionStatus;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
+import org.olat.ims.qti21.ui.components.AssessmentTestEntryRenderer;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
+import org.olat.ims.qti21.ui.components.AssessmentTestSessionStatusRenderer;
 import org.olat.ims.qti21.ui.logviewer.LogViewerController;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -141,7 +146,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  * 
  * 
  * Initial date: 28.06.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class QTI21AssessmentDetailsController extends FormBasicController {
@@ -251,39 +256,45 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.run));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.terminationTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.numOfItemSessions, new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.responded, new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.corrected, new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.score, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.manualScore, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.finalScore, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration,
+				new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.status,
+				new AssessmentTestSessionStatusRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.testEntry,
+				new AssessmentTestEntryRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.numOfItemSessions,
+				new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.responded,
+				new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.corrected,
+				new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.score,
+				new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.manualScore,
+				new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.finalScore,
+				new ScoreCellRenderer()));
 		
-		if(readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "open"));
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"),
-							new StaticFlexiCellRenderer(translate("pull"), "open"))));
-			correctionCol = new DefaultFlexiColumnModel(TSCols.correct.i18nHeaderKey(), TSCols.correct.ordinal(), "correction",
+		if(!readOnly) {
+			correctionCol = new DefaultFlexiColumnModel(TSCols.correct, "correction",
 					new CorrectionCellRender());
 			correctionCol.setDefaultVisible(false);
 			correctionCol.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(correctionCol);
-			DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("invalidate"), "invalidate"), null));
-			columnsModel.addFlexiColumnModel(cancelCol);
+			
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results, "open",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"), null)));
 		}
 		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TSCols.tools));
 
-		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
+		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableMessageKey("results.empty");
-		tableEl.setCssDelegate(tableModel);
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {
 			if(courseNode != null) {
@@ -295,7 +306,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 		}
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-" + entry.getKey() + "-" + subIdent);
+		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-v2-" + entry.getKey() + "-" + subIdent);
 	}
 	
 	protected void updateModel() {
@@ -308,6 +319,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		
 		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity, false);
+		Collections.sort(sessionsStatistics, new AssessmentTestSessionStatisticsCreationDateComparator());
+		
+		int pos = 1;
 		List<QTI21AssessmentTestSessionDetails> infos = new ArrayList<>();
 		final Map<RepositoryEntry,Boolean> manualCorrectionsMap = new HashMap<>();
 		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
@@ -317,7 +331,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 						.computeIfAbsent(testEntry, re -> qtiService.needManualCorrection(re))
 						.booleanValue();
 			}
-			infos.add(forgeDetailsRow(sessionStatistics));
+			infos.add(forgeDetailsRow(sessionStatistics, pos++));
 		}
 		if(correctionCol != null) {
 			boolean visible = manualCorrections || tableEl.isColumnModelVisible(correctionCol);
@@ -338,16 +352,19 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 	}
 	
-	private QTI21AssessmentTestSessionDetails forgeDetailsRow(AssessmentTestSessionStatistics sessionStatistics) {
+	private QTI21AssessmentTestSessionDetails forgeDetailsRow(AssessmentTestSessionStatistics sessionStatistics, int pos) {
 		AssessmentTestSession testSession = sessionStatistics.testSession();
 		
 		int responded = 0;
 		int numOfItems = 0;
 		boolean error = false;
+		boolean suspended = false;
 		try {
 			TestSessionState testSessionState = qtiService.loadTestSessionState(testSession);
 			TestPlan testPlan = testSessionState.getTestPlan();
 			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
+			suspended = testSessionState.isSuspended();
+			
 			for(TestPlanNode node:nodes) {
 				TestNodeType testNodeType = node.getTestNodeType();
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(node.getKey());
@@ -367,13 +384,29 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		
 		error |= testSession.isExploded();
-
+		SessionStatus status = evaluateStatus(testSession, error, suspended);
 		QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
-				numOfItems, responded, sessionStatistics.numOfCorrectedItems(), sessionStatistics.automaticScore(), error);
+				numOfItems, responded, sessionStatistics.numOfCorrectedItems(), sessionStatistics.automaticScore(), status, error, pos);
 		FormLink tools = ActionsColumnModel.createLink(uifactory, getTranslator());
 		row.setToolsLink(tools);
 		tools.setUserObject(row);
 		return row;
+	}
+	
+	private SessionStatus evaluateStatus(AssessmentTestSession session, boolean error, boolean suspended) {
+		if(error) {
+			return SessionStatus.ERROR;
+		}
+		if(session.isCancelled()) {
+			return SessionStatus.CANCELLED;
+		}
+		if(suspended) {
+			return SessionStatus.SUSPENDED;
+		}
+		if(session.getFinishTime() != null || session.getTerminationTime() != null) {
+			return SessionStatus.FINISHED;
+		}
+		return SessionStatus.RUNNING;
 	}
 
 	@Override
@@ -492,8 +525,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					doCorrection(ureq, testSession);
 				} else if("preview".equals(cmd)) {
 					doOpenCorrection(ureq, testSession);
-				} else if("invalidate".equals(cmd)) {
-					confirmInvalidateTestSession(ureq, testSession);
 				}
 			}
 		} else if(source instanceof FormLink link) {
@@ -880,8 +911,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		
 		private Link pdfLink;
 		private Link logLink;
+		private Link pullLink;
 		private Link logViewerLink;
+		private Link invalidateLink;
 		private Link revalidateLink;
+		private Link correctionLink;
+		private Link viewResultsLink;
+		private Link previewLink;
 		
 		private final QTI21AssessmentTestSessionDetails row;
 		
@@ -896,14 +932,34 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 			
 			logLink = LinkFactory.createLink("download.log", mainVC, this);
-			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_file_export");
 			
 			logViewerLink = LinkFactory.createLink("open.log.viewer", mainVC, this);
 			logViewerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
 			
+			Boolean correction = tableModel.isCorrectionAllowed(row);
+			if(correction != null && correction.booleanValue()) {
+				correctionLink = LinkFactory.createLink("correction", mainVC, this);
+				correctionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+			} else if(correction != null && !correction.booleanValue()) {
+				previewLink = LinkFactory.createLink("preview", mainVC, this);
+				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_magnifying_glass");
+			}
+			
+			if(row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
+				viewResultsLink = LinkFactory.createLink("view.results", mainVC, this);
+				viewResultsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_magnifying_glass");
+			} else {
+				pullLink = LinkFactory.createLink("pull", mainVC, this);
+				pullLink.setIconLeftCSS("o_icon o_icon-fw o_icon_view");
+			}
+			
 			if(row.getTestSession().isCancelled()) {
 				revalidateLink = LinkFactory.createLink("revalidate.test", mainVC, this);
 				revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+			} else {
+				invalidateLink = LinkFactory.createLink("invalidate", mainVC, this);
+				invalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ban");
 			}
 			putInitialPanel(mainVC);
 		}
@@ -915,10 +971,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				doDownloadPdf(ureq, row);
 			} else if(logLink == source) {
 				doDownloadLog(ureq, row.getTestSession());
+			} else if(invalidateLink == source) { 
+				confirmInvalidateTestSession(ureq, row.getTestSession());
 			} else if(revalidateLink == source) {
 				confirmRevalidateTestSession(ureq, row.getTestSession());
 			} else if(logViewerLink == source) {
 				doOpenLogViewer(ureq, row.getTestSession());
+			} else if(viewResultsLink == source) {
+				doOpenResult(ureq, row.getTestSession());
+			} else if(pullLink == source) {
+				doConfirmPullSession(ureq, row.getTestSession());
 			}
 		}
 	}
@@ -951,6 +1013,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		@Override
 		public int compare(QTI21AssessmentTestSessionDetails q1, QTI21AssessmentTestSessionDetails q2) {
 			return comparator.compare(q1.getTestSession(), q2.getTestSession());
+		}
+	}
+	
+	public static class AssessmentTestSessionStatisticsCreationDateComparator implements Comparator<AssessmentTestSessionStatistics> {
+
+		@Override
+		public int compare(AssessmentTestSessionStatistics q1, AssessmentTestSessionStatistics q2) {
+			Date d1 = q1.testSession().getCreationDate();
+			Date d2 = q2.testSession().getCreationDate();
+			return d1.compareTo(d2);
 		}
 	}
 	

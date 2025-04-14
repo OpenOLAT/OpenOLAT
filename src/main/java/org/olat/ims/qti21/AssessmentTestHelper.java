@@ -127,12 +127,12 @@ public class AssessmentTestHelper {
 	
 	private static boolean needManualCorrection(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
 		for(SectionPart part: section.getSectionParts()) {
-			if(part instanceof AssessmentItemRef) {
-				if(needManualCorrection((AssessmentItemRef)part, resolvedAssessmentTest)) {
+			if(part instanceof AssessmentItemRef assessmentItemRef) {
+				if(needManualCorrection(assessmentItemRef, resolvedAssessmentTest)) {
 					return true;
 				}
-			} else if(part instanceof AssessmentSection) {
-				if(needManualCorrection((AssessmentSection) part, resolvedAssessmentTest)) {
+			} else if(part instanceof AssessmentSection assessmentSection) {
+				if(needManualCorrection(assessmentSection, resolvedAssessmentTest)) {
 					return true;
 				}
 			}

@@ -63,6 +63,7 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
+import org.olat.modules.assessment.ui.ReferenceHistoryFilterController;
 import org.olat.modules.assessment.ui.UserFilterController;
 import org.olat.modules.assessment.ui.event.UserFilterEvent;
 import org.olat.modules.grade.GradeModule;
@@ -85,6 +86,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private final Link downloadRawLink;
 	
 	private UserFilterController filterCtrl;
+	private ReferenceHistoryFilterController referencesHistoryCtrl;
 	
 	private QTICourseNode courseNode;
 	private final QTI21StatisticResourceResult resourceResult;
@@ -96,7 +98,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private CourseAssessmentService courseAssessmentService;
 
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean printMode, boolean withDiagramm) {
+			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean withHistory, boolean printMode, boolean withDiagramm) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.resourceResult = resourceResult;
@@ -131,6 +133,13 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 					resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
+		}
+		
+		if(withHistory && resourceResult.getTestCourseNode() != null) {
+			referencesHistoryCtrl = new ReferenceHistoryFilterController(ureq, getWindowControl(),
+					resourceResult.getCourseEntry(), resourceResult.getTestCourseNode(), resourceResult.getTestEntry());
+			listenTo(referencesHistoryCtrl);
+			mainVC.put("referencesHistory", referencesHistoryCtrl.getInitialComponent());
 		}
 		
 		putInitialPanel(mainVC);
@@ -300,6 +309,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 				UserFilterEvent ufe = (UserFilterEvent)event;
 				updateData(ufe.isWithMembers(), ufe.isWithNonParticipantUsers(), ufe.isWithAnonymousUser(), ufe.isWithFakeParticipants());
 			}
+		} else if(referencesHistoryCtrl == source) {
+			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
 	}

@@ -738,6 +738,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 			itemBuilder.build();
 		}
 		qtiService.updateAssesmentObject(itemFile, resolvedAssessmentItem);
+		qtiService.evictAssessmentTestInfos(testEntry);
 	}
 
 	private void doBuildAndCommitMetadata() {

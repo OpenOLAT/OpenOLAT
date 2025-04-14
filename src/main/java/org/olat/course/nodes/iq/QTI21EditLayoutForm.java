@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.iq;
 
-import java.io.File;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,16 +33,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.AssessmentTestInfos;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -288,13 +283,10 @@ public class QTI21EditLayoutForm extends FormBasicController {
 	 * @return The time limit of the assessment test in seconds or -1 if not configured
 	 */
 	private long getMaxTimeLimit() {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		AssessmentTestInfos assessmentTestInfos = qtiService.getAssessmentTestInfos(testEntry);
 		long timeLimit = -1;
-		if(assessmentTest != null && assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
-			timeLimit = assessmentTest.getTimeLimits().getMaximum().longValue();
+		if(assessmentTestInfos != null && assessmentTestInfos.timeLimits() != null) {
+			timeLimit = assessmentTestInfos.timeLimits().longValue();
 		}
 		return timeLimit;
 	}

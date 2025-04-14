@@ -180,6 +180,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_fake_participant { @include o-add-icon('street-view');}
 .o_icon_file { @include o-add-icon('file');}
 .o_icon_file_arrow_up { @include o-add-icon('file-arrow-up');}
+.o_icon_file_export { @include o-add-icon('file-export');}
 .o_icon_filehub_add { @include o-add-icon('file-circle-plus');}
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
 .o_icon_fileupload { @include o-add-icon('file', false);}
@@ -199,6 +200,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_header { @include o-add-icon('header');}
 .o_icon_heart { @include o-add-icon('heart');}
 .o_icon_help { @include o-add-icon('question-circle'); cursor: help;}
+.o_icon_history { @include o-add-icon('clock-rotate-left');}
 .o_icon_home { @include o-add-icon('home');}
 .o_icon_html5 { @include o-add-brand-icon('html5');}
 .o_icon_image { @include o-add-icon('image');}
