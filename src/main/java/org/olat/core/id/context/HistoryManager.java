@@ -98,7 +98,11 @@ public class HistoryManager {
 	
 	public void persistHistoryPoint(Identity identity, HistoryPoint historyPoint) {
 		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity);
-		File resumeXml = new File(pathHomePage, "resume.xml");
+		File homePage = new File(pathHomePage);
+		if(!homePage.exists()) {
+			homePage.mkdirs();
+		}
+		File resumeXml = new File(homePage, "resume.xml");
 		try(OutputStream out = new FileOutputStream(resumeXml)) {
 			if(!resumeXml.getParentFile().exists()) {
 				resumeXml.getParentFile().mkdirs();
