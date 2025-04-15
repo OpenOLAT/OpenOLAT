@@ -32,6 +32,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.user.UserImpl;
+import org.olat.user.UserManagerImpl;
 import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,6 +50,7 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_20.0.2";
 
 	private static final String MOVE_USER_PORTRAIT = "MOVE USER PORTRAIT";
+	private static final String INIT_USER_INITIALS_COLOR = "INIT USER INITIALS COLOR";
 	
 	private static final int BATCH_SIZE = 1000;
 	
@@ -55,6 +58,8 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 	private DB dbInstance;
 	@Autowired
 	private UserPortraitService userPortraitService;
+	@Autowired
+	private UserManagerImpl userManager;
 
 	public OLATUpgrade_20_0_2() {
 		super();
@@ -77,7 +82,9 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= moveUserPortrait(upgradeManager, uhd);
+		allOk &= initUserInitialsColor(upgradeManager, uhd);
 
+		uhd.setInstallationComplete(allOk);
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
@@ -194,6 +201,61 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 		}
 	}
 	
+	private boolean initUserInitialsColor(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(INIT_USER_INITIALS_COLOR)) {
+			try {
+				log.info("Start init user initials color.");
+				
+				int counter = 0;
+				int newPortraits = 0;
+				List<Identity> identities;
+				do {
+					identities = getIdentities(counter, BATCH_SIZE);
+					if(!identities.isEmpty()) {
+						for(int i=0; i<identities.size(); i++) {
+							Identity identity = identities.get(i);
+							if(initUserInitialsColor(identity)) {
+								newPortraits++;
+							}
+							if(i % 25 == 0) {
+								dbInstance.commitAndCloseSession();
+							}
+						}
+						counter += identities.size();
+						log.info("Checked the initials color of {} users.", counter);
+					}
+					dbInstance.commitAndCloseSession();
+				} while (!identities.isEmpty());
+				
+				log.info("User initials color {} users initialized.", newPortraits);
+				
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+		
+			uhd.setBooleanDataValue(INIT_USER_INITIALS_COLOR, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean initUserInitialsColor(Identity identity) {
+		if (StringHelper.containsNonWhitespace(identity.getUser().getInitialsCssClass())) {
+			return false;
+		}
+		
+		if (identity.getUser() instanceof UserImpl impl) {
+			userManager.getRandomInitialsColorCss();
+			impl.setInitialsCssClass(userManager.getRandomInitialsColorCss());
+			userManager.updateUser(identity, impl);
+			return true;
+		}
+		
+		return false;
+	}
+
 	private List<Identity> getIdentities(int offset, int maxResults) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident");
@@ -206,4 +268,5 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
+	
 }

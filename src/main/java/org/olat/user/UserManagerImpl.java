@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
@@ -93,7 +94,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	
 	private static final Logger log = Tracing.createLoggerFor(UserManagerImpl.class);
 	
-	public static final List<String> USER_INITIALS_CSS = List.of(
+	private static final List<String> USER_INITIALS_CSS = List.of(
 			"o_user_initials_dark_blue",
 			"o_user_initials_light_blue",
 			"o_user_initials_purple",
@@ -154,6 +155,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		newUser.setLastName(lastName);
 		newUser.setEmail(eMail);
 		newUser.setCreationDate(new Date());
+		newUser.setInitialsCssClass(getRandomInitialsColorCss());
 		
 		Preferences prefs = newUser.getPreferences();
 		Locale loc;
@@ -168,6 +170,10 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		prefs.setPresenceMessagesPublic(false);
 		prefs.setInformSessionTimeout(false);
 		return newUser;
+	}
+	
+	public String getRandomInitialsColorCss() {
+		return USER_INITIALS_CSS.get(new Random().nextInt(USER_INITIALS_CSS.size() - 1));
 	}
 	
 	@Override
@@ -624,19 +630,6 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		AuthenticationProvider authenticationProvider = loginModule.getAuthenticationProvider("OLAT");
 		String issuer = authenticationProvider.getIssuerIdentifier(null);
 		return issuer.startsWith("https://")? issuer.substring(8): issuer;
-	}
-
-	@Override
-	public String getInitials(User user) {
-		return StringHelper.getFirstLetter(user.getFirstName(), true).toUpperCase()
-				+ StringHelper.getFirstLetter(user.getLastName(), true).toUpperCase();
-	}
-
-	@Override
-	public String getInitialsColorCss(Long identityKey) {
-		// Always get the same color
-		int index = Math.abs(identityKey.intValue() % USER_INITIALS_CSS.size());
-		return USER_INITIALS_CSS.get(index);
 	}
 
 	@Override

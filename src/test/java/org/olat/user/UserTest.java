@@ -48,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -135,6 +136,7 @@ public class UserTest extends OlatTestCase {
 		log.debug("Entering testUmCreateUser()");
 		User found = userManager.findUniqueIdentityByEmail("judihui@id.uzh.ch").getUser();
 		assertTrue(u1.getKey().equals(found.getKey()));
+		assertTrue(StringHelper.containsNonWhitespace(u1.getInitialsCssClass()));
 	}
 
 	
