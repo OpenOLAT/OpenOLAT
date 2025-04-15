@@ -743,7 +743,29 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 		return pub;
 	}
-	
+
+	@Override
+	public Subscriber createDisabledSubscriberIfAbsent(Identity identity, SubscriptionContext context, PublisherData data) {
+		Publisher publisher = getPublisher(context);
+		if (publisher == null) {
+			publisher = findOrCreatePublisher(context, data);
+		}
+
+		Subscriber existing = getSubscriber(identity, publisher);
+		if (existing == null) {
+			SubscriberImpl newSubscriber = new SubscriberImpl(publisher, identity);
+			newSubscriber.setEnabled(false); // mark as deactivated (OO-8593)
+			newSubscriber.setCreationDate(new Date());
+			newSubscriber.setLastModified(new Date());
+			newSubscriber.setLatestEmailed(new Date());
+			dbInstance.getCurrentEntityManager().persist(newSubscriber);
+			dbInstance.commit();
+			return newSubscriber;
+		}
+
+		return existing;
+	}
+
 	private Publisher getPublisherForUpdate(Publisher publisher) {
 		List<Publisher> publishers = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadPublisherByKey", Publisher.class)
