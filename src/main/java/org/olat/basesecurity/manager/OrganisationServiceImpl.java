@@ -904,9 +904,9 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public boolean hasMultipleDefaultOrganisations() {
-		List<Organisation> defaultOrgs = organisationDao.loadDefaultOrganisation();
-		return defaultOrgs.size() > 1;
+	public boolean hasMultipleOrganisationsWithSameId(String orgIdentifier) {
+		List<Organisation> orgsByIdentifier = organisationDao.loadByIdentifier(orgIdentifier);
+		return orgsByIdentifier.size() > 1;
 	}
 
 	@Override

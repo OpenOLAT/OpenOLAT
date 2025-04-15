@@ -96,17 +96,21 @@ public class OrganisationServiceTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldDetectMultipleDefaultOrganisations() {
-		// Setup second default organisation
-		Organisation secondDefaultOrg = organisationService.createOrganisation(
-				"Second Default Org", OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER,
+	public void shouldDetectMultipleOrganisationsWithSameId() {
+		Organisation firstSameOrg = organisationService.createOrganisation(
+				"First same org", "same_org",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		// Setup second organisation with the same identifier
+		Organisation secondSameOrg = organisationService.createOrganisation(
+				"Second same org", "same_org",
 				null, null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		boolean multipleDefaults = organisationService.hasMultipleDefaultOrganisations();
+		boolean multipleOrgsWithSameId = organisationService.hasMultipleOrganisationsWithSameId("same_org");
 		// delete afterwards
-		organisationService.deleteOrganisation(secondDefaultOrg, secondDefaultOrg, null);
-		Assert.assertTrue(multipleDefaults);
+		organisationService.deleteOrganisation(firstSameOrg, firstSameOrg, null);
+		organisationService.deleteOrganisation(secondSameOrg, secondSameOrg, null);
+		Assert.assertTrue(multipleOrgsWithSameId);
 	}
 
 	@Test

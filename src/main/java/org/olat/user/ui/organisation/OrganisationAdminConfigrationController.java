@@ -118,7 +118,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		uifactory.addStaticTextElement("organisation.default.label", "organisation.default.label", defaultOrgName, statusCont);
 
 		// Check for multiple default orgs
-		if (organisationService.hasMultipleDefaultOrganisations()) {
+		if (organisationService.hasMultipleOrganisationsWithSameId(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER)) {
 			statusCont.setFormWarning(translate("organisation.status.multiple.default.error"));
 		}
 
