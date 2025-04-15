@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -195,16 +196,25 @@ public class ContentEditorQti {
 		return clonedQuizQuestion;
 	}
 
+	/**
+	 * Copies a quiz question from its original storage path "${olatData}/bcroot/portfolio/questions/xx/xxx/${questionId}.xml"
+	 * to a new targetStoragePath "${olatData]/bcroot/portfolio/questions/yy/yyy/${questionId}.xml}". Also copies all
+	 * dependency files found in the XML's directory.
+	 * 
+	 * @param quizQuestion A quiz question object.
+	 * @param targetStoragePath A target storage path relative to the content editor storage root path.
+	 *    
+	 * @return The path of the generated XML file for the copied question. The path is relative to the content editor storage root path.
+	 */
 	public String copyQuestion(QuizQuestion quizQuestion, String targetStoragePath) {
 		File sourceQuestionFile = contentEditorFileStorage.getFile(quizQuestion.getXmlFilePath());
+		File sourceQuestionDir = sourceQuestionFile.getParentFile();
 		File targetQuestionsDir = contentEditorFileStorage.getFile(targetStoragePath);
 		File targetQuestionDir = new File(targetQuestionsDir, quizQuestion.getId());
 		targetQuestionDir.mkdir();
 		File targetQuestionFile = new File(targetQuestionDir, quizQuestion.getId() + ".xml");
-		try {
-			Files.copy(sourceQuestionFile.toPath(), targetQuestionFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			logger.error("Failed to clone question XML '{}': {}", sourceQuestionFile.toPath().toString(), e);
+		if (!FileUtils.copyDirContentsToDir(sourceQuestionDir, targetQuestionDir, false, "CECopyQuestion")) {
+			logger.error("Failed to clone question XML '{}' and dependency files.", sourceQuestionFile.toPath().toString());
 		}
 		return contentEditorFileStorage.getRelativePath(targetQuestionFile);
 	}
