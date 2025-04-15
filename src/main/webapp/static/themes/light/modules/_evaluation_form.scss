@@ -222,10 +222,11 @@
 		}
 	}
 	
-	.o_evaluation_mc_other {
-		margin-top: -10px;
-		margin-left: 10px;
-		margin-right: 10px;
+	.o_evaluation_mc_horizontal,
+	.o_evaluation_mc_dropdown {
+		&+.o_evaluation_mc_other {
+			margin-top: 10px;
+		}
 	}
 	
 	.o_evaluation_rubric_diagrams {

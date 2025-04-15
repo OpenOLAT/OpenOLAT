@@ -116,12 +116,15 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		switch (multipleChoice.getPresentation()) {
 			case HORIZONTAL:
 				multipleChoiceEl = uifactory.addCheckboxesHorizontal(name, null, flc, keys, values);
+				multipleChoiceEl.setElementCssClass("o_evaluation_mc_horizontal");
 				break;
 			case DROPDOWN:
 				multipleChoiceEl = uifactory.addCheckboxesDropdown(name, null, flc, keys, values);
+				multipleChoiceEl.setElementCssClass("o_evaluation_mc_dropdown");
 				break;
 			default:
 				multipleChoiceEl = uifactory.addCheckboxesVertical(name, null, flc, keys, values, 1);
+				multipleChoiceEl.setElementCssClass("o_evaluation_mc_vertical");
 		}
 		multipleChoiceEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -130,6 +133,8 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 		}
 		otherEl = uifactory.addTextElement("mc_other_" + CodeHelper.getRAMUniqueID(), null, 1000, "", flc);
 		otherEl.setElementCssClass("o_evaluation_mc_other");
+		otherEl.setPlaceholderKey("multiple.choice.others.placeholder", null);
+		otherEl.setAriaLabel(translate("multiple.choice.others.placeholder"));
 		showHideOthers();
 
 		setBlockLayoutClass(multipleChoice.getLayoutSettings());
