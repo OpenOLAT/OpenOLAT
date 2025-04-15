@@ -263,7 +263,8 @@ public class IdentityAssessmentFiguresController extends BasicController {
 	}
 	
 	public boolean hasCompletion() {
-		return progressWidget != null && progressWidget.isVisible();
+		return (passedWidget != null && passedWidget.isVisible() && passedWidget.getLeftComp() != null)
+				|| (progressWidget != null && progressWidget.isVisible() && progressWidget.getLeftComp() != null);
 	}
 
 	public float getCompletion() {
