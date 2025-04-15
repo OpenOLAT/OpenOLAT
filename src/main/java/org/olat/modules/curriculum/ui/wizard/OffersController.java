@@ -309,6 +309,8 @@ public class OffersController extends StepFormBasicController {
 			AccessMethod method = infos.offerAccess().getMethod();
 			boolean withPayment = method.isPaymentMethod();
 			
+			commentEl.setVisible(true);
+			
 			String price = PriceFormat.fullFormat(infos.offer().getPrice());
 			priceEl.setValue(price);
 			priceEl.setVisible(StringHelper.containsNonWhitespace(price) && withPayment);
@@ -324,6 +326,7 @@ public class OffersController extends StepFormBasicController {
 			purchaseOrderNumberEl.setVisible(needBillingAddress);
 		} else {
 			needBillingAddress = false;
+			commentEl.setVisible(false);
 			priceEl.setVisible(false);
 			cancellationFeeEl.setVisible(false);
 			billingAddressInfoCont.setVisible(false);
