@@ -1985,6 +1985,11 @@ table.o_ce_table {
 		}
 	}
 
+	.o_title_page_element {
+		hyphens: auto;
+		word-break: break-word;
+	}
+
 	.o_ed_htmlparagraph {
 		.o_ce_layout_normal {
 			margin: 10px;
