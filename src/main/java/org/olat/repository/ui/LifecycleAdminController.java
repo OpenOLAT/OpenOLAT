@@ -278,11 +278,16 @@ public class LifecycleAdminController extends FormBasicController {
 	}
 
 	private boolean isRelevantCycle(RepositoryEntryLifecycle cycle, Date now) {
-		boolean isFutureOrCurrent =
-				(cycle.getValidTo() == null || !cycle.getValidTo().before(now)) &&
-						(cycle.getValidFrom() == null || !cycle.getValidFrom().after(now));
+		boolean isDefault = cycle.isDefaultPublicCycle();
 
-		return cycle.isDefaultPublicCycle() || isFutureOrCurrent;
+		boolean isCurrent =
+				(cycle.getValidFrom() == null || !cycle.getValidFrom().after(now)) &&
+						(cycle.getValidTo() == null || !cycle.getValidTo().before(now));
+
+		boolean isFuture =
+				cycle.getValidFrom() != null && cycle.getValidFrom().after(now);
+
+		return isDefault || isCurrent || isFuture;
 	}
 
 	private void doOpenTools(UserRequest ureq, FormLink link) {
