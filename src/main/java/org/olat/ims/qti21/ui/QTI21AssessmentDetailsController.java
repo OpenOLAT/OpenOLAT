@@ -264,7 +264,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.status,
 				new AssessmentTestSessionStatusRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.testEntry,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.testEntry,
 				new AssessmentTestEntryRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.numOfItemSessions,
 				new AssessmentTestSessionDetailsNumberRenderer(getTranslator())));
@@ -363,16 +363,17 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			TestSessionState testSessionState = qtiService.loadTestSessionState(testSession);
 			TestPlan testPlan = testSessionState.getTestPlan();
 			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
-			suspended = testSessionState.isSuspended();
+			suspended |= testSessionState.isSuspended();
 			
 			for(TestPlanNode node:nodes) {
 				TestNodeType testNodeType = node.getTestNodeType();
 				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(node.getKey());
-	
+				
 				TestPlanNodeKey testPlanNodeKey = node.getKey();
 				if(testPlanNodeKey != null && testPlanNodeKey.getIdentifier() != null
 						&& testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
 					numOfItems++;
+					suspended |= itemSessionState.isSuspended();
 					if(itemSessionState.isResponded()) {
 						responded++;
 					}
@@ -400,11 +401,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		if(session.isCancelled()) {
 			return SessionStatus.CANCELLED;
 		}
-		if(suspended) {
-			return SessionStatus.SUSPENDED;
-		}
 		if(session.getFinishTime() != null || session.getTerminationTime() != null) {
 			return SessionStatus.FINISHED;
+		}
+		if(suspended) {
+			return SessionStatus.SUSPENDED;
 		}
 		return SessionStatus.RUNNING;
 	}
@@ -951,7 +952,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				viewResultsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_magnifying_glass");
 			} else {
 				pullLink = LinkFactory.createLink("pull", mainVC, this);
-				pullLink.setIconLeftCSS("o_icon o_icon-fw o_icon_view");
+				pullLink.setIconLeftCSS("o_icon o_icon-fw o_icon_pull");
 			}
 			
 			if(row.getTestSession().isCancelled()) {

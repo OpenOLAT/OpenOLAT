@@ -218,10 +218,12 @@ public class QTI21ResultsExport {
 		
 		// Maintain the order
 		List<ReferenceHistoryWithInfos> refs = qtiService.getReferenceHistoryWithInfos(entry, courseNode.getIdent());
+		Set<RepositoryEntry> deduplicate = new HashSet<>();
 		for(ReferenceHistoryWithInfos ref:refs) {
 			RepositoryEntry testEntry = ref.testEntry();
-			if(testEntries.contains(testEntry)) {
+			if(testEntries.contains(testEntry) && !deduplicate.contains(testEntry)) {
 				exportExcelResults(testEntry, count++, zout);
+				deduplicate.add(testEntry);
 			}
 		}
 	}

@@ -528,33 +528,23 @@ span.o_qti_gaptext_score_alternative {
 .o_labeled_light {
 	&.o_assessment_test_session_status_running {
 		font-weight: normal;
-		background-color: #FFFFFF;
-		border-color: #ff8c00;
-		color: #522D00;
+		@extend %o_labeled_light_orange
 	}
 	&.o_assessment_test_session_status_suspended {
 		font-weight: normal;
-		background-color: #FFFFFF;
-		border-color: #003E80;
-		color: #044A95;
+		@extend %o_labeled_light_blue
 	}
 	&.o_assessment_test_session_status_finished {
 		font-weight: normal;
-		background-color: #FFFFFF;
-		border-color: #0D591B;
-		color: #1B652C;
+		@extend %o_labeled_light_green
 	}
 	&.o_assessment_test_session_status_error {
 		font-weight: normal;
-		background-color: #FFFFFF;
-		border-color: #b30018;
-		color: #1B652C;
+		@extend %o_labeled_light_red
 	}
 	&.o_assessment_test_session_status_cancelled {
 		font-weight: normal;
-		background-color: #FFFFFF;
-		border-color: #454545;
-		color: #595959;
+		@extend %o_labeled_light_grey
 	}
 }
 
@@ -1126,10 +1116,6 @@ table.o_qti_item_kprim {
 	position: relative;
 	padding: 0;
 	margin-top: 5px;
-}
-
-.source-top, target-top, .source-bottom, .target-bottom {
-
 }
 
 .o_match_dnd_sources {

@@ -159,23 +159,26 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	private void loadModel() {
 		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
 
-		if (subscriber != null) {
-			Map<Subscriber, SubscriptionInfo> subsInfoMap = initSubsInfoMap(selectedFilterDate);
-
-			List<ContextualSubscriptionListRow> rows = new ArrayList<>();
-			if (subsInfoMap.get(subscriber) != null) {
-				List<SubscriptionListItem> subscriptionListItems = subsInfoMap.get(subscriber).getSubscriptionListItems();
-
-				for (SubscriptionListItem subscriptionListItem : subscriptionListItems) {
-					ContextualSubscriptionListRow row =
-							new ContextualSubscriptionListRow(subscriptionListItem.getDescription(), subscriptionListItem.getIconCssClass(),
-									subscriptionListItem.getLink(), subscriptionListItem.getDate(), getLocale());
-
-					rows.add(row);
-				}
-			}
-			dataModel.setObjects(rows);
+		if (subscriber == null) {
+			subscriber = notificationsManager.createDisabledSubscriberIfAbsent(getIdentity(), subscriptionContext, publisherData);
 		}
+
+		Map<Subscriber, SubscriptionInfo> subsInfoMap = initSubsInfoMap(selectedFilterDate);
+
+		List<ContextualSubscriptionListRow> rows = new ArrayList<>();
+		if (subsInfoMap.get(subscriber) != null) {
+			List<SubscriptionListItem> subscriptionListItems = subsInfoMap.get(subscriber).getSubscriptionListItems();
+
+			for (SubscriptionListItem subscriptionListItem : subscriptionListItems) {
+				ContextualSubscriptionListRow row =
+						new ContextualSubscriptionListRow(subscriptionListItem.getDescription(), subscriptionListItem.getIconCssClass(),
+								subscriptionListItem.getLink(), subscriptionListItem.getDate(), getLocale());
+
+				rows.add(row);
+			}
+		}
+		dataModel.setObjects(rows);
+
 		tableEl.reset(false, true, true);
 	}
 
@@ -232,9 +235,19 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == subscribeToggle) {
 			if (subscribeToggle.isOn()) {
-				notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData);
+				if (subscriber != null) {
+					notificationsManager.updateSubscriber(subscriber, true); // enable it
+					subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
+				} else {
+					subscriber = notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData); // fallback
+				}
 			} else {
-				notificationsManager.unsubscribe(getIdentity(), subscriptionContext);
+				if (subscriber != null) {
+					notificationsManager.updateSubscriber(subscriber, false); // disable it
+				} else {
+					// should not happen, but safe fallback
+					notificationsManager.unsubscribe(getIdentity(), subscriptionContext);
+				}
 			}
 			loadModel();
 			initEmptyTableSettings();
