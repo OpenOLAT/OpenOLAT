@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.basesecurity.manager;
@@ -55,6 +55,7 @@ import org.olat.basesecurity.model.OrganisationIdentityEmail;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipEvent;
+import org.olat.basesecurity.model.OrganisationMembershipInfo;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.OrganisationWithParents;
@@ -87,7 +88,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 9 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -899,6 +900,96 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		// Add rights, which are not granted yet
 		for (String right : addRights) {
 			organisationRoleRightDAO.createOrganisationRoleRight(organisation, role, right);
+		}
+	}
+
+	@Override
+	public boolean hasMultipleDefaultOrganisations() {
+		List<Organisation> defaultOrgs = organisationDao.loadDefaultOrganisation();
+		return defaultOrgs.size() > 1;
+	}
+
+	@Override
+	public List<Identity> getGlobalRolesOutsideDefaultIdentities() {
+		Organisation defaultOrg = getDefaultOrganisation();
+		if (defaultOrg == null) return Collections.emptyList();
+
+		Set<OrganisationRoles> globalRoles = Set.of(
+				OrganisationRoles.sysadmin,
+				OrganisationRoles.groupmanager,
+				OrganisationRoles.poolmanager
+		);
+
+		List<OrganisationMembershipInfo> allMemberships = organisationDao.getOrgMembershipInfos(globalRoles);
+
+		return allMemberships.stream()
+				.filter(info -> !defaultOrg.getKey().equals(info.organisation().getKey()))
+				.map(OrganisationMembershipInfo::identity)
+				.distinct()
+				.toList();
+	}
+
+	@Override
+	public boolean moveGlobalRolesToDefault(Identity doer) {
+		try {
+			Organisation defaultOrg = getDefaultOrganisation();
+			if (defaultOrg == null) return false;
+
+			Set<OrganisationRoles> globalRoles = Set.of(
+					OrganisationRoles.sysadmin,
+					OrganisationRoles.groupmanager,
+					OrganisationRoles.poolmanager
+			);
+
+			List<OrganisationMembershipInfo> membershipInfos = organisationDao.getOrgMembershipInfos(globalRoles);
+
+			// Group by Identity
+			Map<Identity, List<OrganisationMembershipInfo>> byIdentity = membershipInfos.stream()
+					.collect(Collectors.groupingBy(OrganisationMembershipInfo::identity));
+
+			for (Map.Entry<Identity, List<OrganisationMembershipInfo>> entry : byIdentity.entrySet()) {
+				Identity identity = entry.getKey();
+				List<OrganisationMembershipInfo> memberInfos = entry.getValue();
+
+				boolean needsMove = memberInfos.stream()
+						.anyMatch(info -> !defaultOrg.getKey().equals(info.organisation().getKey())
+								&& globalRoles.contains(info.role()));
+
+				if (!needsMove) continue;
+
+				// 1. Remove from non-default orgs
+				for (OrganisationMembershipInfo membershipInfo : memberInfos) {
+					Organisation org = membershipInfo.organisation();
+					if (!defaultOrg.getKey().equals(org.getKey())) {
+						removeMember(org, identity, membershipInfo.role(), false, doer);
+						dbInstance.commitAndCloseSession();
+					}
+				}
+
+				// 2. Add only global roles not already present in default org
+				Set<OrganisationRoles> rolesInDefaultOrg = memberInfos.stream()
+						.filter(info -> defaultOrg.getKey().equals(info.organisation().getKey()))
+						.map(OrganisationMembershipInfo::role)
+						.collect(Collectors.toSet());
+
+				Set<OrganisationRoles> rolesToAdd = memberInfos.stream()
+						.map(OrganisationMembershipInfo::role)
+						.filter(role -> !rolesInDefaultOrg.contains(role))
+						.collect(Collectors.toSet());
+
+				for (OrganisationRoles role : rolesToAdd) {
+					addMember(defaultOrg, identity, role, doer);
+				}
+
+				dbInstance.commitAndCloseSession(); // Finalize transaction per user
+			}
+
+			return true;
+
+		} catch (Exception e) {
+			log.error("Error migrating global roles to default organisation", e);
+			dbInstance.rollbackAndCloseSession();
+			return false;
 		}
 	}
 

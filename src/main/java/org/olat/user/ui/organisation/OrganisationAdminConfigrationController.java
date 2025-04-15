@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,19 +14,22 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user.ui.organisation;
 
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -35,7 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 9 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class OrganisationAdminConfigrationController extends FormBasicController {
@@ -45,9 +48,14 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	private FormToggle emailDomainEnableEl;
 	private FormLayoutContainer legalFolderCont;
 	private FormToggle legalFolderEnableEl;
-	
+	private FormLayoutContainer statusCont;
+	private FormLink moveRolesLink;
+
+
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public OrganisationAdminConfigrationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -90,6 +98,37 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		legalFolderEnableEl = uifactory.addToggleButton("legal.folder", "organisation.admin.legal.folder.enabled", translate("on"), translate("off"), legalFolderCont);
 		legalFolderEnableEl.toggle(organisationModule.isLegalFolderEnabled());
 		legalFolderEnableEl.addActionListener(FormEvent.ONCHANGE);
+
+		initStatusCont();
+	}
+
+	private void initStatusCont() {
+		if (flc.hasFormComponent(statusCont)) {
+			flc.remove(statusCont);
+		}
+		statusCont = null;
+		statusCont = FormLayoutContainer.createDefaultFormLayout("status", getTranslator());
+		statusCont.setFormTitle(translate("organisation.status.title"));
+		statusCont.setElementCssClass("o_block_top");
+		statusCont.setRootForm(mainForm);
+		flc.add(statusCont);
+
+		// Show current default organisation
+		String defaultOrgName = organisationService.getDefaultOrganisation().getDisplayName();
+		uifactory.addStaticTextElement("organisation.default.label", "organisation.default.label", defaultOrgName, statusCont);
+
+		// Check for multiple default orgs
+		if (organisationService.hasMultipleDefaultOrganisations()) {
+			statusCont.setFormWarning(translate("organisation.status.multiple.default.error"));
+		}
+
+		// Check global roles outside default org
+		if (!organisationService.getGlobalRolesOutsideDefaultIdentities().isEmpty()) {
+			statusCont.setFormWarning(translate("organisation.status.roles.warning", String.valueOf(organisationService.getGlobalRolesOutsideDefaultIdentities().size())));
+
+			moveRolesLink = uifactory.addFormLink("organisation.status.roles.move", statusCont, Link.BUTTON);
+			moveRolesLink.setIconLeftCSS("o_icon o_icon-arrows-up-to-line");
+		}
 	}
 
 	private void updateUI() {
@@ -114,6 +153,11 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		} else if(legalFolderEnableEl == source) {
 			organisationModule.setLegalFolderEnabled(legalFolderEnableEl.isOn());
 			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if (moveRolesLink == source) {
+			if (organisationService.moveGlobalRolesToDefault(getIdentity())) {
+				showInfo("organisation.status.move.success", organisationService.getDefaultOrganisation().getDisplayName());
+				initStatusCont();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

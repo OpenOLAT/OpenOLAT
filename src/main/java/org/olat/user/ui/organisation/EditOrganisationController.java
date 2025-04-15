@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user.ui.organisation;
@@ -29,11 +29,13 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 9 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EditOrganisationController extends FormBasicController {
@@ -57,7 +59,7 @@ public class EditOrganisationController extends FormBasicController {
 	private SingleSelection organisationTypeEl;
 	
 	private Organisation organisation;
-	private Organisation parentOrganisation;
+	private final Organisation parentOrganisation;
 	
 	@Autowired
 	private OrganisationService organisationService;
@@ -121,6 +123,7 @@ public class EditOrganisationController extends FormBasicController {
 		identifierEl = uifactory.addTextElement("organisation.identifier", "organisation.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.identifier));
 		identifierEl.setMandatory(true);
+		identifierEl.addActionListener(FormEvent.ONCHANGE);
 
 		String displayName = organisation == null ? "" : organisation.getDisplayName();
 		displayNameEl = uifactory.addTextElement("organisation.displayName", "organisation.displayName", 255, displayName, formLayout);
@@ -173,6 +176,8 @@ public class EditOrganisationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateTextfield(displayNameEl, 255, true);
 		allOk &= validateTextfield(identifierEl, 64, true);
+		allOk &= validateIdentifierField(false);
+
 		return allOk;
 	}
 	
@@ -188,6 +193,34 @@ public class EditOrganisationController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		return allOk;
+	}
+
+	private boolean validateIdentifierField(boolean showWarnings) {
+		boolean allOk = true;
+
+		String identifier = identifierEl.getValue().trim();
+		identifierEl.clearError();
+		identifierEl.clearWarning();
+
+		if (!StringHelper.containsNonWhitespace(identifier)) return true;
+
+		List<Organisation> existing = organisationService.findOrganisationByIdentifier(identifier);
+		if (organisation != null) {
+			existing.removeIf(o -> o.getKey().equals(organisation.getKey()));
+		}
+
+		if (OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(identifier)) {
+			if (!existing.isEmpty()) {
+				identifierEl.setErrorKey("error.defaultorg.exists", OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER);
+				allOk = false;
+			}
+		} else {
+			if (!existing.isEmpty() && showWarnings) {
+				identifierEl.setWarningKey("warning.identifier.duplicate", identifier);
+			}
+		}
+
 		return allOk;
 	}
 
@@ -220,6 +253,13 @@ public class EditOrganisationController extends FormBasicController {
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == identifierEl) {
+			validateIdentifierField(true);
+		}
 	}
 
 	@Override

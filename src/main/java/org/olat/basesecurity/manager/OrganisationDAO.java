@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.basesecurity.manager;
@@ -42,6 +42,7 @@ import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationMembershipInfo;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -61,7 +62,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 9 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -291,7 +292,36 @@ public class OrganisationDAO {
 		}
 		return members;
 	}
-	
+
+	public List<OrganisationMembershipInfo> getOrgMembershipInfos(Set<OrganisationRoles> roles) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select ident, org, membership.role from organisation org")
+				.append(" inner join org.group baseGroup")
+				.append(" inner join baseGroup.members membership")
+				.append(" inner join membership.identity ident")
+				.append(" inner join fetch ident.user user")
+				.append(" where membership.role in (:roles)")
+				.append(" and membership.inheritanceModeString = 'root'");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("roles", OrganisationRoles.toList(roles.toArray(OrganisationRoles.EMPTY_ROLES)));
+
+		List<Object[]> results = query.getResultList();
+		List<OrganisationMembershipInfo> membershipInfos = new ArrayList<>(results.size());
+		for (Object[] row : results) {
+			Identity identity = (Identity) row[0];
+			Organisation org = (Organisation) row[1];
+			String roleStr = (String) row[2];
+
+			if (OrganisationRoles.isValue(roleStr)) {
+				OrganisationRoles role = OrganisationRoles.valueOf(roleStr);
+				membershipInfos.add(new OrganisationMembershipInfo(identity, org, role));
+			}
+		}
+		return membershipInfos;
+	}
+
 	private void createUserPropertiesQueryPart(QueryBuilder sb, String searchString, List<UserPropertyHandler> handlers) {
 		if(!StringHelper.containsNonWhitespace(searchString)) return;
 		

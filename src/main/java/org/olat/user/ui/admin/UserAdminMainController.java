@@ -427,6 +427,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
 			case "created.sixmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -6);
 			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl, content, false);
+			case "globalrolesoutsidedefault":
+				List<Identity> globalRoleOutliers = organisationService.getGlobalRolesOutsideDefaultIdentities();
+				return new UsermanagerUserSearchController(ureq, bwControl, content, globalRoleOutliers, true, true, false);
 			default: return null;		
 		}
 	}
@@ -763,6 +766,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		appendNode("menu.created.lastmonth", "menu.created.lastmonth.alt", "created.lastmonth", "o_sel_useradmin_createdlastmonth", queriesNode);
 		appendNode("menu.created.sixmonth", "menu.created.sixmonth.alt", "created.sixmonth", "o_sel_useradmin_createdsixmonth", queriesNode);
 		appendNode("menu.created.newUsersNotification", "menu.created.newUsersNotification.alt", "created.newUsersNotification", "o_sel_useradmin_creatednewusers", queriesNode);
+		appendNode("menu.global.roles.outside.default", "menu.global.roles.outside.default.alt", "globalrolesoutsidedefault", "o_sel_useradmin_globalrolesoutsidedefault", queriesNode);
 	}
 
 	/**
