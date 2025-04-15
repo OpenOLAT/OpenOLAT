@@ -103,7 +103,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("'>");
 		sb.append("<button type='button' class='btn btn-default dropdown-toggle o_button_printed o_ms_button' data-toggle='dropdown'");
-		sb.append(" aria-labelledby=\"o_cl").append(stC.getDispatchID()).append("\"");
+		if (stF.hasLabel()) {
+			sb.append(" aria-labelledby=\"o_cl").append(stC.getDispatchID()).append("\"");
+		}
 		sb.append(">");
 		sb.append("<span id='").append(buttonTitleId).append("'></span>&nbsp;<span class='caret o_ms_carret'></span>");
 		sb.append("</button>");
@@ -165,7 +167,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 			sb.append("</label></li>");
 			if(stC.isEnabled()){
-				FormJSHelper.appendFlexiFormDirtyForClick(sb, stF.getRootForm(), aId);
+				FormJSHelper.appendFlexiFormDirtyForClick(sb, stF.getRootForm(), formDispatchId);
 			}
 			
 			// Set button text on ready
@@ -231,7 +233,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 
 	private String getRawJSFor(CheckboxElement check) {
 		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null, check.getFormDispatchId());
-		String onKeyword = "onclick=";
+		String onKeyword = "onchange=";
 		int onPos = eventHandlers.indexOf(onKeyword);
 		String substring = "";
 		if (onPos != -1) {
