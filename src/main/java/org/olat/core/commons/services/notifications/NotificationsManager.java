@@ -374,4 +374,18 @@ public interface NotificationsManager {
 	 * @return Subscriber object
 	 */
 	Subscriber mergeSubscriber(Subscriber subscriber);
+
+	/**
+	 * Creates a new subscriber for the given identity and subscription context if one does not already exist.
+	 * The new subscriber is persisted in a disabled state (i.e., not actively subscribed).
+	 * If a subscriber already exists (enabled or disabled), it is returned as-is without any modifications.
+	 * This method is useful for pre-initializing subscription data while deferring actual activation
+	 * until the user explicitly opts in.
+	 *
+	 * @param identity The identity (user) for whom the subscriber should be created.
+	 * @param context The subscription context that defines the publisher to subscribe to.
+	 * @param data The data used to create the publisher if it does not already exist.
+	 * @return The existing or newly created (disabled) subscriber.
+	 */
+	Subscriber createDisabledSubscriberIfAbsent(Identity identity, SubscriptionContext context, PublisherData data);
 }

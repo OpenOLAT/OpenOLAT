@@ -565,7 +565,36 @@ public class NotificationsManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals(2, rows);
 	}
-	
+
+	@Test
+	public void testCreateDisabledSubscriberIfAbsent() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID());
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("CDS", Long.valueOf(321), identifier);
+		PublisherData publisherData = new PublisherData("testCreateDisabledSubscriber", "data", null);
+
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher);
+
+		// Create subscriber if absent (should create new disabled one)
+		Subscriber subscriber = notificationManager
+				.createDisabledSubscriberIfAbsent(id, context, publisherData);
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(subscriber);
+		Assert.assertFalse(subscriber.isEnabled());
+		Assert.assertEquals(id, subscriber.getIdentity());
+		Assert.assertEquals(publisher, subscriber.getPublisher());
+
+		// Call again - should return same subscriber, unchanged
+		Subscriber again = notificationManager
+				.createDisabledSubscriberIfAbsent(id, context, publisherData);
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertEquals(subscriber, again);
+	}
+
 	/**
 	 * Test creation of concurrent subscriber
 	 */
