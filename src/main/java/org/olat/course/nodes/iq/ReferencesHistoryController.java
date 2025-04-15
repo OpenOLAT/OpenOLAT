@@ -72,6 +72,8 @@ public class ReferencesHistoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("references.history.test.title");
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReferencesCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReferencesCols.displayName));

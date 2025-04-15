@@ -31,6 +31,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.IconPanel;
@@ -515,11 +516,19 @@ public class RepositoryEntryReferenceController extends BasicController {
 	
 	private void doShowReferencesHistory(UserRequest ureq) {
 		removeAsListenerAndDispose(referencesHistoryCtrl);
+		removeAsListenerAndDispose(cmc);
+		
 		referencesHistoryCtrl = referenceProvider.getReferencesHistoryController(ureq, getWindowControl());
 		listenTo(referencesHistoryCtrl);
 		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), referencesHistoryCtrl.getInitialComponent(), true, "");
+		String title = null;
+		if(referencesHistoryCtrl instanceof FormBasicController formCtrl) {
+			title = formCtrl.getAndRemoveFormTitle();
+		}
+		if(title == null) {	
+			title = translate("references.history.title");
+		}
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), referencesHistoryCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

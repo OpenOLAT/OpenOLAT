@@ -55,14 +55,20 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.AssessmentTestInfos;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
+import org.olat.ims.qti21.ui.AssessmentEntryOutcomesListener;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -104,6 +110,8 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	private QTI21Service qtiService;
 	@Autowired
 	private GradingService gradingService;
+	@Autowired
+	private InstantMessagingService imService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -149,12 +157,9 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		optionsCont.setFormTitle(translate("change.options.title"));
 		
 		SelectionValues optionsPK = new SelectionValues();
-		optionsPK.add(SelectionValues.entry(KEY_CONTROLLED_REPLACEMENT, translate("change.option.controlled"), null,
-				"o_icon o_icon-fw o_icon_left_right", null, true));
-		optionsPK.add(SelectionValues.entry(KEY_REPLACEMENT_ONLY, translate("change.option.replacement.only"), null,
-				"o_icon o_icon-fw o_icon_revoke", null, true));
-		optionsEl = uifactory.addCardSingleSelectHorizontal("change.options", optionsCont,
-				optionsPK.keys(), optionsPK.values(), optionsPK.descriptions(), optionsPK.icons());
+		optionsPK.add(SelectionValues.entry(KEY_CONTROLLED_REPLACEMENT, translate("change.option.controlled")));
+		optionsPK.add(SelectionValues.entry(KEY_REPLACEMENT_ONLY, translate("change.option.replacement.only")));
+		optionsEl = uifactory.addCardSingleSelectHorizontal("change.options", "change.options", optionsCont, optionsPK);
 		optionsEl.addActionListener(FormEvent.ONCHANGE);
 		optionsEl.select(KEY_CONTROLLED_REPLACEMENT, true);
 		
@@ -200,9 +205,9 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		
 		// Cut value
 		String currentCutValue = roundedValue(currentTestInfos.cutValue());
-		propertiesCont.contextPut("currentCutValue", translateRoundedValue(currentCutValue, "change.cut.value"));
+		propertiesCont.contextPut("currentCutValue", translateRoundedValue(currentCutValue, "score.passed.cut.value"));
 		String newCutValue = roundedValue(newTestInfos.cutValue());
-		propertiesCont.contextPut("newCutValue", translateRoundedValue(newCutValue, "change.cut.value"));
+		propertiesCont.contextPut("newCutValue", translateRoundedValue(newCutValue, "score.passed.cut.value"));
 		if(!Objects.equals(currentCutValue, newCutValue)) {
 			propertiesCont.contextPut("messageCutValue", translate("warning.change.cut.value"));
 		}
@@ -215,7 +220,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	}
 
 	private String manualValue(boolean manualScoring) {
-		return manualScoring ? translate("change.manual.score") : translate("change.auto.score");
+		return manualScoring ? translate("correction.test.entry.manually") : translate("correction.test.entry.auto");
 	}
 	
 	private String roundedValue(Double val) {
@@ -297,7 +302,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(optionsEl.isOneSelected()) {
 			if(KEY_REPLACEMENT_ONLY.equals(optionsEl.getSelectedKey())) {
-				fireEvent(ureq, Event.DONE_EVENT);
+				doReplacementOnly(ureq);
 			} else if(KEY_CONTROLLED_REPLACEMENT.equals(optionsEl.getSelectedKey())) {
 				doControlledReplace(ureq);
 			}
@@ -317,6 +322,36 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
+	private void doReplacementOnly(UserRequest ureq) {
+		// pull running test sessions and set as cancelled
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+
+		for(Identity assessedIdentity:assessedIdentities) {
+			IdentityEnvironment ienv = new IdentityEnvironment(assessedIdentity, Roles.userRoles());
+			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
+			
+			// Cancel test sessions and grading assignment
+			List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity, true);
+			if(!sessions.isEmpty()) {
+				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, uce);
+				for (AssessmentTestSession session:sessions) {
+					if (!newTestEntry.equals(session.getTestEntry())
+							&& !session.isCancelled() && !session.isExploded()
+							&& session.getFinishTime() == null && session.getTerminationTime() == null) {
+						session = pullSession(session, assessedIdentity, uce);
+						session.setCancelled(true);
+						session = qtiService.updateAssessmentTestSession(session);
+						deactivateGradingAssignment(assessmentEntry, session);
+					}
+				}
+			}
+			dbInstance.commitAndCloseSession();
+		}
+		
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
 	private void doControlledReplace(UserRequest ureq) {
 		// reset the data
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
@@ -334,6 +369,9 @@ public class ConfirmChangeResourceController extends FormBasicController {
 				for (AssessmentTestSession session:sessions) {
 					if (!newTestEntry.equals(session.getTestEntry())
 							&& !session.isCancelled() && !session.isExploded()) {
+						if(session.getFinishTime() == null && session.getTerminationTime() == null) {
+							session = pullSession(session, assessedIdentity, uce);
+						}
 						session.setCancelled(true);
 						session = qtiService.updateAssessmentTestSession(session);
 						deactivateGradingAssignment(assessmentEntry, session);
@@ -360,6 +398,45 @@ public class ConfirmChangeResourceController extends FormBasicController {
 			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
 			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		}
+	}
+	
+	private AssessmentTestSession pullSession(AssessmentTestSession session, Identity assessedIdentity, UserCourseEnvironment uce) {
+		//reload it to prevent lazy loading issues
+		session = qtiService.pullSession(session, getSignatureOptions(session, uce.getCourseEnvironment()), getIdentity());
+		if(courseNode instanceof IQTESTCourseNode iqTestCourseNode) {
+			iqTestCourseNode.pullAssessmentTestSession(session, uce, getIdentity(), Role.coach, getLocale());
+
+			String channel = assessedIdentity == null ? session.getAnonymousIdentifier() : assessedIdentity.getKey().toString();
+			RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			imService.endChannel(getIdentity(), courseEntry.getOlatResource(), courseNode.getIdent(), channel);
+		}
+		return session;
+	}
+	
+	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session, CourseEnvironment courseEnv) {
+		RepositoryEntry testEntry = session.getTestEntry();
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		
+		boolean digitalSignature = deliveryOptions.isDigitalSignature();
+		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
+		if(courseNode != null) {
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
+					deliveryOptions.isDigitalSignature());
+			sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
+					deliveryOptions.isDigitalSignatureMail());
+		}
+		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, courseEntry, testEntry);
+		if(digitalSignature) {
+			if(courseNode == null) {
+				 AssessmentEntryOutcomesListener.decorateResourceConfirmation(courseEntry, testEntry, session, options, null, getLocale());
+			} else {
+				QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, testEntry, null, getLocale());
+			}
+		}
+		return options;
 	}
 	
 	private void deactivateGradingAssignment(AssessmentEntry assessmentEntry, AssessmentTestSession session) {
