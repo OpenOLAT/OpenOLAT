@@ -1985,15 +1985,23 @@ table.o_ce_table {
 		}
 	}
 
-	.o_title_page_element {
+	.o_title_page_element, .o_image_title {
 		hyphens: auto;
 		word-break: break-word;
 	}
 
 	.o_ed_htmlparagraph {
+		hyphens: auto;
+		word-break: break-word;
+
 		.o_ce_layout_normal {
 			margin: 10px;
 		}
+	}
+	
+	.o_ce_html_raw, .o_ce_html_paragraph {
+		hyphens: auto;
+		word-break: break-word;
 	}
 
 	.o_ce_layout_predefined,
