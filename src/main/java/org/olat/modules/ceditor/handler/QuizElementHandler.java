@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -56,7 +57,7 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class QuizElementHandler implements PageElementHandler, PageElementStore<QuizElement>,
-		SimpleAddPageElementHandler, ComponentEventListener {
+		SimpleAddPageElementHandler, CloneElementHandler, ComponentEventListener {
 
 	private final RepositoryEntry entry;
 	private final String subIdent;
@@ -124,6 +125,14 @@ public class QuizElementHandler implements PageElementHandler, PageElementStore<
 		quizSettings.setDescription(translator.translate("quiz.description.default"));
 		quizPart.setSettings(quizSettings);
 		return quizPart;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof QuizPart quizPart) {
+			return quizPart.copy();
+		}
+		return null;
 	}
 
 	@Override
