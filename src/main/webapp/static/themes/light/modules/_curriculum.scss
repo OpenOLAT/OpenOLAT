@@ -1108,7 +1108,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	    color: $o-curriculum-status-preparation-color !important;
 	}
 	
-	&.o_gmembership_status_reservation, {
+	&.o_gmembership_status_reservation {
 		font-weight: normal;
 	    background-color: #fff;
 	    border-color: $o-curriculum-status-reservation-border-color;
