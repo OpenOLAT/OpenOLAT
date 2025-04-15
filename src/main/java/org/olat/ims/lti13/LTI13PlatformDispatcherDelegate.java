@@ -779,30 +779,31 @@ public class LTI13PlatformDispatcherDelegate {
 				LTI13Tool tool = lti13Service.getToolBy(toolIss, clientId);
 				List<LTI13Context> ltiContexts = lti13Service.getContextsByTool(tool);
 				if(ltiContexts.size() == 1) {
-					MembershipContainer container = handleNrps(ltiContexts.get(0));
+					MembershipContainer container = handleNrps(ltiContexts.get(0), tool);
 					sendJSON(container, "application/vnd.ims.lti-nrps.v2.membershipcontainer+json", response);
 				}
 			} else if(path.length == 3 && "nrps".equals(path[0]) && StringHelper.containsNonWhitespace(path[1]) && "memberships".equals(path[2])) {
 				LTI13Context ltiContext = lti13Service.getContextByContextId(path[1]);
 				if(ltiContext != null) {
-					MembershipContainer container = handleNrps(ltiContext);
+					LTI13Tool tool = ltiContext.getDeployment().getTool();
+					MembershipContainer container = handleNrps(ltiContext, tool);
 					sendJSON(container, "application/vnd.ims.lti-nrps.v2.membershipcontainer+json", response);
 				}
 			}
 		}
 	}
 	
-	private MembershipContainer handleNrps(LTI13Context deployment) {
+	private MembershipContainer handleNrps(LTI13Context deployment, LTI13Tool tool) {
 		if(deployment.getEntry() != null) {
-			return handleNrpsRepositoryEntry(deployment);
+			return handleNrpsRepositoryEntry(deployment, tool);
 		}
 		if(deployment.getBusinessGroup() != null) {
-			return handleNrpsBusinessGroup(deployment);
+			return handleNrpsBusinessGroup(deployment, tool);
 		}
 		return null;
 	}
 	
-	private MembershipContainer handleNrpsRepositoryEntry(LTI13Context ltiContext) {
+	private MembershipContainer handleNrpsRepositoryEntry(LTI13Context ltiContext, LTI13Tool tool) {
 		List<Identity> participants = repositoryService.getMembers(ltiContext.getEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 		
 		MembershipContainer container = new MembershipContainer();
@@ -815,12 +816,12 @@ public class LTI13PlatformDispatcherDelegate {
 		context.setTitle(entry.getDisplayname());
 		container.setContext(context);
 
-		container.setMembers(toLtiLearners(participants));
+		container.setMembers(toLtiLearners(participants, tool));
 		
 		return container;
 	}
 	
-	private MembershipContainer handleNrpsBusinessGroup(LTI13Context ltiContext) {
+	private MembershipContainer handleNrpsBusinessGroup(LTI13Context ltiContext, LTI13Tool tool) {
 		List<Identity> participants = businessGroupService.getMembers(ltiContext.getBusinessGroup(), GroupRoles.participant.name());
 		
 		MembershipContainer container = new MembershipContainer();
@@ -833,15 +834,17 @@ public class LTI13PlatformDispatcherDelegate {
 		context.setTitle(businessGroup.getName());
 		container.setContext(context);
 		
-		container.setMembers(toLtiLearners(participants));
+		container.setMembers(toLtiLearners(participants, tool));
 		
 		return container;
 	}
 	
-	private List<Member> toLtiLearners(List<Identity> identities) {
+	private List<Member> toLtiLearners(List<Identity> identities, LTI13Tool tool) {
 		List<Member> members = new ArrayList<>();
 		if(identities != null) {
+			final String issuer = tool.getToolDomain();
 			for(Identity identity:identities) {
+				String userId = lti13Service.subIdentity(identity, issuer);
 				User user = identity.getUser();
 				Member member = new Member();
 				member.setStatus("Active");
@@ -849,7 +852,7 @@ public class LTI13PlatformDispatcherDelegate {
 				member.setFamilyName(user.getLastName());
 				member.setName(toLtiLearnerName(user));
 				member.setEmail(user.getEmail());
-				member.setUserId(identity.getKey().toString());
+				member.setUserId(userId);
 				member.setRoles(List.of(LTI13Constants.Roles.LEARNER.editor()));
 				members.add(member);
 			}
