@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.basesecurity.manager;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -40,6 +42,7 @@ import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationMembershipInfo;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -56,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 9 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class OrganisationDAOTest extends OlatTestCase {
@@ -723,5 +726,35 @@ public class OrganisationDAOTest extends OlatTestCase {
 		}
 		Assert.assertEquals(1, numOfUsers);
 		Assert.assertEquals(2, numOfAuthors);
+	}
+
+	@Test
+	public void getOrgMembershipInfos_shouldReturnMatchingIdentitiesAndRoles() {
+		Identity sysadmin = JunitTestHelper.createAndPersistIdentityAsRndUser("sysadmin-test");
+		Identity groupmanager = JunitTestHelper.createAndPersistIdentityAsRndUser("groupmanager-test");
+
+		Organisation orgA = organisationDao.createAndPersistOrganisation("Org-Test-A", UUID.randomUUID().toString(), null, null, null);
+		Organisation orgB = organisationDao.createAndPersistOrganisation("Org-Test-B", UUID.randomUUID().toString(), null, null, null);
+		dbInstance.commit();
+
+		// Add members (with global roles)
+		organisationService.addMember(orgA, sysadmin, OrganisationRoles.sysadmin, GroupMembershipInheritance.root, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(orgB, groupmanager, OrganisationRoles.groupmanager, GroupMembershipInheritance.root, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		Set<OrganisationRoles> globalRoles = Set.of(OrganisationRoles.sysadmin, OrganisationRoles.groupmanager);
+		List<OrganisationMembershipInfo> infos = organisationDao.getOrgMembershipInfos(globalRoles);
+
+		assertThat(infos)
+				.isNotNull()
+				.isNotEmpty()
+				.anySatisfy(info -> {
+					assertThat(info.identity()).isEqualTo(sysadmin);
+					assertThat(info.role()).isEqualTo(OrganisationRoles.sysadmin);
+				})
+				.anySatisfy(info -> {
+					assertThat(info.identity()).isEqualTo(groupmanager);
+					assertThat(info.role()).isEqualTo(OrganisationRoles.groupmanager);
+				});
 	}
 }

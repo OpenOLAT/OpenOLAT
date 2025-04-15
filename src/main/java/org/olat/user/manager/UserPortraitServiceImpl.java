@@ -98,8 +98,8 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		}
 		
 		String displayName = userManager.getUserDisplayName(identity);
-		String initials = userManager.getInitials(identity.getUser());
-		String initialsCss = userManager.getInitialsColorCss(identity.getKey());
+		String initials = getInitials(identity.getUser());
+		String initialsCss = identity.getUser().getInitialsCssClass();
 		
 		String portraitPath = identity.getUser().getPortraitPath();
 		boolean portraitAvailable = StringHelper.containsNonWhitespace(portraitPath);
@@ -139,18 +139,6 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		String initialsCss = "o_user_initials_grey";
 		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, portraitDisplayName, null);
 	}
-	
-	private String getInitials(String displayName) {
-		String[] nameParts = displayName.trim().replaceAll("[ ]+", " ").split(" ");
-		String initials = "";
-		if (nameParts.length > 0 && nameParts[0].length() > 0) {
-			initials += nameParts[0].substring(0, 1).toUpperCase();
-		}
-		if (nameParts.length > 1 && nameParts[1].length() > 0) {
-			initials += nameParts[1].substring(0, 1).toUpperCase();
-		}
-		return initials;
-	}
 
 	@Override
 	public PortraitUser createGuestPortraitUser(Locale locale) {
@@ -179,6 +167,23 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 	@Override
 	public List<PortraitUser> createPortraitUsers(Locale locale, Collection<Identity> identities) {
 		return identities.stream().map(identity -> createPortraitUser(locale, identity)).toList();
+	}
+	
+	private String getInitials(User user) {
+		return StringHelper.getFirstLetter(user.getFirstName(), true).toUpperCase()
+				+ StringHelper.getFirstLetter(user.getLastName(), true).toUpperCase();
+	}
+	
+	private String getInitials(String displayName) {
+		String[] nameParts = displayName.trim().replaceAll("[ ]+", " ").split(" ");
+		String initials = "";
+		if (nameParts.length > 0 && nameParts[0].length() > 0) {
+			initials += nameParts[0].substring(0, 1).toUpperCase();
+		}
+		if (nameParts.length > 1 && nameParts[1].length() > 0) {
+			initials += nameParts[1].substring(0, 1).toUpperCase();
+		}
+		return initials;
 	}
 	
 	private static final class PortraitUserImpl implements PortraitUser {
