@@ -387,13 +387,15 @@ public interface OrganisationService {
 	 */
 	public void upgradeLineManagerRoles();
 
+
 	/**
-	 * Checks if there are multiple organisations marked as the default organisation.
-	 * There should normally be only one default organisation in the system.
+	 * 	Checks if there are multiple organisations with the same identifier.
+	 * 	There should normally be only one organisation with a unique identifier in the system.
 	 *
-	 * @return true if more than one default organisation exists; false otherwise
+	 * @param orgIdentifier the identifier to check
+	 * @return true if more than one organisation with the same identifier exists; false otherwise
 	 */
-	public boolean hasMultipleDefaultOrganisations();
+	public boolean hasMultipleOrganisationsWithSameId(String orgIdentifier);
 
 	/**
 	 * Moves all global roles (e.g., sysadmin, groupmanager, poolmanager) from any non-default organisations
