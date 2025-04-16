@@ -58,6 +58,7 @@ import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerElement;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.model.jpa.AbstractPart;
+import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.ui.component.ContentEditorComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorContainerComponent;
 import org.olat.modules.ceditor.ui.component.ContentEditorFragment;
@@ -599,50 +600,71 @@ public class PageEditorV2Controller extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	private ContentEditorFragment doCloneAndAddElement(UserRequest ureq, ContentEditorFragment fragment) {
-		PageElement element = fragment.getElement();
+	private ContentEditorFragment doCloneAndAddElement(UserRequest ureq, ContentEditorFragment fragmentToClone) {
+		PageElement elementToClone = fragmentToClone.getElement();
 		
-		CloneElementHandler cloneHandler = cloneHandlerMap.get(element.getType());
+		CloneElementHandler cloneHandler = cloneHandlerMap.get(elementToClone.getType());
 		if (cloneHandler == null) {
-			logError("Cannot find a cloneable handler of type: " + element.getType(), null);
+			logError("Cannot find a cloneable handler of type: " + elementToClone.getType(), null);
 			return null;
 		}
 		
 		doCloseAllEditionEvent(ureq, null);
-		PageElement clonedElement = cloneHandler.clonePageElement(element);
+		PageElement clonedElement = cloneHandler.clonePageElement(elementToClone);
 		ContentEditorFragment clonedFragment = null;
 		if (clonedElement != null) {
-			clonedFragment = doAddPageElement(ureq, clonedElement, fragment, PageElementTarget.below, 0);
-			if (clonedElement instanceof AbstractPart clonedPart && element instanceof PagePart oldPart) {
-				clonedPart.afterCopy(oldPart);
-				if (clonedFragment instanceof ContentEditorFragmentComponent fragmentComponent) {
-					fragmentComponent.dispatchToEditor(ureq, new ChangePartEvent(clonedElement));
-				}
-			}
+			clonedFragment = doAddPageElement(ureq, clonedElement, fragmentToClone, PageElementTarget.below, 0);
+			doAfterClone(ureq, elementToClone, clonedElement, clonedFragment);
 		}
 		return clonedFragment;
 	}
 
+	private void doAfterClone(UserRequest ureq, PageElement elementToClone, PageElement clonedElement, ContentEditorFragment clonedFragment) {
+		if (clonedElement instanceof AbstractPart clonedPart && elementToClone instanceof PagePart oldPart) {
+			clonedPart.afterCopy(oldPart);
+			if (clonedFragment instanceof ContentEditorFragmentComponent fragmentComponent) {
+				fragmentComponent.dispatchToEditor(ureq, new ChangePartEvent(clonedElement));
+			}
+		}
+	}
+
 	private void doCloneContainerElements(UserRequest ureq, ContentEditorFragment clonedFragment, PageElement originalElement) {
-		if (clonedFragment != null && originalElement instanceof Container originalContainer) {
-			Map<String, ? extends PageElement> idToElement = provider.getElements().stream()
-					.collect(Collectors.toMap(PageElement::getId, Function.identity()));
+		if (clonedFragment == null) {
+			return;
+		}
+
+		Map<String, ? extends PageElement> idToElement = provider.getElements().stream()
+				.collect(Collectors.toMap(PageElement::getId, Function.identity()));
+
+		if (originalElement instanceof Container originalContainer) {
 			List<ContainerColumn> columns = originalContainer.getContainerSettings().getColumns();
-			for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
-				for (String elementId : columns.get(columnIndex).getElementIds()) {
-					PageElement innerElementToClone = idToElement.get(elementId);
-					if (innerElementToClone != null) {
-						CloneElementHandler innerCloneHandler = cloneHandlerMap.get(innerElementToClone.getType());
-						if (innerCloneHandler == null) {
-							logError("Cannot find a cloneable handler of type: " + innerElementToClone.getType(), null);
-							continue;
-						}
-						
-						PageElement innerClonedElement = innerCloneHandler.clonePageElement(innerElementToClone);
-						if (innerClonedElement != null) {
-							ContentEditorFragment innerClonedFragment = doAddPageElementInContainer(ureq, clonedFragment, innerClonedElement, columnIndex);
-							doCloneContainerElements(ureq, innerClonedFragment, innerElementToClone);
-						}
+			doCloneContainerColumnsAndElements(ureq, clonedFragment, columns, idToElement);
+		}
+		
+		if (originalElement instanceof ContainerPart originalContainerPart) {
+			List<ContainerColumn> columns = originalContainerPart.getContainerSettings().getColumns();
+			doCloneContainerColumnsAndElements(ureq, clonedFragment, columns, idToElement);
+		}
+	}
+
+	private void doCloneContainerColumnsAndElements(UserRequest ureq, ContentEditorFragment clonedFragment, 
+													List<ContainerColumn> columns, Map<String, ? extends PageElement> idToElement) {
+		for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
+			for (String elementId : columns.get(columnIndex).getElementIds()) {
+				PageElement innerElementToClone = idToElement.get(elementId);
+				if (innerElementToClone != null) {
+					CloneElementHandler innerCloneHandler = cloneHandlerMap.get(innerElementToClone.getType());
+					if (innerCloneHandler == null) {
+						logError("Cannot find a cloneable handler of type: " + innerElementToClone.getType(), null);
+						continue;
+					}
+					
+					PageElement innerClonedElement = innerCloneHandler.clonePageElement(innerElementToClone);
+					if (innerClonedElement != null) {
+						ContentEditorFragment innerClonedFragment = doAddPageElementInContainer(ureq, clonedFragment, 
+								innerClonedElement, columnIndex);
+						doAfterClone(ureq, innerElementToClone, innerClonedElement, innerClonedFragment);
+						doCloneContainerElements(ureq, innerClonedFragment, innerElementToClone);
 					}
 				}
 			}

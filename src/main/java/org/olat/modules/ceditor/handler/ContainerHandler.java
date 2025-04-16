@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
@@ -51,7 +52,8 @@ import org.olat.modules.ceditor.ui.PageRunComponent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ContainerHandler implements PageLayoutHandler, PageElementStore<ContainerElement>, SimpleAddPageElementHandler {
+public class ContainerHandler implements PageLayoutHandler, PageElementStore<ContainerElement>, 
+		SimpleAddPageElementHandler, CloneElementHandler {
 	
 	private final ContainerLayout layout;
 	
@@ -125,6 +127,19 @@ public class ContainerHandler implements PageLayoutHandler, PageElementStore<Con
 		ContainerPart container = new ContainerPart();
 		container.setLayoutOptions(ContentEditorXStream.toXml(settings));
 		return container;
+	}
+
+	@Override
+	public PageElement clonePageElement(PageElement element) {
+		if (element instanceof ContainerPart containerPart) {
+			ContainerPart clone = containerPart.copy();
+			ContainerSettings containerSettings = containerPart.getContainerSettings();
+			containerSettings.getColumns().forEach(column -> column.getElementIds().clear());
+			String settingsXml = ContentEditorXStream.toXml(containerSettings);
+			clone.setLayoutOptions(settingsXml);
+			return clone;
+		}
+		return null;
 	}
 
 	@Override
