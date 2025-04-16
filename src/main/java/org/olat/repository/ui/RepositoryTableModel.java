@@ -171,9 +171,9 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		String selectAction = selectTitle ? TABLE_ACTION_SELECT_LINK : null;
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), selectAction, loc));
 		tableCtr.addColumnDescriptor(repositoryModule.isManagedRepositoryEntries(), new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), selectAction, loc));
-		
-		tableCtr.addColumnDescriptor(lifecycle, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
+
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.softkey", RepoCols.lifecycleSoftKey.ordinal(), null, loc));
+		tableCtr.addColumnDescriptor(lifecycle, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), selectAction, loc) {
 			@Override
 			public int compareTo(int rowa, int rowb) {

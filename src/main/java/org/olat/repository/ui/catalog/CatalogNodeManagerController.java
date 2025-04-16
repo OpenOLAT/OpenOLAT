@@ -378,13 +378,13 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(columnModel);
 
 		if (lifecycleModule.isEnabled()) {
-			columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
-					sortEnabled, OrderBy.lifecycleLabel.name());
+			columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
+					sortEnabled, OrderBy.lifecycleSoftkey.name());
 			leafColumns.add(columnModel);
 			columnsModel.addFlexiColumnModel(columnModel);
 
-			columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
-					sortEnabled, OrderBy.lifecycleSoftkey.name());
+			columnModel = new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
+					sortEnabled, OrderBy.lifecycleLabel.name());
 			leafColumns.add(columnModel);
 			columnsModel.addFlexiColumnModel(columnModel);
 
