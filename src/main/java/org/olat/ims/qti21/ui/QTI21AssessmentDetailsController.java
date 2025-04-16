@@ -363,7 +363,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			TestSessionState testSessionState = qtiService.loadTestSessionState(testSession);
 			TestPlan testPlan = testSessionState.getTestPlan();
 			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
-			suspended |= testSessionState.isSuspended();
+			suspended |= testSessionState.getDurationIntervalStartTime() == null;
 			
 			for(TestPlanNode node:nodes) {
 				TestNodeType testNodeType = node.getTestNodeType();
@@ -373,7 +373,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				if(testPlanNodeKey != null && testPlanNodeKey.getIdentifier() != null
 						&& testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
 					numOfItems++;
-					suspended |= itemSessionState.isSuspended();
 					if(itemSessionState.isResponded()) {
 						responded++;
 					}

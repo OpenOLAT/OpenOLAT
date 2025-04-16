@@ -431,18 +431,14 @@ public class IQConfigurationController extends BasicController implements Refere
 				numOfAssessedIdentities += assessedIdentities.size();
 			}
 			
-			if(numOfAssessedIdentities > 0) {
-				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(), course,
-						(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities),
-						numOfAssessedIdentities);
-				listenTo(confirmChangeResourceCtrl);
-				String title = translate("replace.entry");
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
-				listenTo(cmc);
-				cmc.activate();
-			} else {
-				doChangeResource(ureq, newEntry, false);
-			}
+			confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(), course,
+					(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities),
+					numOfAssessedIdentities);
+			listenTo(confirmChangeResourceCtrl);
+			String title = translate("replace.entry");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
+			listenTo(cmc);
+			cmc.activate();
 		} catch (Exception e) {
 			logError("", e);
 			showError("error.resource.corrupted");
