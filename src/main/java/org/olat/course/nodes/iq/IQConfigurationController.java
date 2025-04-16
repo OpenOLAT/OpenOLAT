@@ -41,7 +41,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -417,23 +416,17 @@ public class IQConfigurationController extends BasicController implements Refere
 			RepositoryEntry currentEntry = courseNode.getReferencedRepositoryEntry();
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			
-			int numOfAssessedIdentities = 0;
 			Set<Identity> assessedIdentities = new HashSet<>(); 
 			if(currentEntry != null) {
 				List<AssessmentTestSession> assessmentTestSessions = qti21service.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), currentEntry);
-				
 				for(AssessmentTestSession assessmentTestSession:assessmentTestSessions) {
-					if(StringHelper.containsNonWhitespace(assessmentTestSession.getAnonymousIdentifier())) {
-						numOfAssessedIdentities++;
-					} else if(assessmentTestSession.getIdentity() != null) {
+					if(assessmentTestSession.getIdentity() != null) {
 						assessedIdentities.add(assessmentTestSession.getIdentity());
 					}
 				}
-				numOfAssessedIdentities += assessedIdentities.size();
 				
 				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(), course,
-						(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities),
-						numOfAssessedIdentities);
+						(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities));
 				listenTo(confirmChangeResourceCtrl);
 				String title = translate("replace.entry");
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
