@@ -187,7 +187,12 @@ public class IQConfigurationController extends BasicController implements Refere
 			EmptyStateConfig emptyStateConfig, String selectionTitle, ReferenceContentProvider referenceContentProvider) {
 			super(repositoryService, resourceTypes, emptyStateConfig, selectionTitle, referenceContentProvider);
 		}
-
+		
+		@Override
+		public boolean canCreate() {
+			return newReference;
+		}
+		
 		@Override
 		public boolean hasReferencesHistory() {
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

@@ -195,6 +195,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_files { @include o-add-icon('copy', false);} // files not in FA6 public set!
 .o_icon_fileupload { @include o-add-icon('file', false);}
 .o_icon_filter { @include o-add-icon('filter');}
+.o_icon_finished { @include o-add-icon('flag');}
 .o_icon_fire { @include o-add-icon('fire');}
 .o_icon_flask { @include o-add-icon('flask');}
 .o_icon_form { @include o-add-icon('clipboard', false);}
