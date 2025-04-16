@@ -70,6 +70,18 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		}
 	}
 	
+	protected void renderDuplicateMenuItem(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isCloneable()) {
+			sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' ")
+					.append("href='javascript:;' onclick=\"");
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "clone_element"),
+					new NameValuePair("fragment", cmp.getComponentName()));
+			sb.append(" return false;\" class='o_sel_duplicate' title='").append(translator.translate("duplicate"))
+					.append("'><i class='o_icon o_icon_copy'> </i> ").append(translator.translate("duplicate")).append("</a>");
+		}
+	}
+	
 	protected void renderClose(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
 		sb.append("<a id='o_ccclose_").append(cmp.getDispatchID()).append("' ")
 			  .append("href='javascript:;' onclick=\"");// add elements directly in container
@@ -177,6 +189,12 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 			renderAddAbove(sb, cmp, ubu, translator);
 			sb.append("</li><li role='menuitem'>");
 			renderAddBelow(sb, cmp, ubu, translator);
+			sb.append("</li>");
+		}
+		
+		if(cmp.isCloneable()) {
+			sb.append("<li role='menuitem'>");
+			renderDuplicateMenuItem(sb, cmp, ubu, translator);
 			sb.append("</li>");
 		}
 		
