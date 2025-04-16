@@ -101,7 +101,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	private final RepositoryEntry newTestEntry;
 	private final RepositoryEntry currentTestEntry;
 	private final List<Identity> assessedIdentities;
-	private final int numOfAssessedIdentities;
+	private final long currentRuns;
 	
 	@Autowired
 	private DB dbInstance;
@@ -115,14 +115,16 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	private CourseAssessmentService courseAssessmentService;
 	
 	public ConfirmChangeResourceController(UserRequest ureq, WindowControl wControl, ICourse course, QTICourseNode courseNode,
-			RepositoryEntry newTestEntry, RepositoryEntry currentTestEntry, List<Identity> assessedIdentities, int numOfAssessedIdentities) {
+			RepositoryEntry newTestEntry, RepositoryEntry currentTestEntry, List<Identity> assessedIdentities) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.course = course;
 		this.courseNode = courseNode;
 		this.newTestEntry = newTestEntry;
 		this.currentTestEntry = currentTestEntry;
 		this.assessedIdentities = assessedIdentities;
-		this.numOfAssessedIdentities = numOfAssessedIdentities;
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		currentRuns = countActiveRuns(courseEntry, currentTestEntry);
 		initForm(ureq);
 	}
 	
@@ -212,10 +214,10 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		}
 		
 		// Runs
-		long currentRuns = countActiveRuns(courseEntry, currentTestEntry);
-		propertiesCont.contextPut("currentRuns", Long.toString(currentRuns));
-		long newRuns = countActiveRuns(courseEntry, newTestEntry);
-		propertiesCont.contextPut("newRuns", Long.toString(newRuns));
+		Long currentRuns = qtiService.getAssessmentTestSessionsCount(courseEntry, courseNode.getIdent(), currentTestEntry);
+		propertiesCont.contextPut("currentRuns", currentRuns == null ? "0" : currentRuns.toString());
+		Long newRuns = qtiService.getAssessmentTestSessionsCount(courseEntry, courseNode.getIdent(), newTestEntry);
+		propertiesCont.contextPut("newRuns", newRuns == null ? "0" : newRuns.toString());
 	}
 	
 	private long countActiveRuns(RepositoryEntry courseEntry, RepositoryEntry testEntry) {
@@ -223,7 +225,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		
 		long runs = 0l;
 		for(AssessmentTestSession session:sessions) {
-			if(!session.isCancelled() && !session.isExploded() && session.getFinishTime() == null
+			if(!session.isCancelled() && !session.isExploded() && !session.isAuthorMode()
 					&& session.getTerminationTime() == null && session.getFinishTime() == null) {
 				runs++;
 			}
@@ -304,9 +306,9 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	
 	private void updateUI() {
 		if(optionsEl.isOneSelected() && KEY_REPLACEMENT_ONLY.equals(optionsEl.getSelectedKey())) {
-			impactEl.setValue(translate("change.impact.replacement.only", Integer.toString(numOfAssessedIdentities)));
+			impactEl.setValue(translate("change.impact.replacement.only", Long.toString(currentRuns)));
 		} else {
-			impactEl.setValue(translate("change.impact.controlled", Integer.toString(numOfAssessedIdentities)));
+			impactEl.setValue(translate("change.impact.controlled", Long.toString(currentRuns)));
 		}
 	}
 
