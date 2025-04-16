@@ -165,6 +165,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		optionsEl.select(KEY_CONTROLLED_REPLACEMENT, true);
 		
 		impactEl = uifactory.addStaticTextElement("change.impact", "", optionsCont);
+		impactEl.setElementCssClass("o_change_impact");
 		impactEl.setDomWrapperElement(DomWrapperElement.div);
 		updateUI();
 	}
