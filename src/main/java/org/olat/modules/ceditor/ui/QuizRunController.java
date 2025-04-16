@@ -360,7 +360,11 @@ public class QuizRunController extends BasicController implements PageRunElement
 		URI assessmentItemUri = storageInfo.questionFile().toURI();
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(assessmentItemUri,
 				storageInfo.questionDirectory());
-
+		if (resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null || 
+				resolvedAssessmentItem.getItemLookup().extractIfSuccessful() == null) {
+			showError(translate("error.header") + ": " + assessmentItemUri);
+			return;
+		}
 		QTI21DeliveryOptions deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		deliveryOptions.setPageMode(true);
 		deliveryOptions.setLastQuestion(questionIndex >= (getNumberOfQuestions() - 1));
