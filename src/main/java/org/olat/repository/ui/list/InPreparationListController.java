@@ -163,8 +163,8 @@ public class InPreparationListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.externalRef));
 
 		if (lifecycleModule.isEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleSoftkey));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleLabel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, InPreparationCols.lifecycleSoftkey));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.lifecycleLabel));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd));
 		}
