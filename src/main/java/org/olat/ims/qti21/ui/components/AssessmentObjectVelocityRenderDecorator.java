@@ -725,7 +725,6 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		if(correctAnswers == null) {
 			return null;
 		}
-		stringuifiedResponses = CorrectResponsesUtil.stripResponse(stringuifiedResponses);
 		boolean correct = correctAnswers.match(stringuifiedResponses);
 		return Boolean.valueOf(correct);
 	}
