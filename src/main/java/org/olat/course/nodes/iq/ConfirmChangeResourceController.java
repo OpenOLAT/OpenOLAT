@@ -55,7 +55,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -213,10 +212,23 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		}
 		
 		// Runs
-		Long currentRuns = qtiService.getAssessmentTestSessionsCount(courseEntry, courseNode.getIdent(), currentTestEntry);
-		propertiesCont.contextPut("currentRuns", currentRuns == null ? "0" : currentRuns.toString());
-		Long newRuns = qtiService.getAssessmentTestSessionsCount(courseEntry, courseNode.getIdent(), newTestEntry);
-		propertiesCont.contextPut("newRuns", newRuns == null ? "0" : newRuns.toString());
+		long currentRuns = countActiveRuns(courseEntry, currentTestEntry);
+		propertiesCont.contextPut("currentRuns", Long.toString(currentRuns));
+		long newRuns = countActiveRuns(courseEntry, newTestEntry);
+		propertiesCont.contextPut("newRuns", Long.toString(newRuns));
+	}
+	
+	private long countActiveRuns(RepositoryEntry courseEntry, RepositoryEntry testEntry) {
+		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry);
+		
+		long runs = 0l;
+		for(AssessmentTestSession session:sessions) {
+			if(!session.isCancelled() && !session.isExploded() && session.getFinishTime() == null
+					&& session.getTerminationTime() == null && session.getFinishTime() == null) {
+				runs++;
+			}
+		}
+		return runs;
 	}
 
 	private String manualValue(boolean manualScoring) {
@@ -339,7 +351,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 					if (!newTestEntry.equals(session.getTestEntry())
 							&& !session.isCancelled() && !session.isExploded()
 							&& session.getFinishTime() == null && session.getTerminationTime() == null) {
-						session = pullSession(session, assessedIdentity, uce);
+						session = pullSession(session, assessedIdentity, courseEnv);
 						session.setCancelled(true);
 						session = qtiService.updateAssessmentTestSession(session);
 						deactivateGradingAssignment(assessmentEntry, session);
@@ -370,7 +382,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 					if (!newTestEntry.equals(session.getTestEntry())
 							&& !session.isCancelled() && !session.isExploded()) {
 						if(session.getFinishTime() == null && session.getTerminationTime() == null) {
-							session = pullSession(session, assessedIdentity, uce);
+							session = pullSession(session, assessedIdentity, courseEnv);
 						}
 						session.setCancelled(true);
 						session = qtiService.updateAssessmentTestSession(session);
@@ -400,16 +412,14 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		}
 	}
 	
-	private AssessmentTestSession pullSession(AssessmentTestSession session, Identity assessedIdentity, UserCourseEnvironment uce) {
+	private AssessmentTestSession pullSession(AssessmentTestSession session, Identity assessedIdentity, CourseEnvironment courseEnv) {
 		//reload it to prevent lazy loading issues
-		session = qtiService.pullSession(session, getSignatureOptions(session, uce.getCourseEnvironment()), getIdentity());
-		if(courseNode instanceof IQTESTCourseNode iqTestCourseNode) {
-			iqTestCourseNode.pullAssessmentTestSession(session, uce, getIdentity(), Role.coach, getLocale());
+		session = qtiService.pullSession(session, getSignatureOptions(session, courseEnv), getIdentity());
+		
+		String channel = assessedIdentity == null ? session.getAnonymousIdentifier() : assessedIdentity.getKey().toString();
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		imService.endChannel(getIdentity(), courseEntry.getOlatResource(), courseNode.getIdent(), channel);
 
-			String channel = assessedIdentity == null ? session.getAnonymousIdentifier() : assessedIdentity.getKey().toString();
-			RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			imService.endChannel(getIdentity(), courseEntry.getOlatResource(), courseNode.getIdent(), channel);
-		}
 		return session;
 	}
 	
