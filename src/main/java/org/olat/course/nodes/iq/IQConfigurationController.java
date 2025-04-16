@@ -61,6 +61,7 @@ import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -429,16 +430,18 @@ public class IQConfigurationController extends BasicController implements Refere
 					}
 				}
 				numOfAssessedIdentities += assessedIdentities.size();
+				
+				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(), course,
+						(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities),
+						numOfAssessedIdentities);
+				listenTo(confirmChangeResourceCtrl);
+				String title = translate("replace.entry");
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
+				listenTo(cmc);
+				cmc.activate();
+			} else {
+				doChangeResource(ureq, newEntry, false);
 			}
-			
-			confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(), course,
-					(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities),
-					numOfAssessedIdentities);
-			listenTo(confirmChangeResourceCtrl);
-			String title = translate("replace.entry");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
-			listenTo(cmc);
-			cmc.activate();
 		} catch (Exception e) {
 			logError("", e);
 			showError("error.resource.corrupted");
@@ -473,6 +476,11 @@ public class IQConfigurationController extends BasicController implements Refere
 					hasErrors |= true;
 				}
 			}
+		} else {
+			List<String> changes = new ArrayList<>();
+			visitModel(cetm.getRootNode(), changes);
+			// Changes but not publishable -> some part of the tree is cannot be published
+			hasErrors = !changes.isEmpty();
 		}
 		return !hasErrors;
 	}
@@ -609,6 +617,19 @@ public class IQConfigurationController extends BasicController implements Refere
 			if (child instanceof TreeNode && filter.isVisible(child)) {
 				nodeToPublish.add(child.getIdent());
 				visitPublishModel((TreeNode)child, filter, nodeToPublish);
+			}
+		}
+	}
+	
+	private static void visitModel(TreeNode node,  Collection<String> nodeToPublish) {
+		int numOfChildren = node.getChildCount();
+		for (int i = 0; i < numOfChildren; i++) {
+			INode child = node.getChildAt(i);
+			if (child instanceof CourseEditorTreeNode courseEditorTreeNode) {
+				if(courseEditorTreeNode.isDeleted() || courseEditorTreeNode.isDirty() || courseEditorTreeNode.isNewnode()) {
+					nodeToPublish.add(child.getIdent());
+				}
+				visitModel((TreeNode)child, nodeToPublish);
 			}
 		}
 	}
