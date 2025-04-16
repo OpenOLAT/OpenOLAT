@@ -38,9 +38,10 @@ import org.olat.core.util.Util;
 public class UserPortraitComponent extends AbstractComponent {
 	
 	private static final ComponentRenderer RENDERER = new UserPortraitRenderer();
+	private static final UserPortraitMapper MAPPER = new UserPortraitMapper();
 	
 	private final Translator compTranslator;
-	private final String portraitMapperUrl;
+	private String portraitMapperUrl;
 	private PortraitUser portraitUser;
 	private PortraitSize size = PortraitSize.medium;
 	private boolean displayPresence = false;
@@ -48,7 +49,6 @@ public class UserPortraitComponent extends AbstractComponent {
 	protected UserPortraitComponent(String name, Locale locale) {
 		super(name);
 		compTranslator = Util.createPackageTranslator(UserPortraitComponent.class, locale);
-		portraitMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(null, "user-portrait-mapper", new UserPortraitMapper()).getUrl();
 	}
 
 	@Override
@@ -66,6 +66,11 @@ public class UserPortraitComponent extends AbstractComponent {
 	}
 	
 	String getPortraitMapperUrl() {
+		if (portraitMapperUrl == null) {
+			// Small optimization to prevent unnecessary creations and registrations of the mapper.
+			// Can also be changed without implications if required (e.g. registration in the constructor of the component).
+			portraitMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(null, "user-portrait-mapper", MAPPER).getUrl();
+		}
 		return portraitMapperUrl;
 	}
 
