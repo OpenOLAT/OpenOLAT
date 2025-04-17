@@ -249,12 +249,11 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 
 		UserSession usess = ureq.getUserSession();
 		IdentityEnvironment identEnv = usess.getIdentityEnvironment();
+		boolean externalUsersAllowed = StringHelper.containsNonWhitespace(meeting.getReadableIdentifier());
+		if(meeting.getEntry() != null) {
+			externalUsersAllowed &= meeting.getEntry().getEntryStatus() == RepositoryEntryStatusEnum.published;
+		}
 		if(identEnv.getRoles() == null && identEnv.getIdentity() == null) {
-			boolean externalUsersAllowed = StringHelper.containsNonWhitespace(meeting.getReadableIdentifier());
-			if(meeting.getEntry() != null) {
-				RepositoryEntry re = meeting.getEntry();
-				externalUsersAllowed &= re.getEntryStatus() == RepositoryEntryStatusEnum.published;
-			}
 			return new MeetinSecurity(externalUsersAllowed, false, false);
 		} else if(meeting.getEntry() != null) {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), identEnv.getRoles(), meeting.getEntry());
@@ -272,6 +271,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 				}
 				return new MeetinSecurity(true, reSecurity.isAdministrator() || reSecurity.isOwner(), reSecurity.isCoach());
 			}
+			return new MeetinSecurity(externalUsersAllowed, false, false);
 		} else if(meeting.getBusinessGroup() != null) {
 			boolean member = businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
 			return new MeetinSecurity(member, false, false);
