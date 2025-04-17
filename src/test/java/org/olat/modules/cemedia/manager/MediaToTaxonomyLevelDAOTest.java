@@ -121,4 +121,44 @@ public class MediaToTaxonomyLevelDAOTest extends OlatTestCase {
 			.hasSize(1)
 			.containsExactly(relation);
 	}
+	
+	@Test
+	public void deleteRelationToLevels() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-rel-5");
+		Media media = mediaDao.createMediaAndVersion("Media relation 5", "Media relation description", null, "Media relation content", "Forum", "[Media:5]", null, 10, id);
+
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2305", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-5", random(), "My relation level", "A basic level to delete", null, null, null, null, taxonomy);
+		MediaToTaxonomyLevel relation = mediaToTaxonomyLevelDao.createRelation(media, level);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+		
+		int removed = mediaToTaxonomyLevelDao.deleteRelationToLevels(media);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(1, removed);
+		
+		List<MediaToTaxonomyLevel> levels = mediaToTaxonomyLevelDao.loadRelations(media);
+		Assert.assertTrue(levels.isEmpty());
+	}
+	
+	@Test
+	public void deleteRelationOfLevel() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-rel-6");
+		Media media = mediaDao.createMediaAndVersion("Media relation 6", "Media relation description", null, "Media relation content", "Forum", "[Media:6]", null, 10, id);
+
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-2306", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-6", random(), "My relation level", "Soon deleted", null, null, null, null, taxonomy);
+		MediaToTaxonomyLevel relation = mediaToTaxonomyLevelDao.createRelation(media, level);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+		
+		int removed = mediaToTaxonomyLevelDao.deleteRelationOfLevel(level);
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(1, removed);
+		
+		List<MediaToTaxonomyLevel> levels = mediaToTaxonomyLevelDao.loadRelations(media);
+		Assert.assertTrue(levels.isEmpty());
+	}
+	
+	
 }

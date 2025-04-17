@@ -23,12 +23,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.message.AssessmentMessage;
 import org.olat.modules.message.AssessmentMessagePublicationEnum;
@@ -36,6 +39,7 @@ import org.olat.modules.message.model.AssessmentMessageInfos;
 import org.olat.modules.message.model.AssessmentMessageLogImpl;
 import org.olat.modules.message.model.AssessmentMessageWithReadFlag;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +53,8 @@ public class AssessmentMessageDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentMessageDAO assessmentMessageDao;
 	@Autowired
@@ -226,5 +232,46 @@ public class AssessmentMessageDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, infos.size());
 		Assert.assertEquals(message, infos.get(0).getMessage());
 		Assert.assertTrue(infos.get(0).isRead());
+	}
+	
+	@Test
+	public void getMessagesOfRepositoryEntry() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("scheduled-msg-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date now = new Date();
+		AssessmentMessage messageNow = assessmentMessageDao.createMessage("Hello",
+				DateUtils.addMinutes(now, -5), DateUtils.addMinutes(now, 5),
+				AssessmentMessagePublicationEnum.asap, entry, "load-single-message-infos", id);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentMessage> messages = assessmentMessageDao.getMessages(entry);
+		Assertions.assertThat(messages)
+			.hasSize(1)
+			.containsExactly(messageNow);
+	}
+	
+	@Test
+	public void deleteRepositoryEntry() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("scheduled-msg-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date now = new Date();
+		AssessmentMessage messageNow = assessmentMessageDao.createMessage("Hello",
+				DateUtils.addMinutes(now, -5), DateUtils.addMinutes(now, 5),
+				AssessmentMessagePublicationEnum.asap, entry, "load-single-message-infos", id);
+		dbInstance.commitAndCloseSession();
+		
+		// Check messages
+		List<AssessmentMessage> messages = assessmentMessageDao.getMessages(entry);
+		Assertions.assertThat(messages)
+			.hasSize(1)
+			.containsExactly(messageNow);
+		
+		// Delete
+		repositoryService.deletePermanently(entry, id, Roles.administratorRoles(), Locale.ENGLISH);
+		dbInstance.commitAndCloseSession();
+		
+		// Check really, really deleted
+		RepositoryEntry deletedEntry = repositoryService.loadBy(entry);
+		Assert.assertNull(deletedEntry);
 	}
 }

@@ -37,6 +37,7 @@ import org.olat.modules.message.model.AssessmentMessageInfos;
 import org.olat.modules.message.model.AssessmentMessageLogImpl;
 import org.olat.modules.message.model.AssessmentMessageWithReadFlag;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -210,8 +211,19 @@ public class AssessmentMessageDAO {
 		return infos;
 	}
 	
+	public List<AssessmentMessage> getMessages(RepositoryEntryRef entry) {
+		String sb = """
+				select msg from assessmentmessage as msg
+				inner join fetch msg.entry as v
+				where v.key=:entryKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentMessage.class)
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+	}
+	
 	public void deleteMessage(AssessmentMessage message) {
 		dbInstance.getCurrentEntityManager().remove(message);
 	}
-
 }
