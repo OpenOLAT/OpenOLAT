@@ -67,8 +67,8 @@ public class BooleanCellRenderer implements FlexiCellRenderer, ActionDelegateCel
 	}
 	
 	private void getActions(FlexiCellRenderer delegate, List<String> actions) {
-		if(delegate instanceof ActionDelegateCellRenderer) {
-			List<String> delegateActions = ((ActionDelegateCellRenderer)delegate).getActions();
+		if(delegate instanceof ActionDelegateCellRenderer actionDelegate) {
+			List<String> delegateActions = actionDelegate.getActions();
 			if(delegateActions != null && !delegateActions.isEmpty()) {
 				actions.addAll(delegateActions);
 			}
