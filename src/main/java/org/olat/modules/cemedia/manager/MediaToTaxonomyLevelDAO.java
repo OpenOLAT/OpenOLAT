@@ -91,12 +91,19 @@ public class MediaToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
-	
 	public int deleteRelationToLevels(Media media) {
 		String query = "delete from mediatotaxonomylevel rel where rel.media.key=:mediaKey";
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(query)
 			.setParameter("mediaKey", media.getKey())
+			.executeUpdate();
+	}
+	
+	public int deleteRelationOfLevel(TaxonomyLevel media) {
+		String query = "delete from mediatotaxonomylevel rel where rel.taxonomyLevel.key=:taxonomyLevelKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query)
+			.setParameter("taxonomyLevelKey", media.getKey())
 			.executeUpdate();
 	}
 	

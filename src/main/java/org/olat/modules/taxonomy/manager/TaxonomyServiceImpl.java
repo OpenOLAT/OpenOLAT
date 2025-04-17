@@ -42,6 +42,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.manager.PageToTaxonomyCompetenceDAO;
+import org.olat.modules.cemedia.manager.MediaToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.quality.manager.QualityDataCollectionDAO;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -91,6 +92,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
+	@Autowired
+	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
 	@Autowired
 	private TaxonomyLevelTypeToTypeDAO taxonomyLevelTypeToTypeDao;
 	@Autowired
@@ -227,7 +230,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 					Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
 					VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
 					String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
-					dir += "_" + taxonomyLevel.getKey();
+					dir += "_" + reloadedTaxonomyLevel.getKey();
 					VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
 					if(lastStorage == null) {
 						VFSItem storageItem = lostAndFound.resolve(dir);
@@ -241,9 +244,11 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 					VFSManager.copyContent(library, lastStorage);
 				}
 				//delete the competences
-				taxonomyCompetenceDao.deleteCompetences(taxonomyLevel);
+				taxonomyCompetenceDao.deleteCompetences(reloadedTaxonomyLevel);
 				//questions
-				taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
+				taxonomyRelationsDao.removeFromQuestionItems(reloadedTaxonomyLevel);
+				// Medias
+				mediaToTaxonomyLevelDao.deleteRelationOfLevel(reloadedTaxonomyLevel);
 			}
 
 			// Delete translations
