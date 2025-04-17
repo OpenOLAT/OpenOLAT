@@ -180,14 +180,21 @@ public class CourseCalendars {
 				groupCalendarWrapper.setPrivateEventsVisible(member || isOwner);
 
 				// set calendar access
-				int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
+				int accessConfig = CollaborationTools.CALENDAR_ACCESS_OWNERS;
 				Long lCalAccess = collabTools.lookupCalendarAccess();
-				if (lCalAccess != null) iCalAccess = lCalAccess.intValue();
-				if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_OWNERS && !isOwner) {
-					groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-				} else {
-					groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				if (lCalAccess != null) {
+					accessConfig = lCalAccess.intValue();
 				}
+				int access = KalendarRenderWrapper.ACCESS_READ_ONLY;
+				if (accessConfig == CollaborationTools.CALENDAR_ACCESS_OWNERS) {
+					if(isOwner || courseEnv.isAdmin()) {
+						access = KalendarRenderWrapper.ACCESS_READ_WRITE;
+					}
+				} else if(member || isOwner || courseEnv.isAdmin()) {
+					access = KalendarRenderWrapper.ACCESS_READ_WRITE;
+				}
+				groupCalendarWrapper.setAccess(access);
+				
 				CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
 				if (config != null) {
 					groupCalendarWrapper.setConfiguration(config);
