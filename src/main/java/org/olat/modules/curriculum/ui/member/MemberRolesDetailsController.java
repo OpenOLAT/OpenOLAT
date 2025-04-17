@@ -319,7 +319,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 				row.addConfirmationUntil(role, reservation.getExpirationDate());
 			} else {
 				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
-				if(lastHistory != null) {
+				if(lastHistory != null
+						&& lastHistory.getStatus() != GroupMembershipStatus.active
+						&& lastHistory.getStatus() != GroupMembershipStatus.reservation) {
 					row.addStatus(role, lastHistory.getStatus());
 				}
 			}

@@ -1344,7 +1344,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			
 			if(reason == GroupMembershipStatus.cancel
 					|| reason == GroupMembershipStatus.cancelWithFee
-					|| reason == GroupMembershipStatus.declined) {
+					|| reason == GroupMembershipStatus.declined
+					|| reason == GroupMembershipStatus.removed) {
 				groupMembershipHistoryDao.createMembershipHistory(group, member,
 						role, reason, true, null, null,
 						actor, adminNote);
