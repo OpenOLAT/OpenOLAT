@@ -245,14 +245,16 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element", "add.curriculum", "o_icon_add", true);
-		tableEl.setMultiSelect(true);
+		
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 		
 		initFilters();
 		initFiltersPresets();
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		
-		if(secCallback.canEditCurriculum()) {
+		if(secCallback.canDeleteCurriculum()) {
+			tableEl.setMultiSelect(true);
+			
 			bulkDeleteButton = uifactory.addFormLink("bulk.delete", "delete", "delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
 		}
@@ -710,7 +712,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			openLink.setNewWindow(true, true);
 			exportLink = addLink("export", "o_icon_export", links);
 			
-			if(secCallback.canEditCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
+			if(secCallback.canDeleteCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
 				links.add("-");
 				deleteLink = addLink("delete", "o_icon_delete_item", links);
 			}

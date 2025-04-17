@@ -29,13 +29,15 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canNewCurriculum();
 	
-	public boolean canEditCurriculum();
+	public boolean canEditCurriculum(Curriculum curriculum);
+	
+	public boolean canDeleteCurriculum();
 	
 	public boolean canManagerCurriculumUsers();
 	
-	public boolean canNewCurriculumElement();
+	public boolean canNewCurriculumElement(Curriculum curriculum);
 	
-	public boolean canEditCurriculumElements();
+	public boolean canEditCurriculumElements(Curriculum curriculum);
 	
 	/**
 	 * @param element The curriculum element
@@ -45,7 +47,7 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canEditCurriculumTree();
 	
-	public boolean canManagerCurriculumElementsUsers();
+	public boolean canManagerCurriculumElementsUsers(Curriculum curriculum);
 	
 	public boolean canManagerCurriculumElementUsers(CurriculumElement element);
 	
@@ -55,7 +57,7 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canNewLectureBlock();
 	
-	public boolean canViewAllLectures();
+	public boolean canViewAllLectures(Curriculum curriculum);
 	
 	public boolean canViewAllLearningProgress();
 	

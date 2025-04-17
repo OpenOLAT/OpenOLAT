@@ -69,7 +69,7 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAllLectures() {
+		public boolean canViewAllLectures(Curriculum curriculum) {
 			return true;
 		}
 
@@ -101,7 +101,12 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canEditCurriculum() {
+		public boolean canEditCurriculum(Curriculum curriculum) {
+			return admin || ownedCurriculumKeys.contains(curriculum.getKey());
+		}
+		
+		@Override
+		public boolean canDeleteCurriculum() {
 			return admin;
 		}
 
@@ -111,19 +116,25 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canNewCurriculumElement() {
-			return admin;
+		public boolean canNewCurriculumElement(Curriculum curriculum) {
+			return admin || ownedCurriculumKeys.contains(curriculum.getKey());
 		}
 
 		@Override
-		public boolean canEditCurriculumElements() {
-			return admin || !ownedElementKeys.isEmpty();
+		public boolean canEditCurriculumElements(Curriculum curriculum) {
+			return admin
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()))
+					|| !ownedElementKeys.isEmpty();
 		}
 		
 		@Override
 		public boolean canEditCurriculumElement(CurriculumElement element) {
-			if(element == null) return false;
-			if(admin) return true;
+			if(element == null || element.getCurriculum() == null) {
+				return false;
+			}
+			if(admin || ownedCurriculumKeys.contains(element.getCurriculum().getKey())) {
+				return true;
+			}
 			
 			for(CurriculumElement el=element ; el != null; el=el.getParent()) {
 				if(ownedElementKeys.contains(el.getKey())) {
@@ -139,18 +150,25 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canManagerCurriculumElementsUsers() {
-			return admin;
+		public boolean canManagerCurriculumElementsUsers(Curriculum curriculum) {
+			return admin
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 
 		@Override
 		public boolean canManagerCurriculumElementUsers(CurriculumElement element) {
-			return element != null &&  (admin || ownedElementKeys.contains(element.getKey()));
+			return element != null && element.getCurriculum() != null && (
+					admin
+					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
+					|| ownedElementKeys.contains(element.getKey()));
 		}
 
 		@Override
 		public boolean canManagerCurriculumElementResources(CurriculumElement element) {
-			return element != null &&  (admin || ownedElementKeys.contains(element.getKey()));
+			return element != null && element.getCurriculum() != null && (
+					admin
+					|| ownedCurriculumKeys.contains(element.getCurriculum().getKey())
+					|| ownedElementKeys.contains(element.getKey()));
 		}
 
 		@Override
@@ -164,8 +182,9 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAllLectures() {
-			return admin;
+		public boolean canViewAllLectures(Curriculum curriculum) {
+			return admin
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 
 		@Override
