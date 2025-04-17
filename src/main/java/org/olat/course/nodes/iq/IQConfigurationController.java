@@ -376,8 +376,12 @@ public class IQConfigurationController extends BasicController implements Refere
 			if (event == RepositoryEntryReferenceController.SELECTION_EVENT) {
 				// Reset reference until the new entry is confirmed
 				RepositoryEntry re = referenceCtrl.getRepositoryEntry();
-				referenceCtrl.setRepositoryEntry(urequest, getIQReference());
-				doConfirmChangeTestAndSurvey(urequest, re);
+				if(re != null && re.equals(getIQReference())) {
+					showWarning("warning.same.resource");
+				} else {
+					referenceCtrl.setRepositoryEntry(urequest, getIQReference());
+					doConfirmChangeTestAndSurvey(urequest, re);
+				}
 			} else if (event == RepositoryEntryReferenceController.PREVIEW_EVENT) {
 				doPreview(urequest);
 			}

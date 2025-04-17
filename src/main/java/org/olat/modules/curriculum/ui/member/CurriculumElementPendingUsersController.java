@@ -118,7 +118,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		// Add/remove buttons
 		if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
 			acceptAllButton = uifactory.addFormLink("accept.all", formLayout, Link.BUTTON);
-			acceptAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_accept_all");
+			acceptAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_accepted");
 			
 			addParticipantsButton = uifactory.addFormLink("add.participants", formLayout, Link.BUTTON);
 			addParticipantsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
@@ -445,20 +445,13 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 
 			contactLink = addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
 			
-			boolean needDivider = false;
 			if(member.getNumOfReservations() > 0) {
-				acceptLink = addLink("accept", "accept", "o_icon o_icon-fw o_icon_check");
+				acceptLink = addLink("accept", "accept", "o_icon o_icon-fw o_icon_accepted");
 				declineLink = addLink("decline", "decline", "o_icon o_icon-fw o_icon_decline");
-				needDivider = true;
 			}
 			
 			if(curriculumElement != null && hasOngoingOrder()) {
-				cancelLink = addLink("cancel.booking", "cancel", "o_icon o_icon-fw o_icon_decline");
-				needDivider |= true;
-			}
-			
-			if(needDivider) {
-				mainVC.contextPut("reservationDivider", Boolean.TRUE);
+				cancelLink = addLink("cancel.booking", "cancel", "o_icon o_icon-fw o_icon_circle_xmark");
 			}
 			editMemberLink = addLink("edit.member", "edit.member", "o_icon o_icon-fw o_icon_edit");
 			

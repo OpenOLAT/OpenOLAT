@@ -280,14 +280,17 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new ScoreCellRenderer()));
 		
 		if(!readOnly) {
-			correctionCol = new DefaultFlexiColumnModel(TSCols.correct, "correction",
-					new CorrectionCellRender());
+			correctionCol = new DefaultFlexiColumnModel(TSCols.correct, "correction");
+			correctionCol.setIconHeader("o_icon o_icon_correction");
 			correctionCol.setDefaultVisible(false);
 			correctionCol.setAlwaysVisible(false);
+			correctionCol.setCellRenderer(new CorrectionCellRender());
 			columnsModel.addFlexiColumnModel(correctionCol);
 			
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results, "open",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("results.report"), "open"), null)));
+			DefaultFlexiColumnModel resultsCol = new DefaultFlexiColumnModel(TSCols.results, "open",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "open", null, "o_icon o_icon_magnifying_glass", translate("results.report")), null));
+			resultsCol.setIconHeader("o_icon o_icon_magnifying_glass");
+			columnsModel.addFlexiColumnModel(resultsCol);
 		}
 		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TSCols.tools));
@@ -939,11 +942,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			
 			Boolean correction = tableModel.isCorrectionAllowed(row);
 			if(correction != null && correction.booleanValue()) {
-				correctionLink = LinkFactory.createLink("correction", mainVC, this);
+				correctionLink = LinkFactory.createLink("correct", mainVC, this);
 				correctionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 			} else if(correction != null && !correction.booleanValue()) {
 				previewLink = LinkFactory.createLink("preview", mainVC, this);
-				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_magnifying_glass");
+				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 			}
 			
 			if(row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
@@ -957,7 +960,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(row.getTestSession().isCancelled()) {
 				revalidateLink = LinkFactory.createLink("revalidate.test", mainVC, this);
 				revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
-			} else {
+			} else if (row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
 				invalidateLink = LinkFactory.createLink("invalidate", mainVC, this);
 				invalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ban");
 			}
@@ -981,6 +984,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				doOpenResult(ureq, row.getTestSession());
 			} else if(pullLink == source) {
 				doConfirmPullSession(ureq, row.getTestSession());
+			} else if(correctionLink == source) {
+				doCorrection(ureq, row.getTestSession());
+			} else if(previewLink == source) {
+				doOpenCorrection(ureq, row.getTestSession());
 			}
 		}
 	}
@@ -1028,8 +1035,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private class CorrectionCellRender implements FlexiCellRenderer, ActionDelegateCellRenderer {
 		
-		private final FlexiCellRenderer correctionDelegate = new StaticFlexiCellRenderer(translate("correct"), "correction");
-		private final FlexiCellRenderer previewDelegate = new StaticFlexiCellRenderer(translate("preview"), "preview");
+		private final FlexiCellRenderer correctionDelegate = new StaticFlexiCellRenderer("", "correction", null, "o_icon o_icon_correction", translate("correct"));
+		private final FlexiCellRenderer previewDelegate = new StaticFlexiCellRenderer("", "preview", null, "o_icon o_icon_preview", translate("preview"));
 		private final List<String> actions = List.of("correction", "preview");
 		
 		@Override
