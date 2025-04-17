@@ -39,6 +39,7 @@ import org.olat.modules.message.model.AssessmentMessageLogImpl;
 import org.olat.modules.message.model.AssessmentMessageWithReadFlag;
 import org.olat.modules.message.ui.AssessmentMessageEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +51,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AssessmentMessageServiceImpl implements AssessmentMessageService {
+public class AssessmentMessageServiceImpl implements AssessmentMessageService, RepositoryEntryDataDeletable {
 	
 	@Autowired
 	private DB dbInstance;
@@ -150,6 +151,15 @@ public class AssessmentMessageServiceImpl implements AssessmentMessageService {
 					message.getKey(), message.getEntry().getKey(), message.getResSubPath(), null);
 			coordinator.getEventBus().fireEventToListenersOf(event, messageOres);
 		}
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<AssessmentMessage> messages = assessmentMessageDao.getMessages(re);
+		for(AssessmentMessage message:messages) {
+			deleteMessage(message);
+		}
+		return true;
 	}
 
 	@Override
