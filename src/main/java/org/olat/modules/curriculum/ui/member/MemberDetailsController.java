@@ -164,7 +164,7 @@ public class MemberDetailsController extends FormBasicController {
 		
 		boolean showAcceptDeclineButtons = config.withAcceptDecline() && rolesDetailsCtrl.hasReservations();
 		acceptButton = uifactory.addFormLink("accept", formLayout, Link.BUTTON);
-		acceptButton.setIconLeftCSS("o_icon o_icon-fw o_icon_check");
+		acceptButton.setIconLeftCSS("o_icon o_icon-fw o_icon_accepted");
 		acceptButton.setVisible(showAcceptDeclineButtons);
 		
 		declineButton = uifactory.addFormLink("decline", formLayout, Link.BUTTON);
@@ -172,7 +172,7 @@ public class MemberDetailsController extends FormBasicController {
 		declineButton.setVisible(showAcceptDeclineButtons);
 		
 		cancelButton = uifactory.addFormLink("cancel.booking", formLayout, Link.BUTTON);
-		cancelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
+		cancelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_xmark");
 		cancelButton.setVisible(showAcceptDeclineButtons && config.withOrders() && hasOngoingOrder());
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());

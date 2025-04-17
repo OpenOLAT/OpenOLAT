@@ -1,21 +1,26 @@
 <ul class="o_dropdown list-unstyled">
 	<li>$r.render("contact")</li>
-	#if($r.available("accept") || $r.available("decline") || $r.available("edit.member") || $r.available("remove.memberships"))
-		<li class="divider"></li>
+	#if($r.available("accept") || $r.available("decline") || $r.available("edit.member") || $r.available("cancel.booking") || $r.available("remove.memberships"))
+		#if($r.available("accept") || $r.available("decline"))
+			<li class="divider"></li>
+		#end
 		#if($r.available("accept"))
 			<li>$r.render("accept")</li>
 		#end
 		#if($r.available("decline"))
 			<li>$r.render("decline")</li>
 		#end
-		#if($r.available("cancel.booking"))
-			<li>$r.render("cancel.booking")</li>
+		
+		#if($r.available("edit.member"))
+			<li class="divider"></li>
+			<li>$r.render("edit.member")</li>
 		#end
-		#if($r.isTrue($reservationDivider))
+		
+		#if($r.available("cancel.booking") || $r.available("remove.memberships"))
 			<li class="divider"></li>
 		#end
-		#if($r.available("edit.member"))
-			<li>$r.render("edit.member")</li>
+		#if($r.available("cancel.booking"))
+			<li>$r.render("cancel.booking")</li>
 		#end
 		#if($r.available("remove.memberships"))
 			<li>$r.render("remove.memberships")</li>

@@ -476,10 +476,9 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			contactLink = addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
 			editMemberLink = addLink("edit.member", "edit.member", "o_icon o_icon-fw o_icon_edit");
 			if(curriculumElement != null && hasOngoingOrder()) {
-				cancelLink = addLink("cancel.booking", "cancel", "o_icon o_icon-fw o_icon_decline");
-				mainVC.contextPut("reservationDivider", Boolean.TRUE);
+				cancelLink = addLink("cancel.booking", "cancel", "o_icon o_icon-fw o_icon_circle_xmark");
 			}
-			removeMembershipsLink = addLink("remove.memberships", "remove.memberships", "o_icon o_icon-fw o_icon_remove");
+			removeMembershipsLink = addLink("remove.memberships", "remove.memberships", "o_icon o_icon-fw o_icon_invalidate");
 			
 			putInitialPanel(mainVC);
 		}

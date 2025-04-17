@@ -17,8 +17,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: $brand-success;}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}
 .o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: $brand-danger }
-.o_icon_accept_all { @include o-add-icon('check-double');}
-.o_icon_accepted { @include o-add-icon('thumbs-up');}
+.o_icon_accepted { @include o-add-icon('thumbs-up', false);}
 .o_icon_accessibility { @include o-add-icon('wheelchair');}
 .o_icon_actions { @include o-add-icon('ellipsis-v');}
 .o_icon_activate { @include o-add-icon('check-circle', false);}
@@ -144,7 +143,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}
-.o_icon_decline { @include o-add-icon('xmark');}
+.o_icon_decline { @include o-add-icon('thumbs-down', false);}
 .o_icon_delete_item { @include o-add-icon('trash-can', false);}
 .o_icon_delete { @include o-add-icon('minus-circle'); color: #A87E7E;}
 .o_icon_deleted { @include o-add-icon('trash-can', false);}
