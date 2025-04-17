@@ -137,7 +137,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	}
 	
 	private void initMetadata() {
-		if(secCallback.canEditCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
+		if(secCallback.canDeleteCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
 			Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
 			commandsDropdown.setDomReplaceable(false);
 			commandsDropdown.setButton(true);

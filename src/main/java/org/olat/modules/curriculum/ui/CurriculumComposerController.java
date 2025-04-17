@@ -248,7 +248,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		if(secCallback.canManagerCurriculumElementsUsers()) {
+		if(secCallback.canManagerCurriculumElementsUsers(curriculum)) {
 			if(managed && isAllowedToOverrideManaged(ureq)) {
 				overrideLink = uifactory.addFormLink("override.member", formLayout, Link.BUTTON);
 				overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
@@ -259,7 +259,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		
-		if(secCallback.canNewCurriculumElement()) {
+		if(secCallback.canNewCurriculumElement(curriculum)) {
 			newElementMenu = uifactory.addDropdownMenu("add.curriculum.element.menu", "add.curriculum.element.menu", null, formLayout, getTranslator());
 			newElementMenu.setIconCSS("o_icon o_icon-fw o_icon_add");
 			newElementMenu.setOrientation(DropdownOrientation.right);
@@ -357,7 +357,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		progressCol.setIconHeader("o_icon o_icon-lg o_icon_progress");
 		columnsModel.addFlexiColumnModel(progressCol);
 
-		if(secCallback.canEditCurriculumElements() || (!managed && secCallback.canManagerCurriculumElementsUsers())) {
+		if(secCallback.canEditCurriculumElements(curriculum) || (!managed && secCallback.canManagerCurriculumElementsUsers(curriculum))) {
 			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ElementCols.tools);
 			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
 			toolsColumn.setExportable(false);
@@ -375,7 +375,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");		
-		if(secCallback.canNewCurriculumElement()) {
+		if(secCallback.canNewCurriculumElement(curriculum)) {
 			tableEl.setEmptyTableSettings("table.curriculum.element.empty", "table.curriculum.element.empty.hint", "o_icon_curriculum_element", "add.curriculum.element", "o_icon_add", true);
 		} else {			
 			tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
@@ -386,7 +386,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
 
-		if(secCallback.canNewCurriculumElement() && config.isFlat()) {
+		if(secCallback.canNewCurriculumElement(curriculum) && config.isFlat()) {
 			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
 			tableEl.setMultiSelect(true);

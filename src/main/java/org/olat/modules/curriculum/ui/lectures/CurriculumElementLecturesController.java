@@ -100,7 +100,7 @@ public class CurriculumElementLecturesController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");
 		
-		boolean all = secCallback.canViewAllLectures()
+		boolean all = secCallback.canViewAllLectures(curriculum)
 				|| (lectureModule.isOwnerCanViewAllCoursesInCurriculum() && secCallback.canEditCurriculumElement(element));
 		
 		Identity checkByIdentity = all ? null : getIdentity();

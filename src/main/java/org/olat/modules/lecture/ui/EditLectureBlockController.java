@@ -98,7 +98,6 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
@@ -741,19 +740,21 @@ public class EditLectureBlockController extends FormBasicController {
 		boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn() && onlineMeetingEl.isOneSelected();
 		if(enableOnlineMeeting && BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting);
-			((LectureBlockImpl)lectureBlock).setBBBMeeting(bigBlueButtonMeeting);
-			((LectureBlockImpl)lectureBlock).setTeamsMeeting(null);
+			lectureBlock.setBBBMeeting(bigBlueButtonMeeting);
+			lectureBlock.setTeamsMeeting(null);
 			if(teamsMeeting != null) {
 				teamsService.deleteMeeting(teamsMeeting);
 			}
 		} else if(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
-			((LectureBlockImpl)lectureBlock).setBBBMeeting(null);
-			((LectureBlockImpl)lectureBlock).setTeamsMeeting(teamsMeeting);
+			lectureBlock.setBBBMeeting(null);
+			lectureBlock.setTeamsMeeting(teamsMeeting);
 			if(bigBlueButtonMeeting != null) {
 				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
 			}
 		} else {
+			lectureBlock.setBBBMeeting(null);
+			lectureBlock.setTeamsMeeting(null);
 			if(bigBlueButtonMeeting != null) {
 				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
 			}

@@ -138,7 +138,6 @@ public class CurriculumUserManagementController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v2");
 		
@@ -146,7 +145,9 @@ public class CurriculumUserManagementController extends FormBasicController {
 			addMemberButton = uifactory.addFormLink("add.members", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
-		
+
+			tableEl.setMultiSelect(true);
+			
 			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeMembershipButton);
 		}

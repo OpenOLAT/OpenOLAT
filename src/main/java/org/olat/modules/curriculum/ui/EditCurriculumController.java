@@ -108,7 +108,7 @@ public class EditCurriculumController extends FormBasicController {
 
 		String displayName = curriculum == null ? "" : curriculum.getDisplayName();
 		displayNameEl = uifactory.addTextElement("curriculum.display.name", "curriculum.display.name", 255, displayName, formLayout);
-		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum());
+		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum(curriculum));
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
 			displayNameEl.setFocus(true);
@@ -116,7 +116,7 @@ public class EditCurriculumController extends FormBasicController {
 		
 		String identifier = curriculum == null ? "" : curriculum.getIdentifier();
 		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum());
+		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum(curriculum));
 		identifierEl.setMandatory(true);
 		
 		initFormOrganisations(formLayout, ureq.getUserSession());
@@ -125,7 +125,7 @@ public class EditCurriculumController extends FormBasicController {
 		enabledKeysValues.add(SelectionValues.entry("on", translate("type.lectures.enabled.enabled")));
 		enabledKeysValues.add(SelectionValues.entry("off", translate("type.lectures.enabled.disabled")));
 		lecturesEnabledEl = uifactory.addRadiosHorizontal("type.lectures.enabled", formLayout, enabledKeysValues.keys(), enabledKeysValues.values());
-		lecturesEnabledEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.lectures) && secCallback.canEditCurriculum());
+		lecturesEnabledEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.lectures) && secCallback.canEditCurriculum(curriculum));
 		lecturesEnabledEl.setVisible(lectureModule.isEnabled());
 		if(curriculum != null && curriculum.isLecturesEnabled()) {
 			lecturesEnabledEl.select("on", true);
@@ -136,11 +136,11 @@ public class EditCurriculumController extends FormBasicController {
 		String description = curriculum == null ? "" : curriculum.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.description) && secCallback.canEditCurriculum());
+		descriptionEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.description) && secCallback.canEditCurriculum(curriculum));
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		if(secCallback.canEditCurriculum()) {
+		if(secCallback.canEditCurriculum(curriculum)) {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());

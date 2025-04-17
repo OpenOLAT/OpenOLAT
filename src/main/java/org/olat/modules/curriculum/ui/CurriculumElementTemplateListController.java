@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -91,6 +92,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 	private CurriculumElementRepositoryTableModel tableModel;
 	
 	private int counter = 0;
+	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final CurriculumElementType curriculumElementType;
@@ -112,6 +114,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		super(ureq, wControl, "curriculum_element_templates");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
 		this.secCallback = secCallback;
+		curriculum = curriculumElement.getCurriculum();
 		this.curriculumElement = curriculumElement;
 		curriculumElementType = curriculumElement.getType();
 		
@@ -226,7 +229,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 			addTemplateButton.setEnabled(tableModel.getRowCount() == 0 && linkedCourses == 0);
 		}
 		
-		boolean instantiateEnabled = secCallback.canNewCurriculumElement() && linkedCourses == 0;
+		boolean instantiateEnabled = secCallback.canNewCurriculumElement(curriculum) && linkedCourses == 0;
 		List<CurriculumElementRepositoryRow> rows = this.tableModel.getObjects();
 		for(CurriculumElementRepositoryRow row:rows) {
 			if(row.getInstantiateLink() != null) {
