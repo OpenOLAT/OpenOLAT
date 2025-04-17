@@ -177,12 +177,11 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 
 		UserSession usess = ureq.getUserSession();
 		IdentityEnvironment identEnv = usess.getIdentityEnvironment();
-		if(identEnv.getRoles() == null && identEnv.getIdentity() == null) {
-			boolean externalUsersAllowed = StringHelper.containsNonWhitespace(meeting.getReadableIdentifier());
-			if(meeting.getEntry() != null) {
-				RepositoryEntry re = meeting.getEntry();
-				externalUsersAllowed &= re.getEntryStatus() == RepositoryEntryStatusEnum.published;
-			}
+		boolean externalUsersAllowed = StringHelper.containsNonWhitespace(meeting.getReadableIdentifier());
+		if(meeting.getEntry() != null) {
+			externalUsersAllowed &= meeting.getEntry().getEntryStatus() == RepositoryEntryStatusEnum.published;
+		}
+		if(identEnv.getRoles() == null && identEnv.getIdentity() == null) {	
 			return externalUsersAllowed;
 		} else if(meeting.getEntry() != null) {
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), identEnv.getRoles(), meeting.getEntry());
@@ -200,6 +199,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 				}
 				return true;
 			}
+			return externalUsersAllowed;
 		} else if(meeting.getBusinessGroup() != null) {
 			return businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
 		}
