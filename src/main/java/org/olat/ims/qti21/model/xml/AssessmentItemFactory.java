@@ -49,6 +49,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
+import uk.ac.ed.ph.jqtiplus.node.expression.ExpressionParent;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
@@ -1275,58 +1276,66 @@ public class AssessmentItemFactory {
 		SetOutcomeValue setOutcomeValue = new SetOutcomeValue(responseProcessing);
 		setOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
 		
-		Subtract subtract = new Subtract(setOutcomeValue);
-		setOutcomeValue.getExpressions().add(subtract);
-
-		{// correct
-			Divide divide = new Divide(subtract);
-			subtract.getExpressions().add(divide);
-			
-			Product product = new Product(divide);
-			divide.getExpressions().add(product);
-			
-			IntegerToFloat integerToFloat = new IntegerToFloat(product);
-			product.getExpressions().add(integerToFloat);
-			
-			Variable variable = new Variable(integerToFloat);
-			integerToFloat.getExpressions().add(variable);
-			variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
-			
-			Variable maxScoreVariable = new Variable(product);
-			product.getExpressions().add(maxScoreVariable);
-			maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
-			
-			BaseValue numOfCorrectAnswersValue = new BaseValue(divide);
-			divide.getExpressions().add(numOfCorrectAnswersValue);
-			numOfCorrectAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
-			numOfCorrectAnswersValue.setSingleValue(new IntegerValue(numOfCorrectAnswers));
-		}
-		
-		{// incorrect
-			Divide divide = new Divide(subtract);
-			subtract.getExpressions().add(divide);
-		
-			Product product = new Product(divide);
-			divide.getExpressions().add(product);
-			
-			IntegerToFloat integerToFloat = new IntegerToFloat(product);
-			product.getExpressions().add(integerToFloat);
-			
-			Variable variable = new Variable(integerToFloat);
-			integerToFloat.getExpressions().add(variable);
-			variable.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
-			
-			Variable maxScoreVariable = new Variable(product);
-			product.getExpressions().add(maxScoreVariable);
-			maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
-		
-			BaseValue numOfCorrectAnswersValue = new BaseValue(divide);
-			divide.getExpressions().add(numOfCorrectAnswersValue);
-			numOfCorrectAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
-			numOfCorrectAnswersValue.setSingleValue(new IntegerValue(numOfIncorrectAnswers));
+		if(numOfIncorrectAnswers == 0) {
+			createNPSCorrectBlock(setOutcomeValue, numOfCorrectAnswers);
+		} else {
+			Subtract subtract = new Subtract(setOutcomeValue);
+			setOutcomeValue.getExpressions().add(subtract);
+			// correct
+			createNPSCorrectBlock(subtract, numOfCorrectAnswers);
+			// incorrect
+			createNPSIncorrectBlock(subtract, numOfIncorrectAnswers);
 		}
 
 		return setOutcomeValue;
+	}
+	
+	private static void createNPSCorrectBlock(ExpressionParent parent, int numOfCorrectAnswers) {
+		Divide divide = new Divide(parent);
+		parent.getExpressions().add(divide);
+		
+		Product product = new Product(divide);
+		divide.getExpressions().add(product);
+		
+		IntegerToFloat integerToFloat = new IntegerToFloat(product);
+		product.getExpressions().add(integerToFloat);
+		
+		Variable variable = new Variable(integerToFloat);
+		integerToFloat.getExpressions().add(variable);
+		variable.setIdentifier(QTI21Constants.NPS_NUMCORRECT_CLX_IDENTIFIER);
+		
+		Variable maxScoreVariable = new Variable(product);
+		product.getExpressions().add(maxScoreVariable);
+		maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+		
+		BaseValue numOfCorrectAnswersValue = new BaseValue(divide);
+		divide.getExpressions().add(numOfCorrectAnswersValue);
+		numOfCorrectAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		numOfCorrectAnswersValue.setSingleValue(new IntegerValue(numOfCorrectAnswers));
+	}
+		
+	public static void createNPSIncorrectBlock(ExpressionParent parent, int numOfIncorrectAnswers) {
+		Divide divide = new Divide(parent);
+		parent.getExpressions().add(divide);
+	
+		Product product = new Product(divide);
+		divide.getExpressions().add(product);
+		
+		IntegerToFloat integerToFloat = new IntegerToFloat(product);
+		product.getExpressions().add(integerToFloat);
+		
+		Variable variable = new Variable(integerToFloat);
+		integerToFloat.getExpressions().add(variable);
+		variable.setIdentifier(QTI21Constants.NPS_NUMINCORRECT_CLX_IDENTIFIER);
+		
+		Variable maxScoreVariable = new Variable(product);
+		product.getExpressions().add(maxScoreVariable);
+		maxScoreVariable.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+	
+		BaseValue numOfCorrectAnswersValue = new BaseValue(divide);
+		divide.getExpressions().add(numOfCorrectAnswersValue);
+		numOfCorrectAnswersValue.setBaseTypeAttrValue(BaseType.INTEGER);
+		numOfCorrectAnswersValue.setSingleValue(new IntegerValue(numOfIncorrectAnswers));
 	}
 	
 	public static SetOutcomeValue createNPSSetOutcomeValueForFIB(ResponseProcessing responseProcessing, int numOfAnswers) {
@@ -1378,7 +1387,7 @@ public class AssessmentItemFactory {
 	    </responseIf>
 	  </responseCondition>
 	*/
-	public static void createNPSResponseCondition(ResponseCondition rule, Identifier responseIdentifier, Identifier choiceIdentifier, boolean correct) {
+	private static void createNPSResponseCondition(ResponseCondition rule, Identifier responseIdentifier, Identifier choiceIdentifier, boolean correct) {
 		ResponseIf responseIf = new ResponseIf(rule);
 		rule.setResponseIf(responseIf);
 		
