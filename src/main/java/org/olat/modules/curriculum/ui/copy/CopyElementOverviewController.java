@@ -314,7 +314,7 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	}
 
 	@Override
-	protected void formFinish(UserRequest ureq) {
+	protected void formNext(UserRequest ureq) {
 		List<CopyElementRow> rows = tableModel.getObjects();
 		List<CopyElementSetting> elementsToCopy = rows.stream().map(row -> {
 			Date begin = row.getBeginDateEl().getDate();
@@ -325,7 +325,7 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		}).toList();
 		
 		context.setCurriculumElementsToCopy(elementsToCopy);
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
 	@Override

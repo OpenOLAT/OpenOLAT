@@ -35,28 +35,35 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CopyElement2OffersStep extends BasicStep {
+public class CopyElement2OverviewStep extends BasicStep {
 
 	private final CopyElementContext context;
 	
-	public CopyElement2OffersStep(UserRequest ureq, CopyElementContext context) {
+	public CopyElement2OverviewStep(UserRequest ureq, CopyElementContext context) {
 		super(ureq);
 		this.context = context;
 		
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.duplicate.offers", null);
-
-		setNextStep(new CopyElement3OverviewStep(ureq, context));
+		setI18nTitleAndDescr("wizard.duplicate.overview", null);
+		
+		if(context.getCurriculumElement().getParent() == null && context.hasOffersAndAccessInfos()) {
+			setNextStep(new CopyElement3OffersStep(ureq, context));
+		} else {
+			setNextStep(NOSTEP);
+		}
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_NEXT;
+		if(context.getCurriculumElement().getParent() == null && context.hasOffersAndAccessInfos()) {
+			return PrevNextFinishConfig.BACK_NEXT;
+		}
+		return PrevNextFinishConfig.BACK_FINISH;
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new CopyElementOffersController(ureq, wControl, form, runContext, context);
+		return new CopyElementOverviewController(ureq, wControl, form, runContext, context);
 	}
 }

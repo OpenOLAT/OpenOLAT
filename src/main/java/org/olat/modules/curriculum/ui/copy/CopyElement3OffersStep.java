@@ -35,16 +35,16 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CopyElement3OverviewStep extends BasicStep {
+public class CopyElement3OffersStep extends BasicStep {
 
 	private final CopyElementContext context;
 	
-	public CopyElement3OverviewStep(UserRequest ureq, CopyElementContext context) {
+	public CopyElement3OffersStep(UserRequest ureq, CopyElementContext context) {
 		super(ureq);
 		this.context = context;
 		
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.duplicate.overview", null);
+		setI18nTitleAndDescr("wizard.duplicate.offers", null);
 
 		setNextStep(NOSTEP);
 	}
@@ -57,6 +57,6 @@ public class CopyElement3OverviewStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new CopyElementOverviewController(ureq, wControl, form, runContext, context);
+		return new CopyElementOffersController(ureq, wControl, form, runContext, context);
 	}
 }

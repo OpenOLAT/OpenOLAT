@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -34,6 +36,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -50,6 +53,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -326,6 +330,132 @@ public class CurriculumServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void copyCurriculumElementWithMemberships() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-30-doer");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-30-owner");
+		Identity elementOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-30-cowner");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-30-coach");
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-30-mcoach");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-30", "Curriculum 30", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-copy-1-1", "Element to copy 1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element111 = curriculumService.createCurriculumElement("Element-to-copy-1-1-1", "Element to copy 1.1.1",
+				CurriculumElementStatus.active, null, null, element11, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		Assert.assertNotNull(element111);
+		
+		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
+		changes.add(CurriculumElementMembershipChange.valueOf(owner, element1, true, CurriculumRoles.owner, GroupMembershipStatus.active));
+		changes.add(CurriculumElementMembershipChange.valueOf(elementOwner, element1, true, CurriculumRoles.curriculumelementowner, GroupMembershipStatus.active));
+		changes.add(CurriculumElementMembershipChange.valueOf(coach, element1, true, CurriculumRoles.coach, GroupMembershipStatus.active));
+		changes.add(CurriculumElementMembershipChange.valueOf(masterCoach, element1, true, CurriculumRoles.mastercoach, GroupMembershipStatus.active));
+		curriculumService.updateCurriculumElementMemberships(actor, Roles.administratorRoles(), changes, new MailPackage(false));
+		dbInstance.commit();
+		
+		Date begin = DateUtils.getStartOfDay(new Date());
+		Date end = DateUtils.getEndOfDay(new Date());
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyOwnersMemberships(true);
+		copySettings.setCopyCoachesMemberships(true);
+		copySettings.setCopyElementSettings(List.of(new CopyElementSetting(element1, null, null, begin, end)));
+		
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
+		dbInstance.commit();
+		
+		Assert.assertEquals(begin, copiedElement.getBeginDate());
+		Assert.assertEquals(end, copiedElement.getEndDate());
+		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
+		
+		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
+		Assertions.assertThat(copiedDescendantsElements)
+			.hasSize(2)
+			.map(CurriculumElement::getDisplayName)
+			.containsAnyOf("Element to copy 1.1.1 (Copy)");
+		
+		List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum);
+		Assertions.assertThat(implementations)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(element1, copiedElement);
+
+		// Check members
+		List<Identity> copiedRootOwners = curriculumService.getMembersIdentity(element1, CurriculumRoles.owner);
+		Assertions.assertThat(copiedRootOwners)
+			.hasSize(1)
+			.containsExactly(owner);
+		
+		List<Identity> copiedOwners = curriculumService.getMembersIdentity(element111, CurriculumRoles.owner);
+		Assertions.assertThat(copiedOwners)
+			.hasSize(1)
+			.containsExactly(owner);
+		
+		List<Identity> copiedRootCoaches = curriculumService.getMembersIdentity(element1, CurriculumRoles.coach);
+		Assertions.assertThat(copiedRootCoaches)
+			.hasSize(1)
+			.containsExactly(coach);
+		
+		List<Identity> copiedCoaches = curriculumService.getMembersIdentity(element111, CurriculumRoles.coach);
+		Assertions.assertThat(copiedCoaches)
+			.hasSize(1)
+			.containsExactly(coach);
+	}
+	
+	@Test
+	public void copyCurriculumElementWithSingleMemberships() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-31-doer");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-31-owner");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-31", "Curriculum 31", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-copy-1-1", "Element to copy 1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
+		changes.add(CurriculumElementMembershipChange.valueOf(owner, element1, false, CurriculumRoles.owner, GroupMembershipStatus.active));
+		curriculumService.updateCurriculumElementMemberships(actor, Roles.administratorRoles(), changes, new MailPackage(false));
+		dbInstance.commit();
+		
+		Date begin = DateUtils.getStartOfDay(new Date());
+		Date end = DateUtils.getEndOfDay(new Date());
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyOwnersMemberships(true);
+		copySettings.setCopyCoachesMemberships(true);
+		copySettings.setCopyElementSettings(List.of(new CopyElementSetting(element1, null, null, begin, end)));
+		
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
+		dbInstance.commit();
+		
+		Assert.assertEquals(begin, copiedElement.getBeginDate());
+		Assert.assertEquals(end, copiedElement.getEndDate());
+		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
+		
+		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
+		Assertions.assertThat(copiedDescendantsElements)
+			.hasSize(1)
+			.map(CurriculumElement::getDisplayName)
+			.containsAnyOf("Element to copy 1.1 (Copy)");
+
+		// Check members
+		List<Identity> copiedRootOwners = curriculumService.getMembersIdentity(element1, CurriculumRoles.owner);
+		Assertions.assertThat(copiedRootOwners)
+			.hasSize(1)
+			.containsExactly(owner);
+		
+		List<Identity> copiedOwners = curriculumService.getMembersIdentity(element11, CurriculumRoles.coach);
+		Assertions.assertThat(copiedOwners)
+			.isEmpty();
+	}
+	
+	@Test
 	public void copyCurriculumElementWithOffer() {
 		// Create curriculum
 		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-3");
@@ -379,6 +509,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	public void copyCurriculumElementAndLectureBlock() {
 		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-25");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-25-participant");
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-25-teacher-1");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-25-teacher-2");
 		
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-25", "Curriculum 25", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("ORIGINAL-1", "Element to copy 1",
@@ -394,11 +526,16 @@ public class CurriculumServiceTest extends OlatTestCase {
 		lectureBlock = lectureService.save(lectureBlock, null);
 		dbInstance.commit();
 		
+		lectureService.addTeacher(lectureBlock, teacher1);
+		lectureService.addTeacher(lectureBlock, teacher2);
+		dbInstance.commit();
+		
 		CurriculumCopySettings copySettings = new CurriculumCopySettings();
 		copySettings.setBaseIdentifier(element.getIdentifier());
 		copySettings.setIdentifier("COPY-1");
 		copySettings.setShiftDateByDays(2);
 		copySettings.setCopyStandaloneEvents(true);
+		copySettings.setCopyCoachesMemberships(true);
 		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
 		dbInstance.commit();
 		
@@ -416,6 +553,12 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertEquals("Hello curriculum 25", copiedLectureBlock.getTitle());
 		Assert.assertEquals("COPY-1-EV-1", copiedLectureBlock.getExternalRef());
 		Assert.assertNull(copiedLectureBlock.getExternalId());
+		
+		// Check teachers
+		List<Identity> copiedTeachers = lectureService.getTeachers(copiedLectureBlock);
+		Assertions.assertThat(copiedTeachers)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(teacher1, teacher2);
 		
 		// Check participant
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
@@ -623,7 +766,6 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 	}
 	
-	
 	@Test
 	public void deleteCurriculumInQualityWithSubElement() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);
@@ -663,6 +805,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(deletedCurriculum);
 		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 	}
+	
+	
 	
 	@Test
 	public void deleteSoftlyCurriculumElementAndCloseEntry() {

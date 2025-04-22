@@ -156,7 +156,7 @@ public class ShiftDatesController extends FormBasicController {
 			}
 		} else {
 			Date date = dateShiftEl.getDate();
-			if(date != null && this.earliestDate != null) {
+			if(date != null && earliestDate != null) {
 				numOfDays = DateUtils.countDays(earliestDate, date);
 			}
 		}

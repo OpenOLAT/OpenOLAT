@@ -152,6 +152,14 @@ public class CopyElementContext {
 		copySettings.setCopyStandaloneEvents(standaloneEvents);
 	}
 	
+	public void setCopyOwnersMemberships(boolean copy) {
+		copySettings.setCopyOwnersMemberships(copy);
+	}
+
+	public void setCopyCoachesMemberships(boolean copy) {
+		copySettings.setCopyCoachesMemberships(copy);
+	}
+	
 	public CopyOfferSetting getOfferToCopy(Offer offer) {
 		return copySettings.getCopyOfferSetting(offer);
 	}

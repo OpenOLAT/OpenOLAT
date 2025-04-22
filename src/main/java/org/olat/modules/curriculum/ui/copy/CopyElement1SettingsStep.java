@@ -45,12 +45,7 @@ public class CopyElement1SettingsStep extends BasicStep {
 
 		setTranslator(Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("wizard.duplicate.settings", null);
-		
-		if(context.getCurriculumElement().getParent() == null && context.hasOffersAndAccessInfos()) {
-			setNextStep(new CopyElement2OffersStep(ureq, context));
-		} else {
-			setNextStep(new CopyElement3OverviewStep(ureq, context));
-		}
+		setNextStep(new CopyElement2OverviewStep(ureq, context));
 	}
 	
 	@Override

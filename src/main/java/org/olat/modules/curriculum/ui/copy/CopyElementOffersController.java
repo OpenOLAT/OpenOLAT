@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
@@ -99,6 +100,8 @@ public class CopyElementOffersController extends StepFormBasicController {
 		tableModel = new CopyElementOffersDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 	}
 	
 	private void loadModel() {
@@ -112,6 +115,7 @@ public class CopyElementOffersController extends StepFormBasicController {
 				.toList();
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		tableEl.selectAll();
 	}
 	
 	private CopyOfferRow forgeRow(OfferAndAccessCopy offerAndInfos, List<Organisation> organisations) {
@@ -121,9 +125,13 @@ public class CopyElementOffersController extends StepFormBasicController {
 		
 		CopyOfferRow row = new CopyOfferRow(offerAndInfos, organisations, type);
 		
+		
 		Date validFrom = link.getValidFrom();
 		Date validTo = link.getValidTo();
 		if(validFrom != null || validTo != null) {
+			validFrom = context.shiftDate(validFrom);
+			validTo = context.shiftDate(validTo);
+			
 			DateChooser validFromToEl = uifactory.addDateChooser("valid_" + (++counter), null, validFrom, flc);
 			validFromToEl.setFormLayout("tablecell");
 			validFromToEl.setSecondDate(true);
@@ -136,10 +144,11 @@ public class CopyElementOffersController extends StepFormBasicController {
 	}
 	
 	@Override
-	protected void formNext(UserRequest ureq) {
-		List<CopyOfferRow> rows = tableModel.getObjects();
+	protected void formFinish(UserRequest ureq) {
+		Set<Integer> selectedRows = tableEl.getMultiSelectedIndex();
 		List<CopyOfferSetting> settings = new ArrayList<>();
-		for(CopyOfferRow row:rows) {
+		for(Integer selectedRow:selectedRows) {
+			CopyOfferRow row = tableModel.getObject(selectedRow.intValue());
 			DateChooser dateChooser = row.getValidFromToEl();
 			OfferAndAccessCopy offerAndInfos = row.getOfferAndInfos();
 			if(dateChooser == null) {
@@ -152,7 +161,7 @@ public class CopyElementOffersController extends StepFormBasicController {
 			settings.add(new CopyOfferSetting(row.getOffer(), offerAndInfos.getValidFrom(), offerAndInfos.getValidTo()));
 		}
 		context.setOfferSettings(settings);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 	
 	@Override
