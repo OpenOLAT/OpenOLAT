@@ -102,7 +102,8 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditCurriculum(Curriculum curriculum) {
-			return admin || ownedCurriculumKeys.contains(curriculum.getKey());
+			return admin
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 		
 		@Override
@@ -117,7 +118,8 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canNewCurriculumElement(Curriculum curriculum) {
-			return admin || ownedCurriculumKeys.contains(curriculum.getKey());
+			return admin
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 
 		@Override
@@ -199,7 +201,8 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canCurriculumReports(Curriculum curriculum) {
-			return ownedCurriculumKeys.contains(curriculum.getKey());
+			return admin
+					|| (curriculum != null && ownedCurriculumKeys.contains(curriculum.getKey()));
 		}
 	}
 }
