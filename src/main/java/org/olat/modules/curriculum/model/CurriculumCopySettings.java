@@ -52,7 +52,10 @@ public class CurriculumCopySettings {
 	private long shiftDateByDays = 0;
 	
 	private CopyResources copyResources;
-
+	
+	private boolean copyOwnersMemberships;
+	private boolean copyCoachesMemberships;
+	
 	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
 	
@@ -112,6 +115,22 @@ public class CurriculumCopySettings {
 
 	public void setCopyStandaloneEvents(boolean copy) {
 		this.copyStandaloneEvents = copy;
+	}
+
+	public boolean isCopyOwnersMemberships() {
+		return copyOwnersMemberships;
+	}
+
+	public void setCopyOwnersMemberships(boolean copyOwnersMemberships) {
+		this.copyOwnersMemberships = copyOwnersMemberships;
+	}
+
+	public boolean isCopyCoachesMemberships() {
+		return copyCoachesMemberships;
+	}
+
+	public void setCopyCoachesMemberships(boolean copyCoachesMemberships) {
+		this.copyCoachesMemberships = copyCoachesMemberships;
 	}
 
 	public boolean isCopyOffers() {
@@ -195,6 +214,12 @@ public class CurriculumCopySettings {
 			}
 			return def;
 		}
+	}
+	
+
+	public enum CopyMemberships {
+		dont,
+		include
 	}
 	
 	public record CopyOfferSetting(Offer originalOffer, Date validFrom, Date validTo) {

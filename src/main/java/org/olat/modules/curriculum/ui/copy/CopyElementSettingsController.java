@@ -34,6 +34,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyMemberships;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
@@ -50,6 +51,9 @@ public class CopyElementSettingsController extends StepFormBasicController {
 	private TextElement identifierEl;
 	private SingleSelection courseEventsEl;
 	private SingleSelection standaloneEventsEl;
+	/* Coaches and master coaches */
+	private SingleSelection membershipCoachEl;
+	private SingleSelection membershipOwnerEl;
 	
 	private final CopyElementContext context;
 	
@@ -97,7 +101,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		eventsPK.add(SelectionValues.entry(CopyResources.relation.name(),
 				translate("copy.resources.relation"), translate("copy.resources.relation.desc"), "o_icon o_icon_recycle", null, true));
 		eventsPK.add(SelectionValues.entry(CopyResources.dont.name(),
-				translate("copy.events.none"), translate("copy.events.none.desc"), "o_icon o_icon_ban", null, true));
+				translate("copy.resources.none"), translate("copy.resources.none.desc"), "o_icon o_icon_ban", null, true));
 		courseEventsEl = uifactory.addCardSingleSelectHorizontal("copy.courses.with.events", formLayout,
 				eventsPK.keys(), eventsPK.values(), eventsPK.descriptions(), eventsPK.icons());
 		courseEventsEl.setElementCssClass("o_curriculum_copy_options");
@@ -111,6 +115,24 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		standaloneEventsEl = uifactory.addCardSingleSelectHorizontal("copy.standalone.events", "copy.standalone.events", formLayout,
 				standalonePK.keys(), standalonePK.values(), standalonePK.descriptions(), standalonePK.icons());
 		standaloneEventsEl.select(CopyResources.resource.name(), true);
+		
+		SelectionValues coachesPK = new SelectionValues();
+		coachesPK.add(SelectionValues.entry(CopyMemberships.include.name(),
+				translate("copy.membership.coaches.copy"), translate("copy.membership.coaches.copy.desc"), "o_icon o_icon_copy", null, true));
+		coachesPK.add(SelectionValues.entry(CopyMemberships.dont.name(),
+				translate("copy.membership.coaches.none"), translate("copy.membership.coaches.none.desc"), "o_icon o_icon_ban", null, true));
+		membershipCoachEl = uifactory.addCardSingleSelectHorizontal("copy.membership.coaches", "copy.membership.coaches", formLayout,
+				coachesPK.keys(), coachesPK.values(), coachesPK.descriptions(), coachesPK.icons());
+		membershipCoachEl.select(CopyMemberships.include.name(), true);
+		
+		SelectionValues ownersPK = new SelectionValues();
+		ownersPK.add(SelectionValues.entry(CopyMemberships.include.name(),
+				translate("copy.membership.owners.copy"), translate("copy.membership.owners.copy.desc"), "o_icon o_icon_copy", null, true));
+		ownersPK.add(SelectionValues.entry(CopyMemberships.dont.name(),
+				translate("copy.membership.owners.none"), translate("copy.membership.owners.none.desc"), "o_icon o_icon_ban", null, true));
+		membershipOwnerEl = uifactory.addCardSingleSelectHorizontal("copy.membership.owners", "copy.membership.owners", formLayout,
+				ownersPK.keys(), ownersPK.values(), ownersPK.descriptions(), ownersPK.icons());
+		membershipOwnerEl.select(CopyMemberships.include.name(), true);
 	}
 
 	@Override
@@ -120,18 +142,22 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		allOk &= CurriculumHelper.validateTextElement(displayNameEl, true, 110);
 		allOk &= CurriculumHelper.validateTextElement(identifierEl, true, 64);
 		
-		courseEventsEl.clearError();
-		if(!courseEventsEl.isOneSelected()) {
-			courseEventsEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
+		allOk &= validateFormLogic(courseEventsEl);
+		allOk &= validateFormLogic(standaloneEventsEl);
+		allOk &= validateFormLogic(membershipCoachEl);
+		allOk &= validateFormLogic(membershipOwnerEl);
 		
-		standaloneEventsEl.clearError();
-		if(!standaloneEventsEl.isOneSelected()) {
-			standaloneEventsEl.setErrorKey("form.legende.mandatory");
+		return allOk;
+	}
+
+	private boolean validateFormLogic(SingleSelection el) {
+		boolean allOk = true;
+
+		el.clearError();
+		if(!el.isOneSelected()) {
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
-
 		return allOk;
 	}
 
@@ -141,6 +167,8 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		context.setIdentifier(identifierEl.getValue());
 		context.setCoursesEventsCopySetting(CopyResources.valueOf(courseEventsEl.getSelectedKey()));
 		context.setStandaloneEventsCopySetting(CopyResources.resource.name().equals(standaloneEventsEl.getSelectedKey()));
+		context.setCopyCoachesMemberships(CopyMemberships.include.name().equals(membershipCoachEl.getSelectedKey()));
+		context.setCopyOwnersMemberships(CopyMemberships.include.name().equals(membershipOwnerEl.getSelectedKey()));
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

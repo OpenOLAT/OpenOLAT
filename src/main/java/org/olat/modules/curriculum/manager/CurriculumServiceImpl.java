@@ -531,6 +531,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		copyCurriculumElemenFiles(elementToClone, clone, doer);
+		if(settings.isCopyOwnersMemberships()) {
+			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.owner, doer, depth == 0);
+			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.curriculumelementowner, doer, depth == 0);
+		}
+		if(settings.isCopyCoachesMemberships()) {
+			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.coach, doer, depth == 0);
+			copyCurriculumElementOwners(elementToClone, clone, CurriculumRoles.mastercoach, doer, depth == 0);
+		}
 		
 		boolean hasTemplates = false;
 		if(settings.getCopyResources() == CopyResources.relation
@@ -566,6 +574,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
 						lectureBlocksCloned.add(blockToCopy.getKey());
 						lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
+						if(settings.isCopyCoachesMemberships()) {
+							copyLectureBlockTeachers(blockToCopy, copiedBlock);
+						}
 					}
 				}
 			} else {
@@ -585,8 +596,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 								Date start = settings.shiftDate(blockToCopy.getStartDate());
 								Date end = settings.shiftDate(blockToCopy.getEndDate());
 								String blockExternalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-								lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), blockExternalRef, start, end, entryCopy, clone);
+								LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), blockExternalRef, start, end, entryCopy, clone);
 								lectureBlocksCloned.add(blockToCopy.getKey());
+								if(settings.isCopyCoachesMemberships()) {
+									copyLectureBlockTeachers(blockToCopy, copiedBlock);
+								}
 							}
 						}
 						
@@ -623,6 +637,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
 					lectureBlocksCloned.add(blockToCopy.getKey());
 					lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
+					if(settings.isCopyCoachesMemberships()) {
+						copyLectureBlockTeachers(blockToCopy, copiedBlock);
+					}
 				}
 			}
 		}
@@ -639,6 +656,27 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth);
 		}
 		return clone;
+	}
+	
+	private void copyLectureBlockTeachers(LectureBlock blockToCopy, LectureBlock copiedBlock) {
+		if(copiedBlock instanceof LectureBlockImpl blockImpl) {
+			List<Identity> teachers = lectureBlockDao.getTeachers(List.of(blockToCopy));
+			Group teacherGroup = blockImpl.getTeacherGroup();
+			
+			for(Identity teacher:teachers) {
+				if(!groupDao.hasRole(teacherGroup, teacher, "teacher")) {
+					groupDao.addMembershipOneWay(teacherGroup, teacher, "teacher");
+				}
+			}
+		}
+	}
+	
+	private void copyCurriculumElementOwners(CurriculumElement elementToClone, CurriculumElement clone, CurriculumRoles role, Identity actor, boolean root) {
+		List<GroupMembership> memberships = groupDao.getMemberships(elementToClone.getGroup(), role.name(), true);
+		GroupMembershipInheritance inheritanceMode = root ? GroupMembershipInheritance.root : GroupMembershipInheritance.inherited;
+		for(GroupMembership membership:memberships) {
+			addMember(clone, membership.getIdentity(), role, inheritanceMode, actor, null);
+		}
 	}
 	
 	private void copyCurriculumElemenFiles(CurriculumElement elementToClone, CurriculumElement clone, Identity doer) {
