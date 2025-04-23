@@ -142,12 +142,11 @@ public class RepositoryAccessPage {
 		
 		// select open
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='open.access']");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		// save
 		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
-		OOGraphene.waitElement(saveBy, browser);
+		OOGraphene.waitElementRefreshed(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
@@ -164,12 +163,11 @@ public class RepositoryAccessPage {
 		
 		// select open
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='free.method']");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		// save
 		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
-		OOGraphene.waitElement(saveBy, browser);
+		OOGraphene.waitElementRefreshed(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
@@ -186,12 +184,11 @@ public class RepositoryAccessPage {
 		
 		// select open
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='token.method']");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		// save
 		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
-		OOGraphene.waitElement(saveBy, browser);
+		OOGraphene.waitElementRefreshed(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup

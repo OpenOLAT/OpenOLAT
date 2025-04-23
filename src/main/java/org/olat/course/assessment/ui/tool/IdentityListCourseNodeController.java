@@ -880,8 +880,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 
 		usersTableModel.setObjects(rows);
-		tableEl.reset();
-		tableEl.reloadData();
+		tableEl.reset(true, true, true);
 	}
 
 	private void loadPortfolioStatusData(AssessedIdentityElementRow row, Identity assessedIdentity, String subIdent) {

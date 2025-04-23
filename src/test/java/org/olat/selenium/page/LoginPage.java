@@ -124,16 +124,14 @@ public class LoginPage {
 	 */
 	public void asGuest() {
 		By guestLinkBy = By.xpath("//a[i[contains(@class,'o_icon_provider_guest')]]");
-		OOGraphene.waitElement(guestLinkBy, browser);
-		browser.findElement(guestLinkBy).click();
+		OOGraphene.waitElement(guestLinkBy, browser).click();
 		By footerUserDivBy = By.id("o_footer_user");
 		OOGraphene.waitElement(footerUserDivBy, browser);
 	}
 	
 	public LoginPage startLogin() {
 		By startLoginBy = By.cssSelector(".o_sel_auth_olat a.o_sel_auth_olat");
-		OOGraphene.waitElement(startLoginBy, browser);
-		browser.findElement(startLoginBy).click();
+		OOGraphene.waitElement(startLoginBy, browser).click();
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page
 		return this;
@@ -162,14 +160,12 @@ public class LoginPage {
 	public LoginPage loginAs(String username, String password, By landingPointBy) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		browser.findElement(usernameId).sendKeys(username);
+		OOGraphene.waitElement(usernameId, browser).sendKeys(username);
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 		
 		By passwordId = By.id("o_fiooolat_login_pass");
-		OOGraphene.waitElement(passwordId, browser);
-		browser.findElement(passwordId).sendKeys(password);
+		OOGraphene.waitElement(passwordId, browser).sendKeys(password);
 		browser.findElement(loginBy).click();
 
 		return postSuccessfulLogin(landingPointBy);
