@@ -225,8 +225,12 @@ public class OOGraphene {
 	 * @param element
 	 * @param browser
 	 */
-	public static void waitElement(By element, WebDriver browser) {
-		waitElement(element, timeout, polling, browser);
+	public static WebElement waitElement(By element, WebDriver browser) {
+		return waitElement(element, timeout, polling, browser);
+	}
+	
+	public static WebElement waitElementRefreshed(By element, WebDriver browser) {
+		return waitElementRefreshed(element, timeout, polling, browser);
 	}
 	
 	public static void waitElementClickable(By element, WebDriver browser) {
@@ -266,8 +270,8 @@ public class OOGraphene {
 	 * @param timeoutInSeconds The timeout in seconds
 	 * @param browser The web driver
 	 */
-	public static void waitElement(By element, long timeoutInSeconds, WebDriver browser) {
-		waitElement(element, Duration.ofSeconds(timeoutInSeconds), polling, browser);
+	public static WebElement waitElement(By element, long timeoutInSeconds, WebDriver browser) {
+		return waitElement(element, Duration.ofSeconds(timeoutInSeconds), polling, browser);
 	}
 	
 	/**
@@ -278,8 +282,8 @@ public class OOGraphene {
 	 * @param timeoutInSeconds The timeout in seconds
 	 * @param browser The web driver
 	 */
-	public static void waitElementSlowly(By element, long timeoutInSeconds, WebDriver browser) {
-		waitElement(element, Duration.ofSeconds(timeoutInSeconds), poolingSlower, browser);
+	public static WebElement waitElementSlowly(By element, long timeoutInSeconds, WebDriver browser) {
+		return waitElement(element, Duration.ofSeconds(timeoutInSeconds), poolingSlower, browser);
 	}
 	
 	/**
@@ -314,10 +318,16 @@ public class OOGraphene {
 	 * @param pollingDuration The polling duration
 	 * @param browser The web driver
 	 */
-	public static void waitElement(By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
-		new WebDriverWait(browser, driverTimeout)
+	public static WebElement waitElement(By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
+		return new WebDriverWait(browser, driverTimeout)
 			.withTimeout(timeoutDuration).pollingEvery(pollingDuration)
 			.until(ExpectedConditions.visibilityOfElementLocated(element));
+	}
+	
+	public static WebElement waitElementRefreshed(By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
+		return new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeoutDuration).pollingEvery(pollingDuration)
+			.until(ExpectedConditions.refreshed(ExpectedConditions.visibilityOfElementLocated(element)));
 	}
 	
 	/**
@@ -365,8 +375,7 @@ public class OOGraphene {
 	}
 	
 	public static void nextStep(WebDriver browser) {
-		OOGraphene.waitElement(wizardNextBy, browser);
-		browser.findElement(wizardNextBy).click();
+		OOGraphene.waitElement(wizardNextBy, browser).click();
 		waitBusy(browser);
 	}
 	
@@ -376,8 +385,7 @@ public class OOGraphene {
 	}
 	
 	public static void finishStep(WebDriver browser, boolean closeBlueMessage) {
-		OOGraphene.waitElement(wizardFinishBy, browser);
-		browser.findElement(wizardFinishBy).click();
+		OOGraphene.waitElement(wizardFinishBy, browser).click();
 		if(closeBlueMessage) {
 			closeBlueMessageWindow(browser);
 		}
@@ -395,10 +403,9 @@ public class OOGraphene {
 	 * @param browser The web driver
 	 */
 	public static void clearAndSendKeys(By by, String text, WebDriver browser) {
-		OOGraphene.waitElement(by, browser);
 		try {
-			browser.findElement(by).clear();
-			browser.findElement(by).sendKeys(text);
+			waitElementRefreshed(by, browser).clear();
+			waitElementRefreshed(by, browser).sendKeys(text);
 		} catch (StaleElementReferenceException e) {
 			log.warn("", e);
 			waitingALittleBit();
@@ -822,8 +829,7 @@ public class OOGraphene {
 			waitElement(datePickerBy, browser);
 			
 			By dayBy = By.xpath("//div[contains(@class,'datepicker-dropdown')][contains(@class,'active')]//div[@class='days']//span[normalize-space(text())='" + day + "'][not(contains(@class,'prev'))]");
-			waitElement(dayBy, browser);
-			browser.findElement(dayBy).click();
+			waitElement(dayBy, browser).click();
 			
 			waitElementDisappears(datePickerBy, 5, browser);
 		} catch (Exception e) {
@@ -834,8 +840,7 @@ public class OOGraphene {
 	
 	public static final void flexiTableSelectAll(WebDriver browser) {
 		By selectAll = By.xpath("//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
-		waitElement(selectAll, browser);
-		browser.findElement(selectAll).click();
+		waitElement(selectAll, browser).click();
 		waitBusy(browser);
 		By selectedAll = By.xpath("//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		waitElement(selectedAll, browser);

@@ -142,13 +142,11 @@ public class RepositoryAccessPage {
 		
 		// select open
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='open.access']");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		// save
 		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary.o_button_dirty");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElementRefreshed(saveBy, browser).click();
 		
 		// wait second popup
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_open_form");
@@ -164,12 +162,11 @@ public class RepositoryAccessPage {
 		
 		// select open
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='free.method']");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		// save
 		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElementRefreshed(saveBy, browser).click();
 		
 		// wait second popup
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_free_form");
@@ -185,12 +182,11 @@ public class RepositoryAccessPage {
 		
 		// select open
 		By openBy = By.xpath("//div[@class='modal-content']//input[@value='token.method']");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		// save
 		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElementRefreshed(saveBy, browser).click();
 		
 		// wait second popup
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_token_form");
