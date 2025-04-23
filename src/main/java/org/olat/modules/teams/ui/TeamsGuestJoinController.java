@@ -201,7 +201,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 			}
 			return externalUsersAllowed;
 		} else if(meeting.getBusinessGroup() != null) {
-			return businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
+			return externalUsersAllowed || businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
 		}
 		return false;
 	}

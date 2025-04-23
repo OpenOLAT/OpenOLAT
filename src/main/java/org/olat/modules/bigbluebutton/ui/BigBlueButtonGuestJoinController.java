@@ -275,8 +275,8 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 			}
 			return new MeetinSecurity(externalUsersAllowed, false, false);
 		} else if(meeting.getBusinessGroup() != null) {
-			boolean member = businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
-			return new MeetinSecurity(member, false, false);
+			boolean allowed = externalUsersAllowed || businessGroupService.isIdentityInBusinessGroup(getIdentity(), meeting.getBusinessGroup());
+			return new MeetinSecurity(allowed, false, false);
 		}
 		return new MeetinSecurity(false, false, false);
 	}
