@@ -387,6 +387,27 @@ public class OOGraphene {
 	}
 	
 	/**
+	 * Utility method to clear and fill an input field. If the driver send a stale
+	 * element exception, the method will wait a little and try a second time.
+	 * 
+	 * @param by The selector
+	 * @param text The text to inject in the text field
+	 * @param browser The web driver
+	 */
+	public static void clearAndSendKeys(By by, String text, WebDriver browser) {
+		OOGraphene.waitElement(by, browser);
+		try {
+			browser.findElement(by).clear();
+			browser.findElement(by).sendKeys(text);
+		} catch (StaleElementReferenceException e) {
+			log.warn("", e);
+			waitingALittleBit();
+			browser.findElement(by).clear();
+			browser.findElement(by).sendKeys(text);
+		}
+	}
+	
+	/**
 	 * Verify the location of the button, scroll
 	 * if needed and click. There is no wait of
 	 * any sort. 
@@ -395,8 +416,7 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void click(By buttonBy, WebDriver browser) {
-		WebElement buttonEl = browser.findElement(buttonBy);
-		boolean move = buttonEl.getLocation().getY() > 681;
+		boolean move = getLocationY(buttonBy, browser) > 681;
 		if(move) {
 			scrollBottom(buttonBy, browser);
 		}
@@ -413,8 +433,7 @@ public class OOGraphene {
 	 * @param browser The driver
 	 */
 	public static void clickAndWait(By buttonBy, WebDriver browser) {
-		WebElement buttonEl = browser.findElement(buttonBy);
-		boolean move = buttonEl.getLocation().getY() > 669;
+		boolean move = getLocationY(buttonBy, browser) > 669;
 		if(move) {
 			scrollBottom(buttonBy, browser);
 			browser.findElement(buttonBy).click();
@@ -435,13 +454,31 @@ public class OOGraphene {
 	 */
 	public static void moveAndClick(By buttonBy, WebDriver browser) {
 		waitElementPresence(buttonBy, 5, browser);
-		WebElement buttonEl = browser.findElement(buttonBy);
-		boolean move = buttonEl.getLocation().getY() > 669;
+		boolean move = getLocationY(buttonBy, browser) > 669;
 		if(move) {
 			scrollBottom(buttonBy, browser);
 			waitElement(buttonBy, browser);
 		}
 		browser.findElement(buttonBy).click();
+	}
+	
+	/**
+	 * To prevent random stale element exception, try a second time.
+	 * 
+	 * @param by The selector to find the element
+	 * @param browser The web driver
+	 * @return The location Y
+	 */
+	private static int getLocationY(By by, WebDriver browser) {
+		int y = 0;
+		try {
+			y = browser.findElement(by).getLocation().getY();
+		} catch (StaleElementReferenceException e) {
+			log.warn("", e);
+			waitingALittleBit();
+			y = browser.findElement(by).getLocation().getY();
+		}
+		return y;
 	}
 	
 	/**
