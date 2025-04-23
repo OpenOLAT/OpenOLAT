@@ -48,6 +48,7 @@ public class TransientIdentity implements Identity, User {
 	private Date expirationDate;
 	
 	private Map<String, String> properties = new HashMap<>();
+	private String initialsCssClass;
 
 	@Override
 	public Date getCreationDate() {
@@ -188,7 +189,11 @@ public class TransientIdentity implements Identity, User {
 
 	@Override
 	public String getInitialsCssClass() {
-		return null;
+		return initialsCssClass;
+	}
+
+	public void setInitialsCssClass(String initialsCssClass) {
+		this.initialsCssClass = initialsCssClass;
 	}
 
 	@Override

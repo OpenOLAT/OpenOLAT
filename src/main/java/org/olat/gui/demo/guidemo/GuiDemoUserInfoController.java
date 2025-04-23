@@ -36,21 +36,28 @@ import org.olat.user.UserInfoProfileConfig;
  */
 public class GuiDemoUserInfoController extends UserInfoController {
 
+	private final int maxAttributes;
+	private int numAttributes = 0;
+
 	public GuiDemoUserInfoController(UserRequest ureq, WindowControl wControl,
-			UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
+			UserInfoProfileConfig profileConfig, PortraitUser portraitUser, int maxAttributes) {
 		super(ureq, wControl, profileConfig, portraitUser);
+		this.maxAttributes = maxAttributes;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initFormItems(FormLayoutContainer itemsCont, Controller listener, UserRequest ureq) {
 		super.initFormItems(itemsCont, listener, ureq);
-
-		uifactory.addStaticTextElement("user.info.hairs", translate("user.info.hairs.value"), itemsCont);
 		
-		uifactory.addStaticTextElement("user.info.season", translate("user.info.season.value"), itemsCont);
+		uifactory.addStaticTextElement("user.info.hairs", translate("user.info.hairs.value"), itemsCont);
+		if (maxAttributes <= ++numAttributes) return;
 		
 		uifactory.addTextElement("user.info.river", 100, "", itemsCont);
+		if (maxAttributes <= ++numAttributes) return;
+		
+		uifactory.addStaticTextElement("user.info.season", translate("user.info.season.value"), itemsCont);
+		if (maxAttributes <= ++numAttributes) return;
 		
 		SelectionValues values = new SelectionValues();
 		values.add(SelectionValues.entry("1", translate("select.1")));
@@ -62,5 +69,14 @@ public class GuiDemoUserInfoController extends UserInfoController {
 		values.add(SelectionValues.entry("7", translate("select.7")));
 		values.add(SelectionValues.entry("8", translate("select.8")));
 		uifactory.addDropdownSingleselect("user.info.planet", itemsCont, values.keys(), values.values());
+		if (maxAttributes <= ++numAttributes) return;
+		
+		uifactory.addStaticTextElement("user.info.about", translate("user.info.about.value"), itemsCont);
+		if (maxAttributes <= ++numAttributes) return;
+			
+		uifactory.addStaticTextElement("user.info.hobbies", translate("user.info.hobbies.value"), itemsCont);
+		if (maxAttributes <= ++numAttributes) return;
+			
+		uifactory.addStaticTextElement("user.info.status", translate("user.info.status.value"), itemsCont);
 	}
 }

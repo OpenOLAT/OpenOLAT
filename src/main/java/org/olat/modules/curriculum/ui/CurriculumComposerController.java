@@ -25,9 +25,11 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
@@ -243,7 +245,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		initButtons(formLayout, ureq);
 		initFormTable(formLayout, ureq);
-		initFilters();
+		initFilters(ureq);
 		initFiltersPresets();
 	}
 	
@@ -403,12 +405,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		return "cur-otherlist-v7";
 	}
 	
-	private void initFilters() {
+	private void initFilters(UserRequest ureq) {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		if(curriculum == null) {
-			CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
-			List<Curriculum> curriculums = curriculumService.getCurriculums(searchParams);
+			List<Curriculum> curriculums = loadCurriculumsForFilter(ureq);
 			if(!curriculums.isEmpty()) {
 				SelectionValues curriculumValues = new SelectionValues();
 				for(Curriculum cur:curriculums) {
@@ -462,6 +463,24 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		
 		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private List<Curriculum> loadCurriculumsForFilter(UserRequest ureq) {
+		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
+		managerParams.setCurriculumAdmin(getIdentity());
+		Set<Curriculum> curriculums = new HashSet<>(curriculumService.getCurriculums(managerParams));
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isPrincipal()) {
+			CurriculumSearchParameters principalParams = new CurriculumSearchParameters();
+			principalParams.setCurriculumPrincipal(getIdentity());
+			curriculums.addAll(curriculumService.getCurriculums(principalParams));
+		}
+		
+		CurriculumSearchParameters elementOwnerParams = new CurriculumSearchParameters();
+		elementOwnerParams.setElementOwner(getIdentity());
+		curriculums.addAll(curriculumService.getCurriculums(elementOwnerParams));
+		return List.copyOf(curriculums);
 	}
 	
 	private void initFiltersPresets() {

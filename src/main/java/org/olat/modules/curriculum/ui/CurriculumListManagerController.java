@@ -186,6 +186,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 
 		initForm(ureq);
 		loadModel(null, true);
+		initFilters();// To collect some organisations
 	}
 
 	@Override
@@ -248,7 +249,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 		
-		initFilters();
 		initFiltersPresets();
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		
@@ -273,8 +273,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		}
 		
 		if(isMultiOrganisations) {
-			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-					OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
+			List<Organisation> organisations = loadOrganisationsForFilter();
 			SelectionValues organisationsValues = new SelectionValues();
 			for(Organisation organisation:organisations) {
 				organisationsValues.add(SelectionValues
@@ -288,6 +287,23 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(!filters.isEmpty()) {
 			tableEl.setFilters(true, filters, false, false);
 		}
+	}
+	
+	private List<Organisation> loadOrganisationsForFilter() {
+		Set<Organisation> organisations = new HashSet<>(organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.curriculummanager, OrganisationRoles.principal));
+		
+		if(tableModel != null) {
+			List<CurriculumRow> rows = tableModel.getObjects();
+			for(CurriculumRow row:rows) {
+				Organisation organisation = row.getOrganisation();
+				if(organisation != null) {
+					organisations.add(organisation);
+				}
+			}
+		}
+		
+		return  List.copyOf(organisations);
 	}
 	
 	private void initFiltersPresets() {
