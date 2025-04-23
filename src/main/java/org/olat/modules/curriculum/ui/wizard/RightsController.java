@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -82,14 +83,18 @@ public class RightsController extends StepFormBasicController {
 
 	private static final String CMD_ADD = "add";
 	private static final String CMD_NOTE = "note";
+	private static final String ASSIGN_KEY = "assign";
+	private static final String DONT_ASSIGN_KEY = "dont-assign";
 	
 	private TextElement adminNoteEl;
 	private SingleSelection applyToEl;
 	private DateChooser confirmUntilEl;
 	private SingleSelection confirmationByEl;
 	private SingleSelection confirmationTypeEl;
+	private SingleSelection teacherAssignmentEl;
 	
 	private FlexiTableElement tableEl;
+	private FormLayoutContainer tableCont;
 	private RightsCurriculumElementsTableModel tableModel;
 	
 	private final boolean confirmationPossible;
@@ -105,7 +110,7 @@ public class RightsController extends StepFormBasicController {
 
 	public RightsController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			MembersContext membersContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.membersContext = membersContext;
 		roleToModify = membersContext.getRoleToModify();
@@ -123,8 +128,11 @@ public class RightsController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initSettingsForm(formLayout);
-		initTableForm(formLayout);
+		FormLayoutContainer settingsCont = uifactory.addDefaultFormLayout("settings", null, formLayout);
+		initSettingsForm(settingsCont);
+		tableCont = uifactory.addDefaultFormLayout("elements", null, formLayout);
+		tableCont.setFormTitle(translate("wizard.member.rights.elements"));
+		initTableForm(tableCont);
 	}
 	
 	private void initSettingsForm(FormItemContainer formLayout) {
@@ -170,6 +178,19 @@ public class RightsController extends StepFormBasicController {
 		
 		StaticTextElement applyInfosEl = uifactory.addStaticTextElement("apply.membership.to.alt", "apply.membership.to", applyContained, formLayout);
 		applyInfosEl.setVisible(!membersContext.getDescendants().isEmpty() && allCurriculumElements);
+		
+		SelectionValues assignmentPK = new SelectionValues();
+		assignmentPK.add(SelectionValues.entry(ASSIGN_KEY, translate("teacher.assignments.assign")));
+		assignmentPK.add(SelectionValues.entry(DONT_ASSIGN_KEY, translate("teacher.assignments.none")));
+		teacherAssignmentEl = uifactory.addRadiosHorizontal("teacher.assignments", "teacher.assignments", formLayout,
+				assignmentPK.keys(), assignmentPK.values());
+		if(roleToModify == CurriculumRoles.coach) {
+			teacherAssignmentEl.select(ASSIGN_KEY, true);
+		} else if(roleToModify == CurriculumRoles.mastercoach) {
+			teacherAssignmentEl.select(DONT_ASSIGN_KEY, true);
+		} else {
+			teacherAssignmentEl.setVisible(false);
+		}
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note", "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		adminNoteEl.setVisible(roleToModify == CurriculumRoles.participant);
@@ -217,6 +238,7 @@ public class RightsController extends StepFormBasicController {
 				&& ChangeApplyToEnum.valueOf(applyToEl.getSelectedKey()) == ChangeApplyToEnum.CURRENT;
 		adminNoteEl.setVisible(!individualElements);
 		tableEl.setVisible(individualElements);
+		tableCont.setVisible(individualElements);
 		
 		GroupMembershipStatus nextStatus = getNextStatus();
 		List<RightsCurriculumElementRow> rows = tableModel.getObjects();
@@ -306,23 +328,10 @@ public class RightsController extends StepFormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		confirmationTypeEl.clearError();
-		if(!confirmationTypeEl.isOneSelected()) {
-			confirmationTypeEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
-		
-		confirmationByEl.clearError();
-		if(!confirmationByEl.isOneSelected()) {
-			confirmationByEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
-		
-		applyToEl.clearError();
-		if(applyToEl.isVisible() && !applyToEl.isOneSelected()) {
-			applyToEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
+		allOk &= validateFormLogic(confirmationTypeEl);
+		allOk &= validateFormLogic(confirmationByEl);
+		allOk &= validateFormLogic(applyToEl);
+		allOk &= validateFormLogic(teacherAssignmentEl);
 		
 		tableEl.clearError();
 		if(applyToEl.isVisible() && applyToEl.isOneSelected() && ChangeApplyToEnum.CURRENT.name().equals(applyToEl.getSelectedKey())
@@ -331,6 +340,17 @@ public class RightsController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
+		return allOk;
+	}
+	
+	private boolean validateFormLogic(SingleSelection el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		if(el.isVisible() && !el.isOneSelected()) {
+			el.setErrorKey("form.legende.mandatory");
+			allOk = false;
+		}
 		return allOk;
 	}
 
@@ -375,6 +395,9 @@ public class RightsController extends StepFormBasicController {
 			}
 		}
 		membersContext.setModifications(modifications);
+		
+		membersContext.setAddAsTeacher(teacherAssignmentEl.isVisible() && teacherAssignmentEl.isOneSelected()
+				&& ASSIGN_KEY.equals(teacherAssignmentEl.getSelectedKey()));
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
