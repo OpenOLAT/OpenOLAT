@@ -45,8 +45,8 @@ public class CourseInfoPage {
 	
 	public String guestUrl() {
 		By guestUrlBy = By.xpath("//input[@aria-labelledby='o_extlink2']");
-		OOGraphene.waitElement(guestUrlBy, browser);
-		return browser.findElement(guestUrlBy).getDomAttribute("value");
+		return OOGraphene.waitElement(guestUrlBy, browser)
+				.getDomAttribute("value");
 	}
 
 }

@@ -62,8 +62,7 @@ public class UserAdminPage {
 	public UserAdminPage openSearchUser() {
 		//In case it stay in the way
 		By createBy = By.cssSelector(".o_tree li.o_sel_useradmin_search>div>span.o_tree_link>a");
-		OOGraphene.waitElement(createBy, browser);
-		browser.findElement(createBy).click();
+		OOGraphene.waitElement(createBy, browser).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		return assertOnSearchUser();
 	}
@@ -81,8 +80,7 @@ public class UserAdminPage {
 	 */
 	public UserAdminPage deleteUser() {
 		By createBy = By.cssSelector("ul.o_tools a.o_sel_user_delete");
-		OOGraphene.waitElement(createBy, browser);
-		browser.findElement(createBy).click();
+		OOGraphene.waitElement(createBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -94,8 +92,7 @@ public class UserAdminPage {
 	 */
 	public UserAdminPage confirmDeleteUsers() {
 		By confirmCheckBy = By.cssSelector("fieldset.o_sel_confirm_delete_user input[type='checkbox']");
-		OOGraphene.waitElement(confirmCheckBy, browser);
-		WebElement confirmCheckEl = browser.findElement(confirmCheckBy);
+		WebElement confirmCheckEl = OOGraphene.waitElement(confirmCheckBy, browser);
 		OOGraphene.check(confirmCheckEl, Boolean.TRUE);
 		
 		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-body a.btn.o_sel_delete_user");
@@ -106,8 +103,7 @@ public class UserAdminPage {
 	
 	public UserAdminPage openDirectDeleteUser() {
 		By createBy = By.cssSelector("ul.o_tools a.o_sel_useradmin_direct_delete");
-		OOGraphene.waitElement(createBy, browser);
-		browser.findElement(createBy).click();
+		OOGraphene.waitElement(createBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -121,8 +117,7 @@ public class UserAdminPage {
 	 */
 	public UserAdminPage searchUserToDelete(String username) {
 		By createBy = By.cssSelector("fieldset.o_sel_user_search_form div.o_sel_user_search_username input[type='text']");
-		OOGraphene.waitElement(createBy, browser);
-		browser.findElement(createBy).sendKeys(username);
+		OOGraphene.waitElement(createBy, browser).sendKeys(username);
 		
 		//search
 		By searchBy = By.cssSelector("fieldset.o_sel_user_search_form a.o_sel_user_search_button");
@@ -164,16 +159,14 @@ public class UserAdminPage {
 	
 	public UserAdminPage openImportUsers() {
 		By importBy = By.cssSelector("ul.o_tools a.o_sel_useradmin_import");
-		OOGraphene.waitElement(importBy, browser);
-		browser.findElement(importBy).click();
+		OOGraphene.waitElement(importBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public ImportUserPage startImport() {
 		By importBy = By.cssSelector("a.o_sel_id_start_import_user_button.btn-primary");
-		OOGraphene.waitElement(importBy, browser);
-		browser.findElement(importBy).click();
+		OOGraphene.waitElement(importBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		By dataBy = By.cssSelector("fieldset.o_sel_import_users_data");
 		OOGraphene.waitElement(dataBy, browser);
@@ -197,8 +190,7 @@ public class UserAdminPage {
 	
 	public UserAdminPage fillUserForm(UserVO userVo) {
 		By usernameBy = By.cssSelector(".o_sel_id_create .o_sel_id_username input[type='text']");
-		OOGraphene.waitElement(usernameBy, browser);
-		browser.findElement(usernameBy).sendKeys(userVo.getLogin());
+		OOGraphene.waitElement(usernameBy, browser).sendKeys(userVo.getLogin());
 		
 		By firstNameBy = By.cssSelector(".o_sel_id_create .o_sel_id_firstname input[type='text']");
 		browser.findElement(firstNameBy).sendKeys(userVo.getFirstName());
@@ -230,8 +222,7 @@ public class UserAdminPage {
 	
 	public UserAdminPage searchByUsername(String username) {
 		By usernameBy = By.cssSelector(".o_sel_user_search_form .o_sel_user_search_username input[type='text']");
-		OOGraphene.waitElement(usernameBy, browser);
-		browser.findElement(usernameBy).sendKeys(username);
+		OOGraphene.waitElement(usernameBy, browser).sendKeys(username);
 		
 		By searchBlockBy = By.xpath("//fieldset[contains(@class,'o_sel_user_search_form')]//div[contains(@class,'form-group')][div/p/a]");
 		OOGraphene.scrollBottom(searchBlockBy, browser);
@@ -244,8 +235,7 @@ public class UserAdminPage {
 	
 	public UserAdminPage searchByEmail(String email) {
 		By emailBy = By.cssSelector(".o_sel_user_search_form .o_sel_user_search_email input[type='text']");
-		OOGraphene.waitElement(emailBy, browser);
-		browser.findElement(emailBy).sendKeys(email);
+		OOGraphene.waitElement(emailBy, browser).sendKeys(email);
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
 		browser.findElement(searchBy).click();
@@ -279,8 +269,7 @@ public class UserAdminPage {
 	 */
 	public UserAdminPage selectRowByUsername(String username) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//tr[td/a[contains(text(),'" + username + "')]]/td/input[@name='tb_ms']");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -293,16 +282,14 @@ public class UserAdminPage {
 	 */
 	public UserAdminPage selectByUsername(String username) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//td/a[text()[contains(.,'" + username + "')]]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public UserAdminPage modifyStatusBatch(int status) {
 		By modifyButtonBy = By.cssSelector("a.o_sel_user_bulk_change_status");
-		OOGraphene.waitElement(modifyButtonBy, browser);
-		browser.findElement(modifyButtonBy).click();
+		OOGraphene.waitElement(modifyButtonBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By statusChoiceBy = By.xpath("//fieldset[contains(@class,'o_sel_user_bulk_change_status_form')]//input[@name='status'][@type='radio'][@value='" + status + "']");
@@ -317,8 +304,7 @@ public class UserAdminPage {
 	
 	public UserAttributesWizardPage modifyAttributesBatch() {
 		By modifyButtonBy = By.cssSelector("a.o_sel_user_bulk_change_attributes");
-		OOGraphene.waitElement(modifyButtonBy, browser);
-		browser.findElement(modifyButtonBy).click();
+		OOGraphene.waitElement(modifyButtonBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new UserAttributesWizardPage(browser);
 	}

@@ -60,8 +60,7 @@ public class EntryPage {
 	 */
 	public EntryPage publishEntry() {
 		By publishBy = By.cssSelector("a.o_sel_pf_publish_entry");
-		OOGraphene.waitElement(publishBy, browser);
-		browser.findElement(publishBy).click();
+		OOGraphene.waitElement(publishBy, browser).click();
 		confirm();
 		By publishedBy = By.cssSelector("div.o_portfolio_status i.o_icon_pf_entry_published");
 		OOGraphene.waitElement(publishedBy, browser);
@@ -71,8 +70,7 @@ public class EntryPage {
 	
 	public BinderPage moveEntryToTrash() {
 		By moveToTrashBy = By.cssSelector("a.o_sel_pf_move_page_to_trash");
-		OOGraphene.waitElement(moveToTrashBy, 5, browser);
-		browser.findElement(moveToTrashBy).click();
+		OOGraphene.waitElement(moveToTrashBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		BinderPage binder = new BinderPage(browser);
@@ -82,8 +80,7 @@ public class EntryPage {
 	
 	public EntriesPage deleteEntry() {
 		By moveToTrashBy = By.cssSelector("a.o_sel_pf_delete_page");
-		OOGraphene.waitElement(moveToTrashBy, 5, browser);
-		browser.findElement(moveToTrashBy).click();
+		OOGraphene.waitElement(moveToTrashBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		new BinderPage(browser).confirm();
@@ -92,16 +89,14 @@ public class EntryPage {
 	
 	public ContentEditorPage openEditor() {
 		By openBy = By.cssSelector("button.o_sel_page_edit[aria-checked=\"false\"]");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return contentEditor();
 	}
 	
 	public ContentViewPage closeEditor() {
 		By closeBy = By.cssSelector("button.o_sel_page_edit[aria-checked=\"true\"]");
-		OOGraphene.waitElement(closeBy, browser);
-		browser.findElement(closeBy).click();
+		OOGraphene.waitElement(closeBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return new ContentViewPage(browser);
 	}
@@ -112,8 +107,7 @@ public class EntryPage {
 	private void confirm() {
 		OOGraphene.waitModalDialog(browser);
 		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
-		OOGraphene.waitElement(confirmButtonBy, browser);
-		browser.findElement(confirmButtonBy).click();
+		OOGraphene.waitElement(confirmButtonBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 	}
 }

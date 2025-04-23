@@ -73,8 +73,7 @@ public class ForumPage {
 	
 	public ForumPage userFilter() {
 		By toolBy = By.xpath("//div[contains(@class,'o_forum_toolbar')]/a[contains(@class,'btn')][i[contains(@class,'o_icon_actions')]]");
-		OOGraphene.waitElement(toolBy, browser);
-		browser.findElement(toolBy).click();
+		OOGraphene.waitElement(toolBy, browser).click();
 		OOGraphene.waitCallout(browser);
 		
 		By userFilterBy = By.cssSelector("a.o_sel_forum_filter");
@@ -106,8 +105,7 @@ public class ForumPage {
 			
 			//fill the form
 			By titleBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_title input[type='text']");
-			OOGraphene.waitElement(titleBy, browser);
-			browser.findElement(titleBy).sendKeys(title);
+			OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 			
 			if(alias != null) {
 				By aliasBy = By.cssSelector("div.modal-content form div.o_sel_forum_message_alias input[type='text']");
@@ -146,8 +144,7 @@ public class ForumPage {
 	
 	public ForumPage openThreadInPeekview(String title) {
 		By threadBy = By.xpath("//div[contains(@class,'o_forum_peekview_message')]//a[span[text()='" + title + "']]");
-		OOGraphene.waitElement(threadBy, browser);
-		browser.findElement(threadBy).click();
+		OOGraphene.waitElement(threadBy, browser).click();
 		OOGraphene.waitElement(By.className("o_forum_message"), browser);
 		return this;
 	}
@@ -226,7 +223,7 @@ public class ForumPage {
 	 */
 	public MediaPage addAsMedia() {
 		By collectBy = By.cssSelector(".o_ep_collect .o_portfolio_collector");
-		OOGraphene.waitElement(collectBy, 5, browser);
+		OOGraphene.waitElement(collectBy, browser);
 		browser.findElement(collectBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);

@@ -48,8 +48,7 @@ public class PracticePage {
 	
 	public PracticePage startShuffled() {
 		By startBy = By.cssSelector("div.o_practice_shuffle_play a.btn-primary");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
+		OOGraphene.waitElement(startBy, browser).click();
 		
 		By itemBy = By.cssSelector("div.qtiworks.o_assessmentitem #itemBody");
 		OOGraphene.waitElement(itemBy, browser);
@@ -105,8 +104,7 @@ public class PracticePage {
 	
 	public PracticePage backToOverview() {
 		By backBy = By.cssSelector("a.o_sel_practice_back");
-		OOGraphene.waitElement(backBy, browser);
-		browser.findElement(backBy).click();
+		OOGraphene.waitElement(backBy, browser).click();
 		return assertOnPractice();
 	}
 }

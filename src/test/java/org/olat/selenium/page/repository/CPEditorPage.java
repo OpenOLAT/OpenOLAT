@@ -120,7 +120,7 @@ public class CPEditorPage {
 	public CPEditorPage fillMetadataForm(String title) {
 		//wait popup
 		By metadataPopupBy = By.cssSelector("fieldset.o_sel_cp_metadata");
-		OOGraphene.waitElement(metadataPopupBy, 2, browser);
+		OOGraphene.waitElement(metadataPopupBy, browser);
 		
 		//write title
 		By titleBy = By.cssSelector(".o_sel_cp_title input[type='text']");

@@ -84,8 +84,7 @@ public class CalendarPage {
 		LocalDate date = LocalDate.now().withDayOfMonth(day);
 		String dateString = date.format(formatter);
 		By cellBy = By.xpath("//div[contains(@class,'o_cal')]//td[contains(@data-date,'" + dateString + "')][contains(@class,'fc-day')]/div");
-		OOGraphene.waitElement(cellBy, browser);
-		browser.findElement(cellBy).click();
+		OOGraphene.waitElement(cellBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -136,8 +135,7 @@ public class CalendarPage {
 		OOGraphene.waitBusy(browser);
 		
 		By untilAltBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon");
-		OOGraphene.waitElement(untilAltBy, browser);
-		browser.findElement(untilAltBy).click();
+		OOGraphene.waitElement(untilAltBy, browser).click();
 
 		By datePickerBy = By.cssSelector("div.o_sel_cal_until div.datepicker-dropdown.active");
 		OOGraphene.waitElement(datePickerBy, browser);
@@ -160,8 +158,7 @@ public class CalendarPage {
 	public CalendarPage confirmModifyOneOccurence() {
 		OOGraphene.waitModalDialog(browser, "div.o_sel_confirm_calendar_update");
 		By saveOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_one");
-		OOGraphene.waitElement(saveOneBy, browser);
-		browser.findElement(saveOneBy).click();
+		OOGraphene.waitElement(saveOneBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -169,39 +166,35 @@ public class CalendarPage {
 	public CalendarPage confirmModifyAllOccurences() {
 		OOGraphene.waitModalDialog(browser, "div.o_sel_confirm_calendar_update");
 		By saveAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_all");
-		OOGraphene.waitElement(saveAllBy, browser);
-		browser.findElement(saveAllBy).click();
+		OOGraphene.waitElement(saveAllBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public CalendarPage delete() {
 		By deleteBy = By.cssSelector("div.o_sel_cal_entry_form a.btn.o_sel_cal_delete");
-		OOGraphene.waitElement(deleteBy, 5, browser);
+		OOGraphene.waitElement(deleteBy, browser);
 		OOGraphene.click(deleteBy, browser);
 		return this;
 	}
 	
 	public CalendarPage confirmDeleteOneOccurence() {
 		By deleteOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_one");
-		OOGraphene.waitElement(deleteOneBy, browser);
-		browser.findElement(deleteOneBy).click();
+		OOGraphene.waitElement(deleteOneBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public CalendarPage confirmDeleteFuturOccurences() {
 		By deleteFutureBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_future_events");
-		OOGraphene.waitElement(deleteFutureBy, browser);
-		browser.findElement(deleteFutureBy).click();
+		OOGraphene.waitElement(deleteFutureBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public CalendarPage confirmDeleteAllOccurences() {
 		By deleteAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_all");
-		OOGraphene.waitElement(deleteAllBy, browser);
-		browser.findElement(deleteAllBy).click();
+		OOGraphene.waitElement(deleteAllBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -238,8 +231,7 @@ public class CalendarPage {
 	
 	public CalendarPage openDetails(String subject) {
 		By titleBy = By.xpath("//div[@class='o_cal']//a[descendant::div[contains(@class,'fc-event-title')][contains(text(),'" + subject + "')]]");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).click();
+		OOGraphene.waitElement(titleBy, browser).click();
 		OOGraphene.waitCallout(browser);
 		return this;
 	}
@@ -249,8 +241,7 @@ public class CalendarPage {
 		String dateString = date.format(oocurenceIdFormatter);
 
 		By titleBy = By.xpath("//div[@class='o_cal']//a[contains(@id,'xOccOOccOx_" + dateString + "')][descendant::div[contains(@class,'fc-event-title')][contains(text(),'" + subject + "')]]");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).click();
+		OOGraphene.waitElement(titleBy, browser).click();
 		OOGraphene.waitCallout(browser);
 		return this;
 	}
@@ -262,8 +253,7 @@ public class CalendarPage {
 	 */
 	public CalendarPage edit() {
 		By editBy = By.cssSelector("div.popover-content div.o_callout_content div.o_cal_tooltip_buttons a.btn.btn-default");
-		OOGraphene.waitElement(editBy, browser);
-		browser.findElement(editBy).click();
+		OOGraphene.waitElement(editBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}

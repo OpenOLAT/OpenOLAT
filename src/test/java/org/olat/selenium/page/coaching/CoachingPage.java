@@ -46,8 +46,7 @@ public class CoachingPage {
 	
 	public QTI21CorrectionPage startGrading(String nodeTitle) {
 		By gradingBy = By.xpath("//fieldset[@class='o_sel_grading_assignments']//table//tr[td/a[text()[contains(.,'" + nodeTitle + "')]]]/td/a[contains(@onclick,'grade')]");
-		OOGraphene.waitElement(gradingBy, browser);
-		browser.findElement(gradingBy).click();
+		OOGraphene.waitElement(gradingBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return new QTI21CorrectionPage(browser);
 	}

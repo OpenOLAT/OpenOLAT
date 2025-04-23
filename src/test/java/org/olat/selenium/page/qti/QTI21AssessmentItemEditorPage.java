@@ -42,8 +42,7 @@ public abstract class QTI21AssessmentItemEditorPage {
 	protected QTI21AssessmentItemEditorPage selectTab(String tabCssClass, By tabBy) {
 		try {
 			By tabItemBy = By.cssSelector("ul li." + tabCssClass + ">a");
-			OOGraphene.waitElement(tabItemBy, browser);
-			browser.findElement(tabItemBy).click();
+			OOGraphene.waitElement(tabItemBy, browser).click();
 			OOGraphene.waitElement(tabBy, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("select tab", browser);

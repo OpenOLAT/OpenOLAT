@@ -42,8 +42,7 @@ public class TBrokerConfigurationPage {
 	
 	public TBrokerConfigurationPage selectConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_tb_configuration>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		By configBy = By.cssSelector("fieldset.o_sel_tb_buttons button.btn-primary");
 		OOGraphene.waitElement(configBy, browser);
 		return this;
@@ -51,8 +50,7 @@ public class TBrokerConfigurationPage {
 	
 	public TBrokerConfigurationPage selectConfigurationCustomFields() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_tb_custom_fields>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		// By configBy = By.cssSelector("fieldset.o_sel_st_overview_settings");
 		// OOGraphene.waitElement(configBy, browser);
 		return this;
@@ -60,8 +58,7 @@ public class TBrokerConfigurationPage {
 
 	public TBrokerConfigurationPage selectConfigurationTopics() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_tb_topics>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		By configBy = By.cssSelector("div.o_tb_topics>fieldset");
 		OOGraphene.waitElement(configBy, browser);
 		return this;
@@ -98,8 +95,7 @@ public class TBrokerConfigurationPage {
 	
 	public TBrokerConfigurationPage addTopic(String identifier, String title, int minParticipants, int maxParticipants) {
 		By createButtonBy = By.cssSelector("div.o_tb_topics a.o_sel_tb_create_topic");
-		OOGraphene.waitElement(createButtonBy, browser);
-		browser.findElement(createButtonBy).click();
+		OOGraphene.waitElement(createButtonBy, browser).click();
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_tb_standard_fields");
 		
 		By identifierBy = By.cssSelector("fieldset.o_sel_tb_standard_fields div.o_sel_tb_identifier input[type=text]");

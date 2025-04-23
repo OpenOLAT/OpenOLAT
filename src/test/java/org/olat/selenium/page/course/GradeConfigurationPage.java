@@ -51,8 +51,7 @@ public class GradeConfigurationPage {
 	
 	public GradeConfigurationPage selectGradeSystem(String typeGerman, String typeEnglish) {
 		By selectBy = By.cssSelector("fieldset.o_sel_grade_scale_general a.o_sel_grade_system_select");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_grade_select_system");
 		

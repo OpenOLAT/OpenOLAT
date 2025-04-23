@@ -48,8 +48,7 @@ public class TBrokerCoachPage {
 
 	public TBrokerCoachPage expandParticipantDetails(UserVO participant) {
 		By detailsBy = By.xpath("//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + participant.getFirstName() + "')]]]/td/div/a[i[contains(@class,'o_icon_table_details_expand')]]");
-		OOGraphene.waitElement(detailsBy, browser);
-		browser.findElement(detailsBy).click();
+		OOGraphene.waitElement(detailsBy, browser).click();
 		By participantDetailsBy = By.xpath("//div[contains(@class,'o_tb_participant_selections')]//div[contains(@class,'o_user_info')]//div[contains(@class,'o_user_info_profile_name')][text()[contains(.,'" + participant.getFirstName() + "')]]");
 		OOGraphene.waitElement(participantDetailsBy, browser);
 		return this;
@@ -57,8 +56,7 @@ public class TBrokerCoachPage {
 	
 	public TBrokerCoachPage collapseParticipantDetails(UserVO participant) {
 		By detailsBy = By.xpath("//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + participant.getFirstName() + "')]]]/td/div/a[i[contains(@class,'o_icon_table_details_collaps')]]");
-		OOGraphene.waitElement(detailsBy, browser);
-		browser.findElement(detailsBy).click();
+		OOGraphene.waitElement(detailsBy, browser).click();
 		By participantDetailsBy = By.cssSelector("table.table div.o_tb_participant_selections");
 		OOGraphene.waitElementDisappears(participantDetailsBy, 5, browser);
 		return this;

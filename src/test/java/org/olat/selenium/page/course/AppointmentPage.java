@@ -54,14 +54,12 @@ public class AppointmentPage {
 	 */
 	public AppointmentPage addTopic(String title) {
 		By addTopicBy = By.cssSelector("a.o_sel_app_add_topic");
-		OOGraphene.waitElement(addTopicBy, browser);
-		browser.findElement(addTopicBy).click();
+		OOGraphene.waitElement(addTopicBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.xpath("//div[contains(@class,'modal-dialog')]//div[contains(@class,'o_sel_app_topic_title')]//input[@type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		return this;
 	}
 	
@@ -83,8 +81,7 @@ public class AppointmentPage {
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_app_topic_recurring_day"), browser);
 		
 		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon");
-		OOGraphene.waitElement(firstBy, browser);
-		browser.findElement(firstBy).click();
+		OOGraphene.waitElement(firstBy, browser).click();
 		
 		By firstDatePickerBy = By.cssSelector("div.o_sel_app_topic_recurring_first div.datepicker-dropdown.active");
 		OOGraphene.waitElement(firstDatePickerBy, browser);
@@ -149,16 +146,14 @@ public class AppointmentPage {
 	 */
 	public AppointmentPage selectTopicAsCoach(String title) {
 		By selectTopicBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'panel-default')][div[@class='panel-heading']/h4/div[text()[contains(.,'" + title + "')]]]//a[i[contains(@class,'o_icon_start')]]");
-		OOGraphene.waitElement(selectTopicBy, browser);
-		browser.findElement(selectTopicBy).click();
+		OOGraphene.waitElement(selectTopicBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AppointmentPage selectTopicAsParticipant(String title) {
 		By selectTopicBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'panel-default')][div[@class='panel-heading']/h4[text()[contains(.,'" + title + "')]]]//a[i[contains(@class,'o_icon_start')]]");
-		OOGraphene.waitElement(selectTopicBy, browser);
-		browser.findElement(selectTopicBy).click();
+		OOGraphene.waitElement(selectTopicBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -187,8 +182,7 @@ public class AppointmentPage {
 		By addDropMenuBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//button[contains(@class,'dropdown-toggle')]");
 		browser.findElement(addDropMenuBy).click();
 		By addUserBy = By.xpath("//div[contains(@class,'o_appointments')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_add_member')]]");
-		OOGraphene.waitElement(addUserBy, browser);
-		browser.findElement(addUserBy).click();
+		OOGraphene.waitElement(addUserBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		return new UserSearchPage(browser);
@@ -203,8 +197,7 @@ public class AppointmentPage {
 		By addDropMenuBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]//div[contains(@class,'o_main_cont')]//button[contains(@class,'dropdown-toggle')]");
 		browser.findElement(addDropMenuBy).click();
 		By addUserBy = By.xpath("//div[contains(@class,'o_appointments')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_add_member')]]");
-		OOGraphene.waitElement(addUserBy, browser);
-		browser.findElement(addUserBy).click();
+		OOGraphene.waitElement(addUserBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		return new UserSearchPage(browser);
@@ -312,8 +305,7 @@ public class AppointmentPage {
 	
 	public AppointmentPage confirmPlannedAppointmentByPosition(int posInList) {
 		By confirmBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_planned')]//div[contains(@class,'o_main_cont')]//a[contains(@class,'o_button_confirm')]");
-		OOGraphene.waitElement(confirmBy, browser);
-		browser.findElement(confirmBy).click();
+		OOGraphene.waitElement(confirmBy, browser).click();
 		
 		By confirmedBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_confirmed')]");
 		OOGraphene.waitElement(confirmedBy, browser);
@@ -329,8 +321,7 @@ public class AppointmentPage {
 	public AppointmentPage selectAppointmentByDay(int day) {
 		String dayStr = dayToString(day);
 		By selectBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//a[contains(@class,'o_sel_appointment_select')][contains(@class,'btn-primary')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		By confirmedBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_table_row')]/div[contains(@class,'o_ap_planned')]//div[contains(@class,'o_day_" + dayStr + "')]");
 		OOGraphene.waitElement(confirmedBy, browser);
@@ -344,8 +335,7 @@ public class AppointmentPage {
 	 */
 	public AppointmentPage selectAppointmentByPosition(int posInList) {
 		By selectBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]//div[contains(@class,'o_main_cont')]//a[contains(@class,'o_sel_appointment_select')][contains(@class,'btn-primary')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		By plannedBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_planned')]");
 		OOGraphene.waitElement(plannedBy, browser);
@@ -355,8 +345,7 @@ public class AppointmentPage {
 	public AppointmentPage confirmAppointmentFindingByDay(int day, UserVO user) {
 		String dayStr = dayToString(day);
 		By confirmBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//a[contains(@class,'o_button_confirm')]");
-		OOGraphene.waitElement(confirmBy, browser);
-		browser.findElement(confirmBy).click();
+		OOGraphene.waitElement(confirmBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By userBy = By.xpath("//div[@class='o_sel_appointment_confirm_finding']//table//td[text()[contains(.,'" + user.getFirstName() +"')]]");

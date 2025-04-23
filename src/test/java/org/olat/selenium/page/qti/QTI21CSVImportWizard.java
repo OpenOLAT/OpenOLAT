@@ -82,7 +82,7 @@ public class QTI21CSVImportWizard {
 	
 	public QTI21CSVImportWizard assertOnNumberOfQuestions(int numOfQuestions) {
 		By validRowsBy = By.cssSelector("td.o_dnd_label span i.o_icon.o_icon_accept");
-		OOGraphene.waitElement(validRowsBy, 5, browser);
+		OOGraphene.waitElement(validRowsBy, browser);
 		List<WebElement> validRowEls = browser.findElements(validRowsBy);
 		Assert.assertEquals(numOfQuestions, validRowEls.size());
 		return this;

@@ -64,8 +64,7 @@ public class QTI21InlineChoiceEditorPage extends QTI21AssessmentItemEditorPage {
 		browser.findElement(addChoiceBy).click();
 
 		By newChoiceBy = By.cssSelector("fieldset.o_sel_inlinechoice_form .o_sel_choice_" + index + " input[type='text']");
-		OOGraphene.waitElement(newChoiceBy, browser);
-		browser.findElement(newChoiceBy).sendKeys(choice);
+		OOGraphene.waitElement(newChoiceBy, browser).sendKeys(choice);
 		return this;
 	}
 	

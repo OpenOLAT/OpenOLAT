@@ -78,8 +78,7 @@ public class GroupTaskPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By confirmBy = By.cssSelector("div.o_sel_course_gta_confirm_optional_task button.btn-primary");
-		OOGraphene.waitElement(confirmBy, browser);
-		browser.findElement(confirmBy).click();
+		OOGraphene.waitElement(confirmBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
@@ -140,8 +139,7 @@ public class GroupTaskPage {
 	
 	private GroupTaskPage uploadFile(String stepId, File file) {
 		By uploadButtonBy = By.cssSelector("#" + stepId + " .o_sel_course_gta_submit_file");
-		OOGraphene.waitElement(uploadButtonBy, browser);
-		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitElement(uploadButtonBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
@@ -180,8 +178,7 @@ public class GroupTaskPage {
 		OOGraphene.tinymceExec(text, browser);
 
 		By saveAndCloseDirtyBy = By.cssSelector(".o_htmleditor #o_button_saveclose a.btn.o_button_dirty");
-		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
-		browser.findElement(saveAndCloseDirtyBy).click();
+		OOGraphene.waitElement(saveAndCloseDirtyBy, browser).click();
 		
 		browser.switchTo().window(startWindow);
 		

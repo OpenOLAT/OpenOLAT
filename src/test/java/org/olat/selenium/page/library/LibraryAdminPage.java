@@ -46,15 +46,13 @@ public class LibraryAdminPage {
 	
 	public LibraryAdminPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_library_configuration button.btn.btn-primary");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		return this;
 	}
 	
 	public LibraryAdminPage addSharedFolder(String title) {
 		By chooseBy = By.cssSelector("fieldset a.o_sel_add_shared_folder");
-		OOGraphene.waitElement(chooseBy, browser);
-		browser.findElement(chooseBy).click();
+		OOGraphene.waitElement(chooseBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		
@@ -68,8 +66,7 @@ public class LibraryAdminPage {
 
 		//find the row
 		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + title + "')]]");
-		OOGraphene.waitElement(rowBy, browser);
-		browser.findElement(rowBy).click();
+		OOGraphene.waitElement(rowBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		//double check that the resource is selected (search the preview link)

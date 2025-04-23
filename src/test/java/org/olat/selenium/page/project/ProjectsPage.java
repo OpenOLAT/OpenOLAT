@@ -45,8 +45,7 @@ public class ProjectsPage {
 	
 	public ProjectPage createNewProject() {
 		By newProjectBy = By.cssSelector(".o_proj_project_list .o_sel_proj_create_project");
-		OOGraphene.waitElement(newProjectBy, browser);
-		browser.findElement(newProjectBy).click();
+		OOGraphene.waitElement(newProjectBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new ProjectPage(browser);
 	}
@@ -59,8 +58,7 @@ public class ProjectsPage {
 	
 	public ProjectPage openProject(String title) {
 		By projectBy = By.xpath("//div[contains(@class,'o_proj_projects')]//div[contains(@class,'o_proj_project_list')]//div[contains(@class,'o_proj_project_row')][div/div/div/h3[contains(@class,'o_proj_project_title')][text()[contains(.,'" + title + "')]]]//div[contains(@class,'o_start_buttons')]/a");
-		OOGraphene.waitElement(projectBy, browser);
-		browser.findElement(projectBy).click();
+		OOGraphene.waitElement(projectBy, browser).click();
 		return new ProjectPage(browser).assertOnDashboard(title);
 	}
 

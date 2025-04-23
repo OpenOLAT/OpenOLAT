@@ -53,8 +53,7 @@ public class LTIPage {
 	public LTIPage start() {
 		try {
 			By startBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'start')]");
-			OOGraphene.waitElement(startBy, browser);
-			browser.findElement(startBy).click();
+			OOGraphene.waitElement(startBy, browser).click();
 			
 			By iframeBy = By.cssSelector(".o_iframedisplay iframe");
 			OOGraphene.waitElement(iframeBy, browser);
@@ -75,15 +74,13 @@ public class LTIPage {
 	
 	public LTIPage outcomeToolProvider() {
 		By outcomeToolLinkBy = By.xpath("//a[contains(@href,'tool_provider_outcome.php')]");
-		OOGraphene.waitElement(outcomeToolLinkBy, browser);
-		browser.findElement(outcomeToolLinkBy).click();
+		OOGraphene.waitElement(outcomeToolLinkBy, browser).click();
 		return this;
 	}
 	
 	public LTIPage sendGrade(double grade) {
 		By gradeBy = By.cssSelector("input[type=text][name=grade]");
-		OOGraphene.waitElement(gradeBy, browser);
-		browser.findElement(gradeBy).sendKeys(Double.toString(grade));
+		OOGraphene.waitElement(gradeBy, browser).sendKeys(Double.toString(grade));
 		
 		By sendGradeBy = By.cssSelector("input[type=submit][value='Send Grade']");
 		browser.findElement(sendGradeBy).click();

@@ -56,8 +56,7 @@ public class TaxonomyPage {
 	 */
 	public TaxonomyTreePage selectTaxonomyTree() {
 		By selectLevelsBy = By.cssSelector("a.o_sel_taxonomy_levels");
-		OOGraphene.waitElement(selectLevelsBy, browser);
-		browser.findElement(selectLevelsBy).click();
+		OOGraphene.waitElement(selectLevelsBy, browser).click();
 		return new TaxonomyTreePage(browser).assertOnTaxonomyTree();
 	}
 

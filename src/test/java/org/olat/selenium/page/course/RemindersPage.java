@@ -71,8 +71,7 @@ public class RemindersPage {
 	 */
 	public RemindersPage openActionMenu(String title) {
 		By rowBy = By.xpath("//fieldset[contains(@class,'o_sel_course_reminder_list')]//table//tr[//td//a[contains(text(), '" + title + "')]]//td//a[contains(@class,'o_sel_course_reminder_tools')]");
-		OOGraphene.waitElement(rowBy, browser);
-		browser.findElement(rowBy).click();
+		OOGraphene.waitElement(rowBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -84,13 +83,11 @@ public class RemindersPage {
 	 */
 	public RemindersPage sendRemindersToAll() {
 		By sendBy = By.cssSelector("div.o_callout_content ul.o_dropdown a.o_sel_course_reminder_send");
-		OOGraphene.waitElement(sendBy, browser);
-		browser.findElement(sendBy).click();
+		OOGraphene.waitElement(sendBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By sendAllBy = By.cssSelector("div.modal-dialog a.o_sel_course_reminder_send_all");
-		OOGraphene.waitElement(sendAllBy, browser);
-		browser.findElement(sendAllBy).click();
+		OOGraphene.waitElement(sendAllBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

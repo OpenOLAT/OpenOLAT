@@ -96,8 +96,7 @@ public class GroupTaskConfigurationPage {
 		} else {
 			optionBy = By.xpath("//fieldset[@id='o_covisibleall']//label/input[@name='visibleall'][@value='restricted']");
 		}
-		OOGraphene.waitElement(optionBy, browser);
-		browser.findElement(optionBy).click();;
+		OOGraphene.waitElement(optionBy, browser).click();
 		return this;
 	}
 	
@@ -186,8 +185,7 @@ public class GroupTaskConfigurationPage {
 	
 	public GroupTaskConfigurationPage saveTasks() {
 		By saveBy = By.cssSelector(".o_sel_course_gta_task_config_buttons button.btn-primary");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -226,8 +224,7 @@ public class GroupTaskConfigurationPage {
 	
 	private GroupTaskConfigurationPage selectTab(String tabCssClass, By panelBy) {
 		By tabBy = By.cssSelector("ul.o_node_config li." + tabCssClass + ">a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(panelBy, browser);
 		return this;
 	}

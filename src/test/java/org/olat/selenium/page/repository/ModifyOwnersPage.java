@@ -74,8 +74,7 @@ public class ModifyOwnersPage {
 	
 	public ModifyOwnersPage removeOwner(UserVO user) {
 		By selectBy = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_table_flexi')]//table//tr[td[text()[contains(.,'" + user.getFirstName() + "')]]]/td/input[@name='tb_ms']");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

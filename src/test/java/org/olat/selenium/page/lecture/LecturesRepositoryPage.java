@@ -42,8 +42,7 @@ public class LecturesRepositoryPage {
 	
 	public TeacherRollCallPage openRollCall(String lectureBlockTitle) {
 		By selectBy = By.xpath("//table//tr[td[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'details')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		return new TeacherRollCallPage(browser)
 				.assertOnRollCall();
 	}

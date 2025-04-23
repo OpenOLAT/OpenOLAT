@@ -50,16 +50,15 @@ public class RegistrationPage {
 	
 	public RegistrationPage signIn() {
 		By signInBy = By.id("o_co_olat_login_register");
-		OOGraphene.waitElement(signInBy, browser);
-		browser.findElement(signInBy).click();
+		OOGraphene.waitElement(signInBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
 	public RegistrationPage nextToDisclaimer() {
 		By languageBy = By.id("o_fioselect_language_SELBOX");
-		OOGraphene.waitElement(languageBy, browser);	
-		new Select(browser.findElement(languageBy)).selectByValue("en");
+		WebElement languageEl = OOGraphene.waitElement(languageBy, browser);	
+		new Select(languageEl).selectByValue("en");
 		OOGraphene.waitBusy(browser);
 		By nextBy = By.cssSelector(".modal-content .modal-body .form-group button.btn.btn-primary");
 		browser.findElement(nextBy).click();
@@ -84,8 +83,7 @@ public class RegistrationPage {
 	
 	public RegistrationPage register(String email) {
 		By emailBy = By.cssSelector(".o_sel_registration_email input[type='text']");
-		OOGraphene.waitElement(emailBy, browser);
-		browser.findElement(emailBy).sendKeys(email);
+		OOGraphene.waitElement(emailBy, browser).sendKeys(email);
 		
 		By sendBy = By.cssSelector("fieldset.o_sel_registration_email_form button.btn.btn-primary");
 		browser.findElement(sendBy).click();
@@ -114,8 +112,7 @@ public class RegistrationPage {
 	public void finalizeRegistration(String firstName, String lastName, String login, String password) {
 		try {
 			By firstNameBy = By.cssSelector(".o_sel_registration_firstName input[type='text']");
-			OOGraphene.waitElement(firstNameBy, browser);
-			browser.findElement(firstNameBy).sendKeys(firstName);
+			OOGraphene.waitElement(firstNameBy, browser).sendKeys(firstName);
 			
 			By lastNameBy = By.cssSelector(".o_sel_registration_lastName input[type='text']");
 			browser.findElement(lastNameBy).sendKeys(lastName);

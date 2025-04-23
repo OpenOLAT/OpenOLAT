@@ -55,12 +55,10 @@ public class BadgeIssuePage {
 		
 		// Name
 		By nameBy = By.cssSelector(".o_form_auto_completer span.twitter-typeahead>input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(user.getLogin());
+		OOGraphene.waitElement(nameBy, browser).sendKeys(user.getLogin());
 		
 		By selectBy = By.xpath("//div[contains(@class,'o_form_auto_completer')]//div[contains(@class,'tt-menu')]//div[contains(@class,'tt-suggestion') and contains(@class,'tt-selectable')][text()[contains(.,'" + user.getLogin() + "')]]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		OOGraphene.waitCalloutDisappears(browser, "fieldset.o_sel_user_search_form");
 		return this;
@@ -68,8 +66,7 @@ public class BadgeIssuePage {
 	
 	public BadgeIssuePage award() {
 		By awardBy = By.cssSelector("dialog .modal-body button.btn.btn-primary.o_button_dirty");
-		OOGraphene.waitElement(awardBy, browser);
-		browser.findElement(awardBy).click();
+		OOGraphene.waitElement(awardBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

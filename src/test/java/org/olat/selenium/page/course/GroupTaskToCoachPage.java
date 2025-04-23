@@ -52,8 +52,7 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage selectBusinessGroupToCoach(String name) {
 		By selectBy = By.xpath("//table[contains(@class,'table')]//tr/td[contains(@class,'o_dnd_label')]/a[text()[contains(.,'" + name + "')]][contains(@onclick,'select')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		By processBy = By.cssSelector("div.o_process");
 		OOGraphene.waitElement(processBy, browser);
 		return this;
@@ -66,8 +65,7 @@ public class GroupTaskToCoachPage {
 	 */
 	public GroupTaskToCoachPage selectGroupsToCoach() {
 		By identitiesListSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_course_gta_coaching");
-		OOGraphene.waitElement(identitiesListSegmentBy, browser);
-		browser.findElement(identitiesListSegmentBy).click();
+		OOGraphene.waitElement(identitiesListSegmentBy, browser).click();
 		By groupsListBy = By.cssSelector("div.o_table_flexi.o_sel_course_gta_coached_groups");
 		OOGraphene.waitElement(groupsListBy, browser);
 		return this;
@@ -80,8 +78,7 @@ public class GroupTaskToCoachPage {
 	 */
 	public GroupTaskToCoachPage selectIdentitiesToCoach() {
 		By identitiesListSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_course_gta_coaching");
-		OOGraphene.waitElement(identitiesListSegmentBy, browser);
-		browser.findElement(identitiesListSegmentBy).click();
+		OOGraphene.waitElement(identitiesListSegmentBy, browser).click();
 		By identitiesListBy = By.cssSelector("div.o_table_flexi.o_sel_course_gta_coached_participants");
 		OOGraphene.waitElement(identitiesListBy, browser);
 		return this;
@@ -211,8 +208,7 @@ public class GroupTaskToCoachPage {
 			//open grading tab
 			By collpaseBy = By.xpath("//div[contains(@class,'o_step_grading')]//button[contains(@class,'o_button_details')]");
 			browser.findElement(collpaseBy).click();
-			OOGraphene.waitElement(assessmentButtonBy, browser);
-			browser.findElement(assessmentButtonBy).click();
+			OOGraphene.waitElement(assessmentButtonBy, browser).click();
 		} else {
 			buttons.get(0).click();
 		}

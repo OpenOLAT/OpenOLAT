@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -39,8 +40,8 @@ public class LTI13SettingsPage {
 	
 	public LTI13SettingsPage enableLTI() {
 		By enableBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings .o_sel_lti13_admin_enable input[name='lti13.module.enabled']");
-		OOGraphene.waitElement(enableBy, browser);
-		OOGraphene.check(browser.findElement(enableBy), Boolean.TRUE);
+		WebElement enableEl = OOGraphene.waitElement(enableBy, browser);
+		OOGraphene.check(enableEl, Boolean.TRUE);
 		By platformIssBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings .o_sel_lti13_admin_platform_iss");
 		OOGraphene.waitElement(platformIssBy, browser);
 		return this;

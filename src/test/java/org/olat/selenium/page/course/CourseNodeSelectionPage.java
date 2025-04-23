@@ -59,8 +59,7 @@ public class CourseNodeSelectionPage {
 	 */
 	public CourseNodeSelectionPage openDetails(UserVO user) {
 		By openBy = By.xpath("//div[contains(@class,'o_segments_content')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/a[i[contains(@class,'o_icon_table_details_expand')]]");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		
 		By detailsBy = By.xpath("//div[contains(@class,'o_table_row_details_container')]//div[contains(@class,'o_cns_participant_selections')]//div[contains(@class,'o_user_info_profile_name')][text()[contains(.,'" + user.getFirstName() + "')]]");
 		OOGraphene.waitElement(detailsBy, browser);
@@ -99,14 +98,12 @@ public class CourseNodeSelectionPage {
 	 */
 	public CourseNodeSelectionPage selectCourseNode(String nodeTitle) {
 		By selectBy = By.xpath("//div[contains(@class,'o_cns_selection_table')]//div[contains(@class,'o_cns_selection_row')]//div[@class='o_text_block_items'][div/h4/a/span[text()[contains(.,'" + nodeTitle + "')]]]//a[contains(@class,'btn-primary')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		
 		By confirmBy = By.cssSelector("dialog.dialog fieldset.o_sel_confirm_form a.btn.o_sel_confirm");
-		OOGraphene.waitElement(confirmBy, browser);
-		browser.findElement(confirmBy).click();
+		OOGraphene.waitElement(confirmBy, browser).click();
 		
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;

@@ -55,11 +55,9 @@ public class ZoomSettingsPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By nameBy = By.cssSelector("fieldset.o_sel_zoom_edit_profile .o_sel_zoom_profile_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(profile);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(profile);
 		By ltiKeyBy = By.cssSelector("fieldset.o_sel_zoom_edit_profile .o_sel_zoom_profile_ltikey input[type='text']");
-		OOGraphene.waitElement(ltiKeyBy, browser);
-		browser.findElement(ltiKeyBy).sendKeys(ltiKey);
+		OOGraphene.waitElement(ltiKeyBy, browser).sendKeys(ltiKey);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_zoom_edit_profile button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);

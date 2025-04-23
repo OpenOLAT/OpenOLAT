@@ -78,16 +78,14 @@ public class UserProfilePage {
 	 */
 	public UserProfilePage assertOnUsername(String username) {
 		By usernameBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//input[@value='" + username + "']");
-		OOGraphene.waitElement(usernameBy, browser);
-		WebElement usernameEl = browser.findElement(usernameBy);
+		WebElement usernameEl = OOGraphene.waitElement(usernameBy, browser);
 		Assert.assertTrue(usernameEl.isDisplayed());
 		return this;
 	}
 	
 	public UserProfilePage changeEmail(String newEmail) {
 		By emailBy = By.cssSelector(".o_user_profile_form .o_user_profil_email input[type='text']");
-		OOGraphene.waitElement(emailBy, browser);
-        browser.findElement(emailBy).clear();
+		OOGraphene.waitElement(emailBy, browser).clear();
         // Make it reliable for Firefox (server)
         OOGraphene.waitingALittleBit();
         browser.findElement(emailBy).sendKeys("");

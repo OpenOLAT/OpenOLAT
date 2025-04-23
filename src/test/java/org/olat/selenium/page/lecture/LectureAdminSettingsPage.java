@@ -62,8 +62,7 @@ public class LectureAdminSettingsPage {
 	
 	public LectureAdminSettingsPage configurePermissions(boolean teacherCanAutorizeAbsence) {
 		By permissionsBy = By.cssSelector("div.o_segments a.btn.o_sel_lectures_admin_permissions");
-		OOGraphene.waitElement(permissionsBy, browser);
-		browser.findElement(permissionsBy).click();
+		OOGraphene.waitElement(permissionsBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By paneBy = By.className("o_sel_lecture_permissions");
 		OOGraphene.waitElement(paneBy, browser);

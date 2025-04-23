@@ -50,8 +50,7 @@ public class VideoTaskPage extends VideoPage {
 	
 	public VideoTaskPage startTask() {
 		By startBy = By.cssSelector("div.o_videotask_box a.btn-primary.o_sel_start_videotask");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
+		OOGraphene.waitElement(startBy, browser).click();
 		return this;
 	}
 	
@@ -67,8 +66,7 @@ public class VideoTaskPage extends VideoPage {
 	 */
 	public VideoTaskPage selectFirstSegment() {
 		By segmentBy = By.xpath("//div[@id='o_videotask_categories']/button[contains(@class,'o_video_marker')][1]");
-		OOGraphene.waitElement(segmentBy, browser);
-		browser.findElement(segmentBy).click();
+		OOGraphene.waitElement(segmentBy, browser).click();
 		return this;
 	}
 	
@@ -90,8 +88,7 @@ public class VideoTaskPage extends VideoPage {
 	 */
 	public VideoTaskPage submitTask() {
 		By submitBy = By.xpath("//div[@class='o_videotask_run']/div[contains(@class,'o_button_group')]/a[contains(@class,'btn')][contains(@onclick,'close.video')]");
-		OOGraphene.waitElement(submitBy, browser);
-		browser.findElement(submitBy).click();
+		OOGraphene.waitElement(submitBy, browser).click();
 		
 		// Confirm
 		OOGraphene.waitModalDialog(browser);

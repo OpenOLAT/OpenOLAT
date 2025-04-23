@@ -59,8 +59,7 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	
 	public QTI21MultipleChoiceEditorPage setAnswer(int position, String answer) {
 		By oneLineInputBy = By.cssSelector("div.o_sel_choice_" + position + " input[type='text']");
-		OOGraphene.waitElement(oneLineInputBy, browser);
-		WebElement oneLineInputEl = browser.findElement(oneLineInputBy);
+		WebElement oneLineInputEl = OOGraphene.waitElement(oneLineInputBy, browser);
 		oneLineInputEl.clear();
 		oneLineInputEl.sendKeys(answer);
 		

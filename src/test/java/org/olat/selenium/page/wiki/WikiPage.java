@@ -61,14 +61,12 @@ public class WikiPage {
 	public WikiPage createPage(String name, String content) {
 		//open the create popover
 		By createBy = By.className("o_sel_wiki_create_page");
-		OOGraphene.waitElement(createBy, 2, browser);
-		WebElement createButton = browser.findElement(createBy);
+		WebElement createButton = OOGraphene.waitElement(createBy, browser);
 		createButton.click();
 		
 		//fill the name of the new page
 		By pageNameBy = By.cssSelector("div.o_callout_content form input[type='text']");
-		OOGraphene.waitElement(pageNameBy, 2, browser);
-		WebElement pageNameEl = browser.findElement(pageNameBy);
+		WebElement pageNameEl = OOGraphene.waitElement(pageNameBy, browser);
 		pageNameEl.sendKeys(name);
 		//search for it
 		By searchBy = By.cssSelector("div.popover-content form .o_sel_wiki_search button");
@@ -83,8 +81,7 @@ public class WikiPage {
 		
 		//fill the form
 		By textBy = By.cssSelector("div.o_wikimod_editform_wrapper form textarea");
-		OOGraphene.waitElement(textBy, browser);
-		WebElement textEl = browser.findElement(textBy);
+		WebElement textEl = OOGraphene.waitElement(textBy, browser);
 		textEl.sendKeys(content);
 		//save the page
 		By saveAndCloseBy = By.className("o_sel_wiki_save_and_close");
@@ -122,8 +119,7 @@ public class WikiPage {
 	 */
 	public MediaPage addAsMedia() {
 		By collectBy = By.cssSelector(".o_wikimod_nav .o_portfolio_collector");
-		OOGraphene.waitElement(collectBy, 5, browser);
-		browser.findElement(collectBy).click();
+		OOGraphene.waitElement(collectBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
 	}

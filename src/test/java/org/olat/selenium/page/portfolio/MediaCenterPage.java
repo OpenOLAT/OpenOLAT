@@ -73,8 +73,7 @@ public class MediaCenterPage {
 	
 	public MediaDetailsPage selectMedia(String name) {
 		By nameBy = By.xpath("//div[contains(@class,'o_media_card')]//a[span[contains(text(),'" + name + "')]]");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).click();
+		OOGraphene.waitElement(nameBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return new MediaDetailsPage(browser);
 	}
@@ -105,8 +104,7 @@ public class MediaCenterPage {
 
 	public MediaCenterPage shareWithMeFilter() {
 		By sharedWithMeBy = By.cssSelector("div.o_media_browser div.o_table_tabs ul>li>a.o_sel_media_shared_with_me");
-		OOGraphene.waitElement(sharedWithMeBy, browser);
-		browser.findElement(sharedWithMeBy).click();
+		OOGraphene.waitElement(sharedWithMeBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -128,15 +126,13 @@ public class MediaCenterPage {
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_user_search_form");
 		
 		By nameBy = By.cssSelector(".o_sel_user_search_form .o_sel_user_search_firstname input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(user.getFirstName());
+		OOGraphene.waitElement(nameBy, browser).sendKeys(user.getFirstName());
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default.o_sel_user_search_button");
 		browser.findElement(searchBy).click();
 		
 		By selectBy = By.xpath("//fieldset[contains(@class,'o_sel_usersearch_searchform')]//table//tr[td[text()[contains(.,'" + user.getFirstName() + "')]]]/td/a[contains(@onclick,'ssc')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		OOGraphene.waitModalDialogDisappears(browser);
 		By sharedWithBy = By.xpath("//fieldset[contains(@class,'o_sel_media_relations_form')]//table//tr/td/div/span[text()[contains(.,'" + user.getFirstName() + "')]]");

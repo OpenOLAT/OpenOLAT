@@ -55,8 +55,7 @@ public class RepositoryMetadataPage {
 	
 	public RepositoryMetadataPage setAuthors(String authors) {
 		By authorsBy = By.cssSelector("div.o_sel_repo_authors input.o_sel_repo_authors[type='text']");
-		OOGraphene.waitElement(authorsBy, browser);
-		browser.findElement(authorsBy).sendKeys(authors);
+		OOGraphene.waitElement(authorsBy, browser).sendKeys(authors);
 		return this;
 	}
 	

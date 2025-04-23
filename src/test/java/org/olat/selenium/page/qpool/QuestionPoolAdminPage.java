@@ -84,8 +84,7 @@ public class QuestionPoolAdminPage {
 		OOGraphene.waitBusy(browser);
 		
 		By numOfReviewsBy = By.cssSelector("fieldset.o_sel_qpool_review_process_admin .o_sel_qpool_num_of_reviews input[type='text']");
-		OOGraphene.waitElement(numOfReviewsBy, browser);
-		WebElement numOfReviewEl = browser.findElement(numOfReviewsBy);
+		WebElement numOfReviewEl = OOGraphene.waitElement(numOfReviewsBy, browser);
 		numOfReviewEl.clear();
 		numOfReviewEl.sendKeys(Integer.toString(numOfReviews));
 		
@@ -101,21 +100,18 @@ public class QuestionPoolAdminPage {
 	
 	public QuestionPoolAdminPage selectLevels() {
 		By levelsBy = By.xpath("//div[contains(@class,'o_segments')]/a[contains(@onclick,'segment.educational.context')]");
-		OOGraphene.waitElement(levelsBy, browser);
-		browser.findElement(levelsBy).click();
+		OOGraphene.waitElement(levelsBy, browser).click();
 		return this;
 	}
 	
 	public QuestionPoolAdminPage addLevel(String name) {
 		By addLevelBy = By.cssSelector("a.btn.o_sel_add_level");
-		OOGraphene.waitElement(addLevelBy, browser);
-		browser.findElement(addLevelBy).click();
+		OOGraphene.waitElement(addLevelBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		
 		By nameBy = By.cssSelector("fieldset.o_sel_edit_level_form div.o_sel_level_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_edit_level_form button.btn.btn-primary");
 		browser.findElement(saveBy).click();

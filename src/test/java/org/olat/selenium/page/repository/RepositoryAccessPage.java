@@ -47,8 +47,7 @@ public class RepositoryAccessPage {
 	 */
 	public RepositoryAccessPage setRuntimeType(RepositoryEntryRuntimeType type) {
 		By runtimeTypeBy = By.xpath("//fieldset[contains(@class,'o_ac_runtime_type_form')]//a[contains(@class,'o_sel_repo_change_runtime_type')]");
-		OOGraphene.waitElement(runtimeTypeBy, browser);
-		browser.findElement(runtimeTypeBy).click();
+		OOGraphene.waitElement(runtimeTypeBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By typeBy = By.xpath("//div[@id='o_cocif_runtime_type']/fieldset//label/input[@name='cif.runtime.type' and @value='" + type + "']");

@@ -44,8 +44,7 @@ public class MyCoursesPage {
 	
 	public MyCoursesPage assertOnMyCourses() {
 		By myCoursesSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_mycourses_my");
-		OOGraphene.waitElement(myCoursesSegmentBy, browser);
-		WebElement myCoursesSegmentEl = browser.findElement(myCoursesSegmentBy);
+		WebElement myCoursesSegmentEl = OOGraphene.waitElement(myCoursesSegmentBy, browser);
 		Assert.assertTrue(myCoursesSegmentEl.isDisplayed());
 		return this;
 	}
@@ -96,8 +95,7 @@ public class MyCoursesPage {
 	public MyCoursesPage select(String title) {
 		try {
 			By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
-			OOGraphene.waitElement(titleBy, browser);
-			browser.findElement(titleBy).click();
+			OOGraphene.waitElement(titleBy, browser).click();
 			OOGraphene.waitBusy(browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Select in my courses", browser);
@@ -131,8 +129,7 @@ public class MyCoursesPage {
 	
 	public MyCoursesPage selectCatalogEntry(String shortTitle) {
 		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div[contains(@class,'o_meta')]/h4/a[span[contains(.,'" + shortTitle + "')]]");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).click();
+		OOGraphene.waitElement(titleBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

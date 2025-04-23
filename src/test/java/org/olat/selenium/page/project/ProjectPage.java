@@ -41,9 +41,7 @@ public class ProjectPage {
 	
 	public ProjectPage fillAndSaveProject(String title, String organisation, String teaser) {
 		By titleBy = By.cssSelector("fieldset.o_sel_proj_project_form input.o_sel_proj_project_title[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		WebElement titleEl = browser.findElement(titleBy);
-		titleEl.sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		By organisationBy = By.cssSelector("div.o_sel_proj_project_organisation a.o_msf_button");
 		browser.findElement(organisationBy).click();
@@ -61,8 +59,7 @@ public class ProjectPage {
 		
 		if(StringHelper.containsNonWhitespace(teaser)) {
 			By teaserBy = By.cssSelector("fieldset.o_sel_proj_project_form input.o_sel_proj_project_teaser[type='text']");
-			OOGraphene.waitElement(teaserBy, browser);
-			browser.findElement(teaserBy).sendKeys(teaser);
+			OOGraphene.waitElement(teaserBy, browser).sendKeys(teaser);
 		}
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_proj_project_form button.btn.btn-primary");
@@ -83,8 +80,7 @@ public class ProjectPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.cssSelector("div.o_sel_notice_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		By closeBy = By.cssSelector(".o_sel_buttons a.o_sel_notice_close");
 		browser.findElement(closeBy).click();
@@ -107,8 +103,7 @@ public class ProjectPage {
 	
 	public ProjectPage quickAddToDo(String todo) {
 		By openAddMenuBy = By.cssSelector(".o_proj_dashboard .o_proj_title button.o_sel_proj_quick_create_dropdown");
-		OOGraphene.waitElement(openAddMenuBy, browser);
-		browser.findElement(openAddMenuBy).click();
+		OOGraphene.waitElement(openAddMenuBy, browser).click();
 		
 		By menuBy = By.cssSelector("ul.o_sel_proj_quick_create_dropdown");
 		OOGraphene.waitElement(menuBy, browser);
@@ -118,8 +113,7 @@ public class ProjectPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.cssSelector("div.o_todo_task_edit .o_sel_task_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(todo);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(todo);
 		
 		By saveBy = By.cssSelector(".modal-dialog .o_sel_buttons button.btn.btn-primary");
 		browser.findElement(saveBy).click();
@@ -142,8 +136,7 @@ public class ProjectPage {
 	
 	public ProjectPage selectToDoInTaskList(String title) {
 		By todoBy = By.xpath("//div[contains(@class,'o_todo_task_list')]//td//a[span[text()[contains(.,'" + title + "')]]]");
-		OOGraphene.waitElement(todoBy, browser);
-		browser.findElement(todoBy).click();
+		OOGraphene.waitElement(todoBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		

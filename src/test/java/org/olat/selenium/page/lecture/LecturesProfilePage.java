@@ -58,8 +58,7 @@ public class LecturesProfilePage {
 	
 	public LecturesProfilePage selectCourseAsParticipant(String course) {
 		By selectBy = By.xpath("//table//tr/td/a[contains(@onclick,'details')][contains(text(),'" + course + "')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

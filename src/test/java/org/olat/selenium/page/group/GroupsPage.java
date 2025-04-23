@@ -110,8 +110,7 @@ public class GroupsPage {
 	public BookingPage bookGroup(String name) {
 		try {
 			By accessBy = By.xpath("//div[contains(@class,'o_group_list')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td/div/a[contains(@class,'o_sel_group_access')]");
-			OOGraphene.waitElement(accessBy, browser);
-			browser.findElement(accessBy).click();
+			OOGraphene.waitElement(accessBy, browser).click();
 			By tokenEntryBy = By.className("o_sel_accesscontrol_token_entry");
 			OOGraphene.waitElement(tokenEntryBy, browser);
 			return new BookingPage(browser);
@@ -136,16 +135,14 @@ public class GroupsPage {
 	
 	private GroupsPage selectGroupInTable(String name) {
 		By groupNameBy = By.xpath("//table//td/a[text()[contains(.,'" + name+ "')]][i[contains(@class,'o_icon_group')]]");
-		OOGraphene.waitElement(groupNameBy, browser);
-		browser.findElement(groupNameBy).click();
+		OOGraphene.waitElement(groupNameBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public GroupsPage deleteGroup(String name) {
 		By groupNameBy = By.xpath("//table//td[//a[text()[contains(.,'" + name+ "')]]]//a[contains(@onclick,'bgTblT')]");
-		OOGraphene.waitElement(groupNameBy, browser);
-		browser.findElement(groupNameBy).click();
+		OOGraphene.waitElement(groupNameBy, browser).click();
 		// wait tools callout
 		By toolsBy = By.xpath("//div[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]");
 		OOGraphene.waitElement(toolsBy, browser);

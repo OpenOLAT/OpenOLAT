@@ -46,8 +46,7 @@ public class PasswordAndAuthenticationAdminPage {
 	public PasswordAndAuthenticationAdminPage enableStartButton(boolean enable) {
 		String type = enable ? "button" : "input";
 		By loginBy = By.xpath("//fieldset[contains(@class,'o_sel_passkey_admin_configuration')]//div[contains(@class,'o_sel_start_button_enable')]//input[@type='radio'][@name='enabled.login.options'][@value='" + type + "']");
-		OOGraphene.waitElement(loginBy, browser);
-		browser.findElement(loginBy).click();
+		OOGraphene.waitElement(loginBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -68,8 +67,7 @@ public class PasswordAndAuthenticationAdminPage {
 			OOGraphene.waitModalDialog(browser);
 			
 			By confirmBy = By.cssSelector("div.modal-content button.btn.btn-primary.btn-danger");
-			OOGraphene.waitElement(confirmBy, browser);
-			browser.findElement(confirmBy).click();
+			OOGraphene.waitElement(confirmBy, browser).click();
 			OOGraphene.waitModalDialogDisappears(browser);	
 		}
 
@@ -84,8 +82,7 @@ public class PasswordAndAuthenticationAdminPage {
 	
 	public PasswordAndAuthenticationAdminPage enablePasskeyLevel(PasskeyLevels level) {
 		By calloutButtonBy = By.cssSelector("button.o_sel_passkey_level_all_roles");
-		OOGraphene.waitElement(calloutButtonBy, browser);
-		browser.findElement(calloutButtonBy).click();
+		OOGraphene.waitElement(calloutButtonBy, browser).click();
 
 		By calloutBy = By.cssSelector("ul.o_sel_passkey_level_all_roles");
 		OOGraphene.waitElement(calloutBy, browser);

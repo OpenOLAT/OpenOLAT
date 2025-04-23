@@ -45,7 +45,7 @@ public class QTI21EditorPage {
 	
 	public QTI21EditorPage assertOnEditor() {
 		By editorBy = By.className("o_assessment_test_editor_and_composer");
-		OOGraphene.waitElement(editorBy, 5, browser);
+		OOGraphene.waitElement(editorBy, browser);
 		return this;
 	}
 	
@@ -80,8 +80,7 @@ public class QTI21EditorPage {
 	
 	public QTI21EditorPage selectItem(String title) {
 		By itemBy = By.xpath("//li/div/span[contains(@class,'o_tree_level_label_leaf')]/a[span[contains(text(),'" + title + "')]]");
-		OOGraphene.waitElement(itemBy, browser);
-		browser.findElement(itemBy).click();
+		OOGraphene.waitElement(itemBy, browser).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		return this;
 	}

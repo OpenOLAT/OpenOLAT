@@ -55,8 +55,7 @@ public class DocumentConfigurationPage {
 
 	public DocumentConfigurationPage selectDocument(String name) {
 		By inputBy = By.cssSelector("fieldset.o_sel_document_settings_upload a.o_sel_doc_select_repository_entry");
-		OOGraphene.waitElement(inputBy, browser);
-		browser.findElement(inputBy).click();
+		OOGraphene.waitElement(inputBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By referenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]");
@@ -69,14 +68,12 @@ public class DocumentConfigurationPage {
 
 		//find the row
 		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + name + "')]]");
-		OOGraphene.waitElement(rowBy, browser);
-		browser.findElement(rowBy).click();
+		OOGraphene.waitElement(rowBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		//confirm
 		By confirmBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
-		OOGraphene.waitElement(confirmBy, browser);
-		browser.findElement(confirmBy).click();
+		OOGraphene.waitElement(confirmBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		return assertOnPreview(name);

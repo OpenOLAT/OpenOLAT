@@ -44,46 +44,41 @@ public class PortfolioV2HomePage {
 	
 	public PortfolioV2HomePage assertHome() {
 		By toolbarBy = By.cssSelector("div.o_portfolio div.o_toolbar");
-		OOGraphene.waitElement(toolbarBy, 5, browser);
-		WebElement toolbarEl = browser.findElement(toolbarBy);
+		WebElement toolbarEl = OOGraphene.waitElement(toolbarBy, browser);
 		Assert.assertTrue(toolbarEl.isDisplayed());
 		return this;
 	}
 	
 	public BindersPage openMyBinders() {
 		By myBindersBy = By.cssSelector("a.o_sel_pf_my_binders");
-		OOGraphene.waitElement(myBindersBy, 5, browser);
-		browser.findElement(myBindersBy).click();
+		OOGraphene.waitElement(myBindersBy, browser).click();
 		
 		By binderListBy = By.cssSelector("div.o_table_flexi.o_portfolio_listing");
-		OOGraphene.waitElement(binderListBy, 5, browser);
+		OOGraphene.waitElement(binderListBy, browser);
 		return new BindersPage(browser);
 	}
 	
 	public MediaCenterPage openMediaCenter() {
 		By mediaCenterLinkBy = By.cssSelector("a.o_sel_pf_media_center");
-		OOGraphene.waitElement(mediaCenterLinkBy, 5, browser);
-		browser.findElement(mediaCenterLinkBy).click();
+		OOGraphene.waitElement(mediaCenterLinkBy, browser).click();
 		
 		By mediaListBy = By.cssSelector("div.o_media_browser div.o_table_flexi");
-		OOGraphene.waitElement(mediaListBy, 5, browser);
+		OOGraphene.waitElement(mediaListBy, browser);
 		return new MediaCenterPage(browser);
 	}
 	
 	public SharedWithMePage openSharedWithMe() {
 		By sharedWithMeLinkBy = By.cssSelector("a.o_sel_pf_shared_with_me");
-		OOGraphene.waitElement(sharedWithMeLinkBy, 5, browser);
-		browser.findElement(sharedWithMeLinkBy).click();
+		OOGraphene.waitElement(sharedWithMeLinkBy, browser).click();
 		
 		By sharedWithMeBy = By.cssSelector("div.o_binder_shared_overview");
-		OOGraphene.waitElement(sharedWithMeBy, 5, browser);
+		OOGraphene.waitElement(sharedWithMeBy, browser);
 		return new SharedWithMePage(browser);
 	}
 	
 	public EntriesPage openMyEntries() {
 		By myEntriesLinkBy = By.cssSelector("a.o_sel_pf_my_entries");
-		OOGraphene.waitElement(myEntriesLinkBy, 5, browser);
-		browser.findElement(myEntriesLinkBy).click();
+		OOGraphene.waitElement(myEntriesLinkBy, browser).click();
 		
 		By myEntriesBy = By.cssSelector("div.o_portfolio_entries");
 		OOGraphene.waitElement(myEntriesBy, browser);
@@ -92,8 +87,7 @@ public class PortfolioV2HomePage {
 	
 	public EntriesPage openDeletedEntries() {
 		By goToTrashBy = By.cssSelector("a.o_sel_pf_trash");
-		OOGraphene.waitElement(goToTrashBy, browser);
-		browser.findElement(goToTrashBy).click();
+		OOGraphene.waitElement(goToTrashBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By entriesBy = By.cssSelector("div.o_portfolio_content div.o_portfolio_entries");
 		OOGraphene.waitElement(entriesBy, browser);
@@ -104,8 +98,7 @@ public class PortfolioV2HomePage {
 		openDeletedEntries();
 		
 		By deletedBindersBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@onclick,'binders')]");
-		OOGraphene.waitElement(deletedBindersBy, 5, browser);
-		browser.findElement(deletedBindersBy).click();
+		OOGraphene.waitElement(deletedBindersBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By deletedListingBy = By.cssSelector("div.o_portfolio_listing.o_portfolio_deleted_listing");
 		OOGraphene.waitElement(deletedListingBy, browser);

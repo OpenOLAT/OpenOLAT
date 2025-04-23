@@ -62,9 +62,4 @@ public class LectureRepositoryAdminListPage {
 		OOGraphene.waitModalDialog(browser);
 		return new ImportLecturesBlocksWizard(browser);
 	}
-	
-
-	
-	
-
 }

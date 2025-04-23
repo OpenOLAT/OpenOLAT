@@ -48,7 +48,7 @@ public class QTI21ChoicesScoreEditorPage {
 		if(mode == ScoreEvaluation.allCorrectAnswers) {
 			OOGraphene.waitElementDisappears(choiceScoreTable, 5, browser);
 		} else if (mode == ScoreEvaluation.perAnswer) {
-			OOGraphene.waitElement(choiceScoreTable, 5, browser);
+			OOGraphene.waitElement(choiceScoreTable, browser);
 		}
 		return this;
 	}

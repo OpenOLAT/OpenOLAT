@@ -40,8 +40,7 @@ public class VideoConfigurationPage {
 	
 	public VideoConfigurationPage selectVideoConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_video_configuration>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		By configBy = By.cssSelector("fieldset.o_sel_video_configuration_form");
 		OOGraphene.waitElement(configBy, browser);
 		return this;
@@ -53,8 +52,7 @@ public class VideoConfigurationPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By importByUrlBy = By.cssSelector("div.o_sel_search_referenceable_entries a.o_sel_repo_popup_import_url_resource");
-		OOGraphene.waitElement(importByUrlBy, browser);
-		browser.findElement(importByUrlBy).click();
+		OOGraphene.waitElement(importByUrlBy, browser).click();
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_re_import_url_form");
 		
 		By urlBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_import_url input[type='text']");

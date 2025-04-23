@@ -106,8 +106,7 @@ public class LoginPage {
 	
 	public LoginPage assertOnMembershipConfirmation() {
 		By reservationBy = By.cssSelector("div.o_reservation");
-		OOGraphene.waitElement(reservationBy, 10, browser);
-		WebElement reservationEl = browser.findElement(reservationBy);
+		WebElement reservationEl = OOGraphene.waitElement(reservationBy, 10, browser);
 		Assert.assertTrue(reservationEl.isDisplayed());
 		return this;
 	}
@@ -216,13 +215,11 @@ public class LoginPage {
 	public LoginPage loginDenied(String username, String password) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		browser.findElement(usernameId).sendKeys(username);
+		OOGraphene.waitElement(usernameId, browser).sendKeys(username);
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 		By passwordId = By.id("o_fiooolat_login_pass");
-		OOGraphene.waitElement(passwordId, browser);
-		browser.findElement(passwordId).sendKeys(password);
+		OOGraphene.waitElement(passwordId, browser).sendKeys(password);
 		browser.findElement(loginBy).click();
 		
 		By errorMessageby = By.cssSelector("div.o_login_box div.o_login_error");
@@ -261,8 +258,7 @@ public class LoginPage {
 		
 		// 1. Username
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		browser.findElement(usernameId).sendKeys(username);
+		OOGraphene.waitElement(usernameId, browser).sendKeys(username);
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 		
@@ -313,8 +309,7 @@ public class LoginPage {
 	public LoginPage loginWithPasskey(String username, By landingPointBy) {
 		// 1. Username
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		browser.findElement(usernameId).sendKeys(username);
+		OOGraphene.waitElement(usernameId, browser).sendKeys(username);
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 
@@ -329,8 +324,7 @@ public class LoginPage {
 	public LoginPage loginWithPasskeyButRecovery(String username, By landingPointBy, PasskeyInformations passkeyInfos) {
 		// 1. Username
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		browser.findElement(usernameId).sendKeys(username);
+		OOGraphene.waitElement(usernameId, browser).sendKeys(username);
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 		
@@ -347,8 +341,7 @@ public class LoginPage {
 		browser.findElement(recoveryKeyButtonBy).click();
 		
 		By recoveryKeyBy = By.cssSelector("input.o_sel_auth_recovery_key");
-		OOGraphene.waitElement(recoveryKeyBy, browser);//wait the login page
-		browser.findElement(recoveryKeyBy).sendKeys(passkeyInfos.recoveryKeys().get(0));
+		OOGraphene.waitElement(recoveryKeyBy, browser).sendKeys(passkeyInfos.recoveryKeys().get(0));
 		browser.findElement(loginBy).click();
 
 		return postSuccessfulLogin(landingPointBy);

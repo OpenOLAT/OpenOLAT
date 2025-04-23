@@ -789,8 +789,7 @@ public class OOGraphene {
 	public static final void selectPreviousMonthInDatePicker(WebDriver browser) {
 		try {
 			By nextBy = By.cssSelector("div.datepicker-dropdown.active div.datepicker-header button.prev-button");
-			waitElement(nextBy, browser);
-			browser.findElement(nextBy).click();
+			waitElement(nextBy, browser).click();
 			waitingALittleBit();
 			waitElement(nextBy, browser);
 		} catch (Exception e) {
@@ -807,8 +806,7 @@ public class OOGraphene {
 	public static final void selectNextMonthInDatePicker(WebDriver browser) {
 		try {
 			By nextBy = By.cssSelector("div.datepicker-dropdown.active div.datepicker-header button.next-button");
-			waitElement(nextBy, browser);
-			browser.findElement(nextBy).click();
+			waitElement(nextBy, browser).click();
 			waitingALittleBit();
 			waitElement(nextBy, browser);
 		} catch (Exception e) {
@@ -925,9 +923,8 @@ public class OOGraphene {
 	 */
 	public static final void clickBreadcrumbBack(WebDriver browser) {
 		By backBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_back']/a[i[contains(@class,'o_icon_back')]]");
-		waitElement(backBy, 10, browser);
 		try {
-			browser.findElement(backBy).click();
+			waitElement(backBy, 10, browser).click();
 		} catch (StaleElementReferenceException e) {
 			log.error("", e);
 			waitingALittleLonger();

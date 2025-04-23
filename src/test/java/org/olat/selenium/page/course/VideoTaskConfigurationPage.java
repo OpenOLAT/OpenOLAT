@@ -40,8 +40,7 @@ public class VideoTaskConfigurationPage {
 	
 	public VideoTaskConfigurationPage selectVideoTaskConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_video_configuration>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		By configBy = By.cssSelector("fieldset.o_video_configuration");
 		OOGraphene.waitElement(configBy, browser);
 		return this;

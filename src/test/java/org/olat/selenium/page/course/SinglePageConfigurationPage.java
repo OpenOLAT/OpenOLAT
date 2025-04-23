@@ -48,13 +48,11 @@ public class SinglePageConfigurationPage {
 	
 	public SinglePageConfigurationPage createEditPage(String filename, String content) {
 		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_create");
-		OOGraphene.waitElement(editBy, browser);
-		browser.findElement(editBy).click();
+		OOGraphene.waitElement(editBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By filenameBy = By.cssSelector("fieldset.o_sel_file_form input.o_sel_filename");
-		OOGraphene.waitElement(filenameBy, browser);
-		browser.findElement(filenameBy).sendKeys(filename);
+		OOGraphene.waitElement(filenameBy, browser).sendKeys(filename);
 		
 		By createBy = By.cssSelector("fieldset.o_sel_file_form button.btn-primary");
 		browser.findElement(createBy).click();
@@ -64,24 +62,21 @@ public class SinglePageConfigurationPage {
 		OOGraphene.tinymce(content, browser);
 		
 		By saveAndCloseBy = By.cssSelector("div.o_htmleditor #o_button_saveclose a");
-		OOGraphene.waitElement(saveAndCloseBy, browser);
-		browser.findElement(saveAndCloseBy).click();
+		OOGraphene.waitElement(saveAndCloseBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public TinyPage editPage() {
 		By editPageLink = By.cssSelector("fieldset.o_sel_single_page_file_settings div.o_icon_panel div.o_icon_panel_links>a.o_sel_filechooser_edit");
-		OOGraphene.waitElement(editPageLink, browser);
-		browser.findElement(editPageLink).click();
+		OOGraphene.waitElement(editPageLink, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new TinyPage(browser);
 	}
 	
 	public SinglePageConfigurationPage uploadFile(File file) {
 		By importBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_import");
-		OOGraphene.waitElement(importBy, browser);
-		browser.findElement(importBy).click();
+		OOGraphene.waitElement(importBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".modal-body .o_fileinput input[type='file']");
@@ -90,8 +85,7 @@ public class SinglePageConfigurationPage {
 		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By uploadBy = By.cssSelector(".modal-body .o_sel_upload_buttons button.btn-primary");
-		OOGraphene.waitElement(uploadBy, browser);
-		browser.findElement(uploadBy).click();
+		OOGraphene.waitElement(uploadBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

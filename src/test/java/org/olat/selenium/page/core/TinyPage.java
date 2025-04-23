@@ -49,8 +49,7 @@ public class TinyPage {
 	
 	public TinyPage uploadImage(File image) {
 		By tinyImageButtonBy = By.xpath("//div[@class='o_richtext_mce']//div[contains(@class,'tox-editor-container')]//button[contains(@title,'Bild')]");
-		OOGraphene.waitElement(tinyImageButtonBy, browser);
-		browser.findElement(tinyImageButtonBy).click();
+		OOGraphene.waitElement(tinyImageButtonBy, browser).click();
 		
 		By windowBy = By.cssSelector("div.tox-dialog");
 		OOGraphene.waitElement(windowBy, browser);
@@ -61,8 +60,7 @@ public class TinyPage {
 		OOGraphene.waitTopModalDialog(browser);
 		
 		By uploadButtonBy = By.xpath("//div[@id='o_fc_select']/a[contains(@onclick,'o_fc_upload')]");
-		OOGraphene.waitElement(uploadButtonBy, browser);
-		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitElement(uploadButtonBy, browser).click();
 		
 		By uploadPanelBy = By.xpath("//div[@id='o_fc_upload']//form");
 		OOGraphene.waitElement(uploadPanelBy, browser);
@@ -88,8 +86,7 @@ public class TinyPage {
 	
 	public TinyPage saveContent() {
 		By saveAndCloseBy = By.cssSelector("div.o_htmleditor #o_button_saveclose a");
-		OOGraphene.waitElement(saveAndCloseBy, browser);
-		browser.findElement(saveAndCloseBy).click();
+		OOGraphene.waitElement(saveAndCloseBy, browser).click();
 		
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;

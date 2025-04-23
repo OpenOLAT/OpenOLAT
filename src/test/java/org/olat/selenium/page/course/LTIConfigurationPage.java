@@ -62,8 +62,7 @@ public class LTIConfigurationPage {
 		OOGraphene.toggle("fieldset.o_sel_lti_grading_form div.o_sel_lti_config_assessable button.o_sel_lti_config_assessable", true, false, browser);
 		
 		By scaleBy = By.cssSelector("div.o_sel_lti_config_scale input[type=text]");
-		OOGraphene.waitElement(scaleBy, browser);
-		WebElement scaleEl = browser.findElement(scaleBy);
+		WebElement scaleEl = OOGraphene.waitElement(scaleBy, browser);
 		scaleEl.clear();
 		scaleEl.sendKeys(Double.toString(scale));
 		

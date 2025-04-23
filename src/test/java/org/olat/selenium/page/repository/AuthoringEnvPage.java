@@ -60,8 +60,7 @@ public class AuthoringEnvPage {
 	 */
 	public AuthoringEnvPage assertOnGenericSearch() {
 		By genericSearchBy = By.xpath("//ul[contains(@class,'o_segments')]/li/a[contains(@class,'btn-primary')][contains(@class,'o_sel_author_search')]");
-		OOGraphene.waitElement(genericSearchBy, browser);
-		WebElement genericSearchSegment = browser.findElement(genericSearchBy);
+		WebElement genericSearchSegment = OOGraphene.waitElement(genericSearchBy, browser);
 		Assert.assertTrue(genericSearchSegment.isDisplayed());
 		return this;
 	}
@@ -123,8 +122,7 @@ public class AuthoringEnvPage {
 	 */
 	public AuthoringEnvPage openCreateDropDown() {
 		By createMenuCaretBy = By.cssSelector("button.o_sel_author_create");
-		OOGraphene.waitElement(createMenuCaretBy, browser);
-		browser.findElement(createMenuCaretBy).click();
+		OOGraphene.waitElement(createMenuCaretBy, browser).click();
 		OOGraphene.waitElement(createMenuBy, browser);
 		return this;
 	}
@@ -244,8 +242,7 @@ public class AuthoringEnvPage {
 	
 	public AuthoringEnvPage uploadResource(String title, File resource, boolean saveAllowed) {
 		By importBy = By.className("o_sel_author_import");
-		OOGraphene.waitElement(importBy, browser);
-		browser.findElement(importBy).click();
+		OOGraphene.waitElement(importBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
@@ -259,8 +256,7 @@ public class AuthoringEnvPage {
 		//save
 		if(saveAllowed) {
 			By saveBy = By.xpath("//div[contains(@class,'o_sel_repo_save_details')]//button[contains(@class,'btn-primary')][not(contains(@class,'o_disabled'))]");
-			OOGraphene.waitElement(saveBy, browser);
-			browser.findElement(saveBy).click();
+			OOGraphene.waitElement(saveBy, browser).click();
 			OOGraphene.waitModalDialogDisappears(browser);
 			OOGraphene.waitElement(generaltabBy, browser);
 			OOGraphene.waitTinymce(browser);
@@ -288,8 +284,7 @@ public class AuthoringEnvPage {
 	 */
 	public void openResource(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//a[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 	}
 	
@@ -301,20 +296,17 @@ public class AuthoringEnvPage {
 	 */
 	public AuthoringEnvPage selectResource(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td/input[@name='tb_ms']");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AuthoringEnvPage searchResource(String text) {
 		By searchPresetBy = By.cssSelector(".o_sel_author_env .o_table_tabs a.o_sel_author_search");
-		OOGraphene.waitElement(searchPresetBy, browser);
-		browser.findElement(searchPresetBy).click();
+		OOGraphene.waitElement(searchPresetBy, browser).click();
 		
 		By searchFieldBy = By.cssSelector(".o_sel_author_env .o_table_large_search input[type='text']");
-		OOGraphene.waitElement(searchFieldBy, browser);
-		browser.findElement(searchFieldBy).sendKeys(text);
+		OOGraphene.waitElement(searchFieldBy, browser).sendKeys(text);
 		
 		By searchButtonBy = By.cssSelector(".o_sel_author_env .o_table_large_search a.o_table_search_button");
 		browser.findElement(searchButtonBy).click();
@@ -325,8 +317,7 @@ public class AuthoringEnvPage {
 	public void editResource(String title) {
 		if(browser instanceof FirefoxDriver) {
 			By toolsMenuCaretBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td[contains(@class,'o_col_action')]/div/a[i[contains(@class,'o_icon_actions')]]");
-			OOGraphene.waitElement(toolsMenuCaretBy, browser);
-			browser.findElement(toolsMenuCaretBy).click();
+			OOGraphene.waitElement(toolsMenuCaretBy, browser).click();
 			By toolsMenu = By.cssSelector("ul.o_sel_authoring_tools");
 			OOGraphene.waitElement(toolsMenu, browser);
 			
@@ -334,8 +325,7 @@ public class AuthoringEnvPage {
 			browser.findElement(editBy).click();
 		} else {
 			By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@onclick,'edit')]");
-			OOGraphene.waitElement(editBy, browser);
-			browser.findElement(editBy).click();
+			OOGraphene.waitElement(editBy, browser).click();
 		}
 		// can be warning in edition or edit mode
 		OOGraphene.waitBusy(browser);
@@ -343,21 +333,19 @@ public class AuthoringEnvPage {
 	
 	public ModifyOwnersPage changeOwner() {
 		By modifyOwnersBy = By.cssSelector("div.o_table_batch_buttons a.o_sel_modify_owners");
-		OOGraphene.waitElement(modifyOwnersBy, browser);
-		browser.findElement(modifyOwnersBy).click();
+		OOGraphene.waitElement(modifyOwnersBy, browser).click();
 		OOGraphene.waitModalWizard(browser);
 		return new ModifyOwnersPage(browser);
 	}
 	
 	public AuthoringEnvPage modifyStatus(RepositoryEntryStatusEnum status) {
 		By modifyOwnersBy = By.cssSelector("div.o_table_batch_buttons a.o_sel_modify_status");
-		OOGraphene.waitElement(modifyOwnersBy, browser);
-		browser.findElement(modifyOwnersBy).click();
+		OOGraphene.waitElement(modifyOwnersBy, browser).click();
 		OOGraphene.waitModalWizard(browser);
 		
 		By statusBy = By.cssSelector("div.modal-dialog div.o_sel_status select");
-		OOGraphene.waitElement(statusBy, browser);
-		new Select(browser.findElement(statusBy)).selectByValue(status.name());
+		WebElement statusEl = OOGraphene.waitElement(statusBy, browser);
+		new Select(statusEl).selectByValue(status.name());
 		
 		By modifyBy = By.cssSelector("div.modal-dialog button.btn-primary");
 		browser.findElement(modifyBy).click();

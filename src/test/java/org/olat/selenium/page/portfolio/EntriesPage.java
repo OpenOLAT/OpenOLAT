@@ -48,7 +48,7 @@ public class EntriesPage {
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_entry_form");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		OOGraphene.waitElement(popupBy, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_pf_edit_entry_title input[type='text']");
@@ -118,8 +118,7 @@ public class EntriesPage {
 		OOGraphene.waitBusy(browser);
 
 		By selectSectionBy = By.cssSelector("#o_cosections_SELBOX select");
-		OOGraphene.waitElement(selectSectionBy, browser);
-		WebElement selectSectionEl = browser.findElement(selectSectionBy);
+		WebElement selectSectionEl = OOGraphene.waitElement(selectSectionBy, browser);
 		new Select(selectSectionEl).selectByVisibleText(section);
 		
 		By restoreButtonBy = By.cssSelector("div.modal-dialog button");
