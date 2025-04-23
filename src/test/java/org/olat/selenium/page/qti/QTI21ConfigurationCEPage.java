@@ -88,28 +88,28 @@ public class QTI21ConfigurationCEPage {
 		OOGraphene.waitElement(resultsLevelCheckedBy, browser);
 
 		if(options.isMetadata()) {
-			By levelBy = By.xpath("//fieldset[contains(@class,'o_sel_qti_show_results_options')]//input[@type='checkbox'][@value='metadata']");
-			browser.findElement(levelBy).click();
+			By metadataBy = By.xpath("//fieldset[contains(@class,'o_sel_qti_show_results_options')]//input[@type='checkbox'][@value='metadata']");
+			OOGraphene.waitElementRefreshed(metadataBy, browser).click();
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isSectionSummary()) {
-			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
-			browser.findElement(levelBy).click();
+			By sectionSummaryBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
+			OOGraphene.waitElementRefreshed(sectionSummaryBy, browser).click();
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isQuestionSummary()) {
-			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
-			browser.findElement(levelBy).click();
+			By questionSummaryBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
+			OOGraphene.waitElementRefreshed(questionSummaryBy, browser).click();
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isUserSolutions()) {
-			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
-			browser.findElement(levelBy).click();
+			By userSolutionsBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
+			OOGraphene.waitElementRefreshed(userSolutionsBy, browser).click();
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isCorrectSolutions()) {
-			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
-			browser.findElement(levelBy).click();
+			By correctSolutionsBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
+			OOGraphene.waitElementRefreshed(correctSolutionsBy, browser).click();
 			OOGraphene.waitBusy(browser);
 		}
 		return this;
@@ -124,8 +124,7 @@ public class QTI21ConfigurationCEPage {
 	 */
 	public QTI21ConfigurationCEPage setCorrectionMode(String mode) {
 		By correctionBy = By.xpath("//fieldset[contains(@class,'o_qti_21_correction')]//fieldset[@id='o_cocorrection_mode']//input[@value='" + mode + "'][@name='correction.mode'][@type='radio']");
-		OOGraphene.waitElement(correctionBy, browser);
-		browser.findElement(correctionBy).click();
+		OOGraphene.waitElement(correctionBy, browser).click();
 		return this;
 	}
 	
@@ -151,14 +150,11 @@ public class QTI21ConfigurationCEPage {
 	private QTI21ConfigurationCEPage setTime(String fieldClass, int hour, int minutes, boolean waitBusy) {
 		try {
 			By untilAltBy = By.cssSelector("div." + fieldClass + " div.o_date_picker span.input-group-addon i");
-			OOGraphene.waitElement(untilAltBy, browser);
-			browser.findElement(untilAltBy).click();
+			OOGraphene.waitElement(untilAltBy, browser).click();
 			OOGraphene.waitingALittleLonger();//SEL wait animation
 			
 			By todayBy = By.cssSelector("div." + fieldClass + " div.datepicker-dropdown.active span.datepicker-cell.day.focused");
-			OOGraphene.waitElement(todayBy, browser);
-
-			browser.findElement(todayBy).click();
+			OOGraphene.waitElementRefreshed(todayBy, browser).click();
 			
 			By activePickerBy = By.cssSelector("div." + fieldClass + " div.datepicker-dropdown.active");
 			OOGraphene.waitElementDisappears(activePickerBy, 5, browser);
@@ -203,8 +199,7 @@ public class QTI21ConfigurationCEPage {
 	
 	public QTI21ConfigurationCEPage selectLearnContent() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(chooseTestButton, browser);
 		return this;
 	}

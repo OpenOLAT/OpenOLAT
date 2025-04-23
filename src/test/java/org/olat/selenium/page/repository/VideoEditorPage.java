@@ -67,8 +67,7 @@ public class VideoEditorPage {
 	public VideoEditorPage addSegment() {
 		try {
 			By addBy = By.cssSelector(".o_video_edit_segments .o_video_common_form_header_add_item a.btn");
-			OOGraphene.waitElement(addBy, browser);
-			browser.findElement(addBy).click();
+			OOGraphene.waitElement(addBy, browser).click();
 			
 			By startBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
 			OOGraphene.waitElement(startBy, browser);
@@ -82,10 +81,12 @@ public class VideoEditorPage {
 	public VideoEditorPage editSegment(String start, String end) {
 		try {
 			By startBy = By.cssSelector(".o_video_segment_start .o_video_apply_position_timestamp input[type='text']");
-			OOGraphene.clearAndSendKeys(startBy, start, browser);
+			OOGraphene.waitElementRefreshed(startBy, browser).clear();
+			OOGraphene.waitElementRefreshed(startBy, browser).sendKeys(start);
 
 			By endBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
-			OOGraphene.clearAndSendKeys(endBy, end, browser);
+			OOGraphene.waitElementRefreshed(endBy, browser).clear();
+			OOGraphene.waitElementRefreshed(endBy, browser).sendKeys(end);
 			OOGraphene.waitingALittleBit();
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Edit segment", browser);
@@ -125,7 +126,7 @@ public class VideoEditorPage {
 		try {
 			By saveBy = By.cssSelector(".o_video_segment_buttons>button.btn.btn-primary.o_button_dirty");
 			try {
-				browser.findElement(saveBy).click();
+				OOGraphene.waitElementRefreshed(saveBy, browser).click();
 			} catch (StaleElementReferenceException e) {
 				log.error("", e);
 				OOGraphene.waitingALittleBit();

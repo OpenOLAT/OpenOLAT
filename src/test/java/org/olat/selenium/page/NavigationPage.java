@@ -166,8 +166,7 @@ public class NavigationPage {
 				openMoreMenu();
 			}
 
-			OOGraphene.waitElement(linkBy, browser);
-			browser.findElement(linkBy).click();
+			OOGraphene.waitElement(linkBy, browser).click();
 			OOGraphene.waitBusy(browser);
 			OOGraphene.waitingTransition(browser);
 		} catch (Exception e) {
@@ -199,8 +198,7 @@ public class NavigationPage {
 	
 	private void openMoreMenu() {
 		By openMoreBy = By.cssSelector("#o_navbar_more>li>a.dropdown-toggle");
-		OOGraphene.waitElement(openMoreBy, browser);
-		browser.findElement(openMoreBy).click();
+		OOGraphene.waitElement(openMoreBy, browser).click();
 		//wait the small transition
 		By openedMoreMenuby = By.cssSelector("#o_navbar_more>li.open ul.dropdown-menu.dropdown-menu-right");
 		OOGraphene.waitElement(openedMoreMenuby, browser);

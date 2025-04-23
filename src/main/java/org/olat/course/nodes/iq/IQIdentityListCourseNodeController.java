@@ -894,7 +894,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			}
 		}
 		
-		if(testSessions == null || testSessions.isEmpty()) {
+		if(testSessions.isEmpty()) {
 			showWarning("warning.users.extra.time");
 			return;
 		}
