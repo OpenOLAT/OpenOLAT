@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumStatus;
@@ -89,7 +90,11 @@ public class CurriculumRow implements CurriculumRef {
 		return curriculum;
 	}
 	
-	public String getOrganisation() {
+	public Organisation getOrganisation() {
+		return curriculum.getOrganisation();
+	}
+	
+	public String getOrganisationDisplayName() {
 		if(curriculum.getOrganisation() != null) {
 			return curriculum.getOrganisation().getDisplayName();
 		}

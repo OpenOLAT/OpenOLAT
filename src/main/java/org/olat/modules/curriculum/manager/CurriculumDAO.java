@@ -215,20 +215,8 @@ public class CurriculumDAO {
 			sb.append(")");	
 		}
 		
-		if(params.getCurriculumAdmin() != null) {
-			// curriculum administrator at level curriculum
-			sb.and()
-			  .append("(baseGroup.key in (select cGroup.key from bgroupmember as cMembership")
-			  .append("  inner join cMembership.group as cGroup")
-			  .append("  where cMembership.identity.key=:managerKey")
-			  .append("  and cMembership.role ").in(CurriculumRoles.curriculummanager, CurriculumRoles.curriculumowner)
-			  .append(")");
-			// curriculum administrator from the organisation
-			sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
-			  .append("  inner join oMembership.group as oGroup")
-			  .append("  where oMembership.identity.key=:managerKey")
-			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
-			  .append("))");
+		if(params.getElementOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
+			appendCurriculumPermissions(sb, params);
 		}
 
 		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
@@ -249,6 +237,12 @@ public class CurriculumDAO {
 		}
 		if(params.getCurriculumAdmin() != null) {
 			query.setParameter("managerKey", params.getCurriculumAdmin().getKey());
+		}
+		if(params.getCurriculumPrincipal() != null) {
+			query.setParameter("principalKey", params.getCurriculumPrincipal().getKey());
+		}
+		if(params.getElementOwner() != null) {
+			query.setParameter("ownerKey", params.getElementOwner().getKey());
 		}
 		return query.getResultList();
 	}
@@ -325,57 +319,7 @@ public class CurriculumDAO {
 		}
 		
 		if(params.getElementOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
-			sb.and()
-			  .append("(");
-			
-			boolean needOr = false;
-		
-			if(params.getElementOwner() != null) {
-				needOr = true;
-				sb.append("exists (select courseCurEl.key from curriculumelement as courseCurEl")
-				  .append(" inner join repoentrytogroup as curRelGroup on (courseCurEl.group.key=curRelGroup.group.key)")
-				  .append(" inner join repoentrytogroup as courseRelGroup on (courseRelGroup.entry.key=curRelGroup.entry.key)")
-				  .append(" inner join courseRelGroup.group as courseBaseGroup")
-				  .append(" inner join courseBaseGroup.members as courseMembership")
-				  .append(" where courseMembership.identity.key=:ownerKey and courseMembership.role='").append(GroupRoles.owner.name()).append("'")
-				  .append(" and courseCurEl.curriculum.key=cur.key")
-				  .append(") or exists (select ownedCurEl.key from curriculumelement as ownedCurEl")
-				  .append(" inner join ownedCurEl.group as ownedBaseGroup")
-				  .append(" inner join ownedBaseGroup.members as ownedMembership")
-				  .append(" where ownedMembership.identity.key=:ownerKey and ownedMembership.role ").in(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner)
-				  .append(" and ownedCurEl.curriculum.key=cur.key")
-				  .append(")");
-			}
-			
-			if(params.getCurriculumAdmin() != null) {
-				if(needOr) {
-					sb.append(" or ");
-				}
-				needOr = true;
-				sb.append("baseGroup.key in (select mgrGroup.key from bgroupmember as mgrMembership")
-				  .append("  inner join mgrMembership.group as mgrGroup")
-				  .append("  where mgrMembership.identity.key=:managerKey")
-				  .append("  and mgrMembership.role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager)
-				  .append(")");
-				sb.append("or organis.group.key in (select admGroup.key from bgroupmember as admMembership")
-				  .append("  inner join admMembership.group as admGroup")
-				  .append("  where admMembership.identity.key=:managerKey")
-					  .append("  and admMembership.role ").in(OrganisationRoles.administrator, CurriculumRoles.curriculummanager)
-					  .append(")");
-			}
-			
-			if(params.getCurriculumPrincipal() != null) {
-				if(needOr) {
-					sb.append(" or ");
-				}
-				sb.append(" organis.group.key in (select principalGroup.key from bgroupmember as principalMembership")
-				  .append("  inner join principalMembership.group as principalGroup")
-				  .append("  where principalMembership.identity.key=:principalKey")
-				  .append("  and principalMembership.role ").in(OrganisationRoles.principal)
-				  .append(")");
-			}
-			
-			sb.append(")");
+			appendCurriculumPermissions(sb, params);
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -427,6 +371,60 @@ public class CurriculumDAO {
 			infos.add(new CurriculumInfos(curriculum, statistics));
 		}
 		return infos;
+	}
+	
+	private void appendCurriculumPermissions(QueryBuilder sb, CurriculumSearchParameters params) {
+		sb.and()
+		  .append("(");
+		
+		boolean needOr = false;
+	
+		if(params.getElementOwner() != null) {
+			needOr = true;
+			sb.append("exists (select courseCurEl.key from curriculumelement as courseCurEl")
+			  .append(" inner join repoentrytogroup as curRelGroup on (courseCurEl.group.key=curRelGroup.group.key)")
+			  .append(" inner join repoentrytogroup as courseRelGroup on (courseRelGroup.entry.key=curRelGroup.entry.key)")
+			  .append(" inner join courseRelGroup.group as courseBaseGroup")
+			  .append(" inner join courseBaseGroup.members as courseMembership")
+			  .append(" where courseMembership.identity.key=:ownerKey and courseMembership.role='").append(GroupRoles.owner.name()).append("'")
+			  .append(" and courseCurEl.curriculum.key=cur.key")
+			  .append(") or exists (select ownedCurEl.key from curriculumelement as ownedCurEl")
+			  .append(" inner join ownedCurEl.group as ownedBaseGroup")
+			  .append(" inner join ownedBaseGroup.members as ownedMembership")
+			  .append(" where ownedMembership.identity.key=:ownerKey and ownedMembership.role ").in(CurriculumRoles.curriculumelementowner, CurriculumRoles.owner)
+			  .append(" and ownedCurEl.curriculum.key=cur.key")
+			  .append(")");
+		}
+		
+		if(params.getCurriculumAdmin() != null) {
+			if(needOr) {
+				sb.append(" or ");
+			}
+			needOr = true;
+			sb.append("baseGroup.key in (select mgrGroup.key from bgroupmember as mgrMembership")
+			  .append("  inner join mgrMembership.group as mgrGroup")
+			  .append("  where mgrMembership.identity.key=:managerKey")
+			  .append("  and mgrMembership.role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager)
+			  .append(")");
+			sb.append("or organis.group.key in (select admGroup.key from bgroupmember as admMembership")
+			  .append("  inner join admMembership.group as admGroup")
+			  .append("  where admMembership.identity.key=:managerKey")
+				  .append("  and admMembership.role ").in(OrganisationRoles.administrator, CurriculumRoles.curriculummanager)
+				  .append(")");
+		}
+		
+		if(params.getCurriculumPrincipal() != null) {
+			if(needOr) {
+				sb.append(" or ");
+			}
+			sb.append(" organis.group.key in (select principalGroup.key from bgroupmember as principalMembership")
+			  .append("  inner join principalMembership.group as principalGroup")
+			  .append("  where principalMembership.identity.key=:principalKey")
+			  .append("  and principalMembership.role ").in(OrganisationRoles.principal)
+			  .append(")");
+		}
+		
+		sb.append(")");
 	}
 	
 	public Curriculum update(Curriculum curriculum) {

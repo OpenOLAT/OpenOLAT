@@ -137,7 +137,7 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 			case displayName -> row.getDisplayName();
 			case externalRef -> row.getExternalRef();
 			case externalId -> row.getExternalId();
-			case organisation -> row.getOrganisation();
+			case organisation -> row.getOrganisationDisplayName();
 			case numOfElements -> row.getImplementationsStatistics().numOfRootElements();
 			case numOfPreparationRootElements -> row.getImplementationsStatistics().numOfPreparationRootElements();
 			case numOfProvisionalRootElements -> row.getImplementationsStatistics().numOfProvisionalRootElements();
