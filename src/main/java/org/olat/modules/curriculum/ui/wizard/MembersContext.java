@@ -61,6 +61,8 @@ public class MembersContext {
 	private Map<Long, BillingAddress> identityKeyToBillingAddress;
 	private String purchaseOrderNumber;
 	private String orderComment;
+	
+	private boolean addAsTeacher;
 
 	private List<MembershipModification> modifications;
 	
@@ -239,6 +241,14 @@ public class MembersContext {
 
 	public void setModifications(List<MembershipModification> modifications) {
 		this.modifications = modifications;
+	}
+	
+	public boolean isAddAsTeacher() {
+		return addAsTeacher;
+	}
+
+	public void setAddAsTeacher(boolean addAsTeacher) {
+		this.addAsTeacher = addAsTeacher;
 	}
 
 	public String getAdminNote() {

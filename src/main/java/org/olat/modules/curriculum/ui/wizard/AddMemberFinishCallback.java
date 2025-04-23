@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.wizard;
 import java.util.List;
 
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -37,10 +38,14 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureService;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,6 +57,10 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 	
 	private final MembersContext membersContext;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private LectureService lectureService;
 
 	public AddMemberFinishCallback(MembersContext membersContext) {
 		super();
@@ -82,8 +91,29 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 			if(!changes.isEmpty()) {
 				curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
 			}
+			if(membersContext.isAddAsTeacher()) {
+				addAsTeacher(identities, modifications);
+			}
 		}
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private void addAsTeacher(List<Identity> identities, List<MembershipModification> modifications) {
+		List<CurriculumElement> elements = modifications.stream()
+				.map(MembershipModification::curriculumElement)
+				.toList();
+		
+		for(CurriculumElement element:elements) {
+			List<LectureBlock> blocks = lectureService.getLectureBlocks(element, true);
+			for(LectureBlock block:blocks) {
+				if(block.getStatus() == LectureBlockStatus.active) {
+					for(Identity identity:identities) {
+						lectureService.addTeacher(block, identity);
+					}
+				}
+				dbInstance.commitAndCloseSession();
+			}
+		}
 	}
 	
 	private OrderStatus getOrderStatus(AccessInfos offer) {
