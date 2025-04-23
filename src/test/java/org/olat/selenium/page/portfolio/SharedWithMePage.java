@@ -45,22 +45,20 @@ public class SharedWithMePage {
 		OOGraphene.waitBusy(browser);
 		
 		By sharedBindersWithMeBy = By.cssSelector("div.o_table_flexi.o_binder_shared_items_listing");
-		OOGraphene.waitElement(sharedBindersWithMeBy, 5, browser);
+		OOGraphene.waitElement(sharedBindersWithMeBy, browser);
 		return this;
 	}
 	
 	public SharedWithMePage assertOnBinder(String title) {
 		By binderBy = By.xpath("//div[contains(@class,'o_binder_shared_items_listing')]//td/a[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(binderBy, 5, browser);
-		WebElement binderEl = browser.findElement(binderBy);
+		WebElement binderEl = OOGraphene.waitElement(binderBy, browser);
 		Assert.assertTrue(binderEl.isDisplayed());
 		return this;
 	}
 	
 	public BinderPage selectBinder(String title) {
 		By binderBy = By.xpath("//div[contains(@class,'o_binder_shared_items_listing')]//td/a[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(binderBy, 5, browser);
-		browser.findElement(binderBy).click();
+		OOGraphene.waitElement(binderBy, browser).click();
 		return new BinderPage(browser);
 	}
 }

@@ -47,8 +47,7 @@ public class TaxonomyAdminPage {
 		OOGraphene.scrollTop(browser);//scroll top if the settings were set
 		
 		By selectBy = By.xpath("//div[@class='o_taxonomy_row'][div/div/h4/small[text()[contains(.,'" + identifier + "')]]]/div/div[@class='panel-body']/div[@class='pull-right']/a");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return new TaxonomyPage(browser);
 	}

@@ -75,14 +75,13 @@ public class ContentViewPage {
 	
 	public ContentViewPage assertOnCitation(String citation) {
 		By citationBy = By.xpath("//blockquote[contains(@class,'o_quote')]//p[contains(text(),'" + citation + "')]");
-		OOGraphene.waitElement(citationBy, 5, browser);
+		OOGraphene.waitElement(citationBy, browser);
 		return this;
 	}
 	
 	public ContentViewPage closeInspector() {
 		By closeBy = By.cssSelector(".element_inspector .o_ceditor_inspector_header a.close");
-		OOGraphene.waitElement(closeBy, browser);
-		browser.findElement(closeBy).click();
+		OOGraphene.waitElement(closeBy, browser).click();
 
 		By inspectorBy = By.cssSelector("div.element_inspector>div.o_ceditor_inspector");
 		OOGraphene.waitElementDisappears(inspectorBy, 5, browser);

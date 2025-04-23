@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -40,16 +41,15 @@ public class ZoomConfigurationPage {
 	
 	public ZoomConfigurationPage selectConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_zoom_options>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(By.className("o_sel_zoom_configuration_form"), browser);
 		return this;
 	}
 	
 	public ZoomConfigurationPage selectProfile(String profile) {
 		By profileBy = By.cssSelector("fieldset.o_sel_zoom_configuration_form .o_sel_zoom_profile select");
-		OOGraphene.waitElement(profileBy, browser);
-		new Select(browser.findElement(profileBy))
+		WebElement profileEl = OOGraphene.waitElement(profileBy, browser);
+		new Select(profileEl)
 			.selectByVisibleText(profile);
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -57,8 +57,7 @@ public class ZoomConfigurationPage {
 	
 	public ZoomConfigurationPage saveConfiguration() {
 		By saveBy = By.cssSelector("fieldset.o_sel_zoom_configuration_form button.btn.btn-primary");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By dirtySaveBy = By.xpath("//fieldset[contains(@class,'o_sel_zoom_configuration_form')]//button[contains(@class,'btn-primary') and not(contains(@class,'o_button_dirty'))]");
 		OOGraphene.waitElement(dirtySaveBy, browser);

@@ -94,8 +94,7 @@ public class TBrokerPage {
 	
 	public TBrokerPage startEnrollment() {
 		By startBy = By.cssSelector("a.o_sel_tb_enrollment_start");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
+		OOGraphene.waitElement(startBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -105,8 +104,7 @@ public class TBrokerPage {
 		OOGraphene.waitElement(enrollmentsBy, browser);
 		
 		By runBy = By.xpath("//dialog//div[contains(@class,'buttons')]/button[contains(@class,'btn-primary')]");
-		OOGraphene.waitElement(runBy, browser);
-		browser.findElement(runBy).click();
+		OOGraphene.waitElement(runBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser, ".o_sel_confirm_form");
 		

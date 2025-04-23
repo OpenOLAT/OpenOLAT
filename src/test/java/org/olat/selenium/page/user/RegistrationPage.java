@@ -23,6 +23,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 import com.dumbster.smtp.SmtpMessage;
@@ -47,8 +48,7 @@ public class RegistrationPage {
 	
 	public RegistrationPage signIn() {
 		By signInBy = By.id("o_co_olat_login_register");
-		OOGraphene.waitElement(signInBy, browser);
-		browser.findElement(signInBy).click();
+		OOGraphene.waitElement(signInBy, browser).click();
 		By modalBy = By.cssSelector("dialog.o_wizard div.modal-body");
 		OOGraphene.waitElement(modalBy, browser);
 		return this;
@@ -56,8 +56,8 @@ public class RegistrationPage {
 	
 	public RegistrationPage nextToDisclaimer() {
 		By languageBy = By.id("o_fioselect_language_SELBOX");
-		OOGraphene.waitElement(languageBy, browser);	
-		new Select(browser.findElement(languageBy)).selectByValue("en");
+		WebElement languageEl = OOGraphene.waitElement(languageBy, browser);	
+		new Select(languageEl).selectByValue("en");
 		OOGraphene.waitBusy(browser);
 		OOGraphene.nextStep(browser);
 		// wait disclaimer
@@ -76,8 +76,7 @@ public class RegistrationPage {
 	
 	public RegistrationPage validate(String email) {
 		By emailBy = By.cssSelector(".o_sel_registration_email input[type='text']");
-		OOGraphene.waitElement(emailBy, browser);
-		browser.findElement(emailBy).sendKeys(email);
+		OOGraphene.waitElement(emailBy, browser).sendKeys(email);
 		By validateBy = By.cssSelector(".o_sel_registration_email_form a.btn.btn-primary");
 		browser.findElement(validateBy).click();
 		
@@ -131,8 +130,7 @@ public class RegistrationPage {
 	public void finalizeRegistration(String firstName, String lastName, String login, String password) {
 		try {
 			By firstNameBy = By.cssSelector(".o_sel_registration_firstName input[type='text']");
-			OOGraphene.waitElement(firstNameBy, browser);
-			browser.findElement(firstNameBy).sendKeys(firstName);
+			OOGraphene.waitElement(firstNameBy, browser).sendKeys(firstName);
 			
 			By lastNameBy = By.cssSelector(".o_sel_registration_lastName input[type='text']");
 			browser.findElement(lastNameBy).sendKeys(lastName);

@@ -40,16 +40,14 @@ public class BigBlueButtonTemplatePage {
 	
 	public BigBlueButtonTemplatePage enableTemplate() {
 		By enableBy = By.cssSelector("fieldset.o_sel_bbb_edit_template div.o_sel_bbb_template_enable input[type='checkbox']");
-		OOGraphene.waitElement(enableBy, browser);
-		WebElement checkEl = browser.findElement(enableBy);
+		WebElement checkEl = OOGraphene.waitElement(enableBy, browser);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		return this;
 	}
 	
 	public BigBlueButtonTemplatePage enableGuestLink() {
 		By enableGuestBy = By.cssSelector("fieldset.o_sel_bbb_edit_template div.o_sel_bbb_template_external input[type='checkbox']");
-		OOGraphene.waitElement(enableGuestBy, browser);
-		WebElement checkEl = browser.findElement(enableGuestBy);
+		WebElement checkEl = OOGraphene.waitElement(enableGuestBy, browser);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		return this;
 	}

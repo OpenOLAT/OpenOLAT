@@ -57,8 +57,7 @@ public class QTI21GradingAssignmentsPage {
 	
 	public QTI21GradingAssignmentsPage addGrader(UserVO user) {
 		By graderBy = By.xpath("//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'assign_grader')]");
-		OOGraphene.waitElement(graderBy, browser);
-		browser.findElement(graderBy).click();
+		OOGraphene.waitElement(graderBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalWizard(browser);
 		

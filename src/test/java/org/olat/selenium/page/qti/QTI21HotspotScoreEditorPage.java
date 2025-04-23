@@ -48,7 +48,7 @@ public class QTI21HotspotScoreEditorPage {
 		if(mode == ScoreEvaluation.allCorrectAnswers) {
 			OOGraphene.waitElementDisappears(hotspotsScoreTable, 5, browser);
 		} else if (mode == ScoreEvaluation.perAnswer) {
-			OOGraphene.waitElement(hotspotsScoreTable, 5, browser);
+			OOGraphene.waitElement(hotspotsScoreTable, browser);
 		}
 		return this;
 	}

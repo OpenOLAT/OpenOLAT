@@ -45,8 +45,7 @@ public class BadgesAdminPage {
 	
 	public BadgesAdminPage openGlobalBadges() {
 		By linkBy = By.cssSelector(".o_segments a.o_sel_openbadges_global");
-		OOGraphene.waitElement(linkBy, browser);
-		browser.findElement(linkBy).click();
+		OOGraphene.waitElement(linkBy, browser).click();
 		By badgesClassesBy = By.cssSelector("fieldset.o_badge_classes");
 		OOGraphene.waitElement(badgesClassesBy, browser);
 		return this;
@@ -55,8 +54,7 @@ public class BadgesAdminPage {
 
 	public BadgesAdminPage openIssuedBadges() {
 		By linkBy = By.cssSelector(".o_segments a.o_sel_openbadges_issued");
-		OOGraphene.waitElement(linkBy, browser);
-		browser.findElement(linkBy).click();
+		OOGraphene.waitElement(linkBy, browser).click();
 		By issuedBadgesBy = By.cssSelector("fieldset.o_badge_classes");
 		OOGraphene.waitElement(issuedBadgesBy, browser);
 		return this;
@@ -68,8 +66,7 @@ public class BadgesAdminPage {
 	
 	public BadgeIssuePage awardNewBadge() {
 		By awardBadgeBy = By.cssSelector("a.o_sel_openbadges_issue");
-		OOGraphene.waitElement(awardBadgeBy, browser);
-		browser.findElement(awardBadgeBy).click();
+		OOGraphene.waitElement(awardBadgeBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new BadgeIssuePage(browser);
 	}

@@ -39,8 +39,7 @@ public class TUConfigurationPage {
 	
 	public TUConfigurationPage selectTunnelConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_tu_configuration>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		By configBy = By.cssSelector("fieldset.o_sel_tu_configuration_form");
 		OOGraphene.waitElement(configBy, browser);
 		return this;
@@ -48,15 +47,13 @@ public class TUConfigurationPage {
 	
 	public TUConfigurationPage addURL(String url) {
 		By configBy = By.cssSelector("fieldset.o_sel_tu_configuration_form div.o_sel_tu_url input[type='text']");
-		OOGraphene.waitElement(configBy, browser);
-		browser.findElement(configBy).sendKeys(url);
+		OOGraphene.waitElement(configBy, browser).sendKeys(url);
 		return this;
 	}
 	
 	public TUConfigurationPage selectIframeVisible() {
 		By configBy = By.cssSelector("fieldset.o_sel_tu_configuration_form div.o_sel_tu_type input[type='radio'][value='directIFrame']");
-		OOGraphene.waitElement(configBy, browser);
-		browser.findElement(configBy).click();
+		OOGraphene.waitElement(configBy, browser).click();
 		By protectedBy = By.cssSelector("fieldset.o_sel_tu_configuration_form div.o_sel_tu_protected input");
 		OOGraphene.waitElementDisappears(protectedBy, 5, browser);
 		return this;

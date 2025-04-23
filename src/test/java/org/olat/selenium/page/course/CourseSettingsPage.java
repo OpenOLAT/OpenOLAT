@@ -39,8 +39,7 @@ public class CourseSettingsPage extends RepositorySettingsPage {
 	
 	public CourseToolbarSettingsPage toolbar() {
 		By toolbarSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_toolbar");
-		OOGraphene.waitElement(toolbarSegmentBy, browser);
-		browser.findElement(toolbarSegmentBy).click();
+		OOGraphene.waitElement(toolbarSegmentBy, browser).click();
 		
 		By toolbarSettingsBy = By.cssSelector("fieldset.o_sel_toolbar_settings");
 		OOGraphene.waitElement(toolbarSettingsBy, browser);
@@ -50,8 +49,7 @@ public class CourseSettingsPage extends RepositorySettingsPage {
 	
 	public EfficiencyStatementConfigurationPage efficiencyStatementConfiguration() {
 		By certificateSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_assessment");
-		OOGraphene.waitElement(certificateSegmentBy, browser);
-		browser.findElement(certificateSegmentBy).click();
+		OOGraphene.waitElement(certificateSegmentBy, browser).click();
 		
 		By toolbarSettingsBy = By.cssSelector("fieldset.o_sel_course_efficiency_statements");
 		OOGraphene.waitElement(toolbarSettingsBy, browser);
@@ -61,8 +59,7 @@ public class CourseSettingsPage extends RepositorySettingsPage {
 	
 	public LectureRepositorySettingsPage lecturesConfiguration() {
 		By certificateSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_execution");
-		OOGraphene.waitElement(certificateSegmentBy, browser);
-		browser.findElement(certificateSegmentBy).click();
+		OOGraphene.waitElement(certificateSegmentBy, browser).click();
 		
 		By toolbarSettingsBy = By.cssSelector("fieldset.o_sel_repo_lecture_settings_form");
 		OOGraphene.waitElement(toolbarSettingsBy, browser);

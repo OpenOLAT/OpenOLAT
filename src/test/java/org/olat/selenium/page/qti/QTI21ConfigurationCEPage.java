@@ -48,8 +48,7 @@ public class QTI21ConfigurationCEPage {
 	
 	public QTI21ConfigurationCEPage selectConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(By.className("o_qti_21_configuration"), browser);
 		return this;
 	}
@@ -58,8 +57,7 @@ public class QTI21ConfigurationCEPage {
 		By scoreBy = By.cssSelector(".o_sel_results_on_homepage select#o_fioqti_showresult_SELBOX");
 		OOGraphene.waitElementPresence(scoreBy, 5, browser);
 		OOGraphene.scrollBottom(scoreBy, browser);
-		OOGraphene.waitElement(scoreBy, browser);
-		WebElement scoreEl = browser.findElement(scoreBy);
+		WebElement scoreEl = OOGraphene.waitElement(scoreBy, browser);
 		String val = showResults ? "false" : "no";
 		new Select(scoreEl).selectByValue(val);
 		OOGraphene.waitBusy(browser);
@@ -191,8 +189,7 @@ public class QTI21ConfigurationCEPage {
 	
 	public QTI21LayoutConfigurationCEPage selectLayoutConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_qti_layout>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(By.className("o_qti_21_layout_configuration"), browser);
 		return new QTI21LayoutConfigurationCEPage(browser);
 	}

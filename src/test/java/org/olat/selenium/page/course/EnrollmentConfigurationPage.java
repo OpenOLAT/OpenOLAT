@@ -109,11 +109,9 @@ public class EnrollmentConfigurationPage {
 	
 	public EnrollmentConfigurationPage selectMultipleEnrollments(int maxEnrollmentCount) {
 		By multiEnroll = By.name("allowMultipleEnroll");
-		OOGraphene.waitElement(multiEnroll, browser);
-		browser.findElement(multiEnroll).click();
+		OOGraphene.waitElement(multiEnroll, browser).click();
 		By maxCountBy = By.cssSelector(".o_sel_enroll_max input[type='text']");
-		OOGraphene.waitElement(maxCountBy, browser);
-		WebElement maxCountBox = browser.findElement(maxCountBy);
+		WebElement maxCountBox = OOGraphene.waitElement(maxCountBy, browser);
 		maxCountBox.clear();
 		maxCountBox.sendKeys(Integer.toString(maxEnrollmentCount));
 		By saveBy = By.cssSelector(".o_sel_course_en button.btn");

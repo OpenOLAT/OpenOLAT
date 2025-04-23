@@ -46,8 +46,7 @@ public class InvitationWizardPage {
 	public InvitationWizardPage nextUserInfos(String firstName, String lastName, String email) {
 		OOGraphene.nextStep(browser);	
 		By firstNameBy = By.cssSelector(".o_sel_user_firstName input[type='text']");
-		OOGraphene.waitElement(firstNameBy, browser);
-		browser.findElement(firstNameBy).sendKeys(firstName);
+		OOGraphene.waitElement(firstNameBy, browser).sendKeys(firstName);
 		By lastNameBy = By.cssSelector(".o_sel_user_lastName input[type='text']");
 		browser.findElement(lastNameBy).sendKeys(lastName);
 		By emailBy = By.xpath("//div[contains(@class,'o_sel_user_email')]//input[@type='text'][@value='" + email + "']");

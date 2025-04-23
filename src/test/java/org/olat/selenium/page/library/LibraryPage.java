@@ -69,8 +69,7 @@ public class LibraryPage {
 	
 	public LibraryPage selectFolder(String folder) {
 		By menuLinkBy = By.xpath("//ul[contains(@class,'o_tree_l1')]//span/a[span[text()[contains(.,'" + folder + "')]]]");
-		OOGraphene.waitElement(menuLinkBy, browser);
-		browser.findElement(menuLinkBy).click();
+		OOGraphene.waitElement(menuLinkBy, browser).click();
 		return assertOnSelectedFolder(folder);
 	}
 	
@@ -88,8 +87,7 @@ public class LibraryPage {
 	
 	public LibraryPage addComment(String comment, String file) {
 		By commentBy = By.xpath("//div[contains(@class,'o_library_item')][h4/a[text()[contains(.,'" + file + "')]]]/div[contains(@class,'o_library_extra')]/a[contains(@class,'o_comments')]");
-		OOGraphene.waitElement(commentBy, browser);
-		browser.findElement(commentBy).click();
+		OOGraphene.waitElement(commentBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);
@@ -122,8 +120,7 @@ public class LibraryPage {
 	
 	public LibraryPage uploadDocument(File file) {
 		By uploadBy = By.cssSelector("div.o_library_overview a.o_sel_upload_document");
-		OOGraphene.waitElement(uploadBy, browser);
-		browser.findElement(uploadBy).click();
+		OOGraphene.waitElement(uploadBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputWrapperBy = By.cssSelector("div.modal-dialog div.o_fileinput");
@@ -143,8 +140,7 @@ public class LibraryPage {
 	
 	public LibraryPage directUploadDocumentWizard(File file, String uploadFolder) {
 		By uploadBy = By.cssSelector("div.o_library_overview a.o_sel_upload_document");
-		OOGraphene.waitElement(uploadBy, browser);
-		browser.findElement(uploadBy).click();
+		OOGraphene.waitElement(uploadBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		// Upload document
@@ -162,8 +158,7 @@ public class LibraryPage {
 		
 		// Select folder
 		By folderBy = By.xpath("//div[@class='o_wizard_steps_current']//div[contains(@class,'o_tree') and contains(@class,'o_tree_root_visible')]//span[contains(@class,'o_tree_level_label_leaf')][a/span[contains(text(),'" + uploadFolder + "')]]/input[@type='checkbox']");
-		OOGraphene.waitElement(folderBy, browser);
-		WebElement folderCheckEl = browser.findElement(folderBy);
+		WebElement folderCheckEl = OOGraphene.waitElement(folderBy, browser);
 		OOGraphene.check(folderCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		By selectedBy = By.cssSelector("div.o_wizard_steps_current div.o_tree.o_tree_root_visible span.o_tree_link.o_tree_l0.active");
@@ -175,8 +170,7 @@ public class LibraryPage {
 	
 	public LibraryPage reviewDocuments() {
 		By reviewDocumentsBy = By.xpath("//div[contains(@class,'o_library_overview')]//a[i[contains(@class,'o_icon_review')]]");
-		OOGraphene.waitElement(reviewDocumentsBy, browser);
-		browser.findElement(reviewDocumentsBy).click();
+		OOGraphene.waitElement(reviewDocumentsBy, browser).click();
 		
 		By reviewTableBy = By.cssSelector("div.o_review_documents table.o_table");
 		OOGraphene.waitElement(reviewTableBy, browser);
@@ -191,16 +185,14 @@ public class LibraryPage {
 	
 	public LibraryWizardPage acceptDocument(String filename) {
 		By acceptBy = By.xpath("//div[@class='o_review_documents']//table//tr[td/a[text()[contains(.,'" + filename + "')]]]/td/a[contains(@onclick,'accept')]");
-		OOGraphene.waitElement(acceptBy, browser);
-		browser.findElement(acceptBy).click();
+		OOGraphene.waitElement(acceptBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new LibraryWizardPage(browser);
 	}
 	
 	public LibraryPage back() {
 		By backBy = By.cssSelector("ol.breadcrumb a.o_link_back");
-		OOGraphene.waitElement(backBy, browser);
-		browser.findElement(backBy).click();
+		OOGraphene.waitElement(backBy, browser).click();
 		return assertOnOverview();
 	}
 

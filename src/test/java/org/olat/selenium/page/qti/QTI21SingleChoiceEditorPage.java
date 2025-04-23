@@ -55,15 +55,13 @@ public class QTI21SingleChoiceEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	public QTI21SingleChoiceEditorPage setCorrect(int position) {
 		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
-		OOGraphene.waitElement(correctBy, browser);
-		browser.findElement(correctBy).click();
+		OOGraphene.waitElement(correctBy, browser).click();
 		return this;
 	}
 	
 	public QTI21SingleChoiceEditorPage setAnswer(int position, String answer) {
 		By oneLineInputBy = By.cssSelector("div.o_sel_choice_" + position + " input[type='text']");
-		OOGraphene.waitElement(oneLineInputBy, browser);
-		WebElement oneLineInputEl = browser.findElement(oneLineInputBy);
+		WebElement oneLineInputEl = OOGraphene.waitElement(oneLineInputBy, browser);
 		oneLineInputEl.clear();
 		oneLineInputEl.sendKeys(answer);
 

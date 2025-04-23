@@ -54,8 +54,7 @@ public class QTI21GradingPage {
 	
 	private void selectSegment(String action) {
 		By segmentBy = By.xpath("//div[contains(@class,'o_segments')]/a[contains(@onclick,'" + action + "')]");
-		OOGraphene.waitElement(segmentBy, browser);
-		browser.findElement(segmentBy).click();
+		OOGraphene.waitElement(segmentBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By segmentSelectedBy = By.xpath("//div[contains(@class,'o_segments')]/a[contains(@class,'btn-primary')][contains(@onclick,'" + action + "')]");
 		OOGraphene.waitElement(segmentSelectedBy, browser);

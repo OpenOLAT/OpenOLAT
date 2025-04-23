@@ -46,8 +46,7 @@ public class QTI21FeedbacksEditorPage {
 		openAddFeedbacksMenu().addFeedback("o_sel_add_hint");
 		
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_hint_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		By hintBy = By.cssSelector("div.o_sel_assessment_item_hint_feedback input[type='text']");
 		browser.findElement(hintBy).sendKeys(hint);
@@ -58,8 +57,7 @@ public class QTI21FeedbacksEditorPage {
 		openAddFeedbacksMenu().addFeedback("o_sel_add_correct_solution");
 		
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_correctSolution_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 
 		By correctBy = By.cssSelector("div.o_sel_assessment_item_correctSolution_feedback input[type='text']");
 		browser.findElement(correctBy).sendKeys(correctSolution);
@@ -70,8 +68,7 @@ public class QTI21FeedbacksEditorPage {
 		openAddFeedbacksMenu().addFeedback("o_sel_add_correct");
 		
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_correct_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		By correctBy = By.cssSelector("div.o_sel_assessment_item_correct_feedback input[type='text']");
 		browser.findElement(correctBy).sendKeys(feedback);
@@ -82,8 +79,7 @@ public class QTI21FeedbacksEditorPage {
 		openAddFeedbacksMenu().addFeedback("o_sel_add_incorrect");
 		
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_incorrect_title input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		By correctBy = By.cssSelector("div.o_sel_assessment_item_incorrect_feedback input[type='text']");
 		browser.findElement(correctBy).sendKeys(feedback);
@@ -161,8 +157,7 @@ public class QTI21FeedbacksEditorPage {
 				+ "//a[contains(@class,'btn-default')][i[contains(@class,'o_icon_add')]]";
 		
 		By addConditionBy = By.xpath(conditionXpath);
-		OOGraphene.waitElement(addConditionBy, browser);
-		browser.findElement(addConditionBy).click();
+		OOGraphene.waitElement(addConditionBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -181,7 +176,7 @@ public class QTI21FeedbacksEditorPage {
 		addMenuCaret.click();
 
 		By addMenuBy = By.cssSelector("ul.o_sel_add_feedbacks");
-		OOGraphene.waitElement(addMenuBy, 5, browser);
+		OOGraphene.waitElement(addMenuBy, browser);
 		return this;
 	}
 

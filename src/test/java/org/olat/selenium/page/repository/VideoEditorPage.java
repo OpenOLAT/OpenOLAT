@@ -46,7 +46,7 @@ public class VideoEditorPage {
 		By videoBy = By.xpath("//div[@id='o_video_editor_video']//div[contains(@class,'o_video_run')]//mediaelementwrapper/video");
 		OOGraphene.waitElement(videoBy, 10, browser);
 		By videoControlsBy = By.cssSelector(".o_video_editor .o_video_run .mejs__controls .mejs__button.mejs__playpause-button.mejs__play");
-		OOGraphene.waitElement(videoControlsBy, 5, browser);
+		OOGraphene.waitElement(videoControlsBy, browser);
 		return this;
 	}
 	
@@ -81,12 +81,10 @@ public class VideoEditorPage {
 	public VideoEditorPage editSegment(String start, String end) {
 		try {
 			By startBy = By.cssSelector(".o_video_segment_start .o_video_apply_position_timestamp input[type='text']");
-			OOGraphene.waitElementRefreshed(startBy, browser).clear();
-			OOGraphene.waitElementRefreshed(startBy, browser).sendKeys(start);
+			OOGraphene.clearAndSendKeys(startBy, start, browser);
 
 			By endBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
-			OOGraphene.waitElementRefreshed(endBy, browser).clear();
-			OOGraphene.waitElementRefreshed(endBy, browser).sendKeys(end);
+			OOGraphene.clearAndSendKeys(endBy, end, browser);
 			OOGraphene.waitingALittleBit();
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Edit segment", browser);

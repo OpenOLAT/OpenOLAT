@@ -82,8 +82,7 @@ public class SurveyEditorPage extends ContentEditorPage {
 	
 	private SurveyEditorPage addChoice(String choice, int pos, String buttonClass) {
 		By addButtonBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//a[contains(@class,'btn')][contains(@class,'" + buttonClass + "')]/span");
-		OOGraphene.waitElement(addButtonBy, browser);
-		browser.findElement(addButtonBy).click();
+		OOGraphene.waitElement(addButtonBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//table[contains(@class,'table-condensed')]/tbody/tr[" + pos + "]/td/div/input[@type='text']");

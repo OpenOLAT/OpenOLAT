@@ -47,8 +47,7 @@ public class TaxonomyLevelPage {
 	
 	public TaxonomyLevelPage selectCompetence() {
 		By competenceTabBy = By.cssSelector("ul>li.o_sel_taxonomy_level_competences>a");
-		OOGraphene.waitElement(competenceTabBy, browser);
-		browser.findElement(competenceTabBy).click();
+		OOGraphene.waitElement(competenceTabBy, browser).click();
 		By competencesBy = By.cssSelector("form div.o_sel_taxonomy_level_competences");
 		OOGraphene.waitElement(competencesBy, browser);
 		return this;
@@ -82,16 +81,14 @@ public class TaxonomyLevelPage {
 	private TaxonomyLevelPage searchMember(UserVO user) {
 		//Search by username
 		By usernameBy = By.cssSelector(".o_sel_usersearch_searchform input.o_sel_user_search_username[type='text']");
-		OOGraphene.waitElement(usernameBy, browser);	
-		browser.findElement(usernameBy).sendKeys(user.getLogin());
+		OOGraphene.waitElement(usernameBy, browser).sendKeys(user.getLogin());
 
 		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
 		OOGraphene.moveAndClick(searchBy, browser);
 
 		// select all
 		By selectAll = By.xpath("//dialog[contains(@class,'modal')]//th/a[i[contains(@class,'o_icon_check_off')]]");
-		OOGraphene.waitElement(selectAll, browser);
-		browser.findElement(selectAll).click();
+		OOGraphene.waitElement(selectAll, browser).click();
 		OOGraphene.waitBusy(browser);
 		By selectedAll = By.xpath("//dialog[contains(@class,'modal')]//th/div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		OOGraphene.waitElement(selectedAll, browser);

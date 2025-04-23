@@ -106,8 +106,7 @@ public class CourseExamWizardPage {
 		}
 
 		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + testTitle + "')]]");
-		OOGraphene.waitElement(rowBy, browser);
-		browser.findElement(rowBy).click();
+		OOGraphene.waitElement(rowBy, browser).click();
 		// Wait configuration
 		By infosBy = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_cnd_document')]/div/h4[text()[contains(.,'" + testTitle + "')]]");
 		OOGraphene.waitElement(infosBy, browser);

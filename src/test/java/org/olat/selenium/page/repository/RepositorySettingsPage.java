@@ -46,8 +46,7 @@ public class RepositorySettingsPage {
 	
 	public RepositoryMetadataPage metadata() {
 		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_metadata");
-		OOGraphene.waitElement(accessSegmentBy, browser);
-		browser.findElement(accessSegmentBy).click();
+		OOGraphene.waitElement(accessSegmentBy, browser).click();
 		
 		By accessConfigurationBy = By.cssSelector("fieldset.o_sel_repo_metadata");
 		OOGraphene.waitElement(accessConfigurationBy, browser);
@@ -56,8 +55,7 @@ public class RepositorySettingsPage {
 	
 	public RepositoryExecutionSettingsPage execution() {
 		By executionSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_execution");
-		OOGraphene.waitElement(executionSegmentBy, browser);
-		browser.findElement(executionSegmentBy).click();
+		OOGraphene.waitElement(executionSegmentBy, browser).click();
 		
 		By executionBy = By.cssSelector("div.o_sel_repo_execution");
 		OOGraphene.waitElement(executionBy, browser);
@@ -67,8 +65,7 @@ public class RepositorySettingsPage {
 	
 	public RepositoryAccessPage accessConfiguration() {
 		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_access");
-		OOGraphene.waitElement(accessSegmentBy, browser);
-		browser.findElement(accessSegmentBy).click();
+		OOGraphene.waitElement(accessSegmentBy, browser).click();
 		
 		By accessConfigurationBy = By.cssSelector("fieldset.o_sel_repo_access_configuration");
 		OOGraphene.waitElement(accessConfigurationBy, browser);
@@ -77,8 +74,7 @@ public class RepositorySettingsPage {
 	
 	public RepositoryCertificateSettingsPage certificates() {
 		By accessSegmentBy = By.cssSelector("ul.o_tools_segments a.o_sel_assessment");
-		OOGraphene.waitElement(accessSegmentBy, browser);
-		browser.findElement(accessSegmentBy).click();
+		OOGraphene.waitElement(accessSegmentBy, browser).click();
 		
 		By certificatesConfigurationBy = By.cssSelector("fieldset.o_sel_certificate_settings");
 		OOGraphene.waitElement(certificatesConfigurationBy, browser);

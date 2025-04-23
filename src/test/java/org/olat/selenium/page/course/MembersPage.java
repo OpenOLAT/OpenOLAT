@@ -81,7 +81,7 @@ public class MembersPage {
 		browser.findElement(groupsItemBy).click();
 		OOGraphene.waitBusy(browser);
 		By groupTitleby = By.cssSelector("h4 i.o_icon.o_icon_group");
-		OOGraphene.waitElement(groupTitleby, 5, browser);
+		OOGraphene.waitElement(groupTitleby, browser);
 		return this;
 	}
 	
@@ -178,8 +178,7 @@ public class MembersPage {
 	 */
 	public MembersPage openMembership(String name) {
 		By toolBy = By.xpath("//div//tr[td/a[text()[contains(.,'" + name+ "')]]]/td/div/a[i[contains(@class,'o_icon-fw')][contains(@class,'o_icon_actions')]]");
-		OOGraphene.waitElement(toolBy, browser);
-		browser.findElement(toolBy).click();
+		OOGraphene.waitElement(toolBy, browser).click();
 		OOGraphene.waitCallout(browser);
 		
 		By editBy = By.xpath("//div[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'tbl_edit')]");
@@ -216,8 +215,7 @@ public class MembersPage {
 		
 		// confirm email
 		By confirmNoMailBy = By.xpath("//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_1')]");
-		OOGraphene.waitElement(confirmNoMailBy, browser);
-		browser.findElement(confirmNoMailBy).click();
+		OOGraphene.waitElement(confirmNoMailBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

@@ -49,9 +49,8 @@ public class MenuTreePageFragment {
 	 */
 	public MenuTreePageFragment selectRoot() {
 		By rootNodeBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l0')]/a");
-		OOGraphene.waitElement(rootNodeBy, browser);
 		try {
-			browser.findElement(rootNodeBy).click();
+			OOGraphene.waitElement(rootNodeBy, browser).click();
 		} catch (StaleElementReferenceException e) {
 			// the tree can be updated asynchronously, give a second chance
 			OOGraphene.waitingALittleBit();
@@ -64,9 +63,8 @@ public class MenuTreePageFragment {
 	
 	public MenuTreePageFragment selectWithTitle(String title) {
 		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
-		OOGraphene.waitElement(linkBy, browser);
 		try {
-			browser.findElement(linkBy).click();
+			OOGraphene.waitElement(linkBy, browser).click();
 		} catch (StaleElementReferenceException e) {
 			// the tree can be updated asynchronously, give a second chance
 			OOGraphene.waitingALittleBit();

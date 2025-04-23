@@ -40,8 +40,7 @@ public class PageElementConfigurationPage {
 	
 	public PageElementConfigurationPage selectConfiguration() {
 		By pageConfigBy = By.cssSelector("li.o_sel_cep_content_config>a");
-		OOGraphene.waitElement(pageConfigBy, browser);
-		browser.findElement(pageConfigBy).click();
+		OOGraphene.waitElement(pageConfigBy, browser).click();
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_page_settings"), browser);
 		return this;
 	}

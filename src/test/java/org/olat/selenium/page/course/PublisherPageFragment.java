@@ -53,7 +53,7 @@ public class PublisherPageFragment {
 	public PublisherPageFragment assertOnPublisher() {
 		OOGraphene.waitModalWizard(browser);
 		By publishWizardBy = By.className("o_sel_course_publish_wizard");
-		OOGraphene.waitElement(publishWizardBy, 5, browser);
+		OOGraphene.waitElement(publishWizardBy, browser);
 		return this;
 	}
 
@@ -73,7 +73,7 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment nextSelectNodes() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), browser);
 		return this;
 	}
 	
@@ -109,8 +109,7 @@ public class PublisherPageFragment {
 	 */
 	public PublisherPageFragment selectAccess(UserAccess access) {
 		By publishStatusBy = By.id("o_fiopublishedStatus_SELBOX");
-		OOGraphene.waitElement(publishStatusBy, browser);
-		WebElement publishStatusEl = browser.findElement(publishStatusBy);
+		WebElement publishStatusEl = OOGraphene.waitElement(publishStatusBy, browser);
 		Select publishStatusSelect = new Select(publishStatusEl);
 		publishStatusSelect.selectByValue("published");
 		OOGraphene.waitBusy(browser);
@@ -121,8 +120,7 @@ public class PublisherPageFragment {
 			OOGraphene.waitBusy(browser);
 		} else if(access == UserAccess.booking || access == UserAccess.registred || access == UserAccess.guest) {
 			By allUsersBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='public']");
-			OOGraphene.waitElement(allUsersBy, browser);
-			browser.findElement(allUsersBy).click();
+			OOGraphene.waitElement(allUsersBy, browser).click();
 			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
 			OOGraphene.waitElement(accessConfigurationBy, browser);
 		}
@@ -142,8 +140,7 @@ public class PublisherPageFragment {
 	}
 	
 	public PublisherPageFragment selectCatalog(boolean access) {
-		OOGraphene.waitElement(selectCatalogYesNoBy, browser);
-		WebElement select = browser.findElement(selectCatalogYesNoBy);
+		WebElement select = OOGraphene.waitElement(selectCatalogYesNoBy, browser);
 		new Select(select).selectByValue(access ? "yes" : "no");
 		OOGraphene.waitBusy(browser);
 		return this;

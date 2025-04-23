@@ -40,8 +40,7 @@ public class TUPage {
 	
 	public TUPage checkPage(String cssSelector) {
 		By frameBy = By.cssSelector("div.o_iframedisplay.o_module_tu_wrapper iframe");
-		OOGraphene.waitElement(frameBy, browser);
-		WebElement frameEl = browser.findElement(frameBy);
+		WebElement frameEl = OOGraphene.waitElement(frameBy, browser);
 		WebDriver frame = browser.switchTo().frame(frameEl);
 		OOGraphene.waitElement(By.cssSelector(cssSelector), 15, frame);
 		browser.switchTo().defaultContent();

@@ -53,8 +53,7 @@ public class QuestionPoolPage {
 	 */
 	public QuestionPoolPage selectMyQuestions() {
 		By myQuestionsBy = By.xpath("//div[contains(@class,'o_tree')]/ul[@class='o_tree_l0']//a[i[contains(@class,'o_sel_qpool_my_items')]]");
-		OOGraphene.waitElement(myQuestionsBy, browser);
-		browser.findElement(myQuestionsBy).click();
+		OOGraphene.waitElement(myQuestionsBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(By.id("qitems"), browser);
 		return this;
@@ -68,8 +67,7 @@ public class QuestionPoolPage {
 	 */
 	public QuestionPoolPage selectTaxonomyLevel(String name) {
 		By leafBy = By.xpath("//li[contains(@class,'o_sel_qpool_review_taxonomy_levels')]/ul/li/div[contains(@class,'o_tree_l1')]/span/a[contains(@onclick,'ctncl')][span[text()[contains(.,'" + name + "')]]]");
-		OOGraphene.waitElement(leafBy, browser);
-		browser.findElement(leafBy).click();
+		OOGraphene.waitElement(leafBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -82,21 +80,18 @@ public class QuestionPoolPage {
 	 */
 	public QuestionPoolPage selectQuestionInList(String title) {
 		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/a[contains(@onclick,'select-item')]");
-		OOGraphene.waitElement(rowBy, browser);
-		browser.findElement(rowBy).click();
+		OOGraphene.waitElement(rowBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public QuestionPoolPage assessQuestion(int numOfStars) {
 		By assessmentBy = By.xpath("//div[contains(@class,'o_instruction')]/div[@class='o_button_group']/a[contains(@onclick,'process.activate.review')]");
-		OOGraphene.waitElement(assessmentBy, browser);
-		browser.findElement(assessmentBy).click();
+		OOGraphene.waitElement(assessmentBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By numOfStarsBy = By.xpath("//fieldset[contains(@class,'o_sel_qpool_review_form')]//div[contains(@class,'o_rating')]/div[contains(@class,'o_rating_items')]/a[" + numOfStars + "]");
-		OOGraphene.waitElement(numOfStarsBy, browser);
-		browser.findElement(numOfStarsBy).click();
+		OOGraphene.waitElement(numOfStarsBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		By saveBy = By.cssSelector("div.modal-content fieldset.o_sel_qpool_review_form button.btn.btn-primary");
@@ -142,13 +137,11 @@ public class QuestionPoolPage {
 	public QuestionPoolPage startReviewProcess() {
 		try {
 			By startProcessBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'process.activate.start.review')]");
-			OOGraphene.waitElement(startProcessBy, browser);
-			browser.findElement(startProcessBy).click();
+			OOGraphene.waitElement(startProcessBy, browser).click();
 			OOGraphene.waitModalDialog(browser);
 			
 			By confirmBy = By.cssSelector("fieldset.o_sel_qpool_confirm_start_form button.btn.btn-primary");
-			OOGraphene.waitElement(confirmBy, browser);
-			browser.findElement(confirmBy).click();
+			OOGraphene.waitElement(confirmBy, browser).click();
 			OOGraphene.waitModalDialogDisappears(browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Start review process", browser);
@@ -165,8 +158,7 @@ public class QuestionPoolPage {
 	
 	public QuestionPoolPage openQuickView(String title) {
 		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/div/a[contains(@onclick,'tt-details')]");
-		OOGraphene.waitElement(quickViewBy, browser);
-		browser.findElement(quickViewBy).click();
+		OOGraphene.waitElement(quickViewBy, browser).click();
 		
 		By viewBy = By.cssSelector("tr.o_table_row_details>td #o_qti_container");
 		OOGraphene.waitElement(viewBy, browser);

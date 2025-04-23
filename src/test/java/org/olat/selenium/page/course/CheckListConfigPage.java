@@ -53,14 +53,12 @@ public class CheckListConfigPage {
 	 */
 	public CheckListConfigPage addCheckbox(String title, int score) {
 		By addCheckboxBy = By.className("o_sel_cl_new_checkbox");
-		OOGraphene.waitElement(addCheckboxBy, browser);
-		browser.findElement(addCheckboxBy).click();
+		OOGraphene.waitElement(addCheckboxBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);
 		
 		By titleBy = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form input.o_sel_cl_checkbox_title[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
 		if(score > 0) {
 			By awardPoints = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form fieldset.o_sel_cl_checkbox_award_points input[type='checkbox']");
@@ -68,8 +66,7 @@ public class CheckListConfigPage {
 			OOGraphene.waitBusy(browser);
 			
 			By pointsBy = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form input.o_sel_cl_checkbox_points[type='text']");
-			OOGraphene.waitElement(pointsBy, browser);
-			browser.findElement(pointsBy).sendKeys(Integer.toString(score));
+			OOGraphene.waitElement(pointsBy, browser).sendKeys(Integer.toString(score));
 		}
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form button.btn-primary");
@@ -126,8 +123,7 @@ public class CheckListConfigPage {
 	 */
 	public CheckListConfigPage setScoring(int minScore, int maxScore, int cutValue) {
 		By minScoreBy = By.cssSelector("fieldset.o_sel_cl_edit_assessment input.o_sel_cl_min_score[type='text']");
-		OOGraphene.waitElement(minScoreBy, browser);
-		browser.findElement(minScoreBy).sendKeys(Integer.toString(minScore));
+		OOGraphene.waitElement(minScoreBy, browser).sendKeys(Integer.toString(minScore));
 		
 		By maxScoreBy = By.cssSelector("fieldset.o_sel_cl_edit_assessment input.o_sel_cl_max_score[type='text']");
 		browser.findElement(maxScoreBy).sendKeys(Integer.toString(maxScore));

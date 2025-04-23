@@ -55,8 +55,7 @@ public class UserToolsPage {
 	 */
 	public UserToolsPage assertOnNotifications() {
 		By notificationPanelBy = By.cssSelector("div.o_notifications_news_wrapper");
-		OOGraphene.waitElement(notificationPanelBy, browser);
-		WebElement notificationPanel = browser.findElement(notificationPanelBy);
+		WebElement notificationPanel = OOGraphene.waitElement(notificationPanelBy, browser);
 		Assert.assertTrue(notificationPanel.isDisplayed());
 		return this;
 	}
@@ -67,8 +66,7 @@ public class UserToolsPage {
 	 */
 	public UserToolsPage assertOnCalendar() {
 		By calendarBy = By.cssSelector("div.o_cal div.fc-view-harness.fc-view-harness-active");
-		OOGraphene.waitElement(calendarBy, browser);
-		WebElement calendarEl = browser.findElement(calendarBy);
+		WebElement calendarEl = OOGraphene.waitElement(calendarBy, browser);
 		Assert.assertTrue(calendarEl.isDisplayed());
 		return this;
 	}
@@ -89,8 +87,7 @@ public class UserToolsPage {
 	 */
 	public UserToolsPage openUserToolsMenu() {
 		By toolbarCaretBy = By.id("o_sel_navbar_my_menu_caret");
-		OOGraphene.waitElement(toolbarCaretBy, browser);
-		browser.findElement(toolbarCaretBy).click();
+		OOGraphene.waitElement(toolbarCaretBy, browser).click();
 		
 		try {
 			OOGraphene.waitNavBarTransition(browser);
@@ -123,8 +120,7 @@ public class UserToolsPage {
 	
 	public UserProfilePage openMyProfil() {
 		By profilBy = By.cssSelector("li>a.o_sel_user_tools-profil");
-		OOGraphene.waitElement(profilBy, browser);
-		browser.findElement(profilBy).click();
+		OOGraphene.waitElement(profilBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By userFormBy =  By.cssSelector("div.o_user_profile_form");
 		OOGraphene.waitElement(userFormBy, browser);
@@ -134,8 +130,7 @@ public class UserToolsPage {
 	
 	public BadgesPage openBadges() {
 		By badgesBy = By.cssSelector("li>a.o_sel_user_tools-badges");
-		OOGraphene.waitElement(badgesBy, browser);
-		browser.findElement(badgesBy).click();
+		OOGraphene.waitElement(badgesBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By issuedBadgesBy =  By.cssSelector("fieldset.o_sel_issued_badges");
 		OOGraphene.waitElement(issuedBadgesBy, browser);

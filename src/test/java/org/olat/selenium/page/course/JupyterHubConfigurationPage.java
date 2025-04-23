@@ -39,8 +39,7 @@ public class JupyterHubConfigurationPage {
 	
 	public JupyterHubConfigurationPage selectConfiguration() {
 		By configurationBy = By.cssSelector("ul.o_node_config li.o_sel_jupyterhub_configuration>a");
-		OOGraphene.waitElement(configurationBy, browser);
-		browser.findElement(configurationBy).click();
+		OOGraphene.waitElement(configurationBy, browser).click();
 		
 		By configurationFormBy = By.cssSelector("fieldset.o_sel_jupyterhub_configuration");
 		OOGraphene.waitElement(configurationFormBy, browser);
@@ -49,15 +48,13 @@ public class JupyterHubConfigurationPage {
 	
 	public JupyterHubConfigurationPage setImageName(String name) {
 		By imageNameBy = By.cssSelector("fieldset.o_sel_jupyterhub_configuration div.o_sel_jupyterhub_image_name input[type='text']");
-		OOGraphene.waitElement(imageNameBy, browser);
-		browser.findElement(imageNameBy).sendKeys(name);
+		OOGraphene.waitElement(imageNameBy, browser).sendKeys(name);
 		return this;
 	}
 	
 	public JupyterHubConfigurationPage saveConfiguration() {
 		By saveBy = By.cssSelector("fieldset.o_sel_jupyterhub_configuration button.btn.btn-primary");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -350,8 +350,7 @@ public class CoursePageFragment {
 		OOGraphene.waitBusy(browser);
 
 		By assessmentTool = By.id("o_assessment_tool_main");
-		OOGraphene.waitElement(assessmentTool, browser);
-		WebElement main = browser.findElement(assessmentTool);
+		WebElement main = OOGraphene.waitElement(assessmentTool, browser);
 		Assert.assertTrue(main.isDisplayed());
 		return new AssessmentToolPage(browser);
 	}
@@ -384,8 +383,7 @@ public class CoursePageFragment {
 	
 	public LecturesRepositoryPage lectures() {
 		By lecturesBy = By.xpath("//li[contains(@class,'o_tool')]/a[contains(@onclick,'command.lectures')]");
-		OOGraphene.waitElement(lecturesBy, browser);
-		browser.findElement(lecturesBy).click();
+		OOGraphene.waitElement(lecturesBy, browser).click();
 		
 		By teacherOverviewBy = By.cssSelector("div.o_sel_repo_lectures_list");
 		OOGraphene.waitElement(teacherOverviewBy, browser);
@@ -402,8 +400,7 @@ public class CoursePageFragment {
 	
 	public CourseInfoPage infos() {
 		By infosBy = By.xpath("//div[@class='o_tools_container']//li[@class='o_tool']/a[contains(@onclick,'courseconfig')][i[contains(@class,'o_icon_details')]]");
-		OOGraphene.waitElement(infosBy, browser);
-		browser.findElement(infosBy).click();
+		OOGraphene.waitElement(infosBy, browser).click();
 		
 		By detailsBy = By.cssSelector(".o_repo_details .o_repo_header .o_meta>h2");
 		OOGraphene.waitElement(detailsBy, browser);
@@ -422,8 +419,7 @@ public class CoursePageFragment {
 	
 	public CoursePageFragment changeStatus(RepositoryEntryStatusEnum status) {
 		By statusMenuCaret = By.cssSelector("ul.o_tools a.o_repo_tools_status");
-		OOGraphene.waitElement(statusMenuCaret, browser);
-		browser.findElement(statusMenuCaret).click();
+		OOGraphene.waitElement(statusMenuCaret, browser).click();
 		
 		By statusMenuBy = By.cssSelector("ul.o_repo_tools_status");
 		OOGraphene.waitElement(statusMenuBy, browser);
@@ -470,8 +466,7 @@ public class CoursePageFragment {
 	 */
 	public CoursePageFragment closeCourse() {
 		By closeBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_close a");
-		OOGraphene.waitElement(closeBy, browser);
-		browser.findElement(closeBy).click();
+		OOGraphene.waitElement(closeBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -480,8 +475,7 @@ public class CoursePageFragment {
 		openMyCourseMenu();
 		
 		By badgesBy = By.xpath("//ul[contains(@class,'o_sel_dropdown_mycourse')]/li/a[i[contains(@class,'o_icon_badge')]]");
-		OOGraphene.waitElement(badgesBy, browser);
-		browser.findElement(badgesBy).click();
+		OOGraphene.waitElement(badgesBy, browser).click();
 		
 		By issuedBadges = By.cssSelector("fieldset.o_sel_issued_badges");
 		OOGraphene.waitElement(issuedBadges, browser);

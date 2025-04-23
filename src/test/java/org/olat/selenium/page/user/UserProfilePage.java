@@ -78,8 +78,7 @@ public class UserProfilePage {
 	 */
 	public UserProfilePage assertOnUsername(String username) {
 		By usernameBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//input[@value='" + username + "']");
-		OOGraphene.waitElement(usernameBy, browser);
-		WebElement usernameEl = browser.findElement(usernameBy);
+		WebElement usernameEl = OOGraphene.waitElement(usernameBy, browser);
 		Assert.assertTrue(usernameEl.isDisplayed());
 		return this;
 	}
@@ -93,8 +92,7 @@ public class UserProfilePage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By emailBy = By.cssSelector("dialog .o_sel_email_form input.o_sel_registration_email[type='text']");
-		OOGraphene.waitElement(emailBy, browser);
-        browser.findElement(emailBy).sendKeys(newEmail);
+		OOGraphene.waitElement(emailBy, browser).sendKeys(newEmail);
 		return this;
 	}
 

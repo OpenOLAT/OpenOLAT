@@ -40,8 +40,7 @@ public class PracticeConfigurationPage {
 	
 	public PracticeConfigurationPage selectConfiguration() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_practice_configuration>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(By.className("o_practice_configuration"), browser);
 		return this;
 	}
@@ -62,8 +61,7 @@ public class PracticeConfigurationPage {
 	
 	public PracticeConfigurationPage setNumberOfSeries(int numOfSeriesPerChallenge, int numOfChallengesToComplete) {
 		By seriesBy = By.cssSelector("fieldset.o_practice_configuration .o_sel_practice_serie_per_challenge input[type='text']");
-		OOGraphene.waitElement(seriesBy, browser);
-		WebElement seriesEl = browser.findElement(seriesBy);
+		WebElement seriesEl = OOGraphene.waitElement(seriesBy, browser);
 		seriesEl.clear();
 		seriesEl.sendKeys(Integer.toString(numOfSeriesPerChallenge));
 		

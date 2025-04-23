@@ -59,8 +59,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By solutionBy = By.cssSelector("fieldset.o_sel_gap_entry_form div.o_sel_gap_entry_solution input[type=text]");
-		OOGraphene.waitElement(solutionBy, browser);
-		browser.findElement(solutionBy).sendKeys(solution);
+		OOGraphene.waitElement(solutionBy, browser).sendKeys(solution);
 		
 		By placeholderBy = By.cssSelector("fieldset.o_sel_gap_entry_form div.o_sel_gap_entry_placeholder input[type=text]");
 		browser.findElement(placeholderBy).sendKeys(placeholder);
@@ -167,9 +166,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 		if(toleranceMode == ToleranceMode.EXACT) {
 			OOGraphene.waitElementDisappears(upperBoundBy, 5, browser);
 		} else {
-			OOGraphene.waitElement(upperBoundBy, browser);
-			
-			browser.findElement(upperBoundBy).sendKeys(upperBound);
+			OOGraphene.waitElement(upperBoundBy, browser).sendKeys(upperBound);
 			By lowerBoundBy = By.cssSelector("fieldset.o_sel_gap_numeric_form div.o_sel_gap_numeric_lower_bound input[type=text]");
 			browser.findElement(lowerBoundBy).sendKeys(lowerBound);
 		}

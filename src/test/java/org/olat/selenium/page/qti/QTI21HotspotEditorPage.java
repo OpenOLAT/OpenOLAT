@@ -168,8 +168,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		By tabLinkBy = By.xpath("//ul[contains(@class,'o_sel_assessment_item_config')]/li[2]/a");
 		By scorePanelBy = By.className("o_sel_assessment_item_options");
 		try {
-			OOGraphene.waitElement(tabLinkBy, browser);
-			browser.findElement(tabLinkBy).click();
+			OOGraphene.waitElement(tabLinkBy, browser).click();
 			OOGraphene.waitElementSlowly(scorePanelBy, 5, browser);
 		} catch (Exception e) {
 			try {

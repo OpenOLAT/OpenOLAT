@@ -42,16 +42,14 @@ public class VisitingCardPage {
 	
 	public VisitingCardPage assertOnVisitingCard() {
 		By visitingCardBy = By.cssSelector("div.o_visitingcard");
-		OOGraphene.waitElement(visitingCardBy, 5, browser);
-		WebElement visitingCardEl = browser.findElement(visitingCardBy);
+		WebElement visitingCardEl = OOGraphene.waitElement(visitingCardBy, browser);
 		Assert.assertTrue(visitingCardEl.isDisplayed());
 		return this;
 	}
 	
 	public VisitingCardPage assertOnLastName(String lastName) {
 		By visitingCardBy = By.xpath("//div[contains(@class,'o_visitingcard')]//h2[text()[contains(.,'" + lastName + "')]]");
-		OOGraphene.waitElement(visitingCardBy, 5, browser);
-		WebElement visitingCardEl = browser.findElement(visitingCardBy);
+		WebElement visitingCardEl = OOGraphene.waitElement(visitingCardBy, browser);
 		Assert.assertTrue(visitingCardEl.isDisplayed());
 		return this;
 	}

@@ -64,20 +64,17 @@ public class FolderPage {
 	 */
 	public FolderPage createDirectory(String name) {
 		By newFileBy = By.cssSelector(".o_folder_create_group>div>button.btn");
-		OOGraphene.waitElement(newFileBy, browser);
-		browser.findElement(newFileBy).click();
+		OOGraphene.waitElement(newFileBy, browser).click();
 		
 		By calloutBy = By.cssSelector(".o_folder_create_group ul.dropdown-menu");
 		OOGraphene.waitElement(calloutBy, browser);
 		
 		By newFolderBy = By.xpath("//div[contains(@class,'o_folder_create_group')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_new_folder')]]");
-		OOGraphene.waitElement(newFolderBy, browser);
-		browser.findElement(newFolderBy).click();
+		OOGraphene.waitElement(newFolderBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 
 		By folderNameBy = By.cssSelector(".o_sel_folder_new_folder_name input[type='text']");
-		OOGraphene.waitElement(folderNameBy, browser);
-		browser.findElement(folderNameBy).sendKeys(name);
+		OOGraphene.waitElement(folderNameBy, browser).sendKeys(name);
 		
 		By createBy = By.cssSelector(".modal-dialog button.btn-primary");
 		browser.findElement(createBy).click();
@@ -93,8 +90,7 @@ public class FolderPage {
 	
 	public FolderPage createHTMLFile(String name, String content) {
 		By newFileBy = By.cssSelector(".o_folder_create_group>div>button.btn");
-		OOGraphene.waitElement(newFileBy, browser);
-		browser.findElement(newFileBy).click();
+		OOGraphene.waitElement(newFileBy, browser).click();
 		
 		By calloutBy = By.cssSelector(".o_folder_create_group ul.dropdown-menu");
 		OOGraphene.waitElement(calloutBy, browser);
@@ -114,8 +110,7 @@ public class FolderPage {
 		browser.findElement(moreBy).click();
 
 		By htmlTypeBy = By.cssSelector("div.o_radio_cards.o_sel_folder_new_doc_type input[name='create.doc.format'][value='html']");
-		OOGraphene.waitElement(htmlTypeBy, browser);
-		browser.findElement(htmlTypeBy).click();
+		OOGraphene.waitElement(htmlTypeBy, browser).click();
 		
 		By filenameBy = By.cssSelector(".o_sel_folder_new_doc_name input[type='text']");
 		browser.findElement(filenameBy).sendKeys(name);
@@ -134,8 +129,7 @@ public class FolderPage {
 		
 		// save the HTML document
 		By saveAndCloseDirtyBy = By.cssSelector(".o_htmleditor #o_button_saveclose a.btn.o_button_dirty");
-		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
-		browser.findElement(saveAndCloseDirtyBy).click();
+		OOGraphene.waitElement(saveAndCloseDirtyBy, browser).click();
 		
 		browser.switchTo().window(startWindow);
 		return this;
@@ -150,15 +144,13 @@ public class FolderPage {
 	public FolderPage uploadFile(File file) {
 		try {
 			By newFileBy = By.cssSelector(".o_folder_create_group>div>button.btn");
-			OOGraphene.waitElement(newFileBy, browser);
-			browser.findElement(newFileBy).click();
+			OOGraphene.waitElement(newFileBy, browser).click();
 			
 			By calloutBy = By.cssSelector(".o_folder_create_group ul.dropdown-menu");
 			OOGraphene.waitElement(calloutBy, browser);
 			
 			By onlineButtonBy = By.xpath("//div[contains(@class,'o_folder_create_group')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_filehub_add')]]");
-			OOGraphene.waitElement(onlineButtonBy, browser);
-			browser.findElement(onlineButtonBy).click();
+			OOGraphene.waitElement(onlineButtonBy, browser).click();
 			OOGraphene.waitModalDialog(browser);
 			
 			By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
@@ -193,14 +185,12 @@ public class FolderPage {
 	
 	public FolderPage unzipFile(String filename) {
 		By unzipBy = By.xpath("//div[@class='o_folder_table']//div[contains(@class,'o_folder_card_meta')]/div[div/h5/a/span[text()[contains(.,'" + filename + "')]]]/a[i[contains(@class,'o_icon_actions')]]");
-		OOGraphene.waitElement(unzipBy, browser);
-		browser.findElement(unzipBy).click();
+		OOGraphene.waitElement(unzipBy, browser).click();
 		
 		OOGraphene.waitCallout(browser, "ul.o_dropdown");
 
 		By unzippedFolderBy = By.xpath("//dialog//div[contains(@class,'popover-content')]//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'unzip')][i[contains(@class,'o_filetype_zip')]]");
-		OOGraphene.waitElement(unzippedFolderBy, browser);
-		browser.findElement(unzippedFolderBy).click();
+		OOGraphene.waitElement(unzippedFolderBy, browser).click();
 		
 		String directoryName = filename.replace(".zip", "");
 		return assertOnDirectory(directoryName);
@@ -208,8 +198,7 @@ public class FolderPage {
 	
 	public FolderPage selectRootDirectory() {
 		By rootBy = By.xpath("//div[@class='o_folder_breadcrumb']//ol/li[@class='o_breadcrumb_root']/a");
-		OOGraphene.waitElement(rootBy, browser);
-		browser.findElement(rootBy).click();
+		OOGraphene.waitElement(rootBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

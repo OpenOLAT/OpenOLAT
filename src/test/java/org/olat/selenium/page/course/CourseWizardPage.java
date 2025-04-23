@@ -54,7 +54,7 @@ public class CourseWizardPage {
 	 */
 	public CourseWizardPage nextNodes() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_catalog_chooser_tree"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_catalog_chooser_tree"), browser);
 		return this;
 	}
 	
@@ -88,8 +88,7 @@ public class CourseWizardPage {
 		int numOfCheckbox = checkAll.size();
 		for(int i=0;i<numOfCheckbox; i++) {
 			By checkbox = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_sel_course_elements')]//td/div/div[" + (i+1) + "]/div/label/input[@type='checkbox']");
-			OOGraphene.waitElement(checkbox, browser);
-			browser.findElement(checkbox).click();
+			OOGraphene.waitElement(checkbox, browser).click();
 			OOGraphene.waitBusy(browser);
 			By checkedBox = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_sel_course_elements')]//td/div/div[" + (i+1) + "]/div/label/input[@type='checkbox'][@checked='checked']");
 			OOGraphene.waitElement(checkedBox, browser);

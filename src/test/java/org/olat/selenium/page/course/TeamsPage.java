@@ -59,8 +59,7 @@ public class TeamsPage {
 	 */
 	public TeamsPage selectEditMeetingsList() {
 		By editListBy = By.cssSelector("a.o_sel_teams_edit_meetings_segment");
-		OOGraphene.waitElement(editListBy, browser);
-		browser.findElement(editListBy).click();
+		OOGraphene.waitElement(editListBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(By.className("o_sel_teams_edit_meetings_list"), browser);
 		return this;
@@ -77,13 +76,11 @@ public class TeamsPage {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_teams_single_meeting_add");
-		OOGraphene.waitElement(addSingleMeetingBy, browser);
-		browser.findElement(addSingleMeetingBy).click();
+		OOGraphene.waitElement(addSingleMeetingBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By nameBy = By.cssSelector(".o_sel_teams_edit_meeting_subject input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_teams_edit_meeting button.btn.btn-primary");
 		OOGraphene.moveAndClick(saveBy, browser);
@@ -95,13 +92,11 @@ public class TeamsPage {
 		openCreateDropDown();
 		
 		By addWeeklyMeetingBy = By.cssSelector("a.o_sel_teams_weekly_meeting_add");
-		OOGraphene.waitElement(addWeeklyMeetingBy, browser);
-		browser.findElement(addWeeklyMeetingBy).click();
+		OOGraphene.waitElement(addWeeklyMeetingBy, browser).click();
 		OOGraphene.waitModalWizard(browser);
 		
 		By nameBy = By.cssSelector("fieldset.o_sel_teams_recurring_form div.o_sel_teams_recurring_meeting_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		
 		By startBy = By.cssSelector("div.o_sel_teams_recurring_meeting_start span.input-group-addon i");
 		browser.findElement(startBy).click();
@@ -145,8 +140,7 @@ public class TeamsPage {
 	
 	private TeamsPage openCreateDropDown() {
 		By addMenuCaretBy = By.cssSelector("button.o_sel_teams_meeting_add");
-		OOGraphene.waitElement(addMenuCaretBy, browser);
-		browser.findElement(addMenuCaretBy).click();
+		OOGraphene.waitElement(addMenuCaretBy, browser).click();
 		
 		By addMenuBy = By.cssSelector("ul.o_sel_teams_meeting_add");
 		OOGraphene.waitElement(addMenuBy, browser);
@@ -160,8 +154,7 @@ public class TeamsPage {
 	 */
 	public TeamsPage selectMeetingsList() {
 		By editListBy = By.cssSelector("a.o_sel_teams_meetings_segment");
-		OOGraphene.waitElement(editListBy, browser);
-		browser.findElement(editListBy).click();
+		OOGraphene.waitElement(editListBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -193,8 +186,7 @@ public class TeamsPage {
 	 */
 	public TeamsPage selectMeeting(String meetingName) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//tr[td[text()[contains(.,'" + meetingName + "')]]]/td/a[contains(@onclick,'select')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		By titleBy = By.xpath("//div[@class='o_sel_teams_meeting']//h3[text()[contains(.,'" + meetingName + "')]]");
 		OOGraphene.waitElementPresence(titleBy, 10, browser);
 		return this;

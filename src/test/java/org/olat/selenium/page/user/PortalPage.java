@@ -99,8 +99,7 @@ public class PortalPage {
 	private PortalPage doAction(String portletClassname, String iconAction) {
 		String xpathSelector = "//div[contains(@class,'" + portletClassname + "')]//a[i[contains(@class,'" + iconAction + "')]]";
 		By actionBy = By.xpath(xpathSelector);
-		OOGraphene.waitElement(actionBy, browser);
-		browser.findElement(actionBy).click();
+		OOGraphene.waitElement(actionBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -46,8 +46,7 @@ public class CourseNodeSelectionConfigurationPage {
 	 */
 	public CourseNodeSelectionConfigurationPage selectConfiguration() {
 		By configurationTabBy = By.cssSelector("ul.o_node_config>li.o_sel_cns_configuration>a");
-		OOGraphene.waitElement(configurationTabBy, browser);
-		browser.findElement(configurationTabBy).click();
+		OOGraphene.waitElement(configurationTabBy, browser).click();
 		
 		By configBy = By.cssSelector("fieldset.o_sel_cns_configuration_form");
 		OOGraphene.waitElement(configBy, browser);
@@ -60,8 +59,7 @@ public class CourseNodeSelectionConfigurationPage {
 	 */
 	public CourseNodeSelectionConfigurationPage setNumOfSelections(int num) {
 		By numOfSelectionsBy = By.cssSelector(".o_sel_cns_configuration_form .o_sel_cns_selections input[type=text]");
-		OOGraphene.waitElement(numOfSelectionsBy, browser);
-		WebElement numOfSelectionsEl = browser.findElement(numOfSelectionsBy);
+		WebElement numOfSelectionsEl = OOGraphene.waitElement(numOfSelectionsBy, browser);
 		numOfSelectionsEl.clear();
 		numOfSelectionsEl.sendKeys(Integer.toString(num));
 		return this;

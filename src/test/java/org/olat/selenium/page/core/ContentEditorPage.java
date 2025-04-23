@@ -48,8 +48,7 @@ public class ContentEditorPage extends ContentViewPage {
 	
 	public ContentEditorPage addLayout(ContainerLayout layout) {
 		By addBy = By.cssSelector(".o_ce_add_main_btns>a.btn.o_sel_add_container_main");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
+		OOGraphene.waitElement(addBy, browser).click();
 		By addCalloutBy = By.cssSelector("dialog.popover div.o_inspector_layouts");
 		OOGraphene.waitElement(addCalloutBy, browser);
 		
@@ -64,8 +63,7 @@ public class ContentEditorPage extends ContentViewPage {
 	
 	public ContentEditorPage openElementsChooser(int container, int slot) {
 		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + container + "]//div[contains(@class,'o_page_container_slot')][" + slot + "]//a[contains(@class,'btn')][contains(@class,'o_page_add_in_container')]");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
+		OOGraphene.waitElement(addBy, browser).click();
 		OOGraphene.waitModalDialog(browser, "div.o_ceditor_add_elements");
 		return this;
 	}
