@@ -28,7 +28,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
@@ -54,7 +53,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserProfileInfoController extends UserInfoController {
 
-	private static final String USER_PROFILE_ELEMENTS_CSS = "o_user_card_elements";
 	private static final List<OrganisationRoles> DISPLAY_ROLE_ORDER = List.of(
 			OrganisationRoles.invitee,
 			OrganisationRoles.user,
@@ -123,8 +121,7 @@ public class UserProfileInfoController extends UserInfoController {
 	}
 
 	private void addUserId(FormLayoutContainer itemsCont) {
-		StaticTextElement userIdEl = uifactory.addStaticTextElement("userid", "user.identity", String.valueOf(identity.getKey()), itemsCont);
-		userIdEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
+		uifactory.addStaticTextElement("userid", "user.identity", String.valueOf(identity.getKey()), itemsCont);
 	}
 
 	private void addUserOrganisations(FormLayoutContainer itemsCont, Roles fullRoles) {
@@ -150,7 +147,6 @@ public class UserProfileInfoController extends UserInfoController {
 
 			FormLink link = uifactory.addFormLink("org_link_" + org.getKey(), "org_roles",
 					orgName, null, orgLinkCont, Link.NONTRANSLATED);
-			link.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 			link.setUserObject("org-click");
 		}
 	}
@@ -178,10 +174,9 @@ public class UserProfileInfoController extends UserInfoController {
 				statusKey = "rightsForm.status.deleted";
 				cssClass = "o_user_status_deleted";
 			}
-
+			
 			String statusValue = "<span class=\"o_user_status_badge " + cssClass + "\">" + translate(statusKey) + "</span>";
-			StaticTextElement statusEl = uifactory.addStaticTextElement("status", "user.status", statusValue, itemsCont);
-			statusEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
+			uifactory.addStaticTextElement("status", "user.status", statusValue, itemsCont);
 		}
 	}
 
@@ -221,7 +216,6 @@ public class UserProfileInfoController extends UserInfoController {
 
 			String badge = "<span class=\"o_labeled_light\">" + StringHelper.escapeHtml(label) + "</span>";
 			FormLink link = uifactory.addFormLink("role_link_" + i++, "role_click", badge, null, roleLinkCont, Link.NONTRANSLATED);
-			link.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
 			link.setUserObject("role-click");
 		}
 	}
@@ -229,8 +223,7 @@ public class UserProfileInfoController extends UserInfoController {
 	private void addUserMail(FormLayoutContainer itemsCont) {
 		String email = identity.getUser().getEmail();
 		String userMail = StringHelper.containsNonWhitespace(email) ? email : translate("user.no.data");
-		StaticTextElement userMailEl = uifactory.addStaticTextElement("usermail", "user.mail", userMail, itemsCont);
-		userMailEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
+		uifactory.addStaticTextElement("usermail", "user.mail", userMail, itemsCont);
 	}
 
 	private void addAccountType(FormLayoutContainer itemsCont, Roles fullRoles) {
@@ -244,14 +237,12 @@ public class UserProfileInfoController extends UserInfoController {
 			else
 				accountType = translate("user.type.user");
 		}
-
-		StaticTextElement accountTypeEl = uifactory.addStaticTextElement("ac", "user.account.type.label", accountType, itemsCont);
-		accountTypeEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
+		
+		uifactory.addStaticTextElement("ac", "user.account.type.label", accountType, itemsCont);
 	}
 
 	private void addUsername(FormLayoutContainer itemsCont) {
-		StaticTextElement usernameEl = uifactory.addStaticTextElement("username", "user.username", identity.getName(), itemsCont);
-		usernameEl.setElementCssClass(USER_PROFILE_ELEMENTS_CSS);
+		uifactory.addStaticTextElement("username", "user.username", identity.getName(), itemsCont);
 	}
 
 	@Override

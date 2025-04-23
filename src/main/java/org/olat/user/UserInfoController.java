@@ -67,6 +67,8 @@ public abstract class UserInfoController extends FormBasicController {
 		infoCont.add("items", itemsCont);
 		
 		initFormItems(itemsCont, listener, ureq);
+		Boolean treeCols = Boolean.valueOf(itemsCont.getFormComponents().size() > 4);
+		itemsCont.contextPut("threeCols", treeCols);
 	}
 
 	/*

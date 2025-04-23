@@ -50,6 +50,18 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public abstract class UserManager {
+	
+	public static final List<String> USER_INITIALS_CSS = List.of(
+			"o_user_initials_dark_blue",
+			"o_user_initials_light_blue",
+			"o_user_initials_purple",
+			"o_user_initials_red",
+			"o_user_initials_orange",
+			"o_user_initials_yellow",
+			"o_user_initials_dark_green",
+			"o_user_initials_light_green"
+	);
+	
 	protected static UserManager INSTANCE;
 	
 	// injected by spring configuration

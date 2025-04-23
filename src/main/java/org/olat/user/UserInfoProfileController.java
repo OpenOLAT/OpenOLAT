@@ -83,9 +83,14 @@ public class UserInfoProfileController extends BasicController {
 		
 		mainVC.contextPut("name", StringHelper.escapeHtml(portraitUser.getDisplayName()));
 		
-		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("user.portrait", mainVC, getLocale());
-		userPortraitComp.setPortraitUser(portraitUser);
-		userPortraitComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
+		UserPortraitComponent userPortraitMComp = UserPortraitFactory.createUserPortrait("user.portrait.medium", mainVC, getLocale());
+		userPortraitMComp.setPortraitUser(portraitUser);
+		userPortraitMComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
+		
+		UserPortraitComponent userPortraitLComp = UserPortraitFactory.createUserPortrait("user.portrait.large", mainVC, getLocale());
+		userPortraitLComp.setSize(PortraitSize.large);
+		userPortraitLComp.setPortraitUser(portraitUser);
+		userPortraitLComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
 
 		if (portraitUser.getIdentityKey() < 0) {
 			return;
@@ -93,18 +98,15 @@ public class UserInfoProfileController extends BasicController {
 		
 		visitingCardLink = LinkFactory.createLink("user.info.visiting.card", mainVC, this);
 		visitingCardLink.setIconLeftCSS("o_icon o_icon-fw o_icon_visiting_card");
-		visitingCardLink.setElementCssClass("o_nowrap");
 		visitingCardLink.setAriaRole("button");
 		
 		emailLink = LinkFactory.createLink("user.info.email", mainVC, this);
 		emailLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
-		emailLink.setElementCssClass("o_nowrap");
 		emailLink.setAriaRole("button");
 
 		if (profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey())) {
 			chatLink = LinkFactory.createLink("user.info.chat", mainVC, this);
 			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
-			chatLink.setElementCssClass("o_nowrap");
 			chatLink.setAriaRole("button");
 		}
 
@@ -122,7 +124,6 @@ public class UserInfoProfileController extends BasicController {
 					ExternalLink userManagementLink = LinkFactory.createExternalLink("user.info.user.management", "user.info.user.management", url);
 					userManagementLink.setName(translate("user.info.user.management"));
 					userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
-					userManagementLink.setElementCssClass("o_nowrap");
 					mainVC.put("user.info.user.management", userManagementLink);
 				}
 			}

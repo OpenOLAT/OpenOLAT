@@ -1,24 +1,29 @@
-<div class="o_user_info_profile">
-	<div class="o_user_info_profile_portrait_wrapper">
-		$r.render("user.portrait")
-	</div>
-	<div class="o_user_info_profile_name_wrapper">
-		<div class="o_user_info_profile_name">
-			$name
+<div class="o_user_info_profile_container">
+	<div class="o_user_info_profile">
+		<div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large">
+			$r.render("user.portrait.large")
 		</div>
-		<div class="o_user_info_profile_cmds">
-			#if($r.available("user.info.visiting.card") && $r.visible("user.info.visiting.card"))
-				$r.render("user.info.visiting.card")
-			#end
-			#if($r.available("user.info.email") && $r.visible("user.info.email"))
-				$r.render("user.info.email")
-			#end
-			#if($r.available("user.info.chat") && $r.visible("user.info.chat"))
-				$r.render("user.info.chat")
-			#end
-			#if($r.available("user.info.user.management") && $r.visible("user.info.user.management"))
-				$r.render("user.info.user.management")
-			#end
+		<div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_medium">
+			$r.render("user.portrait.medium")
+		</div>
+		<div class="o_user_info_profile_name_wrapper">
+			<div class="o_user_info_profile_name">
+				$name
+			</div>
+			<div class="o_user_info_profile_cmds">
+				#if($r.available("user.info.visiting.card") && $r.visible("user.info.visiting.card"))
+					$r.render("user.info.visiting.card")
+				#end
+				#if($r.available("user.info.email") && $r.visible("user.info.email"))
+					$r.render("user.info.email")
+				#end
+				#if($r.available("user.info.chat") && $r.visible("user.info.chat"))
+					$r.render("user.info.chat")
+				#end
+				#if($r.available("user.info.user.management") && $r.visible("user.info.user.management"))
+					$r.render("user.info.user.management")
+				#end
+			</div>
 		</div>
 	</div>
 </div>

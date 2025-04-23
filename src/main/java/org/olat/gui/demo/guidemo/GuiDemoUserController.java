@@ -40,6 +40,7 @@ import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
+import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
@@ -71,6 +72,7 @@ public class GuiDemoUserController extends BasicController {
 		identity1.setProperty(UserConstants.FIRSTNAME, "Kristin");
 		identity1.setProperty(UserConstants.LASTNAME, "Frøya");
 		identity1.setProperty(UserConstants.GENDER, "female");
+		identity1.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(1));
 		identities.add(identity1);
 		identities.add(getIdentity());
 		TransientIdentity identity2 = new TransientIdentity();
@@ -78,12 +80,14 @@ public class GuiDemoUserController extends BasicController {
 		identity2.setProperty(UserConstants.FIRSTNAME, "Đorđe");
 		identity2.setProperty(UserConstants.LASTNAME, "Miomir");
 		identity2.setProperty(UserConstants.GENDER, "male");
+		identity2.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(2));
 		identities.add(identity2);
 		TransientIdentity identity3 = new TransientIdentity();
 		identity3.setKey(-3l);
 		identity3.setProperty(UserConstants.FIRSTNAME, "Pauline");
 		identity3.setProperty(UserConstants.LASTNAME, "Lola");
 		identity3.setProperty(UserConstants.EMAIL, "pauline.lola@openolat.com");
+		identity3.setInitialsCssClass(UserManager.USER_INITIALS_CSS.get(3));
 		identities.add(identity3);
 		
 		
@@ -96,13 +100,33 @@ public class GuiDemoUserController extends BasicController {
 		listenTo(infoProfileCtrl1);
 		mainVC.put("info-1", infoProfileCtrl1.getInitialComponent());
 		
-		PortraitUser portraitUser3 = userPortraitService.createPortraitUser(getLocale(), identity3);
+		UserInfoProfileController infoProfileCtrl2 = new UserInfoProfileController(ureq, wControl, profileConfig, portraitUser);
+		listenTo(infoProfileCtrl2);
+		mainVC.put("info-2", infoProfileCtrl2.getInitialComponent());
+		
+		PortraitUser portraitUser3 = userPortraitService.createPortraitUser(getLocale(), identity1);
 		portraitUser3 = userPortraitService.createPortraitUser(portraitUser3.getIdentityKey(),
 				portraitUser3.getUsername(), portraitUser3.isPortraitAvailable(), null, portraitUser3.getInitials(),
 				portraitUser3.getInitialsCss(), portraitUser3.getDisplayName(), Presence.dnd);
-		GuiDemoUserInfoController infoCtrl2 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser3);
-		listenTo(infoCtrl2);
-		mainVC.put("info-2", infoCtrl2.getInitialComponent());
+		GuiDemoUserInfoController infoCtrl3 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser3, 1);
+		listenTo(infoCtrl3);
+		mainVC.put("info-3", infoCtrl3.getInitialComponent());
+		
+		PortraitUser portraitUser4 = userPortraitService.createPortraitUser(getLocale(), identity2);
+		portraitUser4 = userPortraitService.createPortraitUser(portraitUser4.getIdentityKey(),
+				portraitUser4.getUsername(), portraitUser4.isPortraitAvailable(), null, portraitUser4.getInitials(),
+				portraitUser4.getInitialsCss(), portraitUser4.getDisplayName(), Presence.dnd);
+		GuiDemoUserInfoController infoCtrl4 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser4, 4);
+		listenTo(infoCtrl4);
+		mainVC.put("info-4", infoCtrl4.getInitialComponent());
+		
+		PortraitUser portraitUser5 = userPortraitService.createPortraitUser(getLocale(), identity3);
+		portraitUser5 = userPortraitService.createPortraitUser(portraitUser5.getIdentityKey(),
+				portraitUser5.getUsername(), portraitUser5.isPortraitAvailable(), null, portraitUser5.getInitials(),
+				portraitUser5.getInitialsCss(), portraitUser5.getDisplayName(), Presence.dnd);
+		GuiDemoUserInfoController infoCtrl5 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser5, 100);
+		listenTo(infoCtrl5);
+		mainVC.put("info-5", infoCtrl5.getInitialComponent());
 
 		
 		// User infos
