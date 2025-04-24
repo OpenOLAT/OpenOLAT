@@ -49,8 +49,7 @@ public class UserAttributesWizardPage {
 		browser.findElement(attributeSelectionBy).click();
 		
 		By attributeValueBy = By.cssSelector("fieldset.o_sel_user_attributes div.o_sel_user_firstName input.o_sel_user_" + attribute + "[type='text']");
-		OOGraphene.waitElement(attributeValueBy, browser);
-		browser.findElement(attributeValueBy).sendKeys(value);
+		OOGraphene.waitElement(attributeValueBy, browser).sendKeys(value);
 		return this;
 	}
 	

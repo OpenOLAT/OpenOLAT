@@ -46,16 +46,14 @@ public class PageElementPage {
 	
 	public ContentEditorPage openEditor() {
 		By openBy = By.cssSelector("button.o_sel_page_edit[aria-checked=\"false\"]");
-		OOGraphene.waitElement(openBy, browser);
-		browser.findElement(openBy).click();
+		OOGraphene.waitElement(openBy, browser).click();
 		OOGraphene.waitElement(By.cssSelector(".o_page_content .o_page_content_editor"), browser);
 		return contentEditor();
 	}
 	
 	public PageElementPage closeEditor() {
 		By closeBy = By.cssSelector("button.o_sel_page_edit[aria-checked=\"true\"]");
-		OOGraphene.waitElement(closeBy, browser);
-		browser.findElement(closeBy).click();
+		OOGraphene.waitElement(closeBy, browser).click();
 		OOGraphene.waitElementAbsence(By.cssSelector(".o_page_content .o_page_content_editor"), 5, browser);
 		return this;
 	}

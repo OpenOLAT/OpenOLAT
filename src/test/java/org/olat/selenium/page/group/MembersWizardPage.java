@@ -45,8 +45,7 @@ public class MembersWizardPage {
 	
 	public MembersWizardPage importList() {
 		By importBy = By.xpath("//div[contains(@class,'o_sel_import_type')]/label/input[@name='import.type' and @value='list']");
-		OOGraphene.waitElement(importBy, browser);
-		browser.findElement(importBy).click();
+		OOGraphene.waitElement(importBy, browser).click();
 		By listBy = By.cssSelector("div.o_sel_user_import textarea");
 		OOGraphene.waitElement(listBy, browser);
 		return this;
@@ -95,8 +94,7 @@ public class MembersWizardPage {
 
 		// select all
 		By selectAll = By.xpath("//dialog[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
-		OOGraphene.waitElement(selectAll, browser);
-		browser.findElement(selectAll).click();
+		OOGraphene.waitElement(selectAll, browser).click();
 		OOGraphene.waitBusy(browser);
 		By selectedAll = By.xpath("//dialog[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		OOGraphene.waitElement(selectedAll, browser);
@@ -159,8 +157,7 @@ public class MembersWizardPage {
 			sb.append(user.getLogin());
 		}
 		By importAreaBy = By.cssSelector(".modal-content fieldset.o_sel_user_import_by_username textarea");
-		OOGraphene.waitElement(importAreaBy, browser);
-		WebElement importAreaEl = browser.findElement(importAreaBy);
+		WebElement importAreaEl = OOGraphene.waitElement(importAreaBy, browser);
 		OOGraphene.textarea(importAreaEl, sb.toString(), browser);
 		return this;
 	}
@@ -223,8 +220,7 @@ public class MembersWizardPage {
 	
 	public MembersWizardPage selectGroupAsParticipant(String groupName) {
 		By rolesBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[text()='" + groupName + "']]//label[contains(@class,'o_sel_role_participant')]/input");
-		OOGraphene.waitElement(rolesBy, browser);
-		browser.findElement(rolesBy).click();
+		OOGraphene.waitElement(rolesBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

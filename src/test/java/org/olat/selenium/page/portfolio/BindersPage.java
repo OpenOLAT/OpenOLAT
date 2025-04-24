@@ -101,8 +101,7 @@ public class BindersPage {
 		OOGraphene.waitBusy(browser);
 		
 		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
-		OOGraphene.waitElement(confirmButtonBy, 5, browser);
-		browser.findElement(confirmButtonBy).click();
+		OOGraphene.waitElement(confirmButtonBy, browser).click();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

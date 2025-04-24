@@ -39,8 +39,7 @@ public class AdministrationMessagesPage {
 	
 	public AdministrationMessagesPage newMaintenanceMessage(String text) {
 		By newMessageButtonBy = By.cssSelector("a.o_sel_maintenance_msg_edit");
-		OOGraphene.waitElement(newMessageButtonBy, browser);
-		browser.findElement(newMessageButtonBy).click();
+		OOGraphene.waitElement(newMessageButtonBy, browser).click();
 
 		By messageFormBy = By.cssSelector(".o_sel_maintenance_msg_form");
 		OOGraphene.waitElement(messageFormBy, browser);

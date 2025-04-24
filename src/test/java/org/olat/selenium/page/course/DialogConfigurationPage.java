@@ -57,8 +57,7 @@ public class DialogConfigurationPage {
 		OOGraphene.waitElement(uploadedBy, browser);
 		
 		By uploadButtonBy = By.cssSelector("div.modal-body div.o_sel_upload_buttons > button.btn-primary");
-		OOGraphene.waitElement(uploadButtonBy, browser);
-		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitElement(uploadButtonBy, browser).click();
 		
 		By rowBy = By.xpath("//table//tr/td/div/a[contains(text(),'" + file.getName() + "')]");
 		OOGraphene.waitElement(rowBy, browser);

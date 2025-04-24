@@ -39,8 +39,7 @@ public class STConfigurationPage {
 	
 	public STConfigurationPage selectOverview() {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_st_config>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		By configBy = By.cssSelector("fieldset.o_sel_st_overview_settings");
 		OOGraphene.waitElement(configBy, browser);
 		return this;

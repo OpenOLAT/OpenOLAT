@@ -116,8 +116,7 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage selectElementsCourseNode(String nodeTitle) {
 		By elementBy = By.xpath("//div[contains(@class,'o_tree')]//ul//li[div/span/a/span[@class='o_tree_item'][contains(text(),'" + nodeTitle + "')]]/div/span/a[contains(@onclick,'nidle')]");
-		OOGraphene.waitElement(elementBy, browser);
-		browser.findElement(elementBy).click();
+		OOGraphene.waitElement(elementBy, browser).click();
 		By statsBy = By.cssSelector("div.panel.o_assessment_stats");
 		OOGraphene.waitElement(statsBy, browser);
 		return this;
@@ -130,8 +129,7 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage selectIdentitiesList() {
 		By identitiesListSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_assessment_tool_node_participants");
-		OOGraphene.waitElement(identitiesListSegmentBy, browser);
-		browser.findElement(identitiesListSegmentBy).click();
+		OOGraphene.waitElement(identitiesListSegmentBy, browser).click();
 		By identitiesListBy = By.cssSelector("div.o_table_flexi.o_sel_assessment_tool_table");
 		OOGraphene.waitElement(identitiesListBy, browser);
 		return this;
@@ -284,8 +282,7 @@ public class AssessmentToolPage {
 	
 	public AssessmentToolPage generateCertificate() {
 		By userLinksBy = By.className("o_sel_certificate_generate");
-		OOGraphene.waitElement(userLinksBy, browser);
-		browser.findElement(userLinksBy).click();
+		OOGraphene.waitElement(userLinksBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 
@@ -296,8 +293,7 @@ public class AssessmentToolPage {
 	
 	public AssessmentToolPage awardBadge() {
 		By awardBadgeBy = By.cssSelector("a.o_sel_award_badge");
-		OOGraphene.waitElement(awardBadgeBy, browser);
-		browser.findElement(awardBadgeBy).click();
+		OOGraphene.waitElement(awardBadgeBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By awardButtonBy = By.cssSelector(".o_sel_award_badge_form button.btn.btn-primary");
@@ -329,8 +325,7 @@ public class AssessmentToolPage {
 		OOGraphene.flexiTableSelectAll(browser);
 		
 		By bulkBy = By.cssSelector("a.btn.o_sel_assessment_bulk_visible");
-		OOGraphene.waitElement(bulkBy, browser);
-		browser.findElement(bulkBy).click();
+		OOGraphene.waitElement(bulkBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		By visibleBy = By.xpath("//table//span[i[contains(@class,'o_icon_results_visible')]]");
@@ -347,8 +342,7 @@ public class AssessmentToolPage {
 		try {
 			OOGraphene.scrollTop(browser);
 			By firstCrumbBy = By.cssSelector("ol.breadcrumb>li:not(.o_display_none).o_breadcrumb_root>a");
-			OOGraphene.waitElement(firstCrumbBy, browser);
-			browser.findElement(firstCrumbBy).click();
+			OOGraphene.waitElement(firstCrumbBy, browser).click();
 			
 			By lastCrumbBy = By.cssSelector("ol.breadcrumb>li:not(.o_display_none).o_last_crumb>a");
 			OOGraphene.waitElementDisappears(lastCrumbBy, 5, browser);

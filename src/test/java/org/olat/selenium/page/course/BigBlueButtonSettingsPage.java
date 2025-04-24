@@ -44,8 +44,7 @@ public class BigBlueButtonSettingsPage {
 	 */
 	public BigBlueButtonSettingsPage selectTemplates() {
 		By templatesTabBy = By.cssSelector("div.o_segments a.o_sel_bbb_templates");
-		OOGraphene.waitElement(templatesTabBy, browser);
-		browser.findElement(templatesTabBy).click();
+		OOGraphene.waitElement(templatesTabBy, browser).click();
 		
 		By templatesListBy = By.cssSelector("div.o_sel_bbb_templates_list table");
 		OOGraphene.waitElement(templatesListBy, browser);
@@ -60,8 +59,7 @@ public class BigBlueButtonSettingsPage {
 	 */
 	public BigBlueButtonTemplatePage editTemplate(String name) {
 		By editBy = By.xpath("//div[@class='o_sel_bbb_templates_list']//table//tr[td[contains(@class,'o_dnd_label')][text()[contains(.,'" + name + "')]]]/td/a[contains(@onclick,'edit')]");
-		OOGraphene.waitElement(editBy, browser);
-		browser.findElement(editBy).click();
+		OOGraphene.waitElement(editBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return new BigBlueButtonTemplatePage(browser);
 	}

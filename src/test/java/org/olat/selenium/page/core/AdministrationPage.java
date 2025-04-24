@@ -70,8 +70,7 @@ public class AdministrationPage {
 	
 	public AdministrationPage selectSystemInfo() {
 		By systemLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'systemParent')]");
-		OOGraphene.waitElement(systemLinkBy, browser);
-		browser.findElement(systemLinkBy).click();
+		OOGraphene.waitElement(systemLinkBy, browser).click();
 		By systemLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'active')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'systemParent')]");
 		OOGraphene.waitElement(systemLinkOpenBy, browser);
 		return this;
@@ -79,8 +78,7 @@ public class AdministrationPage {
 	
 	public AdministrationPage selectCoreConfiguration() {
 		By coreConfigurationLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'sysconfigParent')]");
-		OOGraphene.waitElement(coreConfigurationLinkBy, browser);
-		browser.findElement(coreConfigurationLinkBy).click();
+		OOGraphene.waitElement(coreConfigurationLinkBy, browser).click();
 		By coreConfigurationLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'active')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'sysconfigParent')]");
 		OOGraphene.waitElement(coreConfigurationLinkOpenBy, browser);
 		return this;
@@ -88,8 +86,7 @@ public class AdministrationPage {
 	
 	public AdministrationPage selectLogin() {
 		By loginLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'loginAndSecurityParent')]");
-		OOGraphene.waitElement(loginLinkBy, browser);
-		browser.findElement(loginLinkBy).click();
+		OOGraphene.waitElement(loginLinkBy, browser).click();
 		By loginLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'o_tree_l0')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active_parent')]/a[contains(@onclick,'loginAndSecurityParent')]");
 		OOGraphene.waitElement(loginLinkOpenBy, browser);
 		return this;
@@ -97,8 +94,7 @@ public class AdministrationPage {
 	
 	public AdministrationPage selectModules() {
 		By moduleLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'modulesParent')]");
-		OOGraphene.waitElement(moduleLinkBy, browser);
-		browser.findElement(moduleLinkBy).click();
+		OOGraphene.waitElement(moduleLinkBy, browser).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		By moduleLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'active_parent')]/a[contains(@onclick,'modulesParent')]");
 		OOGraphene.waitElement(moduleLinkOpenBy, browser);
@@ -107,8 +103,7 @@ public class AdministrationPage {
 	
 	public AdministrationPage selectAssessment() {
 		By assessmentLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'eAssessmentParent')]");
-		OOGraphene.waitElement(assessmentLinkBy, browser);
-		browser.findElement(assessmentLinkBy).click();
+		OOGraphene.waitElement(assessmentLinkBy, browser).click();
 		By assessmentLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'active_parent')]/a[contains(@onclick,'eAssessmentParent')]");
 		OOGraphene.waitElement(assessmentLinkOpenBy, browser);
 		return this;
@@ -116,8 +111,7 @@ public class AdministrationPage {
 	
 	public AdministrationPage selectExternalTools() {
 		By externalToolsLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'externalToolsParent')]");
-		OOGraphene.waitElement(externalToolsLinkBy, browser);
-		browser.findElement(externalToolsLinkBy).click();
+		OOGraphene.waitElement(externalToolsLinkBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -275,8 +269,7 @@ public class AdministrationPage {
 		selectExternalTools();
 		
 		By bigBlueButtonBy = By.cssSelector(".o_sel_bigbluebutton span.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(bigBlueButtonBy, browser);
-		browser.findElement(bigBlueButtonBy).click();
+		OOGraphene.waitElement(bigBlueButtonBy, browser).click();
 		By bbbConfigBy = By.cssSelector("fieldset.o_sel_bbb_admin_configuration");
 		OOGraphene.waitElement(bbbConfigBy, browser);
 		return new BigBlueButtonSettingsPage(browser);
@@ -286,8 +279,7 @@ public class AdministrationPage {
 		selectExternalTools();
 		
 		By ltiBy = By.cssSelector(".o_sel_lti13 span.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(ltiBy, browser);
-		browser.findElement(ltiBy).click();
+		OOGraphene.waitElement(ltiBy, browser).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		By ltiConfigBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings");
 		OOGraphene.waitElement(ltiConfigBy, browser);
@@ -300,8 +292,7 @@ public class AdministrationPage {
 		}
 		
 		By zoomBy = By.cssSelector(".o_sel_zoom span.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(zoomBy, browser);
-		browser.findElement(zoomBy).click();
+		OOGraphene.waitElement(zoomBy, browser).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		By zoomConfigBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration");
 		OOGraphene.waitElement(zoomConfigBy, browser);
@@ -314,8 +305,7 @@ public class AdministrationPage {
 		}
 		
 		By jupiterHubBy = By.cssSelector(".o_sel_jupyterHub span.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(jupiterHubBy, browser);
-		browser.findElement(jupiterHubBy).click();
+		OOGraphene.waitElement(jupiterHubBy, browser).click();
 		OOGraphene.waitBusyAndScrollTop(browser);
 		By jupiterHubConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
 		OOGraphene.waitElement(jupiterHubConfigBy, browser);
@@ -327,8 +317,7 @@ public class AdministrationPage {
 			.selectSecurity();
 		
 		By mediaServerBy = By.cssSelector(".o_segments .o_sel_media_server");
-		OOGraphene.waitElement(mediaServerBy, browser);
-		browser.findElement(mediaServerBy).click();
+		OOGraphene.waitElement(mediaServerBy, browser).click();
 		By mediaServerSelectedBy = By.cssSelector(".o_segments .btn-primary.o_sel_media_server");
 		OOGraphene.waitElement(mediaServerSelectedBy, browser);
 		

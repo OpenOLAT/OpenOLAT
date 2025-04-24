@@ -114,8 +114,7 @@ public class FeedPage {
 	}
 	
 	private FeedPage newExternalFeed(By configureExternalButton, String title, String url) {
-		OOGraphene.waitElement(configureExternalButton, browser);
-		browser.findElement(configureExternalButton).click();
+		OOGraphene.waitElement(configureExternalButton, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);
 
@@ -143,15 +142,13 @@ public class FeedPage {
 	
 	public FeedPage backToList() {
 		By backBy = By.xpath("//div[contains(@class,'o_post')]//a[i[contains(@class,'o_icon_back')]]");
-		OOGraphene.waitElement(backBy, browser);
-		browser.findElement(backBy).click();
+		OOGraphene.waitElement(backBy, browser).click();
 		return this;
 	}
 	
 	public FeedPage allTableFilter() {
 		By allBy = By.xpath("//div[contains(@class,'o_feed')]//div[@class='o_table_tabs']//a[contains(@href,'tab')][contains(@href,'all')]");
-		OOGraphene.waitElement(allBy, browser);
-		browser.findElement(allBy).click();
+		OOGraphene.waitElement(allBy, browser).click();
 		return this;
 	}
 	
@@ -163,8 +160,7 @@ public class FeedPage {
 	public FeedPage newBlogPost() {
 		//click the button to create a feed
 		By newPostBy = By.cssSelector("div.o_feed .o_empty_state .o_empty_action a.btn-primary");
-		OOGraphene.waitElement(newPostBy, browser);
-		browser.findElement(newPostBy).click();
+		OOGraphene.waitElement(newPostBy, browser).click();
 		return this;
 	}
 	
@@ -175,8 +171,7 @@ public class FeedPage {
 	 */
 	public FeedPage addBlogPost() {
 		By addPostBy = By.cssSelector("a.o_sel_feed_add_item");
-		OOGraphene.waitElement(addPostBy, browser);
-		browser.findElement(addPostBy).click();
+		OOGraphene.waitElement(addPostBy, browser).click();
 		return this;
 	}
 	
@@ -211,8 +206,7 @@ public class FeedPage {
 	 */
 	public MediaPage addAsMediaInTable() {
 		By toolsBy = By.xpath("//div[contains(@class,'o_feed')]//div[contains(@class,'o_table')]//tr/td/div/a[i[contains(@class,'o_icon_actions')]]");
-		OOGraphene.waitElement(toolsBy, browser);
-		browser.findElement(toolsBy).click();
+		OOGraphene.waitElement(toolsBy, browser).click();
 		OOGraphene.waitCallout(browser);
 		
 		By addAsMediaBy = By.xpath("//dialog[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]//a[i[contains(@class,'o_icon_eportfolio_add')]]");
@@ -227,8 +221,7 @@ public class FeedPage {
 	 */
 	public FeedPage clickFirstMonthOfPager() {
 		By monthBy = By.xpath("//div[contains(@class,'o_year_navigation')]//li[contains(@class,'o_month')][1]/a");
-		OOGraphene.waitElement(monthBy, browser);
-		browser.findElement(monthBy).click();
+		OOGraphene.waitElement(monthBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

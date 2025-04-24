@@ -39,8 +39,7 @@ public class QTI21GradingSettingsPage {
 	
 	public QTI21GradingSettingsPage enable() {
 		By enableBy = By.xpath("//fieldset[contains(@class,'o_sel_repo_grading_enable')]//input[@name='grading.repo.enabled'][@type='checkbox']");
-		OOGraphene.waitElement(enableBy, browser);
-		browser.findElement(enableBy).click();
+		OOGraphene.waitElement(enableBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		By reminderBy = By.className("o_sel_repo_grading_notification_type");
@@ -68,8 +67,7 @@ public class QTI21GradingSettingsPage {
 		OOGraphene.waitElement(templatesMenu, browser);
 		
 		By firstTemplateBy = By.xpath("//ul[contains(@class,'o_sel_repo_grading_templates')]/li[1]/a");
-		OOGraphene.waitElement(firstTemplateBy, browser);
-		browser.findElement(firstTemplateBy).click();
+		OOGraphene.waitElement(firstTemplateBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		By notificationSubjectBy = By.xpath("//div[contains(@class,'o_sel_repo_grading_notification_subject')]//input[@value[string()]]");

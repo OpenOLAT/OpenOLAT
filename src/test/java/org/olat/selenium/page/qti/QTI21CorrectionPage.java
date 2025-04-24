@@ -39,8 +39,7 @@ public class QTI21CorrectionPage {
 	
 	public QTI21CorrectionPage startTestCorrection() {
 		By startBy = By.cssSelector("a.btn.o_sel_correction");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
+		OOGraphene.waitElement(startBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return assertOnAssessmentItemsSelected();
 	}
@@ -86,8 +85,7 @@ public class QTI21CorrectionPage {
 	
 	public QTI21CorrectionPage setScore(String score) {
 		By scoreBy = By.cssSelector("div.o_assessmentitem_wrapper .o_sel_assessment_item_score input[type='text']");
-		OOGraphene.waitElement(scoreBy, browser);
-		browser.findElement(scoreBy).sendKeys(score);
+		OOGraphene.waitElement(scoreBy, browser).sendKeys(score);
 		return this;
 	}
 	
@@ -117,8 +115,7 @@ public class QTI21CorrectionPage {
 	 */
 	public QTI21CorrectionPage publishAll() {
 		By saveBy = By.cssSelector("a.o_sel_correction_save_tests");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -130,16 +127,14 @@ public class QTI21CorrectionPage {
 	 */
 	public QTI21CorrectionPage publish() {
 		By saveBy = By.cssSelector("a.o_sel_correction_save_test");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public QTI21CorrectionPage confirmDialog() {
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-body button.btn-primary");
-		OOGraphene.waitElement(confirmButtonBy, browser);
-		browser.findElement(confirmButtonBy).click();
+		OOGraphene.waitElement(confirmButtonBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

@@ -45,7 +45,7 @@ public class MediaDetailsPage {
 	
 	public MediaDetailsPage assertOnMediaDetails(String title) {
 		By titleBy = By.xpath("//div//h2[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(titleBy, 5, browser);
+		OOGraphene.waitElement(titleBy, browser);
 		List<WebElement> titleEls = browser.findElements(titleBy);
 		Assert.assertFalse(titleEls.isEmpty());
 		return this;
@@ -53,8 +53,7 @@ public class MediaDetailsPage {
 	
 	public MediaDetailsPage addNewVersion() {
 		By addVersionBy = By.cssSelector("div.o_button_group a.o_sel_set_version");
-		OOGraphene.waitElement(addVersionBy, browser);
-		browser.findElement(addVersionBy).click();
+		OOGraphene.waitElement(addVersionBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -67,8 +66,7 @@ public class MediaDetailsPage {
 	
 	public MediaDetailsPage replaceMedia(File file) {
 		By uploadVersionBy = By.cssSelector("div.o_button_group a.o_sel_upload_version");
-		OOGraphene.waitElement(uploadVersionBy, browser);
-		browser.findElement(uploadVersionBy).click();
+		OOGraphene.waitElement(uploadVersionBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector("fieldset.o_sel_upload_file_form .o_fileinput input[type='file']");

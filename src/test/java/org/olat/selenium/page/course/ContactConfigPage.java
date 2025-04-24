@@ -46,8 +46,7 @@ public class ContactConfigPage {
 	
 	public ContactConfigPage wantAllOwners() {
 		By wantBy = By.cssSelector("div.o_sel_co_want_owners input[name='wantOwners']");
-		OOGraphene.waitElement(wantBy, browser);
-		WebElement wantEl = browser.findElement(wantBy);
+		WebElement wantEl = OOGraphene.waitElement(wantBy, browser);
 		OOGraphene.check(wantEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -55,28 +54,24 @@ public class ContactConfigPage {
 	
 	public ContactConfigPage wantAllCoaches() {
 		By wantBy = By.cssSelector("div.o_sel_config_want_coaches input[type='checkbox'][name='coaches']");
-		OOGraphene.waitElement(wantBy, browser);
-		WebElement wantEl = browser.findElement(wantBy);
+		WebElement wantEl = OOGraphene.waitElement(wantBy, browser);
 		OOGraphene.check(wantEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		
 		By allBy = By.cssSelector("div.o_sel_config_coaches input[type='radio'][value='all']");
-		OOGraphene.waitElement(allBy, browser);
-		browser.findElement(allBy).click();
+		OOGraphene.waitElement(allBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public ContactConfigPage wantAllParticipants() {
 		By wantBy = By.cssSelector("div.o_sel_config_want_participants input[type='checkbox'][name='participants']");
-		OOGraphene.waitElement(wantBy, browser);
-		WebElement wantEl = browser.findElement(wantBy);
+		WebElement wantEl = OOGraphene.waitElement(wantBy, browser);
 		OOGraphene.check(wantEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		
 		By allBy = By.cssSelector("div.o_sel_config_participants input[type='radio'][value='all']");
-		OOGraphene.waitElement(allBy, browser);
-		browser.findElement(allBy).click();
+		OOGraphene.waitElement(allBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

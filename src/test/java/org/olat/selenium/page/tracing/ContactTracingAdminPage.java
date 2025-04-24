@@ -46,8 +46,7 @@ public class ContactTracingAdminPage {
 	 */
 	public ContactTracingAdminPage enableTracing() {
 		By enableBy = By.xpath("//fieldset[contains(@class,'o_sel_contacttracing_enable')]//label/input[@name='contact.tracing.enabled' and @value='on']");
-		OOGraphene.waitElement(enableBy, browser);
-		WebElement checkEl = browser.findElement(enableBy);
+		WebElement checkEl = OOGraphene.waitElement(enableBy, browser);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		
 		By anonymousBy = By.cssSelector("fieldset.o_sel_contacttracing_anonymous");
@@ -63,8 +62,7 @@ public class ContactTracingAdminPage {
 	 */
 	public ContactTracingAdminPage selectLocations() {
 		By locationsBy = By.cssSelector("div.o_segments a.btn.o_sel_contacttracing_locations");
-		OOGraphene.waitElement(locationsBy, browser);
-		browser.findElement(locationsBy).click();
+		OOGraphene.waitElement(locationsBy, browser).click();
 		
 		By addLocationBy = By.cssSelector("div.o_button_group a.o_sel_contacttracing_add_location");
 		OOGraphene.waitElement(addLocationBy, browser);
@@ -83,8 +81,7 @@ public class ContactTracingAdminPage {
 		String url;
 		try {
 			By addLocationBy = By.cssSelector("div.o_button_group a.o_sel_contacttracing_add_location");
-			OOGraphene.waitElement(addLocationBy, browser);
-			browser.findElement(addLocationBy).click();
+			OOGraphene.waitElement(addLocationBy, browser).click();
 			OOGraphene.waitModalDialog(browser);
 			
 			OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contacttracing_location"), browser);

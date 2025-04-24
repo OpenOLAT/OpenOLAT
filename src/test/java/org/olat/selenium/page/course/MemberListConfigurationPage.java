@@ -68,8 +68,7 @@ public class MemberListConfigurationPage {
 	
 	public MemberListConfigurationPage setCourseCoachesOnly() {
 		By courseCoachBy = By.xpath("//fieldset[contains(@class,'o_sel_cmembers_settings')]//input[@type='radio'][@name='coachesChoice'][@value='course']");
-		OOGraphene.waitElement(courseCoachBy, browser);
-		browser.findElement(courseCoachBy).click();
+		OOGraphene.waitElement(courseCoachBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

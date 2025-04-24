@@ -40,8 +40,7 @@ public class PortfolioElementPage {
 	
 	public PortfolioElementPage pickPortfolio() {
 		By pickBy = By.cssSelector("a.btn.o_sel_ep_new_map_template");
-		OOGraphene.waitElement(pickBy, browser);
-		browser.findElement(pickBy).click();
+		OOGraphene.waitElement(pickBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;

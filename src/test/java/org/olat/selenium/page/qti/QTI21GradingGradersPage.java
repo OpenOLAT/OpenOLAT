@@ -41,8 +41,7 @@ public class QTI21GradingGradersPage {
 	
 	public QTI21GradingGradersPage addGrader(UserVO user) {
 		By addGraderBy = By.cssSelector("div.o_button_group a.o_sel_repo_grading_add_graders");
-		OOGraphene.waitElement(addGraderBy, browser);
-		browser.findElement(addGraderBy).click();
+		OOGraphene.waitElement(addGraderBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalWizard(browser);
 		

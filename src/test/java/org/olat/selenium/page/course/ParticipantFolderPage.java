@@ -69,8 +69,7 @@ public class ParticipantFolderPage {
 	}
 	private FolderPage openBox(int xPathIndex) {
 		By returnBoxBy = By.xpath("//div[contains(@class,'o_folder')]/div[contains(@class,'o_folder_table')]//div[@class='o_folder_row'][" + xPathIndex + "]//h5[contains(@class,'o_folder_card_title')]/a");
-		OOGraphene.waitElement(returnBoxBy, browser);
-		browser.findElement(returnBoxBy).click();
+		OOGraphene.waitElement(returnBoxBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return new FolderPage(browser);
 	}

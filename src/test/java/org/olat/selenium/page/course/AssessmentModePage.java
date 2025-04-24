@@ -114,8 +114,7 @@ public class AssessmentModePage {
 	
 	public AssessmentModePage audienceCourse() {
 		By audienceBy = By.xpath("//div[contains(@class,'o_sel_assessment_mode_audience')]//input[@value='course']");
-		OOGraphene.waitElement(audienceBy, browser);
-		browser.findElement(audienceBy).click();
+		OOGraphene.waitElement(audienceBy, browser).click();
 		return this;
 	}
 	
@@ -150,8 +149,7 @@ public class AssessmentModePage {
 	 */
 	public AssessmentModePage start(String name) {
 		By startBy = By.xpath("//fieldset[contains(@class,'o_sel_assessment_mode_list')]//table//tr/td/a[contains(@onclick,'start')]");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
+		OOGraphene.waitElement(startBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -177,16 +175,14 @@ public class AssessmentModePage {
 	 */
 	public AssessmentModePage stop(String name) {
 		By stopBy = By.xpath("//fieldset[contains(@class,'o_sel_assessment_mode_list')]//table//tr/td/a[contains(@onclick,'stop')]");
-		OOGraphene.waitElement(stopBy, browser);
-		browser.findElement(stopBy).click();
+		OOGraphene.waitElement(stopBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AssessmentModePage confirmStop() {
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-body button.btn-primary");
-		OOGraphene.waitElement(confirmButtonBy, browser);
-		browser.findElement(confirmButtonBy).click();
+		OOGraphene.waitElement(confirmButtonBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -226,8 +222,7 @@ public class AssessmentModePage {
 	 */
 	public void backToOpenOLAT() {
 		By continueBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group a.o_sel_assessment_continue");
-		OOGraphene.waitElement(continueBy, browser);
-		browser.findElement(continueBy).click();
+		OOGraphene.waitElement(continueBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 	}
 }

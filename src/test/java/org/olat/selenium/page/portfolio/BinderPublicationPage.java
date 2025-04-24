@@ -42,7 +42,7 @@ public class BinderPublicationPage {
 		By accessBy = By.cssSelector("a.o_sel_pf_access");
 		By accessMenuBy = By.cssSelector("ul.o_sel_pf_access");
 		browser.findElement(accessBy).click();
-		OOGraphene.waitElement(accessMenuBy, 5, browser);
+		OOGraphene.waitElement(accessMenuBy, browser);
 		return this;
 	}
 	
@@ -60,8 +60,7 @@ public class BinderPublicationPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By emailBy = By.cssSelector(".o_sel_pf_invitation_mail input[type='text']");
-		OOGraphene.waitElement(emailBy, browser);
-		browser.findElement(emailBy).sendKeys(email);
+		OOGraphene.waitElement(emailBy, browser).sendKeys(email);
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_invitation_email_form button.btn-primary");

@@ -77,8 +77,7 @@ public class AssessmentCEConfigurationPage {
 		OOGraphene.toggle("div.o_sel_course_ms_display_passed button.o_sel_course_ms_display_passed", true, false, browser);
 		
 		By displayAutoBy = By.cssSelector("div.o_sel_course_ms_display_type input[type='radio'][name='form.passed.type'][value='true']");
-		OOGraphene.waitElement(displayAutoBy, browser);
-		browser.findElement(displayAutoBy).click();
+		OOGraphene.waitElement(displayAutoBy, browser).click();
 
 		By cutValBy = By.cssSelector(".o_sel_course_ms_cut_val input[type='text']");
 		OOGraphene.waitElement(cutValBy, browser);
@@ -110,8 +109,7 @@ public class AssessmentCEConfigurationPage {
 		OOGraphene.toggle("fieldset.o_sel_course_ms div.o_sel_course_ms_score button.o_sel_course_ms_score", true, false, browser);
 		
 		By minValBy = By.cssSelector(".o_sel_course_ms_min input[type='text']");
-		OOGraphene.waitElement(minValBy, browser);
-		WebElement minValEl = browser.findElement(minValBy);
+		WebElement minValEl = OOGraphene.waitElement(minValBy, browser);
 		minValEl.clear();
 		minValEl.sendKeys(Float.toString(minVal));
 		

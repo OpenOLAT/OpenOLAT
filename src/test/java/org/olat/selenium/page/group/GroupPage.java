@@ -101,8 +101,7 @@ public class GroupPage {
 	
 	public GroupPage openEditDetails() {
 		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_details>a");
-		OOGraphene.waitElement(membersBy, browser);
-		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(membersBy, browser).click();
 		return assertOnEditDetails();
 	}
 	
@@ -113,24 +112,21 @@ public class GroupPage {
 	
 	public GroupPage openAdminMembers() {
 		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_members>a");
-		OOGraphene.waitElement(membersBy, browser);
-		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(membersBy, browser).click();
 		OOGraphene.waitElement(showOwners, browser);
 		return this;
 	}
 	
 	public GroupPage openAdminTools() {
 		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_tools>a");
-		OOGraphene.waitElement(membersBy, browser);
-		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(membersBy, browser).click();
 		OOGraphene.waitElement(toolsBy, browser);
 		return this;
 	}
 	
 	public BookingPage openBookingConfig() {
 		By membersBy = By.cssSelector("ul>li.o_sel_group_edit_access>a");
-		OOGraphene.waitElement(membersBy, browser);
-		browser.findElement(membersBy).click();
+		OOGraphene.waitElement(membersBy, browser).click();
 		OOGraphene.waitElement(bookingConfigBy, browser);
 		return new BookingPage(browser);
 	}
@@ -189,8 +185,8 @@ public class GroupPage {
 	}
 	
 	private GroupPage openMenuItem(Tool tool) {
-		OOGraphene.waitElement(tool.getMenuItemBy(), browser);
-		browser.findElement(tool.getMenuItemBy()).click();
+		OOGraphene.waitElement(tool.getMenuItemBy(), browser)
+			.click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -287,7 +283,7 @@ public class GroupPage {
 		By checkToolsBy = tool.getCheckboxBy();
 		browser.findElement(checkToolsBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElement(tool.getMenuItemBy(), 2, browser);
+		OOGraphene.waitElement(tool.getMenuItemBy(), browser);
 		return this;
 	}
 	

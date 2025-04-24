@@ -2316,8 +2316,7 @@ public class AssessmentTest extends Deployments {
 		
 		//Ryomou -> passed
 		By passedBy = By.cssSelector("div.o_state.o_passed");
-		OOGraphene.waitElement(passedBy, browser);
-		WebElement passedEl = browser.findElement(passedBy);
+		WebElement passedEl = OOGraphene.waitElement(passedBy, browser);
 		Assert.assertTrue(passedEl.isDisplayed());
 		
 		//Second login
@@ -2338,8 +2337,7 @@ public class AssessmentTest extends Deployments {
 		
 		//Kanu -> failed
 		By failedBy = By.cssSelector("div.o_state.o_failed");
-		OOGraphene.waitElement(failedBy, browser);
-		WebElement failedEl = browser.findElement(failedBy);
+		WebElement failedEl = OOGraphene.waitElement(failedBy, browser);
 		Assert.assertTrue(failedEl.isDisplayed());
 	}
 	

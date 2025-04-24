@@ -41,8 +41,7 @@ public class LearnPathCourseElementEditorPage {
 	
 	public LearnPathCourseElementEditorPage setCompletionCriterion(FullyAssessedTrigger trigger) {
 		By triggerBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//fieldset[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "']");
-		OOGraphene.waitElement(triggerBy, browser);
-		browser.findElement(triggerBy).click();
+		OOGraphene.waitElement(triggerBy, browser).click();
 		OOGraphene.waitingLong();//SEL wait focus jump
 		By checkedBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//fieldset[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "'][@checked='checked']");
 		OOGraphene.waitElement(checkedBy, browser);
@@ -51,8 +50,7 @@ public class LearnPathCourseElementEditorPage {
 	
 	public LearnPathCourseElementEditorPage setObligation( AssessmentObligation obligation) {
 		By obligationBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[contains(@class,'o_lp_obligation_config')]//input[@name='config.obligation'][@value='" + obligation.name() + "']");
-		OOGraphene.waitElement(obligationBy, browser);
-		browser.findElement(obligationBy).click();
+		OOGraphene.waitElement(obligationBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
 		return this;

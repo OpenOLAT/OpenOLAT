@@ -93,6 +93,7 @@ public class GuiDemoUserController extends BasicController {
 		
 		// User info
 		UserInfoProfileConfig profileConfig = new UserInfoProfileConfig();
+		profileConfig.setShowIdentityStatus(true);
 		profileConfig.setChatEnabled(true);
 		
 		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), getIdentity());
@@ -106,7 +107,7 @@ public class GuiDemoUserController extends BasicController {
 		
 		PortraitUser portraitUser3 = userPortraitService.createPortraitUser(getLocale(), identity1);
 		portraitUser3 = userPortraitService.createPortraitUser(portraitUser3.getIdentityKey(),
-				portraitUser3.getUsername(), portraitUser3.isPortraitAvailable(), null, portraitUser3.getInitials(),
+				portraitUser3.getIdentityStatus(), portraitUser3.isPortraitAvailable(), null, portraitUser3.getInitials(),
 				portraitUser3.getInitialsCss(), portraitUser3.getDisplayName(), Presence.dnd);
 		GuiDemoUserInfoController infoCtrl3 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser3, 1);
 		listenTo(infoCtrl3);
@@ -114,7 +115,7 @@ public class GuiDemoUserController extends BasicController {
 		
 		PortraitUser portraitUser4 = userPortraitService.createPortraitUser(getLocale(), identity2);
 		portraitUser4 = userPortraitService.createPortraitUser(portraitUser4.getIdentityKey(),
-				portraitUser4.getUsername(), portraitUser4.isPortraitAvailable(), null, portraitUser4.getInitials(),
+				portraitUser4.getIdentityStatus(), portraitUser4.isPortraitAvailable(), null, portraitUser4.getInitials(),
 				portraitUser4.getInitialsCss(), portraitUser4.getDisplayName(), Presence.dnd);
 		GuiDemoUserInfoController infoCtrl4 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser4, 4);
 		listenTo(infoCtrl4);
@@ -122,7 +123,7 @@ public class GuiDemoUserController extends BasicController {
 		
 		PortraitUser portraitUser5 = userPortraitService.createPortraitUser(getLocale(), identity3);
 		portraitUser5 = userPortraitService.createPortraitUser(portraitUser5.getIdentityKey(),
-				portraitUser5.getUsername(), portraitUser5.isPortraitAvailable(), null, portraitUser5.getInitials(),
+				portraitUser5.getIdentityStatus(), portraitUser5.isPortraitAvailable(), null, portraitUser5.getInitials(),
 				portraitUser5.getInitialsCss(), portraitUser5.getDisplayName(), Presence.dnd);
 		GuiDemoUserInfoController infoCtrl5 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser5, 100);
 		listenTo(infoCtrl5);

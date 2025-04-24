@@ -44,24 +44,21 @@ public class MemberListPage {
 	
 	public MemberListPage switchToThumbnailsView() {
 		By thumbnailsViewBy = By.cssSelector("a.o_sel_cmembers_thumbnails_view");
-		OOGraphene.waitElement(thumbnailsViewBy, browser);
-		browser.findElement(thumbnailsViewBy).click();
+		OOGraphene.waitElement(thumbnailsViewBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public MemberListPage switchToTableView() {
 		By tableViewBy = By.cssSelector("a.o_sel_cmembers_table_view");
-		OOGraphene.waitElement(tableViewBy, browser);
-		browser.findElement(tableViewBy).click();
+		OOGraphene.waitElement(tableViewBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public MemberListPage emailAll() {
 		By tableViewBy = By.cssSelector("a.o_sel_cmembers_email_all");
-		OOGraphene.waitElement(tableViewBy, browser);
-		browser.findElement(tableViewBy).click();
+		OOGraphene.waitElement(tableViewBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -79,8 +76,7 @@ public class MemberListPage {
 		OOGraphene.check(externalEl, Boolean.TRUE);
 		
 		By externalMailBy = By.cssSelector("div.o_sel_cmembers_external_mail textarea");
-		OOGraphene.waitElement(externalMailBy, browser);
-		browser.findElement(externalMailBy).sendKeys(mail);
+		OOGraphene.waitElement(externalMailBy, browser).sendKeys(mail);
 		return this;
 	}
 	

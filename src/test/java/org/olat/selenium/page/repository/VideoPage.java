@@ -55,15 +55,13 @@ public class VideoPage {
 	
 	public VideoPage play() {
 		By playBy = By.cssSelector(".o_video_run .mejs__controls .mejs__button.mejs__playpause-button.mejs__play");
-		OOGraphene.waitElement(playBy, browser);
-		browser.findElement(playBy).click();
+		OOGraphene.waitElement(playBy, browser).click();
 		return this;
 	}
 	
 	public VideoPage reduceVideoWindow() {
 		By unfullScreenBy = By.cssSelector("div.mejs__fullscreen-button.mejs__unfullscreen > button");
-		OOGraphene.waitElement(unfullScreenBy, browser);
-		browser.findElement(unfullScreenBy).click();
+		OOGraphene.waitElement(unfullScreenBy, browser).click();
 		By submitBy = By.xpath("//div[@class='o_videotask_run']/div[contains(@class,'o_button_group')]/a[contains(@class,'btn')]");
 		OOGraphene.waitElement(submitBy, browser);
 		return this;

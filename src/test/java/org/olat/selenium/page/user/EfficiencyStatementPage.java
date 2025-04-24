@@ -124,8 +124,7 @@ public class EfficiencyStatementPage {
 			courseTitle = courseTitle.substring(0, 25);
 		}
 		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr/td/a[contains(text(),'" + courseTitle + "')]");
-		OOGraphene.waitElement(courseCertificateBy, browser);
-		browser.findElement(courseCertificateBy).click();
+		OOGraphene.waitElement(courseCertificateBy, browser).click();
  		OOGraphene.waitBusy(browser);
 		return this;
 	}

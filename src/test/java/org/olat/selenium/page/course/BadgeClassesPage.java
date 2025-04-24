@@ -54,8 +54,7 @@ public class BadgeClassesPage {
 	 */
 	public BadgeClassesPage createBadgeClass() {
 		By createClassBy = By.cssSelector("fieldset.o_badge_classes a.o_sel_badge_classes_create");
-		OOGraphene.waitElement(createClassBy, browser);
-		browser.findElement(createClassBy).click();
+		OOGraphene.waitElement(createClassBy, browser).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		return this;
@@ -68,8 +67,7 @@ public class BadgeClassesPage {
 	 */
 	public BadgeClassesPage startingWithNewBadgeClass() {
 		By startBy = By.xpath("//div[contains(@class,'o_badge_wiz_starting_point_step')]//input[@name='form.starting.point'][@value='form.create.from.scratch.title']");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
+		OOGraphene.waitElement(startBy, browser).click();
 		
 		By tableBy = By.cssSelector(".o_badge_wiz_starting_point_step table td div.o_image");
 		OOGraphene.waitElementDisappears(tableBy, 5, browser);
@@ -86,8 +84,7 @@ public class BadgeClassesPage {
 	
 	public BadgeClassesPage selectClass(String className) {
 		By classBy = By.xpath("//div[contains(@class,'o_template_card')][div[text()[contains(.,'" + className + "')]]]");
-		OOGraphene.waitElement(classBy, browser);
-		browser.findElement(classBy).click();
+		OOGraphene.waitElement(classBy, browser).click();
 		
 		By classSelectedBy = By.xpath("//div[contains(@class,'o_template_card')][contains(@class,'o_selected')][div[text()[contains(.,'" + className + "')]]]");
 		OOGraphene.waitElement(classSelectedBy, browser);
@@ -96,8 +93,7 @@ public class BadgeClassesPage {
 	
 	public BadgeClassesPage selectClassByType(String type) {
 		By classBy = By.xpath("//div[contains(@class,'o_template_card')][img[contains(@src,'" + type + "')]]");
-		OOGraphene.waitElement(classBy, browser);
-		browser.findElement(classBy).click();
+		OOGraphene.waitElement(classBy, browser).click();
 		
 		By classSelectedBy = By.xpath("//div[contains(@class,'o_template_card')][contains(@class,'o_selected')][img[contains(@src,'" + type + "')]]");
 		OOGraphene.waitElement(classSelectedBy, browser);
@@ -214,8 +210,7 @@ public class BadgeClassesPage {
 		new Select(selectEl).selectByValue("otherBadgeEarned");
 		
 		By badgeBy = By.id("o_fioform_condition_badges_1_SELBOX");
-		OOGraphene.waitElement(badgeBy, browser);
-		WebElement badgeEl = browser.findElement(badgeBy);
+		WebElement badgeEl = OOGraphene.waitElement(badgeBy, browser);
 		new Select(badgeEl).selectByVisibleText(badgeClass);
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -247,12 +242,10 @@ public class BadgeClassesPage {
 		OOGraphene.waitCallout(browser, ".o_badge_course_selector");
 		
 		By quickSearchBy = By.cssSelector("div.o_badge_course_selector_search input.o_quick_search[type='text']");
-		OOGraphene.waitElement(quickSearchBy, browser);
-		browser.findElement(quickSearchBy).sendKeys(course);
+		OOGraphene.waitElement(quickSearchBy, browser).sendKeys(course);
 		
 		By courseSelectBy = By.xpath("//label[div[contains(@class,'o_badge_course_selector_option')]/div[text()[contains(.,'" + course + "')]]]/input[@type='checkbox']");
-		OOGraphene.waitElement(courseSelectBy, browser);
-		browser.findElement(courseSelectBy).click();
+		OOGraphene.waitElement(courseSelectBy, browser).click();
 		
 		By selectCoursesBy = By.cssSelector(".o_badge_course_selector .o_button_group a.btn.btn-primary");
 		browser.findElement(selectCoursesBy).click();

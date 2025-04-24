@@ -77,24 +77,21 @@ public class EvaluationFormPage {
 	
 	public EvaluationFormPage answerSingleChoice(String choice) {
 		By choiceBy = By.xpath("//div[contains(@class,'o_ed_formsinglechoice')]//label[text()[contains(.,'" + choice + "')]]/input[@type='radio']");
-		OOGraphene.waitElement(choiceBy, browser);
-		browser.findElement(choiceBy).click();
+		OOGraphene.waitElement(choiceBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public EvaluationFormPage answerMultipleChoice(String choice) {
 		By choiceBy = By.xpath("//div[contains(@class,'o_ed_formmultiplechoice')]//label[text()[contains(.,'" + choice + "')]]/input[@type='checkbox']");
-		OOGraphene.waitElement(choiceBy, browser);
-		browser.findElement(choiceBy).click();
+		OOGraphene.waitElement(choiceBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public EvaluationFormPage answerRubric(String choice, int rating) {
 		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_discrete_radio')]//div[contains(@class,'o_slider')][div[contains(@class,'o_evaluation_left_label')]/p[text()[contains(.,'" + choice + "')]]]/div[contains(@class,'o_slider_elements')]/div[contains(@class,'o_evaluation_steps')]/div[contains(@class,'radio')][" + rating +"]/label/input[@type='radio']");
-		OOGraphene.waitElement(choiceBy, browser);
-		browser.findElement(choiceBy).click();
+		OOGraphene.waitElement(choiceBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -102,8 +99,7 @@ public class EvaluationFormPage {
 	public EvaluationFormPage assertAnsweredRubric(String choice, int rating, boolean disabled) {
 		String input = "/label/input[@type='radio']" + (disabled ? "[@disabled='disabled']" : "");
 		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_discrete_radio')]//div[contains(@class,'o_slider')][div[contains(@class,'o_evaluation_left_label')]/p[text()[contains(.,'" + choice + "')]]]/div[contains(@class,'o_slider_elements')]/div[contains(@class,'o_evaluation_steps')]/div[contains(@class,'radio')][" + rating +"]" + input);
-		OOGraphene.waitElement(choiceBy, browser);
-		browser.findElement(choiceBy).click();
+		OOGraphene.waitElement(choiceBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -21,6 +21,7 @@ package org.olat.user;
 
 import java.util.List;
 
+import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -35,10 +36,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -91,7 +94,20 @@ public class UserInfoProfileController extends BasicController {
 		userPortraitLComp.setSize(PortraitSize.large);
 		userPortraitLComp.setPortraitUser(portraitUser);
 		userPortraitLComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
-
+		
+		if (profileConfig.isShowIdentityStatus()) {
+			String statusCss = getStatusCss(portraitUser);
+			if (StringHelper.containsNonWhitespace(statusCss)) {
+				mainVC.contextPut("statusCss", statusCss);
+				
+				Translator statusTranslator = Util.createPackageTranslator(UsermanagerUserSearchController.class, getLocale());
+				String statusLabel = "<span class=\"o_user_status_badge " + statusCss + "\">"
+						+ statusTranslator.translate(getStatusI18nKey(portraitUser))
+						+ "</span>";
+				mainVC.contextPut("statusLabel", statusLabel);
+			}
+		}
+		
 		if (portraitUser.getIdentityKey() < 0) {
 			return;
 		}
@@ -128,6 +144,40 @@ public class UserInfoProfileController extends BasicController {
 				}
 			}
 		}
+	}
+	
+	private String getStatusCss(PortraitUser portraitUser) {
+		if (portraitUser != null && portraitUser.getIdentityStatus() != null) {
+			if (portraitUser.getIdentityStatus() == Identity.STATUS_INACTIVE) {
+				return "o_user_status_inactive";
+			} else if (portraitUser.getIdentityStatus() == Identity.STATUS_LOGIN_DENIED) {
+				return "o_user_status_login_denied";
+			} else if (portraitUser.getIdentityStatus() == Identity.STATUS_PENDING) {
+				return "o_user_status_pending";
+			} else if (portraitUser.getIdentityStatus() == Identity.STATUS_DELETED) {
+				return "o_user_status_deleted";
+			} else {
+				return "o_user_status_active";
+			}
+		}
+		return null;
+	}
+	
+	private String getStatusI18nKey(PortraitUser portraitUser) {
+		if (portraitUser != null && portraitUser.getIdentityStatus() != null) {
+			if (portraitUser.getIdentityStatus() == Identity.STATUS_INACTIVE) {
+				return "rightsForm.status.inactive";
+			} else if (portraitUser.getIdentityStatus() == Identity.STATUS_LOGIN_DENIED) {
+				return "rightsForm.status.login_denied";
+			} else if (portraitUser.getIdentityStatus() == Identity.STATUS_PENDING) {
+				return "rightsForm.status.pending";
+			} else if (portraitUser.getIdentityStatus() == Identity.STATUS_DELETED) {
+				return "rightsForm.status.deleted";
+			} else {
+				return "rightsForm.status.activ";
+			}
+		}
+		return null;
 	}
 
 	@Override

@@ -45,8 +45,7 @@ public class FormPage {
 	
 	public EvaluationFormPage selectParticipant(String name) {
 		By selectBy = By.xpath("//div[@class='o_sel_form_participants_list']//tr/td/a[text()[contains(.,'" + name + "')]]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		
 		OOGraphene.waitElement(By.className("o_evaluation_form"), browser);
 		

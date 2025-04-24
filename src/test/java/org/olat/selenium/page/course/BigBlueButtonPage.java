@@ -63,8 +63,7 @@ public class BigBlueButtonPage {
 	 */
 	public BigBlueButtonPage selectEditMeetingsList() {
 		By editListBy = By.cssSelector("a.o_sel_bbb_edit_meetings_segment");
-		OOGraphene.waitElement(editListBy, browser);
-		browser.findElement(editListBy).click();
+		OOGraphene.waitElement(editListBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(By.className("o_sel_bbb_edit_meetings_list"), browser);
 		return this;
@@ -87,16 +86,14 @@ public class BigBlueButtonPage {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_bbb_single_meeting_add");
-		OOGraphene.waitElement(addSingleMeetingBy, browser);
-		browser.findElement(addSingleMeetingBy).click();
+		OOGraphene.waitElement(addSingleMeetingBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 		
 	public BigBlueButtonPage editMeeting(String name, String template) {
 		By nameBy = By.cssSelector(".o_sel_bbb_edit_meeting_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		
 		By templateBy = By.cssSelector(".o_sel_bbb_edit_meeting select#o_fiomeeting_template_SELBOX");
 		new Select(browser.findElement(templateBy)).selectByVisibleText(template);
@@ -146,13 +143,11 @@ public class BigBlueButtonPage {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_bbb_daily_meeting_add");
-		OOGraphene.waitElement(addSingleMeetingBy, browser);
-		browser.findElement(addSingleMeetingBy).click();
+		OOGraphene.waitElement(addSingleMeetingBy, browser).click();
 		OOGraphene.waitModalWizard(browser);
 		
 		By nameBy = By.cssSelector(".o_sel_bbb_recurring_meeting_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		
 		By templateBy = By.cssSelector("#o_comeeting_template_SELBOX select#o_fiomeeting_template_SELBOX");
 		new Select(browser.findElement(templateBy)).selectByVisibleText(template);
@@ -205,8 +200,7 @@ public class BigBlueButtonPage {
 	
 	private BigBlueButtonPage openCreateDropDown() {
 		By addMenuCaretBy = By.cssSelector("button.o_sel_bbb_meeting_add");
-		OOGraphene.waitElement(addMenuCaretBy, browser);
-		browser.findElement(addMenuCaretBy).click();
+		OOGraphene.waitElement(addMenuCaretBy, browser).click();
 		
 		By addMenuBy = By.cssSelector("ul.o_sel_bbb_meeting_add");
 		OOGraphene.waitElement(addMenuBy, browser);
@@ -220,8 +214,7 @@ public class BigBlueButtonPage {
 	 */
 	public BigBlueButtonPage selectMeetingsList() {
 		By editListBy = By.cssSelector("a.o_sel_bbb_meetings_segment");
-		OOGraphene.waitElement(editListBy, browser);
-		browser.findElement(editListBy).click();
+		OOGraphene.waitElement(editListBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -254,8 +247,7 @@ public class BigBlueButtonPage {
 	 */
 	public BigBlueButtonPage selectMeeting(String meetingName) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//tr[td[text()[contains(.,'" + meetingName + "')]]]/td/a[contains(@onclick,'select')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -269,8 +261,7 @@ public class BigBlueButtonPage {
 	 */
 	public BigBlueButtonPage selectMeeting(String meetingName, int pos) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//tr[td[text()[contains(.,'" + meetingName + "')]]][" + pos + "]/td/a[contains(@onclick,'select')]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -320,20 +311,17 @@ public class BigBlueButtonPage {
 	
 	public BigBlueButtonPage loginToGuestJoin(UserVO user) {
 		By toLoginBy = By.cssSelector("div.o_bbb_guest_join_box a.o_sel_bbb_guest_login");
-		OOGraphene.waitElement(toLoginBy, browser);
-		browser.findElement(toLoginBy).click();
+		OOGraphene.waitElement(toLoginBy, browser).click();
 		OOGraphene.waitElementSlowly(LoginPage.loginFormBy, 10, browser);
 		
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		browser.findElement(usernameId).sendKeys(user.getLogin());
+		OOGraphene.waitElement(usernameId, browser).sendKeys(user.getLogin());
 		By loginBy = By.id("o_fiooolat_login_button");
 		browser.findElement(loginBy).click();
 		
 		By passwordId = By.id("o_fiooolat_login_pass");
-		OOGraphene.waitElement(passwordId, browser);
-		browser.findElement(passwordId).sendKeys(user.getPassword());
+		OOGraphene.waitElement(passwordId, browser).sendKeys(user.getPassword());
 		browser.findElement(loginBy).click();
 		
 		return this;

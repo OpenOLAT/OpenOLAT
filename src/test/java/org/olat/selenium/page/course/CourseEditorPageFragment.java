@@ -126,12 +126,10 @@ public class CourseEditorPageFragment {
 		OOGraphene.scrollBottom(By.cssSelector("fieldset.o_sel_course_node_password_config"), browser);
 		
 		By switchBy = By.cssSelector(".o_sel_course_password_condition_switch input[type='checkbox']");
-		OOGraphene.waitElement(switchBy, browser);
-		browser.findElement(switchBy).click();
+		OOGraphene.waitElement(switchBy, browser).click();
 
 		By passwordBy = By.cssSelector(".o_sel_course_password_condition_value input[type='text']");
-		OOGraphene.waitElement(passwordBy, browser);
-		browser.findElement(passwordBy).sendKeys(password);
+		OOGraphene.waitElement(passwordBy, browser).sendKeys(password);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_course_node_password_config button.btn-primary");
 		browser.findElement(saveBy).click();
@@ -146,8 +144,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment selectTabScore() {
 		By tabScoreBy = By.cssSelector("ul.o_node_config li.o_sel_st_score>a");
-		OOGraphene.waitElement(tabScoreBy, browser);
-		browser.findElement(tabScoreBy).click();
+		OOGraphene.waitElement(tabScoreBy, browser).click();
 		By scoreBy = By.cssSelector("fieldset.o_sel_structure_score");
 		OOGraphene.waitElement(scoreBy, browser);
 		return this;
@@ -338,8 +335,7 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment openChangeNodeToolsMenu() {
 		OOGraphene.scrollTop(browser);
 		By changeNodeToolsMenuCaret = By.cssSelector("div.o_title_cmds button.o_sel_course_editor_change_node");
-		OOGraphene.waitElement(changeNodeToolsMenuCaret, browser);
-		browser.findElement(changeNodeToolsMenuCaret).click();
+		OOGraphene.waitElement(changeNodeToolsMenuCaret, browser).click();
 		By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
 		OOGraphene.waitElement(changeNodeToolsMenu, browser);
 		return this;
@@ -379,8 +375,7 @@ public class CourseEditorPageFragment {
 	
 	private CourseEditorPageFragment selectTabContent(By targetBy) {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(tabBy, browser).click();
 		OOGraphene.waitElement(targetBy, browser);
 		return this;
 	}
@@ -475,8 +470,7 @@ public class CourseEditorPageFragment {
 
 		//find the row
 		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
-		OOGraphene.waitElement(rowBy, browser);
-		browser.findElement(rowBy).click();
+		OOGraphene.waitElement(rowBy, browser).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		//double check that the resource is selected (search the preview link)
@@ -524,8 +518,7 @@ public class CourseEditorPageFragment {
 		browser.findElement(importByUrlBy).click();
 		
 		By importButton = By.cssSelector("fieldset.o_sel_feed .o_re_reference a.o_sel_re_reference_import_url");
-		OOGraphene.waitElement(importButton, browser);
-		browser.findElement(importButton).click();
+		OOGraphene.waitElement(importButton, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By urlBy = By.cssSelector("fieldset.o_sel_re_import_url_form div.o_sel_import_url input[type='text']");
@@ -559,8 +552,8 @@ public class CourseEditorPageFragment {
 		
 		//popup
 		By myResourcesBy = By.cssSelector(".modal-body .o_sel_search_referenceable_entries a.o_sel_repo_popup_my_resources");
-		OOGraphene.waitElement(myResourcesBy, browser);
-		browser.findElement(myResourcesBy).click();
+		OOGraphene.waitElement(myResourcesBy, browser)
+			.click();
 		OOGraphene.waitBusy(browser);
 		By mySelectedResourcesBy = By.cssSelector(".modal-body .o_sel_search_referenceable_entries a.btn-primary.o_sel_repo_popup_my_resources");
 		OOGraphene.waitElement(mySelectedResourcesBy, browser);
@@ -574,16 +567,16 @@ public class CourseEditorPageFragment {
 			browser.findElement(createResourcesBy).click();
 			//choose the right type
 			By selectType = By.xpath("//ul[contains(@class,'o_sel_repo_popup_create_resources')]//a[contains(@onclick,'" + resourceType + "')]");
-			OOGraphene.waitElement(selectType, browser);
-			browser.findElement(selectType).click();
+			OOGraphene.waitElement(selectType, browser)
+				.click();
 		} else {
 			browser.findElement(createResourceBy).click();	
 		}
 
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("dialog.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
-		OOGraphene.waitElement(inputBy, browser);
-		browser.findElement(inputBy).sendKeys(resourceTitle);
+		OOGraphene.waitElement(inputBy, browser)
+			.sendKeys(resourceTitle);
 		By submitBy = By.cssSelector("dialog.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_repo_save_details");
@@ -655,8 +648,8 @@ public class CourseEditorPageFragment {
 		try {
 			By crumbBy = By.xpath("//div[contains(@class,'o_edit_mode')]//ol[@class='breadcrumb']/li[contains(@class,'o_breadcrumb_crumb') and contains(@class,'o_first_crumb')]/a");
 			OOGraphene.waitElementPresence(crumbBy, 5, browser);
-			OOGraphene.waitElement(crumbBy, browser);
-			browser.findElement(crumbBy).click();
+			OOGraphene.waitElement(crumbBy, browser)
+				.click();
 			OOGraphene.waitBusy(browser);
 			
 			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_last_crumb.o_nowrap");
@@ -674,8 +667,8 @@ public class CourseEditorPageFragment {
 		try {
 			By crumbBy = By.xpath("//div[contains(@class,'o_edit_mode')]//ol[@class='breadcrumb']/li[@class='o_breadcrumb_root']/a");
 			OOGraphene.waitElementPresence(crumbBy, 10, browser);
-			OOGraphene.waitElement(crumbBy, browser);
-			browser.findElement(crumbBy).click();
+			OOGraphene.waitElement(crumbBy, browser)
+				.click();
 			OOGraphene.waitBusy(browser);
 			
 			By lastCrumbBy = By.cssSelector("ol.breadcrumb li.o_breadcrumb_crumb.o_last_crumb.o_nowrap");

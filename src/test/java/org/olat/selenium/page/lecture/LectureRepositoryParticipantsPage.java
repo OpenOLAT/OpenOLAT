@@ -52,8 +52,7 @@ public class LectureRepositoryParticipantsPage {
 	 */
 	public LectureRepositoryParticipantsPage editParticipant(UserVO participant) {
 		By editBy = By.xpath("//div[contains(@class,'o_sel_lecture_participants_overview')]//table//tr[td[contains(text(),'" + participant.getFirstName() + "')]]/td/a[contains(@onclick,'edit')]");
-		OOGraphene.waitElement(editBy, browser);
-		browser.findElement(editBy).click();
+		OOGraphene.waitElement(editBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -66,8 +65,7 @@ public class LectureRepositoryParticipantsPage {
 	public LectureRepositoryParticipantsPage firstAdmissionBack() {
 		//open the date picker
 		By firstAdmissionBy = By.cssSelector("fieldset.o_sel_lecture_participant_summary_form div.o_sel_lecture_first_admission span.input-group-addon");
-		OOGraphene.waitElement(firstAdmissionBy, browser);
-		browser.findElement(firstAdmissionBy).click();
+		OOGraphene.waitElement(firstAdmissionBy, browser).click();
 		// a month before
 		OOGraphene.selectPreviousMonthInDatePicker(browser);
 		// select the 12
@@ -83,8 +81,7 @@ public class LectureRepositoryParticipantsPage {
 	 */
 	public LectureRepositoryParticipantsPage saveParticipant() {
 		By saveBy = By.cssSelector("fieldset.o_sel_lecture_participant_summary_form button.btn.btn-primary");
-		OOGraphene.waitElement(saveBy, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

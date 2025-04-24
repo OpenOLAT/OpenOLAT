@@ -55,8 +55,7 @@ public class ProjectBrokerPage {
 	
 	public ProjectBrokerPage createNewProject(String title) {
 		By createProjectBy = By.cssSelector("div.o_project_broker_list a.o_sel_broker_create_new_project");
-		OOGraphene.waitElement(createProjectBy, browser);
-		browser.findElement(createProjectBy).click();
+		OOGraphene.waitElement(createProjectBy, browser).click();
 		
 		By projectBy = By.cssSelector(".o_project fieldset.o_sel_project_details_form");
 		OOGraphene.waitElement(projectBy, browser);
@@ -77,8 +76,7 @@ public class ProjectBrokerPage {
 	
 	public ProjectBrokerPage enrollInProject(String title) {
 		By enrollBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//tr[td/a[text()[contains(.,'" + title + "')]]]/td/a[contains(@onclick,'cmd.select')]");
-		OOGraphene.waitElement(enrollBy, browser);
-		browser.findElement(enrollBy).click();
+		OOGraphene.waitElement(enrollBy, browser).click();
 		By enrolledBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//tr/td/strong[@class='o_state_enrolled']");
 		OOGraphene.waitElement(enrolledBy, browser);
 		return this;
@@ -86,16 +84,14 @@ public class ProjectBrokerPage {
 	
 	public ProjectBrokerPage selectProject(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_project_broker_list')]//table//tr/td/a[text()[contains(.,'" + title + "')]]");
-		OOGraphene.waitElement(selectBy, browser);
-		browser.findElement(selectBy).click();
+		OOGraphene.waitElement(selectBy, browser).click();
 		OOGraphene.waitElement(By.className("o_project"), browser);
 		return this;
 	}
 	
 	public ProjectBrokerPage selectFolders() {
 		By foldersBy = By.cssSelector(".o_tabbed_pane ul.nav-tabs>li.o_sel_project_broker_folders>a");
-		OOGraphene.waitElement(foldersBy, browser);
-		browser.findElement(foldersBy).click();
+		OOGraphene.waitElement(foldersBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -114,8 +110,7 @@ public class ProjectBrokerPage {
 	public ProjectBrokerPage selectFolderInDropbox(UserVO user) {
 		String name = user.getLastName();
 		By folderBy = By.xpath("//div[@id='collapseDropbox']//div[contains(@class,'o_folder_table')]//div[div[contains(@class,'o_folder_card_thumbnail') and contains(@class,'o_folder_openable')]][div/div/div/h5/a[span[contains(text(),'" + name + "')]]]/div[contains(@class,'o_folder_card_thumbnail')]");
-		OOGraphene.waitElement(folderBy, browser);
-		browser.findElement(folderBy).click();
+		OOGraphene.waitElement(folderBy, browser).click();
 		
 		// On Linux, the screenshot update the window of Chrome
 		OOGraphene.waitingALittleLonger();
@@ -128,8 +123,7 @@ public class ProjectBrokerPage {
 	
 	public ProjectBrokerPage uploadDropbox(File file) {
 		By uploadButtonBy = By.xpath("//div[@id='collapseDropbox']//a[contains(@onclick,'dropbox.upload')]");
-		OOGraphene.waitElement(uploadButtonBy, browser);
-		browser.findElement(uploadButtonBy).click();
+		OOGraphene.waitElement(uploadButtonBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".o_sel_course_gta_upload_task_form .o_fileinput input[type='file']");

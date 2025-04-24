@@ -186,8 +186,6 @@ public class RightsController extends StepFormBasicController {
 				assignmentPK.keys(), assignmentPK.values());
 		if(roleToModify == CurriculumRoles.coach) {
 			teacherAssignmentEl.select(ASSIGN_KEY, true);
-		} else if(roleToModify == CurriculumRoles.mastercoach) {
-			teacherAssignmentEl.select(DONT_ASSIGN_KEY, true);
 		} else {
 			teacherAssignmentEl.setVisible(false);
 		}

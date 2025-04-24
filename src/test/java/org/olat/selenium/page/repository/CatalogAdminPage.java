@@ -48,15 +48,13 @@ public class CatalogAdminPage {
 	public CatalogAdminPage addCatalogNode(String title, String shortTitle, String description) {
 		//click in toolbox
 		By addNodeBy = By.className("o_sel_catalog_add_category");
-		OOGraphene.waitElement(addNodeBy, browser);
-		browser.findElement(addNodeBy).click();
+		OOGraphene.waitElement(addNodeBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_name input[type='text']");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).sendKeys(title);
+		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		By shortTitleBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_cat_short_title input[type='text']");
 		browser.findElement(shortTitleBy).sendKeys(shortTitle);
 		

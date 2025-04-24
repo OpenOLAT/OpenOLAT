@@ -38,7 +38,7 @@ public interface UserPortraitService {
 	
 	public UserInfoProfileConfig createProfileConfig();
 	
-	public PortraitUser createPortraitUser(Long identityKey, String username, boolean portraitAvailable,
+	public PortraitUser createPortraitUser(Long identityKey, Integer identityStatus, boolean portraitAvailable,
 			String portraitPath, String initials, String initialsCss, String displayName, Presence presence);
 	
 	public PortraitUser createPortraitUser(Locale locale, Identity identity);

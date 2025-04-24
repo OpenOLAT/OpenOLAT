@@ -73,11 +73,10 @@ public class BinderAssessmentPage {
 	
 	public BinderAssessmentPage done() {
 		By saveBy = By.cssSelector("a.o_sel_pf_assessment_save_done");
-		OOGraphene.waitElement(saveBy, 5, browser);
-		browser.findElement(saveBy).click();
+		OOGraphene.waitElement(saveBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		By reopenBy = By.cssSelector("a.o_sel_pf_assessment_reopen");
-		OOGraphene.waitElement(reopenBy, 5, browser);
+		OOGraphene.waitElement(reopenBy, browser);
 		return this;
 	}
 }

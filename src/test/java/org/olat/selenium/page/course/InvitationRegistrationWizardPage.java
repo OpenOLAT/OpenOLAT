@@ -67,8 +67,8 @@ public class InvitationRegistrationWizardPage {
 	
 	public InvitationRegistrationWizardPage selectLanguage() {
 		By languageBy = By.cssSelector(".modal-body fieldset select#o_fioselect_language_SELBOX");
-		OOGraphene.waitElement(languageBy, browser);	
-		new Select(browser.findElement(languageBy)).selectByValue("de");
+		WebElement languageEl = OOGraphene.waitElement(languageBy, browser);	
+		new Select(languageEl).selectByValue("de");
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

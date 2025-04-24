@@ -51,8 +51,7 @@ public class JupyterHubSettingsPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By nameBy = By.cssSelector("fieldset.o_sel_jupyterhub_configuration .o_sel_jupyterhub_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
 		
 		By urlBy = By.cssSelector("fieldset.o_sel_jupyterhub_configuration .o_sel_jupyterhub_url input[type='text']");
 		browser.findElement(urlBy).sendKeys(url);
