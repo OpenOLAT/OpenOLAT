@@ -23,6 +23,7 @@ import static org.olat.modules.curriculum.ui.CurriculumComposerController.CMD_SE
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_OVERVIEW;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusin
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -89,6 +91,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			boolean withOffersOnly = false;
 			Long searchLong = StringHelper.isLong(searchString) ? Long.valueOf(searchString) : null;
 			searchString = StringHelper.containsNonWhitespace(searchString) ? searchString.toLowerCase() : null;
+			Date begin = null;
+			Date end = null;
 			
 			FlexiTableFilter curriculumFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_CURRICULUM);
 			if (curriculumFilter instanceof FlexiTableExtendedFilter extendedFilter) {
@@ -122,6 +126,15 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 				withOffersOnly = extendedFilter.isSelected();
 			}
 			
+			FlexiTableFilter pFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_PERIOD);
+			if (pFilter instanceof FlexiTableDateRangeFilter dateRangeFilter) {
+				FlexiTableDateRangeFilter.DateRange dateRange = dateRangeFilter.getDateRange();
+				if(dateRange != null) {
+					begin = dateRange.getStart();
+					end = dateRange.getEnd();
+				}
+			}
+			
 			FlexiTableFilter occupancyFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_OCCUPANCY_STATUS);
 			if (occupancyFilter instanceof FlexiTableExtendedFilter extendedFilter) {
 				occupancyValues = extendedFilter.getValues();
@@ -134,8 +147,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 						&& acceptStatus(row, status)
 						&& acceptTypes(row, typesKeys)
 						&& acceptWithOffers(row, withOffersOnly)
-						&& acceptOccupancyStatus(row, occupancyValues);
-				
+						&& acceptOccupancyStatus(row, occupancyValues)
+						&& acceptDateRange(row, begin, end);
 				row.setAcceptedByFilter(accept);
 				if(accept) {
 					filteredRows.add(row);
@@ -207,6 +220,22 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			if(acceptOccupancyStatus(row, status)) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	private boolean acceptDateRange(CurriculumElementRow row, Date begin, Date end) {
+		if(begin == null && end == null) return true;
+		
+		if(begin != null && end != null) {
+			return row.getBeginDate() != null && begin.compareTo(row.getBeginDate()) <= 0
+					&& row.getEndDate() != null && end.compareTo(row.getEndDate()) >= 0;
+		}
+		if(begin != null) {
+			return row.getBeginDate() != null && begin.compareTo(row.getBeginDate()) <= 0;
+		}
+		if( end != null) {
+			return row.getEndDate() != null && end.compareTo(row.getEndDate()) >= 0;
 		}
 		return false;
 	}

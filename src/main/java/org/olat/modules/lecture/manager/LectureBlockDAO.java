@@ -841,14 +841,6 @@ public class LectureBlockDAO {
 			}
 			sb.append(")");
 		}
-		
-		if(searchParams.getWithTeachers() != null) {
-			if(searchParams.getWithTeachers().booleanValue()) {
-				sb.and().append(" coach.key is not null");
-			} else {
-				sb.and().append(" coach.key is null");
-			}
-		}
 
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			sb.and()
@@ -911,11 +903,28 @@ public class LectureBlockDAO {
 			  .append(" )");
 		}
 
-		if(searchParams.getTeachersList() != null && !searchParams.getTeachersList().isEmpty()) {
-			sb.and()
-			  .append(" exists (select teacherlist.key from bgroupmember teacherlist where")
-			  .append("  teacherlist.group.key=tGroup.key and teacherlist.identity.key in (:teachersList)")
-			  .append(" )");
+		if((searchParams.getTeachersList() != null && !searchParams.getTeachersList().isEmpty()) || searchParams.getWithTeachers() != null) {
+			sb.and().append(" (");
+			
+			if(searchParams.getWithTeachers() != null) {
+				if(!searchParams.getWithTeachers().booleanValue()) {
+					sb.append(" not ");
+				}
+				sb.append(" exists (select teacherlist.key from bgroupmember teacherlist where")
+				  .append("  teacherlist.group.key=tGroup.key")
+				  .append(" )");
+			}
+			
+			if(searchParams.getTeachersList() != null && !searchParams.getTeachersList().isEmpty()) {
+				if(searchParams.getWithTeachers() != null) {
+					sb.append(" or ");
+				}
+				sb.append(" exists (select teacherlist.key from bgroupmember teacherlist where")
+				  .append("  teacherlist.group.key=tGroup.key and teacherlist.identity.key in (:teachersList)")
+				  .append(" )");
+			}
+			
+			sb.append(")"); 
 		}
 	}
 	
