@@ -290,9 +290,38 @@
 				column-gap: 10px;
 			}
 		}
+		
+		&:has(.o_user_status_badge) {
+			position: relative;
+			.o_user_status_badge {
+				position: absolute;
+				top: 5px;
+				right: 5px;
+			}
+			.o_user_portrait_border {
+				&:is(:has(.o_user_status_active) *) {
+					outline: solid 2px $o-repo-published-color;
+				}
+				&:is(:has(.o_user_status_inactive) *) {
+					outline: solid 2px $o-repo-closed-color;
+				}
+				&:is(:has(.o_user_status_login_denied) *) {
+					outline: solid 2px $o-repo-trash-color;
+				}
+				&:is(:has(.o_user_status_pending) *) {
+					outline: solid 2px $o-labeled-yellow-border-color;
+				}
+				&:is(:has(.o_user_status_deleted) *) {
+					outline: solid 2px $o-repo-deleted-color;
+				}
+			}
+			.o_user_info_profile_name {
+				padding-right: 70px;
+			}
+		}
 	}
 	
-	@container (max-width: 220px) {
+	@container (max-width: 240px) {
 		.o_user_info_profile {
 			flex-direction: column;
 			justify-content: center;
@@ -308,6 +337,15 @@
 				.o_user_info_profile_cmds {
 					justify-content: center;
 				}
+				.o_user_info_profile_name {
+					padding-right: 0px;
+				}
+			}
+			&:has(.o_user_status_badge) {
+				.o_user_status_badge {
+					top: 10px;
+					right: -10px;
+				}
 			}
 		}
 	}
@@ -320,7 +358,7 @@
 	align-items: center;
 	grid-template-columns: 1fr 2fr;
 	&:has(.o_user_info_items_3cols) {
-		grid-template-columns: 220px 1fr;
+		grid-template-columns: 240px 1fr;
 	}
 	
 	>div:has(.o_user_info_profile) {
@@ -395,7 +433,7 @@
 
 .o_user_status_badge {
 	display: inline-block;
-	padding: 1px 25px;
+	padding: 1px 15px;
 	border-radius: $border-radius-small;
 	
 	&.o_user_status_active {

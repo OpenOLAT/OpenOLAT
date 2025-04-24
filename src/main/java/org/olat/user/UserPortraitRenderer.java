@@ -97,6 +97,10 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 	}
 
 	private String getTranslatedPresence(Translator compTranslator, Presence presence) {
+		if (presence == null) {
+			return null;
+		}
+		
 		return switch (presence) {
 		case available -> compTranslator.translate("user.portrait.presence.available");
 		case dnd -> compTranslator.translate("user.portrait.presence.dnd");
@@ -106,6 +110,10 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 	}
 	
 	private String getPresenceIconCss(Presence presence) {
+		if (presence == null) {
+			return "";
+		}
+		
 		return switch (presence) {
 		case available -> "o_icon o_icon_status_available";
 		case dnd -> "o_icon o_icon_status_dnd";

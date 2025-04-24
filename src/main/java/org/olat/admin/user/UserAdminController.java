@@ -727,12 +727,13 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param identity
 	 */
 	private void exposeUserDataToVC(UserRequest ureq, Identity identity, Roles roles) {
-		UserInfoProfileConfig profileConfig = new UserInfoProfileConfig();
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
+		profileConfig.setShowIdentityStatus(true);
 		profileConfig.setChatEnabled(false);
 		profileConfig.setUserManagementLinkEnabled(false);
 
 		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
-		userProfileInfoCtrl = new UserProfileInfoController(ureq, getWindowControl(), profileConfig, portraitUser, identity, roles, getShowTitle());
+		userProfileInfoCtrl = new UserProfileInfoController(ureq, getWindowControl(), profileConfig, portraitUser, identity, roles);
 		listenTo(userProfileInfoCtrl);
 		myContent.put("userInfo", userProfileInfoCtrl.getInitialComponent());
 	}

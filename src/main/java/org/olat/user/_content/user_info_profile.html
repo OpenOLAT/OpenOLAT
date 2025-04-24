@@ -1,5 +1,8 @@
 <div class="o_user_info_profile_container">
 	<div class="o_user_info_profile">
+		#if($r.isNotEmpty($statusLabel))
+			$statusLabel
+		#end
 		<div class="o_user_info_profile_portrait_wrapper o_user_info_profile_portrait_large">
 			$r.render("user.portrait.large")
 		</div>

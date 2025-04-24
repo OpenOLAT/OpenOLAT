@@ -27,8 +27,17 @@ package org.olat.user;
  */
 public class UserInfoProfileConfig {
 	
-	private boolean chatEnabled;
+	private boolean showIdentityStatus = false;
+	private boolean chatEnabled = false;
 	private boolean userManagementLinkEnabled = true;
+
+	public boolean isShowIdentityStatus() {
+		return showIdentityStatus;
+	}
+
+	public void setShowIdentityStatus(boolean showIdentityStatus) {
+		this.showIdentityStatus = showIdentityStatus;
+	}
 
 	public boolean isChatEnabled() {
 		return chatEnabled;

@@ -81,10 +81,10 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 	}
 	
 	@Override
-	public PortraitUser createPortraitUser(Long identityKey, String username, boolean portraitAvailable,
+	public PortraitUser createPortraitUser(Long identityKey, Integer identityStatus,  boolean portraitAvailable,
 			String portraitPath, String initials, String initialsCss, String displayName,
 			Presence presence) {
-		return new PortraitUserImpl(identityKey, username, portraitAvailable, portraitPath, initials,
+		return new PortraitUserImpl(identityKey, identityStatus, portraitAvailable, portraitPath, initials,
 				initialsCss, displayName, presence);
 	}
 	
@@ -121,7 +121,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 			}
 		}
 		
-		return createPortraitUser(identity.getKey(), identity.getName(), portraitAvailable, portraitPath,
+		return createPortraitUser(identity.getKey(), identity.getStatus(), portraitAvailable, portraitPath,
 				initials, initialsCss, displayName, presence);
 	}
 	
@@ -137,7 +137,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 			portraitDisplayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.anonymous");
 		}
 		String initialsCss = "o_user_initials_grey";
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, portraitDisplayName, null);
+		return new PortraitUserImpl(Long.valueOf(-1), Identity.STATUS_ACTIV, false, null, initials, initialsCss, portraitDisplayName, null);
 	}
 
 	@Override
@@ -145,7 +145,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		String initials = "<i class='o_icon o_ac_guest_icon'> </i>";
 		String initialsCss = "o_user_initials_grey";
 		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.guest");
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, null);
+		return new PortraitUserImpl(Long.valueOf(-1), Identity.STATUS_ACTIV, false, null, initials, initialsCss, displayName, null);
 	}
 	
 	@Override
@@ -153,7 +153,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		String initials = "<i class='o_icon o_icon_identity_deleted'> </i>";
 		String initialsCss = "o_user_initials_grey";
 		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, null);
+		return new PortraitUserImpl(Long.valueOf(-1), Identity.STATUS_DELETED, false, null, initials, initialsCss, displayName, null);
 	}
 	
 	@Override
@@ -161,7 +161,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		String initials = "?";
 		String initialsCss = "o_user_initials_grey";
 		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, null);
+		return new PortraitUserImpl(Long.valueOf(-1), Identity.STATUS_ACTIV, false, null, initials, initialsCss, displayName, null);
 	}
 
 	@Override
@@ -189,7 +189,7 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 	private static final class PortraitUserImpl implements PortraitUser {
 		
 		private final Long identityKey;
-		private final String username;
+		private final Integer identityStatus;
 		private final boolean portraitAvailable;
 		private final String portraitCacheIdentifier;
 		private final String initials;
@@ -197,11 +197,11 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		private final String displayName;
 		private final Presence presence;
 		
-		private PortraitUserImpl(Long identityKey, String username, boolean portraitAvailable,
+		private PortraitUserImpl(Long identityKey, Integer identityStatus, boolean portraitAvailable,
 				String portraitCacheIdentifier, String initials, String initialsCss, String displayName,
 				Presence presence) {
 			this.identityKey = identityKey;
-			this.username = username;
+			this.identityStatus = identityStatus;
 			this.portraitAvailable = portraitAvailable;
 			this.portraitCacheIdentifier = portraitCacheIdentifier;
 			this.initials = initials;
@@ -216,8 +216,8 @@ public class UserPortraitServiceImpl implements UserPortraitService, UserDataDel
 		}
 		
 		@Override
-		public String getUsername() {
-			return username;
+		public Integer getIdentityStatus() {
+			return identityStatus;
 		}
 
 		@Override

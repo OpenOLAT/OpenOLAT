@@ -75,7 +75,6 @@ public class UserProfileInfoController extends UserInfoController {
 
 
 	private final Identity identity;
-	private final Boolean showTitle;
 	private final Roles editedRoles;
 
 	@Autowired
@@ -85,12 +84,11 @@ public class UserProfileInfoController extends UserInfoController {
 
 	public UserProfileInfoController(UserRequest ureq, WindowControl wControl,
 									 UserInfoProfileConfig profileConfig, PortraitUser portraitUser,
-									 Identity identity, Roles editedRoles, Boolean showTitle) {
+									 Identity identity, Roles editedRoles) {
 		super(ureq, wControl, profileConfig, portraitUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.identity = identity;
 		this.editedRoles = editedRoles;
-		this.showTitle = showTitle;
 		initForm(ureq);
 	}
 
@@ -103,9 +101,6 @@ public class UserProfileInfoController extends UserInfoController {
 
 		// 3. Organisations (with user role only)
 		addUserOrganisations(itemsCont, editedRoles);
-
-		// 4. Status (with badge)
-		addStatus(itemsCont);
 
 		// 5. Roles (excluding 'user')
 		addRoles(itemsCont, editedRoles);
@@ -130,9 +125,8 @@ public class UserProfileInfoController extends UserInfoController {
 			uifactory.addStaticTextElement("organisations", "user.organisations.label", translate("user.no.data"), itemsCont);
 			return;
 		}
-
-		// Create a horizontal container to hold the links and separators
-		FormLayoutContainer orgLinkCont = FormLayoutContainer.createHorizontalFormLayout("organisations.links", getTranslator());
+		
+		FormLayoutContainer orgLinkCont = FormLayoutContainer.createButtonLayout("organisations.links", getTranslator());
 		orgLinkCont.setLabel("user.organisations.label", null);
 		itemsCont.add(orgLinkCont);
 
@@ -148,35 +142,6 @@ public class UserProfileInfoController extends UserInfoController {
 			FormLink link = uifactory.addFormLink("org_link_" + org.getKey(), "org_roles",
 					orgName, null, orgLinkCont, Link.NONTRANSLATED);
 			link.setUserObject("org-click");
-		}
-	}
-
-
-	private void addStatus(FormLayoutContainer itemsCont) {
-		if (Boolean.TRUE.equals(showTitle)) {
-			int status = identity.getStatus();
-			String statusKey = "";
-			String cssClass = "";
-
-			if (status <= Identity.STATUS_ACTIV) {
-				statusKey = "rightsForm.status.activ";
-				cssClass = "o_user_status_active";
-			} else if (status == Identity.STATUS_INACTIVE) {
-				statusKey = "rightsForm.status.inactive";
-				cssClass = "o_user_status_inactive";
-			} else if (status == Identity.STATUS_LOGIN_DENIED) {
-				statusKey = "rightsForm.status.login_denied";
-				cssClass = "o_user_status_login_denied";
-			} else if (status == Identity.STATUS_PENDING) {
-				statusKey = "rightsForm.status.pending";
-				cssClass = "o_user_status_pending";
-			} else if (status == Identity.STATUS_DELETED) {
-				statusKey = "rightsForm.status.deleted";
-				cssClass = "o_user_status_deleted";
-			}
-			
-			String statusValue = "<span class=\"o_user_status_badge " + cssClass + "\">" + translate(statusKey) + "</span>";
-			uifactory.addStaticTextElement("status", "user.status", statusValue, itemsCont);
 		}
 	}
 
@@ -197,8 +162,8 @@ public class UserProfileInfoController extends UserInfoController {
 		if (addedRoles.isEmpty()) {
 			return;
 		}
-
-		FormLayoutContainer roleLinkCont = FormLayoutContainer.createHorizontalFormLayout("roles.links", getTranslator());
+		
+		FormLayoutContainer roleLinkCont = FormLayoutContainer.createButtonLayout("roles.links", getTranslator());
 		roleLinkCont.setLabel("user.roles.label", null);
 		itemsCont.add(roleLinkCont);
 

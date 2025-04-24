@@ -25,7 +25,7 @@ public interface PortraitUser {
 	
 	public Long getIdentityKey();
 	
-	public String getUsername();
+	public Integer getIdentityStatus();
 	
 	public boolean isPortraitAvailable();
 	
