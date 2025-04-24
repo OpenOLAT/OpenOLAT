@@ -57,6 +57,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -139,6 +140,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	static final String FILTER_TYPE = "Type";
 	static final String FILTER_OFFER = "Offer";
 	static final String FILTER_STATUS = "Status";
+	static final String FILTER_PERIOD = "Period";
 	static final String FILTER_CURRICULUM = "Curriculum";
 	static final String FILTER_OCCUPANCY_STATUS = "Occupancy";
 	static final String FILTER_OCCUPANCY_STATUS_NOT_SPECIFIED = "NotSpecified";
@@ -447,6 +449,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 				FILTER_TYPE, typesValues, true);
 		filters.add(typeFilter);
+		
+		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"), FILTER_PERIOD, true, false,
+				translate("filter.date.from"), translate("filter.date.to"), getLocale());
+		filters.add(periodFilter);
 		
 		if(config.isWithMixMaxColumn()) {
 			SelectionValues occupancyValues = new SelectionValues();

@@ -155,9 +155,17 @@ public class CopyElementContext {
 	public void setCopyOwnersMemberships(boolean copy) {
 		copySettings.setCopyOwnersMemberships(copy);
 	}
+	
+	public void setCopyMasterCoachesMemberships(boolean copy) {
+		copySettings.setCopyMasterCoachesMemberships(copy);
+	}
 
 	public void setCopyCoachesMemberships(boolean copy) {
 		copySettings.setCopyCoachesMemberships(copy);
+	}
+
+	public void setAddCoachesAsTeacher(boolean addAsTeacher) {
+		copySettings.setAddCoachesAsTeacher(addAsTeacher);
 	}
 	
 	public CopyOfferSetting getOfferToCopy(Offer offer) {

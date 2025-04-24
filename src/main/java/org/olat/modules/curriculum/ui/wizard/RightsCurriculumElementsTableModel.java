@@ -61,7 +61,7 @@ implements FlexiTableFooterModel {
 	
 	public boolean isParentOf(RightsCurriculumElementRow parentRow, RightsCurriculumElementRow node) {
 		for(RightsCurriculumElementRow parent=node.getParent(); parent != null; parent=parent.getParent()) {
-			if(parent != null && parent.getKey().equals(parentRow.getKey())) {
+			if(parent.getKey().equals(parentRow.getKey())) {
 				return true;
 			}
 		}

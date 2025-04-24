@@ -53,8 +53,10 @@ public class CurriculumCopySettings {
 	
 	private CopyResources copyResources;
 	
+	private boolean addCoachesAsTeacher;
 	private boolean copyOwnersMemberships;
 	private boolean copyCoachesMemberships;
+	private boolean copyMasterCoachesMemberships;
 	
 	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
@@ -125,12 +127,28 @@ public class CurriculumCopySettings {
 		this.copyOwnersMemberships = copyOwnersMemberships;
 	}
 
+	public boolean isCopyMasterCoachesMemberships() {
+		return copyMasterCoachesMemberships;
+	}
+
+	public void setCopyMasterCoachesMemberships(boolean copyMasterCoachesMemberships) {
+		this.copyMasterCoachesMemberships = copyMasterCoachesMemberships;
+	}
+
 	public boolean isCopyCoachesMemberships() {
 		return copyCoachesMemberships;
 	}
 
 	public void setCopyCoachesMemberships(boolean copyCoachesMemberships) {
 		this.copyCoachesMemberships = copyCoachesMemberships;
+	}
+	
+	public boolean isAddCoachesAsTeacher() {
+		return addCoachesAsTeacher;
+	}
+
+	public void setAddCoachesAsTeacher(boolean addCoachesAsTeacher) {
+		this.addCoachesAsTeacher = addCoachesAsTeacher;
 	}
 
 	public boolean isCopyOffers() {
@@ -219,7 +237,8 @@ public class CurriculumCopySettings {
 
 	public enum CopyMemberships {
 		dont,
-		include
+		memberships,
+		membershipsAddTeachers,
 	}
 	
 	public record CopyOfferSetting(Offer originalOffer, Date validFrom, Date validTo) {

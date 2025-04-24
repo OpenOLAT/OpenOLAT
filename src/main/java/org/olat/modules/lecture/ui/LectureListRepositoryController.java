@@ -204,6 +204,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
 	private static final String FILTER_VIRTUAL_STATUS = "VirtualStatus";
 	
+	private static final String NO_TEACHER = "noteacher";
+	
 	private static final String CMD_ROLLCALL = "lrollcall";
 	protected static final String CMD_REPOSITORY_ENTRY = "lentry";
 	protected static final String CMD_CURRICULUM_ELEMENT = "element";
@@ -625,10 +627,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		virtualStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_VIRTUAL_STATUS, virtualStatusValues, true);
 		filters.add(virtualStatusFilter);
-		
-		teachersFilter = new FlexiTableMultiSelectionFilter(translate("filter.teachers"),
-				FILTER_TEACHERS, teachersValues, true);
-		filters.add(teachersFilter);
 	
 		if(config.withFilterPresetPending() || config.withFilterPresetClosed()) {
 			SelectionValues rollCallStatusValues = new SelectionValues();
@@ -712,7 +710,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		if(config.withFilterPresetWithoutTeachers()) {
 			withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
-					TabSelectionBehavior.nothing, List.of());
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_TEACHERS, NO_TEACHER)));
 			withoutTeachersTab.setFiltersExpanded(true);
 			tabs.add(withoutTeachersTab);
 			map.put(WITHOUT_TEACHERS_TAB_ID.toLowerCase(), withoutTeachersTab);
@@ -959,6 +957,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			teachers.addAll(row.getTeachersList());
 		}
 		List<Identity> teachersList = new ArrayList<>(teachers);
+
+		teachersValues.add(SelectionValues.entry(NO_TEACHER, translate("filter.no.teachers")));
 		for(Identity teacher: teachersList) {
 			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(teacher));
 			teachersValues.add(SelectionValues.entry(teacher.getKey().toString(), fullName));
@@ -1040,6 +1040,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 						.map(key -> new IdentityRefImpl(Long.valueOf(key)))
 						.toList();
 				searchParams.setTeachersList(teachersKeys);
+				searchParams.setWithTeachers(Boolean.FALSE);
 			}
 		}
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();

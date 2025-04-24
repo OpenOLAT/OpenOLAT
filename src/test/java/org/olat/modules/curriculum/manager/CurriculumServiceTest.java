@@ -536,6 +536,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		copySettings.setShiftDateByDays(2);
 		copySettings.setCopyStandaloneEvents(true);
 		copySettings.setCopyCoachesMemberships(true);
+		copySettings.setAddCoachesAsTeacher(true);
 		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
 		dbInstance.commit();
 		
