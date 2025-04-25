@@ -127,13 +127,17 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	}
 
 	/**
-	 * Updates the users efficiency statement for this course. <p>
-	 * Called in AssessmentManager in a <code>doInSync</code> block, toghether with the saveScore.
-	 * @param userCourseEnv
+	 * Updates the users efficiency statement for this course environment. The update
+	 * will be done synchronized (doInSync).
+	 * 
+	 * @param userCourseEnv The user course environment
 	 */
 	public void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnv) {
-		RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		updateUserEfficiencyStatement(userCourseEnv, re);
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
+		RepositoryEntry repoEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);
+		doInSyncUpdateUserEfficiencyStatement(identity, userCourseEnv.getCourseEnvironment(), assessmentNodeList, lastModifications,  repoEntry);
 	}
 
 	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, Float weightedScore, String grade,
@@ -211,14 +215,32 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return efficiencyProperty;
 	}
 	
-	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final RepositoryEntry repoEntry) {
-		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
-		List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);
-		updateUserEfficiencyStatement(identity, userCourseEnv.getCourseEnvironment(), assessmentNodeList, lastModifications,  repoEntry);
+	
+	
+	/**
+	 * The method will call the synchronized update of the efficiency statement (doInSync).
+	 * 
+	 * @param assessedIdentity The identity
+	 * @param courseEnv The course environment
+	 * @param assessmentNodeList The list of course elements
+	 * @param lastModifications Last modifications
+	 * @param repoEntry The repository entry of the course
+	 */
+	public void updateUserEfficiencyStatement(final Identity assessedIdentity, final CourseEnvironment courseEnv,
+			final List<AssessmentNodeData> assessmentNodeList, final AssessmentNodesLastModified lastModifications, final RepositoryEntry repoEntry) {
+		doInSyncUpdateUserEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, repoEntry);
 	}
 	
-	public void updateUserEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv,
+	private void doInSyncUpdateUserEfficiencyStatement(final Identity assessedIdentity, final CourseEnvironment courseEnv,
+			final List<AssessmentNodeData> assessmentNodeList, final AssessmentNodesLastModified lastModifications, final RepositoryEntry repoEntry) {
+		AssessmentManager am = courseEnv.getAssessmentManager();
+		OLATResourceable efficiencyStatementResourceable = am.createOLATResourceableForLocking(assessedIdentity);
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(efficiencyStatementResourceable, () -> {					
+			internalUpdateUserEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, repoEntry);
+		});
+	}
+
+	private void internalUpdateUserEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv,
 			List<AssessmentNodeData> assessmentNodeList, AssessmentNodesLastModified lastModifications, final RepositoryEntry repoEntry) {
 		
 		EfficiencyStatement efficiencyStatement = createEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, repoEntry);
@@ -256,6 +278,12 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 	}
 	
+	/**
+	 * Merge the changes. Not synchronized!
+	 * 
+	 * @param statement The efficiency statement
+	 * @return The merged efficiency statement
+	 */
 	public UserEfficiencyStatementImpl updateUserEfficiencyStatement(UserEfficiencyStatementImpl statement) {
 		return dbInstance.getCurrentEntityManager().merge(statement);
 	}
@@ -900,7 +928,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	}
 
 	/**
-	 * Create or update all efficiency statment lists for the given list of identities and this course
+	 * Create or update all efficiency statement lists for the given list of identities and this course
 	 * This is called from only one thread, since the course is locked at editing (either CourseEdit or CourseDetails edit).
 	 * 
 	 * @param ores The resource to load the course
@@ -910,19 +938,15 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	public void updateEfficiencyStatements(final RepositoryEntry courseEntry, List<Identity> identities) {
 		if (!identities.isEmpty()) {
 			final ICourse course = CourseFactory.loadCourse(courseEntry);
+			final CourseEnvironment courseEnv = course.getCourseEnvironment();
 			log.info(Tracing.M_AUDIT, "Updating efficiency statements for course::{}, this might produce temporary heavy load on the CPU", course.getResourceableId());
 
-			// preload cache to speed up things
-			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();		
 			int count = 0;
 			for (Identity identity : identities) {			
-				//o_clusterOK: by ld
-				OLATResourceable efficiencyStatementResourceable = am.createOLATResourceableForLocking(identity);
-				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(efficiencyStatementResourceable, () -> {					
-					// create temporary user course env
-					UserCourseEnvironment uce = AssessmentHelper.createInitAndUpdateUserCourseEnvironment(identity, course);
-					updateUserEfficiencyStatement(uce, courseEntry);
-				});
+				UserCourseEnvironment uce = AssessmentHelper.createInitAndUpdateUserCourseEnvironment(identity, course);
+				AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
+				List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(uce, lastModifications, true, true, true);
+				doInSyncUpdateUserEfficiencyStatement(identity, courseEnv, assessmentNodeList, lastModifications,  courseEntry);
 				if (Thread.interrupted()) {
 					break;
 				}
