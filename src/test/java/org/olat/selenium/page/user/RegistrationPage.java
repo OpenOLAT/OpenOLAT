@@ -90,7 +90,7 @@ public class RegistrationPage {
 		OOGraphene.waitElement(otpBy, browser);
 		browser.findElement(otpBy).sendKeys(otp);
 		
-		By validateOtpBy = By.cssSelector(".o_sel_registration_email_form .o_sel_registration_otp");
+		By validateOtpBy = By.cssSelector(".o_sel_registration_email_form .o_sel_registration_otp .o_success_with_icon");
 		OOGraphene.waitElement(validateOtpBy, browser);
 		OOGraphene.nextStep(browser);
 		
