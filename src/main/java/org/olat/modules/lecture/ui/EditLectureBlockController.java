@@ -286,10 +286,15 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		externalRefEl = uifactory.addTextElement("externalref", "lecture.external.ref", 128, externalRef, formLayout);
 		externalRefEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.externalRef));
+		
+		String page = velocity_root + "/dates_planned.html";
+		FormLayoutContainer datesAndPlannedCont = uifactory.addCustomFormLayout("datesAndPlanned", null, page, formLayout);
+		datesAndPlannedCont.setElementCssClass("o_lecture_date_planned");
+		datesAndPlannedCont.setFormLayout("0_12");
 
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
 		Date endDate = lectureBlock == null ? null : lectureBlock.getEndDate();
-		dateEl = uifactory.addDateChooser("lecture.date", startDate, formLayout);
+		dateEl = uifactory.addDateChooser("lecture.date", startDate, datesAndPlannedCont);
 		dateEl.setSecondDate(endDate);
 		dateEl.setElementCssClass("o_sel_repo_lecture_date");
 		dateEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
@@ -306,7 +311,7 @@ public class EditLectureBlockController extends FormBasicController {
 			String num = String.valueOf(i);
 			plannedLecturesKeys.add(SelectionValues.entry(num, num));
 		}
-		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
+		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", datesAndPlannedCont,
 				plannedLecturesKeys.keys(), plannedLecturesKeys.values(), null);
 		plannedLecturesEl.setMandatory(true);
 		String plannedlectures = lectureBlock == null

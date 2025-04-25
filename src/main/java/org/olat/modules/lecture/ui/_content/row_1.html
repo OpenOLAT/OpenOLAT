@@ -1,6 +1,6 @@
 <div class="o_lecture_timeline_details">
 	<div class="o_header_with_buttons">
-		<h3>$r.escapeHtml($row.title)#if($r.isNotEmpty($row.externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($row.externalRef)</small>#end</h3>
+		<h3><span><span>$r.escapeHtml($row.title)</span> #if($r.isNotEmpty($row.externalRef))<small>$r.escapeHtml($row.externalRef)</small>#end</span></h3>
 		<div class="o_button_group o_button_group_right">
 			<div class="o_lecture_badge"><span>$r.translate("lecture.block.status"):</span> $row.lectureBlockStatusBadge</div>
 			#if($r.isNotEmpty($row.rollCallStatusBadge))
