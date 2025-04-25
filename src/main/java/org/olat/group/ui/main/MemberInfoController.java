@@ -20,7 +20,6 @@
 package org.olat.group.ui.main;
 
 import java.util.Date;
-import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
@@ -32,14 +31,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -47,9 +44,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
-import org.olat.user.UserManager;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserPortraitService;
+import org.olat.user.UserPropertiesInfoController;
+import org.olat.user.UserPropertiesInfoController.Builder;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,11 +71,11 @@ public class MemberInfoController extends FormBasicController {
 	private final boolean withLinks;
 	
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -103,19 +101,8 @@ public class MemberInfoController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-		
-			Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, false);
-			listenTo(dpc); // auto dispose
-			layoutCont.put("image", dpc.getInitialComponent());
-			layoutCont.contextPut("fullname", StringHelper.escapeHtml(userManager.getUserDisplayName(identity)));
-		}
-		
-		//user properties
-		FormLayoutContainer userPropertiesContainer = FormLayoutContainer.createTableCondensedLayout("userProperties", getTranslator());
-		userPropertiesContainer.contextPut("striped", Boolean.TRUE);
-		formLayout.add("userProperties", userPropertiesContainer);
+		Formatter formatter = Formatter.getInstance(getLocale());
+		Builder lvBuilder = UserPropertiesInfoController.LabelValues.builder();
 		
 		String typei18n;
 		if(identityRoles.isInvitee()) {
@@ -125,32 +112,16 @@ public class MemberInfoController extends FormBasicController {
 		} else {
 			typei18n = "user.type.user";
 		}
-		uifactory.addStaticTextElement("up_user_type", "user.type", translate(typei18n), userPropertiesContainer);
+		lvBuilder.add(translate("user.type"), translate(typei18n));
 		
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(getClass().getCanonicalName(), false);
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) continue;
-
-			String propName = userPropertyHandler.getName();
-			String value = userPropertyHandler.getUserProperty(identity.getUser(), getLocale());
-			String key = userPropertyHandler.i18nFormElementLabelKey();
-			if(value == null) {
-				value = "";
-			}
-			uifactory.addStaticTextElement("up_" + propName, key, value, userPropertiesContainer);
-		}
-
-		Formatter formatter = Formatter.getInstance(getLocale());
 		//course informations
-		FormLayoutContainer resourceInfosContainer = FormLayoutContainer.createTableCondensedLayout("courseInfos", getTranslator());
-		resourceInfosContainer.contextPut("striped", Boolean.TRUE);
-		formLayout.add("resourceInfos", resourceInfosContainer);
 		if(courseInfos != null) {
 			String firstTime = formatter.formatDate(courseInfos.getInitialLaunch());
-			membershipCreationEl = uifactory.addStaticTextElement("firstTime", "course.membership.creation", firstTime, resourceInfosContainer);
+			lvBuilder.add(translate("course.membership.creation"), firstTime);
+			
 		} else if(businessGroupInfos != null) {
 			String creation = formatter.formatDate(businessGroupInfos.creationDate());
-			membershipCreationEl = uifactory.addStaticTextElement("firstTime", "group.membership.creation", creation, resourceInfosContainer);
+			lvBuilder.add(translate("group.membership.creation"), creation);
 		}
 		
 		if(securityModule.isUserLastVisitVisible(ureq.getUserSession().getRoles())) {
@@ -163,13 +134,22 @@ public class MemberInfoController extends FormBasicController {
 				if(courseInfos.getVisit() >= 0) {
 					numOfVisits = Integer.toString(courseInfos.getVisit());
 				}
-				uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, resourceInfosContainer);
-				uifactory.addStaticTextElement("numOfVisits", "course.numOfVisits", numOfVisits, resourceInfosContainer);
+				lvBuilder.add(translate("course.lastTime"), lastVisit);
+				lvBuilder.add(translate("course.numOfVisits"), numOfVisits);
 			} else if(businessGroupInfos != null) {
 				String lastVisit = formatter.formatDate(businessGroupInfos.lastModified());
-				uifactory.addStaticTextElement("lastTime", "course.lastTime", lastVisit, resourceInfosContainer);
+				lvBuilder.add(translate("course.lastTime"), lastVisit);
 			}
 		}
+		
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
+		if (withLinks) {
+			profileConfig.setUserManagementLinkEnabled(false);
+		}
+		UserPropertiesInfoController userInfoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm,
+				identity, getClass().getCanonicalName(), lvBuilder.build(), profileConfig);
+		listenTo(userInfoCtrl);
+		formLayout.add("userInfo", userInfoCtrl.getInitialFormItem());
 		
 		//links
 		if(withLinks) {

@@ -159,7 +159,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			layoutCont.contextPut("date", getDate());
 			
 			UserPropertiesInfoController userInfoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(),
-					mainForm, calledIdentity, null, getImmunoRow(ureq));
+					mainForm, calledIdentity, null, getImmunoRow(ureq), null);
 			listenTo(userInfoCtrl);
 			flc.add("userInfo", userInfoCtrl.getInitialFormItem());
 		}

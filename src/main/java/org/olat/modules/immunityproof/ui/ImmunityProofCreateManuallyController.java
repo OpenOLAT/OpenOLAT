@@ -111,7 +111,7 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 		// User info
 		if (usedByCovidCommissioner) {
 			UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm,
-					editedIdentity, ImmunityProofModule.USER_PROPERTY_HANDLER, null);
+					editedIdentity, ImmunityProofModule.USER_PROPERTY_HANDLER, null, null);
 			listenTo(infoCtrl);
 			formLayout.add("userInfo", infoCtrl.getInitialFormItem());
 		}

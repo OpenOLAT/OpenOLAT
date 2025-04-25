@@ -67,20 +67,21 @@ public class UserPropertiesInfoController extends UserInfoController {
 	public UserPropertiesInfoController(UserRequest ureq, WindowControl wControl, Identity infoIdentity,
 			String customUsageIdentifier, LabelValues additionalLabelValues) {
 		super(ureq, wControl, null, null);
-		init(ureq, infoIdentity, customUsageIdentifier, additionalLabelValues);
+		init(ureq, infoIdentity, customUsageIdentifier, additionalLabelValues, null);
 	}
 	
 	public UserPropertiesInfoController(UserRequest ureq, WindowControl wControl, Form mainForm, Identity infoIdentity) {
-		this(ureq, wControl, mainForm, infoIdentity, null, null);
+		this(ureq, wControl, mainForm, infoIdentity, null, null, null);
 	}
 	
 	public UserPropertiesInfoController(UserRequest ureq, WindowControl wControl, Form mainForm, Identity infoIdentity,
-			String customUsageIdentifier, LabelValues additionalLabelValues) {
+			String customUsageIdentifier, LabelValues additionalLabelValues, UserInfoProfileConfig profileConfig) {
 		super(ureq, wControl, mainForm, null, null);
-		init(ureq, infoIdentity, customUsageIdentifier, additionalLabelValues);
+		init(ureq, infoIdentity, customUsageIdentifier, additionalLabelValues, profileConfig);
 	}
 	
-	private void init(UserRequest ureq, Identity infoIdentity, String customUsageIdentifier, LabelValues additionalLabelValues) {
+	private void init(UserRequest ureq, Identity infoIdentity, String customUsageIdentifier,
+			LabelValues additionalLabelValues, UserInfoProfileConfig customProfileConfig) {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.infoIdentity = infoIdentity;
 		this.additionalLabelValues = additionalLabelValues;
@@ -90,7 +91,10 @@ public class UserPropertiesInfoController extends UserInfoController {
 				: DEFAULT_USAGE_IDENTIFYER;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
-		initProfileConfig(userPortraitService.createProfileConfig());
+		UserInfoProfileConfig profileConfig = customProfileConfig != null
+				? customProfileConfig
+				: userPortraitService.createProfileConfig();
+		initProfileConfig(profileConfig);
 		initPortraitUser(userPortraitService.createPortraitUser(getLocale(), infoIdentity));
 		initForm(ureq);
 	}

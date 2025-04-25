@@ -360,7 +360,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		removeAsListenerAndDispose(userInfoCtrl);
 		
 		userInfoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm, calledIdentity, null,
-				getAdditionalLabelValues(ureq));
+				getAdditionalLabelValues(ureq), null);
 		listenTo(userInfoCtrl);
 		flc.add("userInfo", userInfoCtrl.getInitialFormItem());
 	}
