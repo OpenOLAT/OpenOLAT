@@ -49,6 +49,13 @@ public class LectureRepositoryAdminListPage {
 		return this;
 	}
 	
+	public LectureRepositoryAdminListPage all() {
+		By allBy = By.xpath("//div[contains(@class,'o_sel_repo_lectures_list')]//div[@class='o_table_tabs']/ul/li[1]/a");
+		OOGraphene.waitElement(allBy, browser);
+		OOGraphene.click(allBy, browser);
+		return this;
+	}
+	
 	public EditLectureBlockPage newLectureBlock() {
 		By addLectureBy = By.cssSelector("div.o_sel_repo_lectures_list a.o_sel_repo_add_lecture");
 		browser.findElement(addLectureBy).click();
