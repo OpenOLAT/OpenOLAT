@@ -155,12 +155,12 @@ import org.olat.modules.lecture.ui.addwizard.AssignNewRepositoryEntryController;
 import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
-import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
 import org.olat.modules.lecture.ui.component.IdentityCoachesCellRenderer;
 import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
+import org.olat.modules.lecture.ui.component.LocationCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
@@ -477,7 +477,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 		if(config.withLocation() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withLocation() == Visibility.SHOW, BlockCols.location,
-					new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_location")));
+					new LocationCellRenderer(getTranslator())));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers,
 				new IdentityCoachesCellRenderer(userManager)));
@@ -793,11 +793,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		if(type == FlexiTableRendererType.verticalTimeLine) {
 			LectureBlockRow row = tableModel.getObject(pos);
+			
 			Date now = new Date();
 			if(row.getStartDate() != null && row.getStartDate().compareTo(now) <= 0
 					&& row.getEndDate() != null && row.getEndDate().compareTo(now) >= 0) {
 				return "o_vertical_timeline_item o_lecture_running";
-			}	
+			} else if(row.isNextScheduled()) {
+				return "o_vertical_timeline_item o_lecture_next";
+			}
 		}
 		return null;
 	}
@@ -829,12 +832,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		LectureBlockRow canStart = null;
 		Date now = ureq.getRequestTimestamp();
-		LecturesBlockSearchParameters searchParams = getSearchParams(ureq);
+		LecturesBlockSearchParameters nextParams = getSearchParams();
+		nextParams.setStartDate(now);
+		LectureBlockRef nextScheduledBlock = lectureService.getNextScheduledLectureBlock(nextParams);
+
+		LecturesBlockSearchParameters searchParams = getSearchParamsWithFilters(ureq);
 		List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithOptionalTeachers(searchParams);
 		
 		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
 		for(LectureBlockWithTeachers block:blocks) {
-			LectureBlockRow row = forgeRow(now, block, displayname, externalRef);
+			LectureBlockRow row = forgeRow(now, block, displayname, externalRef, nextScheduledBlock);
 			rows.add(row);
 			if(canStartRollCall(row)) {
 				canStart = row;
@@ -889,7 +896,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
-	private LectureBlockRow forgeRow(Date now, LectureBlockWithTeachers block, String displayname, String externalRef) {
+	private LectureBlockRow forgeRow(Date now, LectureBlockWithTeachers block,
+			String displayname, String externalRef, LectureBlockRef nextScheduledBlock ) {
 		LectureBlock b = block.getLectureBlock();
 		StringBuilder teachers = new StringBuilder();
 		String separator = translate("user.fullname.separator");
@@ -925,6 +933,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			onlineMeetingLink.setUserObject(row);
 			row.setOpenOnlineMeetingLink(onlineMeetingLink);
 		}
+		
+		row.setNextScheduled(nextScheduledBlock != null && nextScheduledBlock.getKey().equals(b.getKey()));
 		
 		if(rollCallEnabled && secCallback.viewAs() != LectureRoles.participant && hasRollCall(row)) {
 			FormLink rollCallLink = uifactory.addFormLink("rcall_" + b.getKey(), CMD_ROLLCALL, "", tableEl, Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
@@ -972,7 +982,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
-	private LecturesBlockSearchParameters getSearchParams(UserRequest ureq) {
+	private LecturesBlockSearchParameters getSearchParams() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		
 		if(curriculumElement != null) {
@@ -1005,6 +1015,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		} else {
 			searchParams.setManager(getIdentity());
 		}
+		
+		return searchParams;
+	}
+	
+	private LecturesBlockSearchParameters getSearchParamsWithFilters(UserRequest ureq) {
+		LecturesBlockSearchParameters searchParams = getSearchParams();
 		
 		if(scopeEl.isVisible() && scopeEl.isEnabled() && scopeEl.isSelected()) {
 			DateRange range = scopeEl.getSelectedDateRange();
@@ -1096,7 +1112,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			activateFilterTab(ureq, allTab);
+			if(config.withFilterPresetRelevant()) {
+				activateFilterTab(ureq, relevantTab);
+			} else {
+				activateFilterTab(ureq, allTab);
+			}
 		} else {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
 			Long id = entries.get(0).getOLATResourceable().getResourceableId();
@@ -1116,6 +1136,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 						activateLecture(ureq, id, subSubEntries);
 					}
 				}
+			} else {
+				activateFilterTab(ureq, allTab);
 			}
 		}
 	}
@@ -1611,9 +1633,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			removeAsListenerAndDispose(row.getDetailsController());
 			flc.remove(row.getDetailsController().getInitialFormItem());
 		}
-		
+
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				mainForm, config, secCallback, lectureManagementManaged);
+				mainForm, config, secCallback, lectureManagementManaged, entry != null);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

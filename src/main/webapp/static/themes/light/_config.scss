@@ -1095,6 +1095,10 @@ $o-lm-timeline-path-stroke-width					: 0.3rem !default;
 $o-lm-timeline-path-top-height						: $o-lm-timeline-row-padding !default;
 
 $o-lm-table-timeline-running-border-color			: $o-labeled-orange-light-border-color !default;
+$o-lm-table-timeline-running-bg-color				: transparentize($o-labeled-orange-light-border-color, 0.9) !default;
+
+$o-lm-table-timeline-next-border-color				: $o-labeled-blue-light-border-color !default;
+$o-lm-table-timeline-next-bg-color					: transparentize($o-labeled-blue-light-border-color, 0.9) !default;
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;

@@ -20,9 +20,6 @@
 			$r.render("lecture.location","vertical")
 		#end
 		$r.render("lecture.participants","vertical")
-		#if($r.available("lecture.preparation"))
-			$r.render("lecture.preparation","vertical")
-		#end
 		$r.render("lecture.compulsory","vertical")
 	
 		#if($r.available("open.online.meeting"))
@@ -72,8 +69,13 @@
 	</div>
 	
 	$r.render("participantsGroupTable")
+	#if($r.available("lecture.preparation"))
+	<div class="o_lecture_descs">
+		$r.render("lecture.preparation","vertical")
+	</div>
+	#end
 	#if($r.available("lecture.desc"))
-	<div class="o_block_top">
+	<div class="o_lecture_descs">
 		$r.render("lecture.desc","vertical")
 	</div>
 	#end

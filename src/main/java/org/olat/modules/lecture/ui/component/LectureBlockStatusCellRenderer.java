@@ -29,6 +29,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
  * 
@@ -52,14 +53,16 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 			} else if(cellValue instanceof LectureBlock block) {
 				target.append(translator.translate(block.getStatus().name()));
 			}
+		} else if(cellValue instanceof LectureBlockRow block) {
+			getStatus(target, "o_labeled_light", block.getLectureBlock(), block.isNextScheduled(), translator);
 		} else if(cellValue instanceof LectureBlock block) {
-			getStatus(target, "o_labeled_light", block, translator);
+			getStatus(target, "o_labeled_light", block, false, translator);
 		}
 	}
 	
-	public static final String getStatusLabel(LectureBlock block, Translator trans) {
+	public static final String getStatusLabel(LectureBlock block, boolean nextScheduled, Translator trans) {
 		StringOutput sb = new StringOutput();
-		getStatus(sb, "o_labeled_light", block, trans);
+		getStatus(sb, "o_labeled_light", block, nextScheduled, trans);
 		return sb.toString();
 	}
 	
@@ -68,10 +71,15 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 		return vStatus == null ? null: trans.translate(vStatus.name());
 	}
 	
-	private static final void getStatus(StringOutput target, String type, LectureBlock block, Translator trans) {
+	private static final void getStatus(StringOutput target, String type, LectureBlock block, boolean nextScheduled, Translator trans) {
 		LectureBlockVirtualStatus vStatus = calculateStatus(block);
 		if(vStatus != null) {
-			String statusName = vStatus.name().toLowerCase();
+			String statusName;
+			if(nextScheduled && vStatus != LectureBlockVirtualStatus.RUNNING) {
+				statusName = "next";
+			} else {
+				statusName = vStatus.name().toLowerCase();
+			}
 			target.append("<span class=\"").append(type).append(" o_lecture_status_")
 			      .append(statusName).append("\">").append(trans.translate(statusName))
 			      .append("</span>");

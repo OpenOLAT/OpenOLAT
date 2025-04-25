@@ -123,7 +123,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditLectureBlockController extends FormBasicController {
 
 	private static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
-	private static final String ON_KEY = "on";
 	private static final String TEAMS_MEETING = "teams";
 	private static final String BIGBLUEBUTTON_MEETING = "bigbluebutton";
 	
@@ -133,12 +132,12 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement preparationEl;
 	private AutoCompleter locationEl;
 	private DateChooser dateEl;
+	private FormToggle compulsoryEl;
 	private FormLink editOnlineMeetingButton;
 	private SingleSelection onlineMeetingEl;
 	private FormToggle enabledOnlineMeetingEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
-	private MultipleSelectionElement compulsoryEl;
 	
 	private final boolean readOnly;
 	private final boolean embedded;
@@ -338,10 +337,10 @@ public class EditLectureBlockController extends FormBasicController {
 		// Online meeting
 		SelectionValues meetingPK = new SelectionValues();
 		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
-			meetingPK.add(SelectionValues.entry(BIGBLUEBUTTON_MEETING, translate("lecture.online.meeting.bigbluebutton")));
+			meetingPK.add(SelectionValues.entry(BIGBLUEBUTTON_MEETING, translate("lecture.online.meeting.bigbluebutton"), null, "o_icon o_bigbluebuttonmeeting_icon", null, true));
 		}
 		if(teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
-			meetingPK.add(SelectionValues.entry(TEAMS_MEETING, translate("lecture.online.meeting.teams")));
+			meetingPK.add(SelectionValues.entry(TEAMS_MEETING, translate("lecture.online.meeting.teams"), null, "o_icon o_teamsmeeting_icon", null, true));
 		}
 
 		enabledOnlineMeetingEl = uifactory.addToggleButton("lecture.online.meeting", "lecture.online.meeting",
@@ -350,7 +349,7 @@ public class EditLectureBlockController extends FormBasicController {
 		enabledOnlineMeetingEl.setVisible(!meetingPK.isEmpty());
 		enabledOnlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
 		
-		onlineMeetingEl = uifactory.addRadiosVertical("onlinemeeting.provider", null, formLayout, meetingPK.keys(), meetingPK.values());
+		onlineMeetingEl = uifactory.addCardSingleSelectHorizontal("onlinemeeting.provider", null, formLayout, meetingPK);
 		onlineMeetingEl.setVisible(enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn());
 		if(meetingPK.containsKey(BIGBLUEBUTTON_MEETING) && bigBlueButtonMeeting != null) {
 			onlineMeetingEl.select(BIGBLUEBUTTON_MEETING, true);
@@ -413,14 +412,10 @@ public class EditLectureBlockController extends FormBasicController {
 		preparationEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.preparation));
 		
 		boolean compulsory = lectureBlock == null || lectureBlock.isCompulsory();
-		SelectionValues compulsoryPK = new SelectionValues();
-		compulsoryPK.add(SelectionValues.entry(ON_KEY, translate("lecture.compulsory.on")));
-		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, compulsoryPK.keys(), compulsoryPK.values(), 1);
+		compulsoryEl = uifactory.addToggleButton("compulsory", "lecture.compulsory", translate("on"), translate("off"), formLayout);
 		compulsoryEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
 		compulsoryEl.addActionListener(FormEvent.ONCHANGE);
-		if(compulsory) {
-			compulsoryEl.select(ON_KEY, true);
-		}
+		compulsoryEl.toggle(compulsory);
 		
 		if(!embedded) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -497,7 +492,7 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		if(compulsoryEl.isAtLeastSelected(1)) {
+		if(compulsoryEl.isOn()) {
 			setFormWarning(null);
 		} else {
 			setFormWarning("warning.edit.lecture");
@@ -567,6 +562,9 @@ public class EditLectureBlockController extends FormBasicController {
 			dateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!validateFormItem(ureq, dateEl)) {
+			allOk &= false;
+		} else if(dateEl.getDate().compareTo(dateEl.getSecondDate()) == 0) {
+			dateEl.setErrorKey("error.min.duration");
 			allOk &= false;
 		} else if(dateEl.getDate().after(dateEl.getSecondDate())) {
 			dateEl.setErrorKey("error.start.after.end.date");
@@ -682,7 +680,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		lectureBlock.setTitle(titleEl.getValue());
 		lectureBlock.setExternalRef(externalRefEl.getValue());
-		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
+		lectureBlock.setCompulsory(compulsoryEl.isOn());
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
 		if(locationEl.isEnabled()) {// autocompleter don't collect value if disabled

@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui.peerreview;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -31,13 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.GTACoachController;
-import org.olat.user.PortraitSize;
-import org.olat.user.PortraitUser;
-import org.olat.user.UserManager;
-import org.olat.user.UserPortraitFactory;
-import org.olat.user.UserPortraitService;
-import org.olat.user.UsersPortraitsComponent;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.user.UserPropertiesInfoController;
 
 /**
  * 
@@ -47,27 +39,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaskPortraitController extends BasicController {
 
-	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private UserPortraitService userPortraitService;
-	
 	public TaskPortraitController(UserRequest ureq, WindowControl wControl, Identity identity, Task task) {
 		super(ureq, wControl, Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		
 		VelocityContainer mainVC = createVelocityContainer("task_portrait");
 		
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(identity));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "task_identity", mainVC);
-		usersPortraitCmp.setSize(PortraitSize.medium);
-		usersPortraitCmp.setMaxUsersVisible(1);
-		usersPortraitCmp.setUsers(portraitUsers);
+		UserPropertiesInfoController userInfoCtrl = new UserPropertiesInfoController(ureq, wControl, identity);
+		listenTo(userInfoCtrl);
+		mainVC.put("userInfo", userInfoCtrl.getInitialComponent());
 		
-		mainVC.put("task_portrait", usersPortraitCmp);
-		mainVC.contextPut("task_fullname", userManager.getUserDisplayName(identity));
 		String taskName = task == null || task.getTaskName() == null ? "" : task.getTaskName();
 		mainVC.contextPut("taskName", taskName);
-
+		
 		putInitialPanel(mainVC);
 	}
 

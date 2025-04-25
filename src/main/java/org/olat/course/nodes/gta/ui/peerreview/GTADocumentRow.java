@@ -22,7 +22,7 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.user.UsersPortraitsComponent;
+import org.olat.user.UserPortraitComponent;
 
 /**
  * 
@@ -44,7 +44,7 @@ public class GTADocumentRow {
 	
 	private FormLink selectLink;
 	private FormLink selectClassicLink;
-	private UsersPortraitsComponent usersPortraitCmp;
+	private UserPortraitComponent usersPortraitCmp;
 	
 	public GTADocumentRow(String id, VFSLeaf document, VFSMetadata metadata, boolean anonym) {
 		this.document = document;
@@ -105,10 +105,6 @@ public class GTADocumentRow {
 		this.thumbnailUrl = url;
 	}
 	
-	public UsersPortraitsComponent getUserPortraits() {
-		return usersPortraitCmp;
-	}
-	
 	public String getSelectLinkName() {
 		return selectLink != null ? selectLink.getComponent().getComponentName() : null;
 	}
@@ -129,7 +125,11 @@ public class GTADocumentRow {
 		this.selectClassicLink = selectClassicLink;
 	}
 
-	public void setUserPortraits(UsersPortraitsComponent usersPortraitCmp) {
+	public UserPortraitComponent getUserPortraits() {
+		return usersPortraitCmp;
+	}
+	
+	public void setUserPortraits(UserPortraitComponent usersPortraitCmp) {
 		this.usersPortraitCmp = usersPortraitCmp;
 	}
 

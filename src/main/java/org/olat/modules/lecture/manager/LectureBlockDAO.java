@@ -709,6 +709,35 @@ public class LectureBlockDAO {
 		return new ArrayList<>(blockMap.values());
 	}
 	
+	public LectureBlockRef getNextScheduledLectureBlock(LecturesBlockSearchParameters searchParams) {
+		QueryBuilder sc = new QueryBuilder(2048);
+		sc.append("select block.key")
+		  .append(" from lectureblock block")
+		  .append(" left join block.teacherGroup tGroup")
+		  .append(" left join tGroup.members membership")
+		  .append(" left join block.entry entry")
+		  .append(" left join block.curriculumElement curEl")
+		  .append(" left join curEl.curriculum cur")
+		  .append(" left join cur.organisation organis")
+		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)");
+		addSearchParametersToQuery(sc, searchParams);
+		sc.append(" order by block.startDate asc");
+		
+		TypedQuery<Long> nextQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Long.class);
+		
+		addSearchParametersToQuery(nextQuery, searchParams);
+		
+		List<Long> nextKeys = nextQuery
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		if(nextKeys != null && !nextKeys.isEmpty() && nextKeys.get(0) != null && nextKeys.get(0).longValue() > 0) {
+			return new LectureBlockRefImpl(nextKeys.get(0));
+		}
+		return null;
+	}
+	
 	/**
 	 * 
 	 * 

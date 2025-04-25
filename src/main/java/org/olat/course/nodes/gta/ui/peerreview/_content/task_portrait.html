@@ -1,9 +1,4 @@
-<div class="o_gta_portrait panel panel-default">
-	<div class="o_gta_assignee">
-		$r.render("task_identity") <span>$r.escapeHtml($task_fullname)</span>
-	</div>
-	<div class="o_gta_task">
-		<label for="task-name">$r.translate("task")</label>
-		<span id="task-name">$r.escapeHtml($taskName)</span>
-	</div>
+<h3>$r.translate("task") $r.escapeHtml($taskName)</h3>
+<div class="o_block">
+	$r.render("userInfo")
 </div>

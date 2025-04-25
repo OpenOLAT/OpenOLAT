@@ -1551,6 +1551,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public LectureBlockRef getNextScheduledLectureBlock(LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.getNextScheduledLectureBlock(searchParams);
+	}
+
+	@Override
 	public List<Identity> getTeachers(LectureBlock lectureBlock) {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlock;
 		return groupDao.getMembers(block.getTeacherGroup(), "teacher");

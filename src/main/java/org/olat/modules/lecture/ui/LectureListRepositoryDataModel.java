@@ -105,14 +105,14 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case externalRef -> row.getExternalRef();
 			case title ->  row.getTitle();
 			case compulsory -> row.getLectureBlock().isCompulsory();
-			case location -> row.getLectureBlock().getLocation();
+			case location -> row;
 			case lecturesNumber -> row.getLectureBlock().getPlannedLecturesNumber();
 			case curriculumElement -> row.getCurriculumElement();
 			case entry -> row.getEntry();
 			case date -> row.getLectureBlock().getStartDate();
 			case startTime -> row.getLectureBlock().getStartDate();
 			case endTime -> row.getLectureBlock().getEndDate();
-			case status -> row.getLectureBlock();
+			case status -> row;
 			case rollCallStatus -> row.getLectureBlock().getRollCallStatus();
 			case teachers -> row;
 			case numParticipants -> row.getNumOfParticipants();

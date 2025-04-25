@@ -19,9 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui.peerreview;
 
-import java.util.List;
-
-import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -38,9 +35,9 @@ import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRend
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
-import org.olat.user.UsersPortraitsComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,13 +82,12 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 			layoutCont.contextPut("status", status);
 			
 			// Portrait
-			Identity userToPortrait = anonym ? new TransientIdentity() : user;
-			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(userToPortrait));
-			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent());
-			usersPortraitCmp.setAriaLabel(placeholderName);
+			PortraitUser portraitUser = anonym
+					? userPortraitService.createAnonymousPortraitUser(getLocale(), placeholderName)
+					: userPortraitService.createPortraitUser(getLocale(), user);
+			UserPortraitComponent usersPortraitCmp = UserPortraitFactory.createUserPortrait("users_id", flc.getFormItemComponent(), getLocale());
 			usersPortraitCmp.setSize(PortraitSize.large);
-			usersPortraitCmp.setMaxUsersVisible(5);
-			usersPortraitCmp.setUsers(portraitUsers);
+			usersPortraitCmp.setPortraitUser(portraitUser);
 			layoutCont.put("portraits", usersPortraitCmp);
 			
 			// Form of the review

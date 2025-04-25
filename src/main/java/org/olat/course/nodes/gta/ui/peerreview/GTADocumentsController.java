@@ -22,7 +22,6 @@ package org.olat.course.nodes.gta.ui.peerreview;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -68,9 +67,9 @@ import org.olat.modules.audiovideorecording.AVModule;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
-import org.olat.user.UsersPortraitsComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -194,15 +193,14 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 				GTADocumentRow row = new GTADocumentRow(id, leaf, metadata, anonym);
 				if(anonym) {
 					row.setAuthorName(placeholderName);
-					TransientIdentity anonymId = new TransientIdentity();
-					forgeUsersPortraits(ureq, row, anonymId);
+					forgeUsersPortraits(row, userPortraitService.createAnonymousPortraitUser(getLocale(), placeholderName));
 				} else {
 					Identity initializedBy = null;
 					if(metadata != null) {
 						initializedBy = metadata.getFileInitializedBy();
 					}
 					row.setAuthorName(userManager.getUserDisplayName(initializedBy));
-					forgeUsersPortraits(ureq, row, initializedBy);
+					forgeUsersPortraits(row, userPortraitService.createPortraitUser(getLocale(), initializedBy));
 				}
 				forgeSelectLink(row, leaf, metadata, roles);
 				
@@ -251,13 +249,10 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 		row.setSelectClassicLink(classicLink);
 	}
 	
-	private void forgeUsersPortraits(UserRequest ureq, GTADocumentRow row, Identity initializedBy) {
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(initializedBy));
-		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + (++count), flc.getFormItemComponent());
-		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
+	private void forgeUsersPortraits(GTADocumentRow row, PortraitUser initializedBy) {
+		UserPortraitComponent usersPortraitCmp = UserPortraitFactory.createUserPortrait("users_" + (++count), flc.getFormItemComponent(), getLocale());
 		usersPortraitCmp.setSize(PortraitSize.small);
-		usersPortraitCmp.setMaxUsersVisible(5);
-		usersPortraitCmp.setUsers(portraitUsers);
+		usersPortraitCmp.setPortraitUser(initializedBy);
 		row.setUserPortraits(usersPortraitCmp);
 	}
 	
