@@ -495,14 +495,11 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void scrollBottom(By by, WebDriver browser) {
-		WebElement element = browser.findElement(by);
-
 		String scrollBottom = """
 				var modal = arguments[0].closest('dialog.dialog .modal-body')?.scrollTo(0, 1024);\n
 				if(modal === undefined) { window.scrollTo(0, 1024); }
 				""";
-		((JavascriptExecutor)browser).executeScript(scrollBottom, element);
-		OOGraphene.waitingALittleLonger();
+		executeScript(browser, by, scrollBottom);
 	}
 	
 	/**
@@ -512,14 +509,11 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void scrollTableRight(By by, WebDriver browser) {
-		WebElement element = browser.findElement(by);
-
 		String scrollBottom = """
 				var modal = arguments[0].closest('.o_scrollable')?.scrollTo(1024, 0);\n
 				if(modal === undefined) { window.scrollTo(1024, 0); }
 				""";
-		((JavascriptExecutor)browser).executeScript(scrollBottom, element);
-		OOGraphene.waitingALittleLonger();
+		executeScript(browser, by, scrollBottom);
 	}
 	
 	/**
@@ -532,14 +526,28 @@ public class OOGraphene {
 		OOGraphene.waitingALittleLonger();
 	}
 	
+
+	
 	/**
 	 * Scroll an element into the view. Doesn't work in a dialog!
 	 * @param by The selector of the element to move into view.
 	 * @param browser The browser
 	 */
 	public static void scrollTo(By by, WebDriver browser) {
-		WebElement element = browser.findElement(by);
-		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"auto\", block: \"end\"});", element);
+		executeScript(browser, by, "return arguments[0].scrollIntoView({behavior:\"auto\", block: \"end\"});");
+	}
+	
+	private static void executeScript(WebDriver browser, By by, String script) {
+		try {
+			WebElement element = browser.findElement(by);
+			((JavascriptExecutor)browser).executeScript(script, element);
+			OOGraphene.waitingALittleLonger();
+		} catch (StaleElementReferenceException e) {
+			waitingALittleBit();
+			WebElement element = browser.findElement(by);
+			((JavascriptExecutor)browser).executeScript(script, element);
+			waitingALittleLonger();
+		}
 	}
 	
 	public static final void waitTinymce(WebDriver browser) {
