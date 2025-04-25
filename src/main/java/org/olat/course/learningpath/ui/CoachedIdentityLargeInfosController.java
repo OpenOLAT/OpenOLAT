@@ -20,24 +20,21 @@
 package org.olat.course.learningpath.ui;
 
 import java.text.Collator;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.UserShortDescription.Builder;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
+import org.olat.user.UserPropertiesInfoController;
+import org.olat.user.UserPropertiesInfoController.Builder;
+import org.olat.user.UserPropertiesInfoController.LabelValues;
 
 /**
  * 
@@ -47,38 +44,29 @@ import org.olat.user.PortraitSize;
  */
 public class CoachedIdentityLargeInfosController extends BasicController {
 
-	private final VelocityContainer mainVC;
-	private final DisplayPortraitController portraitCtr;
-	private final UserShortDescription userShortDescrCtr;
-	
 	public CoachedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachedCourseEnv) {
 		super(ureq, wControl);
 		Identity coachedIdentity = coachedCourseEnv.getIdentityEnvironment().getIdentity();
-		mainVC = createVelocityContainer("user_infos_large");
-		mainVC.contextPut("user", coachedIdentity.getUser());
-
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachedIdentity, PortraitSize.large, true);
-		mainVC.put("portrait", portraitCtr.getInitialComponent());
-		listenTo(portraitCtr);
 		
+		Builder lvBuilder = LabelValues.builder();
 		List<BusinessGroup> participantGroups = coachedCourseEnv.getCourseEnvironment().getCourseGroupManager()
 				.getParticipatingBusinessGroups(coachedIdentity);
-		final Collator collator = Collator.getInstance(getLocale());
-		Collections.sort(participantGroups, (a, b) -> collator.compare(a.getName(), b.getName()));
-		Builder rowsBuilder = Rows.builder();
 		if (!participantGroups.isEmpty()) {
+			Collator collator = Collator.getInstance(getLocale());
 			String groupNames = participantGroups.stream()
 					.map(BusinessGroup::getName)
+					.map(StringHelper::escapeHtml)
+					.sorted((a, b) -> collator.compare(a, b))
 					.collect(Collectors.joining(", "));
-			rowsBuilder.addRow(translate("participant.groups.title"), groupNames);
+			lvBuilder.add(translate("participant.groups.title"), groupNames);
 		}
-		Rows additionalRows = rowsBuilder.build();
-		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), coachedIdentity, additionalRows);
-		mainVC.put("userShortDescription", userShortDescrCtr.getInitialComponent());
-		listenTo(userShortDescrCtr);
 		
-		putInitialPanel(mainVC);
+		UserPropertiesInfoController userInfoCtr = new UserPropertiesInfoController(ureq, getWindowControl(),
+				coachedIdentity, null, lvBuilder.build());
+		listenTo(userInfoCtr);
+		
+		putInitialPanel(userInfoCtr.getInitialComponent());
 	}
 
 	@Override

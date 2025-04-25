@@ -62,7 +62,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.admin.user.UserShortDescription;
+import org.olat.admin.user.UserSearchForm;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -339,7 +339,7 @@ public class UserWebService {
 		
 		if (!syntaxCheckOlatLogin(user)) {
 			Locale locale = getLocale(request);
-			Translator translator = Util.createPackageTranslator(UserShortDescription.class, locale);
+			Translator translator = Util.createPackageTranslator(UserSearchForm.class, locale);
 			String translation = translator.translate("new.error.loginname.empty");
 			ErrorVO[] errorVos = new ErrorVO[]{
 				new ErrorVO("org.olat.admin.user", "new.error.loginname.empty", translation)
@@ -352,7 +352,7 @@ public class UserWebService {
 		Identity identityNickname = securityManager.findIdentityByNickName(user.getLogin());
 		if (identityLogin != null || identityNickname != null) {
 			Locale locale = getLocale(request);
-			Translator translator = Util.createPackageTranslator(UserShortDescription.class, locale);
+			Translator translator = Util.createPackageTranslator(UserSearchForm.class, locale);
 			String translation = translator.translate("new.error.loginname.choosen");
 			ErrorVO[] errorVos = new ErrorVO[]{
 				new ErrorVO("org.olat.admin.user", "new.error.loginname.choosen", translation)

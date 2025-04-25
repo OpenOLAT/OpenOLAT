@@ -1,4 +1,4 @@
-<div class="o_user_info_items #if($r.isTrue($threeCols))o_user_info_items_3cols#end">
+<div class="o_user_info_items #if($r.isTrue($oneCol))o_user_info_items_1col#elseif($r.isTrue($threeCols))o_user_info_items_3cols#end">
 	#foreach ($item in $formitemnames)
 		$r.render($item, "horizontal", "form")
 	#end

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -41,6 +40,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -106,7 +106,7 @@ public class RemovalStep00 extends BasicStep{
 			setFormDescription(i18nDesc);
 
 			// use the user short description and not an own identifier
-			String usageIdentifyer = UserShortDescription.class.getCanonicalName();
+			String usageIdentifyer = UserPropertiesInfoController.DEFAULT_USAGE_IDENTIFYER;
 			List<UserPropertyHandler> handlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 			
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

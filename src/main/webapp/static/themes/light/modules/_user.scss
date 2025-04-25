@@ -257,6 +257,7 @@
 
 .o_user_info_profile_container {
 	container-type: inline-size;
+	container-name: o-profile-container;
 	
 	.o_user_info_profile {
 		border-radius: $o-user-info-profile-border-radius;
@@ -321,7 +322,7 @@
 		}
 	}
 	
-	@container (max-width: 240px) {
+	@container o-profile-container (max-width: 280px) {
 		.o_user_info_profile {
 			flex-direction: column;
 			justify-content: center;
@@ -358,7 +359,7 @@
 	align-items: center;
 	grid-template-columns: 1fr 2fr;
 	&:has(.o_user_info_items_3cols) {
-		grid-template-columns: 240px 1fr;
+		grid-template-columns: minmax(240px, 1fr) 3fr;
 	}
 	
 	>div:has(.o_user_info_profile) {
@@ -396,6 +397,18 @@
 .o_user_info_wrapper {
 	container-type: inline-size;
 	
+	@container (min-width: 800px) {
+		.o_user_info {
+			&:not(:has(.o_user_info_items_3cols)) {
+				.o_user_info_profile_container {
+					&:has(.o_open_org) {
+						width: 100%;
+						min-width: 350px;
+					}
+				}
+			}
+		}
+	}
 	@container (max-width: 800px) {
 		.o_user_info {
 			grid-template-columns: 1fr;

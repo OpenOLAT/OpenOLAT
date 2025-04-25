@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,8 +47,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -102,15 +100,10 @@ public class AccessRightsEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(member != null && formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-
-			Controller portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, PortraitSize.large, true);
-			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
-			listenTo(portraitCtr);
-			Controller userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), member);
-			layoutCont.getFormItemComponent().put("userShortDescription", userShortDescrCtr.getInitialComponent());
-			listenTo(userShortDescrCtr);
+		if(member != null) {
+			UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm, member);
+			listenTo(infoCtrl);
+			formLayout.add("userInfo", infoCtrl.getInitialFormItem());
 		}
 		
 		selectAll = uifactory.addFormLink("form.checkall", "form.checkall", null, formLayout, Link.LINK);

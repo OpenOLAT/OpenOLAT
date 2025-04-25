@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.admin.user.UserChangePasswordController;
-import org.olat.admin.user.UserShortDescription;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -86,13 +85,12 @@ import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
-import org.olat.user.DisplayPortraitController;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
-import org.olat.user.PortraitSize;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.ui.admin.UserAccountController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -138,8 +136,6 @@ public class UserOverviewController extends BasicController implements Activatea
 	private ContactFormController contactController;
 	private UserChangePasswordController userChangePasswordController;
 	private ToggleBoxController userDetailsToggleController;
-	private UserShortDescription userShortDescriptionController;
-	private DisplayPortraitController displayPortraitController;
 	private ProfileAndHomePageEditController profileAndHomePageEditController;
 	private HomePageDisplayController homePageDisplayController;
 	private GroupOverviewController groupOverviewController;
@@ -267,18 +263,12 @@ public class UserOverviewController extends BasicController implements Activatea
 		userDetailsToggleController = new ToggleBoxController(ureq, getWindowControl(), "user_details",
 				translate("user.details.open"), translate("user.details.close"), userDetails);
 		mainVC.put("user_details", userDetailsToggleController.getInitialComponent());
-
-		removeAsListenerAndDispose(displayPortraitController);
-		displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, true);
-		userDetails.put("portrait", displayPortraitController.getInitialComponent());
-
-		removeAsListenerAndDispose(userShortDescriptionController);
-		userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), identity, roleSecurityCallback.isAdministrativeUser());
-		userDetails.put("userShortDescription", userShortDescriptionController.getInitialComponent());
+		
+		UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), identity);
+		listenTo(infoCtrl);
+		userDetails.put("userInfo", infoCtrl.getInitialComponent());
 	}
 	
-
-
 	private void initTabbedPane(UserRequest ureq) {
 		functionsTabbedPane = new TabbedPane("functionsTabbedPane", ureq.getLocale());
 		functionsTabbedPane.addListener(this);

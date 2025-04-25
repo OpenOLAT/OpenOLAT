@@ -21,7 +21,6 @@ package org.olat.modules.immunityproof.ui;
 
 import java.util.Date;
 
-import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,8 +45,7 @@ import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
 import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,8 +66,6 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 	private SelectionValue testPCR;
 	private SelectionValue testAntigen;
 	private SelectionValue medicalCertificate;
-	
-	private FormLayoutContainer userInfoLayout;
 	
 	private FormLayoutContainer vaccinationMethod;
 	private MultipleSelectionElement confirmVaccinationEl;
@@ -114,16 +110,10 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// User info
 		if (usedByCovidCommissioner) {
-			String page = Util.getPackageVelocityRoot(getClass()) + "/immunity_proof_user_details.html";
-			userInfoLayout = FormLayoutContainer.createCustomFormLayout("immunity_proof_user_details", getTranslator(), page);
-			
-			DisplayPortraitController displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), editedIdentity, PortraitSize.large, true);
-			userInfoLayout.put("portrait", displayPortraitController.getInitialComponent());
-
-			UserShortDescription userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), editedIdentity, ImmunityProofModule.USER_PROPERTY_HANDLER);
-			userInfoLayout.put("userShortDescription", userShortDescriptionController.getInitialComponent());
-			
-			formLayout.add(userInfoLayout);
+			UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm,
+					editedIdentity, ImmunityProofModule.USER_PROPERTY_HANDLER, null);
+			listenTo(infoCtrl);
+			formLayout.add("userInfo", infoCtrl.getInitialFormItem());
 		}
 		
 		// Immunity method
