@@ -32,8 +32,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowComparator;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
@@ -42,6 +45,10 @@ import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowCompara
  *
  */
 public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> implements FlexiBusinessPathModel {
+	
+	private static final List<CurriculumElementStatus> ACTIVE_STATUS = List.of(CurriculumElementStatus.confirmed,
+			CurriculumElementStatus.active);
+	private static final List<RepositoryEntryStatusEnum> ENTRY_ACTIVE_STATUS = List.of(RepositoryEntryStatusEnum.published);
 	
 	private final Locale locale;
 	
@@ -52,20 +59,43 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			String lowerSearchString = searchString.toLowerCase();
+		filterTab(searchString, null);
+	}
+	
+	public void filterTab(String searchString, FlexiFiltersTab tab) {
+		if(StringHelper.containsNonWhitespace(searchString) || tab != null) {
+			String lowerSearchString = searchString == null ? null : searchString.toLowerCase();
 			Long searchKey = StringHelper.isLong(lowerSearchString) ? Long.valueOf(lowerSearchString) : null;
+			boolean activeOnly = tab != null && CurriculumElementListController.ACTIVE_TAB.equals(tab.getId());
 			
 			List<CurriculumElementWithViewsRow> filteredRows = backupRows.stream()
-				.filter(row -> quickSearch(lowerSearchString, row) || searchKey(searchKey, row))
+				.filter(row -> (quickSearch(lowerSearchString, row) || searchKey(searchKey, row)))
+				.filter(row -> (!activeOnly || isActive(row)))
 				.collect(Collectors.toList());
 
 			reconstructParentLine(filteredRows);
 			Collections.sort(filteredRows, new CurriculumElementViewsRowComparator(locale));
 			setFilteredObjects(filteredRows);
+			
+			// Open all filtered
+			openedRows.clear();
+			for(CurriculumElementWithViewsRow currentRow:filteredRows) {
+				if(currentRow.getParent() != null) {
+					openedRows.add(currentRow.getParent());
+				} else if(currentRow.getParent() == null) {
+					openedRows.add(currentRow);
+				}
+			}
 		} else {
 			setUnfilteredObjects();
 		}
+	}
+	
+	private boolean isActive(CurriculumElementWithViewsRow row) {
+		CurriculumElementStatus elementStatus = row.getCurriculumElementStatus();
+		RepositoryEntryStatusEnum entryStatus = row.getEntryStatus();
+		return (elementStatus != null && ACTIVE_STATUS.contains(elementStatus))
+				|| (entryStatus != null && ENTRY_ACTIVE_STATUS.contains(entryStatus));
 	}
 	
 	private void reconstructParentLine(List<CurriculumElementWithViewsRow> rows) {

@@ -166,10 +166,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
-		Roles roles = ureq.getUserSession().getRoles();
-		Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
-		boolean isAdministrator = userCourseEnv.isAdmin();
-		boolean isGuestOnly = roles.isGuestOnly();
 		// Add message id to business path if nodemcd is available
 		if (nodecmd != null) {
 			try {
@@ -182,7 +178,19 @@ public class FOCourseNode extends AbstractAccessableCourseNode
 				log.warn("Could not create message ID from given nodemcd::" + nodecmd, e);
 			}
 		}
+		
+		Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
+		ForumCallback foCallback = createSecCallback(ureq, userCourseEnv, nodeSecCallback);
+		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this, userCourseEnv);
+		return new NodeRunConstructionResult(forumC);
+	}
 
+	private ForumCallback createSecCallback(UserRequest ureq, final UserCourseEnvironment userCourseEnv,
+			CourseNodeSecurityCallback nodeSecCallback) {
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrator = userCourseEnv.isAdmin();
+		boolean isGuestOnly = roles.isGuestOnly();
+		
 		// for guests, check if posting is allowed
 		boolean pseudonymPostAllowed = false;
 		boolean defaultPseudonym = false;
@@ -212,8 +220,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode
 				? new ReadOnlyForumCallback(moderator, isAdministrator, isGuestOnly)
 				: new ForumNodeForumCallback(poster, moderator, isAdministrator, isGuestOnly, guestPostAllowed,
 						pseudonymPostAllowed, defaultPseudonym, forumSubContext);
-		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this, userCourseEnv);
-		return new NodeRunConstructionResult(forumC);
+		return foCallback;
 	}
 
 	public boolean isModerator(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
@@ -368,10 +375,10 @@ public class FOCourseNode extends AbstractAccessableCourseNode
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
-			// Create a forum peekview controller that shows the latest two messages
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
+			ForumCallback foCallback = createSecCallback(ureq, userCourseEnv, nodeSecCallback);
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			return new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3);
+			return new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3, foCallback);
 		}
 		// use standard peekview
 		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
