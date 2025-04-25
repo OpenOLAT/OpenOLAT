@@ -455,7 +455,7 @@ public class InPreparationListController extends FormBasicController implements 
 		}
 	}
 	
-	protected boolean doMark(UserRequest ureq, InPreparationRow row) {
+	private boolean doMark(UserRequest ureq, InPreparationRow row) {
 		String businessPath;
 		OLATResourceable item;
 		if(row.getRepositoryEntryKey() != null) {
@@ -463,7 +463,7 @@ public class InPreparationListController extends FormBasicController implements 
 			businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
 		} else if(row.getCurriculumElementKey() != null) {
 			item = OresHelper.createOLATResourceableInstance("CurriculumElement", row.getCurriculumElementKey());
-			businessPath = "[CurriculumElement:" + item.getResourceableId() + "]";
+			businessPath = "[MyCoursesSite:0][CurriculumElement:" + item.getResourceableId() + "]";
 		} else {
 			return false;
 		}

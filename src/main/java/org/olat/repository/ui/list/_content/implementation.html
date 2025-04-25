@@ -1,0 +1,9 @@
+#if($r.isNotEmpty($pendingMsg))
+<div class="o_info_with_icon">$r.xssScan($pendingMsg)</div>
+#end
+<div class="o_coursetable o_rendertype_custom">
+	<div class="o_table_row">
+	$r.render("elementHeader")
+	</div>
+</div>
+$r.render("elementList")

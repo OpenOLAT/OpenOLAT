@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 1 avr. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
@@ -48,7 +48,16 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-1");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false);
+		Assert.assertNotNull(list);
+	}
+	
+	@Test
+	public void searchCurriculumElementsInPreparationBookmarks() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
+		dbInstance.commit();
+		
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true);
 		Assert.assertNotNull(list);
 	}
 }

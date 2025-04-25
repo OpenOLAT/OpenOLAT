@@ -55,6 +55,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
@@ -126,6 +130,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementListController extends FormBasicController implements FlexiTableCssDelegate, FlexiTableComponentDelegate {
 	
+	static final String ALL_TAB = "All";
+	static final String ACTIVE_TAB = "Active";
+	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab activeTab;
+	
 	private FlexiTableElement tableEl;
 	private CurriculumElementWithViewsDataModel tableModel;
 	private final BreadcrumbPanel stackPanel;
@@ -136,6 +146,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private final MapperKey mapperThumbnailKey;
 	private final Identity assessedIdentity;
 	private final CurriculumElement rootElement;
+	private final CurriculumElementListConfig config;
 	private final CurriculumSecurityCallback secCallback;
 	
 	private RepositoryEntryDetailsController detailsCtrl;
@@ -162,10 +173,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 	
 	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			Identity assessedIdentity, CurriculumRef curriculum, CurriculumElement rootElement,
-			CurriculumSecurityCallback secCallback) {
+			CurriculumSecurityCallback secCallback, CurriculumElementListConfig config) {
 		super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		
+		this.config = config;
 		this.curriculum = curriculum;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
@@ -176,6 +188,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		initForm(ureq);
 		loadModel();
+		
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	public CurriculumRef getCurriculum() {
@@ -220,6 +234,22 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v4-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
+		
+		initFilterPresets();
+	}
+	
+	private void initFilterPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(allTab);
+		
+		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB, translate("filter.active"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(activeTab);
+
+		tableEl.setFilterTabs(true, tabs);
 	}
 
 	@Override
@@ -271,6 +301,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 
 	private void loadModel() {
+		if(config.isPreparationWarning() && rootElement != null && rootElement.getElementStatus() == CurriculumElementStatus.preparation) {
+			tableModel.setObjects(List.of());
+			tableEl.setEmptyTableSettings("warning.preparation.title", "warning.preparation.desc", "o_icon_curriculum");
+			return;
+		}
+		
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
 		CurriculumElementStatus[] visibleStatus = RepositoryEntryMyImplementationsQueries.VISIBLE_STATUS.toArray(new CurriculumElementStatus[0]);
@@ -595,8 +631,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 				} else {
 					doOpenDetails(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
-				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
+				tableModel.filterTab(tableEl.getQuickSearchString(), tableEl.getSelectedFilterTab());
 				tableEl.reset(true, true, false);
 			}
 		}

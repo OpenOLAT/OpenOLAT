@@ -42,6 +42,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
@@ -49,11 +50,8 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.modules.curriculum.CurriculumSecurityCallback;
-import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
-import org.olat.modules.curriculum.ui.CurriculumElementListController;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -79,22 +77,22 @@ public class OverviewRepositoryListController extends BasicController implements
 	private static final String CMD_MY_COURSES = "MyCourses";
 	private static final String CMD_IN_PREPARATION = "InPreparation";
 	private static final String CMD_IMPLEMENTATION = "Implementation";
+	private static final String CMD_IMPLEMENTATIONS_LIST = "Implementations";
 
 	private final List<Scope> scopes;
 	private final VelocityContainer mainVC;
-	private final ScopeSelection scopesSelection;
+	private ScopeSelection scopesSelection;
 	private BreadcrumbedStackedPanel entriesStackPanel;
 	private BreadcrumbedStackedPanel inPreparationStackPanel;
-	private BreadcrumbedStackedPanel implementationStackPanel;
+	private BreadcrumbedStackedPanel implementationsListStackPanel;
 	
 	private Controller currentCtrl;
 	private RepositoryEntryListController entriesCtrl;
 	private InPreparationListController inPreparationCtrl;
-	private CurriculumElementListController elementListCtrl;
+	private ImplementationsListController implementationsListCtrl;
 	
 	private boolean entriesDirty;
 	private final boolean guestOnly;
-	
 	private final EventBus eventBus;
 	
 	@Autowired
@@ -121,30 +119,64 @@ public class OverviewRepositoryListController extends BasicController implements
 		mainPanel.setContent(mainVC);
 
 		scopes = new ArrayList<>();
-		scopes.add(ScopeFactory.createScope(CMD_MY_COURSES, translate("search.mycourses.student"),
-				null, "o_icon o_icon-fw o_CourseModule_icon"));
-		
-		if(!guestOnly && curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
-			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity());
-			for(CurriculumElement implementation:implementations) {
-				String name = StringHelper.escapeHtml(implementation.getDisplayName());
-				scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
-					name, null, "o_icon o_icon-fw o_icon_curriculum"));
-			}
-		}
-		
-		if(!guestOnly && inPreparationQueries.hasInPreparation(getIdentity())) {
-			scopes.add(ScopeFactory.createScope(CMD_IN_PREPARATION, translate("search.preparation"),
-				null, "o_icon o_icon-fw o_ac_offer_pending_icon"));
-		}
-		
-		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
-		scopesSelection.setVisible(scopes.size() > 1);
+		loadScopes();
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
 		putInitialPanel(mainPanel);
+	}
+	
+	private void loadScopes() {
+		scopes.clear();
+		scopes.add(ScopeFactory.createScope(CMD_MY_COURSES, translate("search.mycourses.student"),
+				null, "o_icon o_icon-fw o_CourseModule_icon"));
+		
+		if(!guestOnly) {
+			if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
+				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true);
+				for(CurriculumElement implementation:implementations) {
+					String name = StringHelper.escapeHtml(implementation.getDisplayName());
+					String hint = scopeDatesHint(implementation);
+					scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
+						name, hint, "o_icon o_icon-fw o_icon_curriculum"));
+				}
+				
+				scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.implementations.list"),
+						null, "o_icon o_icon-fw o_icon_curriculum"));
+			}
+			
+			if(inPreparationQueries.hasInPreparation(getIdentity())) {
+				scopes.add(ScopeFactory.createScope(CMD_IN_PREPARATION, translate("search.preparation"),
+					null, "o_icon o_icon-fw o_ac_offer_pending_icon"));
+			}
+		}
+		
+		// Hold the selection
+		String selectedKey = scopesSelection == null ? null : scopesSelection.getSelectedKey();
+		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
+		scopesSelection.setVisible(scopes.size() > 1);
+		if(selectedKey != null) {
+			scopesSelection.setSelectedKey(selectedKey);
+		}
+	}
+
+	private String scopeDatesHint(CurriculumElement implementation) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		String begin = formatter.formatDate(implementation.getBeginDate());
+		String end = formatter.formatDate(implementation.getEndDate());
+		
+		String hint;
+		if(begin != null && end != null) {
+			hint = translate("search.implementations.dates", begin, end);
+		} else if(begin != null) {
+			hint = translate("search.implementations.begin", begin);
+		} else if(end != null) {
+			hint = translate("search.implementations.end", end);
+		} else {
+			hint = null;
+		}
+		return hint;
 	}
 	
 	@Override
@@ -164,15 +196,13 @@ public class OverviewRepositoryListController extends BasicController implements
 		} else {
 			ContextEntry entry = entries.get(0);
 			String scope = entry.getOLATResourceable().getResourceableTypeName();
-			Long key = entry.getOLATResourceable().getResourceableId();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 
 			if(CMD_IN_PREPARATION.equalsIgnoreCase(scope) && hasScope(CMD_IN_PREPARATION)) {
 				doOpenInPreparation(ureq);
 				scopesSelection.setSelectedKey(CMD_IN_PREPARATION);
-			} else if(CMD_IMPLEMENTATION.equalsIgnoreCase(scope) && hasImplementationScope(key)) {
-				doOpenImplementation(ureq, entry.getOLATResourceable().getResourceableId());
-				scopesSelection.setSelectedKey(CMD_IMPLEMENTATION + key.toString());
+			} else if("CurriculumElement".equals(scope)) {
+				activateCurriculumElement(ureq, entry.getOLATResourceable().getResourceableId());
 			} else {
 				RepositoryEntryListController listCtrl = doOpenEntries(ureq);
 				scopesSelection.setSelectedKey(CMD_MY_COURSES);
@@ -181,10 +211,26 @@ public class OverviewRepositoryListController extends BasicController implements
 		}
 	}
 	
-	private boolean hasImplementationScope(Long key) {
-		final String id = CMD_IMPLEMENTATION + key.toString();
-		return scopes.stream()
-				.anyMatch(scope -> id.equalsIgnoreCase(scope.getKey()));
+	private void activateCurriculumElement(UserRequest ureq, Long elementKey) {
+		String scopeId = CMD_IMPLEMENTATION + elementKey;
+		
+		List<ContextEntry> entries;
+		if(hasScope(scopeId)) {
+			entries = BusinessControlFactory.getInstance()
+					.createCEListFromString(OresHelper.createOLATResourceableInstance(CurriculumElement.class, elementKey));
+			doOpenImplementationsList(ureq).activate(ureq, entries, null);
+			scopesSelection.setSelectedKey(scopeId);
+		} else {
+			CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(elementKey));
+			if(element.getParent() != null) {
+				element = curriculumService.getImplementationOf(element);
+			}
+			entries = BusinessControlFactory.getInstance()
+					.createCEListFromString(OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()));
+		}
+		
+		doOpenImplementationsList(ureq).activate(ureq, entries, null);
+		scopesSelection.setSelectedKey(scopeId);
 	}
 	
 	private boolean hasScope(String id) {
@@ -224,6 +270,15 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(implementationsListCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				loadScopes();
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == scopesSelection) {
 			if(event instanceof ScopeEvent se) {
@@ -231,11 +286,14 @@ public class OverviewRepositoryListController extends BasicController implements
 					activateMyEntries(ureq);
 				} else if(CMD_IN_PREPARATION.equals(se.getSelectedKey())) {
 					doOpenInPreparation(ureq);
+				} else if(CMD_IMPLEMENTATIONS_LIST.equals(se.getSelectedKey())) {
+					doOpenImplementationsList(ureq);
 				} else if(se.getSelectedKey().startsWith(CMD_IMPLEMENTATION)) {
 					Long implementationKey = Long.valueOf(se.getSelectedKey().replace(CMD_IMPLEMENTATION, ""));
-					doOpenImplementation(ureq, implementationKey);
+					List<ContextEntry> entries = BusinessControlFactory.getInstance()
+							.createCEListFromString(OresHelper.createOLATResourceableInstance(CurriculumElement.class, implementationKey));
+					doOpenImplementationsList(ureq).activate(ureq, entries, null);
 				}
-				
 			}
 		}
 	}
@@ -271,6 +329,22 @@ public class OverviewRepositoryListController extends BasicController implements
 		return entriesCtrl;
 	}
 	
+	private ImplementationsListController doOpenImplementationsList(UserRequest ureq) {
+		if(implementationsListCtrl == null) {
+			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
+			
+			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel);
+			listenTo(implementationsListCtrl);
+			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
+		} else {
+			implementationsListStackPanel.popUpToRootController(ureq);
+		}
+
+		currentCtrl = implementationsListCtrl;
+		mainVC.put("component", implementationsListStackPanel);
+		return implementationsListCtrl;
+	}
+	
 	private InPreparationListController doOpenInPreparation(UserRequest ureq) {
 		if(inPreparationCtrl == null) {
 			SearchMyRepositoryEntryViewParams searchParams
@@ -296,23 +370,5 @@ public class OverviewRepositoryListController extends BasicController implements
 		currentCtrl = inPreparationCtrl;
 		mainVC.put("component", inPreparationStackPanel);
 		return inPreparationCtrl;
-	}
-	
-	private CurriculumElementListController doOpenImplementation(UserRequest ureq, Long implementationKey) {
-		implementationStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
-		
-		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(implementationKey));
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementation", element.getKey());
-		WindowControl swControl = addToHistory(ureq, ores, null);
-		CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
-		elementListCtrl = new CurriculumElementListController(ureq, swControl, implementationStackPanel,
-				getIdentity(), element.getCurriculum(), element, secCallback);
-		listenTo(elementListCtrl);
-		implementationStackPanel.pushController(element.getDisplayName(), elementListCtrl);
-		
-		entriesDirty = false;
-		currentCtrl = elementListCtrl;
-		mainVC.put("component", implementationStackPanel);
-		return elementListCtrl;
 	}
 }

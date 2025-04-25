@@ -56,6 +56,7 @@ import org.olat.commons.info.InfoMessageManager;
 import org.olat.commons.info.InfoMessageToCurriculumElement;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -203,6 +204,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private I18nModule i18nModule;
+	@Autowired
+	private MarkManager markManager;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
@@ -1280,6 +1283,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					role.name(), GroupMembershipStatus.active,
 					inheritanceMode == GroupMembershipInheritance.inherited,
 					null, null, actor, adminNote);
+			if(element.getParent() == null) {
+				OLATResourceable item = OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey());
+				if(!markManager.isMarked(item, member, null)) {
+					markManager.setMark(item, member, null, "[MyCoursesSite:0][CurriculumElement:" + element.getKey() + "]");
+				}
+			}
 			events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 		} else if(membership.getInheritanceMode() != inheritanceMode) {
 			groupDao.updateInheritanceMode(membership, inheritanceMode);

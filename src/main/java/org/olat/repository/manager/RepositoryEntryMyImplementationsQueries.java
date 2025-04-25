@@ -19,7 +19,6 @@
  */
 package org.olat.repository.manager;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +26,7 @@ import java.util.Set;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
@@ -51,48 +51,51 @@ public class RepositoryEntryMyImplementationsQueries {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private MarkManager markManager;
+	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 
-	public List<CurriculumElement> searchImplementations(IdentityRef identity) {
+	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly) {
 		String query = """
-			select el,
-			(select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup
-			  where reToGroup.group.key=baseGroup.key
-			) as numOfCourses,
-			(select count(distinct subEl.key) from curriculumelement subEl
-			  where subEl.parent.key=el.key
-			) as numOfSubElements
-			from curriculumelement el
-			inner join fetch el.group baseGroup
-			inner join baseGroup.members membership
-			left join fetch el.type curElementType
+			select el from curriculumelement el
+			left join el.type curElementType
 			where el.status in (:status)
-			 and membership.identity.key=:identityKey and membership.role=:role
-			 and (el.parent.key is not null or curElementType.maxRepositoryEntryRelations<>1 and curElementType.singleElement=false)""";
+			and (el.parent.key is not null or curElementType.maxRepositoryEntryRelations<>1 and curElementType.singleElement=false)
+			and (
+			  exists (select membership.key from bgroupmember as membership
+			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
+			  and membership.role=:role
+			 )
+			 or exists (select reservation.key from resourcereservation as reservation
+			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
+			))""";
 		
 		List<String> status = VISIBLE_STATUS.stream()
 				.map(CurriculumElementStatus::name)
 				.toList();
-		List<Object[]> objectsList = dbInstance.getCurrentEntityManager().createQuery(query, Object[].class)
+		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("role", GroupRoles.participant.name())
 				.getResultList();
-		List<CurriculumElement> elements = new ArrayList<>();
-		for(Object[] objects:objectsList) {
-			CurriculumElement element = (CurriculumElement)objects[0];
-			elements.add(element);
-		}
 
 		List<CurriculumElement> implementations;
 		if(elements.isEmpty()) {
 			implementations = List.of();
 		} else {
 			Set<Long> implementationsKeys = new HashSet<>();
+			Set<Long> marksResourceIds = null;		
+			if(bookmarksOnly) {
+				marksResourceIds = markManager.getMarkResourceIds(identity, "CurriculumElement", List.of());
+			}
+			
 			for(CurriculumElement element:elements) {
 				List<Long> segments = element.getMaterializedPathKeysList();
 				if(!segments.isEmpty()) {
-					implementationsKeys.add(segments.get(0));
+					Long implementationKey = segments.get(0);
+					if(marksResourceIds == null || marksResourceIds.contains(implementationKey)) {
+						implementationsKeys.add(implementationKey);
+					}
 				}
 			}
 		

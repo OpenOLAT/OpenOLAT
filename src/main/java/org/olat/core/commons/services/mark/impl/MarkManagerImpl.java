@@ -27,6 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -37,10 +41,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
 
 /**
  * Description:<br>
@@ -76,7 +76,7 @@ public class MarkManagerImpl implements MarkManager {
 	}
 	
 	@Override
-	public Set<Long> getMarkResourceIds(Identity identity, String resourceTypeName, Collection<String> subPaths) {
+	public Set<Long> getMarkResourceIds(IdentityRef identity, String resourceTypeName, Collection<String> subPaths) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(mrk.resId) from mark mrk where ")
 			.append("mrk.resName=:resName and mrk.creator=:creator");
@@ -96,7 +96,7 @@ public class MarkManagerImpl implements MarkManager {
 	}
 
 	@Override
-	public List<Mark> getMarks(Identity identity, Collection<String> resourceTypeName) {
+	public List<Mark> getMarks(IdentityRef identity, Collection<String> resourceTypeName) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mrk from mark mrk where ")
 			.append("mrk.creator=:creator ");

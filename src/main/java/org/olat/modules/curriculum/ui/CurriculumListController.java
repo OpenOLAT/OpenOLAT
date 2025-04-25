@@ -218,8 +218,9 @@ public class CurriculumListController extends FormBasicController implements Act
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Curriculum", row.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
+		CurriculumElementListConfig config = CurriculumElementListConfig.defaultConfig();
 		elementListCtrl = new CurriculumElementListController(ureq, swControl, stackPanel,
-				assessedIdentity, row, null, secCallback);
+				assessedIdentity, row, null, secCallback, config);
 		listenTo(elementListCtrl);
 		stackPanel.pushController(row.getDisplayName(), elementListCtrl);
 	}

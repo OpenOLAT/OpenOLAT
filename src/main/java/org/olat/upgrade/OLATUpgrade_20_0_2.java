@@ -23,15 +23,20 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManagerImpl;
 import org.olat.user.UserPortraitService;
@@ -51,6 +56,7 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 
 	private static final String MOVE_USER_PORTRAIT = "MOVE USER PORTRAIT";
 	private static final String INIT_USER_INITIALS_COLOR = "INIT USER INITIALS COLOR";
+	private static final String CURRICULUM_IMPLEMENTATIONS_BOOKMARKS = "CURRICULUM IMPLEMENTATION BOOKMARKS";
 	
 	private static final int BATCH_SIZE = 1000;
 	
@@ -60,6 +66,8 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 	private UserPortraitService userPortraitService;
 	@Autowired
 	private UserManagerImpl userManager;
+	@Autowired
+	private MarkManager markManager;
 
 	public OLATUpgrade_20_0_2() {
 		super();
@@ -83,8 +91,8 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= moveUserPortrait(upgradeManager, uhd);
 		allOk &= initUserInitialsColor(upgradeManager, uhd);
+		allOk &= initBookmarksImplementations(upgradeManager, uhd);
 
-		uhd.setInstallationComplete(allOk);
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
@@ -269,4 +277,78 @@ public class OLATUpgrade_20_0_2 extends OLATUpgrade {
 				.getResultList();
 	}
 	
+	private boolean initBookmarksImplementations(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(CURRICULUM_IMPLEMENTATIONS_BOOKMARKS)) {
+			List<Long> implementationsKeys = getImplementationsKeys();
+			log.info("Start init bookmarks for implementations.");
+			int count = 0;
+			for(Long implementationKey:implementationsKeys) {
+				List<Identity> members = getMembersInImplementations(implementationKey);
+				initBookmarks(members, implementationKey);
+				List<Identity> reservations = getReservationsInImplementations(implementationKey);
+				initBookmarks(reservations, implementationKey);
+				
+				if(++count % 25 == 0) {
+					log.info("Bookmarks for {} implementations on {}.", count, implementationsKeys.size());	
+				}
+				dbInstance.commitAndCloseSession();
+			}
+			log.info("End init bookmarks for {} implementations.", implementationsKeys.size());
+			uhd.setBooleanDataValue(CURRICULUM_IMPLEMENTATIONS_BOOKMARKS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void initBookmarks(List<Identity> members, Long implementationKey) {
+		OLATResourceable item = OresHelper.createOLATResourceableInstance(CurriculumElement.class, implementationKey);
+		
+		int count = 0;
+		for(Identity member:members) {
+			if(!markManager.isMarked(item, member, null)) {
+				markManager.setMark(item, member, null, "[MyCoursesSite:0][Implementation:" + implementationKey + "]");
+			}
+			if(count++ % 25 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+	}
+	
+	private List<Identity> getReservationsInImplementations(Long implementationKey) {
+		String query = """
+			select distinct ident from curriculumelement el
+			inner join el.group baseGroup
+			inner join resourcereservation as reservation on (reservation.resource.key=el.resource.key)
+			inner join reservation.identity ident
+			where el.materializedPathKeys like :materializedPath""";
+
+		return dbInstance.getCurrentEntityManager().createQuery(query, Identity.class)
+				.setParameter("materializedPath", "/" + implementationKey + "/%")
+				.getResultList();
+	}
+	
+	private List<Identity> getMembersInImplementations(Long implementationKey) {
+		String query = """
+			select distinct member from curriculumelement el
+			inner join el.group baseGroup
+			inner join baseGroup.members membership
+			inner join membership.identity member
+			where membership.role=:role and el.materializedPathKeys like :materializedPath""";
+
+		return dbInstance.getCurrentEntityManager().createQuery(query, Identity.class)
+				.setParameter("materializedPath", "/" + implementationKey + "/%")
+				.setParameter("role", GroupRoles.participant.name())
+				.getResultList();
+	}
+	
+	private List<Long> getImplementationsKeys() {
+		String sb = """
+				select el.key from curriculumelement el
+				where el.parent.key is null
+				""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Long.class)
+				.getResultList();
+	}
 }
