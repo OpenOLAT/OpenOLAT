@@ -746,9 +746,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		List<AssessmentNodeData> data = new ArrayList<>(50);
 		AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
-		
 		AssessmentHelper.getAssessmentNodeDataList(0, rootNode, scoreAccounting, userCourseEnvironment, true, true,
-				true, data, lastModifications);
+				true, data, lastModifications);			
 		efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, lastModifications, cgm.getCourseEntry());
 	}
 

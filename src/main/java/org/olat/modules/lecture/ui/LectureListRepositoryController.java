@@ -627,6 +627,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		virtualStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_VIRTUAL_STATUS, virtualStatusValues, true);
 		filters.add(virtualStatusFilter);
+		
+		teachersFilter = new FlexiTableMultiSelectionFilter(translate("filter.teachers"),
+				FILTER_TEACHERS, teachersValues, true);
+		filters.add(teachersFilter);
 	
 		if(config.withFilterPresetPending() || config.withFilterPresetClosed()) {
 			SelectionValues rollCallStatusValues = new SelectionValues();
