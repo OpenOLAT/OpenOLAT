@@ -36,8 +36,8 @@ import org.olat.core.util.Util;
  */
 public abstract class UserInfoController extends FormBasicController {
 
-	private final UserInfoProfileConfig profileConfig;
-	private final PortraitUser portraitUser;
+	private UserInfoProfileConfig profileConfig;
+	private PortraitUser portraitUser;
 
 	public UserInfoController(UserRequest ureq, WindowControl wControl, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -48,6 +48,20 @@ public abstract class UserInfoController extends FormBasicController {
 	public UserInfoController(UserRequest ureq, WindowControl wControl, Form mainForm, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, mainForm);
 		this.profileConfig = profileConfig;
+		this.portraitUser = portraitUser;
+	}
+	
+	/**
+	 * Set the config. This method has to be invoked before the initForm(ureq) method.
+	 */
+	protected void initProfileConfig(UserInfoProfileConfig profileConfig) {
+		this.profileConfig = profileConfig;
+	}
+	
+	/**
+	 * Set the portrait user. This method has to be invoked before the initForm(ureq) method.
+	 */
+	protected void initPortraitUser(PortraitUser portraitUser) {
 		this.portraitUser = portraitUser;
 	}
 
@@ -67,6 +81,9 @@ public abstract class UserInfoController extends FormBasicController {
 		infoCont.add("items", itemsCont);
 		
 		initFormItems(itemsCont, listener, ureq);
+
+		Boolean oneCol = Boolean.valueOf(itemsCont.getFormComponents().size() < 2);
+		itemsCont.contextPut("oneCol", oneCol);
 		Boolean treeCols = Boolean.valueOf(itemsCont.getFormComponents().size() > 4);
 		itemsCont.contextPut("threeCols", treeCols);
 	}

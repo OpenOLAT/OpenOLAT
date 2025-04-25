@@ -26,9 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.UserShortDescription.Builder;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -75,9 +72,10 @@ import org.olat.modules.lecture.ui.coach.AbsenceNoticeDetailsCalloutController;
 import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
+import org.olat.user.UserPropertiesInfoController.Builder;
+import org.olat.user.UserPropertiesInfoController.LabelValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -160,14 +158,10 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("date", getDate());
 			
-			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, PortraitSize.large, false);
-			listenTo(portraitCtr);
-			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
-			
-			Rows immunoRow = getImmunoRow(ureq);
-			UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), calledIdentity, immunoRow);
-			listenTo(userDescr);
-			layoutCont.getFormItemComponent().put("userDescr", userDescr.getInitialComponent());
+			UserPropertiesInfoController userInfoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(),
+					mainForm, calledIdentity, null, getImmunoRow(ureq), null);
+			listenTo(userInfoCtrl);
+			flc.add("userInfo", userInfoCtrl.getInitialFormItem());
 		}
 		
 		// roll call table
@@ -227,8 +221,8 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		return translate("lecture.block.date", args);
 	}
 	
-	private Rows getImmunoRow(UserRequest ureq) {
-		Builder rowsBuilder = Rows.builder();
+	private LabelValues getImmunoRow(UserRequest ureq) {
+		Builder lvBuilder = LabelValues.builder();
 		if (immunityProofModule.isEnabled()) {
 			ImmunityProofLevel proofLevel = null;
 			for(LectureBlock lectureBlock:lectureBlocks) {
@@ -239,10 +233,10 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 				}
 			}
 			if(proofLevel != null) {
-				rowsBuilder.addRowBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
+				lvBuilder.addBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
 			}
 		}
-		return rowsBuilder.build();
+		return lvBuilder.build();
 	}
 	
 	private void loadModel() {

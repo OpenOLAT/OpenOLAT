@@ -22,9 +22,6 @@ package org.olat.modules.lecture.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.UserShortDescription.Builder;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -56,8 +53,9 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
+import org.olat.user.UserPropertiesInfoController;
+import org.olat.user.UserPropertiesInfoController.Builder;
+import org.olat.user.UserPropertiesInfoController.LabelValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,6 +78,8 @@ public class SingleParticipantCallController extends FormBasicController {
 	private MultipleSelectionElement authorizedAbsencedEl;
 	private final List<MultipleSelectionElement> checks = new ArrayList<>();
 	
+	private UserPropertiesInfoController userInfoCtrl;
+	
 	private AbsenceNotice absenceNotice;
 	private final Identity calledIdentity;
 	private LectureBlockRollCall rollCall;
@@ -90,8 +90,6 @@ public class SingleParticipantCallController extends FormBasicController {
 	private final SingleParticipantRollCallRow row;
 	
 	private ImmunityProofLevel proofLevel;
-	
-	private UserShortDescription userDescrCtrl;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -142,20 +140,13 @@ public class SingleParticipantCallController extends FormBasicController {
 			}
 			
 			layoutCont.contextPut("checks", checks);
-		
-			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, PortraitSize.large, false);
-			listenTo(portraitCtr);
-			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
-
+			
 			row.setChecks(checks.toArray(new MultipleSelectionElement[checks.size()]));
 			statusEl = new LectureBlockRollCallStatusItem("status",
 					row, authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator());
 			statusEl.setWithExplanation(true);
 			
-			Rows additionalRows = getAdditionalRows(ureq);
-			userDescrCtrl = new UserShortDescription(ureq, getWindowControl(), calledIdentity, additionalRows);
-			listenTo(userDescrCtrl);
-			layoutCont.getFormItemComponent().put("userDescr", userDescrCtrl.getInitialComponent());
+			updateAbsences(ureq);
 		}
 		
 		if(authorizedAbsenceEnabled) {
@@ -207,23 +198,23 @@ public class SingleParticipantCallController extends FormBasicController {
 		closeButton = uifactory.addFormLink("close", i18nCloseKey, null, formLayout, Link.BUTTON);
 	}
 	
-	private Rows getAdditionalRows(UserRequest ureq) {
-		Builder rowsBuilder = Rows.builder();
+	private LabelValues getAdditionalLabelValues(UserRequest ureq) {
+		Builder lvBuilder = LabelValues.builder();
 		if (immunityProofModule.isEnabled() && lectureBlock.isRunningAt(ureq.getRequestTimestamp())) {
-			rowsBuilder.addRowBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
+			lvBuilder.addBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
 		}
 		
 		StringOutput out = new StringOutput();
 		statusEl.getComponent().getHTMLRendererSingleton()
 			.render(null, out, statusEl.getComponent(), null, getTranslator(), null, onKeys);
 		String status = out.toString();
-		rowsBuilder.addRow(translate("rollcall.status.short"), status);
+		lvBuilder.add(translate("rollcall.status.short"), status);
 		
 		List<Integer> absences = getAbsenceList();
-		rowsBuilder.addRow(translate("absences.title"), Integer.toString(absences.size()));
+		lvBuilder.add(translate("absences.title"), Integer.toString(absences.size()));
 		
 		
-		return rowsBuilder.build();
+		return lvBuilder.build();
 	}
 	
 	public AbsenceCategory getAbsenceCategory() {
@@ -366,7 +357,11 @@ public class SingleParticipantCallController extends FormBasicController {
 	}
 	
 	private void updateAbsences(UserRequest ureq) {
-		Rows rows = getAdditionalRows(ureq);
-		userDescrCtrl.setAdditionalRows(rows);
+		removeAsListenerAndDispose(userInfoCtrl);
+		
+		userInfoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm, calledIdentity, null,
+				getAdditionalLabelValues(ureq), null);
+		listenTo(userInfoCtrl);
+		flc.add("userInfo", userInfoCtrl.getInitialFormItem());
 	}
 }

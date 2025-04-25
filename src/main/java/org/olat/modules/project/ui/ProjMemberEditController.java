@@ -21,8 +21,6 @@ package org.olat.modules.project.ui;
 
 import java.util.Set;
 
-import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -35,8 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
+import org.olat.user.UserPropertiesInfoController;
 
 /**
  * 
@@ -62,27 +59,18 @@ public class ProjMemberEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), mainForm, member);
+		listenTo(infoCtrl);
+		formLayout.add("userInfo", infoCtrl.getInitialFormItem());
 		
-			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, PortraitSize.large, false);
-			listenTo(portraitCtr);
-			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
-			
-			Rows additionalRows = Rows.builder().build();
-			UserShortDescription userDescrCtrl = new UserShortDescription(ureq, getWindowControl(), member, additionalRows);
-			listenTo(userDescrCtrl);
-			layoutCont.getFormItemComponent().put("userDescr", userDescrCtrl.getInitialComponent());
-			
-			FormLayoutContainer titleCont = FormLayoutContainer.createDefaultFormLayout("title", getTranslator());
-			titleCont.setFormTitle(translate("member.edit.roles.title", StringHelper.escapeHtml(project.getTitle())));
-			formLayout.add("title", titleCont);
-			
-			boolean ownerAllowed = !initialRoles.contains(ProjectRole.invitee);
-			rolesCtrl = new ProjMemberRolesController(ureq, getWindowControl(), mainForm, initialRoles, ownerAllowed);
-			listenTo(rolesCtrl);
-			formLayout.add("roles", rolesCtrl.getInitialFormItem());	
-		}
+		FormLayoutContainer titleCont = FormLayoutContainer.createDefaultFormLayout("title", getTranslator());
+		titleCont.setFormTitle(translate("member.edit.roles.title", StringHelper.escapeHtml(project.getTitle())));
+		formLayout.add("title", titleCont);
+		
+		boolean ownerAllowed = !initialRoles.contains(ProjectRole.invitee);
+		rolesCtrl = new ProjMemberRolesController(ureq, getWindowControl(), mainForm, initialRoles, ownerAllowed);
+		listenTo(rolesCtrl);
+		formLayout.add("roles", rolesCtrl.getInitialFormItem());	
 		
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
 		formLayout.add("buttonsWrapper", buttonsWrapperCont);

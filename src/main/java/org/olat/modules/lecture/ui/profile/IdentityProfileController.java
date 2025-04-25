@@ -22,7 +22,6 @@ package org.olat.modules.lecture.ui.profile;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -53,8 +52,7 @@ import org.olat.modules.lecture.ui.coach.DispensationsController;
 import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -102,12 +100,9 @@ public class IdentityProfileController extends BasicController implements Activa
 			mainVC.put("back", backLink);
 		}
 		
-		DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), profiledIdentity, PortraitSize.large, false);
-		listenTo(portraitCtr);
-		mainVC.put("portrait", portraitCtr.getInitialComponent());
-		UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), profiledIdentity);
-		listenTo(userDescr);
-		mainVC.put("userDescr", userDescr.getInitialComponent());
+		UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), profiledIdentity);
+		listenTo(infoCtrl);
+		mainVC.put("userInfo", infoCtrl.getInitialComponent());
 		
 		//new absence, new notice of absence, new dispensation
 		addAbsence = LinkFactory.createButton("add.absence", mainVC, this);

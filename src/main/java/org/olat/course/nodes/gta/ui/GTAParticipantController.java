@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
-import org.olat.admin.user.UserShortDescription;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -82,9 +81,8 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.properties.LogEntry;
 import org.olat.properties.LogFormatter;
-import org.olat.user.DisplayPortraitController;
-import org.olat.user.PortraitSize;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -146,15 +144,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		if(config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(gtaNode, userCourseEnv);
 			if(assessmentEntry != null && assessmentEntry.getCoach() != null) {
-				Identity coachIdentity = assessmentEntry.getCoach();
-				DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachIdentity, PortraitSize.large, true);
-				mainVC.put("portrait", portraitCtr.getInitialComponent());
-				listenTo(portraitCtr);
-				
-				UserShortDescription userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), coachIdentity, COACH_PROPS_ID);
-				userShortDescrCtr.setTitle(translate("coached.by"));
-				listenTo(userShortDescrCtr);
-				mainVC.put("userShortDescription", userShortDescrCtr.getInitialComponent());
+				UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(),
+						assessmentEntry.getCoach(), COACH_PROPS_ID, null);
+				listenTo(infoCtrl);
+				mainVC.put("userInfo", infoCtrl.getInitialComponent());
 			}
 		}
 		

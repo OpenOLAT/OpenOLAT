@@ -961,6 +961,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			teachers.addAll(row.getTeachersList());
 		}
 		List<Identity> teachersList = new ArrayList<>(teachers);
+		if(teachersList.size() > 1) {
+			Collections.sort(teachersList, new IdentityComparator(getLocale()));
+		}
 
 		teachersValues.add(SelectionValues.entry(NO_TEACHER, translate("filter.no.teachers")));
 		for(Identity teacher: teachersList) {

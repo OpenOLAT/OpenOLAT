@@ -117,6 +117,10 @@ public class UsersAvatarController extends FormBasicController {
 	}
 	
 	private String getPresenceIconCss(Presence presence) {
+		if (presence == null) {
+			return "";
+		}
+		
 		return switch (presence) {
 		case available -> "o_icon o_icon_status_available";
 		case dnd -> "o_icon o_icon_status_dnd";

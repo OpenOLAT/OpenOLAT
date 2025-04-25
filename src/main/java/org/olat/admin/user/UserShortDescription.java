@@ -41,6 +41,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.modules.coach.ui.UserOverviewController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,9 +54,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  15.01.2008 <br>
  * @author Lavinia Dumitrescu
  */
+@Deprecated
 public class UserShortDescription extends BasicController {
 	
-	private static final String usageIdentifyer = UserShortDescription.class.getCanonicalName();
+	private static final String usageIdentifyer = UserPropertiesInfoController.DEFAULT_USAGE_IDENTIFYER;
 
 	private VelocityContainer mainVC;
 

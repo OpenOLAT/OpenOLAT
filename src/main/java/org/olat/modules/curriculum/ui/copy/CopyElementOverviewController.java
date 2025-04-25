@@ -312,9 +312,25 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		
 		return allOk;
 	}
+	
+	@Override
+	protected void formFinish(UserRequest ureq) {
+		commitCurriculumElementsToCopy();
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+	}
 
 	@Override
 	protected void formNext(UserRequest ureq) {
+		commitCurriculumElementsToCopy();
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	private void commitCurriculumElementsToCopy() {
 		List<CopyElementRow> rows = tableModel.getObjects();
 		List<CopyElementSetting> elementsToCopy = rows.stream().map(row -> {
 			Date begin = row.getBeginDateEl().getDate();
@@ -325,12 +341,6 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		}).toList();
 		
 		context.setCurriculumElementsToCopy(elementsToCopy);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
 	}
 	
 	private void doOpenShiftDates(UserRequest ureq) {

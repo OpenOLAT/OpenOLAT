@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,7 +33,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.instantMessaging.model.Presence;
-import org.olat.user.DisplayPortraitController;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
@@ -44,6 +41,8 @@ import org.olat.user.UserManager;
 import org.olat.user.UserPortraitComponent;
 import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
+import org.olat.user.UserPropertiesInfoController;
+import org.olat.user.UserPropertiesInfoController.LabelValues;
 import org.olat.user.UsersAvatarController;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitLayout;
@@ -128,18 +127,15 @@ public class GuiDemoUserController extends BasicController {
 		GuiDemoUserInfoController infoCtrl5 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser5, 100);
 		listenTo(infoCtrl5);
 		mainVC.put("info-5", infoCtrl5.getInitialComponent());
-
 		
-		// User infos
-		DisplayPortraitController portrait1Ctrl = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.large, true);
-		listenTo(portrait1Ctrl);
-		mainVC.put("infos-portrait-1", portrait1Ctrl.getInitialComponent());
-		Rows additionalRows = Rows.builder()
-				.addRow(translate("user.infos.additional.label"), translate("user.infos.additional.value"))
+		
+		// User properties
+		LabelValues additionalLabelValues = LabelValues.builder()
+				.add(translate("user.properties.additional.label"), translate("user.properties.additional.value"))
 				.build();
-		UserShortDescription userShortDescrCtrl = new UserShortDescription(ureq, getWindowControl(), getIdentity(), additionalRows);
-		mainVC.put("infos-description-1", userShortDescrCtrl.getInitialComponent());
-		listenTo(userShortDescrCtrl);
+		UserPropertiesInfoController userInfoCtr = new UserPropertiesInfoController(ureq, getWindowControl(), getIdentity(), null, additionalLabelValues);
+		mainVC.put("user-properties-1", userInfoCtr.getInitialComponent());
+		listenTo(userInfoCtr);
 		
 		// User avatars
 		UsersAvatarController avatar1Ctrl = new UsersAvatarController(ureq, getWindowControl(), new HashSet<>(identities));

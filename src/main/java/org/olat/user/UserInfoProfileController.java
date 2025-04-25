@@ -138,6 +138,7 @@ public class UserInfoProfileController extends BasicController {
 					String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(
 							"[UserAdminSite:0][usearch:0][table:0][Identity:" + portraitUser.getIdentityKey() + "]");
 					ExternalLink userManagementLink = LinkFactory.createExternalLink("user.info.user.management", "user.info.user.management", url);
+					userManagementLink.setCssClass("o_open_org");
 					userManagementLink.setName(translate("user.info.user.management"));
 					userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 					mainVC.put("user.info.user.management", userManagementLink);
