@@ -626,9 +626,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			for(OfferAndAccessInfos offerAndAccess:offerAndAccessList) {
 				OfferAccess linkToCopy = offerAndAccess.offerAccess();
 				CopyOfferSetting offerSetting = settings.getCopyOfferSetting(offerAndAccess.offer());
-				Date validFrom = offerSetting == null ? null : offerSetting.validFrom();
-				Date validTo = offerSetting == null ? null : offerSetting.validTo();
-				acService.copyOfferAccess(linkToCopy, validFrom, validTo, clone.getResource(), clone.getDisplayName());
+				if(offerSetting != null) {
+					acService.copyOfferAccess(linkToCopy, offerSetting.validFrom(), offerSetting.validTo(),
+							clone.getResource(), clone.getDisplayName());
+				}
 			}
 		}
 

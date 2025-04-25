@@ -162,7 +162,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		boolean allOk = true;
 
 		el.clearError();
-		if(!el.isOneSelected()) {
+		if(el.isVisible() && !el.isOneSelected()) {
 			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}

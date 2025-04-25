@@ -30,7 +30,6 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 
 /**
@@ -166,14 +165,6 @@ public class CopyElementContext {
 
 	public void setAddCoachesAsTeacher(boolean addAsTeacher) {
 		copySettings.setAddCoachesAsTeacher(addAsTeacher);
-	}
-	
-	public CopyOfferSetting getOfferToCopy(Offer offer) {
-		return copySettings.getCopyOfferSetting(offer);
-	}
-	
-	public List<CopyOfferSetting> getOfferSettings() {
-		return copySettings.getCopyOfferSettings();
 	}
 	
 	public void setOfferSettings(List<CopyOfferSetting> settings) {
