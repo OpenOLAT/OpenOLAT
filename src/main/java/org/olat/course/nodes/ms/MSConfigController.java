@@ -669,7 +669,7 @@ public class MSConfigController extends FormBasicController {
 		config.setStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, scale);
 		
 		// Grade
-		if (gradeEnabledEl != null) {
+		if (gradeEnabledEl != null && gradeEnabledEl.isVisible()) {
 			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isOn());
 			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.parseBoolean(gradeAutoEl.getSelectedKey()));
 		} else {
