@@ -141,7 +141,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged) {
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged, boolean inRepoEntry) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
 		this.config = config;
@@ -158,7 +158,7 @@ public class LectureListDetailsController extends FormBasicController {
 			curriculumElement = curriculumService
 					.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElement().key()));
 		}
-		allowRepositoryEntry = (curriculumElement == null
+		allowRepositoryEntry = !inRepoEntry && (curriculumElement == null
 				|| curriculumElement.getType() == null
 				|| curriculumElement.getType().getMaxRepositoryEntryRelations() != 0);// 1 or more, or -1 for infinity
 		
@@ -171,6 +171,7 @@ public class LectureListDetailsController extends FormBasicController {
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
 			editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			editButton.setElementCssClass("o_lecture_details_edit");
 		}
 		
 		LectureBlock lectureBlock = row.getLectureBlock();
@@ -185,7 +186,7 @@ public class LectureListDetailsController extends FormBasicController {
 				layoutCont.contextPut("externalRef", lectureBlock.getExternalRef());
 			}
 			
-			String badge = LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, getTranslator());
+			String badge = LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, row.isNextScheduled(), getTranslator());
 			layoutCont.contextPut("lectureBlockStatusBadge", badge);
 			if(config.withRollCall() != Visibility.NO) {
 				String rollCallBadge = LectureBlockRollCallBasicStatusCellRenderer.getStatusLabel(lectureBlock, getTranslator());
@@ -299,13 +300,13 @@ public class LectureListDetailsController extends FormBasicController {
 		
 		String description = row.getLectureBlock().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {
-			description = StringHelper.xssScan(description);
+			description = Formatter.escWithBR(StringHelper.xssScan(description)).toString();
 			uifactory.addStaticTextElement("lecture.desc", "lecture.descr", description, formLayout);
 		}
 		
 		String preparation = row.getLectureBlock().getPreparation();
 		if(StringHelper.containsNonWhitespace(preparation)) {
-			preparation = StringHelper.xssScan(preparation);
+			preparation = Formatter.escWithBR(StringHelper.xssScan(preparation)).toString();
 			uifactory.addStaticTextElement("lecture.preparation", "lecture.preparation", preparation, formLayout);
 		}
 		

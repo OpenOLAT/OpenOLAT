@@ -638,6 +638,8 @@ public interface LectureService {
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(LecturesBlockSearchParameters searchParams);
 	
 	public List<LectureBlockWithTeachers> getLectureBlocksWithOptionalTeachers(LecturesBlockSearchParameters searchParams);
+	
+	public LectureBlockRef getNextScheduledLectureBlock(LecturesBlockSearchParameters searchParams);
 
 	public List<LectureBlockRef> getAssessedLectureBlocks(LecturesBlockSearchParameters searchParams);
 	

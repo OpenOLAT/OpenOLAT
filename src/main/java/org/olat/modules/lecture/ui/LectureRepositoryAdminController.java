@@ -80,7 +80,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private final boolean authorizedAbsenceEnabled;
 	private final LectureListRepositoryConfig config;
 	private final LecturesSecurityCallback secCallback;
-	private final List<ContextEntry> allFilterPath = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+	private final List<ContextEntry> allFilterPath = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+	private final List<ContextEntry> relevantFilterPath = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -118,7 +119,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 			segmentView.addSegment(appealsLink, false);
 		}
 
-		doOpenLectures(ureq, allFilterPath);
+		doOpenLectures(ureq, relevantFilterPath);
 
 		putInitialPanel(mainVC);
 	}
@@ -172,7 +173,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == lecturesLink) {
-					doOpenLectures(ureq, (lecturesCtrl == null ? allFilterPath : null));
+					doOpenLectures(ureq, (lecturesCtrl == null ? relevantFilterPath : null));
 				} else if(clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if(clickedLink == appealsLink) {

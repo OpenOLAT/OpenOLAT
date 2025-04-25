@@ -85,8 +85,16 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		} else{
 			renderDateChooserDisabled(sb, jsdcc, jsdcc.getValue(), "o_first_date", maxlength);
 		}
-		sb.append("</div><div class='o_time'><label for=\"").append(receiverId).append("_time_bloc\">")
-		  .append(translator.translate("time"))
+		sb.append("</div><div class='o_time'><label for=\"").append(receiverId).append("_time_bloc\"");
+		if (jsdci.isMandatory()) {
+			sb.append(" aria-required=\"true\"");
+		}
+		sb.append(">");
+		if (jsdci.isMandatory()) {
+			String hover = translator.translate("form.mandatory.hover");
+			sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("' aria-hidden='true'></i> ");
+		}
+		sb.append(translator.translate("time"))
 		  .append("</label><div id=\"").append(receiverId).append("_time_bloc\">");
 		
 		String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";

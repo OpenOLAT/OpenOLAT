@@ -54,6 +54,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private final Reference curriculumElement;
 	private final Reference entry;
 	private final boolean rollCallEnabled;
+	private boolean nextScheduled;
 	
 	private FormLink toolsLink;
 	private LectureListDetailsController detailsCtrl;
@@ -147,7 +148,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	}
 	
 	public String getLectureBlockStatusBadge() {
-		return LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, translator);
+		return LectureBlockStatusCellRenderer.getStatusLabel(lectureBlock, isNextScheduled(), translator);
 	}
 	
 	public String getRollCallStatusBadge() {
@@ -188,6 +189,14 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		return rollCallEnabled;
 	}
 	
+	public boolean isNextScheduled() {
+		return nextScheduled;
+	}
+
+	public void setNextScheduled(boolean nextScheduled) {
+		this.nextScheduled = nextScheduled;
+	}
+
 	public DateChooser getDateChooser() {
 		return dateChooser;
 	}
@@ -240,6 +249,10 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public boolean hasOnlineMeeting() {
+		return openOnlineMeetingLink != null;
 	}
 	
 	public FormLink getOpenOnlineMeetingSmallButton() {

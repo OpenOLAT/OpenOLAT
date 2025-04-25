@@ -98,7 +98,8 @@
 }
 
 .o_labeled_light {
-	&.o_lecture_status_planned {
+	&.o_lecture_status_planned,
+	&.o_lecture_status_next {
 		font-weight: normal;
 		@extend %o_labeled_light_blue;
 	}
@@ -107,17 +108,10 @@
 		font-weight: normal;
 		@extend %o_labeled_light_orange;
 	}
-	&.o_lecture_status_done {
-		font-weight: normal;
-	    background-color: #fff;
-	    border-color: #000000;
-	    color: #000000;
-	}
 	&.o_lecture_status_cancelled {
 		font-weight: normal;
 		@extend %o_labeled_light_grey;
 	}
-	
 	&.o_lecture_rollcall_status_open {
 		font-weight: normal;
 		@extend %o_labeled_light_blue;
@@ -126,6 +120,7 @@
 		font-weight: normal;
 		@extend %o_labeled_light_red;
 	}
+	&.o_lecture_status_done,
 	&.o_lecture_rollcall_status_closed,
 	&.o_lecture_rollcall_status_autoclosed {
 		font-weight: normal;
@@ -135,10 +130,10 @@
 
 .o_button_group>.o_lecture_badge {
 	display: inline-block;
-	margin-right: 7px;
+	margin-left: 7px;
 	
 	.o_labeled_light {
-		margin: 0 1em 0 0.7em;
+		margin: 0 0 0 0em;
 		font-size: 100%;
 	}
 }
@@ -444,9 +439,25 @@
 	}
 }
 
+.o_lecture_details .o_lecture_descs {
+	margin-top: 1em;
+	
+	.form-group:last-child {
+		margin-bottom: 10px;
+	}
+	
+	.form-control-static {
+		padding-bottom: 0;
+	}
+}
+
 .o_table_row_details {
 	.o_lecture_details .o_actions {
 		display: none;
+	}
+	
+	.o_lecture_details_edit {
+		margin-left: 7px;
 	}
 }
 
@@ -470,9 +481,14 @@
 	text-align: right;
 }
 
-.o_table_wrapper.o_table_flexi.o_vertical_timeline .o_vertical_timeline_item.o_lecture_running {
-
-	.o_vertical_timeline_item_content {
+.o_table_wrapper.o_table_flexi.o_vertical_timeline  {
+	.o_vertical_timeline_item.o_lecture_running .o_vertical_timeline_item_content {
 		border-left: 3px solid $o-lm-table-timeline-running-border-color;
+		background-color: $o-lm-table-timeline-running-bg-color;
+	}
+	
+	.o_vertical_timeline_item.o_lecture_next .o_vertical_timeline_item_content {
+		border-left: 3px solid $o-lm-table-timeline-next-border-color;
+		background-color: $o-lm-table-timeline-next-bg-color;
 	}
 }
