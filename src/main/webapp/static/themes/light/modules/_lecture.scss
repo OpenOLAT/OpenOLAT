@@ -477,8 +477,22 @@
 	}
 }
 
-.o_lecture_timeline_details	.o_lecture_timeline_details_actions {
-	text-align: right;
+.o_lecture_timeline_details {
+	h3 {
+		>span {
+			display: flex;
+			flex-direction: column;
+		
+			small {
+				order: -1;
+				padding-bottom: 5px;
+			}
+		}
+	}
+
+	.o_lecture_timeline_details_actions {
+		text-align: right;
+	}
 }
 
 .o_table_wrapper.o_table_flexi.o_vertical_timeline  {
@@ -492,3 +506,12 @@
 		background-color: $o-lm-table-timeline-next-bg-color;
 	}
 }
+
+/* Edit */
+.o_lecture_date_planned >.col-sm-12,
+.o_lecture_date_planned .col-sm-8,
+.o_lecture_date_planned .col-sm-4 {
+	padding-right: 0;
+	padding-left: 0;
+}
+
