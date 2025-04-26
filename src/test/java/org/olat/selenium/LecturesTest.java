@@ -691,6 +691,7 @@ public class LecturesTest extends Deployments {
 		
 		//check the blocks
 		lectureList
+			.all()
 			.assertOnLectureBlock("Abschlussparty")
 			.assertOnLectureBlock("Excel Workshop")
 			.assertOnLectureBlock("Mathematik Einf");
