@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.reminder.Reminder;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -36,9 +37,11 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class CourseReminderSendRow extends UserPropertiesRow {
 	
 	private Date sendDate;
+	private final Reminder reminder;
 	
-	public CourseReminderSendRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public CourseReminderSendRow(Reminder reminder, Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+		this.reminder = reminder;
 	}
 
 	public Date getSendDate() {
@@ -48,5 +51,8 @@ public class CourseReminderSendRow extends UserPropertiesRow {
 	public void setSendDate(Date sendDate) {
 		this.sendDate = sendDate;
 	}
-
+	
+	public String getReminderDescription() {
+		return reminder == null ? null : reminder.getDescription();
+	}
 }

@@ -89,6 +89,15 @@ public class ReminderDAO {
 				.getResultList();
 		return reminders.isEmpty() ? null : reminders.get(0);
 	}
+	
+	public List<Reminder> loadByKeys(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return new ArrayList<>();
+		
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadReminderByKeys", Reminder.class)
+				.setParameter("reminderKeys", keys)
+				.getResultList();
+	}
 
 	public Reminder duplicate(Reminder toCopy, Identity creator) {
 		ReminderImpl reminder = new ReminderImpl();

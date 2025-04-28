@@ -47,6 +47,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -152,8 +153,12 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			if(entry == null && element.isSingleCourseImplementation()) {
 				setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
 				startCtrl.getStartLink().setEnabled(false);
-			} else {
+			//TODO OO-8519 temporary revert
+			} else if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
 				startCtrl.getStartLink().setEnabled(true);
+			} else {
+				setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
+				startCtrl.getStartLink().setEnabled(false);
 			}
 			initLeaveButton();
 		} else {

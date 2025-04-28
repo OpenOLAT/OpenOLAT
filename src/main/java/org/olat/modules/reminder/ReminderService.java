@@ -52,6 +52,8 @@ public interface ReminderService {
 	
 	public Reminder loadByKey(Long key);
 	
+	public List<Reminder> loadByKeys(List<Long> keys);
+	
 	public List<Reminder> getReminders(RepositoryEntryRef entry);
 	
 	public List<ReminderInfos> getReminderInfos(RepositoryEntryRef entry);

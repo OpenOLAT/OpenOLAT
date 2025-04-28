@@ -256,6 +256,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
 	org.olat.course.reminder.manager.ReminderRuleDAOTest.class,
 	org.olat.course.reminder.manager.ReminderRulesXStreamTest.class,
+	org.olat.course.reminder.rule.NextRecertificationDateTest.class,
 	org.olat.course.run.scoring.AssessmentAccountingTest.class,
 	org.olat.course.run.scoring.MultiUserObligationContextTest.class,
 	org.olat.course.run.scoring.SingleUserObligationContextTest.class,

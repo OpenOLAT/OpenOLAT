@@ -29,20 +29,14 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,22 +51,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 3 Jun 2021<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 28 avr. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CourseReminderSendController extends FormBasicController {
+public class CourseRemindersPreviewController extends FormBasicController {
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private CourseReminderSendTableModel dataModel;
 	private FlexiTableElement tableEl;
-	private FormSubmit sendUnsentLink;
-	private FormLink sendAllLink;
-	
-	private RulesViewController rulesCtrl;
-	
-	private final Reminder reminder;
-	private final boolean readonly;
+
+	private final List<Reminder> reminders;
 	
 	@Autowired
 	private ReminderService reminderService;
@@ -83,24 +72,10 @@ public class CourseReminderSendController extends FormBasicController {
 	@Autowired
 	protected BaseSecurity securityManager;
 
-	public CourseReminderSendController(UserRequest ureq, WindowControl wControl, Reminder reminder, boolean readonly) {
-		super(ureq, wControl, "send_reminders");
+	public CourseRemindersPreviewController(UserRequest ureq, WindowControl wControl, List<Reminder> reminders) {
+		super(ureq, wControl, "preview_reminders");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.reminder = reminder;
-		this.readonly = readonly;
-		
-		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CourseReminderSendTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
-		
-		initForm(ureq);
-		loadModel();
-	}
-
-	public CourseReminderSendController(UserRequest ureq, WindowControl wControl, Form rootForm, Reminder reminder, boolean readonly) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "send_reminders", rootForm);
-		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.reminder = reminder;
-		this.readonly = readonly;
+		this.reminders = reminders;
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(CourseReminderSendTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
@@ -111,10 +86,6 @@ public class CourseReminderSendController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		rulesCtrl = new RulesViewController(ureq, getWindowControl(), reminder.getEntry(), reminder.getConfiguration());
-		listenTo(rulesCtrl);
-		flc.put("rules", rulesCtrl.getInitialComponent());
-		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
@@ -129,7 +100,7 @@ public class CourseReminderSendController extends FormBasicController {
 			colIndex++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.reminderDescription));
 		
 		dataModel = new CourseReminderSendTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -137,64 +108,30 @@ public class CourseReminderSendController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setSortSettings(options);
 		tableEl.setEmptyTableSettings("send.no.members", null, "o_icon_reminder");
-		
-		if (!readonly) {
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			buttonsCont.setRootForm(mainForm);
-			formLayout.add(buttonsCont);
-			buttonsCont.setElementCssClass("o_button_group o_button_group_right");
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-			sendAllLink = uifactory.addFormLink("send.all", buttonsCont, Link.BUTTON);
-			sendAllLink.setElementCssClass("o_sel_course_reminder_send_all");
-			sendUnsentLink = uifactory.addFormSubmitButton("send.unsent", buttonsCont);
-			sendUnsentLink.setElementCssClass("o_sel_course_reminder_unsent");
-		}
 	}
 	
 	private void loadModel() {
-		List<Identity> identites = reminderService.getIdentities(reminder);
-		Map<Long, Date> identityKeyToSendDate = reminderService.getSentReminders(reminder).stream()
-				.filter(sent -> identites.contains(sent.getIdentity()))
-				.collect(Collectors.toMap(
-						sent -> sent.getIdentity().getKey(),
-						SentReminder::getCreationDate,
-						(date1, date2) -> (date1.after(date2)? date1: date2)));
-		
-		List<CourseReminderSendRow> rows = new ArrayList<>(identites.size());
-		for (Identity identity : identites) {
-			CourseReminderSendRow row = new CourseReminderSendRow(reminder, identity, userPropertyHandlers, getLocale());
-			Date sendDate = identityKeyToSendDate.get(identity.getKey());
-			row.setSendDate(sendDate);
-			rows.add(row);
-		}
-		
-		flc.contextPut("showUnsent", Boolean.valueOf(!identites.isEmpty()));
-		flc.contextPut("all", String.valueOf(identites.size()));
-		int unsent = identites.size() - identityKeyToSendDate.size();
-		if (unsent < 0) {
-			unsent = 0;
-		}
-		flc.contextPut("unsent", String.valueOf(unsent));
-		if (!readonly) {
-			sendAllLink.setI18nKey("send.all", String.valueOf(identites.size()));
-			sendAllLink.setEnabled(!identites.isEmpty());
-			sendUnsentLink.setI18nKey("send.unsent", new String[] { String.valueOf(unsent) } );
-			sendUnsentLink.setEnabled(unsent > 0);
-			sendUnsentLink.setSubmitAndValidate(unsent > 0);
+		List<CourseReminderSendRow> rows = new ArrayList<>();
+		for(Reminder reminder:reminders) {
+			List<Identity> identities = reminderService.getIdentities(reminder);
+			Map<Long, Date> identityKeyToSendDate = reminderService.getSentReminders(reminder).stream()
+					.filter(sent -> identities.contains(sent.getIdentity()))
+					.collect(Collectors.toMap(
+							sent -> sent.getIdentity().getKey(),
+							SentReminder::getCreationDate,
+							(date1, date2) -> (date1.after(date2)? date1: date2)));
+			
+			for (Identity identity : identities) {
+				CourseReminderSendRow row = new CourseReminderSendRow(reminder, identity, userPropertyHandlers, getLocale());
+				Date sendDate = identityKeyToSendDate.get(identity.getKey());
+				row.setSendDate(sendDate);
+				rows.add(row);
+			}
 		}
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == sendAllLink) {
-			fireEvent(ureq, new SendEvent(reminder, true));
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-	
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
@@ -203,30 +140,6 @@ public class CourseReminderSendController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, new SendEvent(reminder, false));
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
-	public static final class SendEvent extends Event {
-		
-		private static final long serialVersionUID = 7982338274757827457L;
-		
-		private final Reminder reminder;
-		private final boolean resend;
-		
-		public SendEvent(Reminder reminder, boolean resend) {
-			super("reminder-send");
-			this.reminder = reminder;
-			this.resend = resend;
-		}
-		
-		public Reminder getReminder() {
-			return reminder;
-		}
-		
-		public boolean isResend() {
-			return resend;
-		}
-		
-	}
-
 }

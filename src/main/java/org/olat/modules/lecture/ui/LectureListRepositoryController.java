@@ -1064,7 +1064,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 						.map(key -> new IdentityRefImpl(Long.valueOf(key)))
 						.toList();
 				searchParams.setTeachersList(teachersKeys);
-				searchParams.setWithTeachers(Boolean.FALSE);
+				if(filterValues.contains(NO_TEACHER)) {
+					searchParams.setWithTeachers(Boolean.FALSE);
+				}
 			}
 		}
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
