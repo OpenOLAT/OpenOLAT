@@ -21,6 +21,7 @@ package org.olat.repository.ui.author;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: Jan 4, 2021<br>
@@ -72,7 +73,7 @@ public class ModifyOwnersReviewTableRow implements FlexiTreeTableNode {
 	
 	public String getResourceOrIdentity() {
 		if (parent != null && identity != null) {
-			 return identity.getUser().getFirstName() + " " + identity.getUser().getLastName();
+			 return StringHelper.escapeHtml(identity.getUser().getFirstName()) + " " + StringHelper.escapeHtml(identity.getUser().getLastName());
 		} else if (parent == null && resource != null) {
 			return resource.getDisplayname();
 		}
