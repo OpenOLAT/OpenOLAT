@@ -975,6 +975,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			Collections.sort(teachersList, new IdentityComparator(getLocale()));
 		}
 
+		teachersValues.clear();
 		teachersValues.add(SelectionValues.entry(NO_TEACHER, translate("filter.no.teachers")));
 		for(Identity teacher: teachersList) {
 			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(teacher));

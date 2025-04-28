@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -175,7 +176,7 @@ public class IdentityPassedController extends BasicController {
 			}
 			
 			String[] args = new String[] {
-					userManager.getUserDisplayName(passedOverridable.getModBy()),
+					StringHelper.escapeHtml(userManager.getUserDisplayName(passedOverridable.getModBy())),
 					formatter.formatDateAndTime(passedOverridable.getModDate()),
 					messageOriginal
 			};
