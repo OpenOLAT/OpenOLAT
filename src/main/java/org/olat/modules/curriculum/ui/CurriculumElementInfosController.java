@@ -255,7 +255,8 @@ public class CurriculumElementInfosController extends BasicController {
 				showError("cif.error.corrupted");
 			}
 		} else {
-			String businessPath = "[MyCoursesSite:0][CurriculumElement:" + element.getKey() + "]";
+			//TODO OO-8519 temporary revert
+			String businessPath = "[MyCoursesSite:0][Curriculum:0][Curriculum:" + element.getCurriculum().getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
