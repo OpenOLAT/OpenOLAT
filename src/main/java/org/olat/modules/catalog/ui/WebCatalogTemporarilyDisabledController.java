@@ -62,7 +62,8 @@ public class WebCatalogTemporarilyDisabledController extends BasicController {
 		emptyState.getButton().setUrl(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault());
 		
 		if (catalogModule.hasHeaderBgImage()) {
-			String mapperUri = registerMapper(ureq, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
+			String cacheId = "catalogHeaderBackgroundImage" + (catalogModule.hasHeaderBgImage() ? catalogModule.getHeaderBgImage().lastModified() : "");
+			String mapperUri = registerCacheableMapper(null, cacheId, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
 			mainVC.contextPut("bgImageUrl", mapperUri);
 		}
 	}

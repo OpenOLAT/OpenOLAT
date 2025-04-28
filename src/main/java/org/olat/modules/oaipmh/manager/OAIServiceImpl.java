@@ -45,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.commons.services.robots.RobotsProvider;
 import org.olat.core.commons.services.robots.SitemapProvider;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.helpers.Settings;
@@ -267,7 +268,9 @@ public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvid
 	@Override
 	public List<String> getRobotAllows() {
 		if (oaiPmhModule.isEnabled() && oaiPmhModule.isSearchEngineEnabled()) {
-			return List.of(Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH);
+			return List.of(Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH, 
+					Settings.getServerContextPath() + DispatcherModule.PATH_MAPPED,
+					Settings.getServerContextPath() + "/raw/");
 		}
 		return null;
 	}

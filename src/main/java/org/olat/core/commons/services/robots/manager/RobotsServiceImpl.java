@@ -53,6 +53,7 @@ public class RobotsServiceImpl implements RobotsService {
 				.map(RobotsProvider::getRobotAllows)
 				.filter(Objects::nonNull)
 				.flatMap(List::stream)
+				.distinct()
 				.toList();
 	}
 
