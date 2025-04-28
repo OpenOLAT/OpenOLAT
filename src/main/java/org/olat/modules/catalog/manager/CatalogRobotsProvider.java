@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.services.robots.RobotsProvider;
 import org.olat.core.commons.services.robots.SitemapProvider;
 import org.olat.core.commons.services.robots.model.SitemapItem;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.helpers.Settings;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -59,7 +60,9 @@ public class CatalogRobotsProvider implements RobotsProvider, SitemapProvider {
 	@Override
 	public List<String> getRobotAllows() {
 		if (isEnabled()) {
-			return List.of(Settings.getServerContextPath() + "/" + WebCatalogDispatcher.PATH_CATALOG);
+			return List.of(Settings.getServerContextPath() + "/" + WebCatalogDispatcher.PATH_CATALOG, 
+					Settings.getServerContextPath() + DispatcherModule.PATH_MAPPED,
+					Settings.getServerContextPath() + "/raw/");
 		}
 		return null;
 	}

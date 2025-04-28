@@ -110,7 +110,8 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		exploreLink.setUrl(bcFactory.getSearchUrl());
 		
 		if (catalogModule.hasHeaderBgImage()) {
-			String mapperUri = registerMapper(ureq, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
+			String cacheId = "catalogHeaderBackgroundImage" + (catalogModule.hasHeaderBgImage() ? catalogModule.getHeaderBgImage().lastModified() : "");
+			String mapperUri = registerCacheableMapper(null, cacheId, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
 			flc.contextPut("bgImageUrl", mapperUri);
 		}
 	}
