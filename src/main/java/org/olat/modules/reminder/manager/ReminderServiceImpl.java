@@ -145,6 +145,11 @@ public class ReminderServiceImpl implements ReminderService {
 	}
 	
 	@Override
+	public List<Reminder> loadByKeys(List<Long> keys) {
+		return reminderDao.loadByKeys(keys);
+	}
+
+	@Override
 	public List<Reminder> getReminders(RepositoryEntryRef entry) {
 		return reminderDao.getReminders(entry);
 	}

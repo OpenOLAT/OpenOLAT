@@ -316,6 +316,14 @@ public class RulesEditController extends StepFormBasicController {
 				doDeleteRule((RuleElement)button.getUserObject());
 			}
 		}
+		if(mainRuleEl != null) {
+			mainRuleEl.getEditor().formInnerEvent(ureq, source, event);
+		}
+		if(additionalRuleEls != null && additionalRuleEls.isEmpty()) {
+			for(RuleElement additionalRuleEl:additionalRuleEls) {
+				additionalRuleEl.getEditor().formInnerEvent(ureq, source, event);
+			}
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	

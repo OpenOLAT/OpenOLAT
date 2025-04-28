@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -47,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 01.04.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ReminderDAOTest extends OlatTestCase {
@@ -108,6 +109,31 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals("<rules></rules>", reloadedReminder.getConfiguration());
 		Assert.assertEquals("This is a subject", reloadedReminder.getEmailSubject());
 		Assert.assertEquals("Hello world", reloadedReminder.getEmailBody());
+	}
+	
+	@Test
+	public void loadByKey() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-20");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Reminder reminder = createAndSaveReminder(entry, creator, 12);
+		dbInstance.commitAndCloseSession();
+		
+		Reminder loadedReminder = reminderDao.loadByKey(reminder.getKey());
+		Assert.assertNotNull(loadedReminder);
+		Assert.assertEquals(reminder, loadedReminder);
+	}
+	
+	@Test
+	public void loadByKeys() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-20");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Reminder reminder = createAndSaveReminder(entry, creator, 12);
+		dbInstance.commitAndCloseSession();
+		
+		List<Reminder> reminders = reminderDao.loadByKeys(List.of(reminder.getKey()));
+		Assertions.assertThat(reminders)
+			.hasSize(1)
+			.containsExactly(reminder);
 	}
 	
 	@Test

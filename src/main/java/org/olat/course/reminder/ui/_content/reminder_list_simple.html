@@ -2,4 +2,10 @@
 	$r.render("add.reminder")
 	$r.render("tools")
 </div>
+#if($r.isNotEmpty($nextFire))
+<div class="o_hint">$r.translate("reminders.intro.next.fire",$nextFire)</div>
+#end
+#if($r.isTrue($remindersDisabled))
+<div class="o_warning_with_icon">$r.translate("warning.reminders.disabled")</div>
+#end
 $r.render("table")

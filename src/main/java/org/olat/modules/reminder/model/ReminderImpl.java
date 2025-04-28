@@ -54,6 +54,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="reminder")
 @Table(name="o_rem_reminder")
 @NamedQuery(name="loadReminderByKey", query="select rem from reminder rem left join fetch rem.entry as v where rem.key=:reminderKey")
+@NamedQuery(name="loadReminderByKeys", query="select rem from reminder rem left join fetch rem.entry as v where rem.key in (:reminderKeys)")
 public class ReminderImpl implements Reminder, Persistable {
 
 	private static final long serialVersionUID = 2273068238347207165L;

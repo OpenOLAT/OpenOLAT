@@ -68,17 +68,19 @@ public class CourseReminderSendTableModel extends DefaultFlexiTableDataModel<Cou
 	@Override
 	public Object getValueAt(CourseReminderSendRow row, int col) {
 		if(col >= 0 && col < SendCols.values().length) {
-			switch(COLS[col]) {
-				case sendDate: return row.getSendDate();
-				default: return "ERROR";
-			}
+			return switch(COLS[col]) {
+				case sendDate -> row.getSendDate();
+				case reminderDescription -> row.getReminderDescription();
+				default -> "ERROR";
+			};
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
 	
 	public enum SendCols implements FlexiSortableColumnDef {
-		sendDate("table.header.send");
+		sendDate("table.header.send"),
+		reminderDescription("table.header.description");
 		
 		private final String i18nKey;
 

@@ -24,15 +24,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.course.reminder.CourseNodeRuleSPI;
+import org.olat.course.reminder.rule.NextRecertificationDateSPI;
+import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
@@ -49,8 +54,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmDisableRecertificationController extends FormBasicController {
 	
+	private static final String DELETE_KEY = "rdel";
+	
 	private RepositoryEntry repositoryEntry;
 	
+	private MultipleSelectionElement deleteRemindersEl;
+	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private ReminderModule reminderModule;
 	@Autowired
@@ -72,18 +83,52 @@ public class ConfirmDisableRecertificationController extends FormBasicController
 			layoutCont.contextPut("msg", text);
 		}
 		
+		SelectionValues deletePK = new SelectionValues();
+		deletePK.add(SelectionValues.entry(DELETE_KEY, translate("delete.disable.reminders")));
+		deleteRemindersEl = uifactory.addCheckboxesHorizontal("delete.disable.reminders", null, formLayout,
+				deletePK.keys(), deletePK.values());
+		deleteRemindersEl.select(DELETE_KEY, true);
+		
 		uifactory.addFormSubmitButton("disable.recertification", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(deleteRemindersEl.isAtLeastSelected(1)) {
+			doDeleteReminders();
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doDeleteReminders() {
+		List<Reminder> reminders = reminderService.getReminders(repositoryEntry);
+		for(Reminder reminder:reminders) {
+			String configuration = reminder.getConfiguration();
+			if (StringHelper.containsNonWhitespace(configuration)) {
+				List<ReminderRule> rules = reminderService.toRules(configuration).getRules();
+				if(hasNextCertificationRule(rules)) {
+					reminderService.delete(reminder);
+				}
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private boolean hasNextCertificationRule(List<ReminderRule> rules) {
+		if(rules != null && !rules.isEmpty()) {
+			for(ReminderRule rule:rules) {
+				if(NextRecertificationDateSPI.class.getSimpleName().equals(rule.getType())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private long getNumberOfReminders() {

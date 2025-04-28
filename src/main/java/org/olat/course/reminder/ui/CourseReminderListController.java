@@ -20,6 +20,7 @@
 package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -60,6 +62,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -87,6 +90,7 @@ public class CourseReminderListController extends FormBasicController
 	
 	private FormLink addButton;
 	private FormLink showLogLink;
+	private FormLink previewLink;
 	private FlexiTableElement tableEl;
 	private CourseReminderTableModel tableModel;
 	private final BreadcrumbPanel toolbarPanel;
@@ -101,6 +105,7 @@ public class CourseReminderListController extends FormBasicController
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CourseSendReminderListController sendReminderListCtrl;
 	private CourseReminderLogsController reminderLogsCtrl;
+	private CourseRemindersPreviewController previewCtrl;
 
 	private final AtomicInteger counter = new AtomicInteger();
 	private final RepositoryEntry repositoryEntry;
@@ -127,6 +132,9 @@ public class CourseReminderListController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_reminder_list");
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			initInformations(layoutCont);
+		}
 		
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
 		addButton.setIconLeftCSS("o_icon o_icon_add");
@@ -134,6 +142,11 @@ public class CourseReminderListController extends FormBasicController
 		
 		DropdownItem dropdown = uifactory.addDropdownMenuMore("tools", flc, getTranslator());
 		dropdown.setExpandContentHeight(true);
+		
+		previewLink = uifactory.addFormLink("show.preview", "show.preview", "show.preview", null, flc, Link.LINK);
+		previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+		previewLink.setElementCssClass("o_sel_reminder_preview");
+		dropdown.addElement(previewLink);
 		
 		showLogLink = uifactory.addFormLink("show.sent", "show.sent", "show.sent", null, flc, Link.LINK);
 		showLogLink.setIconLeftCSS("o_icon o_icon-fw o_icon_show_send");
@@ -156,6 +169,15 @@ public class CourseReminderListController extends FormBasicController
 		detailsVC = createVelocityContainer("reminder_list_details");
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+	}
+	
+	private void initInformations(FormLayoutContainer formLayout) {
+		formLayout.contextPut("remindersDisabled", Boolean.valueOf(!reminderModule.isEnabled()));
+		
+		Date nextFire = reminderModule.nextJobFireTime();
+		if(nextFire != null) {
+			formLayout.contextPut("nextFire", Formatter.getInstance(getLocale()).formatDateAndTime(nextFire));
+		}
 	}
 	
 	private void updateUI() {
@@ -258,6 +280,8 @@ public class CourseReminderListController extends FormBasicController
 			doAddReminder(ureq);
 		} else if (showLogLink == source) {
 			doShowLog(ureq);
+		} else if(previewLink == source) {
+			doShowPreview(ureq);
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
@@ -314,6 +338,11 @@ public class CourseReminderListController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(previewCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if (source == cmc) {
 			cleanUp();
 		}
@@ -323,12 +352,14 @@ public class CourseReminderListController extends FormBasicController
 	private void cleanUp() {
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(emailViewCtrl);
+		removeAsListenerAndDispose(previewCtrl);
 		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(sendCtrl);
 		removeAsListenerAndDispose(cmc);
 		toolsCalloutCtrl = null;
 		emailViewCtrl = null;
+		previewCtrl = null;
 		wizardCtrl = null;
 		toolsCtrl = null;
 		sendCtrl = null;
@@ -379,6 +410,21 @@ public class CourseReminderListController extends FormBasicController
 		addToHistory(ureq, sendReminderListCtrl);
 		
 		toolbarPanel.pushController(translate("send.reminder"), sendReminderListCtrl);	
+	}
+	
+	private void doShowPreview(UserRequest ureq) {
+		removeAsListenerAndDispose(previewCtrl);
+		
+		List<ReminderRow> rows = tableModel.getObjects();
+		List<Long> remindersKeys = rows.stream().map(ReminderRow::getKey).toList();
+		List<Reminder> reminders = reminderService.loadByKeys(remindersKeys);
+		previewCtrl = new CourseRemindersPreviewController(ureq, getWindowControl(), reminders);
+		listenTo(previewCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(),
+				true, translate("show.preview"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doShowLog(UserRequest ureq) {

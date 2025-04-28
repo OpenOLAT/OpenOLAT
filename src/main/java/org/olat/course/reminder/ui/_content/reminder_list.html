@@ -6,7 +6,13 @@
 	</legend> 
 	<div class="o_hint">
 		$r.translate("reminders.intro")
+		#if($r.isNotEmpty($nextFire))
+			$r.translate("reminders.intro.next.fire",$nextFire)
+		#end
 	</div>
+	#if($r.isTrue($remindersDisabled))
+	<div class="o_warning_with_icon">$r.translate("warning.reminders.disabled")</div>
+	#end
 	
 	<div class="o_button_group o_button_group_right">
 		$r.render("add.reminder")

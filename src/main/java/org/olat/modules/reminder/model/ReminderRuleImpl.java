@@ -35,6 +35,9 @@ public class ReminderRuleImpl implements ReminderRule {
 	private String rightOperand;
 	private String rightUnit;
 	
+	private String tolerance;
+	private String toleranceUnit;
+	
 	@Override
 	public String getType() {
 		return type;
@@ -76,6 +79,22 @@ public class ReminderRuleImpl implements ReminderRule {
 		this.rightUnit = rightUnit;
 	}
 	
+	public String getTolerance() {
+		return tolerance;
+	}
+
+	public void setTolerance(String tolerance) {
+		this.tolerance = tolerance;
+	}
+
+	public String getToleranceUnit() {
+		return toleranceUnit;
+	}
+
+	public void setToleranceUnit(String toleranceUnit) {
+		this.toleranceUnit = toleranceUnit;
+	}
+
 	@Override
 	public ReminderRule clone() {
 		ReminderRuleImpl clone = new ReminderRuleImpl();
@@ -84,6 +103,8 @@ public class ReminderRuleImpl implements ReminderRule {
 		clone.operator = operator;
 		clone.rightOperand = rightOperand;
 		clone.rightUnit = rightUnit;
+		clone.tolerance = tolerance;
+		clone.toleranceUnit = toleranceUnit;
 		return clone;
 	}
 }
