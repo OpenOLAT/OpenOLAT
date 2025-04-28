@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -88,6 +89,7 @@ public class IdentitySelectionController extends BasicController {
 				identitydisplayname.getDisplayName(), Link.LINK + Link.NONTRANSLATED, mainVC, this);
 		link.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
 		link.setUserObject(identitydisplayname.getIdentity());
+		link.setEscapeMode(EscapeMode.html);
 		return link;
 	}
 

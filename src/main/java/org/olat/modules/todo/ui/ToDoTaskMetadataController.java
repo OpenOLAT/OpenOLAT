@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,12 +68,12 @@ public class ToDoTaskMetadataController extends FormBasicController {
 		
 		String createdDateBy = translate("date.by",
 				formatter.formatDate(creationDate),
-				userManager.getUserDisplayName(creator.getKey()));
+				StringHelper.escapeHtml(userManager.getUserDisplayName(creator.getKey())));
 		uifactory.addStaticTextElement("task.created", createdDateBy, formLayout);
 		
 		String modifiedDateBy = translate("date.by",
 				formatter.formatDate(modifiedDate),
-				userManager.getUserDisplayName(modifier));
+				StringHelper.escapeHtml(userManager.getUserDisplayName(modifier)));
 		uifactory.addStaticTextElement("task.last.modified", modifiedDateBy, formLayout);
 	}
 
