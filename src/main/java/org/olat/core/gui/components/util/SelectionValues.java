@@ -185,6 +185,10 @@ public class SelectionValues implements SelectionValuesSupplier {
 		return keyValues.isEmpty();
 	}
 	
+	public void clear() {
+		keyValues.clear();
+	}
+	
 	public List<SelectionValue> keyValues() {
 		return new ArrayList<>(keyValues);
 	}
