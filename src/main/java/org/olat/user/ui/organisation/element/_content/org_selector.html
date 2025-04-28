@@ -40,6 +40,7 @@
 				<div class="o_org_selector_row">
 					<div class="o_org_selector_input">
 						<input type="$inputType"
+							   class="o_clickable"
 							   checked
 							   onchange="handleOrgChange('$r.getId("_orgs_")', '$r.getId("_selected_orgs_")', `org_id_${this.value}`, this);"
 							   id="sel_org_id_${selectedOrg.key()}" 
@@ -48,11 +49,19 @@
 							   title="$r.translate("select")" >
 					</div>
 					<div class="o_org_selector_text">
-						<div class="o_org_selector_status">$r.escapeHtml(${selectedOrg.path()})</div>
+						<div class="o_org_selector_status">
+							<span class="o_clickable" 
+								  onclick="handleClickOnClickable('$r.getId("_orgs_")', '$r.getId("_selected_orgs_")', `${selectedOrg.key()}`);">
+								$r.escapeHtml(${selectedOrg.path()})
+							</span>
+						</div>
 						<div id="sel_org_label_${selectedOrg.key()}" class="o_org_selector_title_version">
-							$r.escapeHtml(${selectedOrg.title()}) 
-							#if($selectedOrg.location()) &middot; $r.escapeHtml(${selectedOrg.location()}) #end
-							#if($selectedOrg.numberOfElements()) (${selectedOrg.numberOfElements()}) #end
+							<span class="o_clickable" 
+								  onclick="handleClickOnClickable('$r.getId("_orgs_")', '$r.getId("_selected_orgs_")', `${selectedOrg.key()}`);">
+								$r.escapeHtml(${selectedOrg.title()}) 
+								#if($selectedOrg.location()) &middot; $r.escapeHtml(${selectedOrg.location()}) #end
+								#if($selectedOrg.numberOfElements()) (${selectedOrg.numberOfElements()}) #end
+							</span>
 						</div>
 					</div>
 				</div>
@@ -73,6 +82,7 @@
 				<div class="o_org_selector_row">
 					<div class="o_org_selector_input">
 						<input type="$inputType"
+							   class="o_clickable"
 							   #if($org.checked()) checked #end
 							   onchange="handleOrgChange('$r.getId("_selected_orgs_")', '$r.getId("_orgs_")', `sel_org_id_${this.value}`, this);"
 							   id="org_id_${org.key()}" 
@@ -81,11 +91,19 @@
 							   title="$r.translate("select")" >
 					</div>
 					<div class="o_org_selector_text">
-						<div class="o_org_selector_status">$r.escapeHtml(${org.path()})</div>
+						<div class="o_org_selector_status">
+							<span class="o_clickable" 
+								  onclick="handleClickOnClickable('$r.getId("_selected_orgs_")', '$r.getId("_orgs_")', '${org.key()}');">
+								$r.escapeHtml(${org.path()})
+							</span>
+						</div>
 						<div id="org_label_${org.key()}" class="o_org_selector_title_version">
-							$r.escapeHtml(${org.title()})
-							#if($org.location()) &middot; $r.escapeHtml(${org.location()}) #end
-							#if($org.numberOfElements()) (${org.numberOfElements()}) #end
+							<span class="o_clickable" 
+								  onclick="handleClickOnClickable('$r.getId("_selected_orgs_")', '$r.getId("_orgs_")', '${org.key()}');">
+								$r.escapeHtml(${org.title()})
+								#if($org.location()) &middot; $r.escapeHtml(${org.location()}) #end
+								#if($org.numberOfElements()) (${org.numberOfElements()}) #end
+							</span>
 						</div>
 					</div>
 				</div>
@@ -122,6 +140,30 @@
 
 				jQuery(`#${ownGroupId} input`).prop('checked', false);
 				jQuery(`#${ownGroupId} input[value="${value}"]`).prop('checked', true);
+			}
+		#end
+	}
+	
+	function handleClickOnClickable(otherGroupId, ownGroupId, orgKey) {
+		var selectionInputElement = document.getElementById(`sel_org_id_${orgKey}`);
+		var inputElement = document.getElementById(`org_id_${orgKey}`);
+		#if($inputType.equals("checkbox"))
+			if (selectionInputElement) {
+				selectionInputElement.checked = !selectionInputElement.checked;
+			}
+			if (inputElement) {
+				inputElement.checked = !inputElement.checked;
+			}
+			var nbSelected = Math.max(jQuery(`#${otherGroupId} input:checked`).length, jQuery(`#${ownGroupId} input:checked`).length);
+			jQuery("#$r.getId('_selection_number_')").html(`(${nbSelected})`);
+		#else
+			if (inputElement && !inputElement.checked) {
+				jQuery(`#${otherGroupId} input`).prop('checked', false);
+				jQuery(`#${ownGroupId} input`).prop('checked', false);
+				inputElement.checked = true;
+				if (selectionInputElement) {
+					selectionInputElement.checked = true;
+				}
 			}
 		#end
 	}
