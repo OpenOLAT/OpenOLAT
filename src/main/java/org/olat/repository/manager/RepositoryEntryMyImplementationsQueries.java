@@ -60,8 +60,13 @@ public class RepositoryEntryMyImplementationsQueries {
 			select el from curriculumelement el
 			left join el.type curElementType
 			where el.status in (:status)
-			and (el.parent.key is not null or curElementType.maxRepositoryEntryRelations<>1 and curElementType.singleElement=false)
 			and (
+			  el.parent.key is not null
+			 or
+			  curElementType.maxRepositoryEntryRelations=-1
+			 or
+			  curElementType.singleElement=false
+			) and (
 			  exists (select membership.key from bgroupmember as membership
 			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
 			  and membership.role=:role
