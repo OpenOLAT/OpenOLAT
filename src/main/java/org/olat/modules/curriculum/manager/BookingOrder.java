@@ -61,6 +61,7 @@ public class BookingOrder {
 	private String transactionStatus;
 	private String paypalTransactionStatus;
 	private String checkoutTransactionStatus;
+	private String implementationLocation;
 
 	public User getUser() {
 		return user;
@@ -193,6 +194,14 @@ public class BookingOrder {
 
 	public Date getEndDate() {
 		return endDate;
+	}
+	
+	public String getImplementationLocation() {
+		return implementationLocation;
+	}
+
+	public void setImplementationLocation(String implementationLocation) {
+		this.implementationLocation = implementationLocation;
 	}
 
 	public void setImplementationFormat(String implementationFormat) {

@@ -123,6 +123,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		header.addCell(pos++, translator.translate("report.header.implementation.format"));
 		header.addCell(pos++, translator.translate("report.header.execution.from"));
 		header.addCell(pos++, translator.translate("report.header.execution.to"));
+		header.addCell(pos++, translator.translate("report.header.location"));
 		header.addCell(pos++, translator.translate("report.header.booking.number"));
 		header.addCell(pos++, translator.translate("report.header.booking.status"));
 		header.addCell(pos++, translator.translate("report.header.offer"));
@@ -211,6 +212,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, educationalTypeIdToName.get(bookingOrder.getImplementationFormat()));
 		row.addCell(pos++, formatDatetime(bookingOrder.getBeginDate()), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, formatDatetime(bookingOrder.getEndDate()), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, bookingOrder.getImplementationLocation());
 		row.addCell(pos++, "" + bookingOrder.getOrder().getKey());
 		row.addCell(pos++, getStatusString(bookingOrder, statusTranslator));
 		row.addCell(pos++, bookingOrder.getOfferName());

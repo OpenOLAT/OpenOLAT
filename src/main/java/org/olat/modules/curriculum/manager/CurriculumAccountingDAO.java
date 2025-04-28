@@ -50,7 +50,7 @@ public class CurriculumAccountingDAO {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select distinct cur.key, cur.displayName, cur.identifier, ");
 		sb.append(" curOrg.identifier, curOrg.displayName, ");
-		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ");
+		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ce.location, ");
 		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, ");
 		sb.append(" trx.statusStr, p_trx.status, c_trx.status, m, ");
 		sb.append(" offer.label, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
@@ -174,6 +174,9 @@ public class CurriculumAccountingDAO {
 		}
 		if (objects[srcIdx++] instanceof Date endDate) {
 			bookingOrder.setEndDate(endDate);
+		}
+		if (objects[srcIdx++] instanceof String implementationLocation) {
+			bookingOrder.setImplementationLocation(implementationLocation);
 		}
 		
 		// order (booking)
