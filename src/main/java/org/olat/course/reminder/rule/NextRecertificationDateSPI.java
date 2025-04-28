@@ -31,6 +31,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -41,7 +42,7 @@ import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.rule.LaunchUnit;
-import org.olat.modules.reminder.ui.RepositoryEntryLifecycleAfterValidRuleEditor;
+import org.olat.modules.reminder.ui.DateWithToleranceValidRuleEditor;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -116,7 +117,7 @@ public class NextRecertificationDateSPI implements IdentitiesProviderRuleSPI {
 
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
-		return new RepositoryEntryLifecycleAfterValidRuleEditor(rule, this.getClass().getSimpleName());
+		return new DateWithToleranceValidRuleEditor(rule, this.getClass().getSimpleName());
 	}
 
 	@Override
@@ -130,7 +131,18 @@ public class NextRecertificationDateSPI implements IdentitiesProviderRuleSPI {
 			int distance = Integer.parseInt(r.getRightOperand());
 			LaunchUnit unit = LaunchUnit.valueOf(r.getRightUnit());
 			Date referenceDate = getDate(new Date(), -distance, unit);
-			List<Long> recertIdentityKeys = helperDao.getNextRecertificationBefore(entry, referenceDate);
+			List<Long> recertIdentityKeys;
+			if(StringHelper.isLong(r.getTolerance())) {
+				int tolerance = Integer.parseInt(r.getTolerance());
+				if(distance < 0) {// Before / after
+					tolerance = -tolerance;
+				}
+				LaunchUnit toleranceUnit = LaunchUnit.valueOf(r.getRightUnit());
+				Date startPeriod = getDate(referenceDate, tolerance, toleranceUnit);
+				recertIdentityKeys = helperDao.getNextRecertificationBefore(entry, startPeriod, referenceDate);
+			} else {
+				recertIdentityKeys = helperDao.getNextRecertificationBefore(entry, referenceDate);
+			}
 			
 			List<Identity> identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
 					GroupRoles.participant.name());

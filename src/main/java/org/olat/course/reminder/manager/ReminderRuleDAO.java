@@ -287,4 +287,18 @@ public class ReminderRuleDAO {
 				.setParameter("referenceDate", referenceDate, TemporalType.DATE)
 				.getResultList();
 	}
+	
+	public List<Long> getNextRecertificationBefore(RepositoryEntry entry, Date startRange, Date endRange) {
+		String sb = """
+			select data.identityKey from certificatelight data
+			where data.last=true and data.olatResourceKey = :olatResourceKey
+			and date(data.nextRecertificationDate) >= date(:startRange) and date(data.nextRecertificationDate) <= date(:endRange)""";
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("olatResourceKey", entry.getOlatResource().getKey())
+				.setParameter("startRange", startRange, TemporalType.DATE)
+				.setParameter("endRange", endRange, TemporalType.DATE)
+				.getResultList();
+	}
 }

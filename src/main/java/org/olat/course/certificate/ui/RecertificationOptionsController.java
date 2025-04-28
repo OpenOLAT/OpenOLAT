@@ -239,13 +239,13 @@ public class RecertificationOptionsController extends FormBasicController {
 		
 		List<ReminderInfos> reminders = reminderService.getReminderInfos(entry);
 		createReminder("reminder.expiration.description", "reminder.expiration.subject", "reminder.expiration.body",
-				reminders, 0);
+				reminders, 0, null);
 		if(days > 10) {
 			createReminder("reminder.recertification.window.repeat.description", "reminder.recertification.window.repeat.subject", "reminder.recertification.window.repeat.body",
-					reminders, -10);
+					reminders, -10, Integer.valueOf(1));
 		}
 		createReminder("reminder.recertification.window.open.description", "reminder.recertification.window.open.subject", "reminder.recertification.window.open.body",
-				reminders, -days);
+				reminders, -days, Integer.valueOf(1));
 		
 		saveConfig();
 		updateUI();
@@ -277,7 +277,7 @@ public class RecertificationOptionsController extends FormBasicController {
 	}
 
 	private void createReminder(String i18nDesc, String i18nSubject, String i18nBody,
-			List<ReminderInfos> reminders, int days) {
+			List<ReminderInfos> reminders, int days, Integer tolerance) {
 		if(reminderAlreadyExists(reminders, days)) {
 			return;
 		}
@@ -298,6 +298,10 @@ public class RecertificationOptionsController extends FormBasicController {
 		rule.setOperator(">");
 		rule.setRightOperand(Integer.toString(days));
 		rule.setRightUnit(LaunchUnit.day.name());
+		if(tolerance != null) {
+			rule.setTolerance(tolerance.toString());
+			rule.setToleranceUnit(LaunchUnit.day.name());
+		}
 		rules.getRules().add(rule);
 		
 		String configuration = reminderService.toXML(rules);

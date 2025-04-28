@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 
 /**
@@ -41,6 +42,15 @@ public abstract class RuleEditorFragment {
 	}
 	
 	public abstract FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq);
+
+	/**
+	 * @param ureq The user request
+	 * @param source The element which send the event
+	 * @param event  The event
+	 */
+	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		//
+	}
 	
 	public abstract boolean validateFormLogic(UserRequest ureq);
 	

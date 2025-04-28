@@ -22,11 +22,12 @@ package org.olat.modules.reminder;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.olat.core.configuration.AbstractSpringModule;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -156,6 +157,20 @@ public class ReminderModule extends AbstractSpringModule {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	public Date nextJobFireTime() {
+		try {
+			if(isEnabled()) {
+				Trigger trigger = scheduler.getTrigger(reminderTriggerKey);
+				if(trigger != null) {
+					return trigger.getNextFireTime();
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
 	}
 	
 	protected String getCronExpression() {
