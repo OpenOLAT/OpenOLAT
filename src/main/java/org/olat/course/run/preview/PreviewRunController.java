@@ -128,6 +128,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		content = new Panel("building_block_content");
 		currentNodeController = nclr.getRunController();
 		currentCourseNode = nclr.getCalledCourseNode();
+		
 		currentNodeController.addControllerListener(this);
 		content.setContent(currentNodeController.getInitialComponent());
 		detail.put("content", content);
@@ -137,6 +138,9 @@ public class PreviewRunController extends MainLayoutBasicController {
 		detail.contextPut("groups", assembleNamesFromGroupList(cgm.getAllBusinessGroups()));
 		detail.contextPut("areas", assembleNamesFromAreaList(cgm.getAllAreas()));
 		detail.contextPut("asRole",role);
+		luTree.setSelectedNodeId(nclr.getSelectedNodeId());
+		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
+		updateCurrentDetails(currentCourseNode);
 		previewLayoutCtr.setCol3(detail);
 	}
 
