@@ -134,8 +134,8 @@ public class CNSCourseNode extends AbstractAccessableCourseNode {
 			if (StringHelper.isLong(requiredSelectionsConfig)) {
 				Integer requiredSelections = Integer.valueOf(requiredSelectionsConfig);
 				if (requiredSelections > getChildCount(cev)) {
-					String shortKey = "error.too.less.children.short";
-					String longKey = "error.too.less.children.long";
+					String shortKey = "error.too.less.subnodes.short";
+					String longKey = "error.too.less.subnodes.long";
 					String[] params = new String[] { getShortTitle() };
 					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, shortKey, longKey, params, TRANSLATOR_PACKAGE);
 					sd.setDescriptionForUnit(getIdent());

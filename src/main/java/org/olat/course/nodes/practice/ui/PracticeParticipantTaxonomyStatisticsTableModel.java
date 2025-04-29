@@ -73,7 +73,7 @@ implements SortableFlexiTableDataModel<PracticeParticipantTaxonomyStatisticsRow>
 	public enum TaxonomyStatisticsCols implements FlexiSortableColumnDef {
 		taxonomyLevel("table.header.taxonomy.level"),
 		bars("table.header.bars"),
-		numbers("table.header.numbers");
+		numbers("table.header.num");
 		
 		private final String i18nKey;
 		

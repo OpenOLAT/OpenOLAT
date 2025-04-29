@@ -40,15 +40,19 @@ public class LectureBlockWithTeachers {
 	private final Reference curriculumElementRef;
 	private final RepositoryEntryLectureConfiguration lecturesConfiguration;
 	
+	private final long leadTime;
+	private final long followupTime;
 	private final long numOfParticipants;
 	private final List<Identity> teachers = new ArrayList<>(3);
 	
 	public LectureBlockWithTeachers(LectureBlock lectureBlock, RepositoryEntryLectureConfiguration lecturesConfiguration,
 			Reference curriculumElementRef, Reference entryRef,
-			long numOfParticipants, boolean assessmentMode) {
+			long numOfParticipants, long leadTime, long followupTime, boolean assessmentMode) {
 		this.entryRef = entryRef;
 		this.lectureBlock = lectureBlock;
 		this.assessmentMode = assessmentMode;
+		this.leadTime = leadTime;
+		this.followupTime = followupTime;
 		this.numOfParticipants = numOfParticipants;
 		this.curriculumElementRef = curriculumElementRef;
 		this.lecturesConfiguration = lecturesConfiguration;
@@ -64,6 +68,14 @@ public class LectureBlockWithTeachers {
 	
 	public long getNumOfParticipants() {
 		return numOfParticipants;
+	}
+
+	public long getLeadTime() {
+		return leadTime;
+	}
+
+	public long getFollowupTime() {
+		return followupTime;
 	}
 
 	public Reference getEntryRef() {

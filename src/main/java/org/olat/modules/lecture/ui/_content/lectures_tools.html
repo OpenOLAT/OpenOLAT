@@ -33,10 +33,10 @@
 		#if($r.available("delete.assessment.mode"))
 		<li>$r.render("delete.assessment.mode")</li>
 		#end
-		<li class="divider"></li>
 	#end
 
 	#if($r.available("edit"))
+		<li class="divider"></li>
 		<li>$r.render("edit")</li>
 	#end
 	#if($r.available("reopen.lecture.blocks"))

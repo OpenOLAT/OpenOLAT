@@ -213,13 +213,11 @@ public class PracticeParticipantController extends FormBasicController {
 				new LevelBarsCellRenderer()));
 		
 		DefaultFlexiColumnModel numbersCol = new DefaultFlexiColumnModel(TaxonomyStatisticsCols.numbers);
-		numbersCol.setHeaderLabel("&nbsp;");
-		numbersCol.setHeaderTooltip(translate(TaxonomyStatisticsCols.numbers.i18nHeaderKey()));
 		columnsModel.addFlexiColumnModel(numbersCol);
 		
 		if(practicingIdentity.equals(getIdentity())) {
 			DefaultFlexiColumnModel playCol = new DefaultFlexiColumnModel("play", -1, "play",
-					new StaticFlexiCellRenderer("", "play", "o_practice_play", "o_icon o_icon_start", null));
+					new StaticFlexiCellRenderer("", "play", "o_practice_play", "o_icon o_icon_start", translate("play")));
 			columnsModel.addFlexiColumnModel(playCol);
 		}
 		
@@ -357,7 +355,10 @@ public class PracticeParticipantController extends FormBasicController {
 		}
 		
 		flc.contextPut("globalLevels", globalLevels);
-		globalLevelsLink.setI18nKey(Integer.toString(globalLevels.getTotal()));
+		String globalLinkValue = globalLevels.getTotal() == 1
+				? translate("num.question")
+				: translate("num.questions", Integer.toString(globalLevels.getTotal()));
+		globalLevelsLink.setI18nKey(globalLinkValue);
 		globalLevelsLink.setUserObject(globalLevels);
 		flc.add("global.levels", globalLevelsLink);
 		
@@ -425,14 +426,14 @@ public class PracticeParticipantController extends FormBasicController {
 	private void addCalloutLevelsLinks(List<PracticeParticipantTaxonomyStatisticsRow> levelRows) {
 		for(PracticeParticipantTaxonomyStatisticsRow levelRow:levelRows) {
 			Levels levels = levelRow.getLevels();
-			FormLink calloutLink = uifactory.addFormLink("levels_callout_" + (counter++), Integer.toString(levels.getTotal()),
-					null, flc, Link.LINK | Link.NONTRANSLATED);
+			String linkValue = levels.getTotal() == 1
+					? translate("num.question")
+					: translate("num.questions", Integer.toString(levels.getTotal()));
+			FormLink calloutLink = uifactory.addFormLink("levels_callout_" + (counter++), linkValue, null, flc, Link.LINK | Link.NONTRANSLATED);
 			levelRow.setLevelsLink(calloutLink);
 			calloutLink.setUserObject(levels);
 		}
 	}
-	
-
 	
 	private List<PracticeParticipantTaxonomyStatisticsRow> aggregate(List<PracticeParticipantTaxonomyStatisticsRow> levelList,
 			boolean withSpecifiedTaxonomy) {

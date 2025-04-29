@@ -196,7 +196,8 @@ public class LectureBlocksStep extends BasicStep {
 					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), null, context.getSourceRepositoryEntry().getDisplayname(),
 							context.getSourceRepositoryEntry().getExternalRef(), null, false,
 							block.getCurriculumElementRef(), block.getEntryRef(),
-							block.getNumOfParticipants(), block.isAssessmentMode(), rollCallEnabled, getTranslator());
+							block.getNumOfParticipants(), block.getLeadTime(), block.getFollowupTime(),
+							block.isAssessmentMode(), rollCallEnabled, getTranslator());
 					
 					Date startDate = null;
 					Date endDate = null;

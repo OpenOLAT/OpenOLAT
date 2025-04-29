@@ -29,7 +29,7 @@ import org.olat.core.gui.translator.Translator;
 /**
  * 
  * Initial date: 15.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class TimeCellRenderer implements FlexiCellRenderer {
@@ -43,12 +43,14 @@ public class TimeCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator t) {
-
-		if(cellValue instanceof Integer) {
-			int leadTime = ((Integer)cellValue).intValue();
-			if(leadTime > 0) {
-				target.append(translator.translate("time.formatted", new String[]{ Integer.toString(leadTime) }));
-			}
+		if(cellValue instanceof Integer time && time.intValue() > 0) {
+			render(target, time.toString());
+		} else if(cellValue instanceof Long time && time.longValue() > 0) {
+			render(target, time.toString());
 		}
+	}
+	
+	private void render(StringOutput target, String time) {
+		target.append(translator.translate("time.formatted", time));
 	}
 }

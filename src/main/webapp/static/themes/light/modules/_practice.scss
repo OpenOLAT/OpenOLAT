@@ -293,6 +293,11 @@ svg {
 	display: grid;
 	grid-template-columns: 6fr 1fr;
 	column-gap: 15px;
+	.o_numbers {
+		a {
+			color: $o-table-link-color;
+		}
+	}
 }
 
 .o_practice_statistics_graph {
@@ -312,7 +317,7 @@ svg {
 
 .o_practice_statistics_legend.o_practice_callout_levels {
 	display: grid;
-	grid-template-columns: 1fr 1fr 5fr;
+	grid-template-columns: 1fr 1fr max-content;
 	column-gap: 5px;
 	
 	.o_practice_num {

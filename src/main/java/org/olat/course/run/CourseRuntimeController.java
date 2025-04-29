@@ -2377,7 +2377,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withDetailsRepositoryEntry(false)
 				.withDetailsExam(true)
 				.withDetailsUnits(true)
-				.withDetailsExternalRef(false);
+				.withDetailsExternalRef(true);
 		return config;
 	}
 	
@@ -2440,7 +2440,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withDetailsRepositoryEntry(false)
 				.withDetailsExam(!participant)
 				.withDetailsUnits(false)
-				.withDetailsExternalRef(false);
+				.withDetailsExternalRef(true);
 		return config;
 	}
 	

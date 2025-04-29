@@ -124,8 +124,14 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case chosenTeachers -> transformIdentitiesToString(row.getTeachersList());
 			case rollCall -> row.getRollCallLink();
 			case onlineMeeting -> row.getOpenOnlineMeetingSmallButton();
+			case leadTime -> getTime(row.getLeadTime());
+			case followUptime -> getTime(row.getFollowupTime());
 			default -> null;
 		};
+	}
+	
+	private Long getTime(long time) {
+		return time <= 0l ? null : Long.valueOf(time);
 	}
 	
 	private String transformIdentitiesToString(List<Identity> identities) {
@@ -168,7 +174,9 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		curriculumElement("table.header.curriculum.element"),
 		onlineMeeting("table.header.online.meeting"),
 		entry("table.header.entry"),
-		rollCall("details");
+		rollCall("details"),
+		leadTime("table.header.lead.time"),
+		followUptime("table.header.followup.time");
 		
 		private final String i18nKey;
 		

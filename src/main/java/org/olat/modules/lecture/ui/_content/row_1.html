@@ -11,7 +11,19 @@
 	
 	<div class="o_two_col_metadata o_block">
 		<div>
-			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)</span>
+			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)
+			#if($row.leadTime > 0 || $row.followupTime > 0)
+				<span class="o_lead_followup_times">
+				#if($row.leadTime > 0)
+					-$row.leadTime
+				#end
+				#if($row.followupTime > 0)
+					#if($row.leadTime > 0)/#end
+					+$row.followupTime
+				#end
+				$r.translate("minute.unit.short")</span>
+			#end
+			</span>
 		#if($r.isNotEmpty($row.location))
 			<br><span><i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($row.location)</span>
 		#end
