@@ -280,13 +280,11 @@ public class LectureListDetailsController extends FormBasicController {
 		String time = translate("lecture.from.to.format.short",
 				formatter.formatTimeShort(startDate), formatter.formatTimeShort(endDate));
 		uifactory.addStaticTextElement("lecture.time", "lecture.time", time, formLayout);
-		
+
 		if(config.withDetailsUnits() && row.getLectureBlock().getPlannedLecturesNumber() > 1) {
 			String units = Integer.toString(row.getLectureBlock().getPlannedLecturesNumber());
 			uifactory.addStaticTextElement("lecture.units", "lecture.units", units, formLayout);
 		}
-	
-		//TODO online exam
 		
 		String location = row.getLocation();
 		if(StringHelper.containsNonWhitespace(location)) {

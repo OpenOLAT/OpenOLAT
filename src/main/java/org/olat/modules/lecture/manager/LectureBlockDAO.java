@@ -619,7 +619,7 @@ public class LectureBlockDAO {
 		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
 		for(LectureBlock block:blocks) {
 			blockMap.put(block.getKey(), new LectureBlockWithTeachers(block, config,
-					null, null, -1, assessedBlockKeySet.contains(block.getKey())));
+					null, null, -1l, -1l, -1l, assessedBlockKeySet.contains(block.getKey())));
 		}
 		
 		// append the coaches
@@ -657,7 +657,7 @@ public class LectureBlockDAO {
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
-		sc.append("select block, coach, config, mode.key,")
+		sc.append("select block, coach, config, mode.key, mode.leadTime, mode.followupTime,")
 		  .append(" entry.key as vKey,")
 		  .append(" entry.displayname as vDisplayName,")
 		  .append(" entry.externalRef as vExternalRef,")
@@ -668,7 +668,8 @@ public class LectureBlockDAO {
 		  .append("   inner join ltogroup.group lgroup")
 		  .append("   inner join lgroup.members as participant")
 		  .append("   where ltogroup.lectureBlock.key=block.key and participant.role='").append(GroupRoles.participant).append("'")
-		  .append(" ) as numOfParticipants")
+		  .append(" ) as numOfParticipants,")
+		  .append(" teamsMeeting.leadTime, teamsMeeting.followupTime, bbbMeeting.leadTime, bbbMeeting.followupTime")
 		  .append(" from lectureblock block")
 		  .append(" inner join fetch block.entry entry")
 		  .append(" inner join block.teacherGroup tGroup")
@@ -680,6 +681,8 @@ public class LectureBlockDAO {
 		  .append(" left join cur.organisation organis")
 		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" inner join lectureentryconfig as config on (config.entry.key=entry.key)")
+		  .append(" left join block.teamsMeeting teamsMeeting")
+		  .append(" left join block.bbbMeeting bbbMeeting")
 		  .where().append(" membership.role='").append("teacher").append("'")
 		  .and().append(" config.lectureEnabled=true");
 		addSearchParametersToQuery(sc, searchParams);
@@ -697,13 +700,21 @@ public class LectureBlockDAO {
 			Identity coach = (Identity)rawCoach[1];
 			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
 			boolean assessmentMode = rawCoach[3] != null;
-			Reference entryRef = new Reference((Long)rawCoach[4], (String)rawCoach[5], (String)rawCoach[6]);
-			Reference elementRef = new Reference((Long)rawCoach[7], (String)rawCoach[8], (String)rawCoach[9]);
-			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 10);
+			Long assessmentModeLeadTime = PersistenceHelper.extractLong(rawCoach, 4);
+			Long assessmentModeFollowUpTime = PersistenceHelper.extractLong(rawCoach, 5);
+			Reference entryRef = new Reference((Long)rawCoach[6], (String)rawCoach[7], (String)rawCoach[8]);
+			Reference elementRef = new Reference((Long)rawCoach[9], (String)rawCoach[10], (String)rawCoach[11]);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 12);
+			Long teamsMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 13);
+			Long teamsMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 14);
+			Long bigBlueButtonMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 15);
+			Long bigBlueButtonMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 16);
+			long leadTime = time(assessmentModeLeadTime, teamsMeetingLeadTime, bigBlueButtonMeetingLeadTime);
+			long followupTime = time(assessmentModeFollowUpTime, teamsMeetingFollowUpTime, bigBlueButtonMeetingFollowUpTime);
 			
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 				new LectureBlockWithTeachers(block, lectureConfiguration,
-						elementRef, entryRef, numOfParticipants, assessmentMode));
+						elementRef, entryRef, numOfParticipants, leadTime, followupTime, assessmentMode));
 			blockWith.getTeachers().add(coach);
 		}
 		return new ArrayList<>(blockMap.values());
@@ -746,7 +757,7 @@ public class LectureBlockDAO {
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithOptionalTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
-		sc.append("select block, coach, config, mode.key,")
+		sc.append("select block, coach, config, mode.key, mode.leadTime, mode.followupTime,")
 		  .append(" entry.key as vKey,")
 		  .append(" entry.displayname as vDisplayName,")
 		  .append(" entry.externalRef as vExternalRef,")
@@ -757,7 +768,8 @@ public class LectureBlockDAO {
 		  .append("   inner join ltogroup.group lgroup")
 		  .append("   inner join lgroup.members as participant")
 		  .append("   where ltogroup.lectureBlock.key=block.key and participant.role='").append(GroupRoles.participant).append("'")
-		  .append(" ) as numOfParticipants")
+		  .append(" ) as numOfParticipants,")
+		  .append(" teamsMeeting.leadTime, teamsMeeting.followupTime, bbbMeeting.leadTime, bbbMeeting.followupTime")
 		  .append(" from lectureblock block")
 		  .append(" left join block.teacherGroup tGroup")
 		  .append(" left join tGroup.members membership")
@@ -768,7 +780,9 @@ public class LectureBlockDAO {
 		  .append(" left join fetch block.curriculumElement curEl")
 		  .append(" left join curEl.curriculum cur")
 		  .append(" left join cur.organisation organis")
-		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)");
+		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)")
+		  .append(" left join block.teamsMeeting teamsMeeting")
+		  .append(" left join block.bbbMeeting bbbMeeting");
 		addSearchParametersToQuery(sc, searchParams);
 
 		//get all, it's quick
@@ -784,18 +798,39 @@ public class LectureBlockDAO {
 			Identity coach = (Identity)rawCoach[1];
 			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
 			boolean assessmentMode = rawCoach[3] != null;
-			Reference entryRef = new Reference((Long)rawCoach[4], (String)rawCoach[5], (String)rawCoach[6]);
-			Reference elementRef = new Reference((Long)rawCoach[7], (String)rawCoach[8], (String)rawCoach[9]);
-			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 10);
+			Long assessmentModeLeadTime = PersistenceHelper.extractLong(rawCoach, 4);
+			Long assessmentModeFollowUpTime = PersistenceHelper.extractLong(rawCoach, 5);
+			Reference entryRef = new Reference((Long)rawCoach[6], (String)rawCoach[7], (String)rawCoach[8]);
+			Reference elementRef = new Reference((Long)rawCoach[9], (String)rawCoach[10], (String)rawCoach[11]);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 12);
+			Long teamsMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 13);
+			Long teamsMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 14);
+			Long bigBlueButtonMeetingLeadTime = PersistenceHelper.extractLong(rawCoach, 15);
+			Long bigBlueButtonMeetingFollowUpTime = PersistenceHelper.extractLong(rawCoach, 16);
+			long leadTime = time(assessmentModeLeadTime, teamsMeetingLeadTime, bigBlueButtonMeetingLeadTime);
+			long followupTime = time(assessmentModeFollowUpTime, teamsMeetingFollowUpTime, bigBlueButtonMeetingFollowUpTime);
 			
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 					new LectureBlockWithTeachers(block, lectureConfiguration,
-							elementRef, entryRef, numOfParticipants, assessmentMode));
+							elementRef, entryRef, numOfParticipants, leadTime, followupTime, assessmentMode));
 			if(coach != null) {
 				blockWith.getTeachers().add(coach);
 			}
 		}
 		return new ArrayList<>(blockMap.values());
+	}
+	
+	private long time(Long assessmentModeTime, Long teamsMeetingTime, Long bigBlueButtonMeetingTime) {
+		if(assessmentModeTime != null && assessmentModeTime.longValue() > 0l) {
+			return assessmentModeTime.longValue();
+		}
+		if(bigBlueButtonMeetingTime != null && bigBlueButtonMeetingTime.longValue() > 0l) {
+			return bigBlueButtonMeetingTime.longValue();
+		}
+		if(teamsMeetingTime != null && teamsMeetingTime.longValue() > 0l) {
+			return teamsMeetingTime.longValue();
+		}
+		return 0;
 	}
 	
 	private void addSearchParametersToQuery(QueryBuilder sb, LecturesBlockSearchParameters searchParams) {

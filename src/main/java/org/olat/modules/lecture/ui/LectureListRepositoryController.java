@@ -117,6 +117,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.ui.mode.AssessmentModeForLectureEditController;
+import org.olat.course.assessment.ui.mode.TimeCellRenderer;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
@@ -444,6 +445,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime,
 				new TimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.leadTime, new TimeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.followUptime, new TimeCellRenderer(getTranslator())));
+		 
 		if(config.withNumberOfLectures() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withNumberOfLectures() == Visibility.HIDE, BlockCols.lecturesNumber));
 		}
@@ -914,7 +918,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		LectureBlockRow row = new LectureBlockRow(b, date, displayname, externalRef,
 				teachers.toString(), iAmTeacher, block.getCurriculumElementRef(), block.getEntryRef(),
-				block.getNumOfParticipants(), block.isAssessmentMode(), rollCallEnabled, getTranslator());
+				block.getNumOfParticipants(), block.getLeadTime(), block.getFollowupTime(),
+				block.isAssessmentMode(), rollCallEnabled, getTranslator());
 		row.setTeachersList(teachersList);
 		
 		if(isOnlineMeetingEnabled() && (b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {
@@ -2011,7 +2016,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				if(row.isAssessmentMode()) {
 					editAssessmentModeLink = addLink("edit.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
 					deleteAssessmentModeLink = addLink("delete.assessment.mode", "delete.assessment.mode", "o_icon o_icon-fw o_icon_delete_item", mainVC);
-				} else if(withAssessment) {
+				} else if(withAssessment && lectureBlock.getBBBMeeting() == null && lectureBlock.getTeamsMeeting() == null) {
 					addAssessmentModeLink = addLink("add.assessment.mode", "add.assessment.mode", "o_icon o_icon-fw o_icon_assessment_mode", mainVC);
 				}
 			}

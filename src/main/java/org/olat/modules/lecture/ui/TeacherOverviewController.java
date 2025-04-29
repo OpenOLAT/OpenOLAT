@@ -133,7 +133,8 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 				rows.add(new LectureBlockRow(block, null, entry.getDisplayname(), entry.getExternalRef(),
 						teachers.toString(), teacherList.contains(getIdentity()),
 						blockWithTeachers.getCurriculumElementRef(), blockWithTeachers.getEntryRef(),
-						blockWithTeachers.getNumOfParticipants(), blockWithTeachers.isAssessmentMode(), false, getTranslator()));
+						blockWithTeachers.getNumOfParticipants(), blockWithTeachers.getLeadTime(), blockWithTeachers.getFollowupTime(),
+						blockWithTeachers.isAssessmentMode(), false, getTranslator()));
 			}
 		}
 		

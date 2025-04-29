@@ -51,6 +51,8 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private LectureBlock lectureBlock;
 	private boolean assessmentMode;
 	private long numOfParticipants;
+	private long leadTime;
+	private long followupTime;
 	private final Reference curriculumElement;
 	private final Reference entry;
 	private final boolean rollCallEnabled;
@@ -74,7 +76,8 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	public LectureBlockRow(LectureBlock lectureBlock, ZonedDateTime date,
 			String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
-			long numOfParticipants, boolean assessmentMode, boolean rollcallEnabled, Translator translator) {
+			long numOfParticipants, long leadTime, long followupTime,
+			boolean assessmentMode, boolean rollcallEnabled, Translator translator) {
 		this.translator = translator;
 		this.lectureBlock = lectureBlock;
 		this.date = date;
@@ -83,6 +86,8 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		this.entryUrl = (entry != null && entry.key() != null)
 				? BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.key() + "]")
 				: null;
+		this.leadTime = leadTime;
+		this.followupTime = followupTime;
 		this.numOfParticipants = numOfParticipants;
 		this.curriculumElement = curriculumElement;
 
@@ -165,6 +170,22 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		this.numOfParticipants = participants;
 	}
 	
+	public long getLeadTime() {
+		return leadTime;
+	}
+
+	public void setLeadTime(long leadTime) {
+		this.leadTime = leadTime;
+	}
+
+	public long getFollowupTime() {
+		return followupTime;
+	}
+
+	public void setFollowupTime(long followupTime) {
+		this.followupTime = followupTime;
+	}
+
 	public String getTeachers() {
 		return teachers;
 	}
