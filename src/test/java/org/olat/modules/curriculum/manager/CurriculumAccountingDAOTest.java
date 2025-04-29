@@ -25,6 +25,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -100,6 +101,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 		
 		BookingOrder bookingOrder = bookingOrders.get(0);
 		Assert.assertEquals(accessResult.getOrder().getParts().get(0).getOrderLines().get(0).getOffer().getLabel(), bookingOrder.getOfferName());
+		Assert.assertNull(bookingOrder.getOrdererMembershipStatus());
 	}
 	
 	@Test
@@ -155,6 +157,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 			.hasSize(1)
 			.map(BookingOrder::getOrder)
 			.containsExactly(accessResult.getOrder());
+		Assert.assertEquals(GroupMembershipStatus.active, (bookingOrders.get(0).getOrdererMembershipStatus()));
 	}
 	
 	@Test
@@ -181,6 +184,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 			.hasSize(1)
 			.map(BookingOrder::getOrder)
 			.containsExactly(accessResult.getOrder());
+		Assert.assertEquals(GroupMembershipStatus.active, (bookingOrders.get(0).getOrdererMembershipStatus()));
 	}
 	
 	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel) {

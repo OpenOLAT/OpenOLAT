@@ -112,6 +112,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 
 	@Override
 	protected int generateCustomHeaderColumns(Row header, int pos, Translator translator) {
+		header.addCell(pos++, translator.translate("report.header.membership.status"));
 		header.addCell(pos++, translator.translate("report.header.curriculum"));
 		header.addCell(pos++, translator.translate("report.header.ext.ref"));
 		header.addCell(pos++, translator.translate("report.header.curriculum.org.id"));
@@ -201,6 +202,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			row.addCell(pos, bookingOrder.getIdentityProp(pos));
 			pos++;
 		}
+		row.addCell(pos++, getMembershipStatusString(bookingOrder));
 		row.addCell(pos++, bookingOrder.getCurriculumName());
 		row.addCell(pos++, bookingOrder.getCurriculumIdentifier());
 		row.addCell(pos++, bookingOrder.getCurriculumOrgId());
@@ -265,6 +267,13 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		OrderTableItem.Status status = OrderTableItem.Status.getStatus(orderStatusString, cancellationFees, trxStatus, 
 				pspTrxStatus, orderMethods);
 		return statusTranslator.translate(OrderTableItem.Status.getI18nKey(status));
+	}
+	
+	private String getMembershipStatusString(BookingOrder bookingOrder) {
+		if (bookingOrder.getOrdererMembershipStatus() == null) {
+			return "";			
+		}
+		return bookingOrder.getOrdererMembershipStatus().name();
 	}
 
 	private String getOfferType(BookingOrder bookingOrder, Map<String, String> accessTypeToName) {

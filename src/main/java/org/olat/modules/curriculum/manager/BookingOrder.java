@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.id.User;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
@@ -62,6 +63,7 @@ public class BookingOrder {
 	private String paypalTransactionStatus;
 	private String checkoutTransactionStatus;
 	private String implementationLocation;
+	private GroupMembershipStatus ordererMembershipStatus;
 
 	public User getUser() {
 		return user;
@@ -298,5 +300,13 @@ public class BookingOrder {
 
 	public String getCheckoutTransactionStatus() {
 		return checkoutTransactionStatus;
+	}
+
+	public void setOrdererMembershipStatus(GroupMembershipStatus ordererMembershipStatus) {
+		this.ordererMembershipStatus = ordererMembershipStatus;
+	}
+
+	public GroupMembershipStatus getOrdererMembershipStatus() {
+		return ordererMembershipStatus;
 	}
 }
