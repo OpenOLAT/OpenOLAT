@@ -19,11 +19,15 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -46,14 +50,104 @@ public class CurriculumAccountingDAO {
 	@Autowired
 	private DB dbInstance;
 
+	private Map<String, GroupMembershipStatus> getImplementationAndIdentityToMembership(CurriculumAccountingSearchParams searchParams) {
+		HashMap<String, GroupMembershipStatus> result = new HashMap<>();
+
+		if (searchParams == null) {
+			return result;
+		}
+		
+		boolean specifyCurriculum = (searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) 
+				|| searchParams.getCurriculum() != null;
+		
+		boolean specifyCurriculumElement = searchParams.getCurriculumElement() != null;
+		
+		if (!specifyCurriculum && !specifyCurriculumElement) {
+			return result;
+		}
+		
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select ce.key, gmh.identity.key, gmh.status ");
+		sb.append(" from bgroupmemberhistory gmh");
+		sb.append(" inner join curriculumelement ce on ce.group.key = gmh.group.key ");
+		
+		if (specifyCurriculum) {
+			sb.append(" inner join curriculum c on c.key = ce.curriculum.key ");
+		}
+		
+		sb.append(" where gmh.role = 'participant' ");
+
+		if (specifyCurriculum) {
+			sb.append(" and c.key in :curriculumKeys ");
+		}
+		
+		if (specifyCurriculumElement) {
+			sb.append(" and ce.key = :curriculumElementKey ");
+		}
+		
+		sb.append(" and (gmh.group.key, gmh.identity.key, gmh.creationDate) in (");
+		sb.append("  select gmh2.group.key, gmh2.identity.key, max(gmh2.creationDate) ");
+		sb.append("   from bgroupmemberhistory gmh2 ");
+		sb.append("   inner join curriculumelement ce2 on ce2.group.key = gmh2.group.key ");
+
+		if (specifyCurriculum) {
+			sb.append("   inner join curriculum c2 on c2.key = ce2.curriculum.key ");
+		}
+
+		sb.append("   where gmh2.role = 'participant' ");
+
+		if (specifyCurriculum) {
+			sb.append(" and c2.key in :curriculumKeys ");
+		}
+
+		if (specifyCurriculumElement) {
+			sb.append(" and ce2.key = :curriculumElementKey ");
+		}
+
+		sb.append("   group by (gmh2.group.key, gmh2.identity.key) ");
+		sb.append(" ) ");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+
+		if (searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = searchParams.getCurriculums().stream().map(CurriculumRef::getKey).toList();
+			query.setParameter("curriculumKeys", curriculumKeys);
+		} else if (searchParams.getCurriculum() != null) {
+			List<Long> curriculumKeys = Collections.singletonList(searchParams.getCurriculum().getKey());
+			query.setParameter("curriculumKeys", curriculumKeys);
+		}
+		
+		if (specifyCurriculumElement) {
+			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());			
+		}
+
+		query.getResultStream().forEach(row -> addToMembershipMap(result, row));
+		
+		return result;
+	}
+
+	private void addToMembershipMap(HashMap<String, GroupMembershipStatus> result, Object[] row) {
+		if (row.length < 3) {
+			return;
+		}
+		if (row[0] instanceof Number curriculumElementKey && row[1] instanceof Number identityKey && 
+				row[2] instanceof GroupMembershipStatus status) {
+			result.put(curriculumElementKey + "_" + identityKey, status);
+		}
+	}
+	
 	public List<BookingOrder> bookingOrders(CurriculumAccountingSearchParams searchParams, List<UserPropertyHandler> userPropertyHandlers) {
+		Map<String, GroupMembershipStatus> implementationAndIdentityToMembership = getImplementationAndIdentityToMembership(searchParams);
+		
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select distinct cur.key, cur.displayName, cur.identifier, ");
 		sb.append(" curOrg.identifier, curOrg.displayName, ");
 		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ce.location, ");
 		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, ");
 		sb.append(" trx.statusStr, p_trx.status, c_trx.status, m, ");
-		sb.append(" offer.label, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
+		sb.append(" offer.label, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account, ");
+		sb.append(" orderer.key ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
 		}
@@ -122,11 +216,12 @@ public class CurriculumAccountingDAO {
 			query.setParameter("toDate", searchParams.getToDate());
 		}
 		return query.getResultList().stream()
-				.map(objects -> mapToBookingOrder(objects, userPropertyHandlers))
+				.map(objects -> mapToBookingOrder(objects, userPropertyHandlers, implementationAndIdentityToMembership))
 				.toList();
 	}
 	
-	private BookingOrder mapToBookingOrder(Object[] objects, List<UserPropertyHandler> userPropertyHandlers) {
+	private BookingOrder mapToBookingOrder(Object[] objects, List<UserPropertyHandler> userPropertyHandlers, 
+										   Map<String, GroupMembershipStatus> implementationAndIdentityToMembership) {
 		BookingOrder bookingOrder = new BookingOrder();
 
 		int srcIdx = 0;
@@ -228,7 +323,14 @@ public class CurriculumAccountingDAO {
 			bookingOrder.setOfferAccount(offerAccount);
 		}
 
-
+		// orderer
+		if (objects[srcIdx++] instanceof Number ordererKey) {
+			String implementationAndIdentityKey = bookingOrder.getImplementationKey() + "_" + ordererKey;
+			if (implementationAndIdentityToMembership.containsKey(implementationAndIdentityKey)) {
+				bookingOrder.setOrdererMembershipStatus(implementationAndIdentityToMembership.get(implementationAndIdentityKey));
+			}
+		}
+		
 		for (int dstIdx = 0; dstIdx < userPropertyHandlers.size() && srcIdx < objects.length; dstIdx++, srcIdx++) {
 			if (objects[srcIdx] instanceof String sourceString) {
 				bookingOrder.setIdentityProp(dstIdx, sourceString);
