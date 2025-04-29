@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -76,10 +77,11 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	private Set<Long> selectedKeys = new HashSet<>();
 	private boolean multipleSelection;
 	private String noSelectionText;
-	private Translator orgTranslator;
+	private final Translator orgTranslator;
 
-	public OrgSelectorElementImpl(WindowControl wControl, String name, List<Organisation> orgs) {
+	public OrgSelectorElementImpl(WindowControl wControl, String name, List<Organisation> orgs, Locale locale) {
 		super(name);
+		orgTranslator = Util.createPackageTranslator(OrgSelectorElementImpl.class, locale);
 		if (orgs == null) {
 			orgs = new ArrayList<>();
 		}
@@ -91,12 +93,12 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		String buttonId = dispatchId + "_org_sel";
 		button = new FormLinkImpl(buttonId, buttonId, "", Link.BUTTON | Link.NONTRANSLATED);
 		button.setDomReplacementWrapperRequired(false);
-		button.setTranslator(translator);
 		button.setElementCssClass("o_org_selector_button o_can_have_focus");
 		button.getComponent().setLabelCSS("o_org_selector_span");
 		button.setIconRightCSS("o_icon o_icon_caret");
 		components.put(buttonId, button);
 		rootFormAvailable(button);
+		updateButtonUI();
 	}
 
 	@Override
@@ -325,25 +327,25 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 	}
 	
 	private void updateButtonUI() {
-		boolean noOrgSelected = false;
-		
 		String linkTitle = orgRows.stream()
 				.filter(orgRow -> selectedKeys.contains(orgRow.key()))
 				.sorted(Comparator.comparing(OrgRow::title))
 				.map(OrgRow::title)
 				.collect(Collectors.joining(", "));
 
-		if (!StringHelper.containsNonWhitespace(linkTitle)) {
-			linkTitle = "&nbsp;";
-			noOrgSelected = true;
+		if (button == null) {
+			return;
 		}
-		if (button != null) {
+
+		if (StringHelper.containsNonWhitespace(linkTitle)) {
 			button.setI18nKey(StringHelper.escapeHtml(linkTitle));
-			if (noOrgSelected) {
-				setNoSelectionButtonText();
-			}
-			component.setDirty(true);
+		} else {
+			setNoSelectionButtonText();
 		}
+		if (!StringHelper.containsNonWhitespace(button.getI18nKey())) {
+			button.setAriaLabel(orgTranslator.translate("selector.selection"));
+		}
+		component.setDirty(true);
 	}
 
 	private void setNoSelectionButtonText() {
@@ -352,14 +354,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			return;
 		}
 
-		if (orgTranslator == null) {
-			if (getTranslator() != null) {
-				orgTranslator = Util.createPackageTranslator(OrgSelectorElementImpl.class, getTranslator().getLocale());
-			}
-		}
-		if (orgTranslator != null) {
-			button.setI18nKey(orgTranslator.translate("selector.none"));
-		}
+		button.setI18nKey(orgTranslator.translate("selector.none"));
 	}
 
 	private void doOpenSelector(UserRequest ureq) {

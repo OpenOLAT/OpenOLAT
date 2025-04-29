@@ -393,7 +393,7 @@ public class FormUIFactory {
 	
 	public OrgSelectorElement addOrgSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
 													WindowControl wControl, List<Organisation> organisations) {
-		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations);
+		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations, formLayout.getTranslator().getLocale());
 		setLabelIfNotNull(i18nLabel, orgSelectorElement);
 		formLayout.add(orgSelectorElement);
 		return orgSelectorElement;
@@ -408,7 +408,7 @@ public class FormUIFactory {
 	public OrgSelectorElement addOrgSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
 													WindowControl wControl, List<Organisation> organisations,
 													boolean multipleSelection) {
-		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations);
+		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations, formLayout.getTranslator().getLocale());
 		orgSelectorElement.setMultipleSelection(multipleSelection);
 		setLabelIfNotNull(i18nLabel, orgSelectorElement);
 		formLayout.add(orgSelectorElement);
