@@ -191,7 +191,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 
 		@Override
 		public boolean sortable() {
-			return this != tools;
+			return this != tools && this != rollCall ;
 		}
 
 		@Override
