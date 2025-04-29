@@ -187,7 +187,7 @@ public class CourseReminderListController extends FormBasicController
 	
 	private void updateModel(UserRequest ureq) {
 		List<ReminderInfos> reminders = reminderService.getReminderInfos(repositoryEntry);
-		reminders.sort((r1, r2) -> r1.getDescription().compareToIgnoreCase(r2.getDescription()));
+		reminders.sort((r1, r2) -> r1.getCreationDate().compareTo(r2.getCreationDate()));
 		List<ReminderRow> rows = new ArrayList<>(reminders.size());
 		for(ReminderInfos reminder:reminders) {
 			if (isVisible(reminder)) {
