@@ -84,8 +84,7 @@ public class ImplementationController extends BasicController {
 		listenTo(elementListCtrl);
 		mainVC.put("elementList", elementListCtrl.getInitialComponent());
 		
-		if(acService.isAccessToResourcePending(rootElement.getResource(), getIdentity()) 
-				|| acService.getReservation(getIdentity(), rootElement.getResource()) != null) {
+		if(acService.getReservation(getIdentity(), rootElement.getResource()) != null) {
 			mainVC.contextPut("pendingMsg", translate("access.denied.not.accepted.yet"));		
 		}
 	

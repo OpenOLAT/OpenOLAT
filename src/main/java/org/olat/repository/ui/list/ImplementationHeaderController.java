@@ -22,6 +22,7 @@ package org.olat.repository.ui.list;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -37,6 +38,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
@@ -55,9 +59,13 @@ public class ImplementationHeaderController extends FormBasicController {
 	private FormLink detailsLink;
 	
 	private final CurriculumElement element;
+	private final String curriculumElementImageMapperUrl;
+	private final CurriculumElementImageMapper curriculumElementImageMapper;
 	
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public ImplementationHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element) {
 		super(ureq, wControl, "row_1");
@@ -66,6 +74,9 @@ public class ImplementationHeaderController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
 		this.element = element;
+		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
+		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
+				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
 		
 		initForm(ureq);
 	}
@@ -75,6 +86,12 @@ public class ImplementationHeaderController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			InPreparationRow row = new InPreparationRow(element.getKey(), element, null,  false);
 			layoutCont.contextPut("row", row);
+			
+			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
+					() -> row.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
+			if (imageUrl != null) {
+				row.setThumbnailRelPath(imageUrl);
+			}
 			
 			String displayName = StringHelper.escapeHtml(row.getDisplayName());
 			selectLink = uifactory.addFormLink("select_" + row.getOlatResource().getKey(), displayName, null, layoutCont, Link.NONTRANSLATED);
@@ -99,12 +116,24 @@ public class ImplementationHeaderController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("select_row");
+				if(StringHelper.isLong(rowKeyStr)) {
+					fireEvent(ureq, new ImplementationEvent());
+				}
+			}
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(markLink == source) {
 			doMark(ureq);
 		} else if(selectLink == source || detailsLink == source) {
 			fireEvent(ureq, new ImplementationEvent());
-		}
+		} 
 		super.formInnerEvent(ureq, source, event);
 	}
 

@@ -941,7 +941,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			logViewerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
 			
 			Boolean correction = tableModel.isCorrectionAllowed(row);
-			if(correction != null && correction.booleanValue()) {
+			if(correction != null && correction.booleanValue() && !readOnly) {
 				correctionLink = LinkFactory.createLink("correct", mainVC, this);
 				correctionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 			} else if(correction != null && !correction.booleanValue()) {
@@ -952,17 +952,19 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
 				viewResultsLink = LinkFactory.createLink("view.results", mainVC, this);
 				viewResultsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_magnifying_glass");
-			} else {
+			} else if(!readOnly) {
 				pullLink = LinkFactory.createLink("pull", mainVC, this);
 				pullLink.setIconLeftCSS("o_icon o_icon-fw o_icon_pull");
 			}
 			
-			if(row.getTestSession().isCancelled()) {
-				revalidateLink = LinkFactory.createLink("revalidate.test", mainVC, this);
-				revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
-			} else if (row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
-				invalidateLink = LinkFactory.createLink("invalidate", mainVC, this);
-				invalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ban");
+			if(!readOnly) {
+				if(row.getTestSession().isCancelled()) {
+					revalidateLink = LinkFactory.createLink("revalidate.test", mainVC, this);
+					revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+				} else if (row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
+					invalidateLink = LinkFactory.createLink("invalidate", mainVC, this);
+					invalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_ban");
+				}
 			}
 			putInitialPanel(mainVC);
 		}
