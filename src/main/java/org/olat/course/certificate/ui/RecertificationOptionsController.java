@@ -238,14 +238,17 @@ public class RecertificationOptionsController extends FormBasicController {
 		reCertificationTimelapseEl.setValue(Integer.toString(days));
 		
 		List<ReminderInfos> reminders = reminderService.getReminderInfos(entry);
-		createReminder("reminder.expiration.description", "reminder.expiration.subject", "reminder.expiration.body",
-				reminders, 0, null);
+		// First reminder: at start of possible recertification (days configurable in UI)
 		if(days > 10) {
 			createReminder("reminder.recertification.window.repeat.description", "reminder.recertification.window.repeat.subject", "reminder.recertification.window.repeat.body",
 					reminders, -10, Integer.valueOf(1));
 		}
+		// Second reminder: 10 days prior to certificate expiration
 		createReminder("reminder.recertification.window.open.description", "reminder.recertification.window.open.subject", "reminder.recertification.window.open.body",
 				reminders, -days, Integer.valueOf(1));
+		// Third and final reminder: at day of certificate expiration
+		createReminder("reminder.expiration.description", "reminder.expiration.subject", "reminder.expiration.body",
+				reminders, 0, null);
 		
 		saveConfig();
 		updateUI();
