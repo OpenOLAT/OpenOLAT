@@ -153,6 +153,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		Identity invitee;
 		if(invitation.getIdentity() != null) {
 			invitee = invitation.getIdentity();
+			invitee = saveIdentityExpirationDate(invitee, expirationDate, doer);
 		} else {
 			invitee = userManager.findUniqueIdentityByEmail(invitation.getMail());
 			if (invitee == null) {
@@ -166,9 +167,9 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 				user.getPreferences().setLanguage(locale.toString());
 				invitee = securityManager.createAndPersistIdentityAndUser(null, invitation.getMail(), null, user, null, null, null, null, null, expirationDate);
 			} else if(invitee.getExpirationDate() != null && invitee.getExpirationDate().before(expirationDate)) {
-				securityManager.saveIdentityExpirationDate(invitee, expirationDate, doer);
+				invitee = saveIdentityExpirationDate(invitee, expirationDate, doer);
 			} else if(invitee.getExpirationDate() == null && securityManager.getRoles(invitee).isInviteeOnly()) {
-				securityManager.saveIdentityExpirationDate(invitee, expirationDate, doer);
+				invitee = saveIdentityExpirationDate(invitee, expirationDate, doer);
 			}
 		}
 		
@@ -184,6 +185,13 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		organisationService.addMember(invitee, OrganisationRoles.invitee, doer);
 		
 		return invitee;
+	}
+	
+	private Identity saveIdentityExpirationDate(Identity invitee, Date expirationDate, Identity doer) {
+		if(Identity.STATUS_INACTIVE.equals(invitee.getStatus())) {
+			invitee = securityManager.saveIdentityStatus(invitee, Identity.STATUS_ACTIV, doer);
+		}
+		return securityManager.saveIdentityExpirationDate(invitee, expirationDate, doer);
 	}
 
 	@Override
