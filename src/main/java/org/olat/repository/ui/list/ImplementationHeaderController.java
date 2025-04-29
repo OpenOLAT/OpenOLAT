@@ -125,6 +125,7 @@ public class ImplementationHeaderController extends FormBasicController {
 				}
 			}
 		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

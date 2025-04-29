@@ -551,6 +551,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
+		options.setFromColumnModel(true);
 		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, config.getPrefsId());
 		tableEl.addBatchButton(deleteLecturesButton);
