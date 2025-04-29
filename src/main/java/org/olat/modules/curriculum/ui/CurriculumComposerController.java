@@ -973,6 +973,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		doOpenCurriculumElementDetails(ureq, row, overview);
 	}
 	
+	private void doOpenCurriculumElementSettings(UserRequest ureq, CurriculumElementRow row) {
+		String path = "[Metadata:0]";
+		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString(path);
+		doOpenCurriculumElementDetails(ureq, row, overview);
+	}
+	
 	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRef row, List<ContextEntry> entries) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
 		doOpenCurriculumElementDetails(ureq, element, entries);
@@ -1185,6 +1191,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		private Link deleteLink;
 		private Link duplicateLink;
 		private Link manageMembersLink;
+		private Link openSettingsLink;
 		
 		private CurriculumElementRow row;
 		
@@ -1199,6 +1206,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			
 			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
 			openLink.setNewWindow(true, true);
+			
+			if(curriculum != null && secCallback.canEditCurriculumElement(element)) {
+				openSettingsLink = addLink("edit", "o_icon_edit", links);
+			}
 			
 			if(curriculum != null && secCallback.canEditCurriculumElement(element) && element.getParent() != null
 					&& !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
@@ -1264,6 +1275,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(newLink == source) {
 				close();
 				doNewSubCurriculumElement(ureq, row, null);
+			} else if(openSettingsLink == source) {
+				close();
+				doOpenCurriculumElementSettings(ureq, row);
 			} else if(manageMembersLink == source) {
 				close();
 				doOpenCurriculumElementUserManagement(ureq, row, null);
