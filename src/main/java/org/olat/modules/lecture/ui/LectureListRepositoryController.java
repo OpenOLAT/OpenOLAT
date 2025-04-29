@@ -451,12 +451,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(config.withNumberOfLectures() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withNumberOfLectures() == Visibility.HIDE, BlockCols.lecturesNumber));
 		}
-		
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, TOGGLE_DETAILS_CMD));
 		if(config.withExternalRef() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withExternalRef() == Visibility.SHOW,
 					BlockCols.externalRef));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, TOGGLE_DETAILS_CMD));
 		
 		if(config.withCurriculum() != Visibility.NO) {
 			String elementCmd = entry == null ? CMD_CURRICULUM_ELEMENT : null;
