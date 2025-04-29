@@ -47,7 +47,7 @@ public class ProjectPage {
 		browser.findElement(organisationBy).click();
 		OOGraphene.waitCallout(browser, ".o_sel_org_selector");
 		
-		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[contains(@class,'o_org_selector_row') and descendant::div[contains(text(),'" + organisation + "')]]//input[@type='checkbox']");
+		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[contains(@class,'o_org_selector_row') and descendant::span[contains(text(),'" + organisation + "')]]//input[@type='checkbox']");
 		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
 		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
