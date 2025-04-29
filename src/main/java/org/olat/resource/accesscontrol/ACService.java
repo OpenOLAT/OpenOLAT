@@ -99,6 +99,13 @@ public interface ACService {
 	
 	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus);
 	
+	/**
+	 * Check if an order is pending.
+	 * 
+	 * @param resource The resource
+	 * @param identity The user
+	 * @return true if an order is still in the pending status
+	 */
 	public boolean isAccessToResourcePending(OLATResource resource, IdentityRef identity);
 
 	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity);
