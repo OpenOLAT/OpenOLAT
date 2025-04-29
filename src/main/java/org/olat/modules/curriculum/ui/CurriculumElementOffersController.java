@@ -91,7 +91,7 @@ public class CurriculumElementOffersController extends BasicController {
 		} else {
 			details = RepositoryCatalogInfoFactory.wrapTaxonomyLevels(taxonomyLevelPath);
 		}
-		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Matadata:0]";
+		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Metadata:0]";
 		
 		boolean fullyBooked = curriculumService.isMaxParticipantsReached(element);
 		boolean startDateAvailable = element.getBeginDate() != null;
