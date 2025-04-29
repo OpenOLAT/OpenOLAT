@@ -203,6 +203,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		propertiesCont.contextPut("newMaxScore", translateRoundedValue(newMaxScore, "change.max.score"));
 		if(!Objects.equals(currentMaxScore, newMaxScore)) {
 			propertiesCont.contextPut("messageMaxScore", translate("warning.change.max.score"));
+			propertiesCont.setFormWarning(translate("warning.change.important"));
 		}
 		
 		// Cut value
@@ -212,6 +213,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		propertiesCont.contextPut("newCutValue", translateRoundedValue(newCutValue, "score.passed.cut.value"));
 		if(!Objects.equals(currentCutValue, newCutValue)) {
 			propertiesCont.contextPut("messageCutValue", translate("warning.change.cut.value"));
+			propertiesCont.setFormWarning(translate("warning.change.important"));
 		}
 		
 		// Runs
