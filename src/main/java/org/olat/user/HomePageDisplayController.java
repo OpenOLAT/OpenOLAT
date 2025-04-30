@@ -70,6 +70,7 @@ public class HomePageDisplayController extends BasicController {
 	private static final String usageIdentifyer = HomePageConfig.class.getCanonicalName();
 	
 	private Link imLink;
+	private boolean isAnonymous;
 	
 	@Autowired
 	private UserModule userModule;
@@ -89,6 +90,14 @@ public class HomePageDisplayController extends BasicController {
 	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, Identity homeIdentity, HomePageConfig hpc) {
 		super(ureq, wControl);
 		
+		// Special case: do not reveal any other personal info than the users name to unknown users
+		isAnonymous = !ureq.getUserSession().isAuthenticated() || ureq.getUserSession().getRoles().isGuestOnly();
+		// Use empty config for anonymous
+		if (isAnonymous) {
+			hpc = new HomePageConfig();
+			hpc.initDefaults();		
+		}
+
 		// use property handler translator for translating of user fields
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("homepagedisplay");
@@ -128,10 +137,12 @@ public class HomePageDisplayController extends BasicController {
 		}
 		
 		// Add external link to visiting card
-		StringBuilder extLink = new StringBuilder();
-		extLink.append(Settings.getServerContextPathURI())
-			.append("/url/HomeSite/").append(homeIdentity.getKey());
-		mainVC.contextPut("extLink", extLink);
+		if (!isAnonymous) {
+			StringBuilder extLink = new StringBuilder();
+			extLink.append(Settings.getServerContextPathURI())
+				.append("/url/HomeSite/").append(homeIdentity.getKey());
+			mainVC.contextPut("extLink", extLink);
+		}
 
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, PortraitSize.medium, false);
 		listenTo(dpc); // auto dispose
@@ -146,7 +157,7 @@ public class HomePageDisplayController extends BasicController {
 	}
 	
 	private void exposeOrganisations(Identity homeIdentity, VelocityContainer mainVC) {
-		if(organisationModule.isEnabled()) {
+		if(organisationModule.isEnabled() && !isAnonymous) {
 			List<Organisation> organisations = organisationService.getOrganisations(homeIdentity, OrganisationRoles.user);
 			List<String> organisationNames = new ArrayList<>(organisations.size());
 			for(Organisation organisation:organisations) {
@@ -169,7 +180,7 @@ public class HomePageDisplayController extends BasicController {
 	}
 	
 	private void exposeInstantMessageLink(Identity homeIdentity, VelocityContainer mainVC) {
-		if(imModule.isEnabled() && imModule.isPrivateEnabled()) {
+		if(imModule.isEnabled() && imModule.isPrivateEnabled() && !isAnonymous) {
 			ImPreferences prefs = imService.getImPreferences(homeIdentity);
 			if(prefs.isVisibleToOthers()) {
 				User user = homeIdentity.getUser();
