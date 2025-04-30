@@ -238,6 +238,11 @@ public class TaxonomyLevelSelectionImpl extends FormItemImpl implements Taxonomy
 				.collect(Collectors.joining());
 		if (!StringHelper.containsNonWhitespace(linkTitle)) {
 			linkTitle = "&nbsp;";
+			if (StringHelper.containsNonWhitespace(getLabelText())) {
+				button.setAriaLabel(taxonomyTranslator.translate("taxonomy.level.selection.empty.aria", getLabelText()));
+			} else {
+				button.setAriaLabel(null);
+			}
 		}
 		linkTitle = "<span class=\"o_taxonomy_tags o_tax_ls_tags\">" + linkTitle + "</span>";
 		button.setI18nKey(linkTitle);

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -110,7 +111,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	private TextElement challengeToCompleteEl;
 	private SingleSelection questionPerSerieEl;
 	private TextElement seriePerChallengeEl;
-	private MultipleSelectionElement rankListEl;
+	private FormToggle rankListEl;
 
 	private FlexiTableElement resourcesTableEl;
 	private PracticeResourceTableModel resourcesModel;
@@ -197,8 +198,6 @@ public class PracticeConfigurationController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PracticeResourceCols.id));
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(PracticeResourceCols.icon,
 				new PracticeResourceIconFlexiCellRenderer());
-		iconCol.setHeaderLabel("&nbsp;");
-		iconCol.setHeaderTooltip(translate(PracticeResourceCols.icon.i18nHeaderKey()));
 		columnsModel.addFlexiColumnModel(iconCol);
 		DefaultFlexiColumnModel titleCol = new DefaultFlexiColumnModel(PracticeResourceCols.title);
 		columnsModel.addFlexiColumnModel(titleCol);
@@ -284,6 +283,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		operatorEl.select(rule.getOperator().name(), true);
 		
 		FormLink deleteRuleButton = uifactory.addFormLink("delete.rule.".concat(partId), "delete", "", null, rulesCont, Link.NONTRANSLATED + Link.BUTTON);
+		deleteRuleButton.setTitle(translate("criteria.remove"));
 		deleteRuleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		deleteRuleButton.setElementCssClass("o_sel_course_delete_rule");
 
@@ -383,11 +383,8 @@ public class PracticeConfigurationController extends FormBasicController {
 		challengeToCompleteEl.setElementCssClass("o_sel_practice_challenge_to_complete");
 		challengeToCompleteEl.setMandatory(true);
 		
-		SelectionValues rankKeys = new SelectionValues();
-		rankKeys.add(SelectionValues.entry("on", ""));
-		rankListEl = uifactory.addCheckboxesHorizontal("rank.list", "rank.list", formLayout, rankKeys.keys(), rankKeys.values());
-		boolean rankList = config.getBooleanSafe(PracticeEditController.CONFIG_KEY_RANK_LIST, false);
-		rankListEl.select("on", rankList);
+		rankListEl = uifactory.addToggleButton("rank.list", "rank.list", translate("on"), translate("off"), formLayout);
+		rankListEl.toggle(config.getBooleanSafe(PracticeEditController.CONFIG_KEY_RANK_LIST, false));
 	}
 	
 	private void initStatisticsForm(FormLayoutContainer formLayout) {
@@ -640,7 +637,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		config.setList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, selectedLevelKeys);
 		boolean includeWoLevels = withoutTaxonomyEl.isAtLeastSelected(1);
 		config.setBooleanEntry(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, includeWoLevels);
-		boolean rankList = rankListEl.isAtLeastSelected(1);
+		boolean rankList = rankListEl.isOn();
 		config.setBooleanEntry(PracticeEditController.CONFIG_KEY_RANK_LIST, rankList);
 		
 		fireEvent(ureq, Event.DONE_EVENT);

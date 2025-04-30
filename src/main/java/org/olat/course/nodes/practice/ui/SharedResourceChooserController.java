@@ -98,8 +98,6 @@ public class SharedResourceChooserController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SharedResourceCols.id));
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(SharedResourceCols.icon,
 				new PracticeResourceIconFlexiCellRenderer());
-		iconCol.setHeaderLabel("&nbsp;");
-		iconCol.setHeaderTooltip(translate(SharedResourceCols.icon.i18nHeaderKey()));
 		columnsModel.addFlexiColumnModel(iconCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SharedResourceCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));

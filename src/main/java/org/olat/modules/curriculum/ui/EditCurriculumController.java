@@ -153,10 +153,18 @@ public class EditCurriculumController extends FormBasicController {
 		
 		organisationEl = uifactory.addOrgSelectorElement("curriculum.organisation", 
 				"curriculum.organisation", formLayout, getWindowControl(), organisations);
+		organisationEl.setMandatory(true);
 
 		if (curriculum != null) {
 			if (curriculum.getOrganisation() != null) {
 				organisationEl.setSelection(curriculum.getOrganisation().getKey());
+			}
+		} else {
+			Organisation defaultOrg = organisationService.getDefaultOrganisation();
+			if (defaultOrg != null) {
+				if (organisations.contains(defaultOrg)) {
+					organisationEl.setSelection(defaultOrg.getKey());
+				}
 			}
 		}
 	}
