@@ -81,6 +81,7 @@ import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementCont
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.MembersWidgetController;
 import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
@@ -124,6 +125,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CurriculumReportsController reportsCtrl;
 	private OffersWidgetController offersWidgetCtrl;
 	private CoursesWidgetController coursesWidgetCtrl;
+	private MembersWidgetController membersWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
 	private CurriculumDashboardController overviewCtrl;
 	private CurriculumElementOffersController offersCtrl;
@@ -563,6 +565,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
 		overviewCtrl = new CurriculumDashboardController(ureq, subControl);
 		listenTo(overviewCtrl);
+		
+		membersWidgetCtrl = new MembersWidgetController(ureq, getWindowControl(), curriculumElement);
+		listenTo(membersWidgetCtrl);
+		overviewCtrl.addWidget("members", membersWidgetCtrl);
 
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
@@ -695,13 +701,16 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(offersWidgetCtrl != null) {
 			offersWidgetCtrl.loadModel();
 		}
+		if(membersWidgetCtrl != null) {
+			membersWidgetCtrl.loadModel(ureq);
+		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(structureCtrl == source || coursesWidgetCtrl == source || offersWidgetCtrl == source
 				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
-				|| resourcesCtrl == source) {
+				|| resourcesCtrl == source || membersWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {

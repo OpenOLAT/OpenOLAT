@@ -504,6 +504,29 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		}
 	}
 	
+	.o_curriculum_widget_two_col {
+		display: grid;
+		grid-template-columns: 50% 50%;
+		column-gap: 10px;
+		
+		@media (max-width: $screen-xs-max) {
+			grid-template-columns: 100%;
+		}
+	}
+	
+	.o_curriculum_widget_two_col h4,
+	.o_curriculum_widget_other_roles h4 {
+			padding: 5px 15px;
+			margin: 5px 0;
+	}
+	
+	.o_curriculum_widget_chart_wrapper {
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-rows: 1fr auto auto;
+		justify-items: center;
+	}
+	
 	.o_curriculum_widget ~ .o_button_group .o_button_details {
 		margin-top: -2px;
 	}
@@ -748,6 +771,34 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			font-size: 1.2em;
 			margin: 0;
 		}
+	}
+	
+	.o_curriculum_widget_roles_portrait {
+		display: grid;
+		grid-template-columns: 33% 33% 33%;
+		column-gap: 10px;
+		padding: 5px 15px;
+		
+		@media (max-width: $screen-xs-max) {
+			grid-template-columns: 100%;
+		}
+		
+		.o_curriculum_widget_role {
+			display: block;
+			padding: 7px 0;
+		}
+	}
+	
+	.o_curriculum_members_widget .o_curriculum_widget_two_col {
+		padding-bottom: 15px;
+	}
+	
+	.o_curriculum_widget_members_status_overbooked {
+		color: $brand-danger;
+	}
+	.o_curriculum_widget_members_status_fullybooked .o_icon:before,
+	.o_curriculum_widget_members_status_fewleft .o_icon:before {
+		color: $brand-warning;
 	}
 }
 

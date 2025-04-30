@@ -1802,6 +1802,90 @@ body {
 }
 
 
+/* Radial chart */
+.o_speedometer {
+	width: 200px;
+	height: 100px;
+	margin: 0 5px;
+	position: relative;
+	overflow: hidden;
+
+	&:before {
+		content: "";
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 200%;
+		border: 10px solid $o-o_speedometer-not-border-color;
+		border-radius: 50%;
+	}
+	
+	>span.o_speedometer_value {
+		display: block;
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		bottom: 0;
+		left: 0;
+		text-align: center;
+		font-size: 48px;
+		line-height: 140px;
+	}
+	
+	>span.o_speedometer_indicator {
+		width: 100%;
+		height: 100%;
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		overflow: hidden;
+		transform: rotate(var(--var-speed));
+		transform-origin: bottom center;
+	
+		&:after {
+			content: "";
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 200%;
+			border: 10px solid $o-o_speedometer-default-border-color;
+			border-top-left-radius: 50%;
+			border-top-right-radius: 50%;
+		}
+	}
+	
+	&.o_speedometer_infos>.o_speedometer_value {
+		color: $o-o_speedometer-default-border-color;
+	}
+	&.o_speedometer_success>.o_speedometer_value {
+		color: $o-o_speedometer-success-border-color;
+	}
+	&.o_speedometer_warning>.o_speedometer_value {
+		color: $o-o_speedometer-warning-border-color;
+	}
+	&.o_speedometer_danger>.o_speedometer_value {
+		color: $o-o_speedometer-danger-border-color;
+	}
+	
+	&.o_speedometer_infos>span:after {
+		border-color: $o-o_speedometer-default-border-color;
+	}
+	&.o_speedometer_success>span:after {
+		border-color: $o-o_speedometer-success-border-color;
+	}
+	&.o_speedometer_warning>span:after {
+		border-color: $o-o_speedometer-warning-border-color;
+	}
+	&.o_speedometer_danger>span:after {
+		border-color: $o-o_speedometer-danger-border-color;
+	}
+}
+
 /* MathLive */
 .o_mathlive_editor {
 	min-height: 3em;
