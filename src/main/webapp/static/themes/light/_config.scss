@@ -1844,3 +1844,10 @@ $o-v-timeline-path-color							: $o-coursesite-sidecol-border !default;
 $o-v-timeline-path-stroke-width						: 0.3rem !default;
 $o-v-timeline-path-top-height						: $o-v-timeline-row-padding !default;
 
+/* Speedometer */
+$o-o_speedometer-not-border-color		: $gray-lighter !default;
+$o-o_speedometer-default-border-color	: $o-labeled-blue-border-color !default;
+$o-o_speedometer-success-border-color	: $o-labeled-green-border-color !default;
+$o-o_speedometer-warning-border-color	: $o-labeled-yellow-border-color !default;
+$o-o_speedometer-danger-border-color	: $o-labeled-red-border-color !default;
+

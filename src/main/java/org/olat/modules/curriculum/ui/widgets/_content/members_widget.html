@@ -1,0 +1,55 @@
+<div class="o_expand_ctrl">
+
+<div class="o_curriculum_widget o_curriculum_members_widget">
+	<div class="o_curriculum_widget_title o_header_with_buttons">
+		<h3>$r.render("curriculum.members")</h3>
+	</div>
+	
+	<div class="o_curriculum_widget_two_col">
+		<div>
+			<h4>$r.translate("curriculum.element.participants")</h4>
+			<div class="o_curriculum_widget_numbers">
+				$r.render("num.of.active.participants", "nolayout")
+				$r.render("num.of.pending.participants", "nolayout")
+			</div>
+		</div>
+		<div class="o_curriculum_widget_chart_wrapper">
+			<div>
+				$r.render("participantsMeter")
+			</div>
+			<div>#if($r.isNotEmpty($minMax))
+				<span class="text-muted">$minMax</span>
+			#end</div>
+			<div>#if($r.isNotEmpty($availabilityMsg))
+				$availabilityMsg
+			#end</div>
+		</div>
+	</div>
+	#if($r.isFalse($minimized))
+	<div class="o_curriculum_widget_other_roles">
+		<h4>$r.translate("curriculum.element.other.roles")</h4>
+		<div class="o_curriculum_widget_roles_portrait">
+			#if($r.available("coaches"))
+			<div>
+				$r.render("coaches")
+				<span class="o_curriculum_widget_role">$r.render("curriculum.element.coaches")</span>
+			</div>
+			#end
+			#if($r.available("masterCoaches"))
+			<div>
+				$r.render("masterCoaches")
+				<span class="o_curriculum_widget_role">$r.render("curriculum.element.mastercoaches")</span>
+			</div>
+			#end
+			#if($r.available("owners"))
+			<div>
+				$r.render("owners")
+				<span class="o_curriculum_widget_role">$r.render("curriculum.element.owners")</span>
+			</div>
+			#end
+		</div>	
+	</div>
+	#end
+</div>
+<div class="o_button_group">$r.render("curriculum.minimize")</div>
+</div>

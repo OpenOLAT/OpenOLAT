@@ -271,8 +271,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		if(entries == null || entries.isEmpty()) return;
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(CurriculumRoles.isValueOf(type)) {
-			FlexiFiltersTab tab = rolesToTab.get(CurriculumRoles.valueOf(type));
+		if(CurriculumRoles.isValueOf(type.toLowerCase())) {
+			FlexiFiltersTab tab = rolesToTab.get(CurriculumRoles.valueOf(type.toLowerCase()));
 			if(tab == null) {
 				tab = allTab;
 			}
