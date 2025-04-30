@@ -289,11 +289,13 @@ public class OverviewRepositoryListController extends BasicController implements
 					doOpenInPreparation(ureq);
 				} else if(CMD_IMPLEMENTATIONS_LIST.equals(se.getSelectedKey())) {
 					doOpenImplementationsList(ureq);
+					scopesSelection.setSelectedKey(se.getSelectedKey());// Reselect because with listen to pop
 				} else if(se.getSelectedKey().startsWith(CMD_IMPLEMENTATION)) {
 					Long implementationKey = Long.valueOf(se.getSelectedKey().replace(CMD_IMPLEMENTATION, ""));
 					List<ContextEntry> entries = BusinessControlFactory.getInstance()
 							.createCEListFromString(OresHelper.createOLATResourceableInstance(CurriculumElement.class, implementationKey));
 					doOpenImplementationsList(ureq).activate(ureq, entries, null);
+					scopesSelection.setSelectedKey(se.getSelectedKey());// Reselect because with listen to pop
 				}
 			}
 		} else if(implementationsListStackPanel == source) {
@@ -336,16 +338,15 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 	
 	private ImplementationsListController doOpenImplementationsList(UserRequest ureq) {
-		if(implementationsListStackPanel != null) {
-			implementationsListStackPanel.removeListener(this);
-		}
-		removeAsListenerAndDispose(implementationsListCtrl);
+		if(implementationsListCtrl == null) {
+			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
 
-		implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
-			
-		implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel);
-		listenTo(implementationsListCtrl);
-		implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
+			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel);
+			listenTo(implementationsListCtrl);
+			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
+		} else {
+			implementationsListStackPanel.popUpToRootController(ureq);
+		}
 		
 		currentCtrl = implementationsListCtrl;
 		mainVC.put("component", implementationsListStackPanel);
