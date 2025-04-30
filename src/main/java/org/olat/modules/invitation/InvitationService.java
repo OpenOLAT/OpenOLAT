@@ -135,6 +135,9 @@ public interface InvitationService {
 	 */
 	public Invitation update(Invitation invitation);
 	
+	
+	public Identity activate(Identity identity, Identity doer);
+	
 	/**
 	 * @param invitation The invitation
 	 * @return A direct URL with the invitation attached

@@ -186,6 +186,18 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		
 		return invitee;
 	}
+
+	@Override
+	public Identity activate(Identity invitee, Identity doer) {
+		Date expirationDate = null;
+		int expireAfter = invitationModule.getExpirationAccountInDays();
+		if(expireAfter > 0) {
+			expirationDate = DateUtils.addDays(new Date(), expireAfter);
+			expirationDate = CalendarUtils.endOfDay(expirationDate);
+		}
+		invitee = saveIdentityExpirationDate(invitee, expirationDate, doer);
+		return invitee;
+	}
 	
 	private Identity saveIdentityExpirationDate(Identity invitee, Date expirationDate, Identity doer) {
 		if(Identity.STATUS_INACTIVE.equals(invitee.getStatus())) {
