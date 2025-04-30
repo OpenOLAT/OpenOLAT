@@ -125,9 +125,8 @@ public class UserPropertiesInfoController extends UserInfoController {
 				continue;
 			}
 			
-			String value = userPropertyHandler.getUserProperty(user, getLocale());
+			String value = userPropertyHandler.getUserPropertyAsHTML(user, getLocale());
 			if (StringHelper.containsNonWhitespace(value)) {
-				value = StringHelper.escapeHtml(value);
 				String i18nLabel = userPropertyHandler.i18nFormElementLabelKey();
 				uifactory.addStaticTextElement(name, i18nLabel, value, itemsCont);
 			}

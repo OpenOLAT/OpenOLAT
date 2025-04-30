@@ -187,8 +187,19 @@ public class UserProfileInfoController extends UserInfoController {
 
 	private void addUserMail(FormLayoutContainer itemsCont) {
 		String email = identity.getUser().getEmail();
-		String userMail = StringHelper.containsNonWhitespace(email) ? email : translate("user.no.data");
-		uifactory.addStaticTextElement("usermail", "user.mail", userMail, itemsCont);
+		if (StringHelper.containsNonWhitespace(email)) {
+			email = StringHelper.escapeHtml(email);
+			StringBuilder sb = new StringBuilder();
+			sb.append("<a href=\"mailto:")
+			  .append(email)
+			  .append("\"><i class='o_icon o_icon_mail'> </i> ")
+			  .append(email)
+			  .append("</a>");
+			email = StringHelper.xssScan(sb.toString());
+		} else {
+			email = translate("user.no.data");
+		}
+		uifactory.addStaticTextElement("usermail", "user.mail", email, itemsCont);
 	}
 
 	private void addAccountType(FormLayoutContainer itemsCont, Roles fullRoles) {
