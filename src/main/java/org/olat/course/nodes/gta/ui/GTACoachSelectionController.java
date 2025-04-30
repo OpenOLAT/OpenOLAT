@@ -49,6 +49,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -73,6 +74,7 @@ import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController.LabelValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -535,18 +537,21 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			
 			VelocityContainer wrapperVC = createVelocityContainer("coach_wrapper");
 			
-			AssessedIdentityLargeInfosController userInfosCtrl = new AssessedIdentityLargeInfosController(ureq, getWindowControl(),
-					assessedIdentity, coachCourseEnv.getCourseEnvironment(), gtaNode);
-			listenTo(userInfosCtrl);
-			wrapperVC.put("userInfos", userInfosCtrl.getInitialComponent());
-			
-
 			wrapperVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 			
 			userTaskCtrl = new GTACoachController(ureq, wControl, assessedIdentityStackPanel,
 					courseEnv, gtaNode, coachCourseEnv, assessedIdentity, false, true, false, false);
 			listenTo(userTaskCtrl);
 			wrapperVC.put("selection", userTaskCtrl.getInitialComponent());
+			
+			LabelValues additionalUserLV = null;
+			if (StringHelper.containsNonWhitespace(userTaskCtrl.getAssignedTaskName())) {
+				additionalUserLV = LabelValues.builder().add(translate("assigned.task"), userTaskCtrl.getAssignedTaskName()).build();
+			}
+			AssessedIdentityLargeInfosController userInfosCtrl = new AssessedIdentityLargeInfosController(ureq, getWindowControl(),
+					assessedIdentity, coachCourseEnv.getCourseEnvironment(), gtaNode, additionalUserLV);
+			listenTo(userInfosCtrl);
+			wrapperVC.put("userInfos", userInfosCtrl.getInitialComponent());
 			
 			putInitialPanel(wrapperVC);
 		}

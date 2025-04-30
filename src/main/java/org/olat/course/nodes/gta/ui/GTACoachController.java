@@ -56,6 +56,7 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
 import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
@@ -118,6 +119,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private final boolean isAdmin;
 	private final boolean withReset;
 	private final UserCourseEnvironment coachCourseEnv;
+	private String assignedTaskName;
 	
 	@Autowired
 	private UserManager userManager;
@@ -175,7 +177,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				emailLink.setIconLeftCSS("o_icon o_icon_mail");				
 			} else if(assessedIdentity != null) {
 				AssessedIdentityLargeInfosController userInfosCtrl = new AssessedIdentityLargeInfosController(ureq, getWindowControl(),
-						assessedIdentity, coachCourseEnv.getCourseEnvironment(), gtaNode);
+						assessedIdentity, coachCourseEnv.getCourseEnvironment(), gtaNode, null);
 				listenTo(userInfosCtrl);
 				mainVC.put("userInfos", userInfosCtrl.getInitialComponent());
 			}
@@ -188,6 +190,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		}
 		
 		putInitialPanel(mainVC);
+	}
+
+	public String getAssignedTaskName() {
+		return assignedTaskName;
 	}
 
 	@Override
@@ -207,6 +213,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				if(!hasAssignment) {
 					setExpiredStatusAndCssClass("assignment");
 				}
+			} else {
+				assignedTaskName = translate("coach.waiting.assignment");
 			}
 		} else {
 			setDoneStatusAndCssClass("assignment");
@@ -217,6 +225,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 					"coach.task.assigned.description", "warning.no.task.choosed.coach", null);
 			listenTo(assignedTaskCtrl);
 			mainVC.put("assignedTask", assignedTaskCtrl.getInitialComponent());
+			
+			assignedTaskName = assignedTask.getTaskName() == null ? null : assignedTask.getTaskName();
 		}
 
 		return assignedTask;
@@ -299,7 +309,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			
 			List<VFSMetadata> metadatas = submitContainer.getItems().stream()
 					.filter(VFSLeaf.class::isInstance)
-					.map(item -> item.getMetaInfo())
+					.map(VFSItem::getMetaInfo)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			AccessSearchParams params = new AccessSearchParams();

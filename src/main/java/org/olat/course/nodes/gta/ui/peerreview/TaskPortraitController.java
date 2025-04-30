@@ -30,6 +30,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.user.UserPropertiesInfoController;
+import org.olat.user.UserPropertiesInfoController.LabelValues;
 
 /**
  * 
@@ -44,12 +45,12 @@ public class TaskPortraitController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("task_portrait");
 		
-		UserPropertiesInfoController userInfoCtrl = new UserPropertiesInfoController(ureq, wControl, identity);
+		String taskName = task == null || task.getTaskName() == null ? "" : task.getTaskName();
+		LabelValues additionalLV = LabelValues.builder().add(translate("task"), taskName).build();
+		
+		UserPropertiesInfoController userInfoCtrl = new UserPropertiesInfoController(ureq, wControl, identity, null, additionalLV);
 		listenTo(userInfoCtrl);
 		mainVC.put("userInfo", userInfoCtrl.getInitialComponent());
-		
-		String taskName = task == null || task.getTaskName() == null ? "" : task.getTaskName();
-		mainVC.contextPut("taskName", taskName);
 		
 		putInitialPanel(mainVC);
 	}

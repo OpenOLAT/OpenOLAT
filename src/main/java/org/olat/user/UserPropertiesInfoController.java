@@ -136,8 +136,8 @@ public class UserPropertiesInfoController extends UserInfoController {
 	}
 
 	private void addAdditionalRows(FormLayoutContainer itemsCont, Predicate<LabelValue> predicate) {
-		if (additionalLabelValues != null && !additionalLabelValues.getRows().isEmpty()) {
-			additionalLabelValues.getRows().stream()
+		if (additionalLabelValues != null && !additionalLabelValues.getLabelValues().isEmpty()) {
+			additionalLabelValues.getLabelValues().stream()
 				.filter(predicate)
 				.forEach(row -> {
 					StaticTextElement additionalEl = uifactory.addStaticTextElement("additional_" + counter++, null, row.getValue(), itemsCont);
@@ -154,7 +154,7 @@ public class UserPropertiesInfoController extends UserInfoController {
 			this.labelValues = new ArrayList<>(builder.labelValues);
 		}
 
-		public List<LabelValue> getRows() {
+		public List<LabelValue> getLabelValues() {
 			return labelValues;
 		}
 
