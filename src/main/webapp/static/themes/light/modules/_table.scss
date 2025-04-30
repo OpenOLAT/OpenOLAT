@@ -211,7 +211,7 @@
 		}
 		/* fix a11y contrast on stipped cols */
  	 	> tbody > tr:nth-of-type(odd) {
-			a:not(.btn) {
+			a:not(.btn):not(.o_practice_play) {
 				color: o-a11y-color($link-color, $table-bg-accent);
 			}
  	 	}
