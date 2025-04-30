@@ -41,6 +41,7 @@ import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.user.UserPropertiesInfoController;
 import org.olat.user.UserPropertiesInfoController.Builder;
+import org.olat.user.UserPropertiesInfoController.LabelValue;
 import org.olat.user.UserPropertiesInfoController.LabelValues;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,16 +59,16 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
-		this(ureq, wControl, assessedIdentity, (CourseEnvironment)null, null);
+		this(ureq, wControl, assessedIdentity, (CourseEnvironment)null, null, null);
 	}
 	
 	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
 			ICourse course, CourseNode courseNode) {
-		this(ureq, wControl, assessedIdentity, (course == null ? null : course.getCourseEnvironment()), courseNode);
+		this(ureq, wControl, assessedIdentity, (course == null ? null : course.getCourseEnvironment()), courseNode, null);
 	}
 	
 	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
-			CourseEnvironment courseEnv, CourseNode courseNode) {
+			CourseEnvironment courseEnv, CourseNode courseNode, LabelValues additionalUserLV) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("user_infos_large");
 
@@ -91,6 +92,12 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 					.map(StringHelper::escapeHtml)
 					.collect(Collectors.joining(", "));
 			lvBuilder.add(translate("participantgroups.title"), groupNames);
+		}
+		
+		if (additionalUserLV != null) {
+			for (LabelValue labelValue : additionalUserLV.getLabelValues()) {
+				lvBuilder.add(labelValue.getLabel(), labelValue.getValue());
+			}
 		}
 		
 		UserPropertiesInfoController userInfoCtr = new UserPropertiesInfoController(ureq, getWindowControl(),

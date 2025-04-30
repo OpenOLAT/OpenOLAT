@@ -175,6 +175,23 @@ public class EditCurriculumController extends FormBasicController {
 		
 		allOk &= validateTextElement(displayNameEl, 64, true);
 		allOk &= validateTextElement(identifierEl, 64, true);
+		allOk &= validateOrg();
+		
+		return allOk;
+	}
+	
+	private boolean validateOrg() {
+		boolean allOk = true;
+		
+		if (organisationEl == null || !organisationEl.isVisible()) {
+			return allOk;
+		}
+
+		organisationEl.clearError();
+		if (organisationEl.getSelection() == null || organisationEl.getSelection().isEmpty()) {
+			organisationEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
 		
 		return allOk;
 	}
