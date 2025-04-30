@@ -31,6 +31,7 @@ import org.olat.core.gui.components.scope.ScopeEvent;
 import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.scope.ScopeSelection;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -288,12 +289,19 @@ public class OverviewRepositoryListController extends BasicController implements
 					doOpenInPreparation(ureq);
 				} else if(CMD_IMPLEMENTATIONS_LIST.equals(se.getSelectedKey())) {
 					doOpenImplementationsList(ureq);
+					scopesSelection.setSelectedKey(se.getSelectedKey());// Reselect because with listen to pop
 				} else if(se.getSelectedKey().startsWith(CMD_IMPLEMENTATION)) {
 					Long implementationKey = Long.valueOf(se.getSelectedKey().replace(CMD_IMPLEMENTATION, ""));
 					List<ContextEntry> entries = BusinessControlFactory.getInstance()
 							.createCEListFromString(OresHelper.createOLATResourceableInstance(CurriculumElement.class, implementationKey));
 					doOpenImplementationsList(ureq).activate(ureq, entries, null);
+					scopesSelection.setSelectedKey(se.getSelectedKey());// Reselect because with listen to pop
 				}
+			}
+		} else if(implementationsListStackPanel == source) {
+			if(event instanceof PopEvent 
+					&& implementationsListStackPanel.getLastController() == implementationsListCtrl) {
+				scopesSelection.setSelectedKey(CMD_IMPLEMENTATIONS_LIST);
 			}
 		}
 	}
@@ -332,14 +340,14 @@ public class OverviewRepositoryListController extends BasicController implements
 	private ImplementationsListController doOpenImplementationsList(UserRequest ureq) {
 		if(implementationsListCtrl == null) {
 			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
-			
+
 			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel);
 			listenTo(implementationsListCtrl);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {
 			implementationsListStackPanel.popUpToRootController(ureq);
 		}
-
+		
 		currentCtrl = implementationsListCtrl;
 		mainVC.put("component", implementationsListStackPanel);
 		return implementationsListCtrl;
