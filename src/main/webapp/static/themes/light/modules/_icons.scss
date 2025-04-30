@@ -49,6 +49,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_assign_new_item { @include o-add-icon('arrows-turn-to-dots'); }
 .o_icon_audio { @include o-add-icon('volume-up');}
 .o_icon_audio_record { @include o-add-icon('microphone');}
+.o_icon_authoring { @include o-add-icon('feather-pointed');}
 .o_icon_back { @include o-add-icon('chevron-left');}
 .o_icon_badge { @include o-add-icon('award');}
 .o_icon_ban { @include o-add-icon('ban');}

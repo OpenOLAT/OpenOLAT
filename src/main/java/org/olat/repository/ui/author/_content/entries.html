@@ -2,7 +2,10 @@
 	#if($r.isNotEmpty($title) || $r.visible("cmd.import.ressource") || $r.visible("cmd.import.url.ressource") || $r.visible("cmd.create.ressource") || $r.visible("help.single") || $r.visible("help.list"))
 	<div class="o_header_with_buttons">
 		#if($r.isNotEmpty($title))
-			<h2>$r.translate($title)</h2>
+			<h2>
+				<i class="o_icon o_icon-fw o_icon_authoring"> </i>
+				$r.translate($title)
+			</h2>
 		#end
 		<div class="o_button_group o_button_group_right">
 			<div class="btn-group">
