@@ -242,6 +242,11 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		if(similarInvitation == null) {
 			invitee = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
 		} else {
+			if(similarInvitation.getIdentity() != null
+					&& Identity.STATUS_INACTIVE.equals(similarInvitation.getIdentity().getStatus())) {
+				invitee = invitationService.activate(similarInvitation.getIdentity(), ureq.getIdentity());
+				similarInvitation.setIdentity(invitee);
+			}
 			if(similarInvitation.getStatus() != InvitationStatusEnum.active) {
 				similarInvitation.setStatus(InvitationStatusEnum.active);
 				similarInvitation = invitationService.update(similarInvitation);
