@@ -12,7 +12,7 @@
 	<div class="o_two_col_metadata o_block">
 		<div>
 			<span>$r.formatTimeShort($row.startDate) - $r.formatTimeShort($row.endDate)
-			#if($row.leadTime > 0 || $row.followupTime > 0)
+			#if(($r.isNotNull($row.leadTime) && $row.leadTime > 0) || ($r.isNotNull($row.followupTime) && $row.followupTime > 0))
 				<span class="o_lead_followup_times">
 				#if($row.leadTime > 0)
 					-$row.leadTime

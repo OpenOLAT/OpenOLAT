@@ -48,6 +48,7 @@ import org.olat.modules.coach.reports.TimeBoundReportConfiguration;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumReportConfiguration;
 import org.olat.modules.curriculum.CurriculumService;
@@ -157,6 +158,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	@Override
 	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet,
 								List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		Translator translator = getTranslator(locale);
 		Translator statusTranslator = Util.createPackageTranslator(OrdersDataModel.class, locale);
 		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
@@ -174,7 +176,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 		for (BookingOrder bookingOrder : bookingOrders) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName,
-					educationalTypeIdToName, statusTranslator);
+					educationalTypeIdToName, statusTranslator, translator);
 		}
 	}
 
@@ -195,14 +197,14 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet,
 								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder,
 								 Map<String, String> accessTypeToName, Map<String, String> educationalTypeIdToName,
-								 Translator statusTranslator) {
+								 Translator statusTranslator, Translator curriculumTranslator) {
 		OpenXMLWorksheet.Row row = sheet.newRow();
 		int pos = 0;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			row.addCell(pos, bookingOrder.getIdentityProp(pos));
 			pos++;
 		}
-		row.addCell(pos++, getMembershipStatusString(bookingOrder));
+		row.addCell(pos++, getMembershipStatusString(bookingOrder, curriculumTranslator));
 		row.addCell(pos++, bookingOrder.getCurriculumName());
 		row.addCell(pos++, bookingOrder.getCurriculumIdentifier());
 		row.addCell(pos++, bookingOrder.getCurriculumOrgId());
@@ -210,7 +212,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getImplementationName());
 		row.addCell(pos++, bookingOrder.getImplementationIdentifier());
 		row.addCell(pos++, bookingOrder.getImplementationType());
-		row.addCell(pos++, bookingOrder.getImplementationStatus());
+		row.addCell(pos++, getImplementationStatusString(bookingOrder, curriculumTranslator));
 		row.addCell(pos++, educationalTypeIdToName.get(bookingOrder.getImplementationFormat()));
 		row.addCell(pos++, formatDatetime(bookingOrder.getBeginDate()), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, formatDatetime(bookingOrder.getEndDate()), workbook.getStyles().getDateTimeStyle());
@@ -269,11 +271,21 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		return statusTranslator.translate(OrderTableItem.Status.getI18nKey(status));
 	}
 	
-	private String getMembershipStatusString(BookingOrder bookingOrder) {
+	private String getMembershipStatusString(BookingOrder bookingOrder, Translator curriculumTranslator) {
 		if (bookingOrder.getOrdererMembershipStatus() == null) {
 			return "";			
 		}
-		return bookingOrder.getOrdererMembershipStatus().name();
+		return curriculumTranslator.translate("membership." + bookingOrder.getOrdererMembershipStatus().name());
+	}
+	
+	private String getImplementationStatusString(BookingOrder bookingOrder, Translator curriculumTranslator) {
+		if (bookingOrder.getImplementationStatus() == null) {
+			return "";
+		}
+		if (!CurriculumElementStatus.isValueOf(bookingOrder.getImplementationStatus())) {
+			return "";
+		}
+		return curriculumTranslator.translate("status." + bookingOrder.getImplementationStatus());
 	}
 
 	private String getOfferType(BookingOrder bookingOrder, Map<String, String> accessTypeToName) {
@@ -350,7 +362,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 			for (BookingOrder bookingOrder : bookingOrders) {
 				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName, 
-						educationalTypeIdToName, statusTranslator);
+						educationalTypeIdToName, statusTranslator, translator);
 				
 				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
 					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
