@@ -6,13 +6,13 @@
 			grid-template-columns: 1fr 1fr;
 		}
 		@media (min-width: $screen-sm-min) {
-			grid-template-columns: 1fr 1fr 1fr;
+			grid-template-columns: 1fr 1fr;
 		}
 		@media (min-width: $screen-md-min) {
-			grid-template-columns: 1fr 1fr 1fr 1fr;
+			grid-template-columns: 1fr 1fr 1fr;
 		}
 		@media (min-width: $screen-lg-min) {
-			grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+			grid-template-columns: 1fr 1fr 1fr 1fr;
 		}
 		gap: 10px;
 
