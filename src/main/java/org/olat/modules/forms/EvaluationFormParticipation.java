@@ -62,6 +62,16 @@ public interface EvaluationFormParticipation extends EvaluationFormParticipation
 	public int getRun();
 	
 	public boolean isLastRun();
+	
+	public String getEmail();
+	
+	public String getFirstName();
+	
+	public void setFirstName(String firstName);
+	
+	public String getLastName();
+	
+	public void setLastName(String lastName);
 
 	/**
 	 * The executor of the participation. A participation must not have an executor.

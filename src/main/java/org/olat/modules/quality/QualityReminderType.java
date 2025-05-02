@@ -29,11 +29,11 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
  */
 public enum QualityReminderType {
 	
-	ANNOUNCEMENT_COACH_TOPIC("reminder.announcement.coach.topic.subject", "reminder.announcement.coach.topic.body", null),
-	ANNOUNCEMENT_COACH_CONTEXT("reminder.announcement.coach.context.subject", "reminder.announcement.coach.context.body", null),
-	INVITATION("reminder.invitation.subject", "reminder.invitation.body", null),
-	REMINDER1("reminder.reminder1.subject", "reminder.reminder1.body", EvaluationFormParticipationStatus.prepared),
-	REMINDER2("reminder.reminder2.subject", "reminder.reminder2.body", EvaluationFormParticipationStatus.prepared);
+	ANNOUNCEMENT_COACH_TOPIC("reminder.announcement.coach.topic.subject", "reminder.announcement.coach.topic.body2", null),
+	ANNOUNCEMENT_COACH_CONTEXT("reminder.announcement.coach.context.subject", "reminder.announcement.coach.context.body2", null),
+	INVITATION("reminder.invitation.subject", "reminder.invitation.body2", null),
+	REMINDER1("reminder.reminder1.subject", "reminder.reminder1.body2", EvaluationFormParticipationStatus.prepared),
+	REMINDER2("reminder.reminder2.subject", "reminder.reminder2.body2", EvaluationFormParticipationStatus.prepared);
 	
 	private final String subjectI18nKey;
 	private final String bodyI18nKey;

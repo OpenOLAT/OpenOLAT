@@ -73,7 +73,7 @@ public class SessionInformationsController extends FormBasicController implement
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.setFormStyle("o_form_two_cols");
 		this.sessionInformations = sessionInformations;
-		this.executionIdentity = new ExecutionIdentity(getIdentity());
+		this.executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
 		initForm(ureq);
 		setBlockLayoutClass(sessionInformations.getLayoutSettings());
 	}

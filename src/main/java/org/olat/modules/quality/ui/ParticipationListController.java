@@ -19,33 +19,53 @@
  */
 package org.olat.modules.quality.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
@@ -54,14 +74,20 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContextRef;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
 import org.olat.modules.quality.ui.wizard.AddCourseUser_1_ChooseCourseStep;
 import org.olat.modules.quality.ui.wizard.AddCurriculumElementUser_1_ChooseCurriculumElementStep;
+import org.olat.modules.quality.ui.wizard.AddEmailAddress_1_AddStep;
+import org.olat.modules.quality.ui.wizard.AddEmailContext;
+import org.olat.modules.quality.ui.wizard.AddEmailContext.EmailIdentity;
 import org.olat.modules.quality.ui.wizard.AddUser_1_ChooseUserStep;
 import org.olat.modules.quality.ui.wizard.CourseContext;
 import org.olat.modules.quality.ui.wizard.CurriculumElementContext;
@@ -78,18 +104,29 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ParticipationListController extends FormBasicController implements TooledController {
-
+	
+	private static final String CMD_DELETE = "delete";
+	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_USER = "Users";
+	private static final String TAB_ID_EMAIL = "Invitations";
+	private static final String FILTER_ROLE = "role";
+	
+	private Dropdown addDropdown;
 	private Link addUsersLink;
 	private Link addCourseUsersLink;
 	private Link addCurriculumElementUsersLink;
-	private FormLink removeUsersLink;
-	private FormLayoutContainer buttons;
+	private Link addEmailAddressLink;
+	private FormLink bulkDeleteLink;
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
 	private StepsMainRunController wizard;
+	private StepsMainRunController emailAddressWizard;
 	private CloseableModalController cmc;
 	private ParticipationRemoveConfirmationController removeConfirmationCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ToolsController toolsCtrl;
 	
 	private final TooledStackedPanel stackPanel;
 	private DataCollectionSecurityCallback secCallback;
@@ -107,26 +144,28 @@ public class ParticipationListController extends FormBasicController implements 
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			DataCollectionSecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection) {
-		super(ureq, windowControl, LAYOUT_BAREBONE);
+		super(ureq, windowControl, "participants");
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		this.dataCollection = dataCollection;
+		
 		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initTable(ureq);
+		updateUI();
+		
+		loadModel();
 	}
 	
-	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback, UserRequest ureq) {
+	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback) {
 		this.dataCollection = dataCollection;
 		this.secCallback = secCallback;
-		initTable(ureq);
+		
 		initTools();
+		updateUI();
+		loadModel();
 	}
-
-	private void initTable(UserRequest ureq) {
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.firstname));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.lastname));
@@ -134,53 +173,138 @@ public class ParticipationListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.role, new QualityContextRoleRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.repositoryEntryName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.curriculumElementName));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ParticipationCols.tools));
 		
-		ParticipationDataSource dataSource = new ParticipationDataSource(dataCollection);
-		dataModel = new ParticipationDataModel(dataSource, columnsModel);
-		if (tableEl != null) flc.remove(tableEl);
-		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
+		dataModel = new ParticipationDataModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
-		tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.user.add.user", "o_icon_qual_part_user_add_course", false);
-		if (secCallback.canRemoveParticipation()) {
-			tableEl.setMultiSelect(true);
-			tableEl.setSelectAllEnable(true);
+		tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.add.participants", "o_icon_add_member", false);
+		
+		initBulkLinks();
+		initFilters();
+		initFilterTabs(ureq);
+	}
+	
+	private void initBulkLinks() {
+		bulkDeleteLink = uifactory.addFormLink("participation.remove", flc, Link.BUTTON);
+		bulkDeleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		tableEl.addBatchButton(bulkDeleteLink);
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
+		
+		SelectionValues roleValues = new SelectionValues();
+		roleValues.add(SelectionValues.entry(QualityContextRole.owner.name(), translate("participation.role.owner")));
+		roleValues.add(SelectionValues.entry(QualityContextRole.coach.name(), translate("participation.role.coach")));
+		roleValues.add(SelectionValues.entry(QualityContextRole.participant.name(), translate("participation.role.participant")));
+		roleValues.add(SelectionValues.entry(QualityContextRole.email.name(), translate("participation.role.email")));
+		roleValues.add(SelectionValues.entry(QualityContextRole.none.name(), translate("participation.role.none")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("participation.role"), FILTER_ROLE, roleValues, true));
+		
+		tableEl.setFilters(true, filters, false, false);
+	}
+
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+
+		FlexiFiltersTab tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.nothing,
+				List.of());
+		tabs.add(tabAll);
+		
+		FlexiFiltersTab tabRoleUser = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_USER,
+				translate("tab.participation.role.user"),
+				TabSelectionBehavior.nothing,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
+						List.of(QualityContextRole.owner.name(),
+								QualityContextRole.coach.name(),
+								QualityContextRole.participant.name(),
+								QualityContextRole.none.name()))));
+		tabs.add(tabRoleUser);
+		
+		FlexiFiltersTab tabRoleEmail = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_EMAIL,
+				translate("tab.participation.role.email"),
+				TabSelectionBehavior.nothing,
+				List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, QualityContextRole.email.name())));
+		tabs.add(tabRoleEmail);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
+	
+	private void loadModel() {
+		List<QualityParticipation> participations = qualityService.loadParticipations(dataCollection);
+		List<ParticipationRow> rows = new ArrayList<>();
+		for (QualityParticipation participation : participations) {
+			ParticipationRow row = new ParticipationRow(participation);
+			forgeToolsLink(row);
+			rows.add(row);
+		}
+		applyFilter(rows);
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+
+	private void forgeToolsLink(ParticipationRow row) {
+		if (!secCallback.canRemoveParticipation()) {
+			return;
 		}
 		
-		if (buttons != null) flc.remove(buttons);
-		if (secCallback.canRemoveParticipation()) {
-			buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			flc.add("buttons", buttons);
-			buttons.setElementCssClass("o_button_group");
-			removeUsersLink = uifactory.addFormLink("participation.remove", buttons, Link.BUTTON);
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
+	}
+	
+	private void applyFilter(List<ParticipationRow> rows) {
+		if (tableEl.getFilters() != null && !tableEl.getFilters().isEmpty()) {
+			FlexiTableFilter roleFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLE);
+			if (roleFilter instanceof FlexiTableExtendedFilter extFilter && extFilter.getValues() != null && !extFilter.getValues().isEmpty()) {
+				Set<QualityContextRole> roles = extFilter.getValues().stream().map(QualityContextRole::valueOf).collect(Collectors.toSet());
+				rows.removeIf(row -> !roles.contains(row.getRole()));
+			}
 		}
-		updateUI();
 	}
 
 	private void updateUI() {
-		if (removeUsersLink != null) {
-			removeUsersLink.setVisible(!dataModel.getObjects().isEmpty());
-		}
+		tableEl.setMultiSelect(secCallback.canRemoveParticipation());
+		tableEl.setSelectAllEnable(secCallback.canRemoveParticipation());
+		bulkDeleteLink.setVisible(secCallback.canRemoveParticipation());
 	}
 
 	@Override
 	public void initTools() {
-		stackPanel.removeTool(addCourseUsersLink);
-		stackPanel.removeTool(addCurriculumElementUsersLink);
-		stackPanel.removeTool(addUsersLink);
+		stackPanel.removeTool(addDropdown);
+		
 		if (secCallback.canAddParticipants()) {
-			addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
-			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
-			stackPanel.addTool(addCourseUsersLink, Align.right);
+			addDropdown = new Dropdown("add.participants", "participation.add.participants", false, getTranslator());
+			addDropdown.setIconCSS("o_icon o_icon-lg o_icon_add_member");
+			addDropdown.setOrientation(DropdownOrientation.right);
+			stackPanel.addTool(addDropdown, Align.right, true, null, this);
+			
+			addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add.search"), this);
+			addUsersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
+			addDropdown.addComponent(addUsersLink);
+			
+			addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.course.add"), this);
+			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
+			addDropdown.addComponent(addCourseUsersLink);
 			
 			if (curriculumModule.isEnabled()) {
-				addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.add.curele"), this);
-				addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_curele");
-				stackPanel.addTool(addCurriculumElementUsersLink, Align.right);
+				addCurriculumElementUsersLink = LinkFactory.createToolLink("participation.user.add.curele", translate("participation.user.curele.add"), this);
+				addCurriculumElementUsersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum");
+				addDropdown.addComponent(addCurriculumElementUsersLink);
 			}
 			
-			addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add"), this);
-			addUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add");
-			stackPanel.addTool(addUsersLink, Align.right);
+			addDropdown.addComponent(new Spacer("extern"));
+			
+			addEmailAddressLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.email.add"), this);
+			addEmailAddressLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+			addDropdown.addComponent(addEmailAddressLink);
 		}
 	}
 	
@@ -189,12 +313,18 @@ public class ParticipationListController extends FormBasicController implements 
 		if(source == tableEl) {
 			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doAddUsers(ureq);
+			} else if(event instanceof FlexiTableSearchEvent) {
+				loadModel();
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink) source;
-			if (link == removeUsersLink) {
+			if (link == bulkDeleteLink) {
 				List<QualityContextRef> contextRefs = getSelectedContextRefs();
 				doConfirmRemove(ureq, contextRefs);
+			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ParticipationRow row) {
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -208,17 +338,19 @@ public class ParticipationListController extends FormBasicController implements 
 			doAddCourseUsers(ureq);
 		} else if (addCurriculumElementUsersLink == source) {
 			doAddCurriculumElementUsers(ureq);
+		} else if (addEmailAddressLink == source) {
+			doAddEmailAddresses(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (wizard == source) {
+		if (wizard == source || emailAddressWizard == source) {
 			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					tableEl.reset(true, false, true);
+					loadModel();
 					updateUI();
 				}
 				cleanUp();
@@ -233,14 +365,29 @@ public class ParticipationListController extends FormBasicController implements 
 		} else if (source == cmc) {
 			cmc.deactivate();
 			cleanUp();
+		} else if (toolsCalloutCtrl == source) {
+			cleanUp();
+		} else if (toolsCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
 		}
 	}
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(removeConfirmationCtrl);
+		removeAsListenerAndDispose(emailAddressWizard);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(wizard);
 		removeAsListenerAndDispose(cmc);
 		removeConfirmationCtrl = null;
+		emailAddressWizard = null;
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
 		wizard = null;
 		cmc = null;
 	}
@@ -264,12 +411,16 @@ public class ParticipationListController extends FormBasicController implements 
 		return (uureq, wControl, runContext) -> {
 			IdentityContext identityContext = (IdentityContext) runContext.get("context");
 			Collection<Identity> identities = identityContext.getIdentities();
-			List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
-			for (EvaluationFormParticipation participation: participations) {
-				qualityService.createContextBuilder(dataCollection, participation).build();
-			}
+			addUserParticipantions(identities);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
+	}
+
+	private void addUserParticipantions(Collection<Identity> identities) {
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, identities);
+		for (EvaluationFormParticipation participation: participations) {
+			qualityService.createContextBuilder(dataCollection, participation).build();
+		}
 	}
 	
 	private void doAddCourseUsers(UserRequest ureq) {
@@ -321,6 +472,42 @@ public class ParticipationListController extends FormBasicController implements 
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 	}
+	
+	private void doAddEmailAddresses(UserRequest ureq) {
+		removeAsListenerAndDispose(emailAddressWizard);
+		
+		Step start = new AddEmailAddress_1_AddStep(ureq);
+		StepRunnerCallback finish = addEmailUsers();
+		emailAddressWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("participation.user.email.add"), null);
+		listenTo(emailAddressWizard);
+		getWindowControl().pushAsModalDialog(emailAddressWizard.getInitialComponent());
+	}
+	
+	private StepRunnerCallback addEmailUsers() {
+		return (uureq, wControl, runContext) -> {
+			AddEmailContext context = (AddEmailContext) runContext.get("context");
+			
+			Collection<EvaluationFormEmailExecutor> emailExecutors = new HashSet<>();
+			Collection<Identity> identities = new HashSet<>();
+			for (EmailIdentity emailIdentity : context.getEmailToIdentity().values()) {
+				if (emailIdentity.identity() == null) {
+					emailExecutors.add(emailIdentity.emailExecutor());
+				} else {
+					identities.add(emailIdentity.identity());
+				}
+			}
+			
+			addUserParticipantions(identities);
+			addEmailParticipantions(emailExecutors);
+			
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+	}
+
+	private void addEmailParticipantions(Collection<EvaluationFormEmailExecutor> emailExecutors) {
+		qualityService.addParticipationsEmail(dataCollection, emailExecutors);
+	}
 
 	private void doConfirmRemove(UserRequest ureq, List<QualityContextRef> contextRefs) {
 		if (contextRefs.isEmpty()) {
@@ -338,13 +525,67 @@ public class ParticipationListController extends FormBasicController implements 
 	
 	private void doRemove(List<QualityContextRef> contextRefs) {
 		qualityService.deleteContextsAndParticipations(contextRefs);
-		tableEl.reset(true, true, true);
+		loadModel();
 		updateUI();
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doOpenTools(UserRequest ureq, ParticipationRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final VelocityContainer mainVC;
+		
+		private final ParticipationRow row;
+		private final List<String> names = new ArrayList<>(1);
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, ParticipationRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			mainVC = createVelocityContainer("tools");
+			putInitialPanel(mainVC);
+			
+			addLink("delete", CMD_DELETE, "o_icon o_icon-fw o_icon_delete_item");
+			
+			mainVC.contextPut("names", names);
+		}
+		
+		private void addLink(String name, String cmd, String iconCSS) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if (iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			names.add(name);
+		}
+		
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				String cmd = link.getCommand();
+				if (CMD_DELETE.equals(cmd)) {
+					doConfirmRemove(ureq, List.of(row.getContextRef()));
+				}
+			}
+		}
 	}
 
 }

@@ -47,6 +47,8 @@ public class QualityContextRoleRenderer implements FlexiCellRenderer {
 				break;
 			case participant: target.append(translator.translate("participation.role.participant"));
 				break;
+			case email: target.append(translator.translate("participation.role.email"));
+				break;
 			default:
 				break;
 			}

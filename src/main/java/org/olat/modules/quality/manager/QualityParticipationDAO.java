@@ -52,35 +52,17 @@ class QualityParticipationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	int getParticipationCount(QualityDataCollectionLight dataCollection) {
-		if (dataCollection == null) return 0;
-		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select count(participation.key)");
-		sb.append("  from evaluationformparticipation as participation");
-		sb.append(" inner join participation.survey as survey");
-		sb.append(" where survey.resName=:resName");
-		sb.append("   and survey.resId=:resId");
-		
-		List<Long> counts = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("resName", dataCollection.getResourceableTypeName())
-				.setParameter("resId", dataCollection.getResourceableId())
-				.getResultList();
-		return Math.toIntExact(counts.get(0));
-	}
-
-	List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		if (dataCollection == null)
-			return new ArrayList<>();
+	List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection) {
+		if (dataCollection == null) {
+			return List.of();
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityParticipationImpl(");
 		sb.append("       participation.key");
-		sb.append("     , user.firstName as firstname");
-		sb.append("     , user.lastName as lastname");
-		sb.append("     , user.email as email");
+		sb.append("     , (case when participation.firstName is null then user.firstName else participation.firstName end) as firstname");
+		sb.append("     , (case when participation.lastName is null then user.lastName else participation.lastName end) as lastname");
+		sb.append("     , (case when participation.email is null then user.email else participation.email end) as email");
 		sb.append("     , context.key");
 		sb.append("     , context.role as role");
 		sb.append("     , audienceRepositoryEntry.displayname as repositoryEntryName");
@@ -96,41 +78,11 @@ class QualityParticipationDAO {
 		sb.append(" where survey.resName=:resName");
 		sb.append("   and survey.resId=:resId");
 		
-		appendParticipationOrderBy(sb, orderBy);
-
-		TypedQuery<QualityParticipation> query = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityParticipation.class)
 				.setParameter("resName", dataCollection.getResourceableTypeName())
-				.setParameter("resId", dataCollection.getResourceableId());
-		if(firstResult >= 0) {
-			query.setFirstResult(firstResult);
-		}
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-		
-		return query.getResultList();
-	}
-	
-	private void appendParticipationOrderBy(StringBuilder sb, SortKey... orderBy) {
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-			String sortKey = orderBy[0].getKey();
-			boolean asc = orderBy[0].isAsc();
-			sb.append(" order by ");
-			sb.append(sortKey);
-			appendAsc(sb, asc);
-		} else {
-			sb.append(" order by participation.key asc ");
-		}
-	}
-	
-	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
-		if(asc) {
-			sb.append(" asc");
-		} else {
-			sb.append(" desc");
-		}
-		return sb;
+				.setParameter("resId", dataCollection.getResourceableId())
+				.getResultList();
 	}
 
 	Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {
@@ -217,7 +169,7 @@ class QualityParticipationDAO {
 	public void appendFrom(QueryBuilder sb) {
 		sb.append("  from evaluationformparticipation as participation");
 		sb.append("       inner join participation.survey as survey");
-		sb.append("       inner join participation.executor as executor");
+		sb.append("       left join participation.executor as executor");
 		sb.append("       left join evaluationformsession as session on session.participation.key = participation.key");
 		sb.append("       inner join qualitydatacollection as collection on collection.key = survey.resId");
 		sb.append("       left join collection.topicIdentity.user as user");

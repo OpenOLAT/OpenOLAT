@@ -335,6 +335,29 @@ public class ReportHelperTest {
 		public Identity getExecutor() {
 			return executor;
 		}
+
+		@Override
+		public String getEmail() {
+			return null;
+		}
+
+		@Override
+		public String getFirstName() {
+			return null;
+		}
+
+		@Override
+		public void setFirstName(String firstName) {
+		}
+
+		@Override
+		public String getLastName() {
+			return null;
+		}
+
+		@Override
+		public void setLastName(String lastName) {
+		}
 	}
 	
 	private final static class IdentityNameGenarator implements LegendNameGenerator {

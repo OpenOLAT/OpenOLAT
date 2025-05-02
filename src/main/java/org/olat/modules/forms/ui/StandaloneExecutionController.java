@@ -28,9 +28,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -123,8 +123,14 @@ public class StandaloneExecutionController extends BasicController {
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
 		EvaluationFormSession session = loadOrCreateSesssion(participation);
-		Identity executor = participation.getExecutor() != null? participation.getExecutor(): getIdentity();
-		ExecutionIdentity executionIdentity = new ExecutionIdentity(executor);
+		ExecutionIdentity executionIdentity;
+		if (participation.getExecutor() != null) {
+			executionIdentity = ExecutionIdentity.ofIdentity(participation.getExecutor());
+		} else if (StringHelper.containsNonWhitespace(participation.getEmail())) {
+			executionIdentity = ExecutionIdentity.ofEmail(participation.getEmail());
+		} else {
+			executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
+		}
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, executionIdentity, null, false, true, false, false, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());

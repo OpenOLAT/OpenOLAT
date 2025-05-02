@@ -132,17 +132,21 @@ public interface EvaluationFormManager {
 	
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
+	
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, String identifierTypePostfix, EvaluationFormEmailExecutor emailExecutor);
 
 	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation);
 	
 	public EvaluationFormParticipation loadParticipationByKey(EvaluationFormParticipationRef participationRef);
 
 	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
-			EvaluationFormParticipationStatus status, boolean fetchExecutor);
+			EvaluationFormParticipationStatus status, boolean emailOnly, boolean fetchExecutor);
 
-	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
+	public List<EvaluationFormParticipation> loadParticipationByEmails(EvaluationFormSurveyRef surveyRef, Collection<String> emails);
 	
 	public List<EvaluationFormParticipation> loadParticipationsByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
+
+	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
 
 	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
 

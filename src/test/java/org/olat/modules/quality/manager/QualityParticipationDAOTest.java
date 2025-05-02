@@ -27,6 +27,7 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,8 +37,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
+import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -50,10 +50,8 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorParticipationCols;
-import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,22 +82,6 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldGetParticipationCount() {
-		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
-		int numberOfParticipations = 3;
-		for (int i = 0; i < numberOfParticipations; i++) {
-			EvaluationFormParticipation participation = qualityTestHelper.createParticipation(survey);
-			qualityTestHelper.createContext(dataCollection, participation);
-		}
-		dbInstance.commitAndCloseSession();
-		
-		int count = sut.getParticipationCount(dataCollection);
-		
-		assertThat(count).isEqualTo(numberOfParticipations);
-	}
-	
-	@Test
 	public void shouldLoadParticipations() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
@@ -111,7 +93,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, 0, -1);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
 		
 		assertThat(participations).hasSize(numberOfParticipations);
 		QualityParticipation participation = participations.get(0);
@@ -126,63 +108,25 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadParticipationsPaged() {
+	public void shouldLoadParticipations_Email() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
-		int numberOfParticipations = 3;
-		for (int i = 0; i < numberOfParticipations; i++) {
-			EvaluationFormParticipation participation = qualityTestHelper.createParticipation(survey);
-			qualityTestHelper.createContext(dataCollection, participation);
-		}
+		EvaluationFormEmailExecutor emailExecutor = new EvaluationFormEmailExecutor(random(), random(), random());
+		EvaluationFormParticipation evaParticipation = evaManager.createParticipation(survey, "test", emailExecutor);
+		qualityTestHelper.createContext(dataCollection, evaParticipation);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, 1, 1);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
 		
-		assertThat(participations).hasSize(1);
-	}
-	
-	@Test
-	public void shouldLoadParticipationsOrdered() {
-		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
-		Identity identityZ = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-		User userZ = identityZ.getUser();
-		userZ.setProperty(UserConstants.LASTNAME, "Z");
-		UserManager.getInstance().updateUser(identityZ, userZ);
-		EvaluationFormParticipation participationZ = qualityTestHelper.createParticipation(survey, identityZ);
-		qualityTestHelper.createContext(dataCollection, participationZ);
-		Identity identityA = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-		User userA = identityA.getUser();
-		userA.setProperty(UserConstants.LASTNAME, "A");
-		UserManager.getInstance().updateUser(identityA, userA);
-		EvaluationFormParticipation participationA = qualityTestHelper.createParticipation(survey, identityA);
-		qualityTestHelper.createContext(dataCollection, participationA);
-		dbInstance.commitAndCloseSession();
-		
-		SortKey sortKey = new SortKey(ParticipationCols.lastname.name(), true);
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, 0, -1, sortKey);
-		
-		assertThat(participations.get(0).getLastname()).isEqualTo("A");
-		assertThat(participations.get(1).getLastname()).isEqualTo("Z");
-	}
-	
-	@Test
-	public void shouldLoadParticipationsOrderedByAllColumns() {
-		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
-		qualityTestHelper.createParticipation(survey, identity);
-		dbInstance.commitAndCloseSession();
-		
-		List<ParticipationCols> excludedCols = Arrays.asList();
-		for (ParticipationCols col: ParticipationCols.values()) {
-			if (!excludedCols.contains(col)) {
-				SortKey sortKey = new SortKey(col.name(), true);
-				sut.loadParticipations(dataCollection, 0, -1, sortKey);
-			}
-		}
-		
-		// Only check that no Exception is thrown to be sure that hql syntax is ok.
+		QualityParticipation participation = participations.get(0);
+		assertThat(participation.getParticipationRef()).isNotNull();
+		assertThat(participation.getFirstname()).isEqualTo(emailExecutor.firstName());
+		assertThat(participation.getLastname()).isEqualTo(emailExecutor.lastName());
+		assertThat(participation.getEmail()).isEqualTo(emailExecutor.email());
+		assertThat(participation.getContextRef()).isNotNull();
+		assertThat(participation.getRole()).isNotNull();
+		assertThat(participation.getAudienceRepositoryEntryName()).isNotNull();
+		assertThat(participation.getAudienceCurriculumElementName()).isNotNull();
 	}
 	
 	@Test

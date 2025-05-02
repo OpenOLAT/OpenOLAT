@@ -30,7 +30,6 @@ import jakarta.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -54,6 +53,8 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.modules.forms.ui.StandaloneExecutionCreator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Dispatcher to execute a survey participation without user authentication.
@@ -62,10 +63,12 @@ import org.olat.modules.forms.ui.StandaloneExecutionCreator;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Service
 public class EvaluationFormDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormDispatcher.class);
 	
+	public static final String EMAIL_PARTICIPATION_PREFIX = "email";
 	private static final String SURVEY_PATH = "survey";
 	
 	public static final String getExecutionUrl(EvaluationFormParticipationIdentifier identifier) {
@@ -79,6 +82,11 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				.append(identifier.getKey())
 				.toString();
 	}
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private EvaluationFormStandaloneProviderFactory standaloneProviderFactory;
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -106,8 +114,8 @@ public class EvaluationFormDispatcher implements Dispatcher {
 		UserSession usess = ureq.getUserSession();
 		if(pathInfo != null && pathInfo.contains("close-window")) {
 			DispatcherModule.setNotContent(pathInfo, response);
-		} else if (usess.isAuthenticated()) {
-			if(persistentAuthenticatedRequest(identifier, ureq) && ureq.isValidDispatchURI()) {
+		} else if (usess.isAuthenticated() && !isAllwaysUnautenticated(identifier)) {
+			if(ureq.isValidDispatchURI() && persistentAuthenticatedRequest(identifier, ureq)) {
 				dispatchValidUnauthenticated(ureq);
 			} else {
 				dispatchAuthenticated(response, identifier, ureq, usess);
@@ -118,7 +126,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 			dispatchUnautenticated(ureq, request, identifier, uriPrefix);
 		}
 	}
-	
+
 	/**
 	 * Started an evaluation form unauthenticated but authenticated later (use the /survey/ dispatcher and not the authenticated)
 	 * and can access a persistent window (persistent across user session and which stick to the HTTP session)
@@ -126,13 +134,15 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	private boolean persistentAuthenticatedRequest(EvaluationFormParticipationIdentifier identifier, UserRequest ureq) {
 		return identifier.getKey().contains(":") && Windows.hasPersistentWindow(ureq);
 	}
+	
+	private boolean isAllwaysUnautenticated(EvaluationFormParticipationIdentifier identifier) {
+		return identifier.getType().startsWith(EMAIL_PARTICIPATION_PREFIX);
+	}
 
 	private void dispatchAuthenticated(HttpServletResponse response, EvaluationFormParticipationIdentifier identifier,
 			UserRequest ureq, UserSession usess) {
-		EvaluationFormParticipation participation = CoreSpringFactory.getImpl(EvaluationFormManager.class)
-				.loadParticipationByIdentifier(identifier);
-		EvaluationFormStandaloneProvider standaloneProvider = CoreSpringFactory
-				.getImpl(EvaluationFormStandaloneProviderFactory.class)
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByIdentifier(identifier);
+		EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory
 				.getProvider(participation.getSurvey().getIdentifier().getOLATResourceable());
 		if (participation.getExecutor().equals(usess.getIdentity()) && standaloneProvider.hasBusinessPath(participation)) {
 			String path = standaloneProvider.getBusinessPath(participation);

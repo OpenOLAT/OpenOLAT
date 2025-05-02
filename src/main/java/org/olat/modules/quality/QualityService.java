@@ -32,6 +32,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSessionRef;
@@ -141,11 +142,21 @@ public interface QualityService {
 	 */
 	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection,
 			Collection<Identity> executors);
+	
+	/**
+	 * Add the email executors to the data collection. If already a participation
+	 * for an executor exists, no further participation is created, but the first
+	 * name and last name of the executor are updated. As this type of participation
+	 * has a special context, the creation of the context is managed by this method
+	 * as well.
+	 *
+	 * @param dataCollection
+	 * @param emailExecutors
+	 */
+	public void addParticipationsEmail(QualityDataCollection dataCollection,
+			Collection<EvaluationFormEmailExecutor> emailExecutors);
 
-	public int getParticipationCount(QualityDataCollectionLight dataCollection);
-
-	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
-			int firstResult, int maxResults, SortKey... orderBy);
+	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection);
 
 	public Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams);
 

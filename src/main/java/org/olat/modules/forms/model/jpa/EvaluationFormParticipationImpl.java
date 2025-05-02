@@ -85,6 +85,12 @@ public class EvaluationFormParticipationImpl implements EvaluationFormParticipat
 	private int run;
 	@Column(name="e_last_run", nullable=true, insertable=true, updatable=true)
 	private boolean lastRun;
+	@Column(name="e_email", nullable=true, insertable=true, updatable=true)
+	private String email;
+	@Column(name="e_first_name", nullable=true, insertable=true, updatable=true)
+	private String firstName;
+	@Column(name="e_last_name", nullable=true, insertable=true, updatable=true)
+	private String lastName;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_executor", nullable=true, insertable=true, updatable=false)
@@ -170,6 +176,35 @@ public class EvaluationFormParticipationImpl implements EvaluationFormParticipat
 
 	public void setLastRun(boolean lastRun) {
 		this.lastRun = lastRun;
+	}
+
+	@Override
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	@Override
+	public String getFirstName() {
+		return firstName;
+	}
+
+	@Override
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	@Override
+	public String getLastName() {
+		return lastName;
+	}
+
+	@Override
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	@Override

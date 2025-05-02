@@ -145,7 +145,7 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 
 	private KeyValue createRoleKeyValue(QualityContext context) {
 		KeyValue keyValue = null;
-		if (context.getRole() != null && !context.getRole().equals(QualityContextRole.none)) {
+		if (context.getRole() != null && !context.getRole().equals(QualityContextRole.none)  && !context.getRole().equals(QualityContextRole.email)) {
 			String key = translator.translate("executor.participation.rating");
 			String value = translateRole(context.getRole());
 			keyValue = new KeyValue(key, value);

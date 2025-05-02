@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,6 +71,25 @@ class EvaluationFormParticipationDAO {
 		log.debug("Participation created: " + participation.toString());
 		return participation;
 	}
+	
+	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier, String email, String firstName, String lastName) {
+		EvaluationFormParticipationImpl participation = new EvaluationFormParticipationImpl();
+		participation.setCreationDate(new Date());
+		participation.setLastModified(participation.getCreationDate());
+		participation.setSurvey(survey);
+		participation.setIdentifier(identifier);
+		participation.setStatus(EvaluationFormParticipationStatus.prepared);
+		participation.setAnonymous(true);
+		participation.setRun(1);
+		participation.setLastRun(true);
+		participation.setEmail(email);
+		participation.setFirstName(firstName);
+		participation.setLastName(lastName);
+		dbInstance.getCurrentEntityManager().persist(participation);
+		log.debug("Participation created: " + participation.toString());
+		return participation;
+	}
 
 	EvaluationFormParticipation changeStatus(EvaluationFormParticipation participation, EvaluationFormParticipationStatus status) {
 		if (participation instanceof EvaluationFormParticipationImpl) {
@@ -109,7 +129,7 @@ class EvaluationFormParticipationDAO {
 	}
 	
 	List<EvaluationFormParticipation> loadBySurvey(EvaluationFormSurveyRef survey,
-			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
+			EvaluationFormParticipationStatus status, boolean emailOnly, boolean fetchExecutor) {
 		if (survey == null) return List.of();
 		
 		StringBuilder query = new StringBuilder();
@@ -121,6 +141,9 @@ class EvaluationFormParticipationDAO {
 		query.append(" where participation.survey.key=:surveyKey");
 		if (status != null) {
 			query.append("   and participation.status=:status");
+		}
+		if (emailOnly) {
+			query.append (" and participation.email is not null");
 		}
 
 		TypedQuery<EvaluationFormParticipation> typedQuery = dbInstance.getCurrentEntityManager()
@@ -148,6 +171,19 @@ class EvaluationFormParticipationDAO {
 				.createQuery(query.toString(), EvaluationFormParticipation.class)
 				.setParameter("surveyKey", survey.getKey())
 				.setParameter("executorKey", executor.getKey())
+				.getResultList();
+	}
+
+	List<EvaluationFormParticipation> loadByEmails(EvaluationFormSurveyRef survey, Collection<String> emails) {
+		StringBuilder query = new StringBuilder();
+		query.append("select participation from evaluationformparticipation as participation");
+		query.append(" where participation.survey.key = :surveyKey");
+		query.append("   and participation.email in :emails");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), EvaluationFormParticipation.class)
+				.setParameter("surveyKey", survey.getKey())
+				.setParameter("emails", emails)
 				.getResultList();
 	}
 

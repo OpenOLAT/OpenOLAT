@@ -555,7 +555,7 @@ public class DataCollectionController extends BasicController implements TooledC
 			configurationCtrl.onChanged(dataCollection, secCallback);
 		}
 		if (participationsCtrl != null) {
-			participationsCtrl.onChanged(dataCollection, secCallback, ureq);
+			participationsCtrl.onChanged(dataCollection, secCallback);
 		}
 		if (remindersCtrl != null) {
 			remindersCtrl.onChanged(dataCollection, secCallback);

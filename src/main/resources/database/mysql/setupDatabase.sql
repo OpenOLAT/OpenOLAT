@@ -2905,6 +2905,9 @@ create table o_eva_form_participation (
    e_anonymous bit not null,
    e_run bigint default 1 not null,
    e_last_run boolean not null default 1,
+   e_email varchar(128),
+   e_first_name varchar(128),
+   e_last_name varchar(128),
    fk_executor bigint,
    fk_survey bigint,
    primary key (id)

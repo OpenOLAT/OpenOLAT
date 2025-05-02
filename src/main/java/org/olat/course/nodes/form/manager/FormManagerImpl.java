@@ -203,7 +203,7 @@ public class FormManagerImpl implements FormManager {
 	@Override
 	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
 			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
-		return evaluationFormManager.loadParticipations(survey, status, fetchExecutor);
+		return evaluationFormManager.loadParticipations(survey, status, false, fetchExecutor);
 	}
 	
 	@Override

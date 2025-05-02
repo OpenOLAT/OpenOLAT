@@ -436,6 +436,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.manager.QualityReportAccessDAOTest.class,
 	org.olat.modules.quality.manager.QualityToDoTaskQueryTest.class,
 	org.olat.modules.quality.manager.RepositoryEntryQualityContextBuilderTest.class,
+	org.olat.modules.quality.QualityServiceTest.class,
 	org.olat.modules.lecture.manager.AbsenceCategoryDAOTest.class,
 	org.olat.modules.lecture.manager.AbsenceNoticeDAOTest.class,
 	org.olat.modules.lecture.manager.AbsenceNoticeToLectureBlockDAOTest.class,

@@ -84,6 +84,7 @@ import org.olat.modules.forms.ui.NameShuffleAnonymousComparator;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -92,6 +93,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.model.QualityMailTemplateBuilder;
 import org.olat.modules.quality.ui.FiguresFactory;
@@ -147,7 +149,7 @@ class QualityMailing {
 		if(bundle != null) {
 			appendMimeFrom(bundle);
 			result = mailManager.sendMessage(bundle);
-			logMailerResult(result, reminder, topicIdentity);
+			logMailerResult(result, reminder.getDataCollection(), reminder.getType(), topicIdentity.toString());
 		}
 	}
 
@@ -188,39 +190,61 @@ class QualityMailing {
 		
 		return mailBuilder.build();
 	}
-
-	void sendReminderMail(QualityReminder reminder, QualityReminder invitation, EvaluationFormParticipation participation) {
-		if (participation.getExecutor() != null) {
-			Identity executor = participation.getExecutor();
-			MailTemplate template = createAnnouncementMailTemplate(reminder, invitation, executor);
+	
+	void sendReminderMail(QualityReminder reminder, QualityReminder invitation,
+			EvaluationFormParticipation participation) {
+		sendReminderMail(reminder.getDataCollection(), participation, reminder.getType(), invitation);
+	}
+	
+	void sendReminderMail(QualityDataCollection dataCollection, EvaluationFormParticipation participation,
+			QualityReminderType reminderType) {
+		sendReminderMail(dataCollection, participation, reminderType, null);
+	}
+	
+	private void sendReminderMail(QualityDataCollection dataCollection, EvaluationFormParticipation participation,
+			QualityReminderType reminderType, QualityReminder invitation) {
+		if (participation.getExecutor() != null || StringHelper.containsNonWhitespace(participation.getEmail())) {
+			MailTemplate template = createAnnouncementMailTemplate(dataCollection, participation, reminderType, invitation);
 			
 			MailerResult result = new MailerResult();
-			MailBundle bundle = mailManager.makeMailBundle(null, executor, template, null, null, result);
+			MailBundle bundle = participation.getExecutor() != null 
+					? mailManager.makeMailBundle(null, participation.getExecutor(), template, null, null, result)
+					: mailManager.makeMailBundle(null, participation.getEmail(), template, null, null, result);
 			if(bundle != null) {
 				appendMimeFrom(bundle);
 				result = mailManager.sendMessage(bundle);
-				logMailerResult(result, reminder, executor);
+				String reciver = participation.getExecutor() != null
+						? participation.getExecutor().toString()
+						: "E-Mail-Invitation " + participation.getKey();
+				logMailerResult(result, dataCollection, reminderType, reciver);
 			}
 		}
 	}
 
-	private void logMailerResult(MailerResult result, QualityReminder reminder, Identity executor) {
+	private void logMailerResult(MailerResult result, QualityDataCollectionRef dataCollection,
+			QualityReminderType reminderType, String reciver) {
 		if (result.isSuccessful()) {
 			log.info(MessageFormat.format("{0} for quality data collection [key={1}] sent to {2}",
-					reminder.getType().name(), reminder.getDataCollection().getKey(), executor));
+					reminderType.name(), dataCollection.getKey(), reciver));
 		} else {
 			log.warn(MessageFormat.format("Sending {0} for quality data collection [key={1}] to {2} failed: {3}",
-					reminder.getType().name(), reminder.getDataCollection().getKey(), executor, result.getErrorMessage()));
+					reminderType.name(), dataCollection.getKey(), reciver, result.getErrorMessage()));
 		}
 	}
 
-	private MailTemplate createAnnouncementMailTemplate(QualityReminder reminder, QualityReminder invitationReminder, Identity executor) {
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(executor.getUser().getPreferences().getLanguage());
+	private MailTemplate createAnnouncementMailTemplate(QualityDataCollection dataCollection,
+			EvaluationFormParticipation evaParticipation, QualityReminderType reminderType,
+			QualityReminder invitationReminder) {
+		String language = null;
+		if (evaParticipation.getExecutor() != null) {
+			language = evaParticipation.getExecutor().getUser().getPreferences().getLanguage();
+		}
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
 		
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
-		searchParams.setExecutorRef(executor);
-		searchParams.setDataCollectionRef(reminder.getDataCollection());
+		searchParams.setParticipationRef(evaParticipation);
+		searchParams.setDataCollectionRef(dataCollection);
 		searchParams.setDataCollectionStatus(STATUS_FILTER);
 		List<QualityExecutorParticipation> participations = participationDao.loadExecutorParticipations(translator, searchParams , 0, -1);
 		QualityExecutorParticipation participation = null;
@@ -228,12 +252,14 @@ class QualityMailing {
 			participation = participations.get(0);
 		}
 		
-		String subject = translator.translate(reminder.getType().getSubjectI18nKey());
-		String body = translator.translate(reminder.getType().getBodyI18nKey());
+		
+		String subject = translator.translate(reminderType.getSubjectI18nKey());
+		String body = translator.translate(reminderType.getBodyI18nKey());
 		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
 		
-		User user = executor.getUser();
-		mailBuilder.withExecutor(user);
+		if (evaParticipation.getExecutor() != null) {
+			mailBuilder.withExecutor(evaParticipation.getExecutor().getUser());
+		}
 		
 		if (participation != null) {
 			mailBuilder.withStart(participation.getStart())
@@ -276,9 +302,9 @@ class QualityMailing {
 				.build()
 				.getUiContexts();
 		for (UIContext uiContext : uiContexts) {
-			sb.append("<br/>");
+			sb.append("<br>");
 			for (KeyValue kv : uiContext.getKeyValues()) {
-				sb.append("<br/>").append(kv.getKey()).append(": ").append(kv.getValue());
+				sb.append("<br>").append(kv.getKey()).append(": ").append(kv.getValue());
 			}
 		}
 		return sb.toString();
@@ -330,7 +356,7 @@ class QualityMailing {
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
 		
 		String subject = translator.translate("report.access.email.subject");
-		String body = translator.translate("report.access.email.body");
+		String body = translator.translate("report.access.email.body2");
 		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
 		
 		User user = recipient.getUser();
@@ -397,9 +423,9 @@ class QualityMailing {
 				.build()
 				.getUiContexts();
 		for (UIContext uiContext : uiContexts) {
-			sb.append("<br/>");
+			sb.append("<br>");
 			for (KeyValue kv : uiContext.getKeyValues()) {
-				sb.append("<br/>").append(kv.getKey()).append(": ").append(kv.getValue());
+				sb.append("<br>").append(kv.getKey()).append(": ").append(kv.getValue());
 			}
 		}
 		return sb.toString();
@@ -427,7 +453,7 @@ class QualityMailing {
 					translatedRating                                          // rating
 			};
 			
-			sb.append("<br/>");
+			sb.append("<br>");
 			sb.append(translator.translate("report.access.email.rubric.rating", args));
 		}
 		return sb.toString();
@@ -565,7 +591,7 @@ class QualityMailing {
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
 		
 		String subject = translator.translate("qualitative.feedback.subject");
-		String body = translator.translate("qualitative.feedback.body");
+		String body = translator.translate("qualitative.feedback.body2");
 		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
 		
 		mailBuilder.withExecutor(user);

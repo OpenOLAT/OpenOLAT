@@ -19,10 +19,15 @@
  */
 package org.olat.modules.quality.ui;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -30,30 +35,42 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipationDataModel extends DefaultFlexiTableDataSourceModel<ParticipationRow> {
+public class ParticipationDataModel extends DefaultFlexiTableDataModel<ParticipationRow>
+		implements SortableFlexiTableDataModel<ParticipationRow> {
+	
+	private final static ParticipationCols[] COLS = ParticipationCols.values();
+	
+	private final Locale locale;
 
-	public ParticipationDataModel(FlexiTableDataSourceDelegate<ParticipationRow> dataSource,
-			FlexiTableColumnModel columnsModel) {
-		super(dataSource, columnsModel);
+	public ParticipationDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+		super(columnsModel);
+		this.locale = locale;
 	}
-
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		List<ParticipationRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		super.setObjects(rows);
+	}
+	
 	@Override
 	public Object getValueAt(int row, int col) {
-		ParticipationRow participationRow = getObject(row);
-		switch (ParticipationCols.values()[col]) {
-			case firstname: return participationRow.getFirstname();
-			case lastname: return participationRow.getLastname();
-			case email: return participationRow.getEmail();
-			case role: return participationRow.getRole();
-			case repositoryEntryName: return participationRow.getAudienceRepositoryEntryName();
-			case curriculumElementName: return participationRow.getAudienceCurriculumElementName();
+		ParticipationRow participation = getObject(row);
+		return getValueAt(participation, col);
+	}
+	
+	@Override
+	public Object getValueAt(ParticipationRow row, int col) {
+		switch(COLS[col]) {
+			case firstname: return row.getFirstname();
+			case lastname: return row.getLastname();
+			case email: return row.getEmail();
+			case role: return row.getRole();
+			case repositoryEntryName: return row.getAudienceRepositoryEntryName();
+			case curriculumElementName: return row.getAudienceCurriculumElementName();
+			case tools: return row.getToolsLink();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataSourceModel<ParticipationRow> createCopyWithEmptyList() {
-		return new ParticipationDataModel(getSourceDelegate(), getTableColumnModel());
 	}
 
 	public enum ParticipationCols implements FlexiSortableColumnDef {
@@ -62,7 +79,8 @@ public class ParticipationDataModel extends DefaultFlexiTableDataSourceModel<Par
 		email("participation.email"),
 		role("participation.role"),
 		repositoryEntryName("participation.repository.entry"),
-		curriculumElementName("participation.curriculum.element");
+		curriculumElementName("participation.curriculum.element"),
+		tools("action.more");
 		
 		private final String i18nKey;
 		

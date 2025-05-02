@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.EvaluationFormDispatcher;
+import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -294,6 +297,16 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, String identifierTypePostfix,
+			EvaluationFormEmailExecutor emailExecutor) {
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(
+				EvaluationFormDispatcher.EMAIL_PARTICIPATION_PREFIX + "." + identifierTypePostfix,
+				UUID.randomUUID().toString().replace("-", ""));
+		return evaluationFormParticipationDao.createParticipation(survey, identifier, emailExecutor.email(),
+				emailExecutor.firstName(), emailExecutor.lastName());
+	}
+
+	@Override
 	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation) {
 		return evaluationFormParticipationDao.updateParticipation(participation);
 	}
@@ -315,9 +328,14 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 	
 	@Override
+	public List<EvaluationFormParticipation> loadParticipationByEmails(EvaluationFormSurveyRef surveyRef, Collection<String> emails) {
+		return evaluationFormParticipationDao.loadByEmails(surveyRef, emails);
+	}
+	
+	@Override
 	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
-			EvaluationFormParticipationStatus status, boolean fetchExecutor) {
-		return evaluationFormParticipationDao.loadBySurvey(surveyRef, status, fetchExecutor);
+			EvaluationFormParticipationStatus status, boolean emailOnly, boolean fetchExecutor) {
+		return evaluationFormParticipationDao.loadBySurvey(surveyRef, status, emailOnly, fetchExecutor);
 	}
 
 	@Override

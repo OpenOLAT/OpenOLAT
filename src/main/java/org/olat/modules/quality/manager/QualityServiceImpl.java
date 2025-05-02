@@ -30,7 +30,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -55,6 +58,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -304,7 +308,9 @@ public class QualityServiceImpl
 		try {
 			QualityDataCollectionStatus previousStatus = dataCollection.getStatus();
 			updatedDataCollection = dataCollectionDao.updateDataCollectionStatus(dataCollection, status);
-			if (hasChangedToFinished(status, previousStatus)) {
+			if (hasChangedToRunning(status, previousStatus)) {
+				sendPlainEmailParticipationMails(dataCollection);
+			} else if (hasChangedToFinished(status, previousStatus)) {
 				reportAccessDao.deleteUnappropriated(of(updatedDataCollection));
 				sendDoneMails(dataCollection);
 			}
@@ -315,9 +321,29 @@ public class QualityServiceImpl
 		return updatedDataCollection;
 	}
 
+	private boolean hasChangedToRunning(QualityDataCollectionStatus status,
+			QualityDataCollectionStatus previousStatus) {
+		return QualityDataCollectionStatus.RUNNING.equals(status) && !QualityDataCollectionStatus.RUNNING.equals(previousStatus);
+	}
+
 	private boolean hasChangedToFinished(QualityDataCollectionStatus status,
 			QualityDataCollectionStatus previousStatus) {
 		return QualityDataCollectionStatus.FINISHED.equals(status) && !QualityDataCollectionStatus.FINISHED.equals(previousStatus);
+	}
+
+	private void sendPlainEmailParticipationMails(QualityDataCollection dataCollection) {
+		QualityReminder invitationReminder = loadReminder(dataCollection, QualityReminderType.INVITATION);
+		if (invitationReminder != null) {
+			// E-mail invitees are informed by the invitation.
+			return;
+		}
+		
+		// E-mail invitees have to be informed!
+		EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
+		List<EvaluationFormParticipation> emailParticipations = evaluationFormManager.loadParticipations(survey, null, true, true);
+		for (EvaluationFormParticipation participation : emailParticipations) {
+			qualityMailing.sendReminderMail(dataCollection, participation, QualityReminderType.INVITATION);
+		}
 	}
 
 	private void sendDoneMails(QualityDataCollection dataCollection) {
@@ -554,7 +580,7 @@ public class QualityServiceImpl
 
 	@Override
 	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection, Collection<Identity> executors) {
-		List<EvaluationFormParticipation> participations = new ArrayList<>();
+		List<EvaluationFormParticipation> participations = new ArrayList<>(executors.size());
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		for (Identity executor: executors) {
 			EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
@@ -565,16 +591,42 @@ public class QualityServiceImpl
 		}
 		return participations;
 	}
-
+	
 	@Override
-	public int getParticipationCount(QualityDataCollectionLight dataCollection) {
-		return participationDao.getParticipationCount(dataCollection);
+	public void addParticipationsEmail(QualityDataCollection dataCollection,
+			Collection<EvaluationFormEmailExecutor> emailExecutors) {
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
+		
+		Set<String> emailAddresses = emailExecutors.stream()
+				.map(EvaluationFormEmailExecutor::email)
+				.collect(Collectors.toSet());
+		Map<String, EvaluationFormParticipation> emailToParticipation = evaluationFormManager
+				.loadParticipationByEmails(survey, emailAddresses).stream()
+				.collect(Collectors.toMap(EvaluationFormParticipation::getEmail, Function.identity()));
+		
+		for (EvaluationFormEmailExecutor emailExecutor: emailExecutors) {
+			if (emailToParticipation.keySet().contains(emailExecutor.email())) {
+				EvaluationFormParticipation participation = emailToParticipation.get(emailExecutor.email());
+				if (!Objects.equals(emailExecutor.firstName(), participation.getFirstName())
+						|| !Objects.equals(emailExecutor.lastName(), participation.getLastName())) {
+					participation.setFirstName(emailExecutor.firstName());
+					participation.setLastName(emailExecutor.lastName());
+					evaluationFormManager.updateParticipation(participation);
+					emailToParticipation.put(emailExecutor.email(), participation);
+				}
+			} else {
+				EvaluationFormParticipation participation = evaluationFormManager.createParticipation(survey, "qm", emailExecutor);
+				DefaultQualityContextBuilder.builder(dataCollection, participation)
+					.withRole(QualityContextRole.email)
+					.build();
+				emailToParticipation.put(emailExecutor.email(), participation);
+			}
+		}
 	}
 
 	@Override
-	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		return participationDao.loadParticipations(dataCollection, firstResult, maxResults, orderBy);
+	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection) {
+		return participationDao.loadParticipations(dataCollection);
 	}
 
 	@Override
@@ -715,12 +767,12 @@ public class QualityServiceImpl
 
 	private List<EvaluationFormParticipation> getParticipants(QualityReminder reminder) {
 		if (QualityReminderType.ANNOUNCEMENT_COACH_CONTEXT == reminder.getType()) {
-			return getContextCaches(reminder);
+			return getContextCoaches(reminder);
 		}
 		return getSurveyParticipants(reminder);
 	}
 
-	private List<EvaluationFormParticipation> getContextCaches(QualityReminder reminder) {
+	private List<EvaluationFormParticipation> getContextCoaches(QualityReminder reminder) {
 		return contextDao.loadParticipationByRole(reminder.getDataCollection(), QualityContextRole.coach);
 	}
 
@@ -729,7 +781,7 @@ public class QualityServiceImpl
 		EvaluationFormParticipationStatus status = type.getParticipationStatus();
 		QualityDataCollection dataCollection = reminder.getDataCollection();
 		EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
-		return evaluationFormManager.loadParticipations(survey, status, true);
+		return evaluationFormManager.loadParticipations(survey, status, false, true);
 	}
 
 

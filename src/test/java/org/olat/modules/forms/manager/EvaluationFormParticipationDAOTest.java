@@ -30,6 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormEmailExecutor;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -54,6 +56,9 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+
 	
 	@Autowired
 	private EvaluationFormParticipationDAO sut;
@@ -111,6 +116,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		participation.setAnonymous(true);
+		
 		EvaluationFormParticipation updateedParticipation = sut.updateParticipation(participation);
 		
 		assertThat(updateedParticipation.isAnonymous()).isTrue();
@@ -144,10 +150,26 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		otherSurvey = sut.changeStatus(otherSurvey, status);
 		dbInstance.commitAndCloseSession();
 		
-		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, status, true);
+		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, status, false, true);
 
 		assertThat(participations).contains(participation)
 				.doesNotContain(otherStatus, otherSurvey);
+	}
+	
+	@Test
+	public void shouldLoadBySurveyAndEmailOnly() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		evaTestHelper.createParticipation(survey, true);
+		evaTestHelper.createParticipation(survey, false);
+		EvaluationFormParticipation participationEmail1 = evaluationFormManager.createParticipation(survey,
+				"test", new EvaluationFormEmailExecutor(random(), null, null));
+		EvaluationFormParticipation participationEmail2 = evaluationFormManager.createParticipation(survey,
+				"test", new EvaluationFormEmailExecutor(random(), random(), random()));
+		dbInstance.commitAndCloseSession();
+		
+		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, null, true, true);
+		
+		assertThat(participations).containsExactlyInAnyOrder(participationEmail1, participationEmail2);
 	}
 	
 	@Test
@@ -181,6 +203,25 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		assertThat(sut.loadByExecutor(survey, executor, null)).containsExactlyInAnyOrder(participation1, participation2, participation3);
 		assertThat(sut.loadByExecutor(survey, executor, Boolean.TRUE)).containsExactlyInAnyOrder(participation3);
 		assertThat(sut.loadByExecutor(survey, executor, Boolean.FALSE)).containsExactlyInAnyOrder(participation1, participation2);
+	}
+	
+	@Test
+	public void shouldLoadBySurveyAndEmail() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		
+		EvaluationFormParticipation participation1 = sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE, random()), random(), null, null);
+		EvaluationFormParticipation participation2 = sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE, random()), random(), null, null);
+		sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE, random()), random(), null, null);
+		sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE, random()), false, 1, executor);
+		dbInstance.commitAndCloseSession();
+		
+		List<EvaluationFormParticipation> participations = sut.loadByEmails(survey, List.of(participation1.getEmail(), participation2.getEmail()));
+		
+		assertThat(participations)
+				.hasSize(2)
+				.extracting(EvaluationFormParticipation::getKey)
+				.containsExactlyInAnyOrder(participation1.getKey(), participation2.getKey());
 	}
 	
 	@Test

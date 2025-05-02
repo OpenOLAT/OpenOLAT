@@ -312,7 +312,7 @@ public class ExampleData extends OlatTestCase {
 	public void generateRandomResponses(EvaluationFormSurvey survey) {
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		if (form != null) {
-			List<EvaluationFormParticipation> participations = evaluationFormManager.loadParticipations(survey, prepared, true);
+			List<EvaluationFormParticipation> participations = evaluationFormManager.loadParticipations(survey, prepared, false, true);
 			for (EvaluationFormParticipation participation : participations) {
 				EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 				if (session == null) {

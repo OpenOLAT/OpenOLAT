@@ -2821,6 +2821,9 @@ create table o_eva_form_participation (
    e_anonymous number default 0 not null,
    e_run number(20) default 1 not null,
    e_last_run number default 1 not null,
+   e_email varchar(128),
+   e_first_name varchar(128),
+   e_last_name varchar(128),
    fk_executor number(20),
    fk_survey number(20) not null,
    primary key (id)

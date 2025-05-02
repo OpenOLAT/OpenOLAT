@@ -19,8 +19,10 @@
  */
 package org.olat.modules.forms.ui.model;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 
 /**
  * Wrapper around the identity of the executor. This class helps to fill out
@@ -36,9 +38,9 @@ public class ExecutionIdentity {
 	private final Long identityKey;
 	private final User user;
 	
-	public ExecutionIdentity(Identity identity) {
-		identityKey = identity.getKey();
-		user = identity.getUser();
+	private ExecutionIdentity(Long identityKey, User user) {
+		this.identityKey = identityKey;
+		this.user = user;
 	}
 	
 	public Long getIdentityKey() {
@@ -47,6 +49,16 @@ public class ExecutionIdentity {
 	
 	public User getUser() {
 		return user;
+	}
+	
+	public static ExecutionIdentity ofIdentity(Identity identity) {
+		return new ExecutionIdentity(identity.getKey(), identity.getUser());
+	}
+
+	public static ExecutionIdentity ofEmail(String email) {
+		TransientIdentity user = new TransientIdentity();
+		user.setProperty(UserConstants.EMAIL, email);
+		return new ExecutionIdentity(null, user);
 	}
 
 }

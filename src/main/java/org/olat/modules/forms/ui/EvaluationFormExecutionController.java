@@ -170,7 +170,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (executionIdentity != null) {
 			this.executionIdentity = executionIdentity;
 		} else {
-			this.executionIdentity = new ExecutionIdentity(getIdentity());
+			this.executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
 		}
 
 		initForm(ureq);
@@ -190,7 +190,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.readOnly = false;
 		this.showDoneButton = false;
 		this.doneSavesOnly = false;
-		this.executionIdentity = new ExecutionIdentity(getIdentity());
+		this.executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
 
 		initForm(ureq);
 	}

@@ -19,10 +19,11 @@
  */
 package org.olat.modules.quality.ui;
 
-import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityParticipation;
+import org.olat.modules.quality.ui.wizard.AddEmailContext.EmailIdentity;
 
 /**
  * 
@@ -30,75 +31,72 @@ import org.olat.modules.quality.QualityParticipation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class ParticipationRow {
+public class ParticipationRow {
 
-	private final QualityParticipation participation;
-	private final Long key;
+	private final String firstname;
+	private final String lastname;
+	private final String email;
+	private final QualityContextRef contextRef;
+	private final QualityContextRole role;
+	private final String audienceRepositoryEntryName;
+	private final String audienceCurriculumElementName;
+
+	private FormLink toolsLink;
 
 	public ParticipationRow(QualityParticipation participation) {
-		this.participation = participation;
-		this.key = participation.getParticipationRef().getKey();
+		firstname = participation.getFirstname();
+		lastname = participation.getLastname();
+		email = participation.getEmail();
+		contextRef = participation.getContextRef();
+		role = participation.getRole();
+		audienceRepositoryEntryName = participation.getAudienceRepositoryEntryName();
+		audienceCurriculumElementName = participation.getAudienceCurriculumElementName();
 	}
 
-	public QualityParticipation getParticipation() {
-		return participation;
+	public ParticipationRow(EmailIdentity emailIdentity) {
+		firstname = emailIdentity.identity() != null? emailIdentity.identity().getUser().getFirstName() : emailIdentity.emailExecutor().firstName();
+		lastname = emailIdentity.identity() != null? emailIdentity.identity().getUser().getLastName() : emailIdentity.emailExecutor().lastName();
+		email = emailIdentity.emailExecutor().email();
+		contextRef = null;
+		role = emailIdentity.identity() != null? null: QualityContextRole.email;
+		audienceRepositoryEntryName = null;
+		audienceCurriculumElementName = null;
 	}
 	
-	public EvaluationFormParticipationRef getParticipationRef() {
-		return participation.getParticipationRef();
-	}
-
 	public String getFirstname() {
-		return participation.getFirstname();
+		return firstname;
 	}
 
 	public String getLastname() {
-		return participation.getLastname();
+		return lastname;
 	}
 
 	public String getEmail() {
-		return participation.getEmail();
+		return email;
 	}
 	
 	public QualityContextRef getContextRef() {
-		return participation.getContextRef();
+		return contextRef;
 	}
 	
 	public QualityContextRole getRole() {
-		return participation.getRole();
+		return role;
 	}
 	
 	public String getAudienceRepositoryEntryName() {
-		return participation.getAudienceRepositoryEntryName();
+		return audienceRepositoryEntryName;
 	}
 	
 	public String getAudienceCurriculumElementName() {
-		return participation.getAudienceCurriculumElementName();
+		return audienceCurriculumElementName;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		return result;
+	public FormLink getToolsLink() {
+		return toolsLink;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ParticipationRow other = (ParticipationRow) obj;
-		if (key == null) {
-			if (other.key != null)
-				return false;
-		} else if (!key.equals(other.key))
-			return false;
-		return true;
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 
 }
