@@ -146,6 +146,7 @@ import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
@@ -169,6 +170,7 @@ import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
+import org.olat.modules.lecture.ui.teacher.ManageTeachersController;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
@@ -225,6 +227,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FormLink pendingRollCallLink;
 	private FormLink startButton;
 	private FormLink startWizardButton;
+	private FormLink manageTeachersButton;
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
 	private final VelocityContainer detailsVC;
@@ -254,6 +257,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private EditLectureBlockController addLectureCtrl;
 	private EditLectureBlockController editLectureCtrl;
 	private StepsMainRunController addLectureWizardCtrl;
+	private ManageTeachersController manageTeachersCtrl;
 	private EditTeamsMeetingController editTeamsMeetingCtrl;
 	private IdentitySmallListController teacherSmallListCtrl; 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -408,7 +412,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			onlyMineButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
 			onlyMineButton.setPrimary(!all);
 		}
-	
+		
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
 			if(entry != null || curriculum != null || curriculumElement != null) {
 				addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
@@ -417,6 +421,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+			
+			// Don't manage all
+			if(entry != null || curriculumElement != null || curriculum != null) {
+				manageTeachersButton = uifactory.addFormLink("manage.teachers", formLayout, Link.BUTTON);
+			}
 			
 			if(entry != null || curriculumElement != null) {
 				DropdownItem addTaskDropdown = uifactory.addDropdownMenu("import.lectures.dropdown", null, null, formLayout, getTranslator());
@@ -554,6 +563,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		options.setFromColumnModel(true);
 		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, config.getPrefsId());
+		tableEl.addBatchButton(manageTeachersButton);
 		tableEl.addBatchButton(deleteLecturesButton);
 		
 		initFilters();
@@ -1198,6 +1208,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doAddLectureBlock(ureq);
 		} else if(deleteLecturesButton == source) {
 			doConfirmBulkDelete(ureq);
+		} else if(manageTeachersButton == source) {
+			doBulkManageTeachers(ureq);
 		} else if(importLecturesButton == source) {
 			doImportLecturesBlock(ureq);
 		} else if(allLevelsButton == source) {
@@ -1269,7 +1281,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(addLectureCtrl == source || deleteLectureBlocksCtrl == source || assignNewEntryCtrl == source) {
+		if(addLectureCtrl == source || deleteLectureBlocksCtrl == source
+				|| assignNewEntryCtrl == source || manageTeachersCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
@@ -1376,6 +1389,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(addLectureWizardCtrl);
 		removeAsListenerAndDispose(rollCallWizardCtrl);
 		removeAsListenerAndDispose(assignNewEntryCtrl);
+		removeAsListenerAndDispose(manageTeachersCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(addLectureCtrl);
@@ -1390,6 +1404,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		addLectureWizardCtrl = null;
 		rollCallWizardCtrl = null;
 		assignNewEntryCtrl = null;
+		manageTeachersCtrl = null;
 		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
 		addLectureCtrl = null;
@@ -1566,15 +1581,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {
-		Set<Integer> selections = tableEl.getMultiSelectedIndex();
-		List<LectureBlock> blocks = new ArrayList<>();
-		for(Integer selection:selections) {
-			LectureBlockRow blockRow = tableModel.getObject(selection);
-			if(!LectureBlockManagedFlag.isManaged(blockRow.getLectureBlock(), LectureBlockManagedFlag.delete)) {
-				blocks.add(blockRow.getLectureBlock());
-			}
-		}
-		
+		List<LectureBlock> blocks = getSelectableLectureBlocks(LectureBlockManagedFlag.delete);
 		if(blocks.isEmpty()) {
 			showWarning("error.atleastone.lecture");
 		} else {
@@ -1588,6 +1595,18 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
+	private List<LectureBlock> getSelectableLectureBlocks(LectureBlockManagedFlag managedFlag) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<LectureBlock> blocks = new ArrayList<>();
+		for(Integer selection:selections) {
+			LectureBlockRow blockRow = tableModel.getObject(selection);
+			if(!LectureBlockManagedFlag.isManaged(blockRow.getLectureBlock(), managedFlag)) {
+				blocks.add(blockRow.getLectureBlock());
+			}
+		}
+		return blocks;
+	}
+	
 	private void doConfirmDelete(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock block = lectureService.getLectureBlock(row);
 		deleteLectureBlocksCtrl = new ConfirmDeleteLectureBlockController(ureq, getWindowControl(), List.of(block));
@@ -1597,6 +1616,44 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteLectureBlocksCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doBulkManageTeachers(UserRequest ureq) {
+		List<LectureBlockRow> blocks = getSelectableLectureBlocksRows(LectureBlockManagedFlag.teachers);
+		if(blocks.isEmpty()) {
+			showWarning("error.atleastone.lecture");
+		} else {
+			LecturesMemberSearchParameters searchParams = new LecturesMemberSearchParameters();
+			if(curriculumElement != null) {
+				searchParams.setCurriculumElement(curriculumElement);
+			} else if(entry != null) {
+				searchParams.setRepositoryEntry(entry);
+			} else if(curriculum != null) {
+				searchParams.setCurriculum(curriculum);
+			}
+			List<Identity> teachers = lectureService.searchTeachers(searchParams);
+			manageTeachersCtrl = new ManageTeachersController(ureq, getWindowControl(), blocks, teachers,
+					config, secCallback, entry);
+			listenTo(manageTeachersCtrl);
+			
+			String title = translate("manage.teachers");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), manageTeachersCtrl.getInitialComponent(), true, title);
+			cmc.setCustomWindowCSS("o_modal_large");
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private List<LectureBlockRow> getSelectableLectureBlocksRows(LectureBlockManagedFlag managedFlag) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<LectureBlockRow> blocks = new ArrayList<>();
+		for(Integer selection:selections) {
+			LectureBlockRow blockRow = tableModel.getObject(selection);
+			if(!LectureBlockManagedFlag.isManaged(blockRow.getLectureBlock(), managedFlag)) {
+				blocks.add(blockRow);
+			}
+		}
+		return blocks;
 	}
 
 	private void doExportLog(UserRequest ureq, LectureBlockRow row) {

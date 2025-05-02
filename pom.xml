@@ -71,7 +71,7 @@
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.1.1</apache.cxf>
-		<apache.pdfbox>3.0.4</apache.pdfbox>
+		<apache.pdfbox>3.0.5</apache.pdfbox>
 		<apache.poi>5.4.1</apache.poi>
 		<apache.log4j>2.24.3</apache.log4j>
 		<org.slf4j>2.0.17</org.slf4j>
@@ -80,12 +80,12 @@
 		<io.undertow>2.3.18.Final</io.undertow>
 		<jackson.version>2.19.0</jackson.version>
 		<swagger.ui.version>5.21.0</swagger.ui.version>
-		<com.mysql.version>9.2.0</com.mysql.version>
+		<com.mysql.version>9.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.5</org.postgresql.version>
 		<org.infinispan.version>15.2.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.31.0</version.selenium>
-		<activemq.artemis.version>2.40.0</activemq.artemis.version>
+		<activemq.artemis.version>2.41.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
@@ -1740,7 +1740,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.29.0.RELEASE</version>
+			<version>0.29.1.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

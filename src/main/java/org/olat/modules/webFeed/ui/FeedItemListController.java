@@ -53,6 +53,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -61,7 +62,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -249,7 +249,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		}
 
 		if (feedRss.isInternal()) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(FeedItemTableModel.ItemsCols.toolsLink.i18nHeaderKey(), FeedItemTableModel.ItemsCols.toolsLink.ordinal());
+			ActionsColumnModel toolsColumn = new ActionsColumnModel(FeedItemTableModel.ItemsCols.toolsLink);
 			toolsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(toolsColumn);
 			toolsColumn.setAlwaysVisible(false);
