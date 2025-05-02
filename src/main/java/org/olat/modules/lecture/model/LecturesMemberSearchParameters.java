@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.model;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntryRef;
@@ -37,6 +38,7 @@ public class LecturesMemberSearchParameters {
 	private IdentityRef teacher;
 
 	private String searchString;
+	private Curriculum curriculum;
 	private RepositoryEntryRef repositoryEntry;
 	private CurriculumElement curriculumElement;
 	
@@ -96,6 +98,14 @@ public class LecturesMemberSearchParameters {
 
 	public void setRepositoryEntry(RepositoryEntryRef repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
+	}
+
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
+
+	public void setCurriculum(Curriculum curriculum) {
+		this.curriculum = curriculum;
 	}
 
 	public CurriculumElement getCurriculumElement() {

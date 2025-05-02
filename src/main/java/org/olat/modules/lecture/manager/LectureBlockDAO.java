@@ -1439,6 +1439,26 @@ public class LectureBlockDAO {
 			  .append(" )");
 		}
 		
+		if(searchParams.getCurriculum() != null) {
+			sb.and()
+			  .append(" exists (select blockToCur.key from lectureblocktogroup as blockToCur")
+			  .append("  inner join curriculumelement curriculumEl on (curriculumEl.group.key=blockToCur.group.key)")
+			  .append("  where blockToCur.lectureBlock.key=block.key and curriculumEl.curriculum.key=:curriculumKey")
+			  .append(")");
+		}
+		
+		if(searchParams.getCurriculumElement() != null) {
+			sb.and()
+			  .append(" exists (select blockToCurEl.key from lectureblocktogroup as blockToCurEl")
+			  .append("  inner join curriculumelement curEl on (curEl.group.key=blockToCurEl.group.key)")
+			  .append("  where blockToCurEl.lectureBlock.key=block.key and curEl.key=:curriculumElementKey")
+			  .append(")");
+		}
+		
+		if(searchParams.getRepositoryEntry() != null) {
+			sb.and().append(" block.entry.key=:repositoryEntryKey");
+		}
+		
 		Long refId = null;
 		String fuzzyString = null;
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
@@ -1467,6 +1487,15 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
+		}
+		if(searchParams.getCurriculum() != null) {
+			query.setParameter("curriculumKey", searchParams.getCurriculum().getKey());
+		}
+		if(searchParams.getCurriculumElement() != null) {
+			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
+		}
+		if(searchParams.getRepositoryEntry() != null) {
+			query.setParameter("repositoryEntryKey", searchParams.getRepositoryEntry().getKey());
 		}
 		if(refId != null) {
 			query.setParameter("idKey", refId);
