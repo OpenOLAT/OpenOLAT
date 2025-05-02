@@ -263,6 +263,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		initFilters(filters);
 		itemsTable.setFilters(true, filters, false, false);
+		itemsTable.expandFilters(true);
 		initFiltersDefaultValues();
 	}
 	
