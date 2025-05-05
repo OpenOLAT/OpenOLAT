@@ -308,4 +308,12 @@ public class AssessmentInspectionDAO {
 		}
 		sb.append(" and inspection.inspectionStatus").in(AssessmentInspectionStatusEnum.scheduled).append(")");
 	}
+	
+	public int deleteInspections(AssessmentInspectionConfiguration configuration) {
+		String query = "delete from courseassessmentinspection as inspection where inspection.configuration.key=:configurationKey";
+
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("configurationKey", configuration.getKey())
+				.executeUpdate();
+	}
 }
