@@ -111,7 +111,7 @@ implements FlexiTableCssDelegate, SortableFlexiTableDataModel<FeedItemRow>, Filt
 		changedFrom("table.feed.header.modifier"),
 		rating("table.feed.header.rating"),
 		comments("table.feed.header.comments"),
-		toolsLink("table.feed.header.actions");
+		toolsLink("action.more");
 
 		private final String i18nKey;
 
