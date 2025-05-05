@@ -22,12 +22,13 @@ package org.olat.modules.oaipmh.common.services.sitemap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
-import org.olat.core.util.Formatter;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.model.Metadata;
 import org.olat.modules.oaipmh.common.xml.XSLPipeline;
@@ -46,6 +47,7 @@ public class XMLSitemap implements XmlWritable {
 	public static final String NAMESPACE_URI = "http://www.sitemaps.org/schemas/sitemap/0.9";
 	public static final String XML_ENCODING = "UTF-8";
 	public static final String XML_VERSION = "1.0";
+	private static final SimpleDateFormat LAST_MODIFIED_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmXXX", Locale.ENGLISH);
 
 	private final List<RepositoryEntry> repositoryEntries;
 
@@ -66,7 +68,7 @@ public class XMLSitemap implements XmlWritable {
 
 			for (RepositoryEntry repositoryEntry : repositoryEntries) {
 				infoUrl = ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString());
-				lastModDate = Formatter.formatDatetime(repositoryEntry.getLastModified());
+				lastModDate = LAST_MODIFIED_FORMAT.format(repositoryEntry.getLastModified());
 
 				writer.writeStartElement(NAMESPACE_URI, "url");
 
