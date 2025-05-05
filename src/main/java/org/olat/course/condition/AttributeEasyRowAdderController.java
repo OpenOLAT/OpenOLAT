@@ -320,11 +320,16 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 			// is the same as the current row count
 			addRowAt(row);
 			// set value in attribute selection
-			SingleSelection ssi = (SingleSelection) flc.getFormComponent(columnAttribute.get(row));
-			ssi.select(extendedCondition.getAttribute(), true);
+			SingleSelection ssiAttr = (SingleSelection) flc.getFormComponent(columnAttribute.get(row));
+			if(ssiAttr.containsKey(extendedCondition.getAttribute())) {
+				ssiAttr.select(extendedCondition.getAttribute(), true);
+			}
+			
 			// set value in operator selection
-			ssi = (SingleSelection) flc.getFormComponent(columnOperator.get(row));
-			ssi.select(extendedCondition.getOperator().getOperatorKey(), true);
+			SingleSelection ssiOperator = (SingleSelection) flc.getFormComponent(columnOperator.get(row));
+			if(ssiOperator.containsKey(extendedCondition.getOperator().getOperatorKey())) {
+				ssiOperator.select(extendedCondition.getOperator().getOperatorKey(), true);
+			}
 			// set the selectable values for this attribute if available and set the
 			// preselected / predefined value.
 			final String attribute = extendedCondition.getAttribute();

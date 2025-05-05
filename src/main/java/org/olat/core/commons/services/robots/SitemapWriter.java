@@ -20,14 +20,15 @@
 package org.olat.core.commons.services.robots;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.robots.model.SitemapItem;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
@@ -71,6 +72,8 @@ public class SitemapWriter {
 		private static final String XML_ENCODING = "UTF-8";
 		private static final String XML_VERSION = "1.0";
 		
+		private static final SimpleDateFormat LAST_MODIFIED_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmXXX", Locale.ENGLISH);
+		
 		@Override
 		public void write(XmlWriter writer) throws XmlWriteException {
 			try {
@@ -88,7 +91,7 @@ public class SitemapWriter {
 						
 						if (item.getLastModDate() != null) {
 							writer.writeStartElement(NAMESPACE_URI, "lastmod");
-							writer.writeCharacters(Formatter.formatDatetime(item.getLastModDate()));
+							writer.writeCharacters(LAST_MODIFIED_FORMAT.format(item.getLastModDate()));
 							writer.writeEndElement();
 						}
 						

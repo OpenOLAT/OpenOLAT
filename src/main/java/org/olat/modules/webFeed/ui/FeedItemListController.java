@@ -251,8 +251,8 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		if (feedRss.isInternal()) {
 			ActionsColumnModel toolsColumn = new ActionsColumnModel(FeedItemTableModel.ItemsCols.toolsLink);
 			toolsColumn.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsColumn);
 			toolsColumn.setAlwaysVisible(false);
+			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
 		uifactory.addSpacerElement("spacer", formLayout, false);

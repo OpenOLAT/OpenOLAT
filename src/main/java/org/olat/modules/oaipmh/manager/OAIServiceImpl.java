@@ -268,7 +268,7 @@ public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvid
 	@Override
 	public List<String> getRobotAllows() {
 		if (oaiPmhModule.isEnabled() && oaiPmhModule.isSearchEngineEnabled()) {
-			return List.of(Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH, 
+			return List.of(Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH + "/",
 					Settings.getServerContextPath() + DispatcherModule.PATH_MAPPED,
 					Settings.getServerContextPath() + "/raw/");
 		}

@@ -55,6 +55,7 @@ import org.olat.course.assessment.ui.inspection.CreateInspectionContext.Inspecti
 import org.olat.course.assessment.ui.inspection.SearchAssessmentInspectionParameters;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AssessmentInspectionServiceImpl implements AssessmentInspectionService {
+public class AssessmentInspectionServiceImpl implements AssessmentInspectionService, RepositoryEntryDataDeletable {
 
 	@Autowired
 	private DB dbInstance;
@@ -173,6 +174,17 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	@Override
 	public List<AssessmentInspectionConfigurationWithUsage> getInspectionConfigurationsWithUsage(RepositoryEntryRef entry) {
 		return inspectionConfigurationDao.loadConfigurationsWithUsageByEntry(entry);
+	}
+
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<AssessmentInspectionConfiguration> configurations = inspectionConfigurationDao.loadConfigurationsByEntry(re);
+		for(AssessmentInspectionConfiguration configuration:configurations) {
+			inspectionLogDao.deleteInspectionLog(configuration);
+			inspectionDao.deleteInspections(configuration);
+			deleteConfiguration(configuration);
+		}
+		return true;
 	}
 
 	@Override

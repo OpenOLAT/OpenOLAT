@@ -65,6 +65,7 @@ public class RobotsDispatcher implements Dispatcher {
 			
 			String sitemapIndexUrl = robotsService.getSitemapIndexUrl();
 			if (StringHelper.containsNonWhitespace(sitemapIndexUrl)) {
+				writer.write("\nAllow: " + sitemapIndexUrl);
 				writer.write("\n\nSitemap: " + sitemapIndexUrl);
 			}
 		} catch(IOException e) {

@@ -264,5 +264,63 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 			.map(AssessmentEntryInspection::inspection)
 			.containsExactlyInAnyOrder(inspection1, inspection3);
 	}
+	
+	@Test
+	public void deleteInspection() {
+		Date now = new Date();
+		String subIdent = "123456F";
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-8");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-9");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		AssessmentInspection inspection1 = inspectionDao
+				.createInspection(id1, DateUtils.addHours(now, -3), DateUtils.addHours(now, -1), null, null, subIdent, config);
+		AssessmentInspection inspection2 = inspectionDao
+				.createInspection(id2, DateUtils.addHours(now, -1), DateUtils.addHours(now, 1), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(inspection1);
+		Assert.assertNotNull(inspection2);
+		
+		inspectionDao.deleteInspections(config);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentInspection deletedInspection1 = inspectionDao.loadByKey(inspection1.getKey());
+		Assert.assertNull(deletedInspection1);
+		AssessmentInspection deletedInspection2 = inspectionDao.loadByKey(inspection1.getKey());
+		Assert.assertNull(deletedInspection2);
+	}
+	
+	@Test
+	public void deleteInspectionParano() {
+		Date now = new Date();
+		String subIdent = "123456G";
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-10");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-11");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration configToDelete = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		configToDelete = inspectionConfigurationDao.saveConfiguration(configToDelete);
+		AssessmentInspectionConfiguration configToKeep = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		configToKeep = inspectionConfigurationDao.saveConfiguration(configToKeep);
+
+		AssessmentInspection inspectionToDelete = inspectionDao
+				.createInspection(id1, DateUtils.addHours(now, -3), DateUtils.addHours(now, -1), null, null, subIdent, configToDelete);
+		AssessmentInspection inspectionToKeep = inspectionDao
+				.createInspection(id2, DateUtils.addHours(now, -1), DateUtils.addHours(now, 1), null, null, subIdent, configToKeep);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(inspectionToDelete);
+		Assert.assertNotNull(inspectionToKeep);
+		
+		inspectionDao.deleteInspections(configToDelete);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentInspection deletedInspection = inspectionDao.loadByKey(inspectionToDelete.getKey());
+		Assert.assertNull(deletedInspection);
+		AssessmentInspection keepedInspection = inspectionDao.loadByKey(inspectionToKeep.getKey());
+		Assert.assertNotNull(keepedInspection);
+		Assert.assertEquals(inspectionToKeep, keepedInspection);
+	}
 
 }
