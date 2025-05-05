@@ -421,14 +421,13 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		
 		RepositoryEntry entry = block.getEntry();
 		RepositoryEntryLectureConfiguration lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
-		
-		int leadTime = ConfigurationHelper.getLeadTime(lectureConfig, lectureModule);
-		int followupTime = ConfigurationHelper.getFollowupTime(lectureConfig, lectureModule);
-		String ipList = ConfigurationHelper.getAdmissibleIps(lectureConfig, lectureModule);
-		String sebKey = ConfigurationHelper.getSebKeys(lectureConfig, lectureModule);
+
 		AssessmentMode newMode = assessmentModeMgr.getAssessmentMode(block);
 		if(newMode == null) {
-			newMode = assessmentModeMgr.createAssessmentMode(block, leadTime, followupTime, ipList, sebKey);
+			int leadTime = ConfigurationHelper.getLeadTime(lectureConfig, lectureModule);
+			int followupTime = ConfigurationHelper.getFollowupTime(lectureConfig, lectureModule);
+			String ipList = ConfigurationHelper.getAdmissibleIps(lectureConfig, lectureModule);
+			newMode = assessmentModeMgr.createAssessmentMode(block, leadTime, followupTime, ipList);
 		}
 		assessmentModeEditCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry, newMode);
 		listenTo(assessmentModeEditCtrl);

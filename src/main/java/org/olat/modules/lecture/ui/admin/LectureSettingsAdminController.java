@@ -31,11 +31,13 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.ui.mode.AssessmentModeAdminController;
 import org.olat.modules.lecture.DailyRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
@@ -51,6 +53,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureSettingsAdminController extends FormBasicController {
 	
+	private static final String SEB_KEYS = "sebkeys";
+	private static final String SEB_OPENOLAT_DEF_CONFIG = "openolatconfig";
+	
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] yesNoKeys = new String[] { "yes", "no" };
 	private static final String[] showKeys = new String[] { "all", "mine" };
@@ -65,7 +70,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private TextElement assessmentIpsEl;
 	private TextElement assessmentLeadTimeEl;
 	private TextElement assessmentFollowupTimeEl;
-	private TextElement assessmentSafeExamBrowserEl;
+	private SingleSelection assessmentSafeExamBrowserEl;
+	private TextElement assessmentSafeExamBrowserKeysEl;
+	private SingleSelection assessmentSafeExamBrowserDownloadEl;
 	private TextElement defaultPlannedLecturesEl;
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement enableAbsenceNoticeEl;
@@ -92,7 +99,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private UserToolsModule userToolsModule;
 	
 	public LectureSettingsAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "admin_settings", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
+		super(ureq, wControl, "admin_settings", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale(),
+				Util.createPackageTranslator(AssessmentModeAdminController.class, ureq.getLocale())));
 		initForm(ureq);
 		initializeValues();
 		updateUI();
@@ -100,13 +108,18 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		initCourseForm(formLayout);
+		initAssessmentModeForm(formLayout);
+		initGlobalForm(formLayout);
+	}
+	
+
+	private void initCourseForm(FormItemContainer formLayout) {
 		// configuration which can be overriden in course
-		FormLayoutContainer courseCont = FormLayoutContainer.createDefaultFormLayout("override_course", getTranslator());
+		FormLayoutContainer courseCont = uifactory.addDefaultFormLayout("course", null, formLayout);
 		courseCont.setFormTitle(translate("lecture.admin.course.override.title"));
 		courseCont.setFormContextHelp("manual_admin/administration/Lecture_and_roll_call_management/");
 		courseCont.setElementCssClass("o_sel_lectures_configuration_form");
-		courseCont.setRootForm(mainForm);
-		formLayout.add("course", courseCont);
 
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", courseCont, onKeys, onValues);
@@ -135,12 +148,34 @@ public class LectureSettingsAdminController extends FormBasicController {
 		// assessment mode
 		enableAssessmentModeEl = uifactory.addCheckboxesHorizontal("lecture.assessment.mode.enabled", courseCont, onKeys, onValues);
 		enableAssessmentModeEl.addActionListener(FormEvent.ONCHANGE);
+	}
 		
-		assessmentLeadTimeEl = uifactory.addTextElement("lecture.assessment.mode.leading.time", "lecture.assessment.mode.leading.time", 8, "", courseCont);
-		assessmentFollowupTimeEl = uifactory.addTextElement("lecture.assessment.mode.followup.time", "lecture.assessment.mode.followup.time", 8, "", courseCont);
-		assessmentIpsEl = uifactory.addTextElement("lecture.assessment.mode.ips", "lecture.assessment.mode.ips", 1024, "", courseCont);
-		assessmentSafeExamBrowserEl = uifactory.addTextAreaElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 16000, 4, 60, false, false, "", courseCont);
-		assessmentSafeExamBrowserEl.setMaxLength(16000);
+	private void initAssessmentModeForm(FormItemContainer formLayout) {	
+		FormLayoutContainer assessmentModeCont = uifactory.addDefaultFormLayout("assessment.mode", null, formLayout);
+		
+		assessmentLeadTimeEl = uifactory.addTextElement("lecture.assessment.mode.leading.time", "lecture.assessment.mode.leading.time", 8, "", assessmentModeCont);
+		assessmentFollowupTimeEl = uifactory.addTextElement("lecture.assessment.mode.followup.time", "lecture.assessment.mode.followup.time", 8, "", assessmentModeCont);
+		assessmentIpsEl = uifactory.addTextElement("lecture.assessment.mode.ips", "lecture.assessment.mode.ips", 1024, "", assessmentModeCont);
+		
+		SelectionValues sebPK = new SelectionValues();
+		sebPK.add(SelectionValues.entry(SEB_KEYS, translate("mode.safeexambrowser.type.keys")));
+		sebPK.add(SelectionValues.entry(SEB_OPENOLAT_DEF_CONFIG, translate("mode.safeexambrowser.type.inOpenOlat")));
+		assessmentSafeExamBrowserEl = uifactory.addRadiosHorizontal("lecture.assessment.mode.seb.mode", "lecture.assessment.mode.seb.mode", assessmentModeCont,
+				sebPK.keys(), sebPK.values());
+		assessmentSafeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
+		
+		SelectionValues downloadPK = new SelectionValues();
+		downloadPK.add(SelectionValues.entry(Boolean.TRUE.toString(), translate("yes")));
+		downloadPK.add(SelectionValues.entry(Boolean.FALSE.toString(), translate("no")));
+		assessmentSafeExamBrowserDownloadEl = uifactory.addRadiosHorizontal("lecture.assessment.mode.seb.download", "mode.safeexambrowser.download.config", assessmentModeCont,
+				downloadPK.keys(), downloadPK.values());
+		
+		assessmentSafeExamBrowserKeysEl = uifactory.addTextAreaElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 16000, 4, 60, false, false, "", assessmentModeCont);
+		assessmentSafeExamBrowserKeysEl.setMaxLength(16000);
+	}
+
+	private void initGlobalForm(FormItemContainer formLayout) {
+		String[] onValues = new String[] { translate("on") };
 		
 		//global configuration
 		globalCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
@@ -341,8 +376,18 @@ public class LectureSettingsAdminController extends FormBasicController {
 		} else {
 			assessmentFollowupTimeEl.setValue("");
 		}
-		assessmentSafeExamBrowserEl.setValue(lectureModule.getAssessmentModeSebKeys());
 		
+		if(StringHelper.containsNonWhitespace(lectureModule.getAssessmentModeSebKeys())) {
+			assessmentSafeExamBrowserEl.select(SEB_KEYS, true);
+			assessmentSafeExamBrowserKeysEl.setValue(lectureModule.getAssessmentModeSebKeys());
+			assessmentSafeExamBrowserDownloadEl.select(Boolean.FALSE.toString(), true);
+		} else {
+			assessmentSafeExamBrowserEl.select(SEB_OPENOLAT_DEF_CONFIG, true);
+			assessmentSafeExamBrowserKeysEl.setValue(null);
+			String download = Boolean.toString(lectureModule.isAssessmentModeSebDownload());
+			assessmentSafeExamBrowserDownloadEl.select(download, true);
+		}
+	
 		dayBatchRollCallEnableEl.select(lectureModule.getDailyRollCall().name(), true);
 	}
 	
@@ -362,7 +407,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 		assessmentLeadTimeEl.setVisible(assessmentModeEnabled);
 		assessmentFollowupTimeEl.setVisible(assessmentModeEnabled);
 		assessmentIpsEl.setVisible(assessmentModeEnabled);
-		assessmentSafeExamBrowserEl.setVisible(assessmentModeEnabled);
+		assessmentSafeExamBrowserKeysEl.setVisible(assessmentSafeExamBrowserEl.isOneSelected()
+				&& SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
+		assessmentSafeExamBrowserDownloadEl.setVisible(assessmentSafeExamBrowserEl.isOneSelected()
+				&& SEB_OPENOLAT_DEF_CONFIG.equals(assessmentSafeExamBrowserEl.getSelectedKey()));
 		
 		globalCont.setVisible(enabled);
 		autoClosePeriodEl.setVisible(enabled);
@@ -460,7 +508,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 			updateUI();
 		} else if(appealAbsenceEnableEl == source || reminderEnableEl == source
 				|| authorizedAbsenceEnableEl == source || enableAssessmentModeEl == source
-				|| countAuthorizedAbsenceAsAttendantEl == source) {
+				|| countAuthorizedAbsenceAsAttendantEl == source || assessmentSafeExamBrowserEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -534,17 +582,25 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 			lectureModule.setShowLectureBlocksAllTeachersDefault(showAllTeachersLecturesEl.isSelected(0));
 			lectureModule.setDailyRollCall(DailyRollCall.valueOf(dayBatchRollCallEnableEl.getSelectedKey()));
-			
 		}
 		
 		if(assessmentModeEnabled) {
 			lectureModule.setAssessmentModeAdmissibleIps(assessmentIpsEl.getValue());
-			lectureModule.setAssessmentModeSebKeys(assessmentSafeExamBrowserEl.getValue());
 			lectureModule.setAssessmentModeLeadTime(Integer.parseInt(assessmentLeadTimeEl.getValue()));
 			lectureModule.setAssessmentModeFollowupTime(Integer.parseInt(assessmentFollowupTimeEl.getValue()));
+			if(SEB_KEYS.equals(assessmentSafeExamBrowserEl.getSelectedKey())) {
+				lectureModule.setAssessmentModeSebDefault(false);
+				lectureModule.setAssessmentModeSebKeys(assessmentSafeExamBrowserKeysEl.getValue());
+				lectureModule.setAssessmentModeSebDownload(false);
+			} else {
+				lectureModule.setAssessmentModeSebDefault(true);
+				lectureModule.setAssessmentModeSebKeys("");
+				lectureModule.setAssessmentModeSebDownload(Boolean.TRUE.toString().equals(assessmentSafeExamBrowserDownloadEl.getSelectedKey()));
+			}
 		} else {
 			lectureModule.setAssessmentModeSebKeys("");
 			lectureModule.setAssessmentModeAdmissibleIps("");
+			lectureModule.setAssessmentModeSebDownload(false);
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
