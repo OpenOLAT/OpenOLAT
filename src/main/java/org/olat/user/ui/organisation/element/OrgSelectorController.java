@@ -59,7 +59,7 @@ public class OrgSelectorController extends FormBasicController {
 	private List<OrgUIRow> orgUIRows;
 	private int maxUnselectedRows = PAGE_SIZE;
 
-	public record OrgUIRow(Long key, String path, String title, String location, String numberOfElements, boolean checked) {}
+	public record OrgUIRow(Long key, String path, String displayPath, String title, String location, String numberOfElements, boolean checked) {}
 
 	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows,
 								 Set<Long> selectedKeys, boolean multipleSelection) {
@@ -120,11 +120,12 @@ public class OrgSelectorController extends FormBasicController {
 	private OrgUIRow mapToOrgUIRow(OrgSelectorElementImpl.OrgRow orgRow) {
 		Long key = orgRow.key();
 		String path = orgRow.path();
+		String displayPath = orgRow.displayPath();
 		String title = orgRow.title();
 		String location = orgRow.location();
 		String numberOfElements = orgRow.numberOfElements() > 1 ? Integer.toString(orgRow.numberOfElements()) : "";
 		boolean checked = selectedKeys.contains(key);
-		return new OrgUIRow(key, path, title, location, numberOfElements, checked);
+		return new OrgUIRow(key, path, displayPath, title, location, numberOfElements, checked);
 	}
 
 	@Override
