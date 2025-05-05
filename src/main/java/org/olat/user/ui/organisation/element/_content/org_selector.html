@@ -52,7 +52,7 @@
 						<div class="o_org_selector_status">
 							<span class="o_clickable" 
 								  onclick="handleClickOnClickable('$r.getId("_orgs_")', '$r.getId("_selected_orgs_")', `${selectedOrg.key()}`);">
-								$r.escapeHtml(${selectedOrg.path()})
+								$r.escapeHtml(${selectedOrg.displayPath()})
 							</span>
 						</div>
 						<div id="sel_org_label_${selectedOrg.key()}" class="o_org_selector_title_version">
@@ -94,7 +94,7 @@
 						<div class="o_org_selector_status">
 							<span class="o_clickable" 
 								  onclick="handleClickOnClickable('$r.getId("_selected_orgs_")', '$r.getId("_orgs_")', '${org.key()}');">
-								$r.escapeHtml(${org.path()})
+								$r.escapeHtml(${org.displayPath()})
 							</span>
 						</div>
 						<div id="org_label_${org.key()}" class="o_org_selector_title_version">

@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.manager.OrganisationDAO;
+import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -113,9 +117,50 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			orgKeyToName.put(org.getKey(), org.getDisplayName());
 			orgKeys.add(org.getKey());
 		}
+		addMissingOrgNames(orgKeyToName, orgs);
+		
 		orgRows = orgs.stream().map(org -> mapToOrgRow(org, orgKeyToName))
 				.sorted(this::orgPathComparator)
 				.collect(Collectors.toList());
+	}
+
+	private void addMissingOrgNames(Map<Long, String> orgKeyToName, List<Organisation> orgs) {
+		Set<Long> missingOrgKeys = getMissingOrgKeys(orgs);
+		if (missingOrgKeys.isEmpty()) {
+			return;
+		}
+		OrganisationDAO organisationDAO = CoreSpringFactory.getImpl(OrganisationDAO.class);
+		List<OrganisationRef> missingOrgRefs = missingOrgKeys.stream().map(OrganisationRefImpl::new)
+				.map(o -> (OrganisationRef) o).toList();
+		List<Organisation> missingOrgs = organisationDAO.getOrganisations(missingOrgRefs);
+		for (Organisation missingOrg : missingOrgs) {
+			orgKeyToName.put(missingOrg.getKey(), missingOrg.getDisplayName());
+		}
+	}
+
+	private Set<Long> getMissingOrgKeys(List<Organisation> orgs) {
+		HashSet<Long> referencedOrgKeys = getReferencedOrgKeys(orgs);
+		referencedOrgKeys.removeAll(orgKeys);
+		return referencedOrgKeys;
+	}
+	
+	private HashSet<Long> getReferencedOrgKeys(Collection<Organisation> orgs) {
+		HashSet<Long> keys = new HashSet<>();
+		try {
+			for (Organisation org : orgs) {
+				if (org.getMaterializedPathKeys() != null) {
+					for (String orgKeyString : org.getMaterializedPathKeys().split("/")) {
+						if (StringHelper.containsNonWhitespace(orgKeyString)) {
+							Long orgKey = Long.parseLong(orgKeyString);
+							keys.add(orgKey);
+						}
+					}
+				}
+			}
+		} catch(Exception e) {
+			//
+		}
+		return keys;
 	}
 
 	private int orgPathComparator(OrgRow orgRow1, OrgRow orgRow2) {
@@ -171,13 +216,25 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 				.filter(StringHelper::containsNonWhitespace)
 				.map(Long::parseLong).map(orgKeyToName::get)
 				.filter(StringHelper::containsNonWhitespace)
-				.collect(Collectors.joining(" / ")) : "";
+				.collect(Collectors.joining("/")) : "";
+		String displayPath = toDisplayPath(path);
 		String title = org.getDisplayName();
 		String location = org.getLocation();
 		OrgNode orgNode = orgRoot.find(org.getKey());
 		int numberOfElements = orgNode != null ? orgNode.getNumberOfElements() : -1;
 		
-		return new OrgRow(key, path, title, location, numberOfElements);
+		return new OrgRow(key, path, displayPath, title, location, numberOfElements);
+	}
+	
+	private String toDisplayPath(String path) {
+		path = path.trim();
+		
+		int lastSlashIndex = path.lastIndexOf('/');
+		if (lastSlashIndex == -1) {
+			return "/";
+		}
+
+		return "/" + path.substring(0, lastSlashIndex) + "/";
 	}
 
 	@Override
@@ -382,7 +439,7 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		return multipleSelection;
 	}
 
-	public record OrgRow(long key, String path, String title, String location, int numberOfElements) {}
+	public record OrgRow(long key, String path, String displayPath, String title, String location, int numberOfElements) {}
 
 	public static class OrgNode {
 		private final Organisation data;
