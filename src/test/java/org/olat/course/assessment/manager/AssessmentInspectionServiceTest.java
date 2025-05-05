@@ -23,11 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
@@ -37,7 +39,9 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +56,8 @@ public class AssessmentInspectionServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
@@ -100,5 +106,37 @@ public class AssessmentInspectionServiceTest extends OlatTestCase {
 		Object after = AssessmentInspectionXStream.fromXml(inspectionLog.getAfter(), AssessmentInspection.class);
 		Assert.assertNotNull(after);
 	}
-
+	
+	@Test
+	public void deleteRepositoryEntryWithInspections() {
+		Identity assessedId1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-2");
+		Identity assessedId2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-3");
+		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log");
+		
+		String subIdent = "123456";
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		// prepare a test and a user
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedId1, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedId2, null, entry, subIdent, null, entry);
+		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry1, assessedId1, null, 300, true);
+		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry2, assessedId2, null, null, true);
+		testSession1.setFinishTime(new Date());
+		testSessionDao.update(testSession1);
+		testSession2.setFinishTime(new Date());
+		testSessionDao.update(testSession2);
+		// Inspection
+		AssessmentInspectionConfiguration config = inspectionService.createInspectionConfiguration(entry);
+		config = inspectionService.saveConfiguration(config);
+		
+		Date now = new Date();
+		inspectionService.addInspection(config, DateUtils.addDays(now, -2), DateUtils.addDays(now, 2),
+				null, false, subIdent, List.of(assessedId1), doerId);
+		inspectionService.addInspection(config, DateUtils.addDays(now, -2), DateUtils.addDays(now, 2),
+				null, false, subIdent, List.of(assessedId2), doerId);
+		dbInstance.commitAndCloseSession();
+		
+		ErrorList errors = repositoryService.deletePermanently(entry, doerId, Roles.administratorRoles(), Locale.ENGLISH);
+		Assert.assertFalse(errors.hasErrors());
+	}
 }

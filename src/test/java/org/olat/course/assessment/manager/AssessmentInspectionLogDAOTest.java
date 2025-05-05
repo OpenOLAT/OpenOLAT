@@ -19,11 +19,10 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Date;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -56,8 +55,8 @@ public class AssessmentInspectionLogDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createInspectionLog() {
-		Identity assessedId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log");
-		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log");
+		Identity assessedId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-1");
+		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-2");
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
@@ -76,8 +75,8 @@ public class AssessmentInspectionLogDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadLogsByInspection() {
-		Identity assessedId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log");
-		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log");
+		Identity assessedId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-3");
+		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-4");
 		
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
@@ -88,7 +87,7 @@ public class AssessmentInspectionLogDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<AssessmentInspectionLog> loadedInspectionLogs = inspectionLogDao.loadLogs(inspection, null, null);
-		assertThat(loadedInspectionLogs)
+		Assertions.assertThat(loadedInspectionLogs)
 			.hasSize(1)
 			.containsExactly(inspectionLog);
 		
@@ -100,5 +99,64 @@ public class AssessmentInspectionLogDAOTest extends OlatTestCase {
 		Assert.assertEquals(Action.create, loadedInspectionLog.getAction());
 		Assert.assertEquals(inspection, loadedInspectionLog.getInspection());
 		Assert.assertEquals(doerId, loadedInspectionLog.getDoer());
+	}
+	
+	@Test
+	public void deleteInspectionLog() {
+		Identity assessedId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-5");
+		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-6");
+		
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		AssessmentInspection inspection = inspectionDao
+				.createInspection(assessedId, new Date(), new Date(), null, null, "123456", config);
+		AssessmentInspectionLog inspectionLog = inspectionLogDao.createLog(Action.create, null, null, inspection, doerId);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(inspectionLog);
+		
+		inspectionLogDao.deleteInspectionLog(config);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentInspectionLog> loadedInspectionLogs = inspectionLogDao.loadLogs(inspection, null, null);
+		Assertions.assertThat(loadedInspectionLogs)
+			.isEmpty();
+	}
+	
+	@Test
+	public void deleteInspectionLogParano() {
+		Identity assessedId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-7");
+		Identity doerId = JunitTestHelper.createAndPersistIdentityAsRndUser("inspection-log-8");
+		
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration configToDelete = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		configToDelete = inspectionConfigurationDao.saveConfiguration(configToDelete);
+		AssessmentInspectionConfiguration configToKeep = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		configToKeep = inspectionConfigurationDao.saveConfiguration(configToKeep);
+		
+		// Inspection with log to delete
+		AssessmentInspection inspectionWithDeletedLog = inspectionDao
+				.createInspection(assessedId, new Date(), new Date(), null, null, "123456", configToDelete);
+		AssessmentInspectionLog inspectionLogToDelete = inspectionLogDao.createLog(Action.create, null, null, inspectionWithDeletedLog, doerId);
+
+		// Inspection with log to keep
+		AssessmentInspection inspectionWithLog = inspectionDao
+				.createInspection(assessedId, new Date(), new Date(), null, null, "123456", configToKeep);
+		AssessmentInspectionLog inspectionLog = inspectionLogDao.createLog(Action.create, null, null, inspectionWithLog, doerId);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(inspectionLogToDelete);
+		
+		inspectionLogDao.deleteInspectionLog(configToDelete);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentInspectionLog> loadedInspectionLogs = inspectionLogDao.loadLogs(inspectionWithDeletedLog, null, null);
+		Assertions.assertThat(loadedInspectionLogs)
+			.isEmpty();
+		
+		List<AssessmentInspectionLog> keepedInspectionLogs = inspectionLogDao.loadLogs(inspectionWithLog, null, null);
+		Assertions.assertThat(keepedInspectionLogs)
+			.hasSize(1)
+			.containsAnyOf(inspectionLog);
 	}
 }

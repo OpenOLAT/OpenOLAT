@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentInspectionLog;
 import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.AssessmentInspection;
+import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.model.AssessmentInspectionLogImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,5 +86,14 @@ public class AssessmentInspectionLogDAO {
 		}
 		return logQuery.getResultList();
 	}
-
+	
+	public int deleteInspectionLog(AssessmentInspectionConfiguration configuration) {
+		String query = """
+			delete from courseassessmentinspectionlog as log where log.inspection.key in (
+			 select inspection.key from courseassessmentinspection as inspection where inspection.configuration.key=:configurationKey
+			)""";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("configurationKey", configuration.getKey())
+				.executeUpdate();
+	}
 }
