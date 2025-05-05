@@ -1860,9 +1860,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
         	TestPart currentTestPart = testSessionController.getCurrentTestPart();
         	if(currentTestPart != null && currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
         		//go to the first assessment item
-        		if(testSessionController.hasFollowingNonLinearItem()) {
-        			testSessionController.selectFollowingItemNonLinear(ureq.getRequestTimestamp());
-        		}
+        		try {
+					if(testSessionController.hasFollowingNonLinearItem()) {
+						testSessionController.selectFollowingItemNonLinear(ureq.getRequestTimestamp());
+					}
+				} catch (Exception e) {
+					logError("", e);
+					showError("error.unexpected.start");
+				}
         	}
         }
         
