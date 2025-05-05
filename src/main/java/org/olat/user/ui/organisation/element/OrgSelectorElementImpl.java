@@ -117,15 +117,15 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 			orgKeyToName.put(org.getKey(), org.getDisplayName());
 			orgKeys.add(org.getKey());
 		}
-		addMissingOrgKeys(orgKeyToName, orgs, orgKeys);
+		addMissingOrgNames(orgKeyToName, orgs);
 		
 		orgRows = orgs.stream().map(org -> mapToOrgRow(org, orgKeyToName))
 				.sorted(this::orgPathComparator)
 				.collect(Collectors.toList());
 	}
 
-	private void addMissingOrgKeys(Map<Long, String> orgKeyToName, List<Organisation> orgs, Set<Long> orgKeys) {
-		Set<Long> missingOrgKeys = getMissingOrgKeys(orgs, orgKeys);
+	private void addMissingOrgNames(Map<Long, String> orgKeyToName, List<Organisation> orgs) {
+		Set<Long> missingOrgKeys = getMissingOrgKeys(orgs);
 		if (missingOrgKeys.isEmpty()) {
 			return;
 		}
@@ -135,11 +135,10 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		List<Organisation> missingOrgs = organisationDAO.getOrganisations(missingOrgRefs);
 		for (Organisation missingOrg : missingOrgs) {
 			orgKeyToName.put(missingOrg.getKey(), missingOrg.getDisplayName());
-			orgKeys.add(missingOrg.getKey());
 		}
 	}
 
-	private Set<Long> getMissingOrgKeys(List<Organisation> orgs, Set<Long> orgKeys) {
+	private Set<Long> getMissingOrgKeys(List<Organisation> orgs) {
 		HashSet<Long> referencedOrgKeys = getReferencedOrgKeys(orgs);
 		referencedOrgKeys.removeAll(orgKeys);
 		return referencedOrgKeys;
