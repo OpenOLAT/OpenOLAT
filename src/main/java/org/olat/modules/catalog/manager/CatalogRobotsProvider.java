@@ -60,7 +60,7 @@ public class CatalogRobotsProvider implements RobotsProvider, SitemapProvider {
 	@Override
 	public List<String> getRobotAllows() {
 		if (isEnabled()) {
-			return List.of(Settings.getServerContextPath() + "/" + WebCatalogDispatcher.PATH_CATALOG, 
+			return List.of(Settings.getServerContextPath() + "/" + WebCatalogDispatcher.PATH_CATALOG + "/",
 					Settings.getServerContextPath() + DispatcherModule.PATH_MAPPED,
 					Settings.getServerContextPath() + "/raw/");
 		}
