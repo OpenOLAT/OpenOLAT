@@ -33,6 +33,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBBrokerRef;
 import org.olat.modules.topicbroker.TBTopic;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,19 @@ public class TopicBrokerStorage {
 		if (!brokerDirectory.exists()) {
 			brokerDirectory.mkdirs();
 		}
+	}
+
+	public VFSContainer getBrokerContainer(TBBrokerRef broker) {
+		File brokerDir = getBrokerDir(broker);
+		if (!brokerDir.exists()) {
+			brokerDir.mkdirs();
+		}
+		String relativePath = File.separator + bcrootDirectory.toPath().relativize(brokerDir.toPath()).toString();
+		return VFSManager.olatRootContainer(relativePath);
+	}
+	
+	private File getBrokerDir(TBBrokerRef broker) {
+		return new File(brokerDirectory, broker.getKey().toString());
 	}
 	
 	public void deleteTopicLeaf(TBTopic topic, String identifier) {
@@ -84,7 +98,7 @@ public class TopicBrokerStorage {
 	}
 	
 	private VFSContainer getOrCreateContainer(TBTopic topic, String path) {
-		File storage = new File(brokerDirectory, topic.getBroker().getKey().toString());
+		File storage = getBrokerDir(topic.getBroker());
 		if (!storage.exists()) {
 			storage.mkdirs();
 		}

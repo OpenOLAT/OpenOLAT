@@ -28,6 +28,7 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
 
@@ -61,6 +62,8 @@ public interface TopicBrokerService {
 	public TBBroker getBroker(RepositoryEntry repositoryEntry, String subIdent);
 	
 	public TBBroker getBroker(TBBrokerRef broker);
+	
+	public VFSContainer getBrokerContainer(TBBrokerRef broker);
 	
 	public TBParticipant updateParticipant(Identity identity, TBParticipant participant);
 	

@@ -42,6 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -336,6 +337,15 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		params.setBroker(broker);
 		List<TBBroker> brokers = brokerDao.loadBrokers(params);
 		return !brokers.isEmpty()? brokers.get(0): null;
+	}
+	
+	@Override
+	public VFSContainer getBrokerContainer(TBBrokerRef broker) {
+		if (broker == null || broker.getKey() == null) {
+			return null;
+			
+		}
+		return tbStorage.getBrokerContainer(broker);
 	}
 	
 	private TBParticipant createParticipant(Identity doer, TBBroker broker, Identity participantIdentity) {

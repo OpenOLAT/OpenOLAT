@@ -33,6 +33,7 @@ import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.PageCourseNode;
+import org.olat.course.nodes.TopicBrokerCourseNode;
 
 /**
  * Initial date: Jul 04, 2023
@@ -111,6 +112,7 @@ public class CourseQuotaUsageRow implements FlexiTreeTableNode {
 				|| getType().equals(FOCourseNode.TYPE)
 				|| getType().equals(DialogCourseNode.TYPE)
 				|| getType().equals(PageCourseNode.TYPE)
+				|| getType().equals(TopicBrokerCourseNode.TYPE)
 				? numOfFiles : null;
 	}
 

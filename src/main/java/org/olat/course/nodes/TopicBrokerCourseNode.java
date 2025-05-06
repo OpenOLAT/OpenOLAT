@@ -41,6 +41,10 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -61,11 +65,14 @@ import org.olat.course.nodes.topicbroker.ui.TBConfigsController;
 import org.olat.course.nodes.topicbroker.ui.TBEditController;
 import org.olat.course.nodes.topicbroker.ui.TBRunCoachController;
 import org.olat.course.nodes.topicbroker.ui.TBRunController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -76,7 +83,7 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
+public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implements CourseNodeWithFiles {
 
 	private static final long serialVersionUID = 2135898475307987572L;
 	
@@ -346,6 +353,43 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode {
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNodeIdent,
 				customFieldDefinitionsXml);
 		
+	}
+
+	@Override
+	public Quota getQuota(QuotaManager quotaManager, RepositoryEntry entry) {
+		return null;
+	}
+
+	@Override
+	public Long getUsageKb(CourseEnvironment courseEnvironment) {
+		return VFSManager.getUsage(getBrokerContainer(courseEnvironment)).getSizeInKB();
+	}
+
+	@Override
+	public String getRelPath(CourseEnvironment courseEnvironment) {
+		return getBrokerContainer(courseEnvironment).getRelPath();
+	}
+
+	@Override
+	public Integer getNumOfFiles(CourseEnvironment courseEnvironment) {
+		long numOfFiles = VFSManager.getUsage(getBrokerContainer(courseEnvironment)).getNumOfFiles();
+		return (int)numOfFiles;
+	}
+	
+	private VFSContainer getBrokerContainer(CourseEnvironment courseEnvironment) {
+		TopicBrokerService topicBrokerService = CoreSpringFactory.getImpl(TopicBrokerService.class);
+		TBBroker broker = topicBrokerService.getBroker(courseEnvironment.getCourseGroupManager().getCourseEntry(), getIdent());
+		return topicBrokerService.getBrokerContainer(broker);
+	}
+
+	@Override
+	public boolean isStorageExtern() {
+		return false;
+	}
+
+	@Override
+	public boolean isStorageInCourseFolder() {
+		return false;
 	}
 
 }
