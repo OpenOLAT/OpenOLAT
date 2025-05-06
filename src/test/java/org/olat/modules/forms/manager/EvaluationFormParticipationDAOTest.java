@@ -162,9 +162,9 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		evaTestHelper.createParticipation(survey, true);
 		evaTestHelper.createParticipation(survey, false);
 		EvaluationFormParticipation participationEmail1 = evaluationFormManager.createParticipation(survey,
-				"test", new EvaluationFormEmailExecutor(random(), null, null));
+				new EvaluationFormEmailExecutor(random(), null, null));
 		EvaluationFormParticipation participationEmail2 = evaluationFormManager.createParticipation(survey,
-				"test", new EvaluationFormEmailExecutor(random(), random(), random()));
+				new EvaluationFormEmailExecutor(random(), random(), random()));
 		dbInstance.commitAndCloseSession();
 		
 		List<EvaluationFormParticipation> participations = sut.loadBySurvey(survey, null, true, true);

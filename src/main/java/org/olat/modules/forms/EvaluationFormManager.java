@@ -139,7 +139,7 @@ public interface EvaluationFormManager {
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
 	
-	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, String identifierTypePostfix, EvaluationFormEmailExecutor emailExecutor);
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormEmailExecutor emailExecutor);
 
 	public EvaluationFormParticipation updateParticipation(EvaluationFormParticipation participation);
 	

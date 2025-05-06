@@ -312,10 +312,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, String identifierTypePostfix,
-			EvaluationFormEmailExecutor emailExecutor) {
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormEmailExecutor emailExecutor) {
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(
-				EvaluationFormDispatcher.EMAIL_PARTICIPATION_PREFIX + "." + identifierTypePostfix,
+				EvaluationFormDispatcher.EMAIL_PARTICIPATION_TYPE,
 				UUID.randomUUID().toString().replace("-", ""));
 		return evaluationFormParticipationDao.createParticipation(survey, identifier, emailExecutor.email(),
 				emailExecutor.firstName(), emailExecutor.lastName());

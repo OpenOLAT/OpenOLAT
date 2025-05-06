@@ -112,7 +112,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
 		EvaluationFormEmailExecutor emailExecutor = new EvaluationFormEmailExecutor(random(), random(), random());
-		EvaluationFormParticipation evaParticipation = evaManager.createParticipation(survey, "test", emailExecutor);
+		EvaluationFormParticipation evaParticipation = evaManager.createParticipation(survey, emailExecutor);
 		qualityTestHelper.createContext(dataCollection, evaParticipation);
 		dbInstance.commitAndCloseSession();
 		

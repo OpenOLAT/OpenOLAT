@@ -631,7 +631,7 @@ public class QualityServiceImpl
 					emailToParticipation.put(emailExecutor.email(), participation);
 				}
 			} else {
-				EvaluationFormParticipation participation = evaluationFormManager.createParticipation(survey, "qm", emailExecutor);
+				EvaluationFormParticipation participation = evaluationFormManager.createParticipation(survey, emailExecutor);
 				DefaultQualityContextBuilder.builder(dataCollection, participation)
 					.withRole(QualityContextRole.email)
 					.build();

@@ -69,7 +69,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormDispatcher.class);
 	
-	public static final String EMAIL_PARTICIPATION_PREFIX = "email";
+	public static final String EMAIL_PARTICIPATION_TYPE = "email";
 	public static final String PUBLIC_PARTICIPATION_TYPE = "publicParticipation";
 	private static final String SURVEY_PATH = "survey";
 	public static final String PUBLIC_PARTICIPATION_PATH = "public";
@@ -218,7 +218,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	
 	private boolean isAllwaysUnautenticated(EvaluationFormParticipationIdentifier identifier) {
 		return PUBLIC_PARTICIPATION_TYPE.equalsIgnoreCase(identifier.getType())
-				|| identifier.getType().startsWith(EMAIL_PARTICIPATION_PREFIX);
+				|| EMAIL_PARTICIPATION_TYPE.equalsIgnoreCase(identifier.getType());
 	}
 
 	private void dispatchAuthenticated(HttpServletResponse response, EvaluationFormParticipationIdentifier identifier,
