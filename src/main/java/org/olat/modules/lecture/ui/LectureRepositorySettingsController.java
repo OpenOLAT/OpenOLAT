@@ -274,7 +274,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		assessmentIpsEl.setVisible(assessmentModeEnabled);
 		assessmentLeadTimeEl.setVisible(assessmentModeEnabled);
 		assessmentFollowupTimeEl.setVisible(assessmentModeEnabled);
-		assessmentSafeExamBrowserEl.setVisible(assessmentModeEnabled);
+		assessmentSafeExamBrowserEl.setVisible(assessmentModeEnabled && !lectureModule.isAssessmentModeSebDefault());
 	}
 
 	@Override

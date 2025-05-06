@@ -668,7 +668,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertTrue(blockRefs.isEmpty());
 		
 		// add an assessment mode
-		AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(lectureBlock, 5, 5, "", null);
+		AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(lectureBlock, 5, 5, "");
 		assessmentMode = assessmentModeManager.persist(assessmentMode);
 		dbInstance.commitAndCloseSession();
 		

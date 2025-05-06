@@ -114,7 +114,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	
 	@Override
 	public AssessmentMode createAssessmentMode(LectureBlock lectureBlock,
-			int leadTime, int followupTime, String ips, String sebKeys) {
+			int leadTime, int followupTime, String ips) {
 		AssessmentModeImpl mode = new AssessmentModeImpl();
 		mode.setCreationDate(new Date());
 		mode.setLastModified(mode.getCreationDate());
@@ -128,12 +128,6 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setRestrictAccessIps(restricIps);
 		if(restricIps) {
 			mode.setIpList(ips);
-		}
-		boolean seb = StringHelper.containsNonWhitespace(sebKeys);
-		mode.setSafeExamBrowser(seb);
-		if(seb) {
-			mode.setSafeExamBrowserKey(sebKeys);
-			mode.setSafeExamBrowserConfigDownload(true);
 		}
 		mode.setRepositoryEntry(lectureBlock.getEntry());
 		mode.setLectureBlock(lectureBlock);

@@ -48,7 +48,7 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry);
 	
-	public AssessmentMode createAssessmentMode(LectureBlock lectureBlock, int leadTime, int followUpTime, String ips, String sebKeys);
+	public AssessmentMode createAssessmentMode(LectureBlock lectureBlock, int leadTime, int followUpTime, String ips);
 	
 	public AssessmentMode createAssessmentMode(AssessmentMode assessmentMode);
 

@@ -257,7 +257,9 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	public void createAssessmentMode_lectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
-		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(lectureBlock, 5, 10, "192.168.1.203", "very-complicated-key");
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(lectureBlock, 5, 10, "192.168.1.203");
+		mode.setSafeExamBrowser(true);
+		mode.setSafeExamBrowserKey("very-complicated-key");
 		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);

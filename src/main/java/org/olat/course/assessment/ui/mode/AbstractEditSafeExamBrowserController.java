@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -96,6 +97,13 @@ public abstract class AbstractEditSafeExamBrowserController extends FormBasicCon
 			SafeExamBrowserEnabled configuration) {
 		super(ureq, wControl, LAYOUT_BAREBONE, Util
 				.createPackageTranslator(AbstractEditSafeExamBrowserController.class, ureq.getLocale()));
+		this.configuration = configuration;
+	}
+	
+	public AbstractEditSafeExamBrowserController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			SafeExamBrowserEnabled configuration) {
+		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
+		setTranslator(Util.createPackageTranslator(AbstractEditSafeExamBrowserController.class, ureq.getLocale(), getTranslator()));
 		this.configuration = configuration;
 	}
 	
