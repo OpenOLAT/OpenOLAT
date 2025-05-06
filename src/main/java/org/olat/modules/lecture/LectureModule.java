@@ -47,7 +47,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String ASSESSMENT_MODE_LEAD_TIME = "lecture.assessment.mode.lead.time";
 	private static final String ASSESSMENT_MODE_FOLLOWUP_TIME = "lecture.assessment.mode.followup.time";
 	private static final String ASSESSMENT_MODE_ADMISSIBLE_IPS = "lecture.assessment.mode.admissible.ips";
+	
 	private static final String ASSESSMENT_MODE_SEB_KEYS = "lecture.assessment.mode.seb.keys";
+	private static final String ASSESSMENT_MODE_SEB_DEFAULT = "lecture.assessment.mode.seb.default";
+	private static final String ASSESSMENT_MODE_SEB_DOWNLOAD = "lecture.assessment.mode.seb.download";
+	private static final String ASSESSMENT_MODE_SEB_HINT = "lecture.assessment.mode.seb.hint";
 
 	private static final String CAN_OVERRIDE_STANDARD_CONFIGURATION = "lecture.can.override.standard.configuration";
 	private static final String STATUS_PARTIALLY_DONE_ENABLED = "lecture.status.partially.done.enabled";
@@ -147,9 +151,16 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private int assessmentModeFollowupTime;
 	@Value("${lecture.assessment.mode.admissible.ips}")
 	private String assessmentModeAdmissibleIps;
+	
 	@Value("${lecture.assessment.mode.seb.keys}")
 	private String assessmentModeSebKeys;
-	
+	@Value("${lecture.assessment.mode.seb.default}")
+	private String assessmentModeSebDefault;
+	@Value("${lecture.assessment.mode.seb.download}")
+	private String assessmentModeSebDownload;
+	@Value("${lecture.assessment.mode.seb.hint}")
+	private String assessmentModeSebHint;
+
 	@Value("${lecture.owner.can.view.all.courses.curriculum:true}")
 	private boolean ownerCanViewAllCoursesInCurriculum;
 
@@ -407,8 +418,10 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 
 		assessmentModeAdmissibleIps = getStringPropertyValue(ASSESSMENT_MODE_ADMISSIBLE_IPS, assessmentModeAdmissibleIps);
 		assessmentModeSebKeys = getStringPropertyValue(ASSESSMENT_MODE_SEB_KEYS, assessmentModeSebKeys);
+		assessmentModeSebDefault = getStringPropertyValue(ASSESSMENT_MODE_SEB_DEFAULT, assessmentModeSebDefault);
+		assessmentModeSebDownload = getStringPropertyValue(ASSESSMENT_MODE_SEB_DOWNLOAD, assessmentModeSebDownload);
+		assessmentModeSebHint = getStringPropertyValue(ASSESSMENT_MODE_SEB_HINT, assessmentModeSebHint);
 	}
-
 
 	@Override
 	public boolean isEnabled() {
@@ -644,7 +657,40 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		this.assessmentModeSebKeys = assessmentModeSebKeys;
 		setStringProperty(ASSESSMENT_MODE_SEB_KEYS, assessmentModeSebKeys, true);
 	}
-	
+
+	/**
+	 * @return Use the default configuration in OpenOlat
+	 */
+	public boolean isAssessmentModeSebDefault() {
+		return "true".equals(assessmentModeSebDefault);
+	}
+
+	/**
+	 * @param sebConfiguration The Safe exam Browser configuration in XML format.
+	 */
+	public void setAssessmentModeSebDefault(boolean defaultConfiguration) {
+		this.assessmentModeSebDefault = defaultConfiguration ? "true" : "false";
+		setStringProperty(ASSESSMENT_MODE_SEB_DEFAULT, assessmentModeSebDefault, true);
+	}
+
+	public boolean isAssessmentModeSebDownload() {
+		return "true".equals(assessmentModeSebDownload);
+	}
+
+	public void setAssessmentModeSebDownload(boolean download) {
+		assessmentModeSebDownload = download ? "true" : "false";
+		setStringProperty(ASSESSMENT_MODE_SEB_DOWNLOAD, assessmentModeSebDownload, true);
+	}
+
+	public String getAssessmentModeSebHint() {
+		return assessmentModeSebHint;
+	}
+
+	public void setAssessmentModeSebHint(String hint) {
+		this.assessmentModeSebHint = hint;
+		setStringProperty(ASSESSMENT_MODE_SEB_HINT, hint, true);
+	}
+
 	public boolean isOwnerCanViewAllCoursesInCurriculum() {
 		return ownerCanViewAllCoursesInCurriculum;
 	}

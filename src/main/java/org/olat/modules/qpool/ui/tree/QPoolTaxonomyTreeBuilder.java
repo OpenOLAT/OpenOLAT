@@ -115,6 +115,16 @@ public class QPoolTaxonomyTreeBuilder {
 		prefill(levels);
 	}
 	
+	public void loadTaxonomyLevels(Translator translator, TaxonomyLevel rootLevel) {
+		reset();
+		this.translator = translator;
+		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevels();
+		List<TaxonomyLevel> subLevels = levels.stream()
+				.filter(l -> l.getMaterializedPathKeys().contains(rootLevel.getMaterializedPathKeys()))
+				.toList();
+		prefill(subLevels);
+	}
+	
 	private void loadAllTaxonomyLevels() {
 		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevels();
 		prefill(levels);

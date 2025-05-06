@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -52,6 +53,9 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.SafeExamBrowserEnabled;
+import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.group.BusinessGroup;
@@ -61,7 +65,10 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,10 +88,14 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	private TextElement nameEl;
 	private RichTextElement descriptionEl;
 	private StaticTextElement chooseElementsCont;
+	private FormToggle useSafeExamBrowserEl;
+	private TextAreaElement safeExamBrowserKeyEl;
+	private FormLink safeExamBrowserConfigurationEl;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCtrl;
 	private ChooseElementsController chooseElementsCtrl;
+	private SafeExamBrowserConfigurationController safeExamBrowserConfigurationCtrl;
 	
 	private List<String> elementKeys;
 	
@@ -92,9 +103,14 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	private AssessmentMode assessmentMode;
 	private final LectureBlock lectureBlock;
 	private final OLATResourceable courseOres;
-	
+	private final RepositoryEntryLectureConfiguration lectureConfig;
+
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -110,6 +126,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 			RepositoryEntry entry, AssessmentMode assessmentMode) {
 		super(ureq, wControl);
 		this.entry = entry;
+		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		courseOres = OresHelper.clone(entry.getOlatResource());
 		if(assessmentMode.getKey() == null) {
 			this.assessmentMode = assessmentMode;
@@ -118,6 +135,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 		lectureBlock = this.assessmentMode.getLectureBlock();
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -187,18 +205,33 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 
 		chooseElementsButton = uifactory.addFormLink("choose.elements", formLayout, Link.BUTTON);
 		chooseElementsButton.setEnabled(status != Status.end);
-
+		
+		boolean useSEB = assessmentMode.isSafeExamBrowser();
+		useSafeExamBrowserEl = uifactory.addToggleButton("mode.safeexambrowser", "mode.safeexambrowser", translate("on"), translate("off"), formLayout);
+		useSafeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
+		useSafeExamBrowserEl.toggle(useSEB);
+		
+		safeExamBrowserConfigurationEl = uifactory.addFormLink("show.safeexambrowser.configuration", "show.safeexambrowser.configuration",
+				"show.safeexambrowser.configuration.label", formLayout, Link.BUTTON);
+		safeExamBrowserConfigurationEl.getComponent().setSuppressDirtyFormWarning(true);
+		safeExamBrowserConfigurationEl.setGhost(true);
+		boolean showConfiguration = (assessmentMode.getKey() == null && lectureModule.isAssessmentModeSebDefault())
+				|| (assessmentMode.getKey() != null && assessmentMode.isSafeExamBrowser() && assessmentMode.getSafeExamBrowserConfiguration() != null);
+		safeExamBrowserConfigurationEl.setVisible(showConfiguration);
+		
+		String key = assessmentMode.getKey() == null
+				? ConfigurationHelper.getSebKeys(lectureConfig, lectureModule)
+				: assessmentMode.getSafeExamBrowserKey();
+		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 4096, 6, 60, false, false, key, formLayout);
+		safeExamBrowserKeyEl.setVisible(useSEB && StringHelper.containsNonWhitespace(key));
+		safeExamBrowserKeyEl.setEnabled(false);
+		
 		//ips
 		String ipList = assessmentMode.getIpList();
 		TextAreaElement ipListEl = uifactory.addTextAreaElement("mode.ips.list", "mode.ips.list", 4096, 4, 60, false, false, ipList, formLayout);
 		ipListEl.setVisible(assessmentMode.isRestrictAccessIps());
 		ipListEl.setEnabled(false);
-		
-		String key = assessmentMode.getSafeExamBrowserKey();
-		TextAreaElement safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 4096, 6, 60, false, false, key, formLayout);
-		safeExamBrowserKeyEl.setVisible(assessmentMode.isSafeExamBrowser());
-		safeExamBrowserKeyEl.setEnabled(false);
-		
+
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
 		if(status != Status.end) {
@@ -273,6 +306,13 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		}
 		return name;
 	}
+	
+	private void updateUI() {
+		boolean useSEB = useSafeExamBrowserEl.isOn();
+		boolean useKeys = (assessmentMode.getKey() == null && !lectureModule.isAssessmentModeSebDefault())
+				|| (assessmentMode.getKey() != null && StringHelper.containsNonWhitespace(assessmentMode.getSafeExamBrowserKey()));
+		safeExamBrowserKeyEl.setVisible(useSEB && useKeys);
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -287,6 +327,11 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				save(ureq, true);
 			}
+		} else if(safeExamBrowserConfigurationCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CLOSE_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -294,8 +339,10 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(safeExamBrowserConfigurationCtrl);
 		removeAsListenerAndDispose(chooseElementsCtrl);
 		removeAsListenerAndDispose(cmc);
+		safeExamBrowserConfigurationCtrl = null;
 		chooseElementsCtrl = null;
 		cmc = null;
 	}
@@ -376,6 +423,25 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		} else {
 			assessmentMode.setElementList(null);
 		}
+		
+		boolean useSEB = useSafeExamBrowserEl.isOn();
+		assessmentMode.setSafeExamBrowser(useSEB);
+		if(useSEB) {
+			if(lectureModule.isAssessmentModeSebDefault()) {
+				SafeExamBrowserConfiguration configuration = assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration();
+				assessmentMode.setSafeExamBrowserConfiguration(configuration);
+				boolean safeExamBrowserConfigDownload = lectureModule.isAssessmentModeSebDownload();
+				assessmentMode.setSafeExamBrowserConfigDownload(safeExamBrowserConfigDownload);
+				String safeExamBrowserHint = lectureModule.getAssessmentModeSebHint();
+				assessmentMode.setSafeExamBrowserHint(safeExamBrowserHint);
+				assessmentMode.setSafeExamBrowserKey(null);
+			} else {
+				String sebKey = ConfigurationHelper.getSebKeys(lectureConfig, lectureModule);
+				assessmentMode.setSafeExamBrowserKey(sebKey);
+			}
+		} else {
+			assessmentMode.setSafeExamBrowserKey(null);
+		}
 
 		//mode need to be persisted for the following relations
 		if(assessmentMode.getKey() == null) {
@@ -395,8 +461,19 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if(chooseElementsButton == source) {
 			doChooseElements(ureq);
+		} else if(safeExamBrowserConfigurationEl == source) {
+			doShowSafeExamBrowserConfiguration(ureq);
+		} else if(useSafeExamBrowserEl == source) {
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(fiSrc != safeExamBrowserConfigurationEl) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
 	}
 
 	@Override
@@ -432,5 +509,138 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 			}
 		}
 		chooseElementsCont.setValue(elementSb.toString());
+	}
+	
+	private void doShowSafeExamBrowserConfiguration(UserRequest ureq) {
+		SafeExamBrowserEnabled configuration;
+		if(assessmentMode.getKey() == null) {
+			configuration = new DefaultSafeExamBrowserConfiguration();
+		} else {
+			configuration = assessmentMode;
+		}
+		safeExamBrowserConfigurationCtrl = new SafeExamBrowserConfigurationController(ureq, getWindowControl(), configuration);
+		listenTo(safeExamBrowserConfigurationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), safeExamBrowserConfigurationCtrl.getInitialComponent(),
+				true, translate("show.safeexambrowser.configuration.label"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private class DefaultSafeExamBrowserConfiguration implements SafeExamBrowserEnabled {
+
+		@Override
+		public boolean isSafeExamBrowser() {
+			return true;
+		}
+
+		@Override
+		public void setSafeExamBrowser(boolean safeExamBrowser) {
+			//
+		}
+
+		@Override
+		public String getSafeExamBrowserKey() {
+			return null;
+		}
+
+		@Override
+		public void setSafeExamBrowserKey(String safeExamBrowserKey) {
+			//
+		}
+
+		@Override
+		public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration() {
+			return assessmentModule.getSafeExamBrowserConfigurationDefaultConfiguration();
+		}
+
+		@Override
+		public void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration) {
+			//
+		}
+
+		@Override
+		public String getSafeExamBrowserConfigPList() {
+			return null;
+		}
+
+		@Override
+		public String getSafeExamBrowserConfigPListKey() {
+			return null;
+		}
+
+		@Override
+		public boolean isSafeExamBrowserConfigDownload() {
+			return lectureModule.isAssessmentModeSebDownload();
+		}
+
+		@Override
+		public void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload) {
+			// 
+		}
+
+		@Override
+		public String getSafeExamBrowserHint() {
+			return lectureModule.getAssessmentModeSebHint();
+		}
+
+		@Override
+		public void setSafeExamBrowserHint(String safeExamBrowserHint) {
+			//
+		}
+	}
+	
+	private static class SafeExamBrowserConfigurationController extends AbstractEditSafeExamBrowserController {
+		
+		private FormLink closeButton;
+		
+		public SafeExamBrowserConfigurationController(UserRequest ureq, WindowControl wControl, SafeExamBrowserEnabled configuration) {
+			super(ureq, wControl, configuration);
+			
+			initForm(ureq);
+			updateUI();
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			super.initForm(formLayout, listener, ureq);
+			
+			FormLayoutContainer buttonsWrapperCont = uifactory.addDefaultFormLayout("buttonsWrapper", null, formLayout);
+			FormLayoutContainer buttonCont = uifactory.addButtonsFormLayout("buttons", null, buttonsWrapperCont);
+			closeButton = uifactory.addFormLink("close", buttonCont, Link.BUTTON);
+		}
+
+		@Override
+		protected void updateUI() {
+			super.updateUI();
+			
+			safeExamBrowserEl.setVisible(false);
+			typeOfUseEl.setVisible(false);
+			downloadConfigEl.setEnabled(isEditable());
+			safeExamBrowserHintEl.setEnabled(isEditable());
+		}
+
+		@Override
+		protected boolean isEditable() {
+			return false;
+		}
+		
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(closeButton == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected void formCancelled(UserRequest ureq) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 }
