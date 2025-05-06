@@ -278,7 +278,12 @@ public abstract class AbstractItemListController extends FormBasicController
 		filters.add(new FlexiTableTextFilter(translate("general.language"), AbstractItemsSource.FILTER_LANGUAGE, false));
 
 		if (securityCallback.canUseTaxonomy()) {
-			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, searchSettings.isSearchAllTaxonomyLevels());
+			if(searchSettings.getTaxonomyLevel() != null) {
+				qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(getTranslator(), searchSettings.getTaxonomyLevel());
+			} else {
+				qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, searchSettings.isSearchAllTaxonomyLevels());
+			}
+			
 			String[] keys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 			String[] values = qpoolTaxonomyTreeBuilder.getSelectableEscapedValues();
 
@@ -361,8 +366,6 @@ public abstract class AbstractItemListController extends FormBasicController
 		}
 		
 		if(searchSettings.getTaxonomyLevel() != null && taxonomyLevelPathFilter != null) {
-			implicitFilters.add(AbstractItemsSource.FILTER_TAXONOMYLEVEL_PATH);
-			implicitFilters.add(AbstractItemsSource.FILTER_TAXONOMYLEVEL_FIELD);
 			filtersValues.add(FlexiTableFilterValue
 					.valueOf(AbstractItemsSource.FILTER_TAXONOMYLEVEL_PATH, searchSettings.getTaxonomyLevel().getMaterializedPathKeys()));
 		}
