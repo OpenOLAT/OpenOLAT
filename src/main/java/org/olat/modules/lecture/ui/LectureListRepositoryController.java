@@ -1973,8 +1973,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				int leadTime = ConfigurationHelper.getLeadTime(lectureConfig, lectureModule);
 				int followupTime = ConfigurationHelper.getFollowupTime(lectureConfig, lectureModule);
 				String ipList = ConfigurationHelper.getAdmissibleIps(lectureConfig, lectureModule);
-				String sebKey = ConfigurationHelper.getSebKeys(lectureConfig, lectureModule);
-				newMode = assessmentModeMgr.createAssessmentMode(block, leadTime, followupTime, ipList, sebKey);
+				newMode = assessmentModeMgr.createAssessmentMode(block, leadTime, followupTime, ipList);
 			}
 			assessmentModeEditCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), blockEntry, newMode);
 			listenTo(assessmentModeEditCtrl);
