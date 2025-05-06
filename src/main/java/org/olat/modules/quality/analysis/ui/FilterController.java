@@ -223,7 +223,7 @@ public class FilterController extends FormBasicController {
 		seriesIndexEl.addActionListener(FormEvent.ONCLICK);
 		
 		contextRoleEl = uifactory.addCheckboxesDropdown("filter.context.role", formLayout);
-		contextRoleEl.addActionListener(FormEvent.ONCLICK);
+		contextRoleEl.addActionListener(FormEvent.ONCHANGE);
 
 		withUserInformationsEl = uifactory.addCheckboxesVertical("filter.with.user.informations.label", formLayout,
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);

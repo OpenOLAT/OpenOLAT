@@ -93,6 +93,8 @@ class AnalysisUIFactory {
 		case owner: return translator.translate("filter.context.role.owner");
 		case coach: return translator.translate("filter.context.role.coach");
 		case participant: return translator.translate("filter.context.role.participant");
+		case email: return translator.translate("filter.context.role.email");
+		case publicParticipation: return translator.translate("filter.context.role.public.participation");
 		case none: return translator.translate("filter.context.role.none");
 		default: return role.toString();
 		}
