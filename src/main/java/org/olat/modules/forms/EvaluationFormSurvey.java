@@ -58,6 +58,15 @@ public interface EvaluationFormSurvey extends EvaluationFormSurveyRef, CreateInf
 	 * @return the previous survey in a series.
 	 */
 	public EvaluationFormSurvey getSeriesPrevious();
+	
+	/**
+	 * The identifier is returned, if someone can participate in a survey without an
+	 * existing participation. If null is returned, the participation must be
+	 * created in advance.
+	 * 
+	 * @return the identifier of the survey
+	 */
+	public String getPublicParticipationIdentifier();
 
 
 }

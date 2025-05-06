@@ -32,5 +32,6 @@ public enum QualityContextRole {
 	coach, //same as GroupRoles
 	participant, //same as GroupRole
 	email,
+	publicParticipation,
 
 }

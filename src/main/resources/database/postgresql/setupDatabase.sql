@@ -2774,6 +2774,7 @@ create table o_eva_form_survey (
    e_sub_ident2 varchar(2048),
    e_series_key bigint,
    e_series_index int,
+   e_public_part_identifier varchar(128),
    fk_form_entry bigint not null,
    fk_series_previous bigint,
    primary key (id)
@@ -5866,6 +5867,7 @@ create unique index idx_de_userinfo_ident_idx on o_de_user_info(fk_identity);
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);
 create index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident, e_sub_ident2);
+create unique index idx_eva_surv_ppident_idx on o_eva_form_survey (e_public_part_identifier) where e_public_part_identifier is not null;
 
 alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create index idx_eva_part_survey_idx on o_eva_form_participation (fk_survey);

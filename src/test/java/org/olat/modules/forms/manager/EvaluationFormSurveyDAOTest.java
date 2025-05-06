@@ -81,8 +81,10 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		softly.assertThat(survey.getSeriesKey()).isEqualTo(previous.getSeriesKey());
 		softly.assertThat(survey.getSeriesPrevious()).isEqualTo(previous);
 		softly.assertThat(survey.getSeriesIndex()).isEqualTo(2);
+		softly.assertThat(survey.getPublicParticipationIdentifier()).isNull();
 		softly.assertAll();
 	}
+	
 	
 	@Test
 	public void shouldLoadByResourceableWithSubident() {
@@ -256,6 +258,51 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		survey4 = sut.loadByResourceable(ores, "4", null);
 		softly.assertThat(survey4.getSeriesIndex()).isEqualTo(3);
 	}
-
+	
+	@Test
+	public void shouldUpdatePublicParticipationIdentifier() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurvey survey = sut.createSurvey(ores, random(), random(), formEntry, null);
+		dbInstance.commitAndCloseSession();
+		
+		String publicParticipationIdentifier = random();
+		sut.updatPublicParticipationIdentifier(survey, publicParticipationIdentifier);
+		dbInstance.commitAndCloseSession();
+		
+		survey = sut.loadSurveyByKey(survey.getKey());
+		
+		assertThat(survey.getPublicParticipationIdentifier()).isEqualTo(publicParticipationIdentifier);
+	}
+	
+	@Test
+	public void shouldLoadByPublicParticipation() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurvey survey = sut.createSurvey(ores, random(), random(), formEntry, null);
+		String identifierUpperSuffix = "A";
+		String publicParticipationIdentifier = random();
+		sut.updatPublicParticipationIdentifier(survey, publicParticipationIdentifier + identifierUpperSuffix);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.loadSurveyByPublicParticipationIdentifier(publicParticipationIdentifier + identifierUpperSuffix)).isEqualTo(survey);
+		assertThat(sut.loadSurveyByPublicParticipationIdentifier(publicParticipationIdentifier + identifierUpperSuffix.toLowerCase())).isEqualTo(survey);
+		assertThat(sut.loadSurveyByPublicParticipationIdentifier(random())).isNull();
+	}
+	
+	@Test
+	public void shouldCheckIfPublicParticipationIdentifierIsAvailable() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurvey survey = sut.createSurvey(ores, random(), random(), formEntry, null);
+		String identifierUpperSuffix = "A";
+		String publicParticipationIdentifier = random();
+		sut.updatPublicParticipationIdentifier(survey, publicParticipationIdentifier + identifierUpperSuffix);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isPublicParticipationIdentifierAvailable(publicParticipationIdentifier + identifierUpperSuffix)).isFalse();
+		assertThat(sut.isPublicParticipationIdentifierAvailable(publicParticipationIdentifier + identifierUpperSuffix.toLowerCase())).isFalse();
+		assertThat(sut.isPublicParticipationIdentifierAvailable(random())).isTrue();
+	}
 
 }

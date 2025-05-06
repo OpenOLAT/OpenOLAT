@@ -69,8 +69,7 @@ class EvaluationFormSurveyDAO {
 	}
 
 	EvaluationFormSurvey updateForm(EvaluationFormSurvey survey, RepositoryEntry formEntry) {
-		if (survey instanceof EvaluationFormSurveyImpl) {
-			EvaluationFormSurveyImpl surveyImpl = (EvaluationFormSurveyImpl) survey;
+		if (survey instanceof EvaluationFormSurveyImpl surveyImpl) {
 			surveyImpl.setFormEntry(formEntry);
 			return update(surveyImpl);
 		}
@@ -162,8 +161,7 @@ class EvaluationFormSurveyDAO {
 	}
 
 	EvaluationFormSurvey updateSeriesPrevious(EvaluationFormSurvey survey, EvaluationFormSurvey previous) {
-		if (survey instanceof EvaluationFormSurveyImpl) {
-			EvaluationFormSurveyImpl surveyImpl = (EvaluationFormSurveyImpl) survey;
+		if (survey instanceof EvaluationFormSurveyImpl surveyImpl) {
 			surveyImpl.setSeriesPrevious(previous);
 			return update(surveyImpl);
 		}
@@ -215,12 +213,40 @@ class EvaluationFormSurveyDAO {
 				.getResultList();
 		int seriesIndex = 1;
 		for (EvaluationFormSurvey survey : surveys) {
-			if (survey instanceof EvaluationFormSurveyImpl) {
-				EvaluationFormSurveyImpl surveyImpl = (EvaluationFormSurveyImpl) survey;
+			if (survey instanceof EvaluationFormSurveyImpl surveyImpl) {
 				surveyImpl.setSeriesIndex(seriesIndex++);
 				update(surveyImpl);
 			}
 		}
+	}
+	
+	EvaluationFormSurvey updatPublicParticipationIdentifier(EvaluationFormSurvey survey, String publicParticipationIdentifier) {
+		if (survey instanceof EvaluationFormSurveyImpl surveyImpl) {
+			surveyImpl.setPublicParticipationIdentifier(publicParticipationIdentifier);
+			return update(surveyImpl);
+		}
+		return survey;
+	}
+	
+	EvaluationFormSurvey loadSurveyByPublicParticipationIdentifier(String publicParticipationIdentifier) {
+		if (!StringHelper.containsNonWhitespace(publicParticipationIdentifier)) return null;
+		
+		String query = """
+				select survey
+				  from evaluationformsurvey as survey
+				 where survey.publicParticipationIdentifier is not null
+				   and lower(survey.publicParticipationIdentifier) = :lowerIdentifier
+				""";
+		
+		List<EvaluationFormSurvey> resultList = dbInstance.getCurrentEntityManager()
+				.createQuery(query, EvaluationFormSurvey.class)
+				.setParameter("lowerIdentifier", publicParticipationIdentifier.toLowerCase())
+				.getResultList();
+		return !resultList.isEmpty() ? resultList.get(0) : null;
+	}
+	
+	boolean isPublicParticipationIdentifierAvailable(String publicParticipationIdentifier) {
+		return loadSurveyByPublicParticipationIdentifier(publicParticipationIdentifier) == null;
 	}
 
 }

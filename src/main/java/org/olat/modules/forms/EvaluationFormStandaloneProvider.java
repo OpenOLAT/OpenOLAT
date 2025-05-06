@@ -83,5 +83,9 @@ public interface EvaluationFormStandaloneProvider {
 	 * @return
 	 */
 	public String getBusinessPath(EvaluationFormParticipation participation);
+	
+	public boolean isPublicParticipationExecutable(EvaluationFormSurvey survey);
+	
+	public void onPublicParticipationCreated(EvaluationFormParticipation participation);
 
 }

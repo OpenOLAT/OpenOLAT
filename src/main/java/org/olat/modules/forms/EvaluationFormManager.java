@@ -111,6 +111,12 @@ public interface EvaluationFormManager {
 	 * @return the survey
 	 */
 	public EvaluationFormSurvey updateSurveyForm(EvaluationFormSurvey survey, RepositoryEntry formEntry);
+	
+	public EvaluationFormSurvey loadSurveyByPublicParticipationIdentifier(String identifier);
+	
+	public void updatePublicParticipationIdentifier(EvaluationFormSurvey survey, String identifier);
+	
+	public boolean isPublicParticipationIdentifierAvailable(String identifier);
 
 	/**
 	 * Deletes all data of a survey but not the survey itself. It deletes all

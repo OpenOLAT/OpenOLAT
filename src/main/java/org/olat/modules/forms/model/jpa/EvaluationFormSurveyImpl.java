@@ -79,6 +79,9 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	@Column(name="e_series_index", nullable=true, insertable=true, updatable=true)
 	private Integer seriesIndex;
 	
+	@Column(name="e_public_part_identifier", nullable=true, insertable=true, updatable=true)
+	private String publicParticipationIdentifier;
+	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=true)
 	private RepositoryEntry formEntry;
@@ -200,6 +203,15 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 
 	public void setSeriesPrevious(EvaluationFormSurvey previous) {
 		this.seriesPrevious = previous;
+	}
+
+	@Override
+	public String getPublicParticipationIdentifier() {
+		return publicParticipationIdentifier;
+	}
+
+	public void setPublicParticipationIdentifier(String publicParticipationIdentifier) {
+		this.publicParticipationIdentifier = publicParticipationIdentifier;
 	}
 
 	@Override

@@ -60,5 +60,9 @@ public class ExecutionIdentity {
 		user.setProperty(UserConstants.EMAIL, email);
 		return new ExecutionIdentity(null, user);
 	}
+	
+	public static ExecutionIdentity ofNone() {
+		return new ExecutionIdentity(null, new TransientIdentity());
+	}
 
 }

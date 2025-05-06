@@ -33,7 +33,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormStandaloneProvider;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
@@ -98,6 +101,18 @@ public class QualityStandaloneProvider implements EvaluationFormStandaloneProvid
 	@Override
 	public String getBusinessPath(EvaluationFormParticipation participation) {
 		return "[QualitySite:0][quality:0][my:0][execution:" + participation.getKey() +"]";
+	}
+
+	@Override
+	public boolean isPublicParticipationExecutable(EvaluationFormSurvey survey) {
+		QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(
+				() -> survey.getIdentifier().getOLATResourceable().getResourceableId());
+		return dataCollection != null && QualityDataCollectionStatus.RUNNING == dataCollection.getStatus();
+	}
+
+	@Override
+	public void onPublicParticipationCreated(EvaluationFormParticipation participation) {
+		qualityService.onPublicParticipationCreated(participation);
 	}
 
 }

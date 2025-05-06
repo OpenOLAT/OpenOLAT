@@ -44,6 +44,8 @@ public interface DataCollectionSecurityCallback extends ToDoTaskSecurityCallback
 	
 	public boolean canDeleteDataCollection();
 	
+	public boolean canEditPublicParticipation();
+	
 	public boolean canAddParticipants();
 	
 	public boolean canRemoveParticipation();

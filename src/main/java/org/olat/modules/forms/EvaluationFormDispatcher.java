@@ -22,6 +22,7 @@ package org.olat.modules.forms;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.UUID;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -69,7 +70,9 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormDispatcher.class);
 	
 	public static final String EMAIL_PARTICIPATION_PREFIX = "email";
+	public static final String PUBLIC_PARTICIPATION_TYPE = "publicParticipation";
 	private static final String SURVEY_PATH = "survey";
+	public static final String PUBLIC_PARTICIPATION_PATH = "public";
 	
 	public static final String getExecutionUrl(EvaluationFormParticipationIdentifier identifier) {
 		return new StringBuilder()
@@ -80,6 +83,17 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				.append(identifier.getType())
 				.append("/")
 				.append(identifier.getKey())
+				.toString();
+	}
+	public static final String getPublicParticipationUrl(String publicParticipationIdentifier) {
+		return new StringBuilder()
+				.append(Settings.getServerContextPathURI())
+				.append("/")
+				.append(SURVEY_PATH)
+				.append("/")
+				.append(PUBLIC_PARTICIPATION_PATH)
+				.append("/")
+				.append(publicParticipationIdentifier)
 				.toString();
 	}
 	
@@ -114,6 +128,8 @@ public class EvaluationFormDispatcher implements Dispatcher {
 		UserSession usess = ureq.getUserSession();
 		if(pathInfo != null && pathInfo.contains("close-window")) {
 			DispatcherModule.setNotContent(pathInfo, response);
+		} else if (isPublicParticipation(identifier)) {
+			dispatchPublicParticipation(request, response, ureq, usess, identifier, uriPrefix);
 		} else if (usess.isAuthenticated() && !isAllwaysUnautenticated(identifier)) {
 			if(ureq.isValidDispatchURI() && persistentAuthenticatedRequest(identifier, ureq)) {
 				dispatchValidUnauthenticated(ureq);
@@ -126,7 +142,72 @@ public class EvaluationFormDispatcher implements Dispatcher {
 			dispatchUnautenticated(ureq, request, identifier, uriPrefix);
 		}
 	}
+	
+	private boolean isPublicParticipation(EvaluationFormParticipationIdentifier identifier) {
+		return PUBLIC_PARTICIPATION_PATH.equalsIgnoreCase(identifier.getType());
+	}
+	
+	private void dispatchPublicParticipation(HttpServletRequest request, HttpServletResponse response, UserRequest ureq,
+			UserSession usess, EvaluationFormParticipationIdentifier publicIdentifier, String uriPrefix) {
+		initSessionInfo(ureq, request, usess);
+		String participationKey = getParticipationIdentifierKeyOfPublicParticipation(usess, publicIdentifier.getKey(), false);
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, participationKey);
+		
+		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByIdentifier(identifier);
+		if (participation != null && EvaluationFormParticipationStatus.done == participation.getStatus()) {
+			// The survey can be filled out multiple times.
+			// If the participation is done, a new participation is initialized.
+			participationKey = getParticipationIdentifierKeyOfPublicParticipation(usess, publicIdentifier.getKey(), true);
+			identifier = new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, participationKey);
+			participation = null;
+		}
+		
+		if (participation == null) {
+			EvaluationFormSurvey survey = evaluationFormManager.loadSurveyByPublicParticipationIdentifier(publicIdentifier.getKey());
+			if (survey == null) {
+				log.debug("No survey for the publicParticipationIdentifier.");
+				// Display form not found message
+				dispatchUnautenticated(ureq, request, null, uriPrefix);
+				return;
+			}
+			
+			EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory.getProvider(survey.getIdentifier().getOLATResourceable());
+			if (!standaloneProvider.isPublicParticipationExecutable(survey)) {
+				log.debug("Public participation not available.");
+				// Display survey not ready message (publicIdentifier as special marker)
+				dispatchUnautenticated(ureq, request, publicIdentifier, uriPrefix);
+				return;
+			}
+			
+			participation = evaluationFormManager.createParticipation(survey, identifier);
+			standaloneProvider.onPublicParticipationCreated(participation);
+		}
+		
+		if (participation == null) {
+			DispatcherModule.sendBadRequest(request.getRequestURI(), response);
+			return;
+		}
+		
+		String executionUrl = getExecutionUrl(participation.getIdentifier());
+		DispatcherModule.redirectSecureTo(response, executionUrl);
+	}
+	
 
+	private String getParticipationIdentifierKeyOfPublicParticipation(UserSession usess, String publicParticipationIdentifier, boolean removeCurrent) {
+		String sessionId = usess.getSessionInfo().getSession().getId() + "::" + publicParticipationIdentifier;
+		Object id = usess.getEntry(sessionId);
+		if (id instanceof String key) {
+			if (!removeCurrent) {
+				return key;
+			}
+			// else a new key is created below
+		}
+		
+		String key = UUID.randomUUID().toString().replace("-", "");
+		usess.putEntryInNonClearedStore(sessionId, key);
+		return key;
+	}
+	
 	/**
 	 * Started an evaluation form unauthenticated but authenticated later (use the /survey/ dispatcher and not the authenticated)
 	 * and can access a persistent window (persistent across user session and which stick to the HTTP session)
@@ -136,7 +217,8 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	}
 	
 	private boolean isAllwaysUnautenticated(EvaluationFormParticipationIdentifier identifier) {
-		return identifier.getType().startsWith(EMAIL_PARTICIPATION_PREFIX);
+		return PUBLIC_PARTICIPATION_TYPE.equalsIgnoreCase(identifier.getType())
+				|| identifier.getType().startsWith(EMAIL_PARTICIPATION_PREFIX);
 	}
 
 	private void dispatchAuthenticated(HttpServletResponse response, EvaluationFormParticipationIdentifier identifier,
@@ -193,18 +275,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	
 	private void dispatchUnautenticated(UserRequest ureq, HttpServletRequest request, EvaluationFormParticipationIdentifier identifier, String uriPrefix) {
 		UserSession usess = ureq.getUserSession();
-		if(usess.getSessionInfo() == null) {
-			HttpSession session = request.getSession();
-			SessionInfo sinfo = new SessionInfo(null, session);
-			sinfo.setFromIP(ureq.getHttpReq().getRemoteAddr());
-			sinfo.setUserAgent(ureq.getHttpReq().getHeader("User-Agent"));
-			sinfo.setSecure(ureq.getHttpReq().isSecure());
-			sinfo.setLastClickTime();
-			usess.setSessionInfo(sinfo);
-		}
-		
-		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
-		I18nManager.updateLocaleInfoToThread(usess);
+		initSessionInfo(ureq, request, usess);
 		
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
 		bfwcParts.showTopNav(false);
@@ -234,6 +305,21 @@ public class EvaluationFormDispatcher implements Dispatcher {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	private void initSessionInfo(UserRequest ureq, HttpServletRequest request, UserSession usess) {
+		if (usess.getSessionInfo() == null) {
+			HttpSession session = request.getSession();
+			SessionInfo sinfo = new SessionInfo(null, session);
+			sinfo.setFromIP(ureq.getHttpReq().getRemoteAddr());
+			sinfo.setUserAgent(ureq.getHttpReq().getHeader("User-Agent"));
+			sinfo.setSecure(ureq.getHttpReq().isSecure());
+			sinfo.setLastClickTime();
+			usess.setSessionInfo(sinfo);
+		}
+		
+		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
+		I18nManager.updateLocaleInfoToThread(usess);
 	}
 	
 	private EvaluationFormParticipationIdentifier getIdentifier(HttpServletRequest request) {

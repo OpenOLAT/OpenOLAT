@@ -96,7 +96,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private final StackedPanel mainPanel;
 	
 	private DataCollectionConfigurationController configurationCtrl;
-	private ParticipationListController participationsCtrl;
+	private ParticipationConfigController participationsCtrl;
 	private RemindersController remindersCtrl;
 	private DataCollectionToDoListController toDosCtrl;
 	private DataCollectionReportAccessController reportAccessCtrl;
@@ -386,7 +386,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	private void doOpenParticipants(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		participationsCtrl = new ParticipationListController(ureq, getWindowControl(), secCallback, stackPanel,
+		participationsCtrl = new ParticipationConfigController(ureq, getWindowControl(), secCallback, stackPanel,
 				dataCollection);
 		listenTo(participationsCtrl);
 		stackPanel.pushController(translate("data.collection.participations"), participationsCtrl);

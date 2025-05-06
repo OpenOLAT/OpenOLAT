@@ -221,6 +221,21 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public void updatePublicParticipationIdentifier(EvaluationFormSurvey survey, String identifier) {
+		evaluationFormSurveyDao.updatPublicParticipationIdentifier(survey, identifier);
+	}
+	
+	@Override
+	public EvaluationFormSurvey loadSurveyByPublicParticipationIdentifier(String identifier) {
+		return evaluationFormSurveyDao.loadSurveyByPublicParticipationIdentifier(identifier);
+	}
+	
+	@Override
+	public boolean isPublicParticipationIdentifierAvailable(String identifier) {
+		return evaluationFormSurveyDao.isPublicParticipationIdentifierAvailable(identifier);
+	}
+
+	@Override
 	public void deleteAllData(EvaluationFormSurvey survey) {
 		if (survey == null) return;
 		

@@ -130,6 +130,12 @@ public interface QualityService {
 	public void updateDataCollectionOrganisations(QualityDataCollection dataCollection,
 			List<Organisation> organisations);
 	
+	public String getPublicParticipationIdentifier(QualityDataCollection dataCollection);
+
+	public void updatePublicParticipationIdentifier(QualityDataCollection dataCollection, String identifier);
+	
+	public boolean isPublicParticipationIdentifierAvailable(String identifier);
+	
 	/**
 	 * Add the executors to the data collection and returns the participations of
 	 * the executors. If already a participation for an executor exists, no further
@@ -155,6 +161,8 @@ public interface QualityService {
 	 */
 	public void addParticipationsEmail(QualityDataCollection dataCollection,
 			Collection<EvaluationFormEmailExecutor> emailExecutors);
+	
+	public void onPublicParticipationCreated(EvaluationFormParticipation participation);
 
 	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection);
 

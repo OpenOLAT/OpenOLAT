@@ -76,6 +76,11 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 	public boolean canDeleteDataCollection() {
 		return isNotRunning();
 	}
+	
+	@Override
+	public boolean canEditPublicParticipation() {
+		return isNotRunning();
+	}
 
 	@Override
 	public boolean canAddParticipants() {

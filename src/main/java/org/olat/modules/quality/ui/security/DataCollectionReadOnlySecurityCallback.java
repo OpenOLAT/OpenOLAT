@@ -65,6 +65,11 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 	public boolean canDeleteDataCollection() {
 		return false;
 	}
+	
+	@Override
+	public boolean canEditPublicParticipation() {
+		return false;
+	}
 
 	@Override
 	public boolean canAddParticipants() {

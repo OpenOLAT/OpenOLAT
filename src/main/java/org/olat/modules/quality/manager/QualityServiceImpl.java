@@ -577,6 +577,22 @@ public class QualityServiceImpl
 			}
 		}
 	}
+	
+	@Override
+	public String getPublicParticipationIdentifier(QualityDataCollection dataCollection) {
+		return evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection)).getPublicParticipationIdentifier();
+	}
+
+	@Override
+	public void updatePublicParticipationIdentifier(QualityDataCollection dataCollection, String identifier) {
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
+		evaluationFormManager.updatePublicParticipationIdentifier(survey, identifier);
+	}
+
+	@Override
+	public boolean isPublicParticipationIdentifierAvailable(String identifier) {
+		return evaluationFormManager.isPublicParticipationIdentifierAvailable(identifier);
+	}
 
 	@Override
 	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection, Collection<Identity> executors) {
@@ -622,6 +638,21 @@ public class QualityServiceImpl
 				emailToParticipation.put(emailExecutor.email(), participation);
 			}
 		}
+	}
+	
+	@Override
+	public void onPublicParticipationCreated(EvaluationFormParticipation participation) {
+		QualityDataCollection dataCollection = loadDataCollectionByKey(
+				() -> participation.getSurvey().getIdentifier().getOLATResourceable().getResourceableId());
+		if (dataCollection == null) {
+			log.error("Data collection for public participation not found (key={})",
+					participation.getSurvey().getIdentifier().getOLATResourceable().getResourceableId());
+			return;
+		}
+		
+		DefaultQualityContextBuilder.builder(dataCollection, participation)
+			.withRole(QualityContextRole.publicParticipation)
+			.build();
 	}
 
 	@Override

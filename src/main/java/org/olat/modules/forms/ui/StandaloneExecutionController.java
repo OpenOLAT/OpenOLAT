@@ -31,6 +31,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormDispatcher;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -68,6 +69,13 @@ public class StandaloneExecutionController extends BasicController {
 		
 		mainVC = createVelocityContainer("standalone");
 		putInitialPanel(mainVC);
+		
+		// PUBLIC_PARTICIPATION_PATH is used as special marker for not available public participations
+		if (identifier != null && EvaluationFormDispatcher.PUBLIC_PARTICIPATION_PATH.equalsIgnoreCase(identifier.getType())) {
+			doShowNotExecuteable(ureq);
+			log.debug("Public participation not executeable: {}", identifier);
+			return;
+		}
 		
 		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByIdentifier(identifier);
 		if (participation == null) {
@@ -128,8 +136,10 @@ public class StandaloneExecutionController extends BasicController {
 			executionIdentity = ExecutionIdentity.ofIdentity(participation.getExecutor());
 		} else if (StringHelper.containsNonWhitespace(participation.getEmail())) {
 			executionIdentity = ExecutionIdentity.ofEmail(participation.getEmail());
-		} else {
+		} else if (getIdentity() != null) {
 			executionIdentity = ExecutionIdentity.ofIdentity(getIdentity());
+		} else {
+			executionIdentity = ExecutionIdentity.ofNone();
 		}
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, executionIdentity, null, false, true, false, false, null);
 		listenTo(executionCtrl);

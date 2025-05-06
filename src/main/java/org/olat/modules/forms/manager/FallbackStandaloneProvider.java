@@ -25,6 +25,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormStandaloneProvider;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.springframework.stereotype.Service;
 
 /**
@@ -64,6 +65,16 @@ public class FallbackStandaloneProvider implements EvaluationFormStandaloneProvi
 	@Override
 	public String getBusinessPath(EvaluationFormParticipation participation) {
 		return null;
+	}
+
+	@Override
+	public boolean isPublicParticipationExecutable(EvaluationFormSurvey survey) {
+		return false;
+	}
+	
+	@Override
+	public void onPublicParticipationCreated(EvaluationFormParticipation participation) {
+		//
 	}
 
 }
