@@ -1,4 +1,7 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("createNewVersion"))
+	<li>$r.render("createNewVersion")</li>
+	#end
 	#if($r.available("edit"))
 	<li>$r.render("edit")</li>
 	#end

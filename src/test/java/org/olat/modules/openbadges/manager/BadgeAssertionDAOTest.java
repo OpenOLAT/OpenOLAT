@@ -89,7 +89,7 @@ public class BadgeAssertionDAOTest extends OlatTestCase {
 		Assert.assertEquals(recipient, badgeAssertion.getRecipient());
 		Assert.assertEquals(badgeClassImpl.getUuid(), badgeAssertion.getBadgeClass().getUuid());
 
-		List<BadgeAssertion> badgeAssertions = badgeAssertionDAO.getBadgeAssertions(badgeClassImpl);
+		List<BadgeAssertion> badgeAssertions = badgeAssertionDAO.getBadgeAssertions(badgeClassImpl, true);
 
 		Assert.assertEquals(1, badgeAssertions.size());
 		Assert.assertEquals(uuid, badgeAssertions.get(0).getUuid());
@@ -161,11 +161,11 @@ public class BadgeAssertionDAOTest extends OlatTestCase {
 		Assert.assertEquals(Set.of(uuid4), recipient2GlobalBadges.stream().map(BadgeAssertion::getUuid).collect(Collectors.toSet()));
 		Assert.assertEquals(Set.of(recipient2.getKey()), recipient2GlobalBadges.stream().map(BadgeAssertion::getRecipient).map(IdentityRef::getKey).collect(Collectors.toSet()));
 
-		List<BadgeAssertion> courseClassBadges = badgeAssertionDAO.getBadgeAssertions(courseBadgeClass);
+		List<BadgeAssertion> courseClassBadges = badgeAssertionDAO.getBadgeAssertions(courseBadgeClass, true);
 		Assert.assertEquals(2, courseClassBadges.size());
 		Assert.assertEquals(Set.of(uuid1, uuid2), courseClassBadges.stream().map(BadgeAssertion::getUuid).collect(Collectors.toSet()));
 
-		List<BadgeAssertion> globalClassBadges = badgeAssertionDAO.getBadgeAssertions(globalBadgeClass);
+		List<BadgeAssertion> globalClassBadges = badgeAssertionDAO.getBadgeAssertions(globalBadgeClass, true);
 		Assert.assertEquals(2, globalClassBadges.size());
 		Assert.assertEquals(Set.of(uuid3, uuid4), globalClassBadges.stream().map(BadgeAssertion::getUuid).collect(Collectors.toSet()));
 

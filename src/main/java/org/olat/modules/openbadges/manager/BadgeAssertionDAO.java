@@ -152,13 +152,22 @@ public class BadgeAssertionDAO {
 		return typedQuery.getResultList();
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass) {
+	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass, boolean allVersions) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
-		sb.append("where ba.badgeClass.key = :badgeClassKey ");
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class)
-				.setParameter("badgeClassKey", badgeClass.getKey())
-				.getResultList();
+		if (allVersions) {
+			sb.append("where ba.badgeClass.rootId = :badgeClassRootId ");
+		} else {
+			sb.append("where ba.badgeClass.key = :badgeClassKey ");
+		}
+		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BadgeAssertion.class);
+		if (allVersions) {
+			typedQuery.setParameter("badgeClassRootId", badgeClass.getRootId());
+		} else {
+			typedQuery.setParameter("badgeClassKey", badgeClass.getKey());
+		}
+		return typedQuery.getResultList();
 	}
 
 	public List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys) {
@@ -179,10 +188,11 @@ public class BadgeAssertionDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(ba.key) from badgeassertion ba ");
 		sb.append("where ba.recipient.key = :recipientKey ");
-		sb.append("and ba.badgeClass.key = :badgeClassKey ");
+		sb.append("and (ba.badgeClass.key = :badgeClassKey or ba.badgeClass.rootId = :badgeClassRootId) ");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("recipientKey", recipient.getKey())
 				.setParameter("badgeClassKey", badgeClass.getKey())
+				.setParameter("badgeClassRootId", badgeClass.getRootId())
 				.getResultList().get(0);
 	}
 

@@ -126,13 +126,15 @@ public interface OpenBadgesManager {
 
 	void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry);
 
-	void deleteBadgeClassAndAssertions(BadgeClass badgeClass);
+	void deleteBadgeClassAndAssertions(BadgeClass badgeClass, boolean allVersions);
 
 	boolean hasCourseBadgeClasses(Identity author);
 
 	List<BadgeClassDAO.BadgeClassWithUseCount> getCourseBadgeClassesWithUseCounts(Identity identity);
 
 	List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity);
+
+	void createNewBadgeClassVersion(Long sourceClassKey, Identity author);
 
 	void copyBadgeClass(Long sourceClassKey, Translator translator, Identity author);
 
@@ -166,7 +168,7 @@ public interface OpenBadgesManager {
 
 	List<ParticipantAndAssessmentEntries> associateParticipantsWithAssessmentEntries(List<AssessmentEntry> assessmentEntries);
 
-	List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass);
+	List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass, boolean allVersions);
 
 	List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry, boolean nullEntryMeansAll);
 
@@ -276,7 +278,7 @@ public interface OpenBadgesManager {
 		}
 	}
 
-	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count, Long revokedCount, Long resetCount) {
+	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count, Long revokedCount, Long resetCount, Long totalUseCount) {
 		public Size fitIn(int width, int height) {
 			double sourceAspectRatio = (double) size.getWidth() / (double) size.getHeight();
 			double targetAspectRatio = (double) width / (double) height;

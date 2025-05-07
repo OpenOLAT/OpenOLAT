@@ -322,8 +322,8 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeClassImpl badgeE = BadgeTestData.createTestBadgeClass("Badge 3: E", "image.png", null);
 		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Badge 4: B", "image.png", null);
 		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge 5: C", "image.png", null);
-		BadgeClassImpl badgeF = BadgeTestData.createTestBadgeClass("Badge 6: F", "image.png", null);	
-		
+		BadgeClassImpl badgeF = BadgeTestData.createTestBadgeClass("Badge 6: F", "image.png", null);
+
 		RepositoryEntry courseC = JunitTestHelper.deployBasicCourse(doer);
 		passCourse(courseC, recipient);
 
@@ -348,7 +348,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		
 		// act:
 		//
- 		// Issue 'badgeA' manually. Due to down-stream badge dependencies, this should automatically issue another
+		// Issue 'badgeA' manually. Due to down-stream badge dependencies, this should automatically issue another
 		// badge B and another badge C.
 		//
 
@@ -376,7 +376,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	private void passCourse(RepositoryEntry course, Identity participant) {
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry assessmentEntry = assessmentEntryDAO.createAssessmentEntry(participant, null, 
+		AssessmentEntry assessmentEntry = assessmentEntryDAO.createAssessmentEntry(participant, null,
 				course, subIdent, true, null);
 		assessmentEntry.setPassed(true);
 		assessmentEntryDAO.updateAssessmentEntry(assessmentEntry);
@@ -450,7 +450,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		
 		// act:
 		//
- 		// Issue badges of 'courseA' automatically (simulating that courseA has been passed and that 
+		// Issue badges of 'courseA' automatically (simulating that courseA has been passed and that 
 		// the openBadgesManager is called as a result of this). Should lead to a chain reaction.
 		//
 
@@ -482,5 +482,30 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		badgeCriteria.getConditions().add(new CoursePassedCondition());
 		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
 		badgeClassDAO.updateBadgeClass(badge);
+	}
+
+	@Test
+	public void createNewBadgeClassVersionBasic() {
+
+		// arrange
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("doer-1");
+		BadgeClassImpl badgeA1 = BadgeTestData.createTestBadgeClass("Badge A", "image.png", null);
+
+		// act
+		openBadgesManager.createNewBadgeClassVersion(badgeA1.getKey(), doer);
+		
+		// assert
+		BadgeClass badgeA2 = badgeClassDAO.getCurrentBadgeClass(badgeA1.getRootId());
+		BadgeClass badgeA1Reloaded = badgeClassDAO.getBadgeClass(badgeA1.getKey());
+
+		Assert.assertNotNull(badgeA2);
+		Assert.assertEquals(badgeA1Reloaded.getRootId(), badgeA2.getRootId());
+		Assert.assertNotEquals(badgeA1Reloaded.getUuid(), badgeA2.getUuid());
+		Assert.assertEquals(OpenBadgesFactory.getDefaultVersion(), badgeA1Reloaded.getVersion());
+		Assert.assertEquals("2", badgeA2.getVersion());
+		Assert.assertEquals(badgeA1Reloaded, badgeA2.getPreviousVersion());
+		Assert.assertNull(badgeA2.getNextVersion());
+		Assert.assertNull(badgeA1.getPreviousVersion());
+		Assert.assertEquals(badgeA2,  badgeA1.getNextVersion());
 	}
 }

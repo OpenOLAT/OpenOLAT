@@ -564,12 +564,43 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
 
+	public void createNewBadgeClassVersion(Long sourceClassKey, Identity author) {
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
+		if (sourceClass.getVersionType() == null) {
+			sourceClass.setVersion(OpenBadgesFactory.getDefaultVersion());
+		}
+		if (!StringHelper.containsNonWhitespace(sourceClass.getRootId())) {
+			sourceClass.setRootId(sourceClass.getUuid());
+		}
+		sourceClass.setVersionType(BadgeClass.BadgeClassVersionType.old);
+		
+		BadgeClassImpl targetClass = new BadgeClassImpl();
+		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
+		targetClass.setRootId(sourceClass.getRootId());
+		targetClass.setVersion(OpenBadgesFactory.incrementVersion(sourceClass.getVersion()));
+		targetClass.setVersionType(BadgeClass.BadgeClassVersionType.current);
+		targetClass.setPreviousVersion(sourceClass);
+		
+		copyBadgeClassFields(sourceClass, targetClass);
+		badgeClassDAO.createBadgeClass(targetClass);
+
+		sourceClass.setNextVersion(targetClass);
+		badgeClassDAO.updateBadgeClass(sourceClass);
+
+		VFSContainer classesContainer = getBadgeClassesRootContainer();
+		if (classesContainer.resolve(sourceClass.getImage()) instanceof LocalFileImpl sourceLeaf) {
+			copyFile(classesContainer, sourceLeaf.getBasefile(), targetClass.getImage(), author);
+		}
+	}
+	
 	@Override
 	public void copyBadgeClass(Long sourceClassKey, Translator translator, Identity author) {
 		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
 
 		BadgeClassImpl targetClass = new BadgeClassImpl();
 		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
+		targetClass.setRootId(targetClass.getUuid());
+		targetClass.setVersion(OpenBadgesFactory.getDefaultVersion());
 		targetClass.setEntry(sourceClass.getEntry());
 
 		copyBadgeClassFields(sourceClass, targetClass);
@@ -639,7 +670,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private void copyBadgeClassFields(BadgeClass sourceClass, BadgeClass targetClass) {
 		targetClass.setStatus(BadgeClass.BadgeClassStatus.preparation);
 		targetClass.setSalt(OpenBadgesFactory.createSalt(targetClass));
-		targetClass.setVersion(sourceClass.getVersion());
 		targetClass.setName(sourceClass.getName());
 		targetClass.setDescription(sourceClass.getDescription());
 		targetClass.setLanguage(sourceClass.getLanguage());
@@ -656,6 +686,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		BadgeClassImpl targetClass = new BadgeClassImpl();
 		targetClass.setEntry(targetEntry);
 		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
+		targetClass.setRootId(targetClass.getRootId());
+		targetClass.setVersion(OpenBadgesFactory.getDefaultVersion());
 
 		copyBadgeClassFields(sourceClass, targetClass);
 
@@ -804,7 +836,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 		return enhancedBadgeClasses.stream().map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(),
 				sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount(), obj.getRevokedCount(),
-				obj.getResetCount())).toList();
+				obj.getResetCount(), obj.getTotalUseCount())).toList();
 	}
 
 	private boolean updateBadgeClasses(List<BadgeClassDAO.BadgeClassWithUseCount> enhancedBadgeClasses) {
@@ -878,12 +910,27 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void deleteBadgeClassAndAssertions(BadgeClass badgeClass) {
-		List<BadgeAssertion> badgeAssertions = getBadgeAssertions(badgeClass);
+	public void deleteBadgeClassAndAssertions(BadgeClass badgeClass, boolean allVersions) {
+		List<BadgeAssertion> badgeAssertions = getBadgeAssertions(badgeClass, allVersions);
 		for (BadgeAssertion badgeAssertion : badgeAssertions) {
 			deleteBadgeAssertion(badgeAssertion);
 		}
 
+		deleteBadgeClass(badgeClass, allVersions);
+	}
+
+	private void deleteBadgeClass(BadgeClass badgeClass, boolean allVersions) {
+		if (allVersions) {
+			List<BadgeClass> badgeClasseVersions = badgeClassDAO.getBadgeClassVersions(badgeClass.getRootId());
+			for (BadgeClass badgeClassVersion : badgeClasseVersions) {
+				deleteBadgeClass(badgeClassVersion);
+			}
+		} else {
+			deleteBadgeClass(badgeClass);
+		}
+	}
+	
+	private void deleteBadgeClass(BadgeClass badgeClass) {
 		if (getBadgeClassesRootContainer().resolve(badgeClass.getImage()) instanceof VFSLeaf badgeClassImageLeaf) {
 			badgeClassImageLeaf.deleteSilently();
 		}
@@ -972,7 +1019,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public List<BadgeClassWithSizeAndCount> getCourseBadgeClassesWithSizesAndCounts(Identity identity) {
 		return getCourseBadgeClassesWithUseCounts(identity).stream()
 				.map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()),
-						obj.getUseCount(), obj.getRevokedCount(), obj.getResetCount())).toList();
+						obj.getUseCount(), obj.getRevokedCount(), obj.getResetCount(), obj.getTotalUseCount())).toList();
 	}
 
 	//
@@ -1035,9 +1082,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private void recreateBadgeAssertionIfNeeded(Identity recipient, BadgeClass badgeClass, Date issuedOn, Identity awardedBy) {
 		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(recipient, badgeClass);
 		if (badgeAssertion == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("No badge assertion exists for identity {} and badge '{}'.", recipient.getKey(), badgeClass.getName());
-			}
+			log.info("No badge assertion exists for identity {} and badge '{}'.", recipient.getKey(), badgeClass.getName());
 			return;
 		}
 		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.issued)) {
@@ -1574,8 +1619,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass) {
-		return badgeAssertionDAO.getBadgeAssertions(badgeClass);
+	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass, boolean allVersions) {
+		return badgeAssertionDAO.getBadgeAssertions(badgeClass, allVersions);
 	}
 
 	@Override

@@ -141,7 +141,7 @@ public class BadgeDetailsController extends FormBasicController {
 		issuerEl = uifactory.addStaticTextElement("class.issuer", "", formLayout);
 		languageEl = uifactory.addStaticTextElement("form.language", "", formLayout);
 		versionEl = uifactory.addStaticTextElement("form.version", "", formLayout);
-		versionEl.setVisible(OpenBadgesUIFactory.isSpecifyVersion());
+		versionEl.setVisible(badgeClass.getVersionType() != null);
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
 
@@ -151,6 +151,7 @@ public class BadgeDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.version));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer()));
 
 		columnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
@@ -224,7 +225,7 @@ public class BadgeDetailsController extends FormBasicController {
 		}
 
 		List<Row> rows = openBadgesManager
-				.getBadgeAssertions(badgeClass)
+				.getBadgeAssertions(badgeClass, true)
 				.stream()
 				.map(this::mapBadgeAssertionToRow)
 				.toList();
@@ -435,6 +436,7 @@ public class BadgeDetailsController extends FormBasicController {
 	enum Cols implements FlexiSortableColumnDef {
 		recipient("form.recipient"),
 		issuedOn("form.issued.on"),
+		version("form.version"),
 		status("form.status"),
 		tools("action.more");
 
@@ -478,6 +480,7 @@ public class BadgeDetailsController extends FormBasicController {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion.getStatus();
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
+				case version -> badgeAssertion.getBadgeClass().getVersion();
 				case tools -> getObject(row).toolLink();
 			};
 		}

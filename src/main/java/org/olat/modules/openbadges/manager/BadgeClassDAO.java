@@ -81,6 +81,14 @@ public class BadgeClassDAO {
 		}
 		return typedQuery.getResultList();
 	}
+	
+	public List<BadgeClass> getBadgeClassVersions(String rootId) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select class from badgeclass bc ");
+		sb.append(" where bc.rootId = :rootId ");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class)
+				.setParameter("rootId", rootId).getResultList();
+	}
 
 	/**
 	 * Returns a list of badge classes that belong to courses owned by the owners of the course
@@ -174,6 +182,9 @@ public class BadgeClassDAO {
 		sb.append(" (select count(ba.key) from badgeassertion ba");
 		sb.append("  where ba.badgeClass.key = bc.key");
 		sb.append("  and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.reset.name()).append("'");
+		sb.append(" ), ");
+		sb.append(" (select count(ba.key) from badgeassertion ba ");
+		sb.append("   where ba.badgeClass.rootId = bc.rootId ");
 		sb.append(" ) ");
 		sb.append("from badgeclass bc ");
 		if (entry != null) {
@@ -184,6 +195,7 @@ public class BadgeClassDAO {
 		if (excludeDeleted) {
 			sb.append(" and bc.status <> :excludedStatus ");
 		}
+		sb.append(" and (bc.versionType is null or bc.versionType = '").append(BadgeClass.BadgeClassVersionType.current.name()).append("') ");
 		sb.append("order by bc.status asc, bc.name asc ");
 		TypedQuery<Object[]> typedQuery = dbInstance
 				.getCurrentEntityManager()
@@ -214,6 +226,20 @@ public class BadgeClassDAO {
 		return dbInstance.getCurrentEntityManager().find(BadgeClassImpl.class, key);
 	}
 
+	public BadgeClass getCurrentBadgeClass(String rootId) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb.append("select bc from badgeclass bc ");
+		sb.append(" where bc.rootId = :rootId ");
+		sb.append(" and bc.versionType = '").append(BadgeClass.BadgeClassVersionType.current.name()).append("'");
+		
+		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BadgeClass.class)
+				.setParameter("rootId", rootId)
+				.getResultList();
+		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
+	}
+	
 	public BadgeClass updateBadgeClass(BadgeClass badgeClass) {
 		badgeClass.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(badgeClass);
@@ -285,6 +311,9 @@ public class BadgeClassDAO {
 		        .append(" (select count(ba.key) from badgeassertion ba")
 		        .append("  where ba.badgeClass.key = bc.key")
 		        .append("  and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.reset.name()).append("'")
+				.append(" ), ")
+			    .append(" (select count(ba.key) from badgeassertion ba ")
+				.append("   where ba.badgeClass.rootId = bc.rootId ")
 		        .append(" ) ")
 				.append(" from badgeclass bc")
 				.append(" inner join bc.entry as re")
@@ -350,12 +379,14 @@ public class BadgeClassDAO {
 		private final Long useCount;
 		private final Long revokedCount;
 		private final Long resetCount;
+		private final Long totalUseCount;
 
 		public BadgeClassWithUseCount(Object[] objectArray) {
 			this.badgeClass = (BadgeClass) objectArray[0];
 			this.useCount = PersistenceHelper.extractPrimitiveLong(objectArray, 1);
 			this.revokedCount = PersistenceHelper.extractPrimitiveLong(objectArray, 2);
 			this.resetCount = PersistenceHelper.extractPrimitiveLong(objectArray, 3);
+			this.totalUseCount = PersistenceHelper.extractPrimitiveLong(objectArray, 4);
 		}
 
 		public BadgeClass getBadgeClass() {
@@ -372,6 +403,10 @@ public class BadgeClassDAO {
 
 		public Long getResetCount() {
 			return resetCount;
+		}
+
+		public Long getTotalUseCount() {
+			return totalUseCount;
 		}
 
 		public boolean isActive() {

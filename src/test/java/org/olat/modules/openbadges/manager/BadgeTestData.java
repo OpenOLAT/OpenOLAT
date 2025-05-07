@@ -43,8 +43,9 @@ public class BadgeTestData {
 		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
 
 		badgeClassImpl.setUuid(OpenBadgesFactory.createIdentifier());
+		badgeClassImpl.setRootId(badgeClassImpl.getUuid());
+		badgeClassImpl.setVersion(OpenBadgesFactory.getDefaultVersion());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
-		badgeClassImpl.setVersionWithScan("1.0");
 		badgeClassImpl.setLanguage("en");
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setImage(OpenBadgesFactory.createBadgeClassFileName(badgeClassImpl.getUuid(), sourceImage));

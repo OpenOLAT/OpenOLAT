@@ -200,6 +200,8 @@ public class CreateBadgeClassWizardContext {
 		courseResourcableId = course != null ? course.getResourceableId() : null;
 		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
 		badgeClassImpl.setUuid(OpenBadgesFactory.createIdentifier());
+		badgeClassImpl.setRootId(badgeClassImpl.getUuid());
+		badgeClassImpl.setVersion(OpenBadgesFactory.getDefaultVersion());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
 		badgeClassImpl.setSalt(OpenBadgesFactory.createSalt(badgeClassImpl));
 		Profile issuer = new Profile(new JSONObject());
@@ -212,7 +214,6 @@ public class CreateBadgeClassWizardContext {
 			issuer.setUrl(Settings.getServerContextPathURI());
 		}
 		badgeClassImpl.setIssuer(issuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
-		badgeClassImpl.setVersionWithScan("1.0");
 		badgeClassImpl.setLanguage(I18nModule.getDefaultLocale().getLanguage());
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);

@@ -36,6 +36,7 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_20.1.0";
 	private static final String MIGRATE_LIFECYCLE_ENABLED = "MIGRATE_LIFECYCLE_ENABLED";
+	private static final String UPDATE_BADGE_CLASSES = "UPDATE BADGE CLASSES";
 
 	@Autowired
 	private DB dbInstance;
@@ -56,8 +57,9 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 			return false;
 		}
 
-		boolean allOk;
-		allOk = migrateLifecycleModuleSetting(upgradeManager, uhd);
+		boolean allOk = true;
+		allOk &= migrateLifecycleModuleSetting(upgradeManager, uhd);
+		allOk &= updateBadgeClasses(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -89,6 +91,30 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 			}
 		}
 		return true;
+	}
+	
+	private boolean updateBadgeClasses(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(UPDATE_BADGE_CLASSES)) {
+			try {
+				log.info("Updating badge classes");
+
+				String updateQuery = "update badgeclass set rootId = uuid, versionType = 'current', version = '1' where rootId is null";
+				int updateCount = dbInstance.getCurrentEntityManager().createQuery(updateQuery).executeUpdate();
+				dbInstance.commitAndCloseSession();
+
+				log.info("rootId, version and versionType set for {} badge class instances", updateCount);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(UPDATE_BADGE_CLASSES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
 	}
 }
 

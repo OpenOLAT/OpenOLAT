@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 
 /**
@@ -52,15 +53,31 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		return switch (BadgeClassCols.values()[col]) {
 			case image -> badgeClass.getImage();
 			case name -> badgeClass.getName();
-			case version -> badgeClass.getVersion();
+			case version -> getVersionAndTimestamp(badgeClass);
 			case creationDate -> Formatter.getInstance(translator.getLocale()).formatDateAndTime(badgeClass.getCreationDate());
 			case status -> badgeClass.getStatus();
 			case type -> translator.translate(BadgeCriteriaXStream.fromXml(badgeClass.getCriteria()).isAwardAutomatically() ?
 					"form.award.procedure.automatic.short" : "form.award.procedure.manual.short");
-			case awardedCount -> row.badgeClassWithSizeAndCount().count()
-					- row.badgeClassWithSizeAndCount().revokedCount() - row.badgeClassWithSizeAndCount().resetCount();
+			case awardedCount -> getAwardedCount(row.badgeClassWithSizeAndCount());
 			case tools -> row.toolLink();
 		};
+	}
+
+	private String getAwardedCount(OpenBadgesManager.BadgeClassWithSizeAndCount badgeClassWithSizeAndCount) {
+		long currentCount = badgeClassWithSizeAndCount.count() - badgeClassWithSizeAndCount.revokedCount() 
+				- badgeClassWithSizeAndCount.resetCount();
+		long totalUseCount = badgeClassWithSizeAndCount.totalUseCount();
+		if (currentCount != totalUseCount) {
+			return translator.translate("class.awarded.to.all.version", Long.toString(currentCount), Long.toString(totalUseCount));
+		} else {
+			return Long.toString(currentCount);
+		}
+	}
+
+	private String getVersionAndTimestamp(BadgeClass badgeClass) {
+		String versionString = badgeClass.getVersionDisplayString();
+		String dateAndTime = Formatter.getInstance(translator.getLocale()).formatDateAndTime(badgeClass.getLastModified());
+		return translator.translate("class.version", versionString, dateAndTime);
 	}
 
 	public enum BadgeClassCols implements FlexiSortableColumnDef {

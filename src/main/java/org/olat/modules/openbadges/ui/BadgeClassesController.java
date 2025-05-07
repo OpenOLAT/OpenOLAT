@@ -152,9 +152,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.name, CMD_SELECT));
-		if (OpenBadgesUIFactory.isSpecifyVersion()) {
-			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.version));
-		}
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.version));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.creationDate));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.status, new BadgeClassStatusRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.type));
@@ -309,6 +307,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private class ToolsController extends BasicController {
 
+		private Link createNewVersionLink;
 		private Link editLink;
 		private final Link deleteLink;
 		private Link revokeLink;
@@ -321,7 +320,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 			VelocityContainer mainVC = createVelocityContainer("badge_class_tools");
 
-			if (row.badgeClassWithSizeAndCount().badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
+			BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
+			
+			if (badgeClass.getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
+				createNewVersionLink = LinkFactory.createLink("create.a.new.version", "createNewVersion",
+						getTranslator(), mainVC, this, Link.LINK);
+				createNewVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_version");
+				mainVC.put("createNewVersion",  createNewVersionLink);
+			} else if (badgeClass.getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
 				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this,
 						Link.LINK);
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
@@ -334,7 +340,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			mainVC.put("delete", deleteLink);
 
 			if (row.badgeClassWithSizeAndCount().count() > 0 &&
-					openBadgesManager.unrevokedBadgeAssertionsExist(row.badgeClassWithSizeAndCount().badgeClass())) {
+					openBadgesManager.unrevokedBadgeAssertionsExist(badgeClass)) {
 				revokeLink = LinkFactory.createLink("table.revoke", "remove", getTranslator(), mainVC,
 						this, Link.LINK);
 				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_revoke");
@@ -352,7 +358,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-		    if (source == editLink) {
+			if (source == createNewVersionLink) {
+				doCreateNewVersion(ureq, row);
+			} else if (source == editLink) {
 				doEdit(ureq, row);
 		    } else if (source == deleteLink) {
 				doConfirmDelete(ureq, row);
@@ -362,6 +370,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				doCopy(ureq, row);
 			}
 		}
+	}
+
+	private void doCreateNewVersion(UserRequest ureq, BadgeClassRow row) {
+		openBadgesManager.createNewBadgeClassVersion(row.badgeClassWithSizeAndCount().badgeClass().getKey(),
+				getIdentity());
+		
+		loadModel(ureq);
 	}
 
 	private void doCopy(UserRequest ureq, BadgeClassRow row) {
@@ -439,7 +454,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private void doConfirmDelete(UserRequest ureq, BadgeClassRow row) {
 		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
-		if (row.badgeClassWithSizeAndCount().count() == 0) {
+		if (row.badgeClassWithSizeAndCount().totalUseCount() == 0) {
 			doConfirmDeleteUnusedClass(ureq, badgeClass);
 		} else {
 			doConfirmDeleteUsedClass(ureq, badgeClass);
@@ -582,7 +597,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doDelete(UserRequest ureq, BadgeClass badgeClass) {
-		openBadgesManager.deleteBadgeClassAndAssertions(badgeClass);
+		openBadgesManager.deleteBadgeClassAndAssertions(badgeClass, true);
 		loadModel(ureq);
 	}
 
