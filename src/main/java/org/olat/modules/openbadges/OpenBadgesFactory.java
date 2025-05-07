@@ -88,4 +88,17 @@ public class OpenBadgesFactory {
 	public static String createIdentifier() {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
+	
+	public static String getDefaultVersion() {
+		return "1";
+	}
+	
+	public static String incrementVersion(String oldVersionString) {
+		try {
+			int oldVersion = Integer.parseInt(oldVersionString);
+			return Integer.toString(oldVersion + 1);
+		} catch (Exception e) {
+			return getDefaultVersion();
+		}
+	}
 }

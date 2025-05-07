@@ -28,6 +28,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeOrganization;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
@@ -43,6 +44,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -79,6 +81,9 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name = "b_uuid", nullable = false, insertable = true, updatable = false)
 	private String uuid;
 
+	@Column(name = "b_root_id", nullable = true, insertable = true, updatable = true)
+	private String rootId;
+	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "b_status", nullable = false, insertable = true, updatable = true)
 	private BadgeClassStatus status;
@@ -117,6 +122,10 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name="b_validity_timelapse_unit", nullable = true, insertable = true, updatable = true)
 	private BadgeClassTimeUnit validityTimelapseUnit;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name="b_version_type", nullable = true, insertable = true, updatable = true)
+	private BadgeClassVersionType versionType;
+
 	@ManyToOne(targetEntity = RepositoryEntry.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_entry", nullable = true, insertable = true, updatable = true)
 	private RepositoryEntry entry;
@@ -124,6 +133,14 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@ManyToOne(targetEntity = BadgeOrganizationImpl.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_badge_organization", nullable = true, insertable = true, updatable = true)
 	private BadgeOrganization badgeOrganization;
+
+	@OneToOne(targetEntity = BadgeClassImpl.class, fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "fk_previous_version", nullable = true, insertable = true, updatable = true)
+	private BadgeClass previousVersion;
+	
+	@OneToOne(targetEntity = BadgeClassImpl.class, fetch = FetchType.LAZY, optional = true)
+	@JoinColumn(name = "fk_next_version", nullable = true, insertable = true, updatable = true)
+	private BadgeClass nextVersion;
 
 	public BadgeClassImpl() {
 	}
@@ -166,6 +183,16 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public String getRootId() {
+		return rootId;
+	}
+
+	@Override
+	public void setRootId(String rootId) {
+		this.rootId = rootId;
+	}
+
+	@Override
 	public BadgeClassStatus getStatus() {
 		return status;
 	}
@@ -183,6 +210,14 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public String getVersionWithScan() {
 		return StringHelper.xssScan(getVersion());
+	}
+
+	@Override
+	public String getVersionDisplayString() {
+		if (getVersionType() == null) {
+			return OpenBadgesFactory.getDefaultVersion();
+		}
+		return getVersion();
 	}
 
 	@Override
@@ -334,6 +369,16 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public BadgeClassVersionType getVersionType() {
+		return versionType;
+	}
+
+	@Override
+	public void setVersionType(BadgeClassVersionType versionType) {
+		this.versionType = versionType;
+	}
+
+	@Override
 	public RepositoryEntry getEntry() {
 		return entry;
 	}
@@ -351,6 +396,26 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setBadgeOrganization(BadgeOrganization badgeOrganization) {
 		this.badgeOrganization = badgeOrganization;
+	}
+
+	@Override
+	public BadgeClass getPreviousVersion() {
+		return previousVersion;
+	}
+
+	@Override
+	public void setPreviousVersion(BadgeClass previousVersion) {
+		this.previousVersion = previousVersion;
+	}
+
+	@Override
+	public BadgeClass getNextVersion() {
+		return nextVersion;
+	}
+
+	@Override
+	public void setNextVersion(BadgeClass nextVersion) {
+		this.nextVersion = nextVersion;
 	}
 
 	@Override

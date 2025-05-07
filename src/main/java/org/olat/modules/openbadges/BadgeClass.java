@@ -43,6 +43,10 @@ public interface BadgeClass {
 		day, week, month, year
 	}
 
+	enum BadgeClassVersionType {
+		current, old
+	}
+	
 	Long getKey();
 
 	Date getCreationDate();
@@ -53,6 +57,10 @@ public interface BadgeClass {
 
 	String getUuid();
 
+	String getRootId();
+
+	void setRootId(String rootId);
+
 	BadgeClassStatus getStatus();
 
 	void setStatus(BadgeClassStatus status);
@@ -61,6 +69,8 @@ public interface BadgeClass {
 
 	String getVersionWithScan();
 
+	String getVersionDisplayString();
+	
 	void setVersion(String version);
 
 	void setVersionWithScan(String version);
@@ -115,9 +125,21 @@ public interface BadgeClass {
 
 	void setValidityTimelapseUnit(BadgeClassTimeUnit validityTimelapseUnit);
 
+	BadgeClassVersionType getVersionType();
+
+	void setVersionType(BadgeClassVersionType versionType);
+
 	RepositoryEntry getEntry();
 
 	void setEntry(RepositoryEntry entry);
+
+	BadgeClass getPreviousVersion();
+
+	void setPreviousVersion(BadgeClass previousVersion);
+
+	BadgeClass getNextVersion();
+
+	void setNextVersion(BadgeClass nextVersion);
 
 	@Transient
 	void prepareForEntryReset(RepositoryEntry entry);

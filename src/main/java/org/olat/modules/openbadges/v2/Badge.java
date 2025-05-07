@@ -48,6 +48,7 @@ public class Badge {
 	 */
 	private String id;
 	private String uuid;
+	private String rootId;
 	private String language;
 	private String version;
 	private String name;
@@ -63,6 +64,12 @@ public class Badge {
 					setId(idString);
 				} else {
 					throw new IllegalArgumentException("Invalid badge ID.");
+				}
+			} else if (Constants.ROOT_ID_KEY.equals(key)) {
+				if (jsonObject.get(Constants.ROOT_ID_KEY) instanceof String rootIdString) {
+					setRootId(rootIdString);
+				} else {
+					throw new IllegalArgumentException("Invalid badge root ID.");
 				}
 			} else if (Constants.VERSION_KEY.equals(key)) {
 				if (jsonObject.get(Constants.VERSION_KEY) instanceof String versionString) {
@@ -115,6 +122,7 @@ public class Badge {
 	public Badge(BadgeClass badgeClass) {
 		setId(OpenBadgesFactory.createBadgeClassUrl(badgeClass.getUuid()));
 		setUuid(badgeClass.getUuid());
+		setRootId(badgeClass.getRootId());
 		setLanguage(badgeClass.getLanguage());
 		setVersion(badgeClass.getVersionWithScan());
 		setName(badgeClass.getNameWithScan());
@@ -133,6 +141,7 @@ public class Badge {
 			jsonObject.put(Constants.LANGUAGE_KEY, language);
 		}
 		jsonObject.put(Constants.ID_KEY, getId());
+		jsonObject.put(Constants.ROOT_ID_KEY, getRootId());
 		jsonObject.put(Constants.VERSION_KEY, getVersion());
 		jsonObject.put(Constants.NAME_KEY, getName());
 		jsonObject.put(Constants.DESCRIPTION_KEY, getDescription());
@@ -157,6 +166,14 @@ public class Badge {
 
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
+	}
+
+	public String getRootId() {
+		return rootId;
+	}
+
+	public void setRootId(String rootId) {
+		this.rootId = rootId;
 	}
 
 	public String getVersion() {

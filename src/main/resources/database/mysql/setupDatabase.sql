@@ -4614,6 +4614,7 @@ create table o_badge_class (
    creationdate datetime not null,
    lastmodified datetime not null,
    b_uuid varchar(36) not null,
+   b_root_id varchar(36) default null,
    b_status varchar(256) not null,
    b_version varchar(32) not null,
    b_language varchar(32),
@@ -4626,8 +4627,11 @@ create table o_badge_class (
    b_validity_enabled bool default false not null,
    b_validity_timelapse bigint default 0 not null,
    b_validity_timelapse_unit varchar(32),
+   b_version_type varchar(32) default null,
    fk_entry bigint,
    fk_badge_organization bigint,
+   fk_previous_version bigint default null,
+   fk_next_version bigint default null,
    primary key (id)
 );
 create table o_badge_assertion (
@@ -6263,11 +6267,16 @@ alter table o_jup_deployment add constraint jup_deployment_context_idx foreign k
 
 -- Open Badges
 create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
+create index o_badge_class_root_id_idx on o_badge_class (b_root_id);
 create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
 
 alter table o_badge_class add constraint badge_class_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 alter table o_badge_class add constraint badge_class_organization_idx foreign key (fk_badge_organization) references o_badge_organization (id);
+
+alter table o_badge_class add constraint badge_class_to_previous_version_idx foreign key (fk_previous_version) references o_badge_class (id);
+
+alter table o_badge_class add constraint badge_class_to_next_version_idx foreign key (fk_next_version) references o_badge_class (id);
 
 alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
 

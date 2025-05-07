@@ -29,6 +29,7 @@ public class Constants {
 	public static final String LANGUAGE_KEY = "@language";
 	public static final String CONTEXT_VALUE = "https://w3id.org/openbadges/v2";
 	public static final String ID_KEY = "id";
+	public static final String ROOT_ID_KEY = "rootId";
 	public static final String TYPE_KEY = "type";
 	public static final String PNG_BASE64_PREFIX = "data:image/png;base64,";
 	static final String NAME_KEY = "name";
