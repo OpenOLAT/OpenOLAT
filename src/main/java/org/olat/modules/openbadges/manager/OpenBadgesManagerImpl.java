@@ -580,6 +580,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		targetClass.setVersion(OpenBadgesFactory.incrementVersion(sourceClass.getVersion()));
 		targetClass.setVersionType(BadgeClass.BadgeClassVersionType.current);
 		targetClass.setPreviousVersion(sourceClass);
+		targetClass.setEntry(sourceClass.getEntry());
 		
 		copyBadgeClassFields(sourceClass, targetClass);
 		badgeClassDAO.createBadgeClass(targetClass);

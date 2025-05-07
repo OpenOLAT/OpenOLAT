@@ -97,7 +97,8 @@ public class BadgeClassDAO {
 	 * Returns a list of badge classes that belong to courses owned by the owners of the course
 	 * identified by 'courseEntry'.
 	 *
-	 * Only returns badge classes that can be issued (no deleted or revoked badge classes).
+	 * Only returns badge classes that can be issued (no deleted or revoked badge classes,
+	 * no old badge class versions).
 	 *
 	 * Also returns the badge classes of the course identified by 'courseEntry'.
 	 *
@@ -114,6 +115,7 @@ public class BadgeClassDAO {
 				.append(" inner join coGroup.members as coMembership")
 				.append(" where coMembership.role ").in(GroupRoles.owner)
 				.append(" and coBc.status ").in(BadgeClass.BadgeClassStatus.active, BadgeClass.BadgeClassStatus.preparation)
+				.append(" and coBc.nextVersion is null ")
 				.append(" and coMembership.identity.key in (")
 				.append("  select membership.identity.key from repositoryentry re")
 				.append("   inner join re.groups as groupRel")
@@ -198,7 +200,7 @@ public class BadgeClassDAO {
 		if (excludeDeleted) {
 			sb.append(" and bc.status <> :excludedStatus ");
 		}
-		sb.append(" and (bc.versionType is null or bc.versionType = '").append(BadgeClass.BadgeClassVersionType.current.name()).append("') ");
+		sb.append(" and bc.nextVersion is null ");
 		sb.append("order by bc.status asc, bc.name asc ");
 		TypedQuery<Object[]> typedQuery = dbInstance
 				.getCurrentEntityManager()
