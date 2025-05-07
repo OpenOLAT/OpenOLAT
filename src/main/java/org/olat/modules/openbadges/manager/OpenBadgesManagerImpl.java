@@ -901,7 +901,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry) {
-		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false);
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false, true);
 		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
 			courseBadgeClass.prepareForEntryReset(entry);
 			courseBadgeClass.setEntry(null);
@@ -1988,7 +1988,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (sourceConfiguration != null) {
 			badgeEntryConfigurationDAO.cloneConfiguration(sourceConfiguration, targetEntry);
 		}
-		List<BadgeClass> sourceClasses = badgeClassDAO.getBadgeClasses(sourceEntry, true);
+		List<BadgeClass> sourceClasses = badgeClassDAO.getBadgeClasses(sourceEntry, true, false);
 		List<BadgeClass> targetClasses = sourceClasses.stream()
 				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
 				.map(bc -> cloneBadgeClass(bc, targetEntry, author, null)).toList();

@@ -72,12 +72,12 @@ public class BadgeClassDAOTest extends OlatTestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false);
+		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, true);
 		for (BadgeClass globalBadgeClass : globalBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(globalBadgeClass);
 		}
 
-		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(courseEntry, false);
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(courseEntry, false, true);
 		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(courseBadgeClass);
 		}

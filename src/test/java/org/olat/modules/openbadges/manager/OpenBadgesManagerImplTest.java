@@ -119,7 +119,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 			badgeAssertionDAO.deleteBadgeAssertion(globalBadgeAssertion);
 		}
 
-		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false);
+		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, true);
 		for (BadgeClass globalBadgeClass : globalBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(globalBadgeClass);
 		}

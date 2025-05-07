@@ -57,10 +57,10 @@ public class BadgeClassDAO {
 	}
 
 	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry) {
-		return getBadgeClasses(entry, true);
+		return getBadgeClasses(entry, true, false);
 	}
 
-	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted) {
+	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted, boolean allVersions) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select class from badgeclass class ");
 		if (entry != null) {
@@ -70,6 +70,9 @@ public class BadgeClassDAO {
 		}
 		if (excludeDeleted) {
 			sb.append(" and class.status <> :excludedStatus ");
+		}
+		if (!allVersions) {
+			sb.append(" and class.nextVersion is null ");
 		}
 		sb.append("order by class.name asc ");
 		TypedQuery<BadgeClass> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class);
