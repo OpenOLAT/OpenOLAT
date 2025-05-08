@@ -1,6 +1,8 @@
 <h5>$ctxname</h5>
-<div class="o_desc">$ctxdescr</div>
-<div style="margin-bottom:12px">$r.translate("upc.active") : $activePropCount</div>
+#if($r.isNotEmpty($ctxdescr))
+	<div class="o_desc">$ctxdescr</div>
+#end
+<div class="o_block">$r.translate("upc.active") : $activePropCount</div>
 <table class="table table-condensed table-striped table-hover">
 	<thead>
 		<tr>
