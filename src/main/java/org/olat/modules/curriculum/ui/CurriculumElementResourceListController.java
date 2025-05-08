@@ -171,6 +171,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
 			// 1) add
 			addResourceButton = uifactory.addFormLink("add.resource", formLayout, Link.BUTTON);
+			addResourceButton.setElementCssClass("o_sel_curriculum_element_add_resource");
 			addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			// 2) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);

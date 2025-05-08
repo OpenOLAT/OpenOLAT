@@ -152,6 +152,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("curriculum.element.metadata");
+		formLayout.setElementCssClass("o_sel_curriculum_element_metadata");
 		
 		if(curriculum == null && (element == null || element.getKey() == null)) {
 			CurriculumSearchParameters params = new CurriculumSearchParameters();
@@ -185,6 +186,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		String displayName = element == null ? "" : element.getDisplayName();
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.display.name", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
+		displayNameEl.setElementCssClass("o_sel_curriculum_element_displayname");
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
 			displayNameEl.setFocus(true);
@@ -193,6 +195,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
+		identifierEl.setElementCssClass("o_sel_curriculum_element_identifier");
 		identifierEl.setInlineValidationOn(true);
 		identifierEl.setMandatory(true);
 		if(element == null && identifierGenerator != null) {
@@ -212,6 +215,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typePK.keys(), typePK.values());
 		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && canEdit);
+		curriculumElementTypeEl.setElementCssClass("o_sel_curriculum_element_type");
 		curriculumElementTypeEl.addActionListener(FormEvent.ONCHANGE);
 		curriculumElementTypeEl.setMandatory(true);
 		boolean typeFound = false;

@@ -180,6 +180,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		
 		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_curriculum_element_member_overview");
 		tableEl.setExportEnabled(true);
 		
 		tableEl.setDetailsRenderer(detailsVC, this);

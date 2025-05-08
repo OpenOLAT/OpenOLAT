@@ -265,6 +265,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		if(secCallback.canNewCurriculumElement(curriculum)) {
 			newElementMenu = uifactory.addDropdownMenu("add.curriculum.element.menu", "add.curriculum.element.menu", null, formLayout, getTranslator());
+			newElementMenu.setElementCssClass("o_sel_curriculum_new_elements");
 			newElementMenu.setIconCSS("o_icon o_icon-fw o_icon_add");
 			newElementMenu.setOrientation(DropdownOrientation.right);
 			

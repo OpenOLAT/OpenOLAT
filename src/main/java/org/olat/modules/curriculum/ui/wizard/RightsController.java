@@ -129,6 +129,7 @@ public class RightsController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer settingsCont = uifactory.addDefaultFormLayout("settings", null, formLayout);
+		settingsCont.setElementCssClass("o_sel_curriculum_element_member_rights");
 		initSettingsForm(settingsCont);
 		tableCont = uifactory.addDefaultFormLayout("elements", null, formLayout);
 		tableCont.setFormTitle(translate("wizard.member.rights.elements"));
