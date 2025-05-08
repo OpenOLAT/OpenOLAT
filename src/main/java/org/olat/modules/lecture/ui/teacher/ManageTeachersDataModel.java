@@ -113,7 +113,7 @@ implements SortableFlexiTableDataModel<LectureBlockTeachersRow>, FilterableFlexi
 			}
 		}
 	
-		if(teachers != null && !teachers.isEmpty()) {
+		if(teachersEl != null && teachers != null && !teachers.isEmpty()) {
 			for(int i=teachersEl.length; i-->0; ) {
 				if(teachersEl[i].isAtLeastSelected(1)
 						&& teachersEl[i].getUserObject() instanceof Identity identity

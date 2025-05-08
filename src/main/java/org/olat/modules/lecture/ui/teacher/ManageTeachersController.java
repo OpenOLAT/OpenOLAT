@@ -20,9 +20,14 @@
 package org.olat.modules.lecture.ui.teacher;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -63,6 +68,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
@@ -76,6 +85,10 @@ import org.olat.modules.lecture.ui.component.LocationCellRenderer;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.teacher.ManageTeachersDataModel.BlockTeachersCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.MembershipInfos;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -106,9 +119,9 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private FlexiFiltersTab withoutTeachersTab;
 	private FlexiTableMultiSelectionFilter teachersFilter;
 	private final VelocityContainer detailsVC;
-	
+
+	private final CoachList teachers;
 	private final RepositoryEntry entry;
-	private final List<Identity> teachers;
 	private final List<LectureBlockRow> lectureBlocksRows;
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
@@ -122,10 +135,15 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
-	public ManageTeachersController(UserRequest ureq, WindowControl wControl,
-			List<LectureBlockRow> lectureBlocksRows, List<Identity> teachers,
+	public ManageTeachersController(UserRequest ureq, WindowControl wControl, List<LectureBlockRow> lectureBlocksRows,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback,
 			RepositoryEntry entry) {
 		super(ureq, wControl, "manage_teachers", Util
@@ -134,10 +152,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		this.config = config;
 		this.secCallback = secCallback;
 		this.lectureBlocksRows = new ArrayList<>(lectureBlocksRows);
-		this.teachers = new ArrayList<>(teachers);
-		if(this.teachers.size() > 1) {
-			Collections.sort(this.teachers, new IdentityComparator(getLocale()));
-		}
+		teachers = loadTeacherList(lectureBlocksRows);
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
@@ -191,9 +206,9 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
 		columnsModel.addFlexiColumnModel(compulsoryColumn);
 		
-		int numOfTeachers = teachers.size();
+		int numOfTeachers = teachers.teachers().size();
 		for(int j=0; j<numOfTeachers; j++) {
-			Identity teacher = teachers.get(j);
+			Identity teacher = teachers.teachers().get(j);
 			int colIndex = TEACHERS_OFFSET + j;
 			String fullName = userManager.getUserDisplayName(teacher);
 			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(true, null, colIndex, false, teacher.getKey().toString());
@@ -217,7 +232,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		
 		SelectionValues teachersValues = new SelectionValues();
 		teachersValues.add(SelectionValues.entry(NO_TEACHER, translate("filter.no.teachers")));
-		for(Identity teacher: teachers) {
+		for(Identity teacher: teachers.teachers()) {
 			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(teacher));
 			teachersValues.add(SelectionValues.entry(teacher.getKey().toString(), fullName));
 		}
@@ -246,36 +261,135 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	}
 
 	private void loadModel() {
+		List<CurriculumElementMembership> curriculumElementCoaches = teachers.curriculumElementsMemberships();
+		List<MembershipInfos> entryCoaches = teachers.entriesMemberships();
 		List<LectureBlockTeachersRow> rows = new ArrayList<>(lectureBlocksRows.size());
 		for(LectureBlockRow lectureBlock:lectureBlocksRows) {
-			LectureBlockTeachersRow row = forgeRow(lectureBlock);
+			LectureBlockTeachersRow row = forgeRow(lectureBlock, curriculumElementCoaches, entryCoaches);
 			rows.add(row);
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private LectureBlockTeachersRow forgeRow(LectureBlockRow lectureBlock) {
+	private CoachList loadTeacherList(List<LectureBlockRow> blocks) {
+		List<CurriculumElementMembership> curriculumElementsMemberships = curriculumElementCoaches(blocks);
+		List<MembershipInfos> entriesMemberships = repositoryEntryCoaches(blocks);
+		
+		Set<Long> teachersAndCoachesKeys = new HashSet<>();
+		List<Identity> teachersAndCoaches = new ArrayList<>();
+		for(LectureBlockRow block:blocks) {
+			List<Identity> teachers = block.getTeachersList();
+			for(Identity teacher:teachers) {
+				if(!teachersAndCoachesKeys.contains(teacher.getKey())) {
+					teachersAndCoaches.add(teacher);
+					teachersAndCoachesKeys.add(teacher.getKey());
+				}
+			}
+		}
+		
+		Set<Long> missingIdentities = new HashSet<>();
+		for(CurriculumElementMembership membership:curriculumElementsMemberships) {
+			if(!teachersAndCoachesKeys.contains(membership.getIdentityKey())) {
+				missingIdentities.add(membership.getIdentityKey());
+				teachersAndCoachesKeys.add(membership.getIdentityKey());
+			}
+		}
+		for(MembershipInfos membership:entriesMemberships) {
+			if(!teachersAndCoachesKeys.contains(membership.getIdentityKey())) {
+				missingIdentities.add(membership.getIdentityKey());
+				teachersAndCoachesKeys.add(membership.getIdentityKey());
+			}
+		}
+		
+		if(!missingIdentities.isEmpty()) {
+			List<Identity> moreTeachers = securityManager.loadIdentityByKeys(missingIdentities);
+			teachersAndCoaches.addAll(moreTeachers);
+		}
+		
+		if(teachersAndCoaches.size() > 1) {
+			Collections.sort(teachersAndCoaches, new IdentityComparator(getLocale()));
+		}
+		return new CoachList(curriculumElementsMemberships, entriesMemberships, teachersAndCoaches);
+	}
+	
+	private List<CurriculumElementMembership> curriculumElementCoaches(List<LectureBlockRow> blocks) {
+		Collection<CurriculumElementRef> elements = new HashSet<>();
+		for(LectureBlockRow block:blocks) {
+			if(block.getCurriculumElement() != null && block.getCurriculumElement().key() != null) {
+				elements.add(new CurriculumElementRefImpl(block.getCurriculumElement().key()));
+			}
+		}
+		List<CurriculumElementMembership> coaches = List.of();
+		if(!elements.isEmpty()) {
+			List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(elements);
+			coaches = memberships.stream()
+					.filter(m -> m.isCoach())
+					.toList();
+		}
+		return coaches;
+	}
+	
+	private List<MembershipInfos> repositoryEntryCoaches(List<LectureBlockRow> blocks) {
+		Set<RepositoryEntryRef> entries = new HashSet<>();
+		for(LectureBlockRow block:blocks) {
+			if((block.getCurriculumElement() == null || block.getCurriculumElement().key() == null)
+					&& block.getEntry() != null && block.getEntry().key() != null) {
+				entries.add(new RepositoryEntryRefImpl(block.getEntry().key()));
+			}
+		}
+		List<MembershipInfos> coaches = List.of();
+		if(!entries.isEmpty()) {
+			coaches = repositoryService.getMemberships(new ArrayList<>(entries), GroupRoles.coach.name());
+		}
+		return coaches;
+	}
+	
+	private LectureBlockTeachersRow forgeRow(LectureBlockRow lectureBlock,
+			List<CurriculumElementMembership> curriculumElementCoaches,
+			List<MembershipInfos> entryCoaches) {
 		LectureBlockTeachersRow row = new LectureBlockTeachersRow(lectureBlock);
 		List<Identity> currentTeachers = lectureBlock.getTeachersList();
 
 		SelectionValues pk = new SelectionValues();
 		pk.add(SelectionValues.entry(ON_KEY, ""));
 		
-		String idPrefix = "teacher_" + lectureBlock.getKey() + "_";
-		MultipleSelectionElement[] teachersEl = new MultipleSelectionElement[teachers.size()];
-		for(int i=0; i<teachers.size(); i++) {
-			Identity teacher = teachers.get(i);
+		final String idPrefix = "teacher_" + lectureBlock.getKey() + "_";
+		final int numOfTeachers = teachers.teachers().size();
+		MultipleSelectionElement[] teachersEl = new MultipleSelectionElement[numOfTeachers];
+		for(int i=0; i<numOfTeachers; i++) {
+			Identity teacher = teachers.teachers().get(i);
+			boolean coach = isCoach(lectureBlock, teacher, curriculumElementCoaches, entryCoaches);
+
 			MultipleSelectionElement teacherEl = uifactory.addCheckboxesHorizontal(idPrefix + teacher.getKey(), null, flc, pk.keys(), pk.values());
 			teacherEl.setAjaxOnly(true);
+			teacherEl.setVisible(coach);
 			teacherEl.setUserObject(teacher);
 			if(currentTeachers != null && currentTeachers.contains(teacher)) {
 				teacherEl.select(ON_KEY, true);
+				teacherEl.setVisible(true);
 			}
 			teachersEl[i] = teacherEl;
 		}
 		row.setTeachersEl(teachersEl);
 		return row;
+	}
+	
+	private boolean isCoach(LectureBlockRow lectureBlock, Identity teacher,
+			List<CurriculumElementMembership> curriculumElementCoaches,
+			List<MembershipInfos> entryCoaches) {
+		final Long teacherKey = teacher.getKey();
+		if(lectureBlock.getCurriculumElement() != null && lectureBlock.getCurriculumElement().key() != null) {
+			final Long curriculumElementKey = lectureBlock.getCurriculumElement().key();
+			return curriculumElementCoaches.stream()
+					.anyMatch(ec -> curriculumElementKey.equals(ec.getCurriculumElementKey()) && teacherKey.equals(ec.getIdentityKey()));
+		}
+		if(lectureBlock.getEntry() != null && lectureBlock.getEntry().key() != null) {
+			final Long entryKey = lectureBlock.getEntry().key();
+			return entryCoaches.stream()
+					.anyMatch(ec -> entryKey.equals(ec.getRepositoryEntryKey()) && teacherKey.equals(ec.getIdentityKey()));
+		}
+		return false;
 	}
 	
 	@Override
@@ -379,7 +493,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 			MultipleSelectionElement[] teachersEl = row.getTeachersEl();
 			for(MultipleSelectionElement teacherEl:teachersEl) {
 				Identity teacher = (Identity)teacherEl.getUserObject();
-				boolean selected = teacherEl.isAtLeastSelected(1);
+				boolean selected = teacherEl.isVisible() && teacherEl.isAtLeastSelected(1);
 				if(currentTeachers.contains(teacher) && !selected) {
 					lectureService.removeTeacher(lectureBlock, teacher);
 				} else if(!currentTeachers.contains(teacher) && selected) {
@@ -396,12 +510,13 @@ public class ManageTeachersController extends FormBasicController implements Fle
 
 		int numOfLecturesBlocks = tableModel.getRowCount();
 		List<LectureBlockTeachersRow> rows = tableModel.getObjects();
-		List<Teacher> teachersInfos = new ArrayList<>(teachers.size());
-		for(Identity teacher:teachers) {
-			int teacherIndex = teachers.indexOf(teacher);
+		List<Teacher> teachersInfos = new ArrayList<>(teachers.teachers().size());
+		for(Identity teacher:teachers.teachers()) {
+			int teacherIndex = teachers.teachers().indexOf(teacher);
 			int open = 0;
 			for(LectureBlockTeachersRow row:rows) {
-				if(!row.getTeacherEl(teacherIndex).isAtLeastSelected(1)) {
+				MultipleSelectionElement teacherEl = row.getTeacherEl(teacherIndex);
+				if(teacherEl.isVisible() && !teacherEl.isAtLeastSelected(1)) {
 					open++;
 				}
 			}
@@ -422,12 +537,13 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		
 		int numOfLecturesBlocks = tableModel.getRowCount();
 		List<LectureBlockTeachersRow> rows = tableModel.getObjects();
-		List<Teacher> teachersInfos = new ArrayList<>(teachers.size());
-		for(Identity teacher:teachers) {
-			int teacherIndex = teachers.indexOf(teacher);
+		List<Teacher> teachersInfos = new ArrayList<>(teachers.teachers().size());
+		for(Identity teacher:teachers.teachers()) {
+			int teacherIndex = teachers.teachers().indexOf(teacher);
 			int assigned = 0;
 			for(LectureBlockTeachersRow row:rows) {
-				if(row.getTeacherEl(teacherIndex).isAtLeastSelected(1)) {
+				MultipleSelectionElement teacherEl = row.getTeacherEl(teacherIndex);
+				if(teacherEl.isVisible() && teacherEl.isAtLeastSelected(1)) {
 					assigned++;
 				}
 			}
@@ -443,7 +559,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	}
 	
 	private void doTeachers(Identity teacher, final boolean select) {
-		int teacherIndex = teachers.indexOf(teacher);
+		int teacherIndex = teachers.teachers().indexOf(teacher);
 		if(teacherIndex >= 0) {
 			tableModel.getObjects().stream().forEach(row -> {
 				row.selectTeacher(teacherIndex, select);
@@ -472,6 +588,10 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	}
 	
 	protected record Teacher(Identity identity, int number, int total) {
+		//
+	}
+	
+	protected record CoachList(List<CurriculumElementMembership> curriculumElementsMemberships, List<MembershipInfos> entriesMemberships, List<Identity> teachers) {
 		//
 	}
 	

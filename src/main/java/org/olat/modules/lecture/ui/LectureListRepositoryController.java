@@ -146,7 +146,6 @@ import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
-import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.LectureListRepositoryConfig.Visibility;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
@@ -1112,7 +1111,21 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(row == null) {
 			loadModel(ureq);
 		} else {
-			row.setLectureBlock(lectureBlock);
+			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureBlocks(List.of(lectureBlock));
+			List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithOptionalTeachers(searchParams);
+			if(blocks.size() == 1) {
+				LectureBlockWithTeachers block = blocks.get(0);
+				row.setLectureBlock(block.getLectureBlock());
+				List<Identity> teachersList = new ArrayList<>(block.getTeachers());
+				if(teachersList.size() > 1) {
+					Collections.sort(teachersList, identityComparator);
+				}
+				row.setTeachersList(teachersList);
+			} else {
+				row.setLectureBlock(lectureBlock);
+			}
+			
 			if(row.getDetailsController() != null) {
 				doOpenLectureBlockDetails(ureq, row);
 				tableEl.reset(false, false, false);
@@ -1618,16 +1631,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(blocks.isEmpty()) {
 			showWarning("error.atleastone.lecture");
 		} else {
-			LecturesMemberSearchParameters searchParams = new LecturesMemberSearchParameters();
-			if(curriculumElement != null) {
-				searchParams.setCurriculumElement(curriculumElement);
-			} else if(entry != null) {
-				searchParams.setRepositoryEntry(entry);
-			} else if(curriculum != null) {
-				searchParams.setCurriculum(curriculum);
-			}
-			List<Identity> teachers = lectureService.searchTeachers(searchParams);
-			manageTeachersCtrl = new ManageTeachersController(ureq, getWindowControl(), blocks, teachers,
+			manageTeachersCtrl = new ManageTeachersController(ureq, getWindowControl(), blocks,
 					config, secCallback, entry);
 			listenTo(manageTeachersCtrl);
 			

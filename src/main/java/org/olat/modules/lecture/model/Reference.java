@@ -22,9 +22,24 @@ package org.olat.modules.lecture.model;
 /**
  * 
  * Initial date: 26 sept. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public record Reference(Long key, String displayName, String externalRef) {
-	//
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof Reference ref) {
+			return key() != null && key().equals(ref.key());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return key() == null ? 21874826 : key().hashCode();
+	}
 }

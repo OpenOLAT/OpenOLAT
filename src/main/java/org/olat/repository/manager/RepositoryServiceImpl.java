@@ -113,6 +113,7 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.MembershipInfos;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryPermanentlyDeletedEvent;
 import org.olat.repository.model.RepositoryEntryStatistics;
@@ -972,6 +973,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles) {
 		return reToGroupDao.getMemberKeys(re, relationType, roles);
+	}
+	
+	@Override
+	public List<MembershipInfos> getMemberships(List<RepositoryEntryRef> entries, String role) {
+		return reToGroupDao.getMemberships(entries, role);
 	}
 
 	@Override
