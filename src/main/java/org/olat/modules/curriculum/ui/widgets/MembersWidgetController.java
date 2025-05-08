@@ -100,7 +100,7 @@ public class MembersWidgetController extends FormBasicController {
 	private CurriculumElementInfos loadInformations(CurriculumElement curriculumElement) {
 		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElements(null, List.of(curriculumElement));
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
-		if(elements == null) {
+		if(elements == null || elements.isEmpty()) {
 			return new CurriculumElementInfos(curriculumElement, null, 0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l);
 		}
 		return elements.get(0);
@@ -233,8 +233,8 @@ public class MembersWidgetController extends FormBasicController {
 
 		List<Identity> owners = getCurriculumMembers(members, CurriculumRoles.owner);
 		if(!owners.isEmpty()) {
-			ownersLink = uifactory.addFormLink("curriculum.element.owners", "curriculum.element.owners", null, flc, Link.LINK);
-			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners, "curriculum.element.owners");
+			ownersLink = uifactory.addFormLink("course.owners", "role.owner", null, flc, Link.LINK);
+			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners, "role.owner");
 			flc.put("owners", ownersCmp);
 		} else {
 			flc.remove("owners");

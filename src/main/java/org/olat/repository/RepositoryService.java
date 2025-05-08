@@ -40,6 +40,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.manager.RepositoryEntryAuditLogSearchParams;
+import org.olat.repository.model.MembershipInfos;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
@@ -281,6 +282,8 @@ public interface RepositoryService {
 	public List<Identity> getMembers(List<? extends RepositoryEntryRef> re, RepositoryEntryRelationType relationType, String... roles);
 	
 	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String... roles);
+	
+	public List<MembershipInfos> getMemberships(List<RepositoryEntryRef> entries, String role);
 	
 	/**
 	 * The participants the specified user can coach. The method is specific to

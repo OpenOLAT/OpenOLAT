@@ -707,9 +707,7 @@ public class EditLectureBlockController extends FormBasicController {
 			updateOnlineMeetings();
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 			
-			if(teacherEl.isAtLeastSelected(1)) {
-				synchronizeTeachers(audit);
-			}
+			synchronizeTeachers(audit);
 	
 			String afterxml = lectureService.toAuditXml(lectureBlock);
 			lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null,

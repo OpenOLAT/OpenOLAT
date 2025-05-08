@@ -901,6 +901,40 @@ public class RepositoryEntryRelationDAO {
 		return memberhips;
 	}
 	
+	public List<MembershipInfos> getMemberships(List<RepositoryEntryRef> entries, String role) {
+		if(entries == null || entries.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		String sb = """
+				select v.key, v.displayname, reMember.identity.key, reMember.creationDate
+				from repositoryentry as v
+				inner join v.groups as rel on (rel.defaultGroup=true)
+				inner join rel.group as bGroup
+				inner join bGroup.members as reMember
+				where v.key in (:entriesKeys) and reMember.role=:role""";
+		
+		List<Long> entriesKeys = entries.stream()
+				.map(RepositoryEntryRef::getKey).toList();
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("entriesKeys", entriesKeys)
+				.setParameter("role", role)
+				.getResultList();
+		
+		List<MembershipInfos> memberhips = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			int col = 0;
+			Long entryKey = (Long)rawObject[col++];
+			String displayName = (String)rawObject[col++];
+			Long identityKey = (Long)rawObject[col++];
+			Date creationDate = (Date)rawObject[col++];
+			memberhips.add(new MembershipInfos(identityKey, entryKey, displayName, role, creationDate, null, null, null));
+		}
+		return memberhips;
+	}
+	
 	public List<Organisation> getOrganisations(Collection<? extends RepositoryEntryRef> entries) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select distinct relOrg from organisation as relOrg")
