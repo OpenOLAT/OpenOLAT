@@ -63,7 +63,7 @@ public class BadgeAssertionDAOTest extends OlatTestCase {
 			badgeAssertionDAO.deleteBadgeAssertion(globalBadgeAssertion);
 		}
 
-		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, true);
+		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, false, true);
 		for (BadgeClass globalBadgeClass : globalBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(globalBadgeClass);
 		}

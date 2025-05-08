@@ -70,28 +70,28 @@ public class BadgeSelectorController extends FormBasicController {
 
 	private StaticTextElement resultsMoreEl;
 
-	private Set<Long> selectedKeys;
+	private Set<String> selectedRootIds;
 	private final List<Row> rows;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public record Row(Long key, String image, Size size, String statusString, String title, String version) {}
+	public record Row(String rootId, String image, Size size, String statusString, String title, String version) {}
 
 	public BadgeSelectorController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-								   Set<Long> availableKeys, Set<Long> selectedKeys) {
+								   Set<String> availableRootIds, Set<String> selectedRootIds) {
 		super(ureq, wControl, "badge_selector",
 				Util.createPackageTranslator(OpenBadgesUIFactory.class, ureq.getLocale()));
-		this.selectedKeys = selectedKeys;
+		this.selectedRootIds = selectedRootIds;
 
 		rows = openBadgesManager.getBadgeClassesWithSizes(entry).stream()
-				.filter(bce -> availableKeys.contains(bce.badgeClass().getKey()))
+				.filter(bce -> availableRootIds.contains(bce.badgeClass().getRootId()))
 				.map(this::row).toList();
 
 		String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 		flc.contextPut("mediaUrl", mediaUrl);
 
-		List<Row> selectedRows = rows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
+		List<Row> selectedRows = rows.stream().filter(row -> selectedRootIds.contains(row.rootId)).toList();
 		flc.contextPut("selectedRows", selectedRows);
 
 		flc.contextPut("altImageText", translate("badge.image"));
@@ -105,12 +105,12 @@ public class BadgeSelectorController extends FormBasicController {
 
 		StaticTextElement selectionNoneEl = uifactory.addStaticTextElement("badge.selector.selection.none",
 				"badge.selector.selection", translate("badge.selector.selection.none"), formLayout);
-		selectionNoneEl.setVisible(selectedKeys.isEmpty());
+		selectionNoneEl.setVisible(selectedRootIds.isEmpty());
 
 		StaticTextElement selectionNumEl = uifactory.addStaticTextElement("badge.selector.selection.num",
 				"badge.selector.selection.num", "", formLayout);
-		selectionNumEl.setLabel("badge.selector.selection.num", new String[] { String.valueOf(selectedKeys.size()) });
-		selectionNumEl.setVisible(!selectedKeys.isEmpty());
+		selectionNumEl.setLabel("badge.selector.selection.num", new String[] { String.valueOf(selectedRootIds.size()) });
+		selectionNumEl.setVisible(!selectedRootIds.isEmpty());
 		
 		resultsMoreEl = uifactory.addStaticTextElement("badge.selector.results.more", null,
 				translate("badge.selector.results.more", String.valueOf(MAX_RESULTS)), formLayout);
@@ -151,17 +151,13 @@ public class BadgeSelectorController extends FormBasicController {
 		BadgeClass badgeClass = badgeClassWithSize.badgeClass();
 		Size size = badgeClassWithSize.fitIn(40, 40);
 		String statusString = getTranslator().translate("class.status." + badgeClass.getStatus().name());
-		return new Row(badgeClass.getKey(), badgeClass.getImage(), size, statusString, badgeClass.getName(),
+		return new Row(badgeClass.getRootId(), badgeClass.getImage(), size, statusString, badgeClass.getName(),
 				badgeClass.getVersion());
-	}
-
-	private void setSelectedKeys() {
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (browserButton == source) {
-			setSelectedKeys();
 			fireEvent(ureq, BROWSE_EVENT);
 		} else if (applyButton == source) {
 			doApply(ureq);
@@ -191,15 +187,15 @@ public class BadgeSelectorController extends FormBasicController {
 	}
 
 	private void doApply(UserRequest ureq) {
-		HashSet<Long> selectedKeys = new HashSet<>();
+		HashSet<String> selectedRootIds = new HashSet<>();
 		for (String name : ureq.getParameterSet()) {
 			if (name.startsWith(PARAMETER_KEY_BADGE_SELECTION)) {
-				String badgeKeyString = name.substring(PARAMETER_KEY_BADGE_SELECTION.length());
-				selectedKeys.add(Long.parseLong(badgeKeyString));
+				String badgeRootId = name.substring(PARAMETER_KEY_BADGE_SELECTION.length());
+				selectedRootIds.add(badgeRootId);
 			}
 		}
-		this.selectedKeys = selectedKeys;
-		fireEvent(ureq, new BadgesSelectedEvent(selectedKeys));
+		this.selectedRootIds = selectedRootIds;
+		fireEvent(ureq, new BadgesSelectedEvent(selectedRootIds));
 	}
 
 	private void doQuickSearch(UserRequest ureq) {
@@ -223,7 +219,7 @@ public class BadgeSelectorController extends FormBasicController {
 
 		if (StringHelper.containsNonWhitespace(searchFieldValue)) {
 			List<Row> unselectedRows = rows.stream()
-					.filter(row -> !selectedKeys.contains(row.key))
+					.filter(row -> !selectedRootIds.contains(row.rootId))
 					.filter(row -> row.title.toLowerCase().contains(searchFieldValue))
 					.toList();
 
@@ -259,15 +255,15 @@ public class BadgeSelectorController extends FormBasicController {
 		@Serial
 		private static final long serialVersionUID = -7523245830075971768L;
 
-		private final Set<Long> keys;
+		private final Set<String> rootIds;
 
-		public BadgesSelectedEvent(Set<Long> keys) {
+		public BadgesSelectedEvent(Set<String> rootIds) {
 			super("badges-selected");
-			this.keys = keys;
+			this.rootIds = rootIds;
 		}
 
-		public Set<Long> getKeys() {
-			return keys;
+		public Set<String> getRootIds() {
+			return rootIds;
 		}
 	}
 

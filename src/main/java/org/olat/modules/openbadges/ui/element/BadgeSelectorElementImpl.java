@@ -72,7 +72,7 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	private final RepositoryEntry entry;
 	private final SelectionValues badgesKV;
 	private final String mediaUrl;
-	private Set<Long> selectedKeys = new HashSet<>();
+	private Set<String> selectedRootIds = new HashSet<>();
 
 	public BadgeSelectorElementImpl(UserRequest ureq, WindowControl wControl, String name, RepositoryEntry entry,
 									SelectionValues badgesKV, String mediaUrl) {
@@ -96,14 +96,14 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	}
 
 	@Override
-	public void setSelection(Collection<Long> badgeClassKeys) {
-		selectedKeys = badgeClassKeys == null ? new HashSet<>() : new HashSet<>(badgeClassKeys);
+	public void setSelection(Collection<String> badgeClassRootIds) {
+		selectedRootIds = badgeClassRootIds == null ? new HashSet<>() : new HashSet<>(badgeClassRootIds);
 		updateButtonUI();
 	}
 
 	@Override
-	public Set<Long> getSelection() {
-		return selectedKeys;
+	public Set<String> getSelection() {
+		return selectedRootIds;
 	}
 
 	public FormLink getButton() {
@@ -155,7 +155,7 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if (badgeSelectorCtrl == source) {
 			if (event instanceof BadgeSelectorController.BadgesSelectedEvent badgesSelectedEvent) {
-				selectedKeys = badgesSelectedEvent.getKeys();
+				selectedRootIds = badgesSelectedEvent.getRootIds();
 				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI();
@@ -194,7 +194,7 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	private void updateButtonUI() {
 		boolean noBadgeSelected = false;
 		String linkTitle = badgesKV.keyValues().stream()
-				.filter(kv -> selectedKeys.contains(Long.parseLong(kv.getKey())))
+				.filter(kv -> selectedRootIds.contains(kv.getKey()))
 				.map(SelectionValues.SelectionValue::getValue)
 				.sorted(Collator.getInstance(getTranslator().getLocale()))
 				.collect(Collectors.joining(", "));
@@ -214,8 +214,8 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	}
 
 	private void doOpenSelector(UserRequest ureq) {
-		Set<Long> availableKeys = Arrays.stream(badgesKV.keys()).map(Long::parseLong).collect(Collectors.toSet());
-		badgeSelectorCtrl = new BadgeSelectorController(ureq, wControl, entry, availableKeys, selectedKeys);
+		Set<String> availableRootIds = Arrays.stream(badgesKV.keys()).collect(Collectors.toSet());
+		badgeSelectorCtrl = new BadgeSelectorController(ureq, wControl, entry, availableRootIds, selectedRootIds);
 		badgeSelectorCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, badgeSelectorCtrl.getInitialComponent(),

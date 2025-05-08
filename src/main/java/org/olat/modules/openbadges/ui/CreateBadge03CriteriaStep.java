@@ -141,8 +141,8 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			SelectionValues badgesKV = new SelectionValues();
 			if (createContext.isCourseBadge()) {
 				openBadgesManager.getBadgeClasses(createContext.getBadgeClass().getEntry()).stream()
-						.filter((badgeClass) -> !badgeClass.getUuid().equals(createContext.getBadgeClass().getUuid()))
-						.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName())));
+						.filter((badgeClass) -> !badgeClass.getRootId().equals(createContext.getBadgeClass().getRootId()))
+						.forEach((badgeClass) -> badgesKV.add(SelectionValues.entry(badgeClass.getRootId(), badgeClass.getName())));
 			}
 
 			SelectionValues courseElementsKV = new SelectionValues();
@@ -164,8 +164,8 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			SelectionValues globalBadgesKV = new SelectionValues();
 			if (createContext.isGlobalBadge()) {
 				openBadgesManager.getBadgeClasses(null).stream()
-						.filter(badgeClass -> !badgeClass.getKey().equals(createContext.getBadgeClass().getKey()))
-						.map((badgeClass) -> SelectionValues.entry(Long.toString(badgeClass.getKey()), badgeClass.getName()))
+						.filter(badgeClass -> !badgeClass.getRootId().equals(createContext.getBadgeClass().getRootId()))
+						.map((badgeClass) -> SelectionValues.entry(badgeClass.getRootId(), badgeClass.getName()))
 						.forEach(globalBadgesKV::add);
 			}
 
@@ -254,7 +254,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			for (ConditionRow condition : conditionRows) {
 				BadgeCondition badgeCondition = condition.asBadgeCondition();
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
-					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassUuid());
+					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassRootId());
 					if (unusedBadgeKeys.isEmpty()) {
 						newConditionsKV.remove(badgeCondition.getKey());
 					}
@@ -329,7 +329,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(conditionContext.badgesKV().keys()));
 			for (ConditionRow conditionRow : conditionRows) {
 				if (conditionRow.asBadgeCondition() instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
-					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassUuid());
+					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassRootId());
 				}
 			}
 			return unusedBadgeKeys.isEmpty() ? null : unusedBadgeKeys.iterator().next();

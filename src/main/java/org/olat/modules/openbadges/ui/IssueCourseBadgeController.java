@@ -136,7 +136,7 @@ public class IssueCourseBadgeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		badgeClass = openBadgesManager.getBadgeClass(badgeClass.getUuid());
+		badgeClass = openBadgesManager.getBadgeClassByUuid(badgeClass.getUuid());
 		openBadgesManager.issueBadgeManually(badgeClass, getSelectedIdentities(), getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

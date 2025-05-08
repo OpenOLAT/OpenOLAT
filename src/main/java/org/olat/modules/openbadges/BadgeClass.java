@@ -143,4 +143,7 @@ public interface BadgeClass {
 
 	@Transient
 	void prepareForEntryReset(RepositoryEntry entry);
+
+	@Transient
+	int upgradeBadgeDependencyConditions();
 }

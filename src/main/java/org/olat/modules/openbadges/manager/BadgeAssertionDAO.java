@@ -31,6 +31,7 @@ import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 import org.olat.repository.RepositoryEntryRef;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -113,6 +114,23 @@ public class BadgeAssertionDAO {
 		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
 	}
 	
+	public boolean hasBadgeAssertionByRootId(Long recipientKey, String badgeClassRootId) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select ba.key from badgeassertion ba ")
+				.append("inner join ba.badgeClass as bc ")
+				.and().append("ba.recipient.key = :recipientKey ")
+				.and().append("bc.rootId = :badgeClassRootId ");
+		
+		List<Long> badgeAssertionKeys = dbInstance
+				.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("recipientKey", recipientKey)
+				.setParameter("badgeClassRootId", badgeClassRootId).getResultList();
+		
+		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
+	}
+	
 	public List<BadgeAssertion> getBadgeAssertions(IdentityRef recipient) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
@@ -130,16 +148,12 @@ public class BadgeAssertionDAO {
 		sb.append("select ba from badgeassertion ba ");
 		sb.append("inner join fetch ba.badgeClass bc ");
 		if (courseEntry != null) {
-			sb.append("where bc.entry.key = :courseEntryKey ");
+			sb.and().append("bc.entry.key = :courseEntryKey ");
 		} else if (!nullEntryMeansAll) {
-			sb.append("where bc.entry is null ");
+			sb.and().append("bc.entry is null ");
 		}
 		if (recipient != null) {
-			if (courseEntry == null && nullEntryMeansAll) {
-				sb.append("where ba.recipient.key = :identityKey ");
-			} else {
-				sb.append("and ba.recipient.key = :identityKey ");
-			}
+			sb.and().append("ba.recipient.key = :identityKey ");
 		}
 		sb.append("order by ba.status asc, ba.issuedOn desc ");
 		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class);
@@ -170,17 +184,17 @@ public class BadgeAssertionDAO {
 		return typedQuery.getResultList();
 	}
 
-	public List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys) {
+	public List<Identity> getBadgeAssertionIdentities(Collection<String> badgeClassRootIds) {
 		QueryBuilder sb = new QueryBuilder();
 
 		sb
 				.append("select ident from badgeassertion ba ")
 				.append(" inner join ba.recipient ident")
-				.append(" where ba.badgeClass.key in (:badgeClassKeys)");
+				.append(" where ba.badgeClass.rootId in (:badgeClassRootIds)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("badgeClassKeys", badgeClassKeys)
+				.setParameter("badgeClassRootIds", badgeClassRootIds)
 				.getResultList();
 	}
 
@@ -237,17 +251,27 @@ public class BadgeAssertionDAO {
 				.executeUpdate();
 	}
 
-	public void revokeBadgeAssertions(BadgeClass badgeClass) {
+	public void revokeBadgeAssertions(BadgeClass badgeClass, boolean allVersions) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update badgeassertion ");
 		sb.append("set status = :status, lastModified = :lastModified ");
-		sb.append("where badgeClass.key = :badgeClassKey");
-		dbInstance.getCurrentEntityManager()
+		if (allVersions) {
+			sb.append("where badgeClass.rootId = :badgeClassRootId");
+		} else {
+			sb.append("where badgeClass.key = :badgeClassKey");
+		}
+		Query query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
-				.setParameter("lastModified", new Date())
-				.setParameter("badgeClassKey", badgeClass.getKey())
-				.executeUpdate();
+				.setParameter("lastModified", new Date());
+		
+		if (allVersions) {
+			query.setParameter("badgeClassRootId", badgeClass.getRootId());	
+		} else {
+			query.setParameter("badgeClassKey", badgeClass.getKey());
+		}
+		
+		query.executeUpdate();
 	}
 
 	public void deleteBadgeAssertion(BadgeAssertion badgeAssertion) {

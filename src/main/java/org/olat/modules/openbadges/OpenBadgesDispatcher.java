@@ -224,7 +224,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 	}
 
 	private void handleClass(HttpServletResponse response, String uuid) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(uuid);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
 		if (badgeClass == null || !StringHelper.containsNonWhitespace(badgeClass.getImage())) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find class for UUID {}", uuid);
@@ -243,7 +243,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 	}
 
 	private void handleIssuer(HttpServletResponse response, String uuid) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(uuid);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
 		if (badgeClass == null || !StringHelper.containsNonWhitespace(badgeClass.getImage())) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find issuer for UUID {}", uuid);
@@ -262,7 +262,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 	}
 	private void handleImage(HttpServletResponse response, String uuid) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(uuid);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
 		if (badgeClass == null || !StringHelper.containsNonWhitespace(badgeClass.getImage())) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find image for UUID {}", uuid);
@@ -356,7 +356,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 	}
 
 	private void handleCriteria(HttpServletResponse response, String uuid) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(uuid);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
 		if (badgeClass == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find criteria for UUID {}", uuid);

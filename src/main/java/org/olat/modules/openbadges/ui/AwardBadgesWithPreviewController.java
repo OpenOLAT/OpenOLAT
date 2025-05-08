@@ -145,7 +145,7 @@ public class AwardBadgesWithPreviewController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeDropdown.getSelectedKey());
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(badgeDropdown.getSelectedKey());
 		if (badgeClass != null) {
 			openBadgesManager.issueBadgeManually(badgeClass, recipients, getIdentity());
 		}

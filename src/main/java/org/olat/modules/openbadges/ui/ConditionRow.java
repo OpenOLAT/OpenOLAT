@@ -159,8 +159,8 @@ public class ConditionRow {
 
 		if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
 			badgesDropdown.setVisible(true);
-			if (badgesDropdown.containsKey(otherBadgeCondition.getBadgeClassUuid())) {
-				badgesDropdown.select(otherBadgeCondition.getBadgeClassUuid(), true);
+			if (badgesDropdown.containsKey(otherBadgeCondition.getBadgeClassRootId())) {
+				badgesDropdown.select(otherBadgeCondition.getBadgeClassRootId(), true);
 			}
 		}
 
@@ -198,7 +198,7 @@ public class ConditionRow {
 		}
 		if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
 			globalBadgesDropdown.setVisible(true);
-			globalBadgesDropdown.setSelection(globalBadgesEarnedCondition.getBadgeClassKeys());
+			globalBadgesDropdown.setSelection(globalBadgesEarnedCondition.getBadgeClassRootIds());
 		}
 	}
 

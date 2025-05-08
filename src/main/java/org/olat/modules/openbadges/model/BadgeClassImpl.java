@@ -428,6 +428,17 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public int upgradeBadgeDependencyConditions() {
+		if (StringHelper.containsNonWhitespace(getCriteria())) {
+			BadgeCriteria criteria = BadgeCriteriaXStream.fromXml(getCriteria());
+			int updateCount = criteria.upgradeBadgeDependencyConditions();
+			setCriteria(BadgeCriteriaXStream.toXml(criteria));
+			return updateCount;
+		}
+		return 0;
+	}
+
+	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}

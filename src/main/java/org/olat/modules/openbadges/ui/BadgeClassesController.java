@@ -272,7 +272,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doAwardManually(UserRequest ureq, BadgeClassRow row) {
-		BadgeClass reloadedBadgeClass = openBadgesManager.getBadgeClass(row.badgeClassWithSizeAndCount().badgeClass().getKey());
+		BadgeClass reloadedBadgeClass = openBadgesManager.getBadgeClassByKey(row.badgeClassWithSizeAndCount().badgeClass().getKey());
 
 		if (reloadedBadgeClass.getEntry() == null) {
 			issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), reloadedBadgeClass);
@@ -427,11 +427,11 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			openBadgesManager.createBadgeClass(badgeClassImpl);
 		}
 
-		return openBadgesManager.getBadgeClass(badgeClass.getUuid());
+		return openBadgesManager.getBadgeClassByUuid(badgeClass.getUuid());
 	}
 
 	private void doEdit(UserRequest ureq, BadgeClassRow row) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(row.badgeClassWithSizeAndCount().badgeClass().getUuid());
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(row.badgeClassWithSizeAndCount().badgeClass().getUuid());
 		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.preparation) {
 			showError("warning.badge.cannot.be.edited");
 			return;
@@ -590,9 +590,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doMarkDeletedAndRevokeIssuedBadges(UserRequest ureq, BadgeClass badgeClass) {
-		badgeClass.setStatus(BadgeClass.BadgeClassStatus.deleted);
-		openBadgesManager.updateBadgeClass(badgeClass);
-		openBadgesManager.revokeBadgeAssertions(badgeClass);
+		openBadgesManager.markDeletedAndRevokeIssuedBadges(badgeClass, true);
 		loadModel(ureq);
 	}
 
@@ -602,7 +600,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doRevoke(BadgeClass badgeClass) {
-		openBadgesManager.revokeBadgeAssertions(badgeClass);
+		openBadgesManager.revokeBadgeAssertions(badgeClass, true);
 	}
 
 	@Override
@@ -618,7 +616,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		OLATResourceable olatResourceable = entries.get(0).getOLATResourceable();
 		if ("Badge".equalsIgnoreCase(olatResourceable.getResourceableTypeName())) {
 			Long key = olatResourceable.getResourceableId();
-			BadgeClass badgeClass = openBadgesManager.getBadgeClass(key);
+			BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(key);
 			if (badgeClass == null) {
 				return;
 			}

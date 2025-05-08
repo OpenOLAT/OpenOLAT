@@ -119,7 +119,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 			badgeAssertionDAO.deleteBadgeAssertion(globalBadgeAssertion);
 		}
 
-		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, true);
+		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, false, true);
 		for (BadgeClass globalBadgeClass : globalBadgeClasses) {
 			badgeClassDAO.deleteBadgeClass(globalBadgeClass);
 		}
@@ -268,7 +268,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeCriteria badgeCriteriaB = new BadgeCriteria();
 		badgeCriteriaB.setAwardAutomatically(true);
 		BadgeCondition badgeConditionB1 = new CourseElementPassedCondition(courseNodeIdentB, "Course node B");
-		BadgeCondition badgeConditionB2 = new OtherBadgeEarnedCondition(badgeA.getUuid());
+		BadgeCondition badgeConditionB2 = new OtherBadgeEarnedCondition(badgeA.getRootId());
 		badgeCriteriaB.getConditions().add(badgeConditionB1);
 		badgeCriteriaB.getConditions().add(badgeConditionB2);
 		badgeB.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteriaB));
@@ -392,7 +392,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	private void makeAutomaticAndGloballyDependent(BadgeClassImpl badge, BadgeClassImpl badgeDependency) {
 		BadgeCriteria badgeCriteria = StringHelper.containsNonWhitespace(badge.getCriteria()) ? BadgeCriteriaXStream.fromXml(badge.getCriteria()) : new BadgeCriteria();
 		badgeCriteria.setAwardAutomatically(true);
-		badgeCriteria.getConditions().add(new GlobalBadgesEarnedCondition(List.of(badgeDependency.getKey())));
+		badgeCriteria.getConditions().add(new GlobalBadgesEarnedCondition(List.of(badgeDependency.getRootId())));
 		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
 		badgeClassDAO.updateBadgeClass(badge);
 	}
@@ -471,7 +471,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	private void makeAutomaticAndDependent(BadgeClassImpl badge, BadgeClassImpl badgeDependency) {
 		BadgeCriteria badgeCriteria = StringHelper.containsNonWhitespace(badge.getCriteria()) ? BadgeCriteriaXStream.fromXml(badge.getCriteria()) : new BadgeCriteria();
 		badgeCriteria.setAwardAutomatically(true);
-		badgeCriteria.getConditions().add(new OtherBadgeEarnedCondition(badgeDependency.getUuid()));
+		badgeCriteria.getConditions().add(new OtherBadgeEarnedCondition(badgeDependency.getRootId()));
 		badge.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
 		badgeClassDAO.updateBadgeClass(badge);
 	}
@@ -496,7 +496,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		
 		// assert
 		BadgeClass badgeA2 = badgeClassDAO.getCurrentBadgeClass(badgeA1.getRootId());
-		BadgeClass badgeA1Reloaded = badgeClassDAO.getBadgeClass(badgeA1.getKey());
+		BadgeClass badgeA1Reloaded = badgeClassDAO.getBadgeClassByKey(badgeA1.getKey());
 
 		Assert.assertNotNull(badgeA2);
 		Assert.assertEquals(badgeA1Reloaded.getRootId(), badgeA2.getRootId());

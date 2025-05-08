@@ -20,8 +20,10 @@
 package org.olat.upgrade;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.LifecycleModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,8 +105,11 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 				String updateQuery = "update badgeclass set rootId = uuid, versionType = 'current', version = '1' where rootId is null";
 				int updateCount = dbInstance.getCurrentEntityManager().createQuery(updateQuery).executeUpdate();
 				dbInstance.commitAndCloseSession();
-
 				log.info("rootId, version and versionType set for {} badge class instances", updateCount);
+				
+				OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+				updateCount = openBadgesManager.upgradeBadgeDependencyConditions();
+				log.info("Badge dependency conditions updated for {} badge class instances", updateCount);
 			} catch (Exception e) {
 				log.error("", e);
 				allOk = false;

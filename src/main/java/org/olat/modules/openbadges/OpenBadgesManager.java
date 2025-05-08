@@ -108,7 +108,7 @@ public interface OpenBadgesManager {
 
 	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
 
-	List<String> getBadgeClassNames(Collection<Long> badgeClassKeys);
+	List<String> getBadgeClassNamesForRootIds(Collection<String> badgeClassRootIds);
 
 	List<BadgeAssertion> getRuleEarnedBadgeAssertions(IdentityRef recipient, RepositoryEntryRef courseEntry, String courseNodeIdent);
 
@@ -116,9 +116,9 @@ public interface OpenBadgesManager {
 
 	Long getNumberOfBadgeClasses(RepositoryEntryRef entry);
 
-	BadgeClass getBadgeClass(String uuid);
+	BadgeClass getBadgeClassByUuid(String uuid);
 
-	BadgeClass getBadgeClass(Long key);
+	BadgeClass getBadgeClassByKey(Long key);
 
 	VFSLeaf getBadgeClassVfsLeaf(String classFile);
 
@@ -127,6 +127,8 @@ public interface OpenBadgesManager {
 	void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry);
 
 	void deleteBadgeClassAndAssertions(BadgeClass badgeClass, boolean allVersions);
+
+	void markDeletedAndRevokeIssuedBadges(BadgeClass badgeClass, boolean allVersions);
 
 	boolean hasCourseBadgeClasses(Identity author);
 
@@ -143,6 +145,8 @@ public interface OpenBadgesManager {
 	List<String> getBadgeClassNames(boolean excludeBadgeClass, BadgeClass badgeClass);
 
 	List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(boolean excludeBadgeClass, BadgeClass badgeClass);
+
+	int upgradeBadgeDependencyConditions();
 
 	//
 	// Assertion
@@ -179,7 +183,7 @@ public interface OpenBadgesManager {
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 
-	List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys);
+	List<Identity> getBadgeAssertionIdentities(Collection<String> badgeClassRootIds);
 
 	boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid);
 
@@ -193,7 +197,7 @@ public interface OpenBadgesManager {
 
 	void revokeBadgeAssertion(Long key);
 
-	void revokeBadgeAssertions(BadgeClass badgeClass);
+	void revokeBadgeAssertions(BadgeClass badgeClass, boolean allVersions);
 
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);
 

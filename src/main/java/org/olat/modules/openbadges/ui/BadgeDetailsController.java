@@ -129,7 +129,7 @@ public class BadgeDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 
 		editDetailsButton = uifactory.addFormLink("class.edit.details", formLayout, Link.BUTTON);
 		editDetailsButton.setElementCssClass("o_right");
@@ -164,7 +164,7 @@ public class BadgeDetailsController extends FormBasicController {
 	}
 
 	private void loadData() {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 		name = badgeClass.getNameWithScan();
 
 		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
@@ -331,7 +331,7 @@ public class BadgeDetailsController extends FormBasicController {
 	}
 
 	private void doEdit(UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
 		Step start = new CreateBadge03CriteriaStep(ureq, createBadgeClassContext);
 
@@ -349,7 +349,7 @@ public class BadgeDetailsController extends FormBasicController {
 	}
 
 	private void doAwardBadge(UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassKey);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 
 		if (badgeClass.getEntry() == null) {
 			issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), badgeClass);

@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 public interface BadgeSelectorElement extends FormItem {
 
 
-	void setSelection(Collection<Long> badgeClassKeys);
+	void setSelection(Collection<String> badgeClassRootIds);
 
-	Set<Long> getSelection();
+	Set<String> getSelection();
 }

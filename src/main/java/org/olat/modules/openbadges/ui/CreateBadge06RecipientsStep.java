@@ -263,8 +263,8 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 					}
 				}
 
-				Set<Long> badgeClassKeys = badgeCriteria.getGlobalBadgeClassKeys();
-				List<Identity> recipients = openBadgesManager.getBadgeAssertionIdentities(badgeClassKeys);
+				Set<String> badgeClassRootIds = badgeCriteria.getGlobalBadgeClassRootIds();
+				List<Identity> recipients = openBadgesManager.getBadgeAssertionIdentities(badgeClassRootIds);
 				if (recipients != null && !recipients.isEmpty()) {
 					for (Identity recipient : recipients) {
 						if (!participantsAndAssessmentEntries.containsKey(recipient)) {

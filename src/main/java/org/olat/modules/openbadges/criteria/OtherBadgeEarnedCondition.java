@@ -19,10 +19,13 @@
  */
 package org.olat.modules.openbadges.criteria;
 
+import java.beans.Transient;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -35,8 +38,10 @@ public class OtherBadgeEarnedCondition implements BadgeCondition {
 
 	private String badgeClassUuid;
 
-	public OtherBadgeEarnedCondition(String badgeClassUuid) {
-		this.badgeClassUuid = badgeClassUuid;
+	private String badgeClassRootId;
+
+	public OtherBadgeEarnedCondition(String badgeClassRootId) {
+		this.badgeClassRootId = badgeClassRootId;
 	}
 
 	@Override
@@ -46,16 +51,37 @@ public class OtherBadgeEarnedCondition implements BadgeCondition {
 
 	@Override
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
-		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
+		BadgeClassDAO badgeClassDAO = CoreSpringFactory.getImpl(BadgeClassDAO.class);
+		BadgeClass badgeClass = badgeClassDAO.getBadgeClassByRootId(badgeClassRootId);
 		return translator.translate("badgeCondition." + KEY, badgeClass == null ? "-" : badgeClass.getName());
 	}
 
+	@Deprecated
 	public String getBadgeClassUuid() {
 		return badgeClassUuid;
 	}
 
 	public void setBadgeClassUuid(String badgeClassUuid) {
 		this.badgeClassUuid = badgeClassUuid;
+	}
+
+	public String getBadgeClassRootId() {
+		return badgeClassRootId;
+	}
+
+	public void setBadgeClassRootId(String badgeClassRootId) {
+		this.badgeClassRootId = badgeClassRootId;
+	}
+
+	@Transient
+	public int upgradeBadgeDependency() {
+		if (!StringHelper.containsNonWhitespace(badgeClassUuid)) {
+			return 0;
+		}
+		BadgeClassDAO badgeClassDAO = CoreSpringFactory.getImpl(BadgeClassDAO.class);
+		BadgeClass badgeClass = badgeClassDAO.getBadgeClassByUuid(badgeClassUuid);
+		badgeClassRootId = badgeClass != null ? badgeClass.getRootId() : null;
+		badgeClassUuid = null;
+		return 1;
 	}
 }

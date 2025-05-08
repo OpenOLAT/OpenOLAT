@@ -19,12 +19,14 @@
  */
 package org.olat.modules.openbadges.criteria;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -36,12 +38,14 @@ public class GlobalBadgesEarnedCondition implements BadgeCondition {
 	public static final String KEY = "globalBadgesEarned";
 
 	private final List<Long> badgeClassKeys = new ArrayList<>();
+	
+	private final List<String> badgeClassRootIds = new ArrayList<>();
 
 	public GlobalBadgesEarnedCondition() {
 	}
 
-	public GlobalBadgesEarnedCondition(List<Long> badgeClassKeys) {
-		this.badgeClassKeys.addAll(badgeClassKeys);
+	public GlobalBadgesEarnedCondition(List<String> badgeClassRootIds) {
+		this.badgeClassRootIds.addAll(badgeClassRootIds);
 	}
 
 	@Override
@@ -52,7 +56,7 @@ public class GlobalBadgesEarnedCondition implements BadgeCondition {
 	@Override
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
-		List<String> badgeClassNames = openBadgesManager.getBadgeClassNames(badgeClassKeys);
+		List<String> badgeClassNames = openBadgesManager.getBadgeClassNamesForRootIds(badgeClassRootIds);
 
 		StringBuilder sb = new StringBuilder();
 		String keySuffix = badgeClassNames.size() == 1 ? "singular" : "plural";
@@ -75,7 +79,21 @@ public class GlobalBadgesEarnedCondition implements BadgeCondition {
 		return translator.translate("badgeCondition." + KEY + "." + keySuffix, sb.toString());
 	}
 
+	@Deprecated
 	public List<Long> getBadgeClassKeys() {
 		return badgeClassKeys;
+	}
+
+	public List<String> getBadgeClassRootIds() {
+		return badgeClassRootIds;
+	}
+
+	@Transient
+	public int upgradeBadgeDependency() {
+		BadgeClassDAO badgeClassDAO = CoreSpringFactory.getImpl(BadgeClassDAO.class);
+		badgeClassRootIds.clear();
+		badgeClassRootIds.addAll(badgeClassDAO.getBadgeClassRootIds(badgeClassKeys));
+		badgeClassKeys.clear();
+		return badgeClassRootIds.size();
 	}
 }

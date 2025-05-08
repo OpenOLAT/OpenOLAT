@@ -129,7 +129,7 @@ public class IssueGlobalBadgeController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String badgeClassUuid = badgeClassDropdown.getSelectedKey();
-		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(badgeClassUuid);
 		openBadgesManager.issueBadgeManually(uuidEl.getValue(),  badgeClass, recipient, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -565,7 +565,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	public void createNewBadgeClassVersion(Long sourceClassKey, Identity author) {
-		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClassByKey(sourceClassKey);
 		if (sourceClass.getVersionType() == null) {
 			sourceClass.setVersion(OpenBadgesFactory.getDefaultVersion());
 		}
@@ -596,7 +596,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	
 	@Override
 	public void copyBadgeClass(Long sourceClassKey, Translator translator, Identity author) {
-		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClassByKey(sourceClassKey);
 
 		BadgeClassImpl targetClass = new BadgeClassImpl();
 		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
@@ -618,7 +618,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public File copyBadgeClassWithTemporaryImage(Long sourceClassKey, BadgeClass targetClass, Translator translator) {
-		BadgeClass sourceClass = badgeClassDAO.getBadgeClass(sourceClassKey);
+		BadgeClass sourceClass = badgeClassDAO.getBadgeClassByKey(sourceClassKey);
 
 		copyBadgeClassFields(sourceClass, targetClass);
 
@@ -804,8 +804,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<String> getBadgeClassNames(Collection<Long> badgeClassKeys) {
-		return badgeClassDAO.getBadgeClassNames(badgeClassKeys);
+	public List<String> getBadgeClassNamesForRootIds(Collection<String> badgeClassRootIds) {
+		return badgeClassDAO.getBadgeClassNamesForRootIds(badgeClassRootIds);
 	}
 
 	@Override
@@ -814,13 +814,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public BadgeClass getBadgeClass(String uuid) {
-		return badgeClassDAO.getBadgeClass(uuid);
+	public BadgeClass getBadgeClassByUuid(String uuid) {
+		return badgeClassDAO.getBadgeClassByUuid(uuid);
 	}
 
 	@Override
-	public BadgeClass getBadgeClass(Long key) {
-		return badgeClassDAO.getBadgeClass(key);
+	public BadgeClass getBadgeClassByKey(Long key) {
+		return badgeClassDAO.getBadgeClassByKey(key);
 	}
 
 	@Override
@@ -902,7 +902,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry) {
-		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false, true);
+		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false, false, true);
 		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
 			courseBadgeClass.prepareForEntryReset(entry);
 			courseBadgeClass.setEntry(null);
@@ -922,8 +922,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private void deleteBadgeClass(BadgeClass badgeClass, boolean allVersions) {
 		if (allVersions) {
-			List<BadgeClass> badgeClasseVersions = badgeClassDAO.getBadgeClassVersions(badgeClass.getRootId());
-			for (BadgeClass badgeClassVersion : badgeClasseVersions) {
+			List<BadgeClass> badgeClassVersions = badgeClassDAO.getBadgeClassVersions(badgeClass.getRootId());
+			for (BadgeClass badgeClassVersion : badgeClassVersions) {
+				badgeClassVersion.setNextVersion(null);
+				badgeClassVersion.setPreviousVersion(null);
+				updateBadgeClass(badgeClassVersion);
+			}
+			List<BadgeClass> reloadedBadgeClassVersions = badgeClassDAO.getBadgeClassVersions(badgeClass.getRootId());
+			for (BadgeClass badgeClassVersion : reloadedBadgeClassVersions) {
 				deleteBadgeClass(badgeClassVersion);
 			}
 		} else {
@@ -938,6 +944,22 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		badgeCategoryDAO.delete(badgeClass);
 		badgeClassDAO.deleteBadgeClass(badgeClass);
+	}
+
+	@Override
+	public void markDeletedAndRevokeIssuedBadges(BadgeClass badgeClass, boolean allVersions) {
+		revokeBadgeAssertions(badgeClass, allVersions);
+
+		if (allVersions) {
+			List<BadgeClass> badgeClassVersions = badgeClassDAO.getBadgeClassVersions(badgeClass.getRootId());
+			for (BadgeClass badgeClassVersion : badgeClassVersions) {
+				badgeClassVersion.setStatus(BadgeClass.BadgeClassStatus.deleted);
+				updateBadgeClass(badgeClassVersion);
+			}
+		} else {
+			badgeClass.setStatus(BadgeClass.BadgeClassStatus.deleted);
+			updateBadgeClass(badgeClass);
+		}
 	}
 
 	private void createBadgeClassesRoot() {
@@ -1021,6 +1043,21 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return getCourseBadgeClassesWithUseCounts(identity).stream()
 				.map(obj -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()),
 						obj.getUseCount(), obj.getRevokedCount(), obj.getResetCount(), obj.getTotalUseCount())).toList();
+	}
+
+	@Override
+	public int upgradeBadgeDependencyConditions() {
+		List<BadgeClass> badgeClasses = badgeClassDAO.getBadgeClasses(null, true, false, true);
+		int totalUpdateCount = 0;
+		for (BadgeClass badgeClass : badgeClasses) {
+			int updateCount = badgeClass.upgradeBadgeDependencyConditions();
+			if (updateCount > 0) {
+				totalUpdateCount += updateCount;
+				updateBadgeClass(badgeClass);
+			}
+		}
+		
+		return totalUpdateCount;
 	}
 
 	//
@@ -1718,8 +1755,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void revokeBadgeAssertions(BadgeClass badgeClass) {
-		badgeAssertionDAO.revokeBadgeAssertions(badgeClass);
+	public void revokeBadgeAssertions(BadgeClass badgeClass, boolean allVersions) {
+		badgeAssertionDAO.revokeBadgeAssertions(badgeClass, allVersions);
 	}
 
 	@Override
@@ -1740,8 +1777,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<Identity> getBadgeAssertionIdentities(Collection<Long> badgeClassKeys) {
-		return badgeAssertionDAO.getBadgeAssertionIdentities(badgeClassKeys);
+	public List<Identity> getBadgeAssertionIdentities(Collection<String> badgeClassRootIds) {
+		return badgeAssertionDAO.getBadgeAssertionIdentities(badgeClassRootIds);
 	}
 
 	@Override
@@ -1764,31 +1801,31 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		List<BadgeAssertion> recipientBadges = badgeAssertionDAO.getBadgeAssertions(recipient).stream()
 				.filter(ba -> BadgeAssertion.BadgeAssertionStatus.issued.equals(ba.getStatus())).toList();
 		
-		// We use the UUID of the badge class as an ID of badge classes and badge assertions. That's convenient and
+		// We use the root ID of the badge class as an ID of badge classes and badge assertions. That's convenient and
 		// safe, because all computation below is performed for one single participant.
 		
 		// Helper map to avoid repeated deserialization of criteria
-		Map<String, BadgeCriteria> idToCriteria = new HashMap<>();
+		Map<String, BadgeCriteria> rootIdToCriteria = new HashMap<>();
 		recipientBadges.forEach(ba -> {
 			BadgeClass bc = ba.getBadgeClass();
-			idToCriteria.put(bc.getUuid(), BadgeCriteriaXStream.fromXml(bc.getCriteria()));
+			rootIdToCriteria.put(bc.getRootId(), BadgeCriteriaXStream.fromXml(bc.getCriteria()));
 		});
 		
 		// All the user's badges that are earned automatically in direct relation with the current course node.
-		Set<String> directlyRelated = idToCriteria.keySet().stream().filter(id -> {
-			BadgeCriteria badgeCriteria = idToCriteria.get(id);
+		Set<String> directlyRelated = rootIdToCriteria.keySet().stream().filter(rootId -> {
+			BadgeCriteria badgeCriteria = rootIdToCriteria.get(rootId);
 			return badgeCriteria.isAwardAutomatically() && badgeCriteria.conditionForCourseNodeExists(courseNodeIdent);
 		}).collect(Collectors.toSet());
 
 		// All the user's badges that are earned automatically in indirect relation with the current course node.
-		Set<String> indirectlyRelated = idToCriteria.keySet().stream().filter(id -> {
-			BadgeCriteria badgeCriteria = idToCriteria.get(id);
-			return badgeCriteria.isAwardAutomatically() && hasDependencyPath(id, directlyRelated, idToCriteria);
+		Set<String> indirectlyRelated = rootIdToCriteria.keySet().stream().filter(rootId -> {
+			BadgeCriteria badgeCriteria = rootIdToCriteria.get(rootId);
+			return badgeCriteria.isAwardAutomatically() && hasDependencyPath(rootId, directlyRelated, rootIdToCriteria);
 		}).collect(Collectors.toSet());
 		
 		return recipientBadges.stream().filter(ba -> {
-			String id = ba.getBadgeClass().getUuid();
-			return directlyRelated.contains(id) || indirectlyRelated.contains(id);
+			String rootId = ba.getBadgeClass().getRootId();
+			return directlyRelated.contains(rootId) || indirectlyRelated.contains(rootId);
 		}).collect(Collectors.toList());
 	}
 
@@ -1796,26 +1833,26 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	 * Checks if the badge identified by 'dependencySource' has a badge dependency on one of the badges 
 	 * identified by 'dependencyTargets'.
 	 * 
-	 * @param dependencySource The ID of the badge to check for dependency on other badges.
+	 * @param dependencySource The root ID of the badge class to check for dependency on other badges.
 	 * @param dependencyTargets We check if one of the badge dependencies of 'dependencySource' matches any of these dependency targets.
-	 * @param idToCriteria A helper map that prevents repeated deserialization of badge criteria.
+	 * @param rootIdToCriteria A helper map that prevents repeated deserialization of badge criteria.
 	 * @return true if we can find a dependency.
 	 */
 	private boolean hasDependencyPath(String dependencySource, Set<String> dependencyTargets, 
-									  Map<String, BadgeCriteria> idToCriteria) {
+									  Map<String, BadgeCriteria> rootIdToCriteria) {
 		
-		BadgeCriteria sourceCriteria = idToCriteria.get(dependencySource);
+		BadgeCriteria sourceCriteria = rootIdToCriteria.get(dependencySource);
 		if (sourceCriteria == null) {
 			return false;
 		}
-		Set<String> badgeDependencies = sourceCriteria.otherBadgeClassUuids();
+		Set<String> badgeDependencies = sourceCriteria.otherBadgeClassRootIds();
 		for (String badgeDependency : badgeDependencies) {
 			// dependency match found
 			if (dependencyTargets.contains(badgeDependency)) {
 				return true;
 			}
-			// follow dependency path
-			if (hasDependencyPath(badgeDependency, dependencyTargets, idToCriteria)) {
+			// follow the dependency path
+			if (hasDependencyPath(badgeDependency, dependencyTargets, rootIdToCriteria)) {
 				return true;
 			}
 		}
@@ -1989,34 +2026,34 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (sourceConfiguration != null) {
 			badgeEntryConfigurationDAO.cloneConfiguration(sourceConfiguration, targetEntry);
 		}
-		List<BadgeClass> sourceClasses = badgeClassDAO.getBadgeClasses(sourceEntry, true, false);
+		List<BadgeClass> sourceClasses = badgeClassDAO.getBadgeClasses(sourceEntry, false, true, false);
 		List<BadgeClass> targetClasses = sourceClasses.stream()
 				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
 				.map(bc -> cloneBadgeClass(bc, targetEntry, author, null)).toList();
-		Map<String, String> uuidMap = createUuidMap(sourceClasses, targetClasses);
-		remapUuids(targetClasses, uuidMap);
+		Map<String, String> rootIdMap = createRootIdMap(sourceClasses, targetClasses);
+		remapRootIds(targetClasses, rootIdMap);
 	}
 
-	private void remapUuids(List<BadgeClass> badgeClasses, Map<String, String> uuidMap) {
+	private void remapRootIds(List<BadgeClass> badgeClasses, Map<String, String> rootIdMap) {
 		for (BadgeClass badgeClass : badgeClasses) {
 			BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-			if (badgeCriteria != null && badgeCriteria.remapBadgeClassUuids(uuidMap)) {
+			if (badgeCriteria != null && badgeCriteria.remapBadgeClassRootIds(rootIdMap)) {
 				badgeClass.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteria));
 				badgeClassDAO.updateBadgeClass(badgeClass);
 			}
 		}
 	}
 
-	private Map<String, String> createUuidMap(List<BadgeClass> sourceClasses, List<BadgeClass> targetClasses) {
-		Map<String, String> uuidMap = new HashMap<>();
+	private Map<String, String> createRootIdMap(List<BadgeClass> sourceClasses, List<BadgeClass> targetClasses) {
+		Map<String, String> rootIdMap = new HashMap<>();
 		if (sourceClasses != null && targetClasses != null && sourceClasses.size() == targetClasses.size()) {
 			for (int i = 0; i < sourceClasses.size(); i++) {
 				BadgeClass sourceClass = sourceClasses.get(i);
 				BadgeClass targetClass = targetClasses.get(i);
-				uuidMap.put(sourceClass.getUuid(), targetClass.getUuid());
+				rootIdMap.put(sourceClass.getRootId(), targetClass.getRootId());
 			}
 		}
-		return uuidMap;
+		return rootIdMap;
 	}
 
 	@Override
@@ -2033,8 +2070,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		List<BadgeClass> targetClasses = badgeClasses.getItems().stream()
 				.filter(bc -> !BadgeClass.BadgeClassStatus.revoked.equals(bc.getStatus()))
 				.map(bc -> cloneBadgeClass(bc, targetEntry, author, fImportBaseDirectory)).toList();
-		Map<String, String> uuidMap = createUuidMap(badgeClasses.getItems(), targetClasses);
-		remapUuids(targetClasses, uuidMap);
+		Map<String, String> rootIdMap = createRootIdMap(badgeClasses.getItems(), targetClasses);
+		remapRootIds(targetClasses, rootIdMap);
 	}
 
 	@Override

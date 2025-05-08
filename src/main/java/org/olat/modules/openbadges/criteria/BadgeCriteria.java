@@ -43,7 +43,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
-import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.manager.BadgeAssertionDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.apache.logging.log4j.Logger;
@@ -128,27 +128,27 @@ public class BadgeCriteria {
 
 	/**
 	 * When copying, cloning or importing a course, we copy course badge classes, and
-	 * the UUID of the copied badge classes changes in the process.
+	 * the root ID of the copied badge classes changes in the process.
 	 *
-	 * This method detects occurrences of old UUIDs and replaces them with the
-	 * corresponding new UUID.
+	 * This method detects occurrences of old root IDs and replaces them with the
+	 * corresponding new root ID.
 
-	 * @param badgeClassUuidMap Maps old UUIDs to new UUIDs.
+	 * @param badgeClassRootIdMap Maps old root IDs to new root IDs.
 	 *
 	 *  @return true if one of the conditions of this BadgeCriteria object has changed during this call.
 	 */
-	public boolean remapBadgeClassUuids(Map<String, String> badgeClassUuidMap) {
-		boolean atLeastOneUuidRemapped = false;
+	public boolean remapBadgeClassRootIds(Map<String, String> badgeClassRootIdMap) {
+		boolean atLeastOneRootIdRemapped = false;
 		for (BadgeCondition condition : conditions) {
 			if (condition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
-				String uuid = otherBadgeEarnedCondition.getBadgeClassUuid();
-				if (badgeClassUuidMap.containsKey(uuid)) {
-					otherBadgeEarnedCondition.setBadgeClassUuid(badgeClassUuidMap.get(uuid));
-					atLeastOneUuidRemapped = true;
+				String rootId = otherBadgeEarnedCondition.getBadgeClassRootId();
+				if (badgeClassRootIdMap.containsKey(rootId)) {
+					otherBadgeEarnedCondition.setBadgeClassRootId(badgeClassRootIdMap.get(rootId));
+					atLeastOneRootIdRemapped = true;
 				}
 			}
 		}
-		return atLeastOneUuidRemapped;
+		return atLeastOneRootIdRemapped;
 	}
 
 	/**
@@ -449,23 +449,23 @@ public class BadgeCriteria {
 	}
 
 	private boolean allOtherBadgeConditionsMet(Identity recipient, boolean[] courseBadgeConditionChecked) {
-		OpenBadgesManager openBadgesManager = null;
+		BadgeAssertionDAO badgeAssertionDAO = null;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
 				if (log.isDebugEnabled()) {
 					log.debug("allOtherBadgeConditionsMet(): check OtherBadgeEarnedCondition");
 				}
-				if (openBadgesManager == null) {
-					openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+				if (badgeAssertionDAO == null) {
+					badgeAssertionDAO = CoreSpringFactory.getImpl(BadgeAssertionDAO.class);
 				}
-				if (!openBadgesManager.hasBadgeAssertion(recipient, otherBadgeCondition.getBadgeClassUuid())) {
+				if (!badgeAssertionDAO.hasBadgeAssertionByRootId(recipient.getKey(), otherBadgeCondition.getBadgeClassRootId())) {
 					if (log.isDebugEnabled()) {
-						log.debug("condition depending on badge {} not met.", otherBadgeCondition.getBadgeClassUuid());
+						log.debug("condition depending on badge with root ID {} not met.", otherBadgeCondition.getBadgeClassRootId());
 					}
 					return false;
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("condition depending on badge {} met.", otherBadgeCondition.getBadgeClassUuid());
+					log.debug("condition depending on badge with root ID {} met.", otherBadgeCondition.getBadgeClassRootId());
 				}
 				courseBadgeConditionChecked[0] = true;
 			}
@@ -493,16 +493,14 @@ public class BadgeCriteria {
 				}
 				if (!globalBadgesEarnedConditionMet(recipient, globalBadgesEarnedCondition)) {
 					if (log.isDebugEnabled()) {
-						log.debug("condition depending on badges {} not met.", globalBadgesEarnedCondition
-								.getBadgeClassKeys().stream().map(l -> Long.toString(l))
-								.collect(Collectors.joining(",")));
+						log.debug("condition depending on badges with root IDs {} not met.", 
+								globalBadgesEarnedCondition.getBadgeClassRootIds().stream().collect(Collectors.joining(",")));
 					}
 					return false;
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("condition depending on badges {} met with flying colors.", globalBadgesEarnedCondition
-							.getBadgeClassKeys().stream().map(l -> Long.toString(l))
-							.collect(Collectors.joining(",")));
+					log.debug("condition depending on badges with root IDs {} fully satisfied.", 
+							globalBadgesEarnedCondition.getBadgeClassRootIds().stream().collect(Collectors.joining(",")));
 				}
 				globalBadgeConditionChecked = true;
 			}
@@ -520,12 +518,12 @@ public class BadgeCriteria {
 	}
 
 	private boolean globalBadgesEarnedConditionMet(Identity recipient, GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
-		OpenBadgesManager openBadgesManager = null;
-		for (Long badgeClassKey : globalBadgesEarnedCondition.getBadgeClassKeys()) {
-			if (openBadgesManager == null) {
-				openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+		BadgeAssertionDAO badgeAssertionDAO = null;
+		for (String badgeClassRootId : globalBadgesEarnedCondition.getBadgeClassRootIds()) {
+			if (badgeAssertionDAO == null) {
+				badgeAssertionDAO = CoreSpringFactory.getImpl(BadgeAssertionDAO.class);
 			}
-			if (!openBadgesManager.hasBadgeAssertion(recipient, badgeClassKey)) {
+			if (!badgeAssertionDAO.hasBadgeAssertionByRootId(recipient.getKey(), badgeClassRootId)) {
 				return false;
 			}
 		}
@@ -563,14 +561,14 @@ public class BadgeCriteria {
 		return keys;
 	}
 
-	public Set<Long> getGlobalBadgeClassKeys() {
-		Set<Long> keys = new HashSet<>();
+	public Set<String> getGlobalBadgeClassRootIds() {
+		Set<String> rootIds = new HashSet<>();
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
-				keys.addAll(globalBadgesEarnedCondition.getBadgeClassKeys());
+				rootIds.addAll(globalBadgesEarnedCondition.getBadgeClassRootIds());
 			}
 		}
-		return keys;
+		return rootIds;
 	}
 
 	public boolean conditionForCourseNodeExists(String courseNodeSubIdent) {
@@ -594,14 +592,14 @@ public class BadgeCriteria {
 		return false;
 	}
 
-	public Set<String> otherBadgeClassUuids() {
-		Set<String> uuids = new HashSet<>();
+	public Set<String> otherBadgeClassRootIds() {
+		Set<String> rootIds = new HashSet<>();
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
-				uuids.add(otherBadgeEarnedCondition.getBadgeClassUuid());
+				rootIds.add(otherBadgeEarnedCondition.getBadgeClassRootId());
 			}
 		}
-		return uuids;
+		return rootIds;
 	}
 
 	public void prepareForEntryReset(RepositoryEntry courseEntry) {
@@ -613,5 +611,18 @@ public class BadgeCriteria {
 				courseElementScoreCondition.prepareForEntryReset(courseEntry);
 			}
 		}
+	}
+
+	public int upgradeBadgeDependencyConditions() {
+		int updateCount = 0;
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
+				updateCount += globalBadgesEarnedCondition.upgradeBadgeDependency();
+			}
+			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
+				updateCount += otherBadgeEarnedCondition.upgradeBadgeDependency();
+			}
+		}
+		return updateCount;
 	}
 }

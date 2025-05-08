@@ -57,22 +57,22 @@ public class BadgeClassDAO {
 	}
 
 	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry) {
-		return getBadgeClasses(entry, true, false);
+		return getBadgeClasses(entry, false, true, false);
 	}
 
-	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry, boolean excludeDeleted, boolean allVersions) {
+	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry, boolean nullEntryMeansAll, boolean excludeDeleted, boolean allVersions) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select class from badgeclass class ");
 		if (entry != null) {
-			sb.append(" where class.entry.key = :entryKey ");
-		} else {
-			sb.append(" where class.entry is null ");
+			sb.and().append("class.entry.key = :entryKey ");
+		} else if (!nullEntryMeansAll) {
+			sb.and().append("class.entry is null ");
 		}
 		if (excludeDeleted) {
-			sb.append(" and class.status <> :excludedStatus ");
+			sb.and().append("class.status <> :excludedStatus ");
 		}
 		if (!allVersions) {
-			sb.append(" and class.nextVersion is null ");
+			sb.and().append("class.nextVersion is null ");
 		}
 		sb.append("order by class.name asc ");
 		TypedQuery<BadgeClass> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class);
@@ -87,7 +87,7 @@ public class BadgeClassDAO {
 	
 	public List<BadgeClass> getBadgeClassVersions(String rootId) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select class from badgeclass bc ");
+		sb.append("select bc from badgeclass bc ");
 		sb.append(" where bc.rootId = :rootId ");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class)
 				.setParameter("rootId", rootId).getResultList();
@@ -190,6 +190,7 @@ public class BadgeClassDAO {
 		sb.append(" ), ");
 		sb.append(" (select count(ba.key) from badgeassertion ba ");
 		sb.append("   where ba.badgeClass.rootId = bc.rootId ");
+		sb.append("   and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.issued.name()).append("'");
 		sb.append(" ) ");
 		sb.append("from badgeclass bc ");
 		if (entry != null) {
@@ -218,7 +219,7 @@ public class BadgeClassDAO {
 				.toList();
 	}
 
-	public BadgeClass getBadgeClass(String uuid) {
+	public BadgeClass getBadgeClassByUuid(String uuid) {
 		String query = "select bc from badgeclass bc where bc.uuid=:uuid";
 		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
 				.createQuery(query, BadgeClass.class)
@@ -227,7 +228,16 @@ public class BadgeClassDAO {
 		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
 	}
 
-	public BadgeClass getBadgeClass(Long key) {
+	public BadgeClass getBadgeClassByRootId(String rootId) {
+		String query = "select bc from badgeclass bc where bc.rootId=:rootId";
+		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
+				.createQuery(query, BadgeClass.class)
+				.setParameter("rootId", rootId)
+				.getResultList();
+		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
+	}
+	
+	public BadgeClass getBadgeClassByKey(Long key) {
 		return dbInstance.getCurrentEntityManager().find(BadgeClassImpl.class, key);
 	}
 
@@ -263,6 +273,23 @@ public class BadgeClassDAO {
 				.createQuery(sb.toString(), String.class)
 				.setParameter("badgeClassKeys", badgeClassKeys)
 				.getResultList();
+	}
+
+	public List<String> getBadgeClassNamesForRootIds(Collection<String> badgeClassRootIds) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select bc.name from badgeclass bc")
+				.append(" where bc.rootId in (:badgeClassRootIds)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("badgeClassRootIds", badgeClassRootIds)
+				.getResultList();
+	}
+	
+	public List<String> getBadgeClassRootIds(Collection<Long> badgeClassKeys) {
+		String query = "select bc.rootId from badgeclass bc where bc.key in (:badgeClassKeys)";
+		return dbInstance.getCurrentEntityManager().createQuery(query, String.class)
+				.setParameter("badgeClassKeys", badgeClassKeys).getResultList();
 	}
 
 	/**
@@ -319,6 +346,7 @@ public class BadgeClassDAO {
 				.append(" ), ")
 			    .append(" (select count(ba.key) from badgeassertion ba ")
 				.append("   where ba.badgeClass.rootId = bc.rootId ")
+				.append("   and ba.status = '").append(BadgeAssertion.BadgeAssertionStatus.issued.name()).append("'")
 		        .append(" ) ")
 				.append(" from badgeclass bc")
 				.append(" inner join bc.entry as re")
