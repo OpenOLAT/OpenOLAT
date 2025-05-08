@@ -233,7 +233,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		
 		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, 5, Boolean.TRUE);
 		long numOfBlocks = lectureBlocks.size();
-		if(numOfBlocks > 5) {
+		if(numOfBlocks >= 5) {
 			numOfBlocks = lectureService.countLectureBlocks(searchParams);
 		}
 		List<LectureBlockWidgetRow> rows = lectureBlocks.stream()

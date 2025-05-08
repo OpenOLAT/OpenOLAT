@@ -294,17 +294,17 @@ public class MembersWidgetController extends FormBasicController {
 		} else if(activeParticipantsLink == source) {
 			fireActivateActiveEvent(ureq, "Participant");
 		} else if(pendingParticipantsLink == source) {
-			fireActivateEvent(ureq, "Pending");
+			fireActivatePendingEvent(ureq, "All");
 		} else if(minimizeButton == source) {
 			toogle(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void fireActivateEvent(UserRequest ureq, String filter) {
+	private void fireActivatePendingEvent(UserRequest ureq, String filter) {
 		List<ContextEntry> entries = BusinessControlFactory.getInstance()
 				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS),
-						OresHelper.createOLATResourceableType(filter));
+						OresHelper.createOLATResourceableType("Pending"), OresHelper.createOLATResourceableType(filter));
 		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	
