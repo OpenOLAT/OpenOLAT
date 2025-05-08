@@ -233,8 +233,8 @@ public class MembersWidgetController extends FormBasicController {
 
 		List<Identity> owners = getCurriculumMembers(members, CurriculumRoles.owner);
 		if(!owners.isEmpty()) {
-			ownersLink = uifactory.addFormLink("curriculum.element.owners", "curriculum.element.owners", null, flc, Link.LINK);
-			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners, "curriculum.element.owners");
+			ownersLink = uifactory.addFormLink("course.owners", "role.owner", null, flc, Link.LINK);
+			UsersPortraitsComponent ownersCmp = createUsersPortraits(ureq, owners, "role.owner");
 			flc.put("owners", ownersCmp);
 		} else {
 			flc.remove("owners");
