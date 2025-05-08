@@ -78,6 +78,7 @@ public class UserPreferencesPageFragment {
 			case none: radio = browser.findElement(noneRadio); break;
 			case auto: radio = browser.findElement(autoRadio); break;
 			case ondemand: radio = browser.findElement(ondemandRadio); break;
+			default: radio = browser.findElement(autoRadio); break;
 		}
 		
 		radio.click();

@@ -27,6 +27,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.coaching.CoachingPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.MyCoursesPage;
+import org.olat.selenium.page.curriculum.CoursePlannerPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.library.LibraryPage;
@@ -55,6 +56,7 @@ public class NavigationPage {
 	private static final By navigationSitesBy = By.cssSelector("ul.o_navbar_sites");
 	private static final By authoringEnvTabBy = By.cssSelector("li.o_site_author_env > a");
 	private static final By projectsTabBy = By.cssSelector("li.o_site_project > a");
+	private static final By coursePlannerTabBy = By.cssSelector("li.o_site_curriculum_admin > a");
 	private static final By questionPoolTabBy = By.cssSelector("li.o_site_qpool > a");
 	private static final By coachingTabBy = By.cssSelector("li.o_site_coaching > a");
 	private static final By portalBy = By.cssSelector("li.o_site_portal > a");
@@ -96,6 +98,12 @@ public class NavigationPage {
 			OOGraphene.takeScreenshot("Open authoring environment", browser);
 			throw e;
 		}
+	}
+	
+	public CoursePlannerPage openCoursePlanner() {
+		navigate(coursePlannerTabBy);
+		OOGraphene.waitElement(By.cssSelector("#o_main_container h2>i.o_icon_courseplanner"), browser);
+		return new CoursePlannerPage(browser);
 	}
 	
 	public ProjectsPage openProjects() {

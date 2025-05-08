@@ -134,6 +134,22 @@ public class UserRestClient {
 		return user;
 	}
 	
+	public UserVO createCurriculumManager(String name)
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
+		
+		UserVO user = createUser(restConnection, name, "Auth", createRandomPwd());
+		
+		RolesVO roles = new RolesVO();
+		roles.setCurriculumManager(true);
+		roles.setInstitutionalResourceManager(true);
+		roles.setAuthor(true);
+		updateRoles(restConnection, user, roles);
+
+		restConnection.shutdown();
+		return user;
+	}
+	
 	/**
 	 * Reuse the same administrator.
 	 * 

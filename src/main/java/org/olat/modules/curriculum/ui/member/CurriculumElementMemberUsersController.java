@@ -134,6 +134,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		// Add/remove buttons
 		if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
 			addParticipantButton = uifactory.addFormLink("add.participants", "add.participants", null, formLayout, Link.BUTTON);
+			addParticipantButton.setElementCssClass("o_sel_curriculum_element_add_member");
 			addParticipantButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			
 			DropdownItem addDropdown = uifactory.addDropdownMenu("add.members", null, null, flc, getTranslator());

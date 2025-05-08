@@ -443,7 +443,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		// Implementations
 		if(canChildren) {
-			structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), uureq -> {
+			structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), "o_sel_curriculum_composer", uureq -> {
 				CurriculumComposerConfig config = new CurriculumComposerConfig();
 				config.setTitle(translate("curriculum.structure"), TITLE_SIZE, "o_icon_curriculum_structure");
 				config.setDefaultNumOfParticipants(true);
@@ -459,7 +459,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 				structureCtrl.activate(uureq, all, null);
 				return structureCtrl.getInitialComponent();
-			});
+			}, false);
 		}
 		
 		// Courses
@@ -506,7 +506,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 		
 		// User management
-		userManagerTab = tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
+		userManagerTab = tabPane.addTab(ureq, translate("tab.user.management"), "o_sel_curriculum_members", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS), null);
 			userManagementCtrl = new CurriculumElementUserManagementController(uureq, subControl, toolbarPanel, curriculumElement, secCallback);
@@ -514,7 +514,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Active:0][All:0]");
 			userManagementCtrl.activate(uureq, all, null);
 			return userManagementCtrl.getInitialComponent();
-		});
+		}, false);
 		
 		// Offers
 		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null) {

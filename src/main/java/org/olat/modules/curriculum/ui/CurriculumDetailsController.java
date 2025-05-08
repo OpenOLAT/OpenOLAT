@@ -163,7 +163,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		});
 
 		// Implementations
-		implementationsTab = tabPane.addTab(ureq, translate("curriculum.implementations"), uureq -> {
+		implementationsTab = tabPane.addTab(ureq, translate("curriculum.implementations"), "o_sel_curriculum_composer", uureq -> {
 			CurriculumComposerConfig config = CurriculumComposerConfig.curriculumView();
 			config.setTitle(translate("curriculum.implementations"), TITLE_SIZE, "o_icon_curriculum_implementations");
 			config.setDefaultNumOfParticipants(true);
@@ -179,7 +179,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 			implementationsCtrl.activate(uureq, all, null);
 			return implementationsCtrl.getInitialComponent();
-		});
+		}, false);
 		
 		// Events / lectures blocks
 		if(lectureModule.isEnabled()) {

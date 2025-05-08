@@ -88,6 +88,7 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		updateWarning();
+		formLayout.setElementCssClass("o_curriculum_element_change_status_form");
 		
 		FormLayoutContainer statusCont = FormLayoutContainer.createCustomFormLayout("status", getTranslator(), velocity_root + "/status_change_status.html");
 		statusCont.setRootForm(mainForm);

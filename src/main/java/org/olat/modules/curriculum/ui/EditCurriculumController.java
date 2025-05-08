@@ -99,6 +99,8 @@ public class EditCurriculumController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_curriculum_form");
+		
 		if(curriculum != null) {
 			String key = curriculum.getKey().toString();
 			uifactory.addStaticTextElement("curriculum.key", key, formLayout);
@@ -109,6 +111,7 @@ public class EditCurriculumController extends FormBasicController {
 		String displayName = curriculum == null ? "" : curriculum.getDisplayName();
 		displayNameEl = uifactory.addTextElement("curriculum.display.name", "curriculum.display.name", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum(curriculum));
+		displayNameEl.setElementCssClass("o_sel_curriculum_displayname");
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
 			displayNameEl.setFocus(true);
@@ -116,6 +119,7 @@ public class EditCurriculumController extends FormBasicController {
 		
 		String identifier = curriculum == null ? "" : curriculum.getIdentifier();
 		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", 255, identifier, formLayout);
+		identifierEl.setElementCssClass("o_sel_curriculum_identifier");
 		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum(curriculum));
 		identifierEl.setMandatory(true);
 		
