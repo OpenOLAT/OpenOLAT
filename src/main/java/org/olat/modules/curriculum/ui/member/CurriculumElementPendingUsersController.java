@@ -229,8 +229,9 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-
-		if(tableEl.getSelectedFilterTab() == null) {
+		
+		String filter = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("All".equalsIgnoreCase(filter) || tableEl.getSelectedFilterTab() == null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
 			loadModel(true);
 		}
