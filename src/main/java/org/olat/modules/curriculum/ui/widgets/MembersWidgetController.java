@@ -100,7 +100,7 @@ public class MembersWidgetController extends FormBasicController {
 	private CurriculumElementInfos loadInformations(CurriculumElement curriculumElement) {
 		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElements(null, List.of(curriculumElement));
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
-		if(elements == null) {
+		if(elements == null || elements.isEmpty()) {
 			return new CurriculumElementInfos(curriculumElement, null, 0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l);
 		}
 		return elements.get(0);
