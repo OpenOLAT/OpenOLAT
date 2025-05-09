@@ -66,6 +66,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private boolean escapeHtml = true;
 	private boolean horizontallyAlignedCheckboxes = false;
 	private boolean withTitleOnLabels = false;
+	private boolean isBadgeStyle = false;
 	private String nonSelectedText = "";
 	private ConsumableBoolean formRequestEval = new ConsumableBoolean(false);
 
@@ -135,6 +136,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void setWithTitleOnLabels(boolean enable) {
 		this.withTitleOnLabels = enable;
+	}
+
+	@Override
+	public boolean isBadgeStyle() {
+		return isBadgeStyle;
+	}
+
+	@Override
+	public void setBadgeStyle(boolean badgeStyle) {
+		this.isBadgeStyle = badgeStyle;
 	}
 
 	@Override
@@ -444,6 +455,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 				check.setCssClass(cssClass);
 			}
 		}
+	}
+
+	@Override
+	public String getCssClass(String key) {
+		for(CheckboxElement check : component.getCheckComponents()) {
+			if(check.getKey().equals(key)) {
+				return check.getCssClass();
+			}
+		}
+		return "";
 	}
 
 	@Override

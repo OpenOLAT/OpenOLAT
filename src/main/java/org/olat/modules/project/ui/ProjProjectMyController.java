@@ -45,6 +45,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 	}
 
 	@Override
+	protected String getTitleIconCss() {
+		return "o_icon_proj_project";
+	}
+
+	@Override
 	protected String getTitleI18n() {
 		return "segment.my";
 	}

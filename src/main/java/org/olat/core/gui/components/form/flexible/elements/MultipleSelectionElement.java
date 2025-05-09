@@ -126,6 +126,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	public void setVisible(Set<String> keys, boolean isEnabled);
 	
 	public void setCssClass(String key, String cssClass);
+
+	public String getCssClass(String key);
 	
 	/**
 	 * Enable / disable the escaping of the content. Use with cautious as disabling escaping
@@ -176,6 +178,10 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @param enable true add the title attribute to the label which wraps the check box
 	 */
 	public void setWithTitleOnLabels(boolean enable);
+
+	public boolean isBadgeStyle();
+
+	public void setBadgeStyle(boolean badgeStyle);
 	
 	public enum Layout {
 		horizontal,

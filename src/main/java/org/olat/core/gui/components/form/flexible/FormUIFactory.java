@@ -141,6 +141,8 @@ import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionImpl;
 import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
+import org.olat.user.ui.organisation.structure.OrgStructureElement;
+import org.olat.user.ui.organisation.structure.OrgStructureElementImpl;
 
 /**
  * Factory class to create the flexible form elements.
@@ -1852,5 +1854,21 @@ public class FormUIFactory {
 		
 		setLabelIfNotNull(i18nLabel, verticalContainer);
 		return verticalContainer;
+	}
+
+	public OrgStructureElement addOrgStructureElement(String name, FormItemContainer formLayout,
+													  WindowControl wControl, List<Organisation> activeOrgs) {
+		return addOrgStructureElement(name, name, formLayout, wControl, activeOrgs);
+	}
+
+	public OrgStructureElement addOrgStructureElement(String name, String i18nLabel, FormItemContainer formLayout,
+													  WindowControl wControl, List<Organisation> activeOrgs) {
+		OrgStructureElementImpl orgStructureElement = new OrgStructureElementImpl(
+				wControl, name, activeOrgs,
+				formLayout.getTranslator().getLocale()
+		);
+		setLabelIfNotNull(i18nLabel, orgStructureElement);
+		formLayout.add(orgStructureElement);
+		return orgStructureElement;
 	}
 }

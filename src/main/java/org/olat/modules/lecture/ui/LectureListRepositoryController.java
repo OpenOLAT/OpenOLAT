@@ -2074,7 +2074,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			
 			if(secCallback.canViewList()) {
 				exportLink = addLink("export", "export", "o_icon o_icon-fw o_filetype_xlsx", mainVC);
-				attendanceListLink = addLink("attendance.list", "attendance.list", "o_icon o_icon-fw o_filetype_pdf", mainVC);
+				if(row.getEntry() != null && row.getEntry().key() != null) {
+					attendanceListLink = addLink("attendance.list", "attendance.list", "o_icon o_icon-fw o_filetype_pdf", mainVC);
+				}
 				attendanceListForSignatureLink = addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_icon-fw o_filetype_pdf", mainVC);
 			}
 			

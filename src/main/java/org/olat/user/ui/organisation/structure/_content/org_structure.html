@@ -1,0 +1,57 @@
+#macro(renderNode $node)
+    <li>
+        #if($node.children && $node.children.size() > 0)
+            #if($node.active)
+                <i class="o_icon o_icon-fw o_icon_selected_dot o_tree_toggle"
+                   onclick="
+                         var $li = jQuery(this).closest('li');
+                         var $sub = $li.children('ul').first();
+                         $sub.toggle();
+                         $li.toggleClass('collapsed');
+                         var $icon = jQuery(this);
+                         $icon.toggleClass('o_icon_caret o_icon_caret_right');
+                         return false;
+                       "></i>
+            #else
+                <i class="o_icon o_icon-fw o_icon_caret o_tree_toggle"
+                   onclick="
+                         var $li = jQuery(this).closest('li');
+                         var $sub = $li.children('ul').first();
+                         $sub.toggle();
+                         $li.toggleClass('collapsed');
+                         var $icon = jQuery(this);
+                         $icon.toggleClass('o_icon_caret o_icon_caret_right');
+                         return false;
+                       "></i>
+            #end
+        #else
+            #if($node.active)
+                <i class="o_icon o_icon-fw o_icon_selected_dot"></i>
+            #else
+                <span class="o_tree_spacer"></span>
+            #end
+        #end
+
+        $!{node.organisation.displayName}
+
+        #if($node.children && $node.children.size() > 0)
+            <ul>
+                #foreach($c in $node.children)
+                    #renderNode($c)
+                #end
+            </ul>
+        #end
+    </li>
+#end
+
+<div class="o_callout_tree">
+    <h4>
+        <i class="o_icon o_icon-fw o_icon_levels"></i>
+        $r.translate("structure.org.title")
+    </h4>
+    <ul class="o_tree_root">
+        #foreach($n in $roots)
+            #renderNode($n)
+        #end
+    </ul>
+</div>

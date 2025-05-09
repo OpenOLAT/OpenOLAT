@@ -132,7 +132,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
     throws IOException, TransformerException {
 	    	addPage();
 	    	String lectureBlockTitle = lectureBlock.getTitle();
-	    	String resourceTitle = entry.getDisplayname();
+	    	String resourceTitle = entry == null ? "" : entry.getDisplayname();
 	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
 
 	    	String title = resourceTitle + " - " + lectureBlockTitle;

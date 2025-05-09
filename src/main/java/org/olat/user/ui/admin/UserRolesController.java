@@ -26,25 +26,29 @@
 package org.olat.user.ui.admin;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.SelectOrganisationController;
 import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -60,6 +64,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.structure.OrgStructureElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,11 +87,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * There should be no need to use it anywhere else.
  */
 public class UserRolesController extends FormBasicController {
-	
-	private SpacerElement rolesSep;
+
 	private FormLayoutContainer rolesCont;
 	private FormLink addToOrganisationButton;
-	private MultipleSelectionElement sendLoginDeniedEmailEl;
+	private OrgSelectorElement affiliationSelectorEl;
+	private OrgStructureElement affiliationTreeEl;
 	private final List<MultipleSelectionElement> rolesEls = new ArrayList<>();
 
 	private int counter = 0;
@@ -94,21 +100,25 @@ public class UserRolesController extends FormBasicController {
 	 * The roles without inheritance
 	 */
 	private Roles editedRoles;
-	private Identity editedIdentity;
+	private final Identity editedIdentity;
 	private List<Organisation> organisations;
+	private List<Organisation> affOrgs;
 	
 	private final Roles managerRoles;
 	private final List<Organisation> manageableOrganisations;
 	
 	private CloseableModalController cmc;
 	private SelectOrganisationController selectOrganisationCtrl;
-	
+
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	/**
 	 * Constructor for a controller that lets you edit the users system roles and rights.
@@ -139,160 +149,346 @@ public class UserRolesController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// roles
-		rolesCont = FormLayoutContainer.createDefaultFormLayout("rolesc", getTranslator());
-		formLayout.add(rolesCont);
-		
-		initFormRoles();
-		
+		if (organisationModule.isEnabled()) {
+			// Group: Affiliation
+			FormLayoutContainer affiliationCont = FormLayoutContainer.createCustomFormLayout("affiliationCont", getTranslator(), this.velocity_root + "/aff_org.html");
+			affiliationCont.setFormTitle(translate("form.affiliation"));
+			formLayout.add(affiliationCont);
+			initFormAffiliation(affiliationCont);
+
+			// Group: Additional Roles
+			rolesCont = FormLayoutContainer.createCustomFormLayout("additionalRolesCont", getTranslator(), this.velocity_root + "/add_org.html");
+			rolesCont.setFormTitle(translate("form.additional.roles"));
+			formLayout.add(rolesCont);
+			initFormRoles();
+		} else {
+			FormLayoutContainer simpleRolesCont = FormLayoutContainer
+					.createDefaultFormLayout("rolesCont", getTranslator());
+			simpleRolesCont.setFormTitle(translate("form.additional.roles"));
+			formLayout.add(simpleRolesCont);
+			initFormSimpleRoles(simpleRolesCont);
+		}
 		FormLayoutContainer statusCont = FormLayoutContainer.createDefaultFormLayout("statusc", getTranslator());
 		formLayout.add(statusCont);
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		statusCont.add(buttonGroupLayout);
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+	}
+
+	private void initFormSimpleRoles(FormItemContainer formLayout) {
+		List<String> roleKeys   = new ArrayList<>();
+		List<String> roleValues = new ArrayList<>();
+		fillOrderedRoles(roleKeys, roleValues);
+
+		String[] keys   = roleKeys.toArray(new String[0]);
+		String[] values = roleValues.toArray(new String[0]);
+
+		MultipleSelectionElement rolesEl = uifactory.addCheckboxesDropdown(
+				"roles",
+				"form.roles",
+				formLayout,
+				keys, values,
+				null,
+				null
+		);
+
+		rolesEl.setBadgeStyle(true);
+		rolesEl.setNonSelectedText(translate("no.additional.role.selected"));
+		rolesEl.setMandatory(true);
+
+		for (String key : keys) {
+			OrganisationRoles r = OrganisationRoles.valueOf(key);
+			if (editedRoles.hasRole(r)) {
+				rolesEl.select(key, true);
+			}
+		}
+
+		rolesEls.clear();
+		rolesEls.add(rolesEl);
+	}
+
+	private void initFormAffiliation(FormItemContainer formLayout) {
+		// gather only the orgs where the user has the “user” role
+		affOrgs = organisations.stream()
+				.filter(org -> {
+					RolesByOrganisation r = editedRoles.getRoles(org);
+					return r != null && r.hasRole(OrganisationRoles.user);
+				})
+				.toList();
+
+		if (!affOrgs.isEmpty()) {
+			affiliationSelectorEl = uifactory.addOrgSelectorElement(
+					"affiliation.orgs.label",
+					formLayout,
+					getWindowControl(),
+					affOrgs
+			);
+			affiliationSelectorEl.setMandatory(true);
+			affiliationSelectorEl.setMultipleSelection(true);
+			List<Long> allKeys = affOrgs.stream()
+					            .map(Organisation::getKey)
+					            .toList();
+			affiliationSelectorEl.setSelection(allKeys);
+			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
+
+			affiliationTreeEl = uifactory.addOrgStructureElement(
+					"orgTreeAff",
+					formLayout,
+					getWindowControl(),
+					affOrgs
+			);
+		}
 	}
 
 	private void initFormRoles() {
-		for(Organisation organisation:organisations) {
-			initFormRoles(rolesCont, organisation);
-		}
 		List<Organisation> upgradeableToOrganisations = new ArrayList<>(manageableOrganisations);
 		upgradeableToOrganisations.removeAll(organisations);
 		if(!upgradeableToOrganisations.isEmpty()) {
 			addToOrganisationButton = uifactory.addFormLink("rightsForm.add.to.organisation", rolesCont, Link.BUTTON);
+			addToOrganisationButton.setIconLeftCSS("o_icon o_icon_add");
+			addToOrganisationButton.setElementCssClass("o_sel_add_organisation");
+		}
+
+		List<OrganisationRoles> globals = List.of(
+				OrganisationRoles.sysadmin,
+				OrganisationRoles.groupmanager,
+				OrganisationRoles.poolmanager
+		);
+
+		List<String> globalRoleNames = organisations.stream()
+				.filter(o -> !OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(o.getIdentifier()))
+				.map(o -> editedRoles.getRoles(o))
+				.filter(Objects::nonNull)
+				.flatMap(byOrg ->
+						globals.stream().filter(byOrg::hasRole)
+				)
+				.distinct()
+				.map(r -> translate("role." + r.name()))
+				.toList();
+
+		if (!globalRoleNames.isEmpty()) {
+			rolesCont.contextPut("subOrgGlobalRoleNames", globalRoleNames);
+		}
+
+		for(Organisation organisation:organisations) {
+			initFormRoles(rolesCont, organisation);
 		}
 	}
-	
+
 	private void initFormRoles(FormItemContainer formLayout, Organisation organisation) {
-		boolean admin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
-				|| managerRoles.isSystemAdmin(); 
-		boolean userManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager); 
-		boolean rolesManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager); 
-		
+		int currentIndex = counter++;
+
 		List<String> roleKeys = new ArrayList<>();
 		List<String> roleValues = new ArrayList<>();
+		fillOrderedRoles(roleKeys, roleValues);
 
-		roleKeys.add(OrganisationRoles.invitee.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.invitee.name())));
+		String[] keys = roleKeys.toArray(new String[0]);
+		String[] values = roleValues.toArray(new String[0]);
 
-		roleKeys.add(OrganisationRoles.user.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.user.name())));
+		MultipleSelectionElement rolesDD = uifactory.addCheckboxesDropdown(
+				"roles_" + currentIndex,
+				"rightsForm.roles",
+				formLayout,
+				keys, values,
+				null, null
+		);
+		rolesDD.setBadgeStyle(true);
+		rolesDD.setNonSelectedText(translate("no.additional.role.selected"));
+		rolesDD.addActionListener(FormEvent.ONCLICK);
 
-		roleKeys.add(OrganisationRoles.author.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.author.name())));
-
-		roleKeys.add(OrganisationRoles.usermanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.usermanager.name())));
-
-		roleKeys.add(OrganisationRoles.rolesmanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.rolesmanager.name())));
-
-		roleKeys.add(OrganisationRoles.groupmanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.groupmanager.name())));
-
-		roleKeys.add(OrganisationRoles.poolmanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.poolmanager.name())));
-
-		roleKeys.add(OrganisationRoles.curriculummanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.curriculummanager.name())));
-
-		roleKeys.add(OrganisationRoles.lecturemanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.lecturemanager.name())));
-
-		roleKeys.add(OrganisationRoles.projectmanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.projectmanager.name())));
-
-		roleKeys.add(OrganisationRoles.qualitymanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.qualitymanager.name())));
-
-		roleKeys.add(OrganisationRoles.linemanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.linemanager.name())));
-
-		roleKeys.add(OrganisationRoles.learnresourcemanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.learnresourcemanager.name())));
-		
-		roleKeys.add(OrganisationRoles.educationmanager.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.educationmanager.name())));
-
-		roleKeys.add(OrganisationRoles.principal.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.principal.name())));
-
-		roleKeys.add(OrganisationRoles.administrator.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.administrator.name())));
-
-		roleKeys.add(OrganisationRoles.sysadmin.name());
-		roleValues.add(translate("role.".concat(OrganisationRoles.sysadmin.name())));
-
-		MultipleSelectionElement rolesEl = uifactory.addCheckboxesHorizontal(
-					"roles_" + (++counter), "rightsForm.roles", formLayout,
-					roleKeys.toArray(new String[roleKeys.size()]),
-					roleValues.toArray(new String[roleValues.size()]));
-		if(organisations.size() > 1 || !organisation.getIdentifier().equals(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER)) {
-			rolesEl.setLabel("rightsForm.roles.for", new String[] { StringHelper.escapeHtml(organisation.getDisplayName()) });
+		if (organisations.size() > 1 || !OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
+			rolesDD.setLabel("rightsForm.roles.for", new String[]{ StringHelper.escapeHtml(organisation.getDisplayName()) });
 		}
-		rolesEl.setUserObject(new RolesElement(roleKeys, organisation, rolesEl));
-		rolesEl.addActionListener(FormEvent.ONCHANGE);
-		
-		boolean editedHasSomePermissions = editedRoles.isSystemAdmin() || editedRoles.isAdministrator() || editedRoles.isPrincipal()
-				|| editedRoles.isManager() || editedRoles.isAuthor();
-		
-		if(admin) {
-			rolesEl.setEnabled(new HashSet<>(roleKeys), true);
-		} else if(userManager) {
-			Set<String> enabled = new HashSet<>();
-			if(!editedHasSomePermissions) {
-				enabled.add(OrganisationRoles.invitee.name());
-			}
-			enabled.add(OrganisationRoles.user.name());
-			enabled.add(OrganisationRoles.author.name());
-			rolesEl.setEnabled(enabled, true);
-			Set<String> disabled = new HashSet<>(roleKeys);
-			disabled.removeAll(enabled);
-			rolesEl.setEnabled(disabled, false);
-		} else if(rolesManager) {
-			Set<String> enabled = new HashSet<>();
-			if(!editedHasSomePermissions) {
-				enabled.add(OrganisationRoles.invitee.name());
-			}
-			enabled.add(OrganisationRoles.user.name());
-			enabled.add(OrganisationRoles.author.name());
-			enabled.add(OrganisationRoles.curriculummanager.name());
-			enabled.add(OrganisationRoles.groupmanager.name());
-			enabled.add(OrganisationRoles.learnresourcemanager.name());
-			enabled.add(OrganisationRoles.lecturemanager.name());
-			enabled.add(OrganisationRoles.linemanager.name());
-			enabled.add(OrganisationRoles.poolmanager.name());
-			enabled.add(OrganisationRoles.projectmanager.name());
-			enabled.add(OrganisationRoles.qualitymanager.name());
-			enabled.add(OrganisationRoles.rolesmanager.name());
-			enabled.add(OrganisationRoles.usermanager.name());
-			enabled.add(OrganisationRoles.educationmanager.name());
-			rolesEl.setEnabled(enabled, true);
-			Set<String> disabled = new HashSet<>(roleKeys);
-			disabled.removeAll(enabled);
-			rolesEl.setEnabled(disabled, false);
-		} else {
-			rolesEl.setEnabled(new HashSet<>(), true);
-			Set<String> disabled = new HashSet<>(roleKeys);
-			rolesEl.setEnabled(disabled, false);
-		}
-		
-		rolesEls.add(rolesEl);
+
+		OrganisationMember member = getOrganisationMember(organisation);
+		applySelectedRolesAndInheritance(rolesDD, keys, member, organisation);
+		sortExplicitBeforeInherited(rolesDD, roleKeys, roleValues);
+
+		applyRolePermissions(rolesDD, keys, organisation);
+
+		RolesElement wrapper = new RolesElement(roleKeys, organisation, rolesDD);
+		rolesDD.setUserObject(wrapper);
+		rolesEls.add(rolesDD);
+
+		rolesCont.contextPut("rolesEls", rolesEls);
+
+		uifactory.addOrgStructureElement(
+				"orgTree_" + currentIndex, formLayout,
+				getWindowControl(), Collections.singletonList(organisation)
+		);
 	}
-	
+
+	private void fillOrderedRoles(List<String> roleKeys, List<String> roleValues) {
+		OrganisationRoles[] orderedRoles = {
+				OrganisationRoles.author,
+				OrganisationRoles.learnresourcemanager,
+				OrganisationRoles.linemanager,
+				OrganisationRoles.educationmanager,
+				OrganisationRoles.principal,
+				OrganisationRoles.lecturemanager,
+				OrganisationRoles.curriculummanager,
+				OrganisationRoles.projectmanager,
+				OrganisationRoles.qualitymanager,
+				OrganisationRoles.usermanager,
+				OrganisationRoles.rolesmanager,
+				OrganisationRoles.administrator,
+				OrganisationRoles.groupmanager,
+				OrganisationRoles.poolmanager,
+				OrganisationRoles.sysadmin
+		};
+
+		for (OrganisationRoles r : orderedRoles) {
+			roleKeys.add(r.name());
+			roleValues.add(translate("role." + r.name()));
+		}
+	}
+
+	private OrganisationMember getOrganisationMember(Organisation organisation) {
+		List<OrganisationMember> members = organisationService.getMembers(organisation, new SearchMemberParameters());
+		return members.stream()
+				.filter(m -> m.getIdentity().equals(editedIdentity))
+				.findAny()
+				.orElse(null);
+	}
+
+	private void applySelectedRolesAndInheritance(MultipleSelectionElement rolesDD, String[] keys,
+												  OrganisationMember member, Organisation organisation) {
+		if (member == null) return;
+
+		// explicit/root roles on this org
+		RolesByOrganisation byOrg = editedRoles.getRoles(organisation);
+		Set<OrganisationRoles> explicit = Arrays.stream(keys)
+				.map(OrganisationRoles::valueOf)
+				.filter(byOrg::hasRole)
+				.collect(Collectors.toSet());
+
+		// inherited roles from parent chain
+		Set<OrganisationRoles> inherited = new HashSet<>();
+		for (OrganisationRef parentRef : organisation.getParentLine()) {
+			Organisation parent = organisationService.getOrganisation(parentRef);
+			RolesByOrganisation parentRoles = editedRoles.getRoles(parent);
+			if (parentRoles == null) continue;
+			for (String k : keys) {
+				OrganisationRoles r = OrganisationRoles.valueOf(k);
+				if (parentRoles.hasRole(r) && !explicit.contains(r)) {
+					inherited.add(r);
+				}
+			}
+		}
+
+		// now select all explicit/root and inherited, and set their CSS
+		for (String k : keys) {
+			OrganisationRoles r = OrganisationRoles.valueOf(k);
+
+			// select if explicit/root OR inherited
+			if (explicit.contains(r) || inherited.contains(r)) {
+				rolesDD.select(k, true);
+			}
+
+			if (explicit.contains(r)) {
+				rolesDD.setCssClass(k, "root");
+			} else if (inherited.contains(r)) {
+				rolesDD.setCssClass(k, "inherited");
+			} else {
+				rolesDD.setCssClass(k, "");
+			}
+		}
+	}
+
+	private void sortExplicitBeforeInherited(MultipleSelectionElement rolesDD, List<String> roleKeys, List<String> roleValues) {
+		List<String> sortedKeys = new ArrayList<>();
+		List<String> sortedValues = new ArrayList<>();
+
+		for (int i = 0; i < roleKeys.size(); i++) {
+			String key = roleKeys.get(i);
+			String cssClass = rolesDD.getCssClass(key); // will return e.g. "root" or "inherited"
+
+			if ("root".equals(cssClass)) {
+				sortedKeys.add(key);
+				sortedValues.add(roleValues.get(i));
+			}
+		}
+		for (int i = 0; i < roleKeys.size(); i++) {
+			String key = roleKeys.get(i);
+			String cssClass = rolesDD.getCssClass(key);
+
+			if (!"root".equals(cssClass)) {
+				sortedKeys.add(key);
+				sortedValues.add(roleValues.get(i));
+			}
+		}
+
+		roleKeys.clear();
+		roleKeys.addAll(sortedKeys);
+
+		roleValues.clear();
+		roleValues.addAll(sortedValues);
+	}
+
+	private void applyRolePermissions(MultipleSelectionElement rolesDD, String[] keys, Organisation organisation) {
+		boolean isAdmin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
+				|| managerRoles.isSystemAdmin();
+		boolean isUserManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager);
+		boolean isRolesMgr = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager);
+		boolean hasSome = editedRoles.isSystemAdmin()
+				|| editedRoles.isAdministrator()
+				|| editedRoles.isPrincipal()
+				|| editedRoles.isManager()
+				|| editedRoles.isAuthor();
+
+		for (String k : keys) {
+			OrganisationRoles r = OrganisationRoles.valueOf(k);
+			boolean enable = false;
+
+			if (isAdmin) {
+				enable = true;
+			} else if (isUserManager) {
+				if (!hasSome && r == OrganisationRoles.invitee) enable = true;
+				if (r == OrganisationRoles.user || r == OrganisationRoles.author) enable = true;
+			} else if (isRolesMgr) {
+				if (!hasSome && r == OrganisationRoles.invitee) enable = true;
+				switch (r) {
+					case user, author, curriculummanager, groupmanager,
+						 learnresourcemanager, lecturemanager, linemanager,
+						 poolmanager, projectmanager, qualitymanager,
+						 rolesmanager, usermanager, educationmanager -> enable = true;
+				}
+			}
+			rolesDD.setEnabled(k, enable);
+		}
+	}
+
 	private void update() {
+		// reload from DB
 		editedRoles = securityManager.getRoles(editedIdentity, false);
-		for(MultipleSelectionElement rolesEl:rolesEls) {
-			RolesElement wrapper = (RolesElement)rolesEl.getUserObject();
-			update(wrapper, editedRoles.getRoles(wrapper.getOrganisation()));
+
+		// for each dropdown we built above
+		for (MultipleSelectionElement dd : rolesEls) {
+			Object uo = dd.getUserObject();
+			if (!(uo instanceof RolesElement wrapper)) continue;
+
+			// clear everything
+			dd.uncheckAll();
+
+			Organisation org = wrapper.organisation();
+			OrganisationMember member = getOrganisationMember(org);
+			String[] keys = wrapper.roleKeys().toArray(new String[0]);
+
+			applySelectedRolesAndInheritance(dd, keys, member, org);
+
+			// re-sort so explicits/roots come first
+			sortExplicitBeforeInherited(dd,
+					wrapper.roleKeys(),
+					wrapper.roleKeys().stream()
+							.map(k -> translate("role." + k))
+							.collect(Collectors.toCollection(ArrayList::new))
+			);
 		}
 	}
-	
+
+
 	private void updateRoles() {
-		if(rolesSep != null) {
-			rolesCont.remove(rolesSep);
-		}
 		if(addToOrganisationButton != null) {
 			rolesCont.remove(addToOrganisationButton);
 		}
@@ -302,18 +498,6 @@ public class UserRolesController extends FormBasicController {
 		rolesEls.clear();
 		initFormRoles();
 		update();
-	}
-	
-	private void update(RolesElement wrapper, RolesByOrganisation editedRolesByOrg) {
-		for(OrganisationRoles role:OrganisationRoles.values()) {
-			boolean hasRole = editedRolesByOrg != null && editedRolesByOrg.hasRole(role);
-			wrapper.setRole(role, hasRole);
-		}
-		wrapper.saveSelectedRoles();
-	}
-	
-	public boolean getSendLoginDeniedEmail() {
-		return sendLoginDeniedEmailEl.isSelected(0);
 	}
 	
 	@Override
@@ -341,42 +525,22 @@ public class UserRolesController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		if(rolesEls.isEmpty()) {
-			allOk &= false;
-		} else {
-			rolesEls.get(0).clearError();
-			
-			int numOfRoles = 0;
-			Set<String> allSelectedRoles = new HashSet<>();
-			for(MultipleSelectionElement rolesEl:rolesEls) {
-				Collection<String> selectedRoles = rolesEl.getSelectedKeys();
-				numOfRoles += selectedRoles.size();
-				allSelectedRoles.addAll(selectedRoles);
-			}
-			
-			if(numOfRoles == 0) {
-				rolesEls.get(0).setErrorKey("error.roles.atleastone");
-				allOk &= false;
-			} else if(!allSelectedRoles.contains(OrganisationRoles.invitee.name()) && !allSelectedRoles.contains(OrganisationRoles.user.name())) {
-				Roles currentRoles = securityManager.getRoles(editedIdentity, false);
-				List<OrganisationRef> userOrgs = currentRoles.getOrganisationsWithRole(OrganisationRoles.user)
-						.stream().map(OrganisationRefImpl::new).collect(Collectors.toList());
-				List<OrganisationRef> inviteeOrgs = currentRoles.getOrganisationsWithRole(OrganisationRoles.invitee)
-						.stream().map(OrganisationRefImpl::new).collect(Collectors.toList());
-				Set<OrganisationRef> allOrgRefs = new HashSet<>();
-				allOrgRefs.addAll(userOrgs);
-				allOrgRefs.addAll(inviteeOrgs);
-				
-				for(MultipleSelectionElement rolesEl:rolesEls) {
-					RolesElement rolesElement = (RolesElement)rolesEl.getUserObject();
-					allOrgRefs.remove(new OrganisationRefImpl(rolesElement.getOrganisation()));
-				}
-				
-				if(allOrgRefs.isEmpty()) {
-					rolesEls.get(0).setErrorKey("error.roles.atleastone.userorinvitee");
-					allOk &= false;
-				}
-			}
+		if (rolesEls.isEmpty()) {
+			return false;
+		}
+		for (MultipleSelectionElement rolesEl : rolesEls) {
+			rolesEl.clearError();
+		}
+
+		int numOfRoles = 0;
+		for(MultipleSelectionElement rolesEl:rolesEls) {
+			Collection<String> selectedRoles = rolesEl.getSelectedKeys();
+			numOfRoles += selectedRoles.size();
+		}
+
+		if(numOfRoles == 0) {
+			rolesEls.get(0).setErrorKey("error.roles.atleastone");
+			allOk = false;
 		}
 
 		return allOk;
@@ -386,27 +550,20 @@ public class UserRolesController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addToOrganisationButton == source) {
 			doAddToOrganisation(ureq);
-		} else if(source instanceof MultipleSelectionElement el
-				&& el.getUserObject() instanceof RolesElement uoRoles) {
-			validateInvitee(uoRoles);
+		} else if (source == affiliationSelectorEl) {
+			// get all selected keys
+			Set<Long> selKeys = affiliationSelectorEl.getSelection();
+			// map back to Organisation objects
+			List<Organisation> active = affOrgs.stream()
+					.filter(o -> selKeys.contains(o.getKey()))
+					.toList();
+			// push into the tree
+			affiliationTreeEl.setActiveOrganisations(active);
+			affiliationTreeEl.getComponent().setDirty(true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
-	private void validateInvitee(RolesElement rolesEl) {
-		if(!rolesEl.hasInviteeSelected()) return;
-		
-		for(MultipleSelectionElement el:rolesEls) {
-			if(el.getUserObject() instanceof RolesElement uoRoles) {
-				if(uoRoles.hasInviteeSelected()) {
-					uoRoles.checkInvitee();
-				} else {
-					uoRoles.deselectAll();
-				}
-			}
-		}
-	}
-	
+
 	private void doAddToOrganisation(UserRequest ureq) {
 		if(guardModalController(selectOrganisationCtrl)) return;
 		
@@ -444,8 +601,6 @@ public class UserRolesController extends FormBasicController {
 	 */
 	private void saveFormData() {
 		editedRoles = securityManager.getRoles(editedIdentity, false);
-		
-		checkInviteeInAllOrganisations();
 
 		for(MultipleSelectionElement rolesEl:rolesEls) {
 			if(rolesEl.isEnabled()
@@ -454,144 +609,62 @@ public class UserRolesController extends FormBasicController {
 			}
 		}
 	}
-	
-	private void checkInviteeInAllOrganisations() {
-		boolean isInvitee = false;
-		for(MultipleSelectionElement rolesEl:rolesEls) {
-			if(rolesEl.getUserObject() instanceof RolesElement rolesElement) {
-				rolesElement.checkInvitee();// Double check
-				isInvitee |= rolesElement.hasInviteeSelected();
-			}
-		}
-		
-		if(isInvitee) {
-			for(MultipleSelectionElement rolesEl:rolesEls) {
-				if(rolesEl.getUserObject() instanceof RolesElement rolesElement
-						&& !rolesElement.hasInviteeSelected()) {
-					rolesElement.deselectAll();
-				}
-			}
-		}
-	}
-	
+
 	private void saveOrganisationRolesFormData(RolesElement wrapper) {
-		Organisation organisation = wrapper.getOrganisation();
+		Organisation organisation = wrapper.organisation();
 		boolean iAmUserManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager);
 		boolean iAmRolesManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager);
 		boolean iAmAdmin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
 				|| managerRoles.isSystemAdmin();
 
-		// 2) system roles
+		Set<String> selectedKeys = new HashSet<>(wrapper.rolesDropdown().getSelectedKeys());
+
 		List<OrganisationRoles> rolesToAdd = new ArrayList<>();
 		List<OrganisationRoles> rolesToRemove = new ArrayList<>();
-		wrapper.commit(OrganisationRoles.invitee, rolesToAdd, rolesToRemove);
-		wrapper.commit(OrganisationRoles.user, rolesToAdd, rolesToRemove);
 
-		// author
-		if (iAmAdmin || iAmUserManager) {
-			wrapper.commit(OrganisationRoles.author, rolesToAdd, rolesToRemove);
-		}
-		
-		// managers
-		if (iAmAdmin || iAmRolesManager) {
-			wrapper.commit(OrganisationRoles.groupmanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.poolmanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.curriculummanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.linemanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.projectmanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.qualitymanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.lecturemanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.usermanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.rolesmanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.learnresourcemanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.educationmanager, rolesToAdd, rolesToRemove);
-		}
+		for (OrganisationRoles role : OrganisationRoles.values()) {
+			if (role == OrganisationRoles.user || role == OrganisationRoles.invitee) continue;
 
-		// administration roles, only allowed by administrator
-		if (iAmAdmin) {
-			wrapper.commit(OrganisationRoles.principal, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.administrator, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.sysadmin, rolesToAdd, rolesToRemove);
+			boolean selected = selectedKeys.contains(role.name());
+			boolean currentlyAssigned = editedRoles.getRoles(organisation) != null &&
+					editedRoles.getRoles(organisation).hasRole(role);
+
+			boolean allowedToManage = switch (role) {
+				case author -> iAmAdmin || iAmUserManager;
+				case groupmanager, poolmanager, curriculummanager, linemanager,
+					 projectmanager, qualitymanager, lecturemanager, usermanager,
+					 rolesmanager, learnresourcemanager, educationmanager -> iAmAdmin || iAmRolesManager;
+				case principal, administrator, sysadmin -> iAmAdmin;
+				default -> false;
+			};
+
+			if (!allowedToManage) continue;
+
+			if (selected && !currentlyAssigned) {
+				rolesToAdd.add(role);
+			} else if (!selected && currentlyAssigned) {
+				rolesToRemove.add(role);
+			}
 		}
 
-		RolesByOrganisation editedOrganisationRoles = editedRoles.getRoles(wrapper.getOrganisation());
-		if(editedOrganisationRoles == null) {
-			editedOrganisationRoles = new RolesByOrganisation(wrapper.getOrganisation(), OrganisationRoles.EMPTY_ROLES);
+		RolesByOrganisation editedOrganisationRoles = editedRoles.getRoles(organisation);
+		if (editedOrganisationRoles == null) {
+			editedOrganisationRoles = new RolesByOrganisation(organisation, OrganisationRoles.EMPTY_ROLES);
 		}
 		RolesByOrganisation updatedRoles = RolesByOrganisation.enhance(editedOrganisationRoles, rolesToAdd, rolesToRemove);
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);
 	}
-	
-	public static class RolesElement {
-		
-		private final List<String> roleKeys;
-		private final Organisation organisation;
-		private final MultipleSelectionElement rolesEl;
-		private List<String> selectedRoles = new ArrayList<>();
-		
-		public RolesElement(List<String> roleKeys, Organisation organisation, MultipleSelectionElement rolesEl) {
-			this.roleKeys = roleKeys;
-			this.rolesEl = rolesEl;
-			this.organisation = organisation;
-		}
-		
-		public MultipleSelectionElement getRolesEl() {
-			return rolesEl;
-		}
-		
-		public Organisation getOrganisation() {
-			return organisation;
-		}
-		
+
+	public record RolesElement(List<String> roleKeys, Organisation organisation,
+							   MultipleSelectionElement rolesDropdown) {
 		public void commit(OrganisationRoles k, List<OrganisationRoles> rolesToAdd, List<OrganisationRoles> rolesToRemove) {
-			if(roleKeys.contains(k.name())) {
-				if(getRole(k)) {
-					rolesToAdd.add(k);
-				} else {
-					rolesToRemove.add(k);
-				}
-			}
-		}
-		
-		private boolean getRole(OrganisationRoles k) {
-			return roleKeys.contains(k.name()) && rolesEl.getSelectedKeys().contains(k.name());
-		}
-		
-		private void setRole(OrganisationRoles k, boolean enabled) {
-			if(roleKeys.contains(k.name()) && enabled) {
-				rolesEl.select(k.name(), enabled);
-			}
-		}
-		
-		public void deselectAll() {
-			rolesEl.uncheckAll();
-		}
-		
-		public boolean hasInviteeSelected() {
-			Collection<String> keys = rolesEl.getSelectedKeys();
-			return keys.contains(OrganisationRoles.invitee.name());
-		}
-		
-		public void checkInvitee() {
-			Collection<String> keys = rolesEl.getSelectedKeys();
-			if(selectedRoles.contains(OrganisationRoles.invitee.name())) {
-				if(keys.contains(OrganisationRoles.invitee.name()) && keys.size() > 1)  {
-					rolesEl.uncheckAll();
-					for(String role:keys) {
-						if(!OrganisationRoles.invitee.name().equals(role)) {
-							rolesEl.select(role, true);
-						}
+				if (roleKeys.contains(k.name())) {
+					if (rolesDropdown.isKeySelected(k.name())) {
+						rolesToAdd.add(k);
+					} else {
+						rolesToRemove.add(k);
 					}
 				}
-			} else if(keys.contains(OrganisationRoles.invitee.name())) {
-				rolesEl.uncheckAll();
-				rolesEl.select(OrganisationRoles.invitee.name(), true);
 			}
-			saveSelectedRoles();
-		}
-
-		public void saveSelectedRoles() {
-			selectedRoles = new ArrayList<>(rolesEl.getSelectedKeys());
-		}
 	}
 }

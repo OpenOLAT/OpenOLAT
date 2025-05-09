@@ -509,6 +509,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer) {
 		CurriculumElement copy = copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0);
 		dbInstance.commit();
+		
+		// Recalculate the numbering under this implementation / root element
+		CurriculumElement rootElement = getImplementationOf(copy);
+		numberRootCurriculumElement(rootElement);
+		dbInstance.commitAndCloseSession();
+		
+		// Reload the numbered copy
+		copy = curriculumElementDao.loadByKey(copy.getKey());
 		return copy;
 	}
 	

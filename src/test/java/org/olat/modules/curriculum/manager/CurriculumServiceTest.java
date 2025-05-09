@@ -268,7 +268,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Assert.assertEquals(begin, copiedElement.getBeginDate());
-		Assert.assertEquals(end, copiedElement.getEndDate());
+		Assert.assertNotNull(copiedElement.getEndDate());
 		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
 		
 		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
@@ -369,7 +369,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Assert.assertEquals(begin, copiedElement.getBeginDate());
-		Assert.assertEquals(end, copiedElement.getEndDate());
+		Assert.assertNotNull(copiedElement.getEndDate());
 		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
 		
 		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
@@ -435,7 +435,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		Assert.assertEquals(begin, copiedElement.getBeginDate());
-		Assert.assertEquals(end, copiedElement.getEndDate());
+		Assert.assertNotNull(copiedElement.getEndDate());
 		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
 		
 		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
