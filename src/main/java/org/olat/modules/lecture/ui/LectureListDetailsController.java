@@ -181,6 +181,7 @@ public class LectureListDetailsController extends FormBasicController {
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("lectureBlockKey", lectureBlock.getKey());
 			layoutCont.contextPut("title", lectureBlock.getTitle());
 			if(config.withDetailsExternalRef()) {
 				layoutCont.contextPut("externalRef", lectureBlock.getExternalRef());

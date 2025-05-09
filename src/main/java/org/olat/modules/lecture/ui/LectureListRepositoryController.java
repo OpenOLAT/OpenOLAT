@@ -98,6 +98,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -1162,10 +1163,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			} else if(tabsMap.containsKey(type.toLowerCase())) {
 				activateFilterTab(ureq, tabsMap.get(type.toLowerCase()));
 				if(entries.size() > 1) {
+					Long subId = subEntries.get(0).getOLATResourceable().getResourceableId();
 					String subType = subEntries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
-					if("lecture".equals(subType) || "lectureblock".equals(subType)) {
+					if("lecture".equalsIgnoreCase(subType) || "lectureblock".equalsIgnoreCase(subType)) {
 						List<ContextEntry> subSubEntries = subEntries.subList(1, subEntries.size());
-						activateLecture(ureq, id, subSubEntries);
+						activateLecture(ureq, subId, subSubEntries);
 					}
 				}
 			} else {
@@ -1211,6 +1213,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				} else if("StartWizard".equalsIgnoreCase(subType)) {
 					doRollCallWizard(ureq, row);
 				}
+			} else {
+				String elemId = "#row_o_fi" + tableEl.getComponent().getDispatchID() + "-" + index;
+				getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId(elemId));
 			}
 		}
 	}
