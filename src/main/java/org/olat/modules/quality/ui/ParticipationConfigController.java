@@ -21,6 +21,7 @@ package org.olat.modules.quality.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -35,7 +36,7 @@ import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ParticipationConfigController extends BasicController {
+public class ParticipationConfigController extends BasicController implements TooledController {
 
 	private final ParticipationPublicLinkController publicLinkCtrl;
 	private final ParticipationListController participationsCtrl;
@@ -60,6 +61,11 @@ public class ParticipationConfigController extends BasicController {
 	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback) {
 		publicLinkCtrl.onChanged(dataCollection, secCallback);
 		participationsCtrl.onChanged(dataCollection, secCallback);
+	}
+	
+	@Override
+	public void initTools() {
+		participationsCtrl.initTools(this);
 	}
 
 	@Override

@@ -54,7 +54,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -103,7 +102,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipationListController extends FormBasicController implements TooledController {
+public class ParticipationListController extends FormBasicController {
 	
 	private static final String CMD_DELETE = "delete";
 	
@@ -120,6 +119,7 @@ public class ParticipationListController extends FormBasicController implements 
 	private FormLink bulkDeleteLink;
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
+	private FlexiFiltersTab tabRoleEmail;
 	
 	private StepsMainRunController wizard;
 	private StepsMainRunController emailAddressWizard;
@@ -141,6 +141,8 @@ public class ParticipationListController extends FormBasicController implements 
 	@Autowired
 	private CurriculumService curriculumService;
 
+	private Controller toolCtrl;
+
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			DataCollectionSecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection) {
@@ -150,8 +152,8 @@ public class ParticipationListController extends FormBasicController implements 
 		this.dataCollection = dataCollection;
 		
 		initForm(ureq);
-		updateUI();
 		
+		updateUI();
 		loadModel();
 	}
 	
@@ -161,6 +163,7 @@ public class ParticipationListController extends FormBasicController implements 
 		
 		initTools();
 		updateUI();
+		updateEmptyMessageUI();
 		loadModel();
 	}
 	
@@ -178,11 +181,11 @@ public class ParticipationListController extends FormBasicController implements 
 		dataModel = new ParticipationDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
-		tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.add.participants", "o_icon_add_member", false);
 		
 		initBulkLinks();
 		initFilters();
 		initFilterTabs(ureq);
+		updateEmptyMessageUI();
 	}
 	
 	private void initBulkLinks() {
@@ -226,7 +229,7 @@ public class ParticipationListController extends FormBasicController implements 
 								QualityContextRole.none.name()))));
 		tabs.add(tabRoleUser);
 		
-		FlexiFiltersTab tabRoleEmail = FlexiFiltersTabFactory.tabWithImplicitFilters(
+		tabRoleEmail = FlexiFiltersTabFactory.tabWithImplicitFilters(
 				TAB_ID_EMAIL,
 				translate("tab.participation.role.email"),
 				TabSelectionBehavior.nothing,
@@ -276,15 +279,31 @@ public class ParticipationListController extends FormBasicController implements 
 		bulkDeleteLink.setVisible(secCallback.canRemoveParticipation());
 	}
 
-	@Override
-	public void initTools() {
+	private void updateEmptyMessageUI() {
+		if (secCallback.canAddParticipants()) {
+			if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRoleEmail) {
+				tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.user.email.add", "o_icon_mail", false);
+			} else {
+				tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.add.participants", "o_icon_add_member", false);
+			}
+		} else {
+			tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", null, null, false);
+		}
+	}
+	
+	public void initTools(Controller ctrl) {
+		this.toolCtrl = ctrl;
+		initTools();
+	}
+
+	private void initTools() {
 		stackPanel.removeTool(addDropdown);
 		
 		if (secCallback.canAddParticipants()) {
 			addDropdown = new Dropdown("add.participants", "participation.add.participants", false, getTranslator());
 			addDropdown.setIconCSS("o_icon o_icon-lg o_icon_add_member");
 			addDropdown.setOrientation(DropdownOrientation.right);
-			stackPanel.addTool(addDropdown, Align.right, true, null, this);
+			stackPanel.addTool(addDropdown, Align.right, true, null, toolCtrl);
 			
 			addUsersLink = LinkFactory.createToolLink("participation.user.add", translate("participation.user.add.search"), this);
 			addUsersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
@@ -312,10 +331,15 @@ public class ParticipationListController extends FormBasicController implements 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
 			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doAddUsers(ureq);
+				if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRoleEmail) {
+					doAddEmailAddresses(ureq);
+				} else {
+					doAddUsers(ureq);
+				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				loadModel();
 			} else if (event instanceof FlexiTableFilterTabEvent) {
+				updateEmptyMessageUI();
 				loadModel();
 			}
 		} else if (source instanceof FormLink) {
