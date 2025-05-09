@@ -754,3 +754,62 @@ dialog.popover {
 		}
 	}
 }
+
+.o_roles_dropdown_row {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	column-gap: 0;
+	margin-top: 10px;
+
+	.o_roles_dropdown_button {
+		justify-self: stretch;
+
+		a {
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+	}
+
+	.o_roles_structure_button {
+		justify-self: stretch;
+
+		a {
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
+			border-left-width: 0;
+			border-left-style: solid;
+			width: 100%;
+		}
+	}
+}
+
+.o_callout_tree ul,
+.o_callout_tree ul ul {
+	list-style: none;
+	margin: 0;
+	padding-left: 1.2em;
+}
+
+.o_callout_tree li {
+	margin: 2px 0;
+	position: relative;
+	font-size: small;
+}
+
+.o_callout_tree .o_icon_caret {
+	margin-right: 6px;
+	vertical-align: middle;
+}
+
+.o_callout_tree .o_icon_selected_dot {
+	margin-right: 6px;
+	vertical-align: middle;
+}
+
+/* spacer placeholder to align leaves under carets */
+.o_callout_tree .o_tree_spacer {
+	display: inline-block;
+	width: 1em;      /* same width as a caret icon */
+	margin-right: 6px;
+	vertical-align: middle;
+}

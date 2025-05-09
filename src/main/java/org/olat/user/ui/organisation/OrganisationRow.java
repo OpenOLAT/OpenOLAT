@@ -37,6 +37,7 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 	private final OrganisationType type;
 	private final Long parentOrganisationKey;
 
+	private boolean active;
 	private boolean hasChildren;
 	private OrganisationRow parent;
 	private final FormLink toolsLink;
@@ -104,5 +105,13 @@ public class OrganisationRow implements OrganisationRef, FlexiTreeTableNode {
 
 	public boolean hasChildren() {
 		return hasChildren;
-	}	
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 }
