@@ -41,6 +41,11 @@ public class ProjProjectTemplatesController extends ProjProjectMyController {
 	protected FlexiFiltersTab getInitialTab() {
 		return tabAll;
 	}
+	
+	@Override
+	protected String getTitleIconCss() {
+		return null;
+	}
 
 	@Override
 	protected String getTitleI18n() {

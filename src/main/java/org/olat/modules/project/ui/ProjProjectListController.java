@@ -207,6 +207,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 	}
 	
+	protected abstract String getTitleIconCss();
+	
 	protected abstract String getTitleI18n();
 
 	protected abstract boolean isCreateProjectEnabled();
@@ -253,6 +255,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("project.info");
 		setFormInfoHelp("manual_user/area_modules/Project_Overview/");
+		flc.contextPut("titleIconCss", getTitleIconCss());
 		flc.contextPut("titleI18n", getTitleI18n());
 		
 		if (canCreateProject) {

@@ -1048,16 +1048,23 @@ function o_ainvoke(r) {
 	}
 	
 	if(o_info.latexit) {
+		function o_alatexit() {
+			if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
+					MathJax.typeset();
+			} else {
+				o_mathjax();
+			}
+		}
+		
 		setTimeout(() => {
 			try {
-				if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
-					o_info.latexit = false;
-					window.MathJax.typeset();
-				} else {
-					o_mathjax();
-				}
+				o_alatexit();
 			} catch(e) {
 				if (window.console) console.log("error MathJax: ", e);
+				
+				setTimeout(() => {
+					o_alatexit();
+				},100);
 			}
 		});
 	}
@@ -1076,6 +1083,7 @@ function o_ainvoke(r) {
 	BDebugger.logGlobalOLATObjects();
 */
 }
+
 /**
  * Method to remove the ajax-busy stuff and let the user click links again. This
  * should only be called from the ajax iframe onload method to make sure the UI

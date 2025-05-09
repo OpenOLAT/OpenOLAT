@@ -117,7 +117,7 @@ public class FormExportResource implements MediaResource {
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			if (excelExport != null) {
-				excelExport.export(zout, "/");
+				excelExport.export(zout, "");
 			}
 			
 			List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
