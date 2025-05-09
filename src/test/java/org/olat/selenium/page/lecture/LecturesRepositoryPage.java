@@ -23,6 +23,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -41,6 +42,10 @@ public class LecturesRepositoryPage {
 	}
 	
 	public TeacherRollCallPage openRollCall(String lectureBlockTitle) {
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTableRight(By.cssSelector(".o_table_wrapper .o_scrollable_wrapper .o_scrollable"), browser);
+		}
+		
 		By selectBy = By.xpath("//table//tr[td[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'details')]");
 		OOGraphene.waitElement(selectBy, browser).click();
 		return new TeacherRollCallPage(browser)
