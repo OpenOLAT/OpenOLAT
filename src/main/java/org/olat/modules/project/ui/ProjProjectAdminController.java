@@ -48,6 +48,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	}
 
 	@Override
+	protected String getTitleIconCss() {
+		return null;
+	}
+
+	@Override
 	protected String getTitleI18n() {
 		return "segment.admin";
 	}
