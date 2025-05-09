@@ -161,4 +161,80 @@ public class CoursePlannerTest extends Deployments {
 			.assertOnLearnPathNodeDone("Participant list");
 	}
 
+	
+	/**
+	 * A curriculum manager creates a curriculum, an element with a type
+	 * single course implementation. The status of the element is set to
+	 * provisional. It add a participant to the element.<br>
+	 * The participant logs in and goes in "My courses", in scope
+	 * "In preparation" to read some details about the future course.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createImplementationInPreparation()
+	throws IOException, URISyntaxException {
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Salim");
+		
+		UserVO manager = new UserRestClient(deploymentUrl).createCurriculumManager("Sammy");
+		String typeName = "Single course impl.";
+		CurriculumElementTypeVO type = new CurriculumRestClient(deploymentUrl)
+				.createSingleCourseImplementationType(typeName, "C-CUR-2");
+		
+		LoginPage managerLoginPage = LoginPage.load(browser, deploymentUrl);
+		managerLoginPage
+			.loginAs(manager.getLogin(), manager.getPassword());
+		NavigationPage navBar = NavigationPage.load(browser);
+
+		CoursePlannerPage coursePlannerPage = navBar
+			.openCoursePlanner();
+		
+		String id = UUID.randomUUID().toString();
+		String curriculumName = "Curriculum 2 " + id;
+		String curriculumRef = "CUR-2 " + id;
+		CurriculumPage curriculumPage = coursePlannerPage
+			.openCurriculumBrowser()
+			.addCurriculum(curriculumName, curriculumRef)
+			.assertOnCurriculumInTable(curriculumName)
+			.openCurriculum(curriculumName);
+
+		String eid = UUID.randomUUID().toString();
+		String elementName = "Element preparation 1 " + eid;
+		String elementIdentifier = "PREP-1 " + eid;
+		CurriculumComposerPage curriculumComposer = curriculumPage
+			.openImplementationsTab()
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
+			.assertOnCurriculumElementInTable(elementName);
+		
+		CurriculumElementPage courseElementPage = curriculumComposer
+			.selectCurriculumElementInTable(elementName)
+			.assertOnImplementationDetails();
+		
+		// Add a member
+		CurriculumElementMembersPage elementMembersPage = courseElementPage
+			.openMembersTab();
+		elementMembersPage
+			.addMember()
+			.searchMember(participant, true)
+			.membership(ConfirmationMembershipEnum.WITHOUT)
+			.confirmation(participant)
+			.notification();
+		elementMembersPage
+			.assertOnMemberInList(participant);
+		
+		courseElementPage
+			.changeStatus(CurriculumElementStatus.provisional);
+		
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		NavigationPage.load(browser)
+			.openMyCourses()
+			.openInPreparation()
+			.assertOnCurriculumElementInList(elementName)
+			.more(elementName)
+			.assertOnCurriculumElementDetails(elementName);
+	}
 }

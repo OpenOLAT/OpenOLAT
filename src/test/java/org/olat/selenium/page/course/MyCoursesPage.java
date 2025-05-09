@@ -50,6 +50,20 @@ public class MyCoursesPage {
 		return this;
 	}
 	
+	public MyCoursesPage assertOnCurriculumElementInList(String title) {
+		title = Formatter.truncateOnly(title, 55);
+		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+		OOGraphene.waitElement(titleBy, browser);
+		return this;
+	}
+	
+	public MyCoursesPage assertOnCurriculumElementDetails(String title) {
+		title = Formatter.truncateOnly(title, 55);
+		By titleBy = By.xpath("//div[@class='o_curriculum_element_infos']//div[contains(@class,'o_curriculum_element_infos_header')]//h2[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(titleBy, browser);
+		return this;
+	}
+	
 	public MyCoursesPage openSearch() {
 		By searchBy = By.className("o_sel_mycourses_search");
 		browser.findElement(searchBy).click();
@@ -91,18 +105,26 @@ public class MyCoursesPage {
 	 * "My course" list.
 	 * 
 	 * @param title
-	 * @return
+	 * @return Itself
 	 */
 	public MyCoursesPage select(String title) {
-		try {
-			title = Formatter.truncateOnly(title, 55);
-			By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
-			OOGraphene.waitElement(titleBy, browser).click();
-			OOGraphene.waitBusy(browser);
-		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Select in my courses", browser);
-			throw e;
-		}
+		title = Formatter.truncateOnly(title, 55);
+		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+		OOGraphene.waitElement(titleBy, browser).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Show more informations
+	 * 
+	 * @param title Title of the course or curriculum element
+	 * @return Itself
+	 */
+	public MyCoursesPage more(String title) {
+		title = Formatter.truncateOnly(title, 55);
+		By titleBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h4/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_details')][i[contains(@class,'o_icon_details')]]");
+		OOGraphene.waitElement(titleBy, browser).click();
 		return this;
 	}
 	
