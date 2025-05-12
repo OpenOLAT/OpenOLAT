@@ -34,8 +34,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.olat.core.logging.Tracing;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.test.ArquillianDeployments;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -43,7 +45,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
@@ -133,7 +134,14 @@ public class Deployments {
 			return drivers.get(0);
 		}
 		
-		WebDriver driver = createWebDriver(id);
+		WebDriver driver = null;
+		try {
+			driver = createWebDriver(id);
+		} catch (SessionNotCreatedException e) {
+			log.error("Cannot create a session. Try again.", e);
+			OOGraphene.waitingLong();
+			driver = createWebDriver(id);
+		}
 		drivers.add(driver);
 		driver.manage().window().setSize(new Dimension(1024,800));
 		// startDevTools(driver);
@@ -152,9 +160,10 @@ public class Deployments {
 			driver = new EdgeDriver(options);
 		} else if("firefox".equals(browser)) {
 			FirefoxOptions options = new FirefoxOptions();
-			options.setLogLevel(FirefoxDriverLogLevel.TRACE);
+			//options.setLogLevel(FirefoxDriverLogLevel.TRACE);
 			options.enableBiDi();
 			options.setCapability("moz:debuggerAddress", false);
+			options.setCapability("webSocketUrl", true);
 		    options.addPreference("remote.active-protocols", 1);
 		    
 			FirefoxProfile profile = new FirefoxProfile();
