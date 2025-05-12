@@ -446,7 +446,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block) {
-		return copyLectureBlock(block, newTitle, null, block.getStartDate(), block.getEndDate(),
+		return copyLectureBlock(block, newTitle, block.getExternalRef(), block.getStartDate(), block.getEndDate(),
 				block.getEntry(), block.getCurriculumElement());
 	}
 

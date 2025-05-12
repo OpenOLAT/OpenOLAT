@@ -36,6 +36,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.commons.calendar.CalendarModule;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -219,6 +220,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FormLink allLevelsButton;
 	private FormLink thisLevelButton;
 	private FormLink addLectureButton;
+	private FormLink copyLecturesButton;
 	private FormLink deleteLecturesButton;
 	private FormLink importLecturesButton;
 	private FormLink allTeachersButton;
@@ -278,6 +280,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final LectureListRepositoryConfig config;
 	private final IdentityComparator identityComparator;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -416,6 +420,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 				addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
 			}
+			copyLecturesButton = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			
@@ -561,6 +566,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, config.getPrefsId());
 		tableEl.addBatchButton(manageTeachersButton);
+		tableEl.addBatchButton(copyLecturesButton);
 		tableEl.addBatchButton(deleteLecturesButton);
 		
 		initFilters();
@@ -1223,6 +1229,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doConfirmBulkDelete(ureq);
 		} else if(manageTeachersButton == source) {
 			doBulkManageTeachers(ureq);
+		} else if(copyLecturesButton == source) {
+			doBulkCopy(ureq);
 		} else if(importLecturesButton == source) {
 			doImportLecturesBlock(ureq);
 		} else if(allLevelsButton == source) {
@@ -1582,6 +1590,31 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			for(Identity teacher:importedBlock.getTeachers()) {
 				lectureService.addTeacher(lectureBlock, teacher);
 			}
+		}
+	}
+	
+	private void doBulkCopy(UserRequest ureq) {
+		int count = 0;
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		for(Integer selectedIndex:selectedIndexes) {
+			LectureBlockRow row = tableModel.getObject(selectedIndex.intValue());
+			if(row != null) {
+				LectureBlock block = lectureService.getLectureBlock(row);
+				String newTitle = translate("lecture.block.copy", block.getTitle());
+				lectureService.copyLectureBlock(newTitle, block);
+				dbInstance.commitAndCloseSession();
+				count++;
+			}
+		}
+		
+		loadModel(ureq);
+		
+		if(count == 1) {
+			showInfo("lecture.block.copied");
+		} else if(count > 1) {
+			showInfo("lecture.block.copied.plural", Integer.toString(count));
+		} else {
+			showWarning("error.atleastone.lecture");
 		}
 	}
 	
