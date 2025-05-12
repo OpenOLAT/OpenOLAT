@@ -68,7 +68,19 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 	
 	public static final String getStatusString(LectureBlock block, Translator trans) {
 		LectureBlockVirtualStatus vStatus = calculateStatus(block);
-		return vStatus == null ? null: trans.translate(vStatus.name());
+		return vStatus == null ? null: trans.translate(vStatus.name().toLowerCase());
+	}
+	
+	public static final String getSmallStatus(String type, LectureBlock block, Translator trans) {
+		LectureBlockVirtualStatus vStatus = calculateStatus(block);
+		StringBuilder sb = new StringBuilder();
+		if(vStatus != null) {
+			String statusName = vStatus.name().toLowerCase();
+			sb.append("<span class=\"").append(type).append(" o_lecture_status_")
+			  .append(statusName).append("\">").append(trans.translate(statusName + ".small"))
+			  .append("</span>");
+		}
+		return sb.toString();
 	}
 	
 	private static final void getStatus(StringOutput target, String type, LectureBlock block, boolean nextScheduled, Translator trans) {
@@ -81,7 +93,8 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 				statusName = vStatus.name().toLowerCase();
 			}
 			target.append("<span class=\"").append(type).append(" o_lecture_status_")
-			      .append(statusName).append("\">").append(trans.translate(statusName))
+			      .append(statusName).append("\" title=\"").append(trans.translate(statusName))
+			      .append("\">").append(trans.translate(statusName))
 			      .append("</span>");
 		}
 	}

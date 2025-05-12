@@ -164,7 +164,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			if(jsdcc.isSecondDate() && jsdcc.isSameDay()) {
 				String separator;
 				if(jsdcc.getSeparator() != null) {
-					separator = translator.translate(jsdcc.getSeparator());
+					if(jsdcc.isSeparatorTranslated()) {
+						separator = jsdcc.getSeparator();
+					} else {
+						separator = translator.translate(jsdcc.getSeparator());
+					}
 				} else {
 					separator = " - ";
 				}
@@ -179,7 +183,9 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			String separatorId = null;
 			if(jsdcc.getSeparator() != null) {
 				separatorId = receiverId + "_sep";
-				renderSeparator(sb, separatorId, translator.translate(jsdcc.getSeparator()));
+				String separator = jsdcc.isSeparatorTranslated()
+						? jsdcc.getSeparator() : translator.translate(jsdcc.getSeparator());
+				renderSeparator(sb, separatorId, separator);
 			}
 			sb.append("<div class=\"o_date_bloc\">");
 			if(!jsdcc.isTimeOnlyEnabled() || jsdcc.isTimeOnlyEnabled()) {

@@ -45,24 +45,23 @@ import org.olat.core.util.Util;
  */
 public class FlexiFilterDateRangeController extends FormBasicController {
 	
-	private DateChooser startEl;
-	private DateChooser endEl;
+	private DateChooser rangeEl;
 	private FormLink clearButton;
 	private FormLink updateButton;
 
 	private final FlexiTableDateRangeFilter filter;
 	private final boolean timeEnabled;
-	private final String startLabel;
-	private final String endLabel;
+	private final String dateLabel;
+	private final String separator;
 	private final DateRange initialDateRange;
 
 	public FlexiFilterDateRangeController(UserRequest ureq, WindowControl wControl, FlexiTableDateRangeFilter filter,
-			boolean timeEnabled, String startLabel, String endLabel, DateRange initialDateRange) {
-		super(ureq, wControl, "date_range", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+			boolean timeEnabled, String dateLabel, String separator, DateRange initialDateRange) {
+		super(ureq, wControl, LAYOUT_VERTICAL, Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
 		this.timeEnabled = timeEnabled;
-		this.startLabel = startLabel;
-		this.endLabel = endLabel;
+		this.dateLabel = dateLabel;
+		this.separator = separator;
 		this.initialDateRange = initialDateRange;
 		
 		initForm(ureq);
@@ -75,20 +74,20 @@ public class FlexiFilterDateRangeController extends FormBasicController {
 		formLayout.add("dates", datesCont);
 		
 		Date start = initialDateRange != null? initialDateRange.getStart(): null;
-		startEl = uifactory.addDateChooser("start", null, start, datesCont);
-		startEl.showLabel(true);
-		startEl.setLabel(startLabel, null, false);
-		startEl.setDateChooserTimeEnabled(timeEnabled);
-		
 		Date end = initialDateRange != null? initialDateRange.getEnd(): null;
-		endEl = uifactory.addDateChooser("end", null, end, datesCont);
-		endEl.showLabel(true);
-		endEl.setLabel(endLabel, null, false);
-		endEl.setDateChooserTimeEnabled(timeEnabled);
+		rangeEl = uifactory.addDateChooser("start", null, start, datesCont);
+		rangeEl.setElementCssClass("o_date_scope_range");
+		rangeEl.showLabel(true);
+		rangeEl.setLabel(dateLabel, null, false);
+		rangeEl.setDateChooserTimeEnabled(timeEnabled);
+		rangeEl.setSecondDate(true);
+		rangeEl.setSecondDate(end);
+		rangeEl.setSeparator(separator, true);
 		
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		updateButton = uifactory.addFormLink("update", buttonsCont, Link.BUTTON_SMALL);
 		updateButton.setElementCssClass("o_sel_flexiql_update");
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
+		clearButton = uifactory.addFormLink("clear", buttonsCont, Link.LINK);
 		clearButton.setElementCssClass("o_filter_clear");
 	}
 	
@@ -104,7 +103,7 @@ public class FlexiFilterDateRangeController extends FormBasicController {
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if (source == clearButton || source == startEl || source == endEl) {
+		if (source == clearButton || source == rangeEl) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
 	}
@@ -120,10 +119,10 @@ public class FlexiFilterDateRangeController extends FormBasicController {
 	}
 	
 	private void doUpdate(UserRequest ureq) {
-		if(startEl.getDate() != null || endEl.getDate() != null) {
+		if(rangeEl.getDate() != null || rangeEl.getSecondDate() != null) {
 			DateRange dateRange = new DateRange();
-			dateRange.setStart(startEl.getDate());
-			dateRange.setEnd(endEl.getDate());
+			dateRange.setStart(rangeEl.getDate());
+			dateRange.setEnd(rangeEl.getSecondDate());
 			String value = FlexiTableDateRangeFilter.toString(dateRange);
 			fireEvent(ureq, new ChangeValueEvent(filter, value));
 		} else {
@@ -132,8 +131,8 @@ public class FlexiFilterDateRangeController extends FormBasicController {
 	}
 	
 	private void doClear(UserRequest ureq) {
-		startEl.setValue(null);
-		endEl.setValue(null);
+		rangeEl.setDate(null);
+		rangeEl.setSecondDate(null);
 		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}
 
