@@ -37,13 +37,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OrganisationStructureCalloutController extends BasicController {
 
 	private final VelocityContainer vc;
+	private final boolean collapseUnrelated;
 
 	@Autowired
 	private OrganisationService organisationService;
 
 	public OrganisationStructureCalloutController(UserRequest ureq, WindowControl wControl,
-												  List<Organisation> activeOrganisations) {
+												  List<Organisation> activeOrganisations, boolean collapseUnrelated) {
 		super(ureq, wControl);
+		this.collapseUnrelated = collapseUnrelated;
 		vc = createVelocityContainer("org_structure");
 		buildAndShowTree(activeOrganisations);
 		putInitialPanel(vc);
@@ -60,18 +62,33 @@ public class OrganisationStructureCalloutController extends BasicController {
 		List<OrgNode> roots = new ArrayList<>();
 		for (OrgNode node : map.values()) {
 			Organisation o = node.getOrganisation();
-			if (o.getParent() != null && map.containsKey(o.getParent().getKey())) {
-				map.get(o.getParent().getKey()).getChildren().add(node);
+			if (o.getParent() != null
+					&& map.containsKey(o.getParent().getKey())) {
+				OrgNode parentNode = map.get(o.getParent().getKey());
+				parentNode.getChildren().add(node);
+				node.setParent(parentNode);
 			} else {
 				roots.add(node);
 			}
 		}
-		// Mark the “active” org
-		if (activeOrgs != null) {
-			for (Organisation o : activeOrgs) {
-				OrgNode node = map.get(o.getKey());
-				if (node != null) {
-					node.setActive(true);
+
+		for (Organisation act : activeOrgs) {
+			OrgNode n = map.get(act.getKey());
+			if (n != null) {
+				n.setActive(true);
+			}
+		}
+
+		if (collapseUnrelated) {
+			for (OrgNode n : map.values()) {
+				n.setExpanded(false);
+			}
+
+			for (Organisation act : activeOrgs) {
+				OrgNode leaf = map.get(act.getKey());
+				while (leaf != null) {
+					leaf.setExpanded(true);
+					leaf = leaf.getParent();
 				}
 			}
 		}
@@ -87,6 +104,8 @@ public class OrganisationStructureCalloutController extends BasicController {
 	public static class OrgNode {
 		private final Organisation organisation;
 		private final List<OrgNode> children = new ArrayList<>();
+		private boolean expanded = true;
+		private OrgNode parent;
 		private boolean active;
 
 		public OrgNode(Organisation organisation) {
@@ -97,5 +116,19 @@ public class OrganisationStructureCalloutController extends BasicController {
 		public List<OrgNode> getChildren() { return children; }
 		public boolean isActive() { return active; }
 		public void setActive(boolean active) { this.active = active; }
+		public void setExpanded(boolean expanded) {
+			this.expanded = expanded;
+		}
+		public boolean isExpanded() {
+			return expanded;
+		}
+
+		public OrgNode getParent() {
+			return parent;
+		}
+
+		public void setParent(OrgNode parent) {
+			this.parent = parent;
+		}
 	}
 }

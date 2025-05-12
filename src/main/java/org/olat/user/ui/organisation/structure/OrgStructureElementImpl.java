@@ -55,6 +55,8 @@ public class OrgStructureElementImpl extends FormItemImpl
 	private final FormLink button;
 	private List<Organisation> activeOrganisations;
 
+	private boolean collapseUnrelated = false;
+
 	private OrganisationStructureCalloutController treeCtrl;
 	private CloseableCalloutWindowController popupCtrl;
 
@@ -81,6 +83,10 @@ public class OrgStructureElementImpl extends FormItemImpl
 		this.activeOrganisations = new ArrayList<>(organisations);
 	}
 
+	@Override
+	public void setCollapseUnrelatedBranches(boolean collapse) {
+		this.collapseUnrelated = collapse;
+	}
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
@@ -96,7 +102,7 @@ public class OrgStructureElementImpl extends FormItemImpl
 	}
 
 	private void doOpenTree(UserRequest ureq) {
-		treeCtrl = new OrganisationStructureCalloutController(ureq, wControl, activeOrganisations);
+		treeCtrl = new OrganisationStructureCalloutController(ureq, wControl, activeOrganisations, collapseUnrelated);
 		treeCtrl.addControllerListener(this);
 
 		CalloutSettings settings = new CalloutSettings(true,

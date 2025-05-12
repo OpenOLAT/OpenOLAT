@@ -37,4 +37,11 @@ public interface OrgStructureElement extends FormItem {
 	 * @param organisations the nodes to mark active
 	 */
 	void setActiveOrganisations(List<Organisation> organisations);
+
+	/**
+	 * Control whether only the path to active organisations is expanded.
+	 * If true, all other branches start closed.
+	 */
+	void setCollapseUnrelatedBranches(boolean collapse);
+
 }

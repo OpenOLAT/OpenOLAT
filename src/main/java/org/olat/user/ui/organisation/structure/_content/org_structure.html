@@ -1,41 +1,35 @@
-#macro(renderNode $node)
-    <li>
-        #if($node.children && $node.children.size() > 0)
-            #if($node.active)
-                <i class="o_icon o_icon-fw o_icon_selected_dot o_tree_toggle"
-                   onclick="
-                         var $li = jQuery(this).closest('li');
-                         var $sub = $li.children('ul').first();
-                         $sub.toggle();
-                         $li.toggleClass('collapsed');
-                         var $icon = jQuery(this);
-                         $icon.toggleClass('o_icon_caret o_icon_caret_right');
-                         return false;
-                       "></i>
-            #else
-                <i class="o_icon o_icon-fw o_icon_caret o_tree_toggle"
-                   onclick="
-                         var $li = jQuery(this).closest('li');
-                         var $sub = $li.children('ul').first();
-                         $sub.toggle();
-                         $li.toggleClass('collapsed');
-                         var $icon = jQuery(this);
-                         $icon.toggleClass('o_icon_caret o_icon_caret_right');
-                         return false;
-                       "></i>
-            #end
+#macro(treeIcon $node)
+    #set( $hasKids    = $node.children && $node.children.size() > 0 )
+    #set( $isActive   = $node.active )
+    #set( $isExpanded = $node.expanded )
+
+    #if( $hasKids )
+        #if( $isActive )
+            #set( $iconClass = 'o_icon_selected_dot' )
+        #elseif( $isExpanded )
+            #set( $iconClass = 'o_icon_caret' )
         #else
-            #if($node.active)
-                <i class="o_icon o_icon-fw o_icon_selected_dot"></i>
-            #else
-                <span class="o_tree_spacer"></span>
-            #end
+            #set( $iconClass = 'o_icon_caret_right' )
         #end
+        <i class="o_icon o_icon-fw ${iconClass} o_tree_toggle"
+           onclick="toggleTreeNode(this); return false;"></i>
+    #else
+        #if( $isActive )
+            <i class="o_icon o_icon-fw o_icon_selected_dot"></i>
+        #else
+            <span class="o_tree_spacer"></span>
+        #end
+    #end
+#end
+
+#macro(renderNode $node)
+    <li #if(!$node.expanded)class="collapsed"#end>
+        #treeIcon($node)
 
         $!{node.organisation.displayName}
 
         #if($node.children && $node.children.size() > 0)
-            <ul>
+            <ul #if(!$node.expanded)style="display:none;"#end>
                 #foreach($c in $node.children)
                     #renderNode($c)
                 #end
@@ -55,3 +49,20 @@
         #end
     </ul>
 </div>
+
+<script>
+    function toggleTreeNode(iconEl) {
+        var $li   = jQuery(iconEl).closest('li'),
+            $sub  = $li.children('ul').first(),
+            $icon = jQuery(iconEl);
+
+        $sub.toggle();
+        $li.toggleClass('collapsed');
+
+        if ($sub.is(':visible')) {
+            $icon.removeClass('o_icon_caret_right').addClass('o_icon_caret');
+        } else {
+            $icon.removeClass('o_icon_caret').addClass('o_icon_caret_right');
+        }
+    }
+</script>

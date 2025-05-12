@@ -272,11 +272,17 @@ public class OrganisationDAO {
 		  .append(" inner join fetch ident.user user")
 		  .append(" where org.key=:organisationKey");
 		createUserPropertiesQueryPart(sb, params.getSearchString(), params.getUserProperties());
+		if(params.getIdentityKey() != null) {
+			sb.append(" and ident.key=:identityKey");
+		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("organisationKey", organisation.getKey());
 		createUserPropertiesQueryParameters(query, params.getSearchString());
+		if(params.getIdentityKey() != null) {
+			query.setParameter("identityKey", params.getIdentityKey());
+		}
 		
 		List<Object[]> objects = query.getResultList();
 		List<OrganisationMember> members = new ArrayList<>(objects.size());
