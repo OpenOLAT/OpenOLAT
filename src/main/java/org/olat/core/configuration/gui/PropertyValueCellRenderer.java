@@ -21,6 +21,7 @@ package org.olat.core.configuration.gui;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.olat.core.configuration.model.ConfigurationPropertiesContentRow;
 import org.olat.core.configuration.model.OlatPropertiesTableContentRow;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -40,20 +41,33 @@ import org.olat.core.util.StringHelper;
 public class PropertyValueCellRenderer implements FlexiCellRenderer{
 	
 	private static final String[] protectedKeys = {
+		"azure.adfs.client.secret",
 		"db.pass",
 		"instanceIdentifyer",
 		"ldap.trustStorePwd",
+		"mediasite.enterprise.secret",				
+		"minimalhome.ext.password",	
+		"oauth.datenlotsen.client.secret",				
+		"oauth.keycloak.client.secret",		
 		"onlyoffice.jwt.secret",
 		"opencast.api.password",
+		"opencast.lti.secret",				
 		"paypal.security.password",
+		"paypal.checkout.v2.client.secret",				
+		"performx.server.password",
 		"secret_key",
 		"smtp.pwd",
+		"switch.eduid.client.secret",		
 		"vc.adobe.adminpassword",
+		"vc.bigbluebutton.shared.secret",			
+		"vc.bigbluebutton.secret",			
 		"vc.openmeetings.adminpassword",
+		"vc.teams.api.secret",		
 		"vc.vitero.adminpassword",
 		"websms.password"
 	};
-
+	
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 		URLBuilder ubu, Translator translator) {
@@ -66,9 +80,9 @@ public class PropertyValueCellRenderer implements FlexiCellRenderer{
 					
 					if (StringHelper.containsNonWhitespace((String)cellValue)) {
 						if(Arrays.asList(protectedKeys).stream().anyMatch(contentRow.getPropertyKey()::contains)) {
-							target.append("*****");
+							renderSecret(target, (String)cellValue);
 						} else {
-							target.append("<div class=\"o_admin_property_table_column\">").append((String)cellValue).append("</div>");
+							renderRegulat(target, (String)cellValue);
 						}
 					}
 				} else {
@@ -82,9 +96,9 @@ public class PropertyValueCellRenderer implements FlexiCellRenderer{
 					
 					if (StringHelper.containsNonWhitespace((String)cellValue)) {
 						if(Arrays.asList(protectedKeys).stream().anyMatch(contentRow.getKey()::contains)) {
-							target.append("*****");
+							renderSecret(target, (String)cellValue);
 						} else {
-							target.append("<div class=\"o_admin_property_table_column\">").append((String)cellValue).append("</div>");
+							renderRegulat(target, (String)cellValue);
 						}
 					}
 				} else {
@@ -92,6 +106,14 @@ public class PropertyValueCellRenderer implements FlexiCellRenderer{
 				}
 			}
 		}
+	}
+	
+	private void renderSecret(StringOutput target, String secret) {
+		// give the smallest possible hint. For security extremists this might already be too much..
+		target.append(StringUtils.left(secret, 1)).append("************");		
+	}
+	private void renderRegulat(StringOutput target, String secret) {
+		target.append("<div class=\"o_admin_property_table_column\">").append(secret).append("</div>");
 	}
 }
 
