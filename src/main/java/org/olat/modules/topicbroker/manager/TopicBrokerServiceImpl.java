@@ -650,24 +650,30 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		
 		VFSLeaf topicLeaf = getTopicLeaf(reloadedTopic, identifier);
 		String filenameBefore = null;
+		long sizeBefore = 0L;
 		if (topicLeaf != null) {
 			filenameBefore = topicLeaf.getName();
+			sizeBefore = topicLeaf.getSize();
 		}
 		
 		tbStorage.storeTopicLeaf(reloadedTopic, identifier, doer, file, filename);
 		
 		topicLeaf = getTopicLeaf(reloadedTopic, identifier);
 		String filenameAfter = null;
+		long sizeAfter = 0L;
 		if (topicLeaf != null) {
 			filenameAfter = topicLeaf.getName();
+			sizeAfter = topicLeaf.getSize();
 		}
 		
-		String before = StringHelper.containsNonWhitespace(filenameBefore)
-				? TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameBefore))
-				: null;
-		String after = TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameAfter));
-		
-		auditLogDao.create(TBAuditLog.Action.topicUpdateFile, before, after, doer, reloadedTopic);
+		if (!Objects.equals(filenameBefore, filenameAfter) || sizeBefore != sizeAfter) {
+			String before = StringHelper.containsNonWhitespace(filenameBefore)
+					? TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameBefore))
+					: null;
+			String after = TopicBrokerXStream.toXml(new TBAuditLog.TBFileAuditLog(identifier, filenameAfter));
+			
+			auditLogDao.create(TBAuditLog.Action.topicUpdateFile, before, after, doer, reloadedTopic);
+		}
 		
 		return topicLeaf;
 	}
@@ -844,11 +850,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public void createOrUpdateCustomField(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic,
 			String text) {
-		createOrUpdateCustomField(doer, definition, topic, text, null, null);
+		createOrUpdateCustomField(doer, definition, topic, text, null, null, false);
 	}
 	
 	private void createOrUpdateCustomField(Identity doer, TBCustomFieldDefinitionRef definition, TBTopicRef topic,
-			String text, VFSMetadata vfsMetadata, String filename) {
+			String text, VFSMetadata vfsMetadata, String filename, boolean fileSizeChanged) {
 		TBCustomFieldDefinition reloadedDefinition = getCustomFieldDefinition(definition);
 		if (reloadedDefinition == null) {
 			return;
@@ -873,9 +879,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			reloadedCustomField.setFilename(filename);
 			contentChanged = true;
 		}
+		if (fileSizeChanged) {
+			contentChanged = true;
+		}
 		if (!Objects.equals(reloadedCustomField.getVfsMetadata(), vfsMetadata)) {
 			((TBCustomFieldImpl)reloadedCustomField).setVfsMetadata(vfsMetadata);
-			contentChanged = true;
 		}
 		
 		if (contentChanged) {
@@ -894,9 +902,16 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		if (reloadedCustomField instanceof TBCustomFieldImpl impl) {
 			impl.setVfsMetadata(null);
 		}
+		VFSLeaf topicLeaf = getTopicLeaf(topic, definition.getIdentifier());
+		long sizeBefore = 0L;
+		if (topicLeaf != null) {
+			sizeBefore = topicLeaf.getSize();
+		}
 		
-		VFSLeaf topicLeaf = storeTopicLeaf(doer, topic, definition.getIdentifier(), uploadFile, uploadFileName);
-		createOrUpdateCustomField(doer, definition, topic, null, topicLeaf.getMetaInfo(), uploadFileName);
+		topicLeaf = storeTopicLeaf(doer, topic, definition.getIdentifier(), uploadFile, uploadFileName);
+		long sizeAfter = topicLeaf.getSize();
+		
+		createOrUpdateCustomField(doer, definition, topic, null, topicLeaf.getMetaInfo(), uploadFileName, sizeBefore != sizeAfter);
 	}
 
 	@Override
