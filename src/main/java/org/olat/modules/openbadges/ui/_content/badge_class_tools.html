@@ -1,15 +1,17 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("copy"))
+	<li>$r.render("copy")</li>
+	<li class="divider"></li>
+	#end
 	#if($r.available("createNewVersion"))
 	<li>$r.render("createNewVersion")</li>
 	#end
 	#if($r.available("edit"))
 	<li>$r.render("edit")</li>
 	#end
-	<li>$r.render("delete")</li>
 	#if($r.available("revoke"))
 	<li>$r.render("revoke")</li>
 	#end
-	#if($r.available("copy"))
-	<li>$r.render("copy")</li>
-	#end
+	<li class="divider"></li>
+	<li>$r.render("delete")</li>
 </ul>
