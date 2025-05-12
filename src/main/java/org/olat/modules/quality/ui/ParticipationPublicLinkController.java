@@ -124,7 +124,6 @@ public class ParticipationPublicLinkController extends FormBasicController {
 	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback) {
 		this.dataCollection = dataCollection;
 		this.secCallback = secCallback;
-		
 	}
 
 	@Override
@@ -166,6 +165,9 @@ public class ParticipationPublicLinkController extends FormBasicController {
 		}
 		qualityService.updatePublicParticipationIdentifier(dataCollection, publicParticipationIdentifier);
 		savedPublicParticipationIdentifier = publicParticipationIdentifier;
+		
+		// Update link preview if save button was clicked
+		updateUI();
 	}
 
 }
