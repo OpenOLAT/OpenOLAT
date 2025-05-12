@@ -30,10 +30,19 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class SearchMemberParameters {
-	
+
+	private Long identityKey;
 	private String searchString;
 	private List<UserPropertyHandler> userProperties;
 	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+
 	public String getSearchString() {
 		return searchString;
 	}

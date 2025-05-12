@@ -135,9 +135,7 @@ public class UserRolesController extends FormBasicController {
 		editedRoles.getOrganisations();
 		
 		organisations = new ArrayList<>();
-		for(OrganisationRef organisation: editedRoles.getOrganisations()) {
-			organisations.add(organisationService.getOrganisation(organisation));
-		}
+		loadExplicitOrganisations();
 
 		managerRoles = ureq.getUserSession().getRoles();
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), managerRoles,
@@ -176,12 +174,22 @@ public class UserRolesController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
 
+	/**
+	 * Reload the in-memory list of organisations to exactly those in editedRoles,
+	 * i.e. the ones this identity is explicitly a member of (root)
+	 */
+	private void loadExplicitOrganisations() {
+		organisations = editedRoles.getOrganisations().stream()
+				.map(organisationService::getOrganisation)
+				.toList();
+	}
+
 	private void initFormSimpleRoles(FormItemContainer formLayout) {
-		List<String> roleKeys   = new ArrayList<>();
+		List<String> roleKeys = new ArrayList<>();
 		List<String> roleValues = new ArrayList<>();
 		fillOrderedRoles(roleKeys, roleValues);
 
-		String[] keys   = roleKeys.toArray(new String[0]);
+		String[] keys = roleKeys.toArray(new String[0]);
 		String[] values = roleValues.toArray(new String[0]);
 
 		MultipleSelectionElement rolesEl = uifactory.addCheckboxesDropdown(
@@ -227,8 +235,8 @@ public class UserRolesController extends FormBasicController {
 			affiliationSelectorEl.setMandatory(true);
 			affiliationSelectorEl.setMultipleSelection(true);
 			List<Long> allKeys = affOrgs.stream()
-					            .map(Organisation::getKey)
-					            .toList();
+					.map(Organisation::getKey)
+					.toList();
 			affiliationSelectorEl.setSelection(allKeys);
 			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -238,6 +246,7 @@ public class UserRolesController extends FormBasicController {
 					getWindowControl(),
 					affOrgs
 			);
+			affiliationTreeEl.setCollapseUnrelatedBranches(true);
 		}
 	}
 
@@ -271,7 +280,7 @@ public class UserRolesController extends FormBasicController {
 			rolesCont.contextPut("subOrgGlobalRoleNames", globalRoleNames);
 		}
 
-		for(Organisation organisation:organisations) {
+		for (Organisation organisation : organisations) {
 			initFormRoles(rolesCont, organisation);
 		}
 	}
@@ -298,7 +307,7 @@ public class UserRolesController extends FormBasicController {
 		rolesDD.addActionListener(FormEvent.ONCLICK);
 
 		if (organisations.size() > 1 || !OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
-			rolesDD.setLabel("rightsForm.roles.for", new String[]{ StringHelper.escapeHtml(organisation.getDisplayName()) });
+			rolesDD.setLabel("rightsForm.roles.for", new String[]{StringHelper.escapeHtml(organisation.getDisplayName())});
 		}
 
 		OrganisationMember member = getOrganisationMember(organisation);
@@ -313,10 +322,11 @@ public class UserRolesController extends FormBasicController {
 
 		rolesCont.contextPut("rolesEls", rolesEls);
 
-		uifactory.addOrgStructureElement(
+		OrgStructureElement orgStructureElement = uifactory.addOrgStructureElement(
 				"orgTree_" + currentIndex, formLayout,
 				getWindowControl(), Collections.singletonList(organisation)
 		);
+		orgStructureElement.setCollapseUnrelatedBranches(true);
 	}
 
 	private void fillOrderedRoles(List<String> roleKeys, List<String> roleValues) {
@@ -345,7 +355,9 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private OrganisationMember getOrganisationMember(Organisation organisation) {
-		List<OrganisationMember> members = organisationService.getMembers(organisation, new SearchMemberParameters());
+		SearchMemberParameters searchParams = new SearchMemberParameters();
+		searchParams.setIdentityKey(editedIdentity.getKey());
+		List<OrganisationMember> members = organisationService.getMembers(organisation, searchParams);
 		return members.stream()
 				.filter(m -> m.getIdentity().equals(editedIdentity))
 				.findAny()
@@ -360,7 +372,7 @@ public class UserRolesController extends FormBasicController {
 		RolesByOrganisation byOrg = editedRoles.getRoles(organisation);
 		Set<OrganisationRoles> explicit = Arrays.stream(keys)
 				.map(OrganisationRoles::valueOf)
-				.filter(byOrg::hasRole)
+				.filter(r -> byOrg != null && byOrg.hasRole(r))
 				.collect(Collectors.toSet());
 
 		// inherited roles from parent chain
@@ -489,10 +501,13 @@ public class UserRolesController extends FormBasicController {
 
 
 	private void updateRoles() {
-		if(addToOrganisationButton != null) {
+		editedRoles = securityManager.getRoles(editedIdentity, false);
+		loadExplicitOrganisations();
+
+		if (addToOrganisationButton != null) {
 			rolesCont.remove(addToOrganisationButton);
 		}
-		for(MultipleSelectionElement roleEl:rolesEls) {
+		for (MultipleSelectionElement roleEl : rolesEls) {
 			rolesCont.remove(roleEl);
 		}
 		rolesEls.clear();
@@ -502,13 +517,13 @@ public class UserRolesController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(selectOrganisationCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+		if (selectOrganisationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
 				doAddIdentityToOrganisation(selectOrganisationCtrl.getSelectedOrganisation());
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if (cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -533,12 +548,12 @@ public class UserRolesController extends FormBasicController {
 		}
 
 		int numOfRoles = 0;
-		for(MultipleSelectionElement rolesEl:rolesEls) {
+		for (MultipleSelectionElement rolesEl : rolesEls) {
 			Collection<String> selectedRoles = rolesEl.getSelectedKeys();
 			numOfRoles += selectedRoles.size();
 		}
 
-		if(numOfRoles == 0) {
+		if (numOfRoles == 0) {
 			rolesEls.get(0).setErrorKey("error.roles.atleastone");
 			allOk = false;
 		}
@@ -548,7 +563,7 @@ public class UserRolesController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addToOrganisationButton == source) {
+		if (addToOrganisationButton == source) {
 			doAddToOrganisation(ureq);
 		} else if (source == affiliationSelectorEl) {
 			// get all selected keys
@@ -565,31 +580,31 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void doAddToOrganisation(UserRequest ureq) {
-		if(guardModalController(selectOrganisationCtrl)) return;
-		
+		if (guardModalController(selectOrganisationCtrl)) return;
+
 		List<Organisation> upgradeableToOrganisations = new ArrayList<>(manageableOrganisations);
 		upgradeableToOrganisations.removeAll(organisations);
 		selectOrganisationCtrl = new SelectOrganisationController(ureq, getWindowControl(), upgradeableToOrganisations, editedIdentity);
 		listenTo(selectOrganisationCtrl);
-		
+
 		String title = translate("rightsForm.add.to.organisation");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectOrganisationCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
-		cmc.activate();	
+		cmc.activate();
 	}
 
 	private void doAddIdentityToOrganisation(Organisation organisation) {
 		organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user, getIdentity());
 		dbInstance.commit();
-		organisations = organisationService.getOrganisations(editedIdentity, OrganisationRoles.values());
-		
+		editedRoles = securityManager.getRoles(editedIdentity, false);
+		loadExplicitOrganisations();
 		updateRoles();
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		saveFormData();
-		update();
+		updateRoles();
 	}
 
 	/**
@@ -602,8 +617,8 @@ public class UserRolesController extends FormBasicController {
 	private void saveFormData() {
 		editedRoles = securityManager.getRoles(editedIdentity, false);
 
-		for(MultipleSelectionElement rolesEl:rolesEls) {
-			if(rolesEl.isEnabled()
+		for (MultipleSelectionElement rolesEl : rolesEls) {
+			if (rolesEl.isEnabled()
 					&& rolesEl.getUserObject() instanceof RolesElement rolesElement) {
 				saveOrganisationRolesFormData(rolesElement);
 			}
@@ -658,13 +673,13 @@ public class UserRolesController extends FormBasicController {
 	public record RolesElement(List<String> roleKeys, Organisation organisation,
 							   MultipleSelectionElement rolesDropdown) {
 		public void commit(OrganisationRoles k, List<OrganisationRoles> rolesToAdd, List<OrganisationRoles> rolesToRemove) {
-				if (roleKeys.contains(k.name())) {
-					if (rolesDropdown.isKeySelected(k.name())) {
-						rolesToAdd.add(k);
-					} else {
-						rolesToRemove.add(k);
-					}
+			if (roleKeys.contains(k.name())) {
+				if (rolesDropdown.isKeySelected(k.name())) {
+					rolesToAdd.add(k);
+				} else {
+					rolesToRemove.add(k);
 				}
 			}
+		}
 	}
 }

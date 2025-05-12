@@ -14,9 +14,11 @@
     #end
 
     <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="display: flex; flex-direction: row-reverse;">
-            $r.render("rightsForm.add.to.organisation")
-        </div>
+        #if($r.available("rightsForm.add.to.organisation"))
+            <div style="display: flex; flex-direction: row-reverse;">
+                $r.render("rightsForm.add.to.organisation")
+            </div>
+        #end
 
         #set($idx = 0)
         #foreach($rolesEl in $rolesEls)
