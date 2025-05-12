@@ -87,11 +87,9 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		setFormTitle("admin.assessment.mode.seb.title");
 
 		// configuration
-		SelectionValues trueFalseValues = new SelectionValues();
+		final SelectionValues trueFalseValues = new SelectionValues();
 		trueFalseValues.add(SelectionValues.entry("true", translate("yes")));
 		trueFalseValues.add(SelectionValues.entry("false", translate("no")));
-		
-
 		
 		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -184,8 +182,7 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		blockedRegexEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.blocked.regex", "mode.safeexambrowser.url.filter.blocked.regex",
 				2000, 2, 60, false, false, assessmentModule.getSafeExamBrowserBlockedUrlRegex(), formLayout);
 
-		String hint = null;
-
+		String hint = assessmentModule.getSafeExamBrowserHint();
 		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
 				hint, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		
