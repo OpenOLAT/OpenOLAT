@@ -564,7 +564,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 	
 	private void forgeThumbnail(TBSelectionRow row, TBTopic topic) {
-		VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_IMAGE);
+		VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_IMAGE_DIR);
 		if (topicLeaf != null) {
 			VFSMediaMapper mapper = new VFSMediaMapper(topicLeaf);
 			MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(topic, topicLeaf), mapper, 10);
@@ -573,7 +573,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 	
 	private String getThumbnailMapperId(TBTopic topic, VFSLeaf topicLeaf) {
-		return TopicBrokerService.TOPIC_TEASER_IMAGE + topic.getKey() + "::" + topicLeaf.getLastModified();
+		return TopicBrokerService.TEASER_IMAGE_DIR + topic.getKey() + "::" + topicLeaf.getLastModified();
 	}
 	
 	private void forgeToolsLink(TBSelectionRow row) {

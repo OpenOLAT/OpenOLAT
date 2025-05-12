@@ -89,8 +89,8 @@ public class TBSelectionDetailHeaderController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		VFSLeaf image = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_IMAGE);
-		VFSLeaf video = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_VIDEO);
+		VFSLeaf image = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_IMAGE_DIR);
+		VFSLeaf video = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_VIDEO_DIR);
 		boolean hasThumbnail = image != null || video != null;
 		if (hasThumbnail) {
 			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");

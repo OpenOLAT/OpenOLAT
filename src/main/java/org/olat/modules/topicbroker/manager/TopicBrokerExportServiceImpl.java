@@ -19,6 +19,10 @@
  */
 package org.olat.modules.topicbroker.manager;
 
+import static org.olat.modules.topicbroker.TopicBrokerService.TEASER_IMAGE_DIR;
+import static org.olat.modules.topicbroker.TopicBrokerService.TEASER_VIDEO_DIR;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +38,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.topicbroker.TBBroker;
@@ -64,9 +69,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
-	
-	private static final String EXPORT_TEASER_IMAGE = "teaserimage";
-	private static final String EXPORT_TEASER_VIDEO = "teaservideo";
 	
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -141,9 +143,9 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 		Map<Long, List<String>> topicKeyToCustomFieldTexts = new HashMap<>(topics.size());
 		Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf = new HashMap<>(topics.size());
 		for (TBTopic topic : topics) {
-			VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_IMAGE);
+			VFSLeaf topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_IMAGE_DIR);
 			add(topicIdentToFileIdentToLeaf, topic, EXPORT_TEASER_IMAGE, topicLeaf);
-			topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_VIDEO);
+			topicLeaf = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_VIDEO_DIR);
 			add(topicIdentToFileIdentToLeaf, topic, EXPORT_TEASER_VIDEO, topicLeaf);
 			
 			Map<Long, TBCustomField> definitionKeyToCustomField = topicToDefinitionToCustomFields.get(topic.getKey());
@@ -187,6 +189,8 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				.collect(Collectors.toList());
 		identities.addAll(selectionIdentities);
 		
+		TopicBrokerFilesExport filesExport = new TopicBrokerFilesExport(reloadedBorker, topicIdentToFileIdentToLeaf);
+		
 		TopicBrokerExcelExport excelExport = new TopicBrokerExcelExport(ureq, topics, customFieldNames,
 				topicKeyToCustomFieldTexts, true, true, new ArrayList<>(identities), identityKeyToTopicToSelections);
 		
@@ -206,7 +210,7 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 			topicIdentToExcelExport.put(topic.getIdentifier(), topicExcelExport);
 		}
 		
-		return new TopicBrokerMediaResource(reloadedBorker, topicIdentToFileIdentToLeaf, excelExport, topicIdentToExcelExport);
+		return new TopicBrokerMediaResource(reloadedBorker, filesExport, excelExport, topicIdentToExcelExport);
 	}
 
 	private void add(Map<Long, List<String>> topicKeyToCustomFieldTexts, TBTopic topic, String text) {
@@ -234,9 +238,35 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 				Map.of(), false, true, List.of(), Map.of());
 		return new TopicBrokerExcelMediaResource(excelExport, filename);
 	}
+	
+	@Override
+	public MediaResource createFilesImportTemplateMediaResource(UserRequest ureq, TBBrokerRef broker, String filename) {
+		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
+		definitionSearchParams.setBroker(broker);
+		List<TBCustomFieldDefinition> customFieldDefinitions = topicBrokerService.getCustomFieldDefinitions(definitionSearchParams)
+				.stream()
+				.filter(definition -> TBCustomFieldType.file == definition.getType())
+				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
+				.toList();
+		
+		TBTopicSearchParams searchParams = new TBTopicSearchParams();
+		searchParams.setBroker(broker);
+		List<TBTopic> topics = topicBrokerService.getTopics(searchParams);
+		
+		Map<String, Map<String, VFSLeaf>> topicIdentToFileIdentToLeaf = new HashMap<>(topics.size());
+		for (TBTopic topic : topics) {
+			add(topicIdentToFileIdentToLeaf, topic, EXPORT_TEASER_IMAGE, null);
+			add(topicIdentToFileIdentToLeaf, topic, EXPORT_TEASER_VIDEO, null);
+			
+			customFieldDefinitions.forEach(definition -> add(topicIdentToFileIdentToLeaf, topic, definition.getName(), null));
+		}
+		
+		TopicBrokerFilesExport filesExport = new TopicBrokerFilesExport(broker, topicIdentToFileIdentToLeaf);
+		return new TopicBrokerFilesMediaResource(broker, filesExport, filename);
+	}
 
 	@Override
-	public void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics) {
+	public void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics, File tempFilesDir) {
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setBroker(broker);
 		searchParams.setFetchBroker(true);
@@ -249,22 +279,54 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 			if (!StringHelper.containsNonWhitespace(importTopic.getMessage())) {
 				TBTopic topicImported = importTopic.getTopic();
 				TBTopic topicExisting = identToTopic.get(topicImported.getIdentifier());
-				if (topicExisting == null) {
-					topicExisting = topicBrokerService.createTopic(doer, broker);
-				}
-				topicBrokerService.updateTopic(doer, topicExisting, topicImported.getIdentifier(),
-						topicImported.getTitle(), topicImported.getDescription(), topicImported.getMinParticipants(),
-						topicImported.getMaxParticipants(), topicImported.getGroupRestrictionKeys());
-				orderedIdentificators.add(topicImported.getIdentifier());
 				
-				Map<TBCustomFieldDefinition,String> definitionToValue = importTopic.getCustomFieldDefinitionToValue();
-				if (definitionToValue != null) {
-					for (Entry<TBCustomFieldDefinition, String> entry : definitionToValue.entrySet()) {
-						topicBrokerService.createOrUpdateCustomField(doer, entry.getKey(), topicExisting, entry.getValue());
+				if (!importTopic.isFilesOnly()) {
+					if (topicExisting == null) {
+						topicExisting = topicBrokerService.createTopic(doer, broker);
+					}
+					topicBrokerService.updateTopic(doer, topicExisting, topicImported.getIdentifier(),
+							topicImported.getTitle(), topicImported.getDescription(), topicImported.getMinParticipants(),
+							topicImported.getMaxParticipants(), topicImported.getGroupRestrictionKeys());
+					orderedIdentificators.add(topicImported.getIdentifier());
+					
+					Map<TBCustomFieldDefinition,String> definitionToValue = importTopic.getCustomFieldDefinitionToValue();
+					if (definitionToValue != null) {
+						for (Entry<TBCustomFieldDefinition, String> entry : definitionToValue.entrySet()) {
+							if (TBCustomFieldType.text == entry.getKey().getType()) {
+								topicBrokerService.createOrUpdateCustomField(doer, entry.getKey(), topicExisting, entry.getValue());
+							}
+						}
+					}
+				}
+				
+				if (topicExisting != null && importTopic.getIdentifierToFile() != null && !importTopic.getIdentifierToFile().isEmpty()) {
+					File file = importTopic.getIdentifierToFile().get(EXPORT_TEASER_IMAGE);
+					if (file != null && file.exists()) {
+						topicBrokerService.storeTopicLeaf(doer, topicExisting, TEASER_IMAGE_DIR, file, file.getName());
+					}
+					
+					file = importTopic.getIdentifierToFile().get(EXPORT_TEASER_VIDEO);
+					if (file != null && file.exists()) {
+						topicBrokerService.storeTopicLeaf(doer, topicExisting, TEASER_VIDEO_DIR, file, file.getName());
+					}
+					
+					Map<TBCustomFieldDefinition,String> definitionToValue = importTopic.getCustomFieldDefinitionToValue();
+					if (definitionToValue != null) {
+						for (Entry<TBCustomFieldDefinition, String> entry : definitionToValue.entrySet()) {
+							if (TBCustomFieldType.file == entry.getKey().getType()) {
+								file = importTopic.getIdentifierToFile().get(entry.getKey().getName());
+								if (file != null && file.exists()) {
+									topicBrokerService.createOrUpdateCustomFieldFile(doer, topicExisting, entry.getKey(), file, file.getName());
+								}
+							}
+						}
 					}
 				}
 			}
 		}
+		
+		// clean up
+		FileUtils.deleteDirsAndFiles(tempFilesDir, true, true);
 		
 		topicBrokerService.updateTopicSortOrder(doer, broker, orderedIdentificators);
 	}

@@ -20,9 +20,6 @@
 package org.olat.modules.topicbroker.manager;
 
 import java.io.InputStream;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,33 +29,26 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.io.ShieldOutputStream;
-import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBBrokerRef;
 
 /**
  * 
- * Initial date: 3 Jul 2024<br>
+ * Initial date: 17 Jul 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TopicBrokerMediaResource implements MediaResource {
+public class TopicBrokerFilesMediaResource implements MediaResource {
 	
-	private static final Logger log = Tracing.createLoggerFor(TopicBrokerMediaResource.class);
-	
-	public static final String TOPIC_FILES_PATH = "topic files";
+	private static final Logger log = Tracing.createLoggerFor(TopicBrokerFilesMediaResource.class);
 
-	private final TBBroker broker;
+	private final TBBrokerRef broker;
 	private final TopicBrokerFilesExport filesExport;
+	private final String filename;
 
-	private final TopicBrokerExcelExport excelExport;
-	private final Map<String, TopicBrokerExcelExport> topicIdentToExcelExport;
-
-	public TopicBrokerMediaResource(TBBroker broker, TopicBrokerFilesExport filesExport,
-			TopicBrokerExcelExport excelExport, Map<String, TopicBrokerExcelExport> topicIdentToExcelExport) {
+	public TopicBrokerFilesMediaResource(TBBrokerRef broker, TopicBrokerFilesExport filesExport, String filename) {
 		this.broker = broker;
 		this.filesExport = filesExport;
-		this.excelExport = excelExport;
-		this.topicIdentToExcelExport = topicIdentToExcelExport;
+		this.filename = filename;
 	}
 
 	@Override
@@ -70,7 +60,7 @@ public class TopicBrokerMediaResource implements MediaResource {
 	public boolean acceptRanges() {
 		return false;
 	}
-
+	
 	@Override
 	public String getContentType() {
 		return "application/zip";
@@ -93,43 +83,14 @@ public class TopicBrokerMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		String urlEncodedLabel = StringHelper.urlEncodeUTF8(StringHelper.transformDisplayNameToFileSystemName("topicbroker") + ".zip");
-		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);
-		hres.setHeader("Content-Description", urlEncodedLabel);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));
+		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(filename));
 		
 		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			
-			String filesPath = TOPIC_FILES_PATH + "/";
+			String filesPath = "";
 			filesExport.export(zout, filesPath);
-			
-			String topicsPath = "topic enrollments/";
-			if (topicIdentToExcelExport != null && !topicIdentToExcelExport.isEmpty()) {
-				for (Entry<String, TopicBrokerExcelExport> entry : topicIdentToExcelExport.entrySet()) {
-					TopicBrokerExcelExport topicExcelExport = entry.getValue();
-					if (topicExcelExport != null) {
-						try (ShieldOutputStream sout = new ShieldOutputStream(zout);) {
-							String filename = topicsPath + StringHelper.transformDisplayNameToFileSystemName("enrollments_" + entry.getKey()) + ".xlsx";
-							zout.putNextEntry(new ZipEntry(filename));
-							topicExcelExport.export(sout);
-							zout.closeEntry();
-						} catch(Exception e) {
-							log.error(e);
-						}
-					}
-				}
-			}
-			
-			if (excelExport != null) {
-				try (ShieldOutputStream sout = new ShieldOutputStream(zout);) {
-					zout.putNextEntry(new ZipEntry("topicbroker.xlsx"));
-					excelExport.export(sout);
-					zout.closeEntry();
-				} catch(Exception e) {
-					log.error(e);
-				}
-			}
-			
 		} catch (Exception e) {
 			log.error("Error during export of topic broker (key::{})", broker.getKey(), e);
 		}
@@ -139,5 +100,5 @@ public class TopicBrokerMediaResource implements MediaResource {
 	public void release() {
 		//
 	}
-
+	
 }

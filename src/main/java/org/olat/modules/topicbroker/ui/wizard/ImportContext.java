@@ -19,6 +19,7 @@
  */
 package org.olat.modules.topicbroker.ui.wizard;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.modules.topicbroker.TBBroker;
@@ -36,6 +37,7 @@ public class ImportContext {
 	private final TBBroker broker;
 	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private String input;
+	private File tempFilesDir;
 	private List<TBImportTopic> topics;
 	
 	public ImportContext(TBBroker broker, TBGroupRestrictionCandidates groupRestrictionCandidates) {
@@ -57,6 +59,14 @@ public class ImportContext {
 
 	public void setInput(String input) {
 		this.input = input;
+	}
+
+	public File getTempFilesDir() {
+		return tempFilesDir;
+	}
+
+	public void setTempFilesDir(File tempFilesDir) {
+		this.tempFilesDir = tempFilesDir;
 	}
 
 	public List<TBImportTopic> getTopics() {

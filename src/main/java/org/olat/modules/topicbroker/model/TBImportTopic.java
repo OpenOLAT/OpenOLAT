@@ -19,7 +19,8 @@
  */
 package org.olat.modules.topicbroker.model;
 
-import java.util.List;
+import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
@@ -34,8 +35,9 @@ public final class TBImportTopic {
 	private String maxParticipants;
 	private String groupRestrictions;
 	private TBTopic topic;
-	private List<String> customFieldValues;
-	private Map<TBCustomFieldDefinition, String>  customFieldDefinitionToValue;
+	private Map<TBCustomFieldDefinition, String> customFieldDefinitionToValue;
+	private Map<String, File> identifierToFile;
+	private boolean filesOnly;
 	private String message;
 	
 	public String getIdentifier() {
@@ -94,20 +96,34 @@ public final class TBImportTopic {
 		this.topic = topic;
 	}
 
-	public List<String> getCustomFieldValues() {
-		return customFieldValues;
-	}
-
-	public void setCustomFieldValues(List<String> customFieldValues) {
-		this.customFieldValues = customFieldValues;
-	}
-
 	public Map<TBCustomFieldDefinition, String> getCustomFieldDefinitionToValue() {
 		return customFieldDefinitionToValue;
 	}
+	
+	public void putCustomFieldDefinitionToValue(TBCustomFieldDefinition definition, String value) {
+		if (customFieldDefinitionToValue == null) {
+			customFieldDefinitionToValue = new HashMap<>(2);
+		}
+		customFieldDefinitionToValue.put(definition, value);
+	}
+	
+	public Map<String, File> getIdentifierToFile() {
+		return identifierToFile;
+	}
+	
+	public void putFile(String fileIdentifier, File file) {
+		if (identifierToFile == null) {
+			identifierToFile = new HashMap<>(2);
+		}
+		identifierToFile.put(fileIdentifier, file);
+	}
 
-	public void setCustomFieldDefinitionToValue(Map<TBCustomFieldDefinition, String> customFieldDefinitionToValue) {
-		this.customFieldDefinitionToValue = customFieldDefinitionToValue;
+	public boolean isFilesOnly() {
+		return filesOnly;
+	}
+
+	public void setFilesOnly(boolean filesOnly) {
+		this.filesOnly = filesOnly;
 	}
 
 	public String getMessage() {

@@ -40,8 +40,14 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface TopicBrokerService {
 	
-	public static final String TOPIC_TEASER_IMAGE = "topicteaserimage";
-	public static final String TOPIC_TEASER_VIDEO = "topicteaservideo";
+	public static final String TEASER_IMAGE_DIR = "topicteaserimage";
+	public static final int TEASER_IMAGE_MAX_SIZE_KB = 2048;
+	public static final Set<String> TEASER_IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
+	public static final String TEASER_VIDEO_DIR = "topicteaservideo";
+	public static final int TEASER_VIDEO_MAX_SIZE_KB = 102400;
+	public static final Set<String> TEASER_VIDEO_MIME_TYPES = Set.of("video/mp4");
+	public static final int CUSTOM_FILE_MAX_SIZE_KB = 10240; // 10MB
+	
 	
 	public TBBroker createBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent);
 

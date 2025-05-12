@@ -47,7 +47,8 @@ public class ImportTopicCallback implements StepRunnerCallback {
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		ImportContext importContext = (ImportContext)runContext.get("importContext");
-		topicBrokerExportService.createOrUpdateTopics(doer, importContext.getBroker(), importContext.getTopics());
+		topicBrokerExportService.createOrUpdateTopics(doer, importContext.getBroker(), importContext.getTopics(),
+				importContext.getTempFilesDir());
 		
 		return StepsMainRunController.DONE_MODIFIED;
 	}

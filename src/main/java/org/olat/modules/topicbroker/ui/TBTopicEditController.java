@@ -19,6 +19,12 @@
  */
 package org.olat.modules.topicbroker.ui;
 
+import static org.olat.modules.topicbroker.TopicBrokerService.CUSTOM_FILE_MAX_SIZE_KB;
+import static org.olat.modules.topicbroker.TopicBrokerService.TEASER_IMAGE_MAX_SIZE_KB;
+import static org.olat.modules.topicbroker.TopicBrokerService.TEASER_IMAGE_MIME_TYPES;
+import static org.olat.modules.topicbroker.TopicBrokerService.TEASER_VIDEO_MAX_SIZE_KB;
+import static org.olat.modules.topicbroker.TopicBrokerService.TEASER_VIDEO_MIME_TYPES;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -65,10 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TBTopicEditController extends FormBasicController {
-	
-	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
-	private static final Set<String> VIDEO_MIME_TYPES = Set.of("video/mp4");
-	private static final int CUSTOM_FILE_MAX_SIZE_KB = 10240; // 10MB
 
 	private TextElement identifierEl;
 	private TextElement titleEl;
@@ -175,25 +177,25 @@ public class TBTopicEditController extends FormBasicController {
 		}
 		
 		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "topic.teaser.image", standardCont);
-		teaserImageEl.setMaxUploadSizeKB(2048, null, null);
-		teaserImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
+		teaserImageEl.setMaxUploadSizeKB(TEASER_IMAGE_MAX_SIZE_KB, null, null);
+		teaserImageEl.limitToMimeType(TEASER_IMAGE_MIME_TYPES, "error.mimetype", new String[]{ TEASER_IMAGE_MIME_TYPES.toString()} );
 		teaserImageEl.setReplaceButton(true);
 		teaserImageEl.setDeleteEnabled(true);
 		teaserImageEl.setPreview(ureq.getUserSession(), true);
 		teaserImageEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf teaserImage = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_IMAGE);
+		VFSLeaf teaserImage = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_IMAGE_DIR);
 		if (teaserImage instanceof LocalFileImpl localFile) {
 			teaserImageEl.setInitialFile(localFile.getBasefile());
 		}
 		
 		teaserVideoEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "topic.teaser.video", standardCont);
-		teaserVideoEl.setMaxUploadSizeKB(102400, null, null);
-		teaserVideoEl.limitToMimeType(VIDEO_MIME_TYPES, "error.mimetype", new String[]{ VIDEO_MIME_TYPES.toString()} );
+		teaserVideoEl.setMaxUploadSizeKB(TEASER_VIDEO_MAX_SIZE_KB, null, null);
+		teaserVideoEl.limitToMimeType(TEASER_VIDEO_MIME_TYPES, "error.mimetype", new String[]{ TEASER_VIDEO_MIME_TYPES.toString()} );
 		teaserVideoEl.setReplaceButton(true);
 		teaserVideoEl.setDeleteEnabled(true);
 		teaserVideoEl.setPreview(ureq.getUserSession(), true);
 		teaserVideoEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf teaserVideo = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TOPIC_TEASER_VIDEO);
+		VFSLeaf teaserVideo = topicBrokerService.getTopicLeaf(topic, TopicBrokerService.TEASER_VIDEO_DIR);
 		if (teaserVideo instanceof LocalFileImpl localFile) {
 			teaserVideoEl.setInitialFile(localFile.getBasefile());
 		}
@@ -382,15 +384,15 @@ public class TBTopicEditController extends FormBasicController {
 				Integer.parseInt(maxParticipantsEl.getValue()), groupRestrictionKeys);
 		
 		if (teaserImageEl.getUploadFile() != null) {
-			topicBrokerService.storeTopicLeaf(getIdentity(), topic, TopicBrokerService.TOPIC_TEASER_IMAGE, teaserImageEl.getUploadFile(), teaserImageEl.getUploadFileName());
+			topicBrokerService.storeTopicLeaf(getIdentity(), topic, TopicBrokerService.TEASER_IMAGE_DIR, teaserImageEl.getUploadFile(), teaserImageEl.getUploadFileName());
 		} else if (teaserImageEl.getInitialFile() == null) {
-			topicBrokerService.deleteTopicLeaf(getIdentity(), topic, TopicBrokerService.TOPIC_TEASER_IMAGE);
+			topicBrokerService.deleteTopicLeaf(getIdentity(), topic, TopicBrokerService.TEASER_IMAGE_DIR);
 		}
 		
 		if (teaserVideoEl.getUploadFile() != null) {
-			topicBrokerService.storeTopicLeaf(getIdentity(), topic, TopicBrokerService.TOPIC_TEASER_VIDEO, teaserVideoEl.getUploadFile(), teaserVideoEl.getUploadFileName());
+			topicBrokerService.storeTopicLeaf(getIdentity(), topic, TopicBrokerService.TEASER_VIDEO_DIR, teaserVideoEl.getUploadFile(), teaserVideoEl.getUploadFileName());
 		} else if (teaserVideoEl.getInitialFile() == null) {
-			topicBrokerService.deleteTopicLeaf(getIdentity(), topic, TopicBrokerService.TOPIC_TEASER_VIDEO);
+			topicBrokerService.deleteTopicLeaf(getIdentity(), topic, TopicBrokerService.TEASER_VIDEO_DIR);
 		}
 		
 		if (customTextEls != null) {

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.topicbroker;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -34,6 +35,9 @@ import org.olat.modules.topicbroker.model.TBImportTopic;
  */
 public interface TopicBrokerExportService {
 	
+	static final String EXPORT_TEASER_IMAGE = "teaserimage";
+	static final String EXPORT_TEASER_VIDEO = "teaservideo";
+	
 	void createCustomFieldDefinitions(Identity doer, TBBroker broker, String customFieldDefinitionsXml);
 
 	String getCustomFieldDefinitionExportXml(TBBrokerRef broker);
@@ -42,6 +46,8 @@ public interface TopicBrokerExportService {
 	
 	MediaResource createTopicImportTemplateMediaResource(UserRequest ureq, TBBrokerRef broker, String filename);
 
-	void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics);
+	MediaResource createFilesImportTemplateMediaResource(UserRequest ureq, TBBrokerRef broker, String filename);
+
+	void createOrUpdateTopics(Identity doer, TBBroker broker, List<TBImportTopic> importTopics, File tempFilesDir);
 
 }
