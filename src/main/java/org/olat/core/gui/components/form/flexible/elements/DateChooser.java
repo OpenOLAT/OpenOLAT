@@ -127,13 +127,15 @@ public interface DateChooser extends TextElement {
 	
 	/**
 	 * If time is enabled, and the two dates are on the same day, this option
-	 * allow to only show one date chooser with two times fileds.
+	 * allow to only show one date chooser with two times fields.
 	 * 
 	 * @param sameDay
 	 */
 	public void setSameDay(boolean sameDay);
 	
 	public void setSeparator(String i18nKey);
+	
+	public void setSeparator(String i18nKey, boolean translate);
 
 	/**
 	 * @param errorKey

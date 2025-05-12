@@ -165,6 +165,10 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public String getSeparator() {
 		return element.getSeparator();
 	}
+	
+	public boolean isSeparatorTranslated() {
+		return element.isSeparatorTranslated();
+	}
 
 	public String getExampleDateString() {
 		return element.getExampleDateString();

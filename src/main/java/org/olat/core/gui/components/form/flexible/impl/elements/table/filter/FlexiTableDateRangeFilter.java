@@ -49,17 +49,17 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 	private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
 	private final boolean timeEnabled;
-	private final String startLabel;
-	private final String endLabel;
+	private final String dateLabel;
+	private final String separator;
 	private final Locale locale;
 	private DateRange filterDateRange;
 	
 	public FlexiTableDateRangeFilter(String label, String filter, boolean defaultVisible, boolean timeEnabled,
-			String startLabel, String endLabel, Locale locale) {
+			String dateLabel, String separator, Locale locale) {
 		super(label, filter);
 		this.timeEnabled = timeEnabled;
-		this.startLabel = startLabel;
-		this.endLabel = endLabel;
+		this.dateLabel = dateLabel;
+		this.separator = separator;
 		this.locale = locale;
 		setDefaultVisible(defaultVisible);
 	}
@@ -92,10 +92,10 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 		if (filterDateRange != null) {
 			List<String> values = new ArrayList<>(2);
 			if (filterDateRange.getStart() != null) {
-				values.add(startLabel + ": " + formatDate(filterDateRange.getStart()));
+				values.add(dateLabel + ": " + formatDate(filterDateRange.getStart()));
 			}
 			if (filterDateRange.getEnd() != null) {
-				values.add(endLabel + ": " + formatDate(filterDateRange.getEnd()));
+				values.add(separator + ": " + formatDate(filterDateRange.getEnd()));
 			}
 			if (!values.isEmpty()) {
 				return values;
@@ -125,13 +125,13 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 			}
 			
 			if (dateRange.getStart() != null) {
-				label.append(startLabel).append(": ").append(formatDate(dateRange.getStart()));
+				label.append(dateLabel).append(": ").append(formatDate(dateRange.getStart()));
 			}
 			if (dateRange.getEnd() != null) {
 				if (dateRange.getStart() != null) {
 					label.append(", ");
 				}
-				label.append(endLabel).append(": ").append(formatDate(dateRange.getEnd()));
+				label.append(separator).append(": ").append(formatDate(dateRange.getEnd()));
 			}
 			
 			if(withHtml) {
@@ -158,13 +158,13 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, startLabel, endLabel, filterDateRange);
+		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, dateLabel, separator, filterDateRange);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
 		DateRange dateRange = toDateRange(preselectedValue);
-		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, startLabel, endLabel, dateRange);
+		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, dateLabel, separator, dateRange);
 	}
 
 	private DateRange toDateRange(Object object) {

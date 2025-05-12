@@ -136,6 +136,15 @@ form .o_form, form.o_form {
 			padding-right: 1em;
 		}
 	}
+	.o_date_scope_range .o_date_bloc {
+		.o_first_date {
+			padding-right: 0;
+		}
+		
+		.o_first_ms {
+			padding-left: 1em;
+		}
+	}
 	
 	.has-feedback .o_date_picker .form-control {
 		padding-right: 0;

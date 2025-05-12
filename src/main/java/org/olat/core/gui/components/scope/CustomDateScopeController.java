@@ -60,7 +60,7 @@ public class CustomDateScopeController extends FormBasicController {
 
 	protected CustomDateScopeController(UserRequest ureq, WindowControl wControl, List<DateScope> additionalDateScopes,
 			DateRange initialDateRange, DateRange limit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.additionalDateScopes = additionalDateScopes;
 		this.initialDateRange = initialDateRange;
 		this.limit = limit;
@@ -80,8 +80,8 @@ public class CustomDateScopeController extends FormBasicController {
 		Date to = initialDateRange != null ? initialDateRange.getTo() : null;
 		daterangeEl = uifactory.addDateChooser("date.scope.custom.range", from, formLayout);
 		daterangeEl.setElementCssClass("o_date_scope_range");
+		daterangeEl.setSeparator("to.separator");
 		daterangeEl.setSecondDate(true);
-		daterangeEl.setSeparator("date.scope.custom.separator");
 		daterangeEl.setSecondDate(to);
 		
 		if (additionalDateScopes != null && !additionalDateScopes.isEmpty()) {
@@ -105,7 +105,8 @@ public class CustomDateScopeController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("date.scope.custom.set", buttonsCont);
-		resetLink = uifactory.addFormLink("date.scope.custom.reset", buttonsCont, Link.BUTTON);
+		resetLink = uifactory.addFormLink("date.scope.custom.reset", buttonsCont, Link.LINK);
+		resetLink.setElementCssClass("o_filter_clear");
 	}
 	
 	@Override

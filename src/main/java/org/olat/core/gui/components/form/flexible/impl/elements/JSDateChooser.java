@@ -61,6 +61,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 
 	private Locale locale;
 	private String separatorI18nKey;
+	private boolean separatorTranslated;
 	private boolean timeOnlyEnabled;
 	private boolean dateChooserTimeEnabled;
 	private boolean keepTime;
@@ -395,10 +396,21 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	public String getSeparator() {
 		return separatorI18nKey;
 	}
+	
+	public boolean isSeparatorTranslated() {
+		return separatorTranslated;
+	}
 
 	@Override
 	public void setSeparator(String i18nKey) {
 		separatorI18nKey = i18nKey;
+		separatorTranslated = false;
+	}
+	
+	@Override
+	public void setSeparator(String i18nKey, boolean translate) {
+		separatorI18nKey = i18nKey;
+		separatorTranslated = translate;
 	}
 
 	@Override

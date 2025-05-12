@@ -41,6 +41,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -68,7 +69,8 @@ public class ReferencesController extends BasicController {
 	public ReferencesController(UserRequest ureq, WindowControl wControl, Translator translator,
 			CurriculumElement element) {
 		super(ureq, wControl, Util
-				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), translator));
+				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), Util
+						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale(), translator)));
 		this.elementRow = null;
 		loadReferences(ureq, element);
 	}
@@ -76,7 +78,8 @@ public class ReferencesController extends BasicController {
 	public ReferencesController(UserRequest ureq, WindowControl wControl, Translator translator,
 			CurriculumElementRow elementRow) {
 		super(ureq, wControl, Util
-				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), translator));
+				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), Util
+						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale(), translator)));
 		this.elementRow = elementRow;
 		loadReferences(ureq, elementRow.getCurriculumElement());
 	}
@@ -84,7 +87,8 @@ public class ReferencesController extends BasicController {
 	public ReferencesController(UserRequest ureq, WindowControl wControl, Translator translator,
 			RepositoryEntry entry) {
 		super(ureq, wControl, Util
-				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), translator));
+				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), Util
+						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale(), translator)));
 		this.elementRow = null;
 		loadReferences(ureq, entry);
 	}
@@ -144,9 +148,8 @@ public class ReferencesController extends BasicController {
 		if(statusLabel.length() > 3) {
 			statusLabel = statusLabel.substring(0, 3);
 		}
-		sb.append(" <span class=\"o_labeled_light o_lecture_status_")
-	      .append(status.name()).append("\">").append(statusLabel.toUpperCase())
-	      .append("</span>");
+		String statusStr = LectureBlockStatusCellRenderer.getSmallStatus("o_labeled_light", lectureBlock, getTranslator());
+		sb.append(" ").append(statusStr);
 		return sb.toString();
 	}
 	
