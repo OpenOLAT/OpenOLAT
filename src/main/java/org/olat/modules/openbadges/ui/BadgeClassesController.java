@@ -325,7 +325,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			if (badgeClass.getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
 				createNewVersionLink = LinkFactory.createLink("create.a.new.version", "createNewVersion",
 						getTranslator(), mainVC, this, Link.LINK);
-				createNewVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_version");
+				createNewVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 				mainVC.put("createNewVersion",  createNewVersionLink);
 			} else if (badgeClass.getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
 				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this,
@@ -343,7 +343,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					openBadgesManager.unrevokedBadgeAssertionsExist(badgeClass)) {
 				revokeLink = LinkFactory.createLink("table.revoke", "remove", getTranslator(), mainVC,
 						this, Link.LINK);
-				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_revoke");
+				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_history");
 				mainVC.put("revoke", revokeLink);
 			}
 
