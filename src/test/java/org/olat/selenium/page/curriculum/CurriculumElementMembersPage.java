@@ -45,6 +45,8 @@ public class CurriculumElementMembersPage {
 	}
 	
 	public CurriculumElementMembersPage assertOnMemberInList(UserVO user) {
+		By memberBy = By.xpath("//div[contains(@class,'o_sel_curriculum_element_members')]//table//td/a[text()[contains(.,'" + user.getFirstName() + "')]]");
+		OOGraphene.waitElement(memberBy, browser);
 		return this;
 	}
 	
