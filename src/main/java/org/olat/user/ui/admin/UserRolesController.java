@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.olat.admin.user.SelectOrganisationController;
 import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -283,6 +284,7 @@ public class UserRolesController extends FormBasicController {
 		for (Organisation organisation : organisations) {
 			initFormRoles(rolesCont, organisation);
 		}
+		rolesCont.contextPut("rolesEls", rolesEls);
 	}
 
 	private void initFormRoles(FormItemContainer formLayout, Organisation organisation) {
@@ -310,8 +312,8 @@ public class UserRolesController extends FormBasicController {
 			rolesDD.setLabel("rightsForm.roles.for", new String[]{StringHelper.escapeHtml(organisation.getDisplayName())});
 		}
 
-		OrganisationMember member = getOrganisationMember(organisation);
-		applySelectedRolesAndInheritance(rolesDD, keys, member, organisation);
+		List<OrganisationMember> member = getOrganisationMember(organisation);
+		applySelectedRolesAndInheritance(rolesDD, member);
 		sortExplicitBeforeInherited(rolesDD, roleKeys, roleValues);
 
 		applyRolePermissions(rolesDD, keys, organisation);
@@ -319,8 +321,6 @@ public class UserRolesController extends FormBasicController {
 		RolesElement wrapper = new RolesElement(roleKeys, organisation, rolesDD);
 		rolesDD.setUserObject(wrapper);
 		rolesEls.add(rolesDD);
-
-		rolesCont.contextPut("rolesEls", rolesEls);
 
 		OrgStructureElement orgStructureElement = uifactory.addOrgStructureElement(
 				"orgTree_" + currentIndex, formLayout,
@@ -354,57 +354,20 @@ public class UserRolesController extends FormBasicController {
 		}
 	}
 
-	private OrganisationMember getOrganisationMember(Organisation organisation) {
+	private List<OrganisationMember> getOrganisationMember(Organisation organisation) {
 		SearchMemberParameters searchParams = new SearchMemberParameters();
 		searchParams.setIdentityKey(editedIdentity.getKey());
-		List<OrganisationMember> members = organisationService.getMembers(organisation, searchParams);
-		return members.stream()
-				.filter(m -> m.getIdentity().equals(editedIdentity))
-				.findAny()
-				.orElse(null);
+		return organisationService.getMembers(organisation, searchParams);
 	}
 
-	private void applySelectedRolesAndInheritance(MultipleSelectionElement rolesDD, String[] keys,
-												  OrganisationMember member, Organisation organisation) {
-		if (member == null) return;
+	private void applySelectedRolesAndInheritance(MultipleSelectionElement rolesDD, List<OrganisationMember> members) {
+		if (members == null || members.isEmpty()) return;
 
-		// explicit/root roles on this org
-		RolesByOrganisation byOrg = editedRoles.getRoles(organisation);
-		Set<OrganisationRoles> explicit = Arrays.stream(keys)
-				.map(OrganisationRoles::valueOf)
-				.filter(r -> byOrg != null && byOrg.hasRole(r))
-				.collect(Collectors.toSet());
-
-		// inherited roles from parent chain
-		Set<OrganisationRoles> inherited = new HashSet<>();
-		for (OrganisationRef parentRef : organisation.getParentLine()) {
-			Organisation parent = organisationService.getOrganisation(parentRef);
-			RolesByOrganisation parentRoles = editedRoles.getRoles(parent);
-			if (parentRoles == null) continue;
-			for (String k : keys) {
-				OrganisationRoles r = OrganisationRoles.valueOf(k);
-				if (parentRoles.hasRole(r) && !explicit.contains(r)) {
-					inherited.add(r);
-				}
+		for (OrganisationMember member : members) {
+			if (member.getInheritanceMode().equals(GroupMembershipInheritance.root)) {
+				rolesDD.select(member.getRole(), true);
 			}
-		}
-
-		// now select all explicit/root and inherited, and set their CSS
-		for (String k : keys) {
-			OrganisationRoles r = OrganisationRoles.valueOf(k);
-
-			// select if explicit/root OR inherited
-			if (explicit.contains(r) || inherited.contains(r)) {
-				rolesDD.select(k, true);
-			}
-
-			if (explicit.contains(r)) {
-				rolesDD.setCssClass(k, "root");
-			} else if (inherited.contains(r)) {
-				rolesDD.setCssClass(k, "inherited");
-			} else {
-				rolesDD.setCssClass(k, "");
-			}
+			rolesDD.setCssClass(member.getRole(), member.getInheritanceMode().name());
 		}
 	}
 
@@ -484,10 +447,9 @@ public class UserRolesController extends FormBasicController {
 			dd.uncheckAll();
 
 			Organisation org = wrapper.organisation();
-			OrganisationMember member = getOrganisationMember(org);
-			String[] keys = wrapper.roleKeys().toArray(new String[0]);
+			List<OrganisationMember> member = getOrganisationMember(org);
 
-			applySelectedRolesAndInheritance(dd, keys, member, org);
+			applySelectedRolesAndInheritance(dd, member);
 
 			// re-sort so explicits/roots come first
 			sortExplicitBeforeInherited(dd,
@@ -668,6 +630,9 @@ public class UserRolesController extends FormBasicController {
 		}
 		RolesByOrganisation updatedRoles = RolesByOrganisation.enhance(editedOrganisationRoles, rolesToAdd, rolesToRemove);
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);
+		for (OrganisationRoles role : rolesToAdd) {
+			organisationService.addMember(organisation, editedIdentity, role, getIdentity());
+		}
 	}
 
 	public record RolesElement(List<String> roleKeys, Organisation organisation,

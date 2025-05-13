@@ -233,24 +233,25 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		String escapedFallback = StringHelper.escapeJavaScript(fallbackText);
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("  var titleId      = '").append(buttonTitleId).append("';\n")
-				.append("  var listId       = '").append(listId).append("';\n")
+		sb.append("  var titleId = '").append(buttonTitleId).append("';\n")
+				.append("  var listId = '").append(listId).append("';\n")
 				.append("  var fallbackText = '").append(escapedFallback).append("';\n\n")
 				.append("  function updateBadges() {\n")
-				.append("    var pills = jQuery('#'+listId+' li label input:checked')\n")
+				.append("    var pills = jQuery('#'+listId+' li label input')\n")
 				.append("      .map(function(){\n")
-				.append("        var $chk = jQuery(this);\n")
-				.append("        var val  = $chk.data('value');\n")
-				.append("        var li   = $chk.closest('li');\n")
-				.append("        // anything not inherited is treated as explicit/root\n")
-				.append("        var iconClass = li.hasClass('inherited')\n")
-				.append("                           ? 'o_icon o_icon_inheritance_inherited'\n")
-				.append("                           : 'o_icon o_icon_inheritance_root';\n")
-				.append("        return '<span class=\"o_labeled_light\">'\n")
-				.append("             +   '<i class=\"'+iconClass+'\"></i>&nbsp;'\n")
-				.append("             +   val\n")
-				.append("             + '</span>';\n")
-				.append("      }).get().join(' ');\n")
+				.append("      var $chk = jQuery(this);\n")
+				.append("      var val = $chk.data('value');\n")
+				.append("      var li = $chk.closest('li');\n")
+				.append("      var isChecked = $chk.is(':checked');\n")
+				.append("      var isInherited = li.hasClass('inherited');\n")
+				.append("      if (!isChecked && !isInherited) return null;\n")
+				.append("      var iconClass = isInherited\n")
+				.append("         ? 'o_icon o_icon_inheritance_inherited'\n")
+				.append("         : 'o_icon o_icon_inheritance_root';\n")
+				.append("      return '<span class=\"o_labeled_light\">'\n")
+				.append("           + '<i class=\"' + iconClass + '\"></i>&nbsp;'\n")
+				.append("           + val + '</span>';\n")
+				.append("    }).get().join(' ');\n")
 				.append("    if (!pills) pills = fallbackText;\n")
 				.append("    jQuery('#'+titleId).html(pills);\n")
 				.append("  }\n")
@@ -259,6 +260,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 
 		return sb;
 	}
+
 
 	private StringBuilder getJsSetButtonText(MultipleSelectionElementImpl stF, long buttonTitleId, long listId) {
 		StringBuilder sb = new StringBuilder();
