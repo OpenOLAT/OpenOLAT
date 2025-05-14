@@ -714,7 +714,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			return;
 		}
 		
-		String infos = TBUIFactory.getConfigInfos(getTranslator(), broker, true);
+		String infos = TBUIFactory.getConfigInfos(getTranslator(), broker, true, null);
 		configPanel.setInformations(infos);
 	}
 	

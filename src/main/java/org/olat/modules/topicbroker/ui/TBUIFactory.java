@@ -276,7 +276,8 @@ public class TBUIFactory {
 		return null;
 	}
 	
-	public static String getConfigInfos(Translator translator, TBBroker broker, boolean withMethod) {
+	public static String getConfigInfos(Translator translator, TBBroker broker, boolean withMethod,
+			Integer participantMaxRequiredEnrollments) {
 		String infos = "<ul class=\"list-unstyled\">";
 		
 		infos += createInfo("o_icon_topicbroker",
@@ -286,9 +287,12 @@ public class TBUIFactory {
 		String requiredEnrollmentsI18n = broker.isParticipantCanEditRequiredEnrollments()
 				? "config.overview.required.enrollments.editable"
 				: "config.overview.required.enrollments";
+		String maxRequiredEnrollments = participantMaxRequiredEnrollments != null
+				? String.valueOf(participantMaxRequiredEnrollments)
+				: String.valueOf(broker.getRequiredEnrollments());
 		infos += createInfo("o_icon_tb_broker_enrollment_done",
 				translator.translate(requiredEnrollmentsI18n,
-				String.valueOf(broker.getRequiredEnrollments())));
+				maxRequiredEnrollments));
 		
 		if (withMethod) {
 			String methodAuto = broker.isAutoEnrollment()

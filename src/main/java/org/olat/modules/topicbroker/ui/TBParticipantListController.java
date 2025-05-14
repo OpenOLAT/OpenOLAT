@@ -542,7 +542,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	}
 	
 	private void updateBrokerConfigUI() {
-		String infos = TBUIFactory.getConfigInfos(getTranslator(), broker, true);
+		String infos = TBUIFactory.getConfigInfos(getTranslator(), broker, true, null);
 		configPanel.setInformations(infos);
 	}
 	
@@ -573,6 +573,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (enrollmentManualCtrl == source) {
 			broker = topicBrokerService.getBroker(broker);

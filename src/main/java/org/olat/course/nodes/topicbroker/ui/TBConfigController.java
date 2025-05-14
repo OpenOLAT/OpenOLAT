@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.topicbroker.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.util.Date;
 import java.util.List;
 
@@ -67,9 +65,10 @@ public class TBConfigController extends FormBasicController implements Controlle
 	private static final List<String> RELATIVE_TO_DATES = List.of(DueDateService.TYPE_COURSE_START);
 
 	private TextElement enrollmentsPerIdentityEl;
+	private MultipleSelectionElement enrollmentsReduceEl;
 	private FormLayoutContainer selectionsPerIdentityCont;
 	private TextElement selectionsPerIdentityEl;
-	private MultipleSelectionElement participantCanEl;
+	private MultipleSelectionElement withdrawEl;
 	private FormToggle relativeDatesEl;
 	private DueDateConfigFormItem selectionPeriodEl;
 	private FormLayoutContainer selectionPeriodDurationCont;
@@ -114,9 +113,15 @@ public class TBConfigController extends FormBasicController implements Controlle
 		enrollmentsPerIdentityEl = uifactory.addTextElement("config.enrollments.per.participant", 10, enrollmentsPerIdentity, enrollmentCont);
 		enrollmentsPerIdentityEl.setMandatory(true);
 		
+		enrollmentsReduceEl = uifactory.addCheckboxesVertical("config.participant.enrollments.confirmation",
+				enrollmentCont, new String[] { TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS },
+				new String[] { translate("config.participant.enrollments.confirmation.can") }, 1);
+		enrollmentsReduceEl.select(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS,
+				moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS));
+		
 		selectionsPerIdentityCont = FormLayoutContainer.createCustomFormLayout("selectionsCont", getTranslator(), velocity_root + "/item_suffix.html");
 		selectionsPerIdentityCont.setLabel("config.selections.per.participant", null);
-		selectionsPerIdentityCont.setMandatory(false);
+		selectionsPerIdentityCont.setMandatory(true);
 		selectionsPerIdentityCont.setRootForm(mainForm);
 		enrollmentCont.add(selectionsPerIdentityCont);
 		
@@ -127,13 +132,12 @@ public class TBConfigController extends FormBasicController implements Controlle
 		selectionsPerIdentityCont.contextPut("itemName", selectionsPerIdentityEl.getName());
 		selectionsPerIdentityCont.contextPut("suffix", translate("config.selections.per.participant.max"));
 		
-		SelectionValues participantCanSV = new SelectionValues();
-		participantCanSV.add(entry(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS, translate("config.participant.can.reduce.enrollments")));
-		participantCanSV.add(entry(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW, translate("config.participant.can.withdraw")));
-		participantCanEl = uifactory.addCheckboxesVertical("config.participant.can", enrollmentCont, participantCanSV.keys(), participantCanSV.values(), 1);
-		participantCanEl.addActionListener(FormEvent.ONCHANGE);
-		participantCanEl.select(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS, moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS));
-		participantCanEl.select(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW, moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW));
+		withdrawEl = uifactory.addCheckboxesVertical("config.participant.withdraw", enrollmentCont,
+				new String[] { TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW },
+				new String[] { translate("config.participant.withdraw.can") }, 1);
+		withdrawEl.addActionListener(FormEvent.ONCHANGE);
+		withdrawEl.select(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW,
+				moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW));
 	
 		FormLayoutContainer periodCont = FormLayoutContainer.createDefaultFormLayout("period", getTranslator());
 		periodCont.setRootForm(mainForm);
@@ -221,7 +225,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 			selectionPeriodAbsEl.setVisible(!relativDates);
 		}
 		
-		boolean canWithdraw = participantCanEl.getSelectedKeys().contains(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW);
+		boolean canWithdraw = withdrawEl.getSelectedKeys().contains(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW);
 		withdrawEndSpacer.setVisible(canWithdraw);
 		withdrawEndRelCont.setVisible(canWithdraw && relativDates);
 		withdrawEndRelativeEl.setVisible(canWithdraw && relativDates);
@@ -230,7 +234,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == participantCanEl) {
+		if (source == withdrawEl) {
 			updateSelectionPeriodUI();
 		} else if (source == relativeDatesEl) {
 			updateSelectionPeriodUI();
@@ -344,8 +348,8 @@ public class TBConfigController extends FormBasicController implements Controlle
 	protected void formOK(UserRequest ureq) {
 		moduleConfig.setStringValue(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENTS_PER_PARTICIPANT, enrollmentsPerIdentityEl.getValue());
 		moduleConfig.setStringValue(TopicBrokerCourseNode.CONFIG_KEY_SELECTIONS_PER_PARTICIPANT, selectionsPerIdentityEl.getValue());
-		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS, participantCanEl.isKeySelected(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS));
-		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW, participantCanEl.isKeySelected(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW));
+		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS, enrollmentsReduceEl.isKeySelected(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS));
+		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW, withdrawEl.isKeySelected(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW));
 		
 		boolean relativDates = relativeDatesEl.isVisible() && relativeDatesEl.isOn();
 		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_RELATIVE_DATES, relativDates);

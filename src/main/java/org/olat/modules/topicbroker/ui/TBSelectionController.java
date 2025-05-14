@@ -44,11 +44,9 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -73,13 +71,13 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.components.updown.UpDownFactory;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Roles;
@@ -132,7 +130,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private static final String CMD_OPEN_FILE = "open.file";
 	
 	private InfoPanel configPanel;
-	private SingleSelection maxEnrollmentsEl;
+	private FormLink maxEnrollmentsLink;
 	private final TBSelectionStatusRenderer statusRenderer;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabEnrolled;
@@ -142,6 +140,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private TBSelectionDataModel topicDataModel;
 	private FlexiTableElement topicTableEl;
 	
+	private CloseableModalController cmc;
+	private TBMaxEnrollmentsController maxEnrollmentsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private SelectionToolsController selectionToolsCtrl;
 	private TopicToolsController topicToolsCtrl;
@@ -189,8 +189,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		initForm(ureq);
 		loadModel(false);
+		doInitMaxEnrollments(ureq);
 	}
-	
+
 	@Override
 	public void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		configPanel = new InfoPanel("configs");
@@ -202,23 +203,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		updateBrokerStatusUI();
 		
 		if (broker.isParticipantCanEditRequiredEnrollments()) {
-			FormLayoutContainer myEnrollmentsCont = FormLayoutContainer.createDefaultFormLayout("myEnrollments", getTranslator());
-			myEnrollmentsCont.setFormTitle(translate("selection.individual.enrollments"));
-			myEnrollmentsCont.setFormInfo(translate("selection.individual.enrollments.info"));
-			myEnrollmentsCont.setRootForm(mainForm);
-			formLayout.add(myEnrollmentsCont);
+			maxEnrollmentsLink = uifactory.addFormLink("selection.individual.enrollments.change", formLayout, Link.BUTTON);
+			maxEnrollmentsLink.setGhost(true);
 			
-			SelectionValues maxEnrollmentsSV = new SelectionValues();
-			for (int i = 0; i <= broker.getRequiredEnrollments().intValue(); i++) {
-				maxEnrollmentsSV.add(SelectionValues.entry(String.valueOf(i), String.valueOf(i)));
-			}
-			if (participant.getRequiredEnrollments() != null && participant.getRequiredEnrollments() > broker.getRequiredEnrollments()) {
-				maxEnrollmentsSV.add(SelectionValues.entry(String.valueOf(
-						participant.getRequiredEnrollments()),
-						String.valueOf(participant.getRequiredEnrollments())));
-			}
-			maxEnrollmentsEl = uifactory.addDropdownSingleselect("selection.individual.enrollments.my", myEnrollmentsCont, maxEnrollmentsSV.keys(), maxEnrollmentsSV.values());
-			maxEnrollmentsEl.addActionListener(FormEvent.ONCHANGE);
 			updateMaxEnrollmentsEnabledUI();
 		}
 		
@@ -375,7 +362,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, getIdentity());
-		updateMaxEnrollmentsUI();
+		updateBrokerConfigUI();
 		
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setBroker(broker);
@@ -701,18 +688,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 	
 	private void updateMaxEnrollmentsEnabledUI() {
-		if (maxEnrollmentsEl != null) {
-			maxEnrollmentsEl.setEnabled(periodEvaluator.isSelectionPeriod());
-		}
-	}
-
-	private void updateMaxEnrollmentsUI() {
-		if (maxEnrollmentsEl != null) {
-			if (participant.getRequiredEnrollments() != null) {
-				maxEnrollmentsEl.select(participant.getRequiredEnrollments().toString(), true);
-			} else {
-				maxEnrollmentsEl.select(String.valueOf(broker.getRequiredEnrollments()), true);
-			}
+		if (maxEnrollmentsLink != null) {
+			maxEnrollmentsLink.setVisible(periodEvaluator.isSelectionPeriod());
 		}
 	}
 
@@ -759,7 +736,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		infos += "</ol>";
 		infos += "<ul class=\"list-unstyled\">";
-		infos += TBUIFactory.getConfigInfos(getTranslator(), broker, false);
+		infos += TBUIFactory.getConfigInfos(getTranslator(), broker, false, participant.getRequiredEnrollments());
 		infos += "</ul>";
 		configPanel.setInformations(infos);
 	}
@@ -803,7 +780,14 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == lightboxCtrl) {
+		if (source == maxEnrollmentsCtrl) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(true);
+				updateBrokerConfigUI();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == lightboxCtrl) {
 			loadModel(true);
 			cleanUp();
 		} else if (docEditorCtrl == source) {
@@ -824,6 +808,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			}
 		} else if (toolsCalloutCtrl == source) {
 			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -835,12 +821,16 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		removeAsListenerAndDispose(selectionToolsCtrl);
 		removeAsListenerAndDispose(topicToolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(maxEnrollmentsCtrl);
+		removeAsListenerAndDispose(cmc);
 		detailCtrl = null;
 		lightboxCtrl = null;
 		docEditorCtrl = null;
 		topicToolsCtrl = null;
 		selectionToolsCtrl = null;
 		toolsCalloutCtrl = null;
+		maxEnrollmentsCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -856,9 +846,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == maxEnrollmentsEl) {
-			doUpdateParticipant();
-			loadModel(true);
+		if (source == maxEnrollmentsLink) {
+			doUpdateMaxEnrollments(ureq);
 		} else if (selectionTableEl == source) {
 			if (event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -943,18 +932,24 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			updateBrokerConfigUI();
 		}
 	}
-
-	private void doUpdateParticipant() {
-		Integer maxEnrollments = null;
-		if (maxEnrollmentsEl.isOneSelected() && !maxEnrollmentsEl.getSelectedKey().equals(String.valueOf(broker.getRequiredEnrollments()))) {
-			Integer selectedMaxEnrollments = Integer.valueOf(maxEnrollmentsEl.getSelectedKey());
-			if (broker.getRequiredEnrollments().intValue() != selectedMaxEnrollments.intValue()) {
-				maxEnrollments = selectedMaxEnrollments;
-			}
+	
+	private void doInitMaxEnrollments(UserRequest ureq) {
+		if (maxEnrollmentsLink != null && maxEnrollmentsLink.isVisible() && participant.getRequiredEnrollments() == null) {
+			doUpdateMaxEnrollments(ureq);
 		}
-		participant.setRequiredEnrollments(maxEnrollments);
+	}
+	
+	private void doUpdateMaxEnrollments(UserRequest ureq) {
+		if (guardModalController(maxEnrollmentsCtrl)) { return; }
 		
-		participant = topicBrokerService.updateParticipant(getIdentity(), participant);
+		maxEnrollmentsCtrl = new TBMaxEnrollmentsController(ureq, getWindowControl(), participant);
+		listenTo(maxEnrollmentsCtrl);
+
+		String title = translate("selection.individual.enrollments.change");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				maxEnrollmentsCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doSelectTopic(TBTopicRef topic, Integer sortOrder) {
