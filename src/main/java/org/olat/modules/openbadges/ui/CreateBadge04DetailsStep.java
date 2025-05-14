@@ -52,6 +52,7 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.manager.BadgeClassDAO;
+import org.olat.modules.openbadges.ui.CreateBadgeClassWizardContext.Mode;
 import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 
@@ -152,7 +153,7 @@ public class CreateBadge04DetailsStep extends BasicStep {
 				linkedInOrganizationKV.add(SelectionValues.entry(Long.toString(bo.getKey()), bo.getOrganizationValue()));
 			});
 
-			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
+			boolean isEditMode = Mode.edit.equals(createContext.getMode()) || Mode.editNewVersion.equals(createContext.getMode());
 			if (OpenBadgesUIFactory.isSpecifyVersion()) {
 				usedNameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
 			} else {
@@ -182,7 +183,8 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 		private void updateFromTemplate() {
 			Long templateKey = createContext.getSelectedTemplateKey();
-			if (templateKey == null || CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(templateKey)) {
+			if (templateKey == null || CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(templateKey) || 
+					CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY.equals(templateKey)) {
 				return;
 			}
 			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
@@ -190,6 +192,9 @@ public class CreateBadge04DetailsStep extends BasicStep {
 		}
 
 		private void updateTitleAndDescription(BadgeTemplate template) {
+			if (createContext.isEditWithVersion()) {
+				return;
+			}
 			Translator translator = OpenBadgesUIFactory.getTranslator(createContext.getLocale());
 			String templateName = OpenBadgesUIFactory.translateTemplateName(translator, template.getIdentifier());
 			String templateDescription = OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier());

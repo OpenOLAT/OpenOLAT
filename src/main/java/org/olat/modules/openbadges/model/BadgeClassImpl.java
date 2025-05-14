@@ -409,6 +409,11 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public boolean hasPreviousVersion() {
+		return previousVersion != null;
+	}
+
+	@Override
 	public BadgeClass getNextVersion() {
 		return nextVersion;
 	}

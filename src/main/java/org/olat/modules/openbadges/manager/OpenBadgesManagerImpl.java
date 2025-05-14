@@ -564,6 +564,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeClassDAO.createBadgeClass(badgeClass);
 	}
 
+	@Override
+	public BadgeClassWithSize getBadgeClassWithSize(Long badgeClassKey) {
+		BadgeClass badgeClass = getBadgeClassByKey(badgeClassKey);
+		return new BadgeClassWithSize(badgeClass, sizeForBadgeClass(badgeClass));
+	}
+
 	public void createNewBadgeClassVersion(Long sourceClassKey, Identity author) {
 		BadgeClass sourceClass = badgeClassDAO.getBadgeClassByKey(sourceClassKey);
 		if (sourceClass.getVersionType() == null) {
@@ -821,6 +827,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public BadgeClass getBadgeClassByKey(Long key) {
 		return badgeClassDAO.getBadgeClassByKey(key);
+	}
+	
+	public BadgeClass getCurrentBadgeClass(String rootId) {
+		return badgeClassDAO.getCurrentBadgeClass(rootId);
 	}
 
 	@Override

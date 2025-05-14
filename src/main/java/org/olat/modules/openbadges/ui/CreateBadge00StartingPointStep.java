@@ -76,8 +76,10 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 		setI18nTitleAndDescr("form.starting.point", null);
 		if (createBadgeClassContext.isStartFromScratch()) {
 			setNextStep(new CreateBadge01ImageStep(ureq, createBadgeClassContext));
-		} else {
+		} else if (createBadgeClassContext.showCriteriaStep()) {
 			setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+		} else {
+			setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
 		}
 	}
 
@@ -133,7 +135,11 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 					setNextStep(new CreateBadge01ImageStep(ureq, createBadgeClassContext));
 				} else {
 					createBadgeClassContext.copyFromExistingBadge(getTranslator());
-					setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+					if (createBadgeClassContext.showCriteriaStep()) {
+						setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+					} else {
+						setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
+					}
 				}
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 

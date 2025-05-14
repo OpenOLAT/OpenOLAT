@@ -228,15 +228,6 @@ public class BadgeClassDAO {
 		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
 	}
 
-	public BadgeClass getBadgeClassByRootId(String rootId) {
-		String query = "select bc from badgeclass bc where bc.rootId=:rootId";
-		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
-				.createQuery(query, BadgeClass.class)
-				.setParameter("rootId", rootId)
-				.getResultList();
-		return badgeClasses == null || badgeClasses.isEmpty() ? null : badgeClasses.get(0);
-	}
-	
 	public BadgeClass getBadgeClassByKey(Long key) {
 		return dbInstance.getCurrentEntityManager().find(BadgeClassImpl.class, key);
 	}
@@ -377,6 +368,8 @@ public class BadgeClassDAO {
 		} else {
 			sb.append(" where bc.entry is null ");
 		}
+		
+		sb.append(" and bc.nextVersion is null");
 
 		TypedQuery<NameAndVersion> typedQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), NameAndVersion.class);
@@ -396,6 +389,8 @@ public class BadgeClassDAO {
 		} else {
 			sb.append(" where bc.entry is null ");
 		}
+		
+		sb.append(" and bc.nextVersion is null");
 
 		TypedQuery<String> typedQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class);

@@ -92,6 +92,8 @@ public interface OpenBadgesManager {
 
 	void createBadgeClass(BadgeClassImpl badgeClass);
 
+	BadgeClassWithSize getBadgeClassWithSize(Long badgeClassKey);
+	
 	String createBadgeClassImageFromSvgTemplate(String uuid, Long templateKey, String backgroundColorId, String title, Identity savedBy);
 
 	String createBadgeClassImageFromPngTemplate(String uuid, Long templateKey);
@@ -119,6 +121,8 @@ public interface OpenBadgesManager {
 	BadgeClass getBadgeClassByUuid(String uuid);
 
 	BadgeClass getBadgeClassByKey(Long key);
+
+	BadgeClass getCurrentBadgeClass(String rootId);
 
 	VFSLeaf getBadgeClassVfsLeaf(String classFile);
 

@@ -407,21 +407,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private BadgeClass createBadgeClass(CreateBadgeClassWizardContext createContext) {
 		BadgeClass badgeClass = createContext.getBadgeClass();
-		if (createContext.selectedTemplateIsSvg()) {
-			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(badgeClass.getUuid(),
-					createContext.getSelectedTemplateKey(), createContext.getBackgroundColorId(),
-					createContext.getTitle(), getIdentity());
-			badgeClass.setImage(image);
-		} else if (createContext.selectedTemplateIsPng()) {
-			String image = openBadgesManager.createBadgeClassImageFromPngTemplate(badgeClass.getUuid(),
-					createContext.getSelectedTemplateKey());
-			badgeClass.setImage(image);
-		} else if (createContext.ownFileIsSvg() || createContext.ownFileIsPng()) {
-			String image = openBadgesManager.createBadgeClassImage(badgeClass.getUuid(),
-					createContext.getTemporaryBadgeImageFile(), createContext.getTargetBadgeImageFileName(),
-					getIdentity());
-			badgeClass.setImage(image);
-		}
+		createContext.updateImage(openBadgesManager, badgeClass, getIdentity());
 
 		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
 			openBadgesManager.createBadgeClass(badgeClassImpl);
@@ -436,11 +422,18 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			showError("warning.badge.cannot.be.edited");
 			return;
 		}
-		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity);
-		Step start = new CreateBadge03CriteriaStep(ureq, createBadgeClassContext);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity, getTranslator());
+
+		Step start;
+		if (createBadgeClassContext.isEditWithVersion()) {
+			start = new CreateBadge01ImageStep(ureq, createBadgeClassContext);
+		} else {
+			start = new CreateBadge03CriteriaStep(ureq, createBadgeClassContext);
+		}
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
+			updateImage(createBadgeClassContext, updatedBadgeClass);
 			openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			loadModel(innerUreq);
 			return StepsMainRunController.DONE_MODIFIED;
@@ -450,6 +443,15 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				translate(editKey), "o_sel_edit_badge_wizard");
 		listenTo(stepsController);
 		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
+	}
+
+	private void updateImage(CreateBadgeClassWizardContext createContext, BadgeClass badgeClass) {
+		if (!createContext.isEditWithVersion() || !createContext.imageWasSelected()) {
+			return;
+		}
+		if (createContext.updateImage(openBadgesManager, badgeClass, getIdentity())) {
+			openBadgesManager.updateBadgeClass(badgeClass);
+		}
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeClassRow row) {

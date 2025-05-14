@@ -82,8 +82,10 @@ public class CreateBadge01ImageStep extends BasicStep {
 		setI18nTitleAndDescr("form.image", null);
 		if (createBadgeClassContext.needsCustomization()) {
 			setNextStep(new CreateBadge02CustomizationStep(ureq, createBadgeClassContext));
-		} else {
+		} else if (createBadgeClassContext.showCriteriaStep()) {
 			setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+		} else {
+			setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
 		}
 	}
 
@@ -103,11 +105,14 @@ public class CreateBadge01ImageStep extends BasicStep {
 
 	private class CreateBadgeImageForm extends StepFormBasicController {
 		public final static String OWN_BADGE_IDENTIFIER = "ownBadge";
+		public final static String CURRENT_IMAGE_IDENTIFIER = "currentImage";
+
 		private CreateBadgeClassWizardContext createContext;
 		private List<TagInfo> tagInfos;
 		private Set<Long> selectedTagKeys;
 		private List<Card> cards;
-		private String mediaUrl;
+		private String templateMediaUrl;
+		private String badgeClassMediaUrl;
 		private FileElement fileEl;
 		private File tmpImageFile;
 		private ImageFormItem imageEl;
@@ -216,6 +221,15 @@ public class CreateBadge01ImageStep extends BasicStep {
 				updateSteps(ureq);
 				return;
 			}
+			
+			if (templateKey == CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY) {
+				createContext.setSelectedTemplateKey(CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY);
+				createContext.setTemplateVariables(Set.of());
+				flc.contextPut("selectedTemplateKey", CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY);
+				flc.contextPut("showOwnBadgeSection", false);
+				updateSteps(ureq);
+				return;
+			}
 
 			flc.contextPut("showOwnBadgeSection", false);
 
@@ -229,12 +243,12 @@ public class CreateBadge01ImageStep extends BasicStep {
 		}
 
 		private void updateSteps(UserRequest ureq) {
-			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
-				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
-			} else if (createContext.needsCustomization()) {
+			if (createContext.needsCustomization()) {
 				setNextStep(new CreateBadge02CustomizationStep(ureq, createContext));
-			} else {
+			} else if (createContext.showCriteriaStep()) {
 				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
+			} else {
+				setNextStep(new CreateBadge04DetailsStep(ureq, createContext));
 			}
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 		}
@@ -264,12 +278,17 @@ public class CreateBadge01ImageStep extends BasicStep {
 			if (CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(createContext.getSelectedTemplateKey())) {
 				createContext.setTemporaryBadgeImageFile(tmpImageFile);
 				createContext.setTargetBadgeImageFileName(fileEl.getUploadFileName());
-				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
+				if (createContext.showCriteriaStep()) {
+					setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
+				} else {
+					setNextStep(new CreateBadge04DetailsStep(ureq, createContext));
+				}
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 				return;
 			}
 
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
@@ -282,7 +301,8 @@ public class CreateBadge01ImageStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			flc.contextPut("chooseTemplate", createContext.getSelectedTemplateKey() == null);
 
-			mediaUrl = registerMapper(ureq, new BadgeImageMapper());
+			templateMediaUrl = registerMapper(ureq, new BadgeTemplateImageMapper());
+			badgeClassMediaUrl = registerMapper(ureq, new BadgeClassImageMapper());
 
 			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image.gfx");
 			formLayout.add(imageEl);
@@ -295,6 +315,12 @@ public class CreateBadge01ImageStep extends BasicStep {
 
 			initCards();
 			initCategories();
+			
+			if (createBadgeClassContext.isEditWithVersion()) {
+				if (createBadgeClassContext.getSelectedTemplateKey() == null) {
+					doSelectTemplate(ureq, CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY);
+				}
+			}
 		}
 
 		private void initCards() {
@@ -302,10 +328,19 @@ public class CreateBadge01ImageStep extends BasicStep {
 
 			BadgeTemplate.Scope scope = createContext.getCourseResourcableId() != null ? BadgeTemplate.Scope.course : BadgeTemplate.Scope.global;
 
-			Card card = new Card(CreateBadgeClassWizardContext.OWN_BADGE_KEY, translate("badge.own"), "", 120, 66,
-					OWN_BADGE_IDENTIFIER, List.of(), this);
-			card.isVisible();
+			Card ownBadgeCard = new Card(CreateBadgeClassWizardContext.OWN_BADGE_KEY, translate("badge.own"), 
+					"", 120, 66, OWN_BADGE_IDENTIFIER, List.of(), this);
 
+			Card currentBadgeImageCard = null;
+			if (createBadgeClassContext.isEditWithVersion()) {
+				OpenBadgesManager.BadgeClassWithSize badgeClassWithSize = openBadgesManager.getBadgeClassWithSize(createBadgeClassContext.getBadgeClass().getKey());
+				Size targetSize = badgeClassWithSize.fitIn(120, 66);
+				currentBadgeImageCard = new Card(CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY, 
+						createBadgeClassContext.getBadgeClass().getNameWithScan(), 
+						badgeClassMediaUrl + "/" + createBadgeClassContext.getBadgeClass().getImage(), 
+						targetSize.getWidth(), targetSize.getHeight(), CURRENT_IMAGE_IDENTIFIER, List.of(), this);
+			}
+			
 			cards = openBadgesManager.getTemplatesWithSizes(scope).stream()
 					.map(template -> {
 						Size targetSize = template.fitIn(120, 66);
@@ -321,7 +356,7 @@ public class CreateBadge01ImageStep extends BasicStep {
 						return new Card(
 								template.template().getKey(),
 								name,
-								mediaUrl + "/" + (previewImage != null ? previewImage : image),
+								templateMediaUrl + "/" + (previewImage != null ? previewImage : image),
 								targetSize.getWidth(), targetSize.getHeight(),
 								template.template().getIdentifier(),
 								tags,
@@ -329,7 +364,10 @@ public class CreateBadge01ImageStep extends BasicStep {
 					})
 					.toList();
 			List<Card> combinedCards = new ArrayList<>();
-			combinedCards.add(card);
+			combinedCards.add(ownBadgeCard);
+			if (currentBadgeImageCard != null) {
+				combinedCards.add(currentBadgeImageCard);
+			}
 			combinedCards.addAll(cards);
 			flc.contextPut("cards", combinedCards);
 		}
@@ -365,13 +403,25 @@ public class CreateBadge01ImageStep extends BasicStep {
 			flc.contextPut("tagInfos", tagInfos);
 		}
 
-		private class BadgeImageMapper implements Mapper {
+		private class BadgeTemplateImageMapper implements Mapper {
 
 			@Override
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				VFSLeaf templateLeaf = openBadgesManager.getTemplateVfsLeaf(relPath);
 				if (templateLeaf != null) {
 					return new VFSMediaResource(templateLeaf);
+				}
+				return new NotFoundMediaResource();
+			}
+		}
+		
+		private class BadgeClassImageMapper implements Mapper {
+			
+			@Override
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				VFSLeaf classLeaf = openBadgesManager.getBadgeClassVfsLeaf(relPath);
+				if (classLeaf != null) {
+					return new VFSMediaResource(classLeaf);
 				}
 				return new NotFoundMediaResource();
 			}

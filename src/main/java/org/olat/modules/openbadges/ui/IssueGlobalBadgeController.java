@@ -73,7 +73,7 @@ public class IssueGlobalBadgeController extends FormBasicController {
 		this.selectedBadgeClass = selectedBadgeClass;
 		badgeClassKV = new SelectionValues();
 		for (BadgeClass badgeClass : openBadgesManager.getBadgeClasses(null)) {
-			badgeClassKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName()));
+			badgeClassKV.add(SelectionValues.entry(badgeClass.getRootId(), badgeClass.getNameWithScan()));
 		}
 		initForm(ureq);
 	}
@@ -99,7 +99,7 @@ public class IssueGlobalBadgeController extends FormBasicController {
 
 		if (!badgeClassKV.isEmpty()) {
 			if (selectedBadgeClass != null) {
-				badgeClassDropdown.select(selectedBadgeClass.getUuid(), true);
+				badgeClassDropdown.select(selectedBadgeClass.getRootId(), true);
 				badgeClassDropdown.setEnabled(false);
 			} else {
 				badgeClassDropdown.select(badgeClassKV.keys()[0], true);
@@ -128,8 +128,8 @@ public class IssueGlobalBadgeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String badgeClassUuid = badgeClassDropdown.getSelectedKey();
-		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(badgeClassUuid);
+		String badgeClassRootId = badgeClassDropdown.getSelectedKey();
+		BadgeClass badgeClass = openBadgesManager.getCurrentBadgeClass(badgeClassRootId);
 		openBadgesManager.issueBadgeManually(uuidEl.getValue(),  badgeClass, recipient, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

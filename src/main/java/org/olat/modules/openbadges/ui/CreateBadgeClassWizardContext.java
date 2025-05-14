@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -34,6 +33,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -64,6 +64,7 @@ import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.json.JSONObject;
 
 /**
  * Initial date: 2023-06-19<br>
@@ -73,6 +74,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 public class CreateBadgeClassWizardContext {
 
 	public final static Long OWN_BADGE_KEY = -1L;
+	public final static Long CURRENT_BADGE_IMAGE_KEY = -2L;
 
 	private final RepositoryEntry entry;
 	private final CourseNode courseNode;
@@ -138,6 +140,10 @@ public class CreateBadgeClassWizardContext {
 		return course.getCourseEnvironment();
 	}
 
+	public boolean imageWasSelected() {
+		return selectedTemplateIsSvg() || selectedTemplateIsPng() || ownFileIsSvg() || ownFileIsPng();
+	}
+	
 	public boolean selectedTemplateIsSvg() {
 		if (OWN_BADGE_KEY.equals(selectedTemplateKey)) {
 			return false;
@@ -166,8 +172,56 @@ public class CreateBadgeClassWizardContext {
 		return temporaryBadgeImageFile != null && OpenBadgesFactory.isPngFileName(temporaryBadgeImageFile.getPath());
 	}
 
+	public boolean showCriteriaStep() {
+		return badgeClass != null && !badgeClass.hasPreviousVersion();
+	}
+	
+	public boolean isEditWithVersion() {
+		return badgeClass != null && badgeClass.hasPreviousVersion();
+	}
+
+	public boolean updateImage(OpenBadgesManager openBadgesManager, BadgeClass badgeClass, Identity doer) {
+		if (selectedTemplateIsSvg()) {
+			deleteImage(openBadgesManager, badgeClass);
+			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(badgeClass.getUuid(),
+					getSelectedTemplateKey(), getBackgroundColorId(),
+					getTitle(), doer);
+			if (image == null) {
+				return false;
+			}
+			badgeClass.setImage(image);
+			return true;
+		} else if (selectedTemplateIsPng()) {
+			deleteImage(openBadgesManager, badgeClass);
+			String image = openBadgesManager.createBadgeClassImageFromPngTemplate(badgeClass.getUuid(),
+					getSelectedTemplateKey());
+			if (image == null) {
+				return false;
+			}
+			badgeClass.setImage(image);
+			return true;
+		} else if (ownFileIsSvg() || ownFileIsPng()) {
+			deleteImage(openBadgesManager, badgeClass);
+			String image = openBadgesManager.createBadgeClassImage(badgeClass.getUuid(),
+					getTemporaryBadgeImageFile(), getTargetBadgeImageFileName(),
+					doer);
+			if (image == null) {
+				return false;
+			}
+			badgeClass.setImage(image);
+			return true;
+		}
+
+		return false;
+	}
+	
+	private void deleteImage(OpenBadgesManager openBadgesManager, BadgeClass badgeClass) {
+		VFSLeaf imageLeaf = openBadgesManager.getBadgeClassVfsLeaf(badgeClass.getImage());
+		imageLeaf.deleteSilently();
+	}
+
 	public enum Mode {
-		create, edit
+		create, edit, editNewVersion
 	}
 
 	public static final String KEY = "createBadgeClassWizardContext";
@@ -227,15 +281,19 @@ public class CreateBadgeClassWizardContext {
 		locale = i18nManager.getLocaleOrDefault(null);
 	}
 
-	public CreateBadgeClassWizardContext(BadgeClass badgeClass, RepositoryEntrySecurity reSecurity) {
-		mode = Mode.edit;
+	public CreateBadgeClassWizardContext(BadgeClass badgeClass, RepositoryEntrySecurity reSecurity, Translator translator) {
+		this(badgeClass, reSecurity, translator, Mode.edit);
+	}
+	
+	public CreateBadgeClassWizardContext(BadgeClass badgeClass, RepositoryEntrySecurity reSecurity, Translator translator, Mode mode) {
+		this.mode = mode;
 		ICourse course = badgeClass.getEntry() != null ? CourseFactory.loadCourse(badgeClass.getEntry()) : null;
 		this.entry = badgeClass.getEntry();
 		this.courseNode = null;
 		this.reSecurity = reSecurity;
 		courseResourcableId = course != null ? course.getResourceableId() : null;
-		backgroundColorId = null;
-		title = null;
+		backgroundColorId = "gold";
+		title = translator.translate("var.title.default");
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		automatic = badgeCriteria.isAwardAutomatically();
 		this.badgeClass = badgeClass;

@@ -128,18 +128,16 @@ public class CreateBadge05SummaryStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			if (createContext.getMode() == CreateBadgeClassWizardContext.Mode.create) {
+			if (createContext.imageWasSelected()) {
 				imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
 				formLayout.add(imageEl);
 
-				flc.contextPut("createMode", true);
 				if (createContext.selectedTemplateIsSvg() || createContext.ownFileIsSvg()) {
 					setSvg();
 				} else if (createContext.selectedTemplateIsPng() || createContext.ownFileIsPng()) {
 					setPng();
 				}
 			} else {
-				flc.contextPut("createMode", false);
 				flc.contextPut("img", mediaUrl + "/" + createContext.getBadgeClass().getImage());
 			}
 

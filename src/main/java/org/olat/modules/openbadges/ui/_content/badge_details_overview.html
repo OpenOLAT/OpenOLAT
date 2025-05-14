@@ -1,0 +1,84 @@
+<div class="o_badge_details_overview row o_form form-horizontal">
+	<div class="col-xs-12 row">
+		<div class="col-xs-6 col-sm-4 col-md-3 col-lg-2 o_badge_class_image_wrapper">
+			<img src="${img}" alt="${imgAlt}"/>
+		</div>
+		<div class="col-xs-6 col-sm-5 col-md-6 col-lg-8">
+			<div class="o_labeled o_badge_class_status_${badgeClass.status}">$r.translate("class.status." + $badgeClass.status)</div>
+			<legend style="border: none;">${badgeClass.nameWithScan}</legend>
+			<p>
+				#if($isCourseBadge)
+				$r.translate("class.type.course")
+				#else
+				$r.translate("class.type.global")
+				#end
+			</p>
+		</div>
+		<div class="col-xs-12 col-sm-3 col-md-3 col-lg-2" style="text-align: right; padding-right: 0;">
+			#if($r.available("class.edit.details") && $r.visible("class.edit.details"))
+			$r.render("class.edit.details")
+			#end
+		</div>
+	</div>
+	<div class="col-xs-12 o_badge_metadata_box">
+		<div class="row o_badge_details_box">
+			<div class="col-xs-6 col-sm-6 col-lg-4 o_badge_details_column">
+				#if($r.available("form.course") && $r.visible("form.course"))
+				$r.render("form.course", "3_9", "form")
+				#end
+				$r.render("form.createdOn", "3_9", "form")
+				#if($r.available("form.version") && $r.visible("form.version"))
+				$r.render("form.version", "3_9", "form")
+				#end
+			</div>
+			<div class="col-xs-6 col-sm-6 col-lg-4 o_badge_details_column">
+				$r.render("class.issuer", "3_9", "form")
+				#if($r.available("class.issuer.email") && $r.visible("class.issuer.email"))
+				$r.render("class.issuer.email", "3_9", "form")
+				#end
+				#if($r.available("class.issuer.url") && $r.visible("class.issuer.url"))
+				$r.render("class.issuer.url", "3_9", "form")
+				#end
+			</div>
+			<div class="col-xs-6 col-sm-6 col-lg-4 o_badge_details_column">
+				#if($r.available("form.language") && $r.visible("form.language"))
+				$r.render("form.language", "3_9", "form")
+				#end
+				#if($r.available("form.valid") && $r.visible("form.valid"))
+				$r.render("form.valid", "3_9", "form")
+				#end
+			</div>
+		</div>
+	</div>
+	<div class="col-xs-12">
+		<legend>$r.translate("form.criteria")</legend>
+		<p>$r.formatMarkdown($criteriaDescription)</p>
+
+		#if($showConditions)
+		<div style="margin: 20px;">
+			#foreach($condition in $conditions)
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">
+					#if($condition.first()) $r.translate("condition.if") #else $r.translate("condition.and") #end
+				</span>
+				$condition.toString()
+			</div>
+			#end
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area">
+					$r.translate("condition.then")
+				</span>
+				$r.translate("badge.awarded")
+			</div>
+		</div>
+		#end
+
+		#if($r.available("badge.issued.manually") && $r.visible("badge.issued.manually"))
+		$r.render("badge.issued.manually", "horizontal", "form")
+		#end
+	</div>
+	<div class="col-xs-12 o_badge_class_description_wrapper">
+		<legend>$r.translate("form.description")</legend>
+		<div class="o_badge_class_description">$r.formatMarkdown($badgeClass.descriptionWithScan)</div>
+	</div>
+</div>

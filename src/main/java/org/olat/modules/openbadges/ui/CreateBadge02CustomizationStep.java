@@ -59,7 +59,11 @@ public class CreateBadge02CustomizationStep extends BasicStep {
 	public CreateBadge02CustomizationStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.customization", null);
-		setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+		if (createBadgeClassContext.showCriteriaStep()) {
+			setNextStep(new CreateBadge03CriteriaStep(ureq, createBadgeClassContext));
+		} else {
+			setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
+		}
 	}
 
 	@Override

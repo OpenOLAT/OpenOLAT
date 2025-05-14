@@ -52,7 +52,7 @@ public class OtherBadgeEarnedCondition implements BadgeCondition {
 	@Override
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
 		BadgeClassDAO badgeClassDAO = CoreSpringFactory.getImpl(BadgeClassDAO.class);
-		BadgeClass badgeClass = badgeClassDAO.getBadgeClassByRootId(badgeClassRootId);
+		BadgeClass badgeClass = badgeClassDAO.getCurrentBadgeClass(badgeClassRootId);
 		return translator.translate("badgeCondition." + KEY, badgeClass == null ? "-" : badgeClass.getName());
 	}
 

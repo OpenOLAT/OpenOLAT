@@ -126,6 +126,40 @@
 	padding-bottom: 20px;
 }
 
+.o_badge_details {
+	display: flex;
+	
+	.o_badge_details_summary {
+		flex-grow: 1;
+		display: flex;
+		
+		margin-bottom: 20px;
+		
+		.o_badge_details_image {
+			min-width: 50px;
+			min-height: 50px;
+			margin: auto;
+		}
+		
+		.o_badge_details_meta {
+			flex-grow: 1;
+			
+			h3 {
+				margin: 3px 0;
+			}
+			
+			p {
+				margin: 0;
+			}
+		}
+	}
+	
+	.o_badge_details_action {
+		flex-grow: 1;
+		text-align: right;
+	}
+}
+
 .o_badge_details_box {
 	padding-top: 15px;
 	background-color: #f8f8f8;

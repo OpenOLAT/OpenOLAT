@@ -137,6 +137,8 @@ public interface BadgeClass {
 
 	void setPreviousVersion(BadgeClass previousVersion);
 
+	boolean hasPreviousVersion();
+	
 	BadgeClass getNextVersion();
 
 	void setNextVersion(BadgeClass nextVersion);
