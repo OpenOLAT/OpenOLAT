@@ -245,8 +245,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum);
 		List<CurriculumElementRow> rows = new ArrayList<>(implementations.size());
 		for(CurriculumElement element:implementations) {
-			CurriculumElementRow row = new CurriculumElementRow(element);
-			rows.add(row);
+			CurriculumElementStatus status = element.getElementStatus();
+			if(status != CurriculumElementStatus.deleted) {
+				rows.add(new CurriculumElementRow(element));
+			}
 		}
 		
 		if(rows.size() > 1) {
@@ -304,9 +306,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
 		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
 		for(CurriculumElement element:elements) {
-			CurriculumElementRow row = new CurriculumElementRow(element);
-			rows.add(row);
-			keyToRows.put(element.getKey(), row);
+			CurriculumElementStatus status = element.getElementStatus();
+			if(status != CurriculumElementStatus.deleted) {
+				CurriculumElementRow row = new CurriculumElementRow(element);
+				rows.add(row);
+				keyToRows.put(element.getKey(), row);
+			}
 		}
 		// Build parent line
 		for(CurriculumElementRow row:rows) {
