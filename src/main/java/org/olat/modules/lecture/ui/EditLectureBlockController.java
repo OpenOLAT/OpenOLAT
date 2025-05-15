@@ -392,8 +392,8 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		} 
-		if(!found && teachersPK.size() > 0 && lectureBlock == null) {
-			teacherEl.select(teachersPK.keys()[0], true);
+		if(!found && !teachersPK.isEmpty() && lectureBlock == null) {
+			teacherEl.selectAll();
 		}
 		
 		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);

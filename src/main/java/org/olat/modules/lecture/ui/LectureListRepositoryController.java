@@ -833,6 +833,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 
 	public void loadModel(UserRequest ureq) {
+		loadModel(ureq, false);
+	}
+
+	private void loadModel(UserRequest ureq, boolean replaceOnly) {
 		String displayname = null;
 		String externalRef = null;
 		if(curriculumElement != null) {
@@ -864,7 +868,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		}
 		tableModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(!replaceOnly, !replaceOnly, true);
 
 		if(deleteLecturesButton != null) {
 			deleteLecturesButton.setVisible(!rows.isEmpty());
@@ -1311,7 +1315,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			cleanUp();
 		} else if(editLectureCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				reloadModel(ureq, editLectureCtrl.getLectureBlock());
+				loadModel(ureq, true);
 			}
 			cmc.deactivate();
 			cleanUp();
