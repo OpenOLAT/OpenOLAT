@@ -164,7 +164,8 @@ public interface QualityService {
 	
 	public void onPublicParticipationCreated(EvaluationFormParticipation participation);
 
-	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection);
+	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
+			Collection<String> identifierTypesOnly, Collection<String> identifierTypesExcluded);
 
 	public Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams);
 

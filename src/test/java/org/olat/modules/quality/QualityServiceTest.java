@@ -69,7 +69,7 @@ public class QualityServiceTest extends OlatTestCase {
 		sut.addParticipationsEmail(dataCollection, emailExecutors);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, null, null);
 		assertThat(participations)
 				.hasSize(2)
 				.extracting(QualityParticipation::getEmail)
@@ -87,7 +87,7 @@ public class QualityServiceTest extends OlatTestCase {
 		sut.addParticipationsEmail(dataCollection, List.of(emailExecutor));
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, null, null);
 		assertThat(participations).hasSize(1);
 		QualityParticipation participation = participations.get(0);
 		assertThat(participation.getFirstname()).isEqualTo(emailExecutor.firstName());
@@ -97,7 +97,7 @@ public class QualityServiceTest extends OlatTestCase {
 		sut.addParticipationsEmail(dataCollection, List.of(emailExecutor));
 		dbInstance.commitAndCloseSession();
 		
-		participations = sut.loadParticipations(dataCollection);
+		participations = sut.loadParticipations(dataCollection, null, null);
 		assertThat(participations).hasSize(1);
 		participation = participations.get(0);
 		assertThat(participation.getFirstname()).isEqualTo(emailExecutor.firstName());
@@ -114,7 +114,7 @@ public class QualityServiceTest extends OlatTestCase {
 		sut.addParticipationsEmail(dataCollection, List.of(emailExecutor));
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, null, null);
 		assertThat(participations).hasSize(1);
 		QualityParticipation participation = participations.get(0);
 		assertThat(participation.getRole()).isEqualTo(QualityContextRole.email);

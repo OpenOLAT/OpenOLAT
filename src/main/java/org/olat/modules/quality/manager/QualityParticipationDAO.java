@@ -20,6 +20,7 @@
 package org.olat.modules.quality.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.TypedQuery;
@@ -52,7 +53,8 @@ class QualityParticipationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection) {
+	List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
+			Collection<String> identifierTypesOnly, Collection<String> identifierTypesExcluded) {
 		if (dataCollection == null) {
 			return List.of();
 		}
@@ -77,12 +79,25 @@ class QualityParticipationDAO {
 		sb.append("  left join context.audienceCurriculumElement as audienceCurriculumElement");
 		sb.append(" where survey.resName=:resName");
 		sb.append("   and survey.resId=:resId");
+		if (identifierTypesOnly != null && !identifierTypesOnly.isEmpty()) {
+			sb.append(" and participation.identifier.type in :identifierTypesOnly");
+		}
+		if (identifierTypesExcluded != null && !identifierTypesExcluded.isEmpty()) {
+			sb.append(" and participation.identifier.type not in :identifierTypesExcluded");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<QualityParticipation> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityParticipation.class)
 				.setParameter("resName", dataCollection.getResourceableTypeName())
-				.setParameter("resId", dataCollection.getResourceableId())
-				.getResultList();
+				.setParameter("resId", dataCollection.getResourceableId());
+		if (identifierTypesOnly != null && !identifierTypesOnly.isEmpty()) {
+			query.setParameter("identifierTypesOnly", identifierTypesOnly);
+		}
+		if (identifierTypesExcluded != null && !identifierTypesExcluded.isEmpty()) {
+			query.setParameter("identifierTypesExcluded", identifierTypesExcluded);
+		}
+		
+		return query.getResultList();
 	}
 
 	Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {

@@ -656,8 +656,9 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection) {
-		return participationDao.loadParticipations(dataCollection);
+	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
+			Collection<String> identifierTypesOnly, Collection<String> identifierTypesExcluded) {
+		return participationDao.loadParticipations(dataCollection, identifierTypesOnly, identifierTypesExcluded);
 	}
 
 	@Override

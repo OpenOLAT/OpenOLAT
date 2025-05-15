@@ -19,6 +19,9 @@
  */
 package org.olat.modules.quality.ui;
 
+import static org.olat.modules.forms.EvaluationFormDispatcher.EMAIL_PARTICIPATION_TYPE;
+import static org.olat.modules.forms.EvaluationFormDispatcher.PUBLIC_PARTICIPATION_TYPE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -103,7 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ParticipationListController extends FormBasicController {
-	
+
 	private static final String CMD_DELETE = "delete";
 	
 	private static final String TAB_ID_ALL = "All";
@@ -119,6 +121,7 @@ public class ParticipationListController extends FormBasicController {
 	private FormLink bulkDeleteLink;
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
+	private FlexiFiltersTab tabRoleUser;
 	private FlexiFiltersTab tabRoleEmail;
 	
 	private StepsMainRunController wizard;
@@ -211,29 +214,22 @@ public class ParticipationListController extends FormBasicController {
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
 
-		FlexiFiltersTab tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(
+		FlexiFiltersTab tabAll = FlexiFiltersTabFactory.tab(
 				TAB_ID_ALL,
 				translate("all"),
-				TabSelectionBehavior.nothing,
-				List.of());
+				TabSelectionBehavior.nothing);
 		tabs.add(tabAll);
 		
-		FlexiFiltersTab tabRoleUser = FlexiFiltersTabFactory.tabWithImplicitFilters(
+		tabRoleUser = FlexiFiltersTabFactory.tab(
 				TAB_ID_USER,
 				translate("tab.participation.role.user"),
-				TabSelectionBehavior.nothing,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
-						List.of(QualityContextRole.owner.name(),
-								QualityContextRole.coach.name(),
-								QualityContextRole.participant.name(),
-								QualityContextRole.none.name()))));
+				TabSelectionBehavior.nothing);
 		tabs.add(tabRoleUser);
 		
-		tabRoleEmail = FlexiFiltersTabFactory.tabWithImplicitFilters(
+		tabRoleEmail = FlexiFiltersTabFactory.tab(
 				TAB_ID_EMAIL,
 				translate("tab.participation.role.email"),
-				TabSelectionBehavior.nothing,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, QualityContextRole.email.name())));
+				TabSelectionBehavior.nothing);
 		tabs.add(tabRoleEmail);
 		
 		tableEl.setFilterTabs(true, tabs);
@@ -241,7 +237,17 @@ public class ParticipationListController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<QualityParticipation> participations = qualityService.loadParticipations(dataCollection);
+		List<String> identifierTypesOnly = null;
+		List<String> identifierTypesExcluded = null;
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRoleUser) {
+			identifierTypesExcluded = List.of(EMAIL_PARTICIPATION_TYPE, PUBLIC_PARTICIPATION_TYPE);
+		} else if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRoleEmail) {
+			identifierTypesOnly = List.of(EMAIL_PARTICIPATION_TYPE);
+		} else {
+			identifierTypesExcluded = List.of(PUBLIC_PARTICIPATION_TYPE);
+		}
+		
+		List<QualityParticipation> participations = qualityService.loadParticipations(dataCollection, identifierTypesOnly, identifierTypesExcluded);
 		List<ParticipationRow> rows = new ArrayList<>();
 		for (QualityParticipation participation : participations) {
 			ParticipationRow row = new ParticipationRow(participation);

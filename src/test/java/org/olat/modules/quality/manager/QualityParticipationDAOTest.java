@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -93,7 +94,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, null, null);
 		
 		assertThat(participations).hasSize(numberOfParticipations);
 		QualityParticipation participation = participations.get(0);
@@ -116,7 +117,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		qualityTestHelper.createContext(dataCollection, evaParticipation);
 		dbInstance.commitAndCloseSession();
 		
-		List<QualityParticipation> participations = sut.loadParticipations(dataCollection);
+		List<QualityParticipation> participations = sut.loadParticipations(dataCollection, null, null);
 		
 		QualityParticipation participation = participations.get(0);
 		assertThat(participation.getParticipationRef()).isNotNull();
@@ -127,6 +128,36 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		assertThat(participation.getRole()).isNotNull();
 		assertThat(participation.getAudienceRepositoryEntryName()).isNotNull();
 		assertThat(participation.getAudienceCurriculumElementName()).isNotNull();
+	}
+	
+	@Test
+	public void shouldLoadParticipations_filterIdentifierTypes() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection);
+		EvaluationFormEmailExecutor emailExecutor = new EvaluationFormEmailExecutor(random(), random(), random());
+		EvaluationFormParticipation participationEmail = evaManager.createParticipation(survey, emailExecutor);
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		EvaluationFormParticipation participation = evaManager.createParticipation(survey, executor);
+		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(random(), random());
+		EvaluationFormParticipation participation2 = evaManager.createParticipation(survey, identifier);
+		
+		qualityTestHelper.createContext(dataCollection, participationEmail);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.loadParticipations(dataCollection, null, null))
+				.extracting(QualityParticipation::getParticipationRef)
+				.extracting(EvaluationFormParticipationRef::getKey)
+				.containsExactlyInAnyOrder(participationEmail.getKey(), participation.getKey(), participation2.getKey());
+		
+		assertThat(sut.loadParticipations(dataCollection, List.of(identifier.getType()), null))
+				.extracting(QualityParticipation::getParticipationRef)
+				.extracting(EvaluationFormParticipationRef::getKey)
+				.containsExactlyInAnyOrder(participation2.getKey());
+		
+		assertThat(sut.loadParticipations(dataCollection, null, List.of(identifier.getType())))
+				.extracting(QualityParticipation::getParticipationRef)
+				.extracting(EvaluationFormParticipationRef::getKey)
+				.containsExactlyInAnyOrder(participationEmail.getKey(), participation.getKey());
 	}
 	
 	@Test
