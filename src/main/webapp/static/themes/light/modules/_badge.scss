@@ -128,12 +128,12 @@
 
 .o_badge_details {
 	display: flex;
+
+	padding-bottom: 25px;
 	
 	.o_badge_details_summary {
 		flex-grow: 1;
 		display: flex;
-		
-		margin-bottom: 20px;
 		
 		.o_badge_details_image {
 			min-width: 50px;
@@ -154,9 +154,11 @@
 		}
 	}
 	
-	.o_badge_details_action {
+	.o_badge_details_actions {
 		flex-grow: 1;
 		text-align: right;
+		margin-top: auto;
+		margin-bottom: auto;
 	}
 }
 
