@@ -36,11 +36,16 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.CreateBadgeClassWizardContext.Mode;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,6 +153,13 @@ public class BadgeDetailsController extends BasicController {
 		mainVC.contextPut("imgAlt", translate("badge.image") + ": " + badgeClass.getNameWithScan());
 		mainVC.contextPut("badgeClass", badgeClass);
 		mainVC.contextPut("isCourseBadge", badgeClass.getEntry() != null);
+		
+		RepositoryEntry courseEntry = badgeClass.getEntry();
+		if (courseEntry != null) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(course.getCourseTitle()));
+			mainVC.contextPut("courseUrl", Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey());
+		}
 		
 		if (overviewCtrl != null) {
 			overviewCtrl.loadData();

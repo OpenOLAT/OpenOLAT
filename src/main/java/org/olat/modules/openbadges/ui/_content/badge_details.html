@@ -11,7 +11,7 @@
 				<h3>${badgeClass.nameWithScan}</h3>
 				<p>
 					#if($isCourseBadge)
-					$r.translate("class.type.course")
+					$r.translate("class.type.from.course"): <a href="$courseUrl" target="_blank">$courseTitle</a> 
 					#else
 					$r.translate("class.type.global")
 					#end
