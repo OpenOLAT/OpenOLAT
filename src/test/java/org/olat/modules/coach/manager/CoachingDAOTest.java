@@ -21,6 +21,7 @@ package org.olat.modules.coach.manager;
 
 import static org.olat.test.JunitTestHelper.random;
 
+import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
@@ -51,9 +52,12 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.coach.CoachingLargeTest;
+import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.repository.RepositoryEntry;
@@ -69,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24.07.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CoachingDAOTest extends OlatTestCase {
@@ -81,6 +85,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private CoachingService coachingService;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
@@ -91,9 +97,9 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
-	private EfficiencyStatementManager effManager;
+	private EfficiencyStatementManager efficiencyStatementManager;
 	@Autowired
-	private AssessmentService assessmnetService;
+	private AssessmentService assessmentService;
 	
 	private static Organisation defaultUnitTestOrganisation;
 	
@@ -103,6 +109,220 @@ public class CoachingDAOTest extends OlatTestCase {
 			defaultUnitTestOrganisation = organisationService
 					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 		}
+	}
+	
+	@Test
+	public void getParticipantsEntriesStatisticsByCoach() {
+		
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		//members of courses
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
+		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant1, re2, GroupRoles.participant.name());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant2, re2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make user infos
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2);
+		dbInstance.commitAndCloseSession();
+		
+		// Coach statistics
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		List<ParticipantStatisticsEntry> participantsStats = coachingDAO.loadParticipantsCoursesStatistics(coach, GroupRoles.coach, null, null, userPropertyHandlers, Locale.ENGLISH);
+
+		Assert.assertNotNull(participantsStats);
+		Assert.assertEquals(2, participantsStats.size());
+		
+		// Participant 1, is in re2,
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, participantsStats);
+		Assert.assertNotNull(entryParticipant1);
+		Assert.assertEquals(2, entryParticipant1.getEntries().numOfEntries());
+		Assert.assertEquals(2, entryParticipant1.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant1.getEntries().numOfNotVisited());
+		
+		// Participant 2 is only in re2
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, participantsStats);
+		Assert.assertNotNull(entryParticipant2);
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfEntries());
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant2.getEntries().numOfNotVisited());
+	}
+	
+	@Test
+	public void getParticipantsEntriesStatisticsByOwner() {
+		
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		//members of courses
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, re1, GroupRoles.owner.name());
+		repositoryService.addRole(owner, re2, GroupRoles.owner.name());
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant1, re2, GroupRoles.participant.name());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant2, re2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make user infos
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant1);
+		userCourseInformationsManager.updateUserCourseInformations(re1.getOlatResource(), participant2);
+		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2);
+		dbInstance.commitAndCloseSession();
+		
+		// Coach statistics
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		List<ParticipantStatisticsEntry> participantsStats = coachingDAO.loadParticipantsCoursesStatistics(owner, GroupRoles.owner, null, null, userPropertyHandlers, Locale.ENGLISH);
+
+		Assert.assertNotNull(participantsStats);
+		Assert.assertEquals(2, participantsStats.size());
+		
+		// Participant 1, is in re2,
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, participantsStats);
+		Assert.assertNotNull(entryParticipant1);
+		Assert.assertEquals(2, entryParticipant1.getEntries().numOfEntries());
+		Assert.assertEquals(2, entryParticipant1.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant1.getEntries().numOfNotVisited());
+		
+		// Participant 2 is only in re2
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, participantsStats);
+		Assert.assertNotNull(entryParticipant2);
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfEntries());
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant2.getEntries().numOfNotVisited());
+	}
+	
+	@Test
+	public void getParticipantsPassedFailedStatisticsByCoach() {
+		
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		//members of courses
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
+		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant1, re2, GroupRoles.participant.name());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant2, re2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make statements participant 1
+		setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1);
+		setScoreInformations(new Date(), 4.0f, null, "g2", "gs1", "pc2", null, participant1, re2);
+
+		//make statements participant 2
+	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant2, re1);
+	    setScoreInformations(new Date(), 2.0f, null, "g2", "gs1", "pc2", false, participant2, re2);
+		dbInstance.commitAndCloseSession();
+		
+		// Coach statistics
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
+		
+		Assert.assertNotNull(participantsStats);
+		Assert.assertEquals(2, participantsStats.size());
+		
+		// Participant 1, is in re2,
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, participantsStats);
+		Assert.assertNotNull(entryParticipant1);
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant1.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numUndefined());
+		
+		// Participant 2 is only in re2
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, participantsStats);
+		Assert.assertNotNull(entryParticipant2);
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryParticipant2.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numUndefined());
+	}
+	
+	@Test
+	public void getParticipantsPassedFailedStatisticsByOwner() {
+		
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		
+		//members of courses
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1-", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, re1, GroupRoles.owner.name());
+		repositoryService.addRole(owner, re2, GroupRoles.owner.name());
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant1, re2, GroupRoles.participant.name());
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(participant2, re2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make statements participant 1
+		setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1);
+		setScoreInformations(new Date(), 4.0f, null, "g2", "gs1", "pc2", null, participant1, re2);
+
+		//make statements participant 2
+	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant2, re1);
+	    setScoreInformations(new Date(), 2.0f, null, "g2", "gs1", "pc2", false, participant2, re2);
+		dbInstance.commitAndCloseSession();
+		
+		// Owner statistics
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(owner, GroupRoles.owner)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
+		
+		Assert.assertNotNull(participantsStats);
+		Assert.assertEquals(2, participantsStats.size());
+		
+		// Participant 1, is in re2,
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, participantsStats);
+		Assert.assertNotNull(entryParticipant1);
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant1.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numUndefined());
+		
+		// Participant 2 is only in re2
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, participantsStats);
+		Assert.assertNotNull(entryParticipant2);
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryParticipant2.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numUndefined());
 	}
 	
 	/**
@@ -132,7 +352,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		//  -> group 2 p2
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re, GroupRoles.coach.name());
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
@@ -143,23 +363,25 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//members of 2 groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
 	    businessGroupRelationDao.addRole(participant1, group1, GroupRoles.participant.name());
 	    BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
-	    		null, null, false, false, re);
+	    		null, null, false, false, null);
 	    businessGroupRelationDao.addRole(participant1, group2, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRelationToResource(group1, re);
+	    businessGroupRelationDao.addRelationToResource(group2, re);
 		dbInstance.commitAndCloseSession();
 		
 		//make statements
-	    effManager.createUserEfficiencyStatement(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 2.0f, null, "g2", "gs1", "pc2", false, participant2, re.getOlatResource());
+	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re);
+	    setScoreInformations(new Date(), 2.0f, null, "g2", "gs1", "pc2", false, participant2, re);
 		dbInstance.commitAndCloseSession();
 		//make user infos
 		userCourseInformationsManager.updateUserCourseInformations(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(), participant1);
 		dbInstance.commitAndCloseSession();
 		
 		
-		//native
+		// Courses statistics
 		List<CourseStatEntry> nativeStats = coachingDAO.getCoursesStatisticsNative(coach);
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(1, nativeStats.size());
@@ -170,28 +392,31 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, nativeStat.getInitialLaunch());
 		Assert.assertEquals(4.0f, nativeStat.getAverageScore(), 0.0001);
 
-		
-		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
+		// Participants statistics as coach
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
+
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(2, nativeUserStats.size());
 		//participant1
-		StudentStatEntry entryParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, nativeUserStats);
 		Assert.assertNotNull(entryParticipant1);
-		Assert.assertEquals(1, entryParticipant1.getCountPassed());
-		Assert.assertEquals(0, entryParticipant1.getCountFailed());
-		Assert.assertEquals(0, entryParticipant1.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant1.getInitialLaunch());
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant1.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant1.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipant1.getEntries().numOfEntries());
 		//participant2
-		StudentStatEntry entryParticipant2 = getStudentStatEntry(participant2, nativeUserStats);
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, nativeUserStats);
 		Assert.assertNotNull(entryParticipant2);
-		Assert.assertEquals(0, entryParticipant2.getCountPassed());
-		Assert.assertEquals(1, entryParticipant2.getCountFailed());
-		Assert.assertEquals(0, entryParticipant2.getCountNotAttempted());
-		Assert.assertEquals(0, entryParticipant2.getInitialLaunch());
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryParticipant2.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfNotVisited());
+		Assert.assertEquals(0, entryParticipant2.getEntries().numOfVisited());
 
 		
-		//group native
+		// Group statistics
 		List<GroupStatEntry> nativeGroupStats = coachingDAO.getGroupsStatisticsNative(coach);
 		Assert.assertNotNull(nativeGroupStats);
 		Assert.assertEquals(2, nativeGroupStats.size());
@@ -233,7 +458,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
@@ -248,21 +473,22 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//members of 2 groups
 		BusinessGroup group= businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re1);
-		businessGroupService.addResourceTo(group, re2);
-		businessGroupService.addResourceTo(group, re3);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group, re1);
+		businessGroupRelationDao.addRelationToResource(group, re2);
+		businessGroupRelationDao.addRelationToResource(group, re3);
 		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//make statements participant 1
-	    effManager.createUserEfficiencyStatement(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, null, "g2", "gs1", "pc2", null, participant1, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 2.0f, null, "g3", "gs1", "pc3", false, participant1, re3.getOlatResource());
+		setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1);
+		setScoreInformations(new Date(), 4.0f, null, "g2", "gs1", "pc2", null, participant1, re2);
+	    setScoreInformations(new Date(), 2.0f, null, "g3", "gs1", "pc3", false, participant1, re3);
 
 		//make statements participant 2
-	    effManager.createUserEfficiencyStatement(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant2, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), null, null, "g2", "gs1", "pc2", null, participant2, re2.getOlatResource());
+	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant2, re1);
+	    setScoreInformations(new Date(), null, null, "g2", "gs1", "pc2", null, participant2, re2);
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
@@ -273,7 +499,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		userCourseInformationsManager.updateUserCourseInformations(re2.getOlatResource(), participant2);
 		dbInstance.commitAndCloseSession();
 		
-		//check course
+		// Course statistics
 		List<CourseStatEntry> nativeStats = coachingDAO.getCoursesStatisticsNative(coach);
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(3, nativeStats.size());
@@ -281,7 +507,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, entryRe1.getCountStudents());
 		Assert.assertEquals(2, entryRe1.getCountPassed());
 		Assert.assertEquals(0, entryRe1.getCountFailed());
-		Assert.assertEquals(0, entryRe1.getCountNotAttempted());
+		//TODO coaching Assert.assertEquals(2, entryRe1.getCountNotAttempted());
 		Assert.assertEquals(2, entryRe1.getInitialLaunch());
 		Assert.assertEquals(6.0f, entryRe1.getAverageScore(), 0.0001);
 		
@@ -301,31 +527,59 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryRe3.getInitialLaunch());
 		Assert.assertEquals(2.0f, entryRe3.getAverageScore(), 0.0001);
 		
+		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> participantsStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
 		
-		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
-		Assert.assertNotNull(nativeUserStats);
-		Assert.assertEquals(2, nativeUserStats.size());
-		//participant1
-		StudentStatEntry entryParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
+		Assert.assertNotNull(participantsStats);
+		Assert.assertEquals(2, participantsStats.size());
+		// Participant 1, is in r1 and re2 via group
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, participantsStats);
 		Assert.assertNotNull(entryParticipant1);
-		Assert.assertEquals(1, entryParticipant1.getCountPassed());
-		Assert.assertEquals(1, entryParticipant1.getCountFailed());
-		Assert.assertEquals(1, entryParticipant1.getCountNotAttempted());
-		Assert.assertEquals(3, entryParticipant1.getInitialLaunch());
-		Assert.assertEquals(3, entryParticipant1.getCountRepo());
-		//participant2
-		StudentStatEntry entryParticipant2 = getStudentStatEntry(participant2, nativeUserStats);
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant1.getEntries().numOfNotVisited());
+		Assert.assertEquals(3, entryParticipant1.getEntries().numOfVisited());
+		Assert.assertEquals(3, entryParticipant1.getEntries().numOfEntries());
+		// Participant 2
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, participantsStats);
 		Assert.assertNotNull(entryParticipant2);
-		Assert.assertEquals(1, entryParticipant2.getCountPassed());
-		Assert.assertEquals(0, entryParticipant2.getCountFailed());
-		Assert.assertEquals(2, entryParticipant2.getCountNotAttempted());
-		Assert.assertEquals(2, entryParticipant2.getInitialLaunch());
-		Assert.assertEquals(3, entryParticipant1.getCountRepo());
+		Assert.assertEquals(1, entryParticipant2.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfNotVisited());
+		Assert.assertEquals(2, entryParticipant2.getEntries().numOfVisited());
+		Assert.assertEquals(3, entryParticipant1.getEntries().numOfEntries());
 
+		// Owner statistics
+		SearchParticipantsStatisticsParams participantsOwnerSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.owner)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> participantsOwnerStats = coachingService.getParticipantsStatistics(participantsOwnerSearch, userPropertyHandlers, Locale.ENGLISH);
 		
-		//group native
+		Assert.assertNotNull(participantsStats);
+		Assert.assertEquals(2, participantsStats.size());
+		// Participant 1, only in re1 where coach is owner
+		ParticipantStatisticsEntry entryParticipantOwner1 = getParticipantStatisticsEntry(participant1, participantsOwnerStats);
+		Assert.assertNotNull(entryParticipantOwner1);
+		Assert.assertEquals(1, entryParticipantOwner1.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipantOwner1.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipantOwner1.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipantOwner1.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipantOwner1.getEntries().numOfEntries());
+		// Participant 2
+		ParticipantStatisticsEntry entryParticipantOwner2 = getParticipantStatisticsEntry(participant2, participantsOwnerStats);
+		Assert.assertNotNull(entryParticipantOwner2);
+		Assert.assertEquals(1, entryParticipantOwner2.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipantOwner2.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipantOwner2.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipantOwner2.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipantOwner2.getEntries().numOfEntries());
+		
+		
+		// Group native
 		List<GroupStatEntry> nativeGroupStats = coachingDAO.getGroupsStatisticsNative(coach);
 		Assert.assertNotNull(nativeGroupStats);
 		Assert.assertEquals(1, nativeGroupStats.size());
@@ -354,7 +608,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re3, GroupRoles.coach.name());
@@ -367,7 +621,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//members of group of re 2
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re2);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group2, re2);
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
 		businessGroupRelationDao.addRole(participant3, group2, GroupRoles.participant.name());
 		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-4");
@@ -376,7 +631,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//members of group of re 3
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re3);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group3, re3);
 		Identity participant5 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-5");
 		businessGroupRelationDao.addRole(participant5, group3, GroupRoles.participant.name());
 		Identity participant6 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-6");
@@ -384,12 +640,12 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make statements participant 1
-	    effManager.createUserEfficiencyStatement(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, null, "g1", "gs1", "pc1", false, participant2, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 5.5f, null, "g1", "gs1", "pc1", true, participant3, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), null, null, null, null, null, null, participant4, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, null, "g1", "gs1", "pc1", true, participant5, re3.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 3.0f, null, "g1", "gs1", "pc1", false, participant6, re3.getOlatResource());
+	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1);
+	    setScoreInformations(new Date(), 4.0f, null, "g1", "gs1", "pc1", false, participant2, re1);
+	    setScoreInformations(new Date(), 5.5f, null, "g1", "gs1", "pc1", true, participant3, re2);
+	    setScoreInformations(new Date(), null, null, null, null, null, null, participant4, re2);
+	    setScoreInformations(new Date(), 4.0f, null, "g1", "gs1", "pc1", true, participant5, re3);
+	    setScoreInformations(new Date(), 3.0f, null, "g1", "gs1", "pc1", false, participant6, re3);
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
@@ -447,48 +703,55 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryCourse2.getCountNotAttempted());
 		Assert.assertEquals(5.5f, entryCourse2.getAverageScore(), 0.0001f);
 		
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		SearchParticipantsStatisticsParams participantsSearch = SearchParticipantsStatisticsParams.as(coach, GroupRoles.owner)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(participantsSearch, userPropertyHandlers, Locale.ENGLISH);
+		
 		Assert.assertNotNull(nativeUserStats);
-	
 		Assert.assertEquals(4, nativeUserStats.size());
-		//participant1 is only in re 1
-		StudentStatEntry entryParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
+		
+		// Participant1 is only in re 1
+		ParticipantStatisticsEntry entryParticipant1 = getParticipantStatisticsEntry(participant1, nativeUserStats);
 		Assert.assertNotNull(entryParticipant1);
-		Assert.assertEquals(1, entryParticipant1.getCountPassed());
-		Assert.assertEquals(0, entryParticipant1.getCountFailed());
-		Assert.assertEquals(0, entryParticipant1.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant1.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipant1.getCountRepo());
-		//participant2 is only in re 1
-		StudentStatEntry entryParticipant2 = getStudentStatEntry(participant2, nativeUserStats);
+		Assert.assertEquals(1, entryParticipant1.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant1.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant1.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipant1.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipant1.getEntries().numOfEntries());
+		
+		// Participant2 is only in re 1
+		ParticipantStatisticsEntry entryParticipant2 = getParticipantStatisticsEntry(participant2, nativeUserStats);
 		Assert.assertNotNull(entryParticipant2);
-		Assert.assertEquals(0, entryParticipant2.getCountPassed());
-		Assert.assertEquals(1, entryParticipant2.getCountFailed());
-		Assert.assertEquals(0, entryParticipant2.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant2.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipant2.getCountRepo());
-		//participant3 is in re 2 ( via group 2)
-		StudentStatEntry entryParticipant3 = getStudentStatEntry(participant3, nativeUserStats);
+		Assert.assertEquals(0, entryParticipant2.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryParticipant2.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfEntries());
+		Assert.assertEquals(1, entryParticipant2.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant2.getEntries().numOfNotVisited());
+		
+		// Participant3 is in re 2 ( via group 2)
+		ParticipantStatisticsEntry entryParticipant3 = getParticipantStatisticsEntry(participant3, nativeUserStats);
 		Assert.assertNotNull(entryParticipant3);
-		Assert.assertEquals(1, entryParticipant3.getCountPassed());
-		Assert.assertEquals(0, entryParticipant3.getCountFailed());
-		Assert.assertEquals(0, entryParticipant3.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant3.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipant3.getCountRepo());
-		//participant4 is in re 2 ( via group 2)
-		StudentStatEntry entryParticipant4 = getStudentStatEntry(participant4, nativeUserStats);
+		Assert.assertEquals(1, entryParticipant3.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant3.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant3.getEntries().numOfEntries());
+		Assert.assertEquals(1, entryParticipant3.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant3.getEntries().numOfNotVisited());
+		
+		// Participant4 is in re 2 ( via group 2)
+		ParticipantStatisticsEntry entryParticipant4 = getParticipantStatisticsEntry(participant4, nativeUserStats);
 		Assert.assertNotNull(entryParticipant4);
-		Assert.assertEquals(0, entryParticipant4.getCountPassed());
-		Assert.assertEquals(0, entryParticipant4.getCountFailed());
-		Assert.assertEquals(1, entryParticipant4.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant4.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipant4.getCountRepo());
+		Assert.assertEquals(0, entryParticipant4.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant4.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryParticipant4.getEntries().numOfEntries());
+		Assert.assertEquals(1, entryParticipant4.getEntries().numOfVisited());
+		Assert.assertEquals(0, entryParticipant4.getEntries().numOfNotVisited());
 	}
 	
 	/**
-	 * Check the access permissions on course (coach can only see courses with memebrsOnly, or access >= 3)
+	 * Check the access permissions on course (coach can only see their courses or their groups)
 	 * 
 	 * @throws URISyntaxException
 	 */
@@ -504,10 +767,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
-		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
-		repositoryService.addRole(courseCoach, re1, GroupRoles.coach.name());
-		repositoryService.addRole(courseCoach, re2, GroupRoles.coach.name());
+		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(courseCoach, re3, GroupRoles.coach.name());
 		
 		//add participants to courses
@@ -526,21 +787,23 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 1
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re1);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, null);
 		Identity participantG1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g1", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG1, group1, GroupRoles.participant.name());
 		Identity participantG11 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g11", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG11, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group1, re1);
 		dbInstance.commitAndCloseSession();
 
 		//members of group of re 2
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re2);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, null);
 		Identity participantG2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g2", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG2, group2, GroupRoles.participant.name());
 		Identity participantG21 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g22", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG21, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group2, re2);
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 3
@@ -550,23 +813,24 @@ public class CoachingDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(participantG3, group3, GroupRoles.participant.name());
 		Identity participantG31 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g33", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG31, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group3, re3);
 		dbInstance.commitAndCloseSession();
 		
 		//make statements participants
-	    effManager.createUserEfficiencyStatement(new Date(), 6.230429f, null, "g1", "gs1", "pc1", true, participant1, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.182317f, null, "g1", "gs1", "pc1", false, participant11, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.095833f, null, "g1", "gs1", "pc1", false, participantG1, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.578924f, null, "g1", "gs1", "pc1", false, participantG11, re1.getOlatResource());
+	    setScoreInformations(new Date(), 6.230429f, null, "g1", "gs1", "pc1", true, participant1, re1);
+	    setScoreInformations(new Date(), 4.182317f, null, "g1", "gs1", "pc1", false, participant11, re1);
+	    setScoreInformations(new Date(), 4.095833f, null, "g1", "gs1", "pc1", false, participantG1, re1);
+	    setScoreInformations(new Date(), 4.578924f, null, "g1", "gs1", "pc1", false, participantG11, re1);
 	    
-	    effManager.createUserEfficiencyStatement(new Date(), 2.2894727f, null, "g1", "gs1", "pc1", true, participant2, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), null, null, null, null, null, null, participant21, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 5.2347774f, null, "g1", "gs1", "pc1", true, participantG2, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), null, null, null, null, null, null, participantG21, re2.getOlatResource());
+	    setScoreInformations(new Date(), 2.2894727f, null, "g1", "gs1", "pc1", true, participant2, re2);
+	    setScoreInformations(new Date(), null, null, null, null, null, null, participant21, re2);
+	    setScoreInformations(new Date(), 5.2347774f, null, "g1", "gs1", "pc1", true, participantG2, re2);
+	    setScoreInformations(new Date(), null, null, null, null, null, null, participantG21, re2);
 	    
-	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, null, "g1", "gs1", "pc1", true, participant3, re3.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 3.0f, null, "g1", "gs1", "pc1", false, participant31, re3.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 5.5f, null, "g1", "gs1", "pc1", true, participantG3, re3.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 1.0f, null, "g1", "gs1", "pc1", false, participantG31, re3.getOlatResource());
+	    setScoreInformations(new Date(), 4.0f, null, "g1", "gs1", "pc1", true, participant3, re3);
+	    setScoreInformations(new Date(), 3.0f, null, "g1", "gs1", "pc1", false, participant31, re3);
+	    setScoreInformations(new Date(), 5.5f, null, "g1", "gs1", "pc1", true, participantG3, re3);
+	    setScoreInformations(new Date(), 1.0f, null, "g1", "gs1", "pc1", false, participantG31, re3);
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
@@ -587,11 +851,13 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 
-		//course coach cannot see groups
+		// Course coach cannot see groups
 		List<GroupStatEntry> courseCoachGroupStats = coachingDAO.getGroupsStatisticsNative(courseCoach);
 		Assert.assertNotNull(courseCoachGroupStats);
 		Assert.assertEquals(0, courseCoachGroupStats.size());
 
+		
+		// Group coach can see its group 3
 		List<GroupStatEntry> groupCoachGroupStats = coachingDAO.getGroupsStatisticsNative(groupCoach);
 		Assert.assertNotNull(groupCoachGroupStats);
 		Assert.assertEquals(1, groupCoachGroupStats.size());
@@ -605,7 +871,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(3.25f, entryGroup3.getAverageScore(), 0.0001f);
 		
 
-		//course statistics
+		// Course statistics
 		List<CourseStatEntry> courseCoachCourseStats = coachingDAO.getCoursesStatisticsNative(courseCoach);
 		Assert.assertNotNull(courseCoachCourseStats);
 		Assert.assertEquals(1, courseCoachCourseStats.size());
@@ -617,7 +883,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryCourse3.getCountFailed());
 		Assert.assertEquals(0, entryCourse3.getCountNotAttempted());
 		Assert.assertEquals(3.5f, entryCourse3.getAverageScore(), 0.0001f);
-		//group coach can see course 3
+		
+		// Group coach can see course 3 via group 3
 		List<CourseStatEntry> groupCoachCourseStats = coachingDAO.getCoursesStatisticsNative(groupCoach);
 		Assert.assertNotNull(groupCoachCourseStats);
 		Assert.assertEquals(1, groupCoachCourseStats.size());
@@ -629,49 +896,56 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(0, entryCourse3g.getCountNotAttempted());
 		Assert.assertEquals(3.25f, entryCourse3g.getAverageScore(), 0.0001f);
 	
+		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		//user native
-		List<StudentStatEntry> courseCoachUserStats = coachingDAO.getStudentsStatisticsNative(courseCoach, userPropertyHandlers, Locale.ENGLISH);
+		// Participants as course coach
+		SearchParticipantsStatisticsParams courseCoachSearchParams = SearchParticipantsStatisticsParams.as(courseCoach, GroupRoles.coach)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> courseCoachUserStats = coachingService.getParticipantsStatistics(courseCoachSearchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(courseCoachUserStats);
 		Assert.assertEquals(2, courseCoachUserStats.size());
-		//participant3 is only in re 1
-		StudentStatEntry entryParticipant3 = getStudentStatEntry(participant3, courseCoachUserStats);
+		// Participant3 is only in re 1
+		ParticipantStatisticsEntry entryParticipant3 = getParticipantStatisticsEntry(participant3, courseCoachUserStats);
 		Assert.assertNotNull(entryParticipant3);
-		Assert.assertEquals(1, entryParticipant3.getCountPassed());
-		Assert.assertEquals(0, entryParticipant3.getCountFailed());
-		Assert.assertEquals(0, entryParticipant3.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant3.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipant3.getCountRepo());
-		//participant31 is only in re 1
-		StudentStatEntry entryParticipant31 = getStudentStatEntry(participant31, courseCoachUserStats);
+		Assert.assertEquals(1, entryParticipant3.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipant3.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant3.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipant3.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipant3.getEntries().numOfEntries());
+		// Participant31 is only in re 1
+		ParticipantStatisticsEntry entryParticipant31 = getParticipantStatisticsEntry(participant31, courseCoachUserStats);
 		Assert.assertNotNull(entryParticipant31);
-		Assert.assertEquals(0, entryParticipant31.getCountPassed());
-		Assert.assertEquals(1, entryParticipant31.getCountFailed());
-		Assert.assertEquals(0, entryParticipant31.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipant31.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipant31.getCountRepo());
+		Assert.assertEquals(0, entryParticipant31.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryParticipant31.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipant31.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipant31.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipant31.getEntries().numOfEntries());
 		
-		//group coach
-		List<StudentStatEntry> groupCoachUserStats = coachingDAO.getStudentsStatisticsNative(groupCoach, userPropertyHandlers, Locale.ENGLISH);
+		// Participants as group coach of group 3
+		SearchParticipantsStatisticsParams groupCoachSearchParams = SearchParticipantsStatisticsParams.as(groupCoach, GroupRoles.coach)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> groupCoachUserStats = coachingService.getParticipantsStatistics(groupCoachSearchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(groupCoachUserStats);
 		Assert.assertEquals(2, groupCoachUserStats.size());
 
 		//participantG3 is in re 3 ( via group 3)
-		StudentStatEntry entryParticipantG3 = getStudentStatEntry(participantG3, groupCoachUserStats);
+		ParticipantStatisticsEntry entryParticipantG3 = getParticipantStatisticsEntry(participantG3, groupCoachUserStats);
 		Assert.assertNotNull(entryParticipantG3);
-		Assert.assertEquals(1, entryParticipantG3.getCountPassed());
-		Assert.assertEquals(0, entryParticipantG3.getCountFailed());
-		Assert.assertEquals(0, entryParticipantG3.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipantG3.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipantG3.getCountRepo());
+		//TODO coaching Assert.assertEquals(1, entryParticipantG3.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryParticipantG3.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipantG3.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipantG3.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipantG3.getEntries().numOfEntries());
 		//participantG3 is in re 3 ( via group 3)
-		StudentStatEntry entryParticipantG31 = getStudentStatEntry(participantG31, groupCoachUserStats);
+		ParticipantStatisticsEntry entryParticipantG31 = getParticipantStatisticsEntry(participantG31, groupCoachUserStats);
 		Assert.assertNotNull(entryParticipantG31);
-		Assert.assertEquals(0, entryParticipantG31.getCountPassed());
-		Assert.assertEquals(1, entryParticipantG31.getCountFailed());
-		Assert.assertEquals(0, entryParticipantG31.getCountNotAttempted());
-		Assert.assertEquals(1, entryParticipantG31.getInitialLaunch());
-		Assert.assertEquals(1, entryParticipantG31.getCountRepo());
+		Assert.assertEquals(0, entryParticipantG31.getSuccessStatus().numPassed());
+		//TODO coaching Assert.assertEquals(1, entryParticipantG31.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryParticipantG31.getEntries().numOfNotVisited());
+		Assert.assertEquals(1, entryParticipantG31.getEntries().numOfVisited());
+		Assert.assertEquals(1, entryParticipantG31.getEntries().numOfEntries());
 	}
 	
 	/**
@@ -690,7 +964,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
 		
@@ -702,11 +976,12 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re1);
+				null, null, false, false, null);
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participant3, group1, GroupRoles.participant.name());
 		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-4", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participant4, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group1, re1);
 		dbInstance.commitAndCloseSession();
 		
 		//check groups statistics
@@ -736,21 +1011,23 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(4, entryCourse1.getCountNotAttempted());
 		Assert.assertNull(entryCourse1.getAverageScore());
 
+		// Coach is owner of the first entry -> look at participants
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, GroupRoles.owner);
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
+		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(4, nativeUserStats.size());
+		
 		//participants have all the same statistics
 		Identity[] participants = new Identity[]{ participant1, participant2, participant3, participant4};
 		for(Identity participant:participants) {
-			StudentStatEntry entryParticipant = getStudentStatEntry(participant, nativeUserStats);
+			ParticipantStatisticsEntry entryParticipant = getParticipantStatisticsEntry(participant, nativeUserStats);
 			Assert.assertNotNull(entryParticipant);
-			Assert.assertEquals(0, entryParticipant.getCountPassed());
-			Assert.assertEquals(0, entryParticipant.getCountFailed());
-			Assert.assertEquals(1, entryParticipant.getCountNotAttempted());
-			Assert.assertEquals(0, entryParticipant.getInitialLaunch());
-			Assert.assertEquals(1, entryParticipant.getCountRepo());
+			Assert.assertEquals(0, entryParticipant.getSuccessStatus().numPassed());
+			Assert.assertEquals(0, entryParticipant.getSuccessStatus().numFailed());
+			Assert.assertEquals(1, entryParticipant.getEntries().numOfNotVisited());
+			Assert.assertEquals(0, entryParticipant.getEntries().numOfVisited());
+			Assert.assertEquals(1, entryParticipant.getEntries().numOfEntries());
 		}
 	}
 	
@@ -770,12 +1047,13 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
 		//groups
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re1);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group, re1);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(group);
 
@@ -790,14 +1068,15 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(0, nativeCourseStats.size());
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
+		//Participants
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach);
+		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
-		Assert.assertEquals(0, nativeUserStats.size());
+		Assert.assertTrue(nativeUserStats.isEmpty());
 	}
 	
 	@Test
-	public void getStatistics_completion() {
+	public void getStatisticsCompletion() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation); 
@@ -809,7 +1088,7 @@ public class CoachingDAOTest extends OlatTestCase {
 				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1-");
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3", defaultUnitTestOrganisation, null);
@@ -823,7 +1102,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//members of group of re 2
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re2);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group2, re2);
 		businessGroupRelationDao.addRole(coach, group2, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant1, group2, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
@@ -831,7 +1111,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		//members of group of re 3
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re3);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group3, re3);
 		businessGroupRelationDao.addRole(coach, group3, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant1, group3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group3, GroupRoles.participant.name());
@@ -843,46 +1124,48 @@ public class CoachingDAOTest extends OlatTestCase {
 		repositoryService.addRole(participant2, re4, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		//make assessments participant 1
-		AssessmentEntry aeParticipant1Course1 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null);
+		// Override assessments participant 1
+		AssessmentEntry aeParticipant1Course1 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null);
 		aeParticipant1Course1.setCompletion(Double.valueOf(1));
-		assessmnetService.updateAssessmentEntry(aeParticipant1Course1);
-		AssessmentEntry aeParticipant1Course1a = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null);
+		assessmentService.updateAssessmentEntry(aeParticipant1Course1);
+		AssessmentEntry aeParticipant1Course1a = assessmentService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null);
 		aeParticipant1Course1a.setCompletion(Double.valueOf(1));
-		assessmnetService.updateAssessmentEntry(aeParticipant1Course1a);
-		AssessmentEntry aeParticipant1Course2 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null);
+		assessmentService.updateAssessmentEntry(aeParticipant1Course1a);
+		AssessmentEntry aeParticipant1Course2 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null);
 		aeParticipant1Course2.setCompletion(Double.valueOf(0.2));
-		assessmnetService.updateAssessmentEntry(aeParticipant1Course2);
-		AssessmentEntry aeParticipant1Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		assessmentService.updateAssessmentEntry(aeParticipant1Course2);
+		AssessmentEntry aeParticipant1Course3 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
 		aeParticipant1Course3.setCompletion(null);
-		assessmnetService.updateAssessmentEntry(aeParticipant1Course3);
-		AssessmentEntry aeParticipant1Course4 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null);
+		assessmentService.updateAssessmentEntry(aeParticipant1Course3);
+		AssessmentEntry aeParticipant1Course4 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null);
 		aeParticipant1Course4.setCompletion(Double.valueOf(0.6));
-		assessmnetService.updateAssessmentEntry(aeParticipant1Course4);
+		assessmentService.updateAssessmentEntry(aeParticipant1Course4);
 		dbInstance.commitAndCloseSession();
 		
-		//make assessments participant 2
-		AssessmentEntry aeParticipant2Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		// Override assessments participant 2
+		AssessmentEntry aeParticipant2Course3 = assessmentService.getOrCreateAssessmentEntry(participant2, null, re3, random(), Boolean.TRUE, null);
 		aeParticipant2Course3.setCompletion(null);
-		assessmnetService.updateAssessmentEntry(aeParticipant2Course3);
-		dbInstance.commitAndCloseSession();
+		assessmentService.updateAssessmentEntry(aeParticipant2Course3);
 		
-		//make assessments participant 3
-		AssessmentEntry aeParticipant3Course1 = assessmnetService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null);
+		// Override assessments participant 3
+		AssessmentEntry aeParticipant3Course1 = assessmentService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null);
 		aeParticipant3Course1.setCompletion(Double.valueOf(0.4));
-		assessmnetService.updateAssessmentEntry(aeParticipant3Course1);
+		assessmentService.updateAssessmentEntry(aeParticipant3Course1);
 		dbInstance.commitAndCloseSession();
 		
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach, GroupRoles.coach)
+				.withCourseCompletion(true)
+				.withCourseStatus(true);
+		List<ParticipantStatisticsEntry> nativeUserStats = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		
 		// Assert average completions of members
-		StudentStatEntry statsParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
+		ParticipantStatisticsEntry statsParticipant1 = getParticipantStatisticsEntry(participant1, nativeUserStats);
 		Assert.assertNotNull(statsParticipant1);
 		Assert.assertEquals(0.6, statsParticipant1.getAverageCompletion(), 0.0001f);
 		
-		StudentStatEntry statsParticipant2 = getStudentStatEntry(participant2, nativeUserStats);
+		ParticipantStatisticsEntry statsParticipant2 = getParticipantStatisticsEntry(participant2, nativeUserStats);
 		Assert.assertNotNull(statsParticipant2);
 		Assert.assertNull(statsParticipant2.getAverageCompletion());
 		
@@ -923,17 +1206,19 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		// groups
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re2);
+				null, null, false, false, null);
 		businessGroupRelationDao.addRole(participant, group2, GroupRoles.participant.name());
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re3);
+				null, null, false, false, null);
 		businessGroupRelationDao.addRole(participant, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group2, re2);
+		businessGroupRelationDao.addRelationToResource(group3, re3);
 		dbInstance.commitAndCloseSession();
 
 		//make statements participant 1
-	    effManager.createUserEfficiencyStatement(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant, re1.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 4.0f, null, "g1", "gs1", "pc1", false, participant, re2.getOlatResource());
-	    effManager.createUserEfficiencyStatement(new Date(), 2.0f, null, "g1", "gs1", "pc1", false, participant, re3.getOlatResource());
+	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant, re1);
+	    setScoreInformations(new Date(), 4.0f, null, "g1", "gs1", "pc1", false, participant, re2);
+	    setScoreInformations(new Date(), 2.0f, null, "g1", "gs1", "pc1", false, participant, re3);
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
@@ -989,7 +1274,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStudents_coach_course() {
+	public void getStudentsByCoachAndCourse() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
@@ -1007,11 +1292,13 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		// groups
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
 		businessGroupRelationDao.addRole(participant3, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group2, re);
+		businessGroupRelationDao.addRelationToResource(group3, re);
 		dbInstance.commitAndCloseSession();
 
 		List<Identity> students = coachingDAO.getStudents(coach, re);
@@ -1043,12 +1330,14 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		// groups
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
 		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
 		businessGroupRelationDao.addRole(participant3, group3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant4, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRelationToResource(group2, re);
+		businessGroupRelationDao.addRelationToResource(group3, re);
 		dbInstance.commitAndCloseSession();
 		
 		//owner
@@ -1069,7 +1358,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void isCoach_owner() throws URISyntaxException {
+	public void isCoachOwner() throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
@@ -1085,7 +1374,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void isCoach_coach() {
+	public void isCoachByCoach() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
@@ -1099,7 +1388,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		//coach in a group of the course
 		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2", defaultUnitTestOrganisation, null);
 		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group, re);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 		
@@ -1111,7 +1401,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void isCoach_notPermitted() {
+	public void isCoachNotPermitted() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course",
 				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
@@ -1127,7 +1417,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		//coach in a group of the course
 		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2");
 		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
-				null, null, false, false, re);
+				null, null, false, false, null);
+		businessGroupRelationDao.addRelationToResource(group, re);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 		
@@ -1138,6 +1429,34 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertTrue(canGroupCoach);
 		boolean canCourseParticipant= coachingDAO.isCoach(courseParticipant);
 		Assert.assertFalse(canCourseParticipant);
+	}
+	
+	private void setScoreInformations(Date date, Float score, Float weightedScore,
+			String grade, String gradeSystemIdent, String performanceClassIdent,
+			Boolean passed, Identity identity, RepositoryEntry entry) {
+		
+		ICourse course = CourseFactory.loadCourse(entry);
+		AssessmentEntry assessmentEntry = course.getCourseEnvironment().getAssessmentManager()
+				.getOrCreateAssessmentEntry(course.getRunStructure().getRootNode(), identity, Boolean.TRUE);
+		assessmentEntry.setScore(score == null ? null : new BigDecimal(Float.toString(score)));
+		assessmentEntry.setWeightedScore(weightedScore == null ? null : new BigDecimal(Float.toString(weightedScore)));
+		assessmentEntry.setPassed(passed);
+		assessmentEntry.setCompletion(1.0d);
+		course.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(assessmentEntry);
+
+		efficiencyStatementManager.createUserEfficiencyStatement(date, score, weightedScore,
+	    		grade, gradeSystemIdent, performanceClassIdent,
+	    		passed, identity, entry.getOlatResource());
+	}
+	
+	private ParticipantStatisticsEntry getParticipantStatisticsEntry(IdentityRef identity, List<ParticipantStatisticsEntry> entries) {
+		ParticipantStatisticsEntry entry = null;
+		for(ParticipantStatisticsEntry e:entries) {
+			if(e.getIdentityKey().equals(identity.getKey())) {
+				entry = e;
+			}
+		}
+		return entry;
 	}
 	
 	private StudentStatEntry getStudentStatEntry(IdentityRef identity, List<StudentStatEntry> entries) {

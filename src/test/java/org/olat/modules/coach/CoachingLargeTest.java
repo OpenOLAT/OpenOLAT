@@ -43,7 +43,9 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.repository.RepositoryEntry;
@@ -275,8 +277,9 @@ public class CoachingLargeTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStudentsStatistics() {
-		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10, userPropertyHandlers, Locale.ENGLISH);
+	public void getParticipantsStatisticsAsCoach() {
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(coach10, GroupRoles.coach);
+		List<ParticipantStatisticsEntry> statEntries = coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(statEntries);
 	}
 	

@@ -22,9 +22,7 @@ package org.olat.modules.coach;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -38,7 +36,9 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -53,17 +53,16 @@ public interface CoachingService {
 
 	public CoachingSecurity isCoach(Identity identity, Roles roles);
 	
-	//TODO absence remove it in a few weeks
-	public boolean isTeacher(IdentityRef identity);
 
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
 	
-	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
+	public List<ParticipantStatisticsEntry> getParticipantsStatistics(SearchParticipantsStatisticsParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
+	
+	
 
 	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 
-	public List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
-	
+
 	public List<StudentStatEntry> getUsersByOrganization(List<UserPropertyHandler> userPropertyHandlers, Identity identity, List<Organisation> organisations, OrganisationRoles organisationRole, Locale locale);
 	
 	public List<RepositoryEntry> getUserCourses(Identity student);

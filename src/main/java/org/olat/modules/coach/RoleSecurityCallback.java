@@ -105,7 +105,7 @@ public interface RoleSecurityCallback {
 	/**
 	 * Is this role allowed to manage pending course bookings?
 	 */
-	public boolean canManagePendingCourseBookings();
+	public boolean canViewPendingCourseBookings();
 
 	/**
 	 * Is this role allowed to view an invoices report?

@@ -169,7 +169,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		appendOrganisations(rows, rowKeys);
 	}
 	
-	private void appendOrganisations(List<? extends IdentityOrganisationsRow> rows, List<Long> rowsKeys) {
+	public void appendOrganisations(List<? extends IdentityOrganisationsRow> rows, List<Long> rowsKeys) {
 		
 		List<OrganisationWithParents> organisations = organisationTree.getOrderedOrganisationsWithParents();
 		Map<Long,OrganisationWithParents> organisationsMap = organisations.stream()

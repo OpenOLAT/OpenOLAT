@@ -140,8 +140,8 @@ public class RoleSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canManagePendingCourseBookings() {
-			return roleRights.contains(PendingAccountActivationRightProvider.RELATION_RIGHT);
+		public boolean canViewPendingCourseBookings() {
+			return roleRights.contains(PendingCourseBookingsRightProvider.RELATION_RIGHT);
 		}
 
 		@Override

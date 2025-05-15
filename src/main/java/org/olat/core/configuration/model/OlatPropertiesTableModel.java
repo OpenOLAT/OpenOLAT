@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.coach.ui.StudentsTableDataModel;
 
 
 /**
@@ -43,7 +42,7 @@ import org.olat.modules.coach.ui.StudentsTableDataModel;
 
 public class OlatPropertiesTableModel extends DefaultFlexiTableDataModel<OlatPropertiesTableContentRow> implements SortableFlexiTableDataModel<OlatPropertiesTableContentRow>, FilterableFlexiTableModel {
 
-	private static final Logger log = Tracing.createLoggerFor(StudentsTableDataModel.class);
+	private static final Logger log = Tracing.createLoggerFor(OlatPropertiesTableModel.class);
 	private List<OlatPropertiesTableContentRow> backup; 
 	
 	public OlatPropertiesTableModel(FlexiTableColumnModel columnModel) {

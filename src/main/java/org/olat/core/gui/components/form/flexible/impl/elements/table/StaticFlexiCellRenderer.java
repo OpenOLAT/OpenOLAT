@@ -151,6 +151,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		this.linkCSS = linkCSS;
 	}
 	
+	public void setLinkTitle(String linkTitle) {
+		this.linkTitle = linkTitle;
+	}
+	
 	public String getAction() {
 		return action;
 	}
