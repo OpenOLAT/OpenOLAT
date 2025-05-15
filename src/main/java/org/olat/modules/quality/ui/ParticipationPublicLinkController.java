@@ -104,9 +104,12 @@ public class ParticipationPublicLinkController extends FormBasicController {
 	}
 	
 	private void updateUI() {
+		enabledEl.setEnabled(secCallback.canEditPublicParticipation());
+		
 		boolean enabled = enabledEl.isOn();
 		
 		identifierEl.setVisible(enabled);
+		identifierEl.setEnabled(secCallback.canEditPublicParticipation());
 		if (enabled && !StringHelper.containsNonWhitespace(identifierEl.getValue())) {
 			identifierEl.setValue(UUID.randomUUID().toString().replace("-", ""));
 		}
@@ -124,6 +127,7 @@ public class ParticipationPublicLinkController extends FormBasicController {
 	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback) {
 		this.dataCollection = dataCollection;
 		this.secCallback = secCallback;
+		updateUI();
 	}
 
 	@Override
