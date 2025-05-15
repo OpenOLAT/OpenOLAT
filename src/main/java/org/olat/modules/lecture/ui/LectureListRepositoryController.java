@@ -32,6 +32,7 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerException;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.IdentityRefImpl;
@@ -1474,6 +1475,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(guardModalController(editLectureCtrl)) return;
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
+		if(block == null) {
+			loadModel(ureq);
+		} else {
+			doEditLectureBlock(ureq, block);
+		}
+	}
+	
+	private void doEditLectureBlock(UserRequest ureq, LectureBlock block) {
 		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
 		if(entry != null) {
 			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
@@ -1600,34 +1609,47 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private void doBulkCopy(UserRequest ureq) {
 		int count = 0;
 		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		List<LectureBlock> selectedBlocks = new ArrayList<>();
 		for(Integer selectedIndex:selectedIndexes) {
 			LectureBlockRow row = tableModel.getObject(selectedIndex.intValue());
 			if(row != null) {
 				LectureBlock block = lectureService.getLectureBlock(row);
+				if(block != null) {
+					selectedBlocks.add(block);
+				}
+			}
+		}
+		if(selectedBlocks.isEmpty()) {
+			showWarning("error.atleastone.lecture");
+		} else if(selectedBlocks.size() == 1) {
+			LectureBlock block = selectedBlocks.get(0);
+			String newTitle = translate("lecture.block.copy", block.getTitle());
+			LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, block, false);
+			doEditLectureBlock(ureq, copiedBlock);
+		} else {
+			for(LectureBlock block:selectedBlocks) {
 				String newTitle = translate("lecture.block.copy", block.getTitle());
-				lectureService.copyLectureBlock(newTitle, block);
+				lectureService.copyLectureBlock(newTitle, block, true);
 				dbInstance.commitAndCloseSession();
 				count++;
 			}
-		}
-		
-		loadModel(ureq);
-		
-		if(count == 1) {
-			showInfo("lecture.block.copied");
-		} else if(count > 1) {
-			showInfo("lecture.block.copied.plural", Integer.toString(count));
-		} else {
-			showWarning("error.atleastone.lecture");
+			loadModel(ureq);
+			
+			if(count == 1) {
+				showInfo("lecture.block.copied");
+			} else if(count > 1) {
+				showInfo("lecture.block.copied.plural", Integer.toString(count));
+			} else {
+				showWarning("error.atleastone.lecture");
+			}
 		}
 	}
 	
 	private void doCopy(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock block = lectureService.getLectureBlock(row);
 		String newTitle = translate("lecture.block.copy", block.getTitle());
-		lectureService.copyLectureBlock(newTitle, block);
-		loadModel(ureq);
-		showInfo("lecture.block.copied");
+		LectureBlock copiedBlock = lectureService.copyLectureBlock(newTitle, block, false);
+		doEditLectureBlock(ureq, copiedBlock);
 	}
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {
@@ -1818,12 +1840,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doOpenRepositoryEntry(UserRequest ureq, LectureBlockRow row) {
-		if(row.getCurriculumElement() == null) return;
+		if(row.getCurriculumElement() == null || row.getEntry().key() == null) return;
 		
 		String path = "[RepositoryEntry:" + row.getEntry().key() + "]";
-		List<ContextEntry> entries = BusinessControlFactory.getInstance()
-				.createCEListFromString(path);
-		fireEvent(ureq, new ActivateEvent(entries));
+		NewControllerFactory.getInstance().launch(path, ureq, getWindowControl());
 	}
 	
 	private void doAssignNewEntry(UserRequest ureq, LectureBlockRow row) {
