@@ -126,6 +126,8 @@ public interface OpenBadgesManager {
 
 	VFSLeaf getBadgeClassVfsLeaf(String classFile);
 
+	List<BadgeClass> getBadgeClassVersions(String rootId);
+
 	BadgeClass updateBadgeClass(BadgeClass badgeClass);
 
 	void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry);

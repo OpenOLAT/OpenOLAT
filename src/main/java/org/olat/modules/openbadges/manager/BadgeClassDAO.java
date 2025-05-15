@@ -89,6 +89,7 @@ public class BadgeClassDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select bc from badgeclass bc ");
 		sb.append(" where bc.rootId = :rootId ");
+		sb.append(" order by bc.creationDate desc ");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class)
 				.setParameter("rootId", rootId).getResultList();
 	}

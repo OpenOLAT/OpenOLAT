@@ -28,10 +28,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,7 +67,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	private final Long badgeClassKey;
 	private final String mediaUrl;
 	private String name;
-	private FormLink editDetailsButton;
+	private SingleSelection versionSelectionEl;
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
 	private StaticTextElement issuerEl;
@@ -89,10 +91,15 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 
-		editDetailsButton = uifactory.addFormLink("class.edit.details", formLayout, Link.BUTTON);
-		editDetailsButton.setElementCssClass("o_right");
-		editDetailsButton.setVisible(false);
-		
+		SelectionValues sv = new SelectionValues();
+		if (badgeClass.hasPreviousVersion()) {
+			openBadgesManager.getBadgeClassVersions(badgeClass.getRootId())
+					.forEach(bc -> sv.add(SelectionValues.entry(bc.getUuid(), versionString(bc))));
+			versionSelectionEl = uifactory.addDropdownSingleselect("versionSelection", formLayout, sv.keys(), sv.values());
+			versionSelectionEl.addActionListener(FormEvent.ONCHANGE);
+			versionSelectionEl.select(badgeClass.getUuid(), true);
+		}
+
 		courseEl = uifactory.addFormLink("form.course", "goToCourse", "", translate("form.course"), formLayout, Link.NONTRANSLATED);
 		uifactory.addStaticTextElement("form.createdOn",
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate()), formLayout);
@@ -107,8 +114,19 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		loadData();
 	}
 
+	private String versionString(BadgeClass badgeClass) {
+		return translate("class.version", badgeClass.getVersion(), 
+				Formatter.formatDateFilesystemSave(badgeClass.getCreationDate()));
+	}
+
 	void loadData() {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
+		BadgeClass badgeClass;
+		if (versionSelectionEl != null && versionSelectionEl.isVisible() && versionSelectionEl.getSelectedKey() != null) {
+			badgeClass = openBadgesManager.getBadgeClassByUuid(versionSelectionEl.getSelectedKey());
+		} else {
+			badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
+		}
+
 		name = badgeClass.getNameWithScan();
 
 		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
@@ -172,6 +190,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == courseEl) {
 			fireEvent(ureq, FormEvent.BACK_EVENT);
+		} else if (source == versionSelectionEl) {
+			loadData();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -850,6 +850,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				obj.getResetCount(), obj.getTotalUseCount())).toList();
 	}
 
+	@Override
+	public List<BadgeClass> getBadgeClassVersions(String rootId) {
+		return badgeClassDAO.getBadgeClassVersions(rootId);
+	}
+
 	private boolean updateBadgeClasses(List<BadgeClassDAO.BadgeClassWithUseCount> enhancedBadgeClasses) {
 		boolean updated = false;
 		for (BadgeClassDAO.BadgeClassWithUseCount enhancedBadgeClass : enhancedBadgeClasses) {

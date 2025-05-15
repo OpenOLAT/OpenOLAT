@@ -1,9 +1,9 @@
 <div class="o_badge_details_overview row o_form form-horizontal">
-	<div class="col-xs-12 row">
+	<div class="col-xs-12 row" style="padding-right: 0;">
 		<div class="col-xs-6 col-sm-4 col-md-3 col-lg-2 o_badge_class_image_wrapper">
 			<img src="${img}" alt="${imgAlt}"/>
 		</div>
-		<div class="col-xs-6 col-sm-5 col-md-6 col-lg-8">
+		<div class="col-xs-6 col-sm-5 col-md-6 col-lg-7">
 			<div class="o_labeled o_badge_class_status_${badgeClass.status}">$r.translate("class.status." + $badgeClass.status)</div>
 			<legend style="border: none;">${badgeClass.nameWithScan}</legend>
 			<p>
@@ -14,9 +14,9 @@
 				#end
 			</p>
 		</div>
-		<div class="col-xs-12 col-sm-3 col-md-3 col-lg-2" style="text-align: right; padding-right: 0;">
-			#if($r.available("class.edit.details") && $r.visible("class.edit.details"))
-			$r.render("class.edit.details")
+		<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3" style="text-align: right; padding-right: 0;">
+			#if($r.available("versionSelection") && $r.visible("versionSelection"))
+			$r.render("versionSelection")
 			#end
 		</div>
 	</div>
