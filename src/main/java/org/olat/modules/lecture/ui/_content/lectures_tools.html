@@ -15,6 +15,19 @@
 		<li>$r.render("change.to.location.meeting")</li>
 	#end
 	
+	#if($r.available("add.assessment.mode") || $r.available("edit.assessment.mode") || $r.available("delete.assessment.mode"))
+		<li class="divider"></li>
+		#if($r.available("add.assessment.mode"))
+		<li>$r.render("add.assessment.mode")</li>
+		#end
+		#if($r.available("edit.assessment.mode"))
+		<li>$r.render("edit.assessment.mode")</li>
+		#end
+		#if($r.available("delete.assessment.mode"))
+		<li>$r.render("delete.assessment.mode")</li>
+		#end
+	#end
+	
 	#if($r.available("edit") || $r.available("copy") || $r.available("open.online.meeting") || $r.available("change.to.online.meeting") || $r.available("change.to.location.meeting"))
 		<li class="divider"></li>
 	#end
@@ -33,19 +46,6 @@
 	#end
 	#if($r.available("reopen.lecture.blocks"))
 	<li>$r.render("reopen.lecture.blocks")</li>
-	#end
-
-	#if($r.available("add.assessment.mode") || $r.available("edit.assessment.mode") || $r.available("delete.assessment.mode"))
-		<li class="divider"></li>
-		#if($r.available("add.assessment.mode"))
-		<li>$r.render("add.assessment.mode")</li>
-		#end
-		#if($r.available("edit.assessment.mode"))
-		<li>$r.render("edit.assessment.mode")</li>
-		#end
-		#if($r.available("delete.assessment.mode"))
-		<li>$r.render("delete.assessment.mode")</li>
-		#end
 	#end
 
 	#if($r.available("assign.new.entry"))

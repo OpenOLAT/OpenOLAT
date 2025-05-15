@@ -225,7 +225,7 @@ public interface LectureService {
 	 * @param block
 	 * @return
 	 */
-	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block);
+	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block, boolean persist);
 	
 	/**
 	 * Copy the specified lecture block with some customization and link it
@@ -241,7 +241,7 @@ public interface LectureService {
 	 * @return The new lecture block
 	 */
 	public LectureBlock copyLectureBlock(LectureBlock block, String title, String externalRef, Date start, Date end,
-			RepositoryEntry entry, CurriculumElement curriculumElement);
+			RepositoryEntry entry, CurriculumElement curriculumElement, boolean persist);
 	
 	public LectureBlock moveLectureBlock(LectureBlockRef block, RepositoryEntry newEntry);
 	

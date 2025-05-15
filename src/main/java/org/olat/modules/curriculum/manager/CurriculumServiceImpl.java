@@ -584,7 +584,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						Date start = settings.shiftDate(blockToCopy.getStartDate());
 						Date end = settings.shiftDate(blockToCopy.getEndDate());
 						String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-						LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
+						LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone, true);
 						lectureBlocksCloned.add(blockToCopy.getKey());
 						lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
 						if(settings.isCopyCoachesMemberships() && settings.isAddCoachesAsTeacher()) {
@@ -609,7 +609,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 								Date start = settings.shiftDate(blockToCopy.getStartDate());
 								Date end = settings.shiftDate(blockToCopy.getEndDate());
 								String blockExternalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-								LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), blockExternalRef, start, end, entryCopy, clone);
+								LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), blockExternalRef, start, end, entryCopy, clone, true);
 								lectureBlocksCloned.add(blockToCopy.getKey());
 								if(settings.isCopyCoachesMemberships() && settings.isAddCoachesAsTeacher()) {
 									copyLectureBlockTeachers(blockToCopy, copiedBlock);
@@ -648,7 +648,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					Date start = settings.shiftDate(blockToCopy.getStartDate());
 					Date end = settings.shiftDate(blockToCopy.getEndDate());
 					String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-					LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
+					LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone, true);
 					lectureBlocksCloned.add(blockToCopy.getKey());
 					lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
 					if(settings.isCopyCoachesMemberships() && settings.isAddCoachesAsTeacher()) {

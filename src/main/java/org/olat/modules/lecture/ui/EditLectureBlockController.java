@@ -392,8 +392,8 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		} 
-		if(!found && teachersPK.size() > 0 && lectureBlock == null) {
-			teacherEl.select(teachersPK.keys()[0], true);
+		if(!found && !teachersPK.isEmpty() && (lectureBlock == null || lectureBlock.getKey() == null)) {
+			teacherEl.selectAll();
 		}
 		
 		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);
@@ -646,7 +646,7 @@ public class EditLectureBlockController extends FormBasicController {
 		LectureBlockAuditLog.Action action;
 		StringBuilder audit = new StringBuilder();
 		List<Group> selectedGroups;
-		if(lectureBlock == null) {
+		if(lectureBlock == null || lectureBlock.getKey() == null) {
 			beforeXml = null;
 			action = LectureBlockAuditLog.Action.createLectureBlock;
 			selectedGroups = new ArrayList<>();	
@@ -658,10 +658,14 @@ public class EditLectureBlockController extends FormBasicController {
 					List<RepositoryEntry> curriculumElementEntries = curriculumService.getRepositoryEntries(curriculumElement);
 					singleEntry = curriculumElementEntries.size() == 1 ? curriculumElementEntries.get(0) : null;
 				}
-				lectureBlock = lectureService.createLectureBlock(curriculumElement, singleEntry);
+				lectureBlock = lectureBlock.getKey() == null
+						? lectureBlock
+						: lectureService.createLectureBlock(curriculumElement, singleEntry);
 				selectedGroups.add(curriculumElement.getGroup());
 			} else if(entry != null) {
-				lectureBlock = lectureService.createLectureBlock(entry);
+				lectureBlock = lectureBlock.getKey() == null
+						? lectureBlock
+						: lectureService.createLectureBlock(entry);
 				// Add default group and business groups automatically
 				Group defGroup = repositoryService.getDefaultGroup(entry);
 				selectedGroups.add(defGroup);

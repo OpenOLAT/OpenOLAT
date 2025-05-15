@@ -214,17 +214,23 @@ public class QTI21ResultsExport {
 	}
 	
 	public void exportExcelResults(ZipOutputStream zout) {
-		int count = 1;
+		List<RepositoryEntry> testEntriesList = new ArrayList<>();
+		RepositoryEntry currentTestEntry = courseNode.getReferencedRepositoryEntry();
+		if(currentTestEntry != null) {
+			testEntriesList.add(currentTestEntry);
+		}
 		
-		// Maintain the order
 		List<ReferenceHistoryWithInfos> refs = qtiService.getReferenceHistoryWithInfos(entry, courseNode.getIdent());
-		Set<RepositoryEntry> deduplicate = new HashSet<>();
 		for(ReferenceHistoryWithInfos ref:refs) {
 			RepositoryEntry testEntry = ref.testEntry();
-			if(testEntries.contains(testEntry) && !deduplicate.contains(testEntry)) {
-				exportExcelResults(testEntry, count++, zout);
-				deduplicate.add(testEntry);
+			if(testEntry != null && !testEntriesList.contains(testEntry)) {
+				testEntriesList.add(testEntry);
 			}
+		}
+		
+		int count = 1;
+		for(RepositoryEntry testEntry:testEntriesList) {
+			exportExcelResults(testEntry, count++, zout);
 		}
 	}
 	
