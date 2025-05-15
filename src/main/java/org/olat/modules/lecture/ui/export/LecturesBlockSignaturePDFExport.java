@@ -135,46 +135,52 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 	    	String resourceTitle = entry == null ? "" : entry.getDisplayname();
 	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
 
-	    	String title = resourceTitle + " - " + lectureBlockTitle;
-	    	title = translator.translate("attendance.list.to.sign.title", new String[] { title });
-	    	addParagraph(title, 16, true, width);
-	
-	    	Formatter formatter = Formatter.getInstance(translator.getLocale());
-		String dates = translator.translate("pdf.table.dates", new String[] {
-			formatter.formatDate(lectureBlock.getStartDate()),
-			formatter.formatTimeShort(lectureBlock.getStartDate()),
-			formatter.formatTimeShort(lectureBlock.getEndDate())
-		});
-	
-	    	addParagraph(dates, 12, true, width);
-	  	
-	    	float cellMargin = 5.0f;
-	    	float fontSize = 10.0f;
-	    	
-	    	String[] content = getRows(rows);
-	
-	    	int numOfRows = content.length;
-	    	for(int offset=0; offset<numOfRows; ) {
-	    		offset += drawTable(content, offset, fontSize, cellMargin);
-	    		closePage();
-	        	if(offset<numOfRows) {
-	        		addPage();
-	        	}
-	    	}
-	    	
-	    	addPageNumbers(); 
-	    }
+		String title = resourceTitle + " - " + lectureBlockTitle;
+		title = translator.translate("attendance.list.to.sign.title", new String[] { title });
+		addParagraph(title, 16, true, width);
+
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+		String dates = translator.translate("pdf.table.dates",
+				new String[] { formatter.formatDate(lectureBlock.getStartDate()),
+						formatter.formatTimeShort(lectureBlock.getStartDate()),
+						formatter.formatTimeShort(lectureBlock.getEndDate()) });
+
+		addParagraph(dates, 12, true, width);
+
+		float cellMargin = 5.0f;
+		float fontSize = 10.0f;
+
+		String[] content = getRows(rows);
+
+		int numOfRows = content.length;
+		if(numOfRows == 0) {
+			String[] emptyContent = { };
+			drawTable(emptyContent, 0, fontSize, cellMargin);
+			closePage();
+		} else {
 		
-		private String[] getRows(List<Identity> rows) {
-			int numOfRows = rows.size();
-	
-	    	String[] content = new String[numOfRows];
-	    	for(int i=0; i<numOfRows; i++) {
-	    		Identity row = rows.get(i);
-	        	content[i] = getName(row);
-	    	}
-	    	
-	    	return content;
+			for (int offset = 0; offset < numOfRows;) {
+				offset += drawTable(content, offset, fontSize, cellMargin);
+				closePage();
+				if (offset < numOfRows) {
+					addPage();
+				}
+			}
+		}
+
+		addPageNumbers();
+	}
+
+	private String[] getRows(List<Identity> rows) {
+		int numOfRows = rows.size();
+
+		String[] content = new String[numOfRows];
+		for (int i = 0; i < numOfRows; i++) {
+			Identity row = rows.get(i);
+			content[i] = getName(row);
+		}
+
+		return content;
 	}
 	
 	private String getName(Identity identity) {

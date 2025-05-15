@@ -171,11 +171,17 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		Row[] content = getRows(rows, rollCalls, notices);
 	    	
 		int numOfRows = content.length;
-		for(int offset=0; offset<numOfRows; ) {
-			offset += drawTable(content, offset, fontSize, cellMargin);
+		if(numOfRows == 0) {
+			Row[] emptyContent = {};
+			drawTable(emptyContent, 0, fontSize, cellMargin);
 			closePage();
-			if(offset<numOfRows) {
-				addPageLandscape();
+		} else {
+			for(int offset=0; offset<numOfRows; ) {
+				offset += drawTable(content, offset, fontSize, cellMargin);
+				closePage();
+				if(offset<numOfRows) {
+					addPageLandscape();
+				}
 			}
 		}
 		
