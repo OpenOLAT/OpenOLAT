@@ -219,7 +219,7 @@ public class UserListController extends FormBasicController implements Activatea
 	}
 	
 	protected void previousStudent(UserRequest ureq) {
-		StudentStatEntry currentEntry = studentCtrl.getEntry();
+		Object currentEntry = studentCtrl.getUserObject();
 		int previousIndex = model.getObjects().indexOf(currentEntry) - 1;
 		if(previousIndex < 0 || previousIndex >= model.getRowCount()) {
 			previousIndex = model.getRowCount() - 1;
@@ -229,7 +229,7 @@ public class UserListController extends FormBasicController implements Activatea
 	}
 	
 	protected void nextStudent(UserRequest ureq) {
-		StudentStatEntry currentEntry = studentCtrl.getEntry();
+		Object currentEntry = studentCtrl.getUserObject();
 		int nextIndex = model.getObjects().indexOf(currentEntry) + 1;
 		if(nextIndex < 0 || nextIndex >= model.getRowCount()) {
 			nextIndex = 0;

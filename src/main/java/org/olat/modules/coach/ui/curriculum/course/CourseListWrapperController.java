@@ -38,7 +38,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.RoleSecurityCallback;
-import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.EnrollmentListController;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -49,10 +48,14 @@ public class CourseListWrapperController extends BasicController implements Acti
 
     private static final String WITH_CURRICULUM = "Curriculum";
     private static final String WITHOUT_CURRICULM = "List";
-
+    
+    private VelocityContainer content;
+    private FormToggleComponent curriculumShow;
     private final TooledStackedPanel stackPanel;
+    
     private final Identity mentee;
-    private final StudentStatEntry statEntry;
+    private final Object statEntry;
+    private boolean showCurriculum;
     private final CurriculumSecurityCallback curriculumSecurityCallback;
     private final RoleSecurityCallback roleSecurityCallback;
     private final List<CurriculumRef> curriculumRefs;
@@ -60,16 +63,12 @@ public class CourseListWrapperController extends BasicController implements Acti
     private CurriculumElementListController curriculumListController;
     private EnrollmentListController enrollmentListController;
 
-    private FormToggleComponent curriculumShow;
-    private boolean showCurriculum;
-    private VelocityContainer content;
-
     @Autowired
     private CurriculumModule curriculumModule;
 
     public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee,
     		CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
-    		List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
+    		List<CurriculumRef> curriculumRefs, Object statEntry) {
         super(ureq, wControl);
 
         this.stackPanel = stackPanel;

@@ -456,11 +456,16 @@ public class PersistenceHelper {
 		return obj == null ? 0 : ((Number)obj).intValue();
 	}
 	
-	
 	public static float extractPrimitiveFloat(Object[] results, int pos) {
 		if(results == null || pos >= results.length) return 0l;
 		Object obj = results[pos];
 		return obj == null ? 0l : ((Number)obj).longValue();
+	}
+	
+	public static double extractPrimitiveDouble(Object[] results, int pos) {
+		if(results == null || pos >= results.length) return 0l;
+		Object obj = results[pos];
+		return obj == null ? 0l : ((Number)obj).doubleValue();
 	}
 	
 	public static String extractString(Object[] results, int pos) {

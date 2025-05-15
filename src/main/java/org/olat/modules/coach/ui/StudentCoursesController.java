@@ -51,7 +51,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -80,7 +79,7 @@ import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
-import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.UserDetailsController.Segment;
 import org.olat.modules.lecture.LectureModule;
@@ -101,7 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class StudentCoursesController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
+public class StudentCoursesController extends FormBasicController implements NextPreviousController, GenericEventListener, TooledController {
 
 	private final Link homeLink, contactLink;
 	private Link resetLink;
@@ -122,7 +121,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private final int numOfStudents;
 	private final Identity student;
 	private final boolean fullAccess;
-	private final StudentStatEntry statEntry;
+	private final Object userObject;
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -146,7 +145,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private BaseSecurityManager securityManager;
 	
 	public StudentCoursesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			StudentStatEntry statEntry, Identity student, int index, int numOfStudents, boolean fullAccess) {
+			Object userObject, Identity student, int index, int numOfStudents, boolean fullAccess) {
 		super(ureq, wControl, "student_course_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -154,7 +153,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 
 		this.index = index;
 		this.student = student;
-		this.statEntry = statEntry;
+		this.userObject = userObject;
 		this.fullAccess = fullAccess;
 		this.stackPanel = stackPanel;
 		this.numOfStudents = numOfStudents;
@@ -276,8 +275,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 		model.putCertificate(certificate);
 	}
 	
-	public StudentStatEntry getEntry() {
-		return statEntry;
+	public Object getUserObject() {
+		return userObject;
 	}
 	
 	private List<EfficiencyStatementEntry> loadModel() {

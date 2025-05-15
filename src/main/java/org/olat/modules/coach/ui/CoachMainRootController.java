@@ -21,6 +21,7 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,6 +42,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.ui.component.SearchEvent;
+import org.olat.modules.coach.ui.component.SearchStateEntry;
 import org.olat.modules.coach.ui.manager.ManagerReportsController;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
@@ -81,8 +83,8 @@ public class CoachMainRootController extends BasicController implements Activate
 	private ManagerReportsController reportsCtrl;
 	private CoachPeopleController peopleListCtrl;
 	private OrdersAdminController ordersAdminCtrl;
-	private StudentListController quickSearchCtrl;
 	private OrdersOverviewController ordersOverviewCtrl;
+	private CoachParticipantsListController quickSearchCtrl;
 	private final CoachMainSearchHeaderController searchFieldCtrl;
 	
 	@Autowired
@@ -253,8 +255,9 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("QuickSearch", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		quickSearchCtrl = new StudentListController(ureq, bwControl, content, searchString);
+		quickSearchCtrl = new CoachParticipantsListController(ureq, bwControl, content, GroupRoles.coach);
 		listenTo(quickSearchCtrl);
+		quickSearchCtrl.activate(ureq, List.of(), new SearchStateEntry(searchString));
 		content.pushController(translate("students.menu.title"), quickSearchCtrl);
 	}
 	

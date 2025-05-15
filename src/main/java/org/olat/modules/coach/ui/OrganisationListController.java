@@ -19,154 +19,104 @@
  */
 package org.olat.modules.coach.ui;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
-import org.olat.modules.coach.model.SearchCoachedIdentityParams;
-import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Initial date: 25 May 2020<br>
- * @author aboeckle, alexander.boeckle@frentix.com
+ * 
+ * Initial date: 13 mai 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ *
  */
-public class OrganisationListController extends AbstactCoachListController {
+public class OrganisationListController extends AbstractParticipantsListController {
 	
-	private static final String FILTER_ORGANISATIONS = "organisations";
-
+    
+	private final List<Organisation> organisations;
+    private final OrganisationRoles organisationRole;
+	
+	private final boolean canViewReservations;
+	private final boolean canViewCoursesAndCurriculum;
+	private final boolean canViewCourseProgressAndStatus;
+	private final RoleSecurityCallback securityCallback;
+	
     @Autowired
     private CoachingService coachingService;
     @Autowired
     private OrganisationService organisationService;
 
-    private final List<Organisation> organisations;
-    private final OrganisationRoles organisationRole;
-
-    public OrganisationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, OrganisationRoles role) {
-        super(ureq, wControl, stackPanel);
+    public OrganisationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+    		OrganisationRoles role, String initialTab) {
+        super(ureq, wControl, stackPanel, role.name());
 
         organisationRole = role;
         organisations = organisationService.getOrganisations(getIdentity(), role);
         
 		Organisation organisation = (organisations == null || organisations.isEmpty()) ? null : organisations.get(0);
-        securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationRights(organisation, organisationRole));
+		securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationRights(organisation, organisationRole));
+        canViewReservations = securityCallback.canViewPendingCourseBookings();
+        canViewCoursesAndCurriculum = securityCallback.canViewCoursesAndCurriculum();
+        canViewCourseProgressAndStatus = securityCallback.canViewCourseProgressAndStatus();
 
         initForm(ureq);
         loadModel();
-    }
+        setFilterOrganisations(organisations);
+        if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(initialTab)) {
+        	tableEl.setSelectedFilterTab(ureq, tableEl.getFilterTabById(initialTab));
+        	tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+        	tableEl.reset(true, true, true);
+        }
+    }  
     
     @Override
-    protected void initFilters() {
-		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
-    	
-    	if(organisations.size() > 1) {
-    		SelectionValues organisationsKV = new SelectionValues();
-    		for(Organisation organisation:organisations) {
-    			organisationsKV.add(SelectionValues.entry(organisation.getKey().toString(),
-    					StringHelper.escapeHtml(organisation.getDisplayName())));
-    		}
-    		FlexiTableMultiSelectionFilter participantFilter = new FlexiTableMultiSelectionFilter(translate("filter.organisations"),
-    				FILTER_ORGANISATIONS, organisationsKV, true);
-    		filters.add(participantFilter);
-    	}
-    	
-    	if(!filters.isEmpty()) {
-    		tableEl.setFilters(true, filters, false, true);
-    	}
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initTableForm(formLayout, ureq, canViewReservations, canViewCoursesAndCurriculum, canViewCourseProgressAndStatus, true);
     }
 
     @Override
-    protected void loadModel() {
+	protected List<ParticipantStatisticsEntry> loadStatistics() {
     	if(organisations.isEmpty()) {
-    		model.setObjects(List.of());
-    	} else {
-        	List<StudentStatEntry> students = getUserStatistics();
-        	model.setObjects(students);
-        	if(StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())) {
-        		model.search(tableEl.getQuickSearchString());
-        	}
+    		return List.of();
     	}
-        tableEl.reset(true, true, true);
-    }
-
-	private List<StudentStatEntry> getUserStatistics() {
-		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
-		params.setOrganisations(getFilteredOrganisations(tableEl.getFilters()));
-		params.setIgnoreInheritedOrgMemberships(true);
-		List<StudentStatEntry> courseStats = coachingService.getUsersStatistics(params, userPropertyHandlers, getLocale());
-		List<StudentStatEntry> userProperties = coachingService.getUsersByOrganization(userPropertyHandlers, getIdentity(), 
-				getFilteredOrganisations(tableEl.getFilters()), organisationRole, getLocale());
-
-		Set<Long> courseStatsIdentityKeys = courseStats.stream().map(StudentStatEntry::getIdentityKey).collect(Collectors.toSet());
-		List<StudentStatEntry> result = new ArrayList<>(courseStats);
-		for (StudentStatEntry studentStatEntry : userProperties) {
-			if (courseStatsIdentityKeys.contains(studentStatEntry.getIdentityKey())) {
-				continue;
-			}
-			if (studentStatEntry.getIdentityKey() == getIdentity().getKey()) {
-				continue;
-			}
-			result.add(studentStatEntry);
-		}
-		return result;
-	}
-
-	private List<Organisation> getFilteredOrganisations(List<FlexiTableFilter> filters) {
-    	FlexiTableFilter organisationsFilter = FlexiTableFilter.getFilter(filters, FILTER_ORGANISATIONS);
-		if(organisationsFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)organisationsFilter).getValues();
-			if (filterValues != null && !filterValues.isEmpty()) {
-				Set<Long> keys = filterValues.stream()
-						.map(Long::valueOf)
-						.collect(Collectors.toSet());
-				List<Organisation> filteredOrganisations = organisations.stream()
-						.filter(org -> keys.contains(org.getKey()))
-						.toList();
-				if(!filteredOrganisations.isEmpty()) {
-					return filteredOrganisations;
-				}
-			}
-		}
-		return organisations;
+    	SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(organisations);
+    	searchParams
+    		.withOrganisations(true)
+    		.withReservations(canViewReservations)
+			.withCourseCompletion(canViewCourseProgressAndStatus)
+			.withCourseStatus(canViewCourseProgressAndStatus);
+    	return coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, getLocale());
     }
 
     @Override
-    protected UserOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
-		Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
-		if (!allowedToManageUser(student)) {
+    protected UserOverviewController createParticipantOverview(UserRequest ureq, ParticipantStatisticsEntry statisticsEntry) {
+		Identity identity = securityManager.loadIdentityByKey(statisticsEntry.getIdentityKey());
+		if (!allowedToManageUser(identity)) {
 			showWarning("error.select.no.permission");
 			return null;
 		}
 
-        OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
+        OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());
         WindowControl bwControl = addToHistory(ureq, ores, null);
         
-        int index = model.getObjects().indexOf(studentStat);
-        userCtrl = new UserOverviewController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), null, securityCallback);
-        listenTo(userCtrl);
-
-        String displayName = userManager.getUserDisplayName(student);
-        stackPanel.pushController(displayName, userCtrl);
-        return userCtrl;
+        int index = tableModel.getObjects().indexOf(statisticsEntry);
+        return new UserOverviewController(ureq, bwControl, stackPanel, statisticsEntry, identity, index, tableModel.getRowCount(), null, securityCallback);
     }
 
 	private boolean allowedToManageUser(Identity user) {

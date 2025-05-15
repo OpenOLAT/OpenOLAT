@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.admin.user.UserCreateController;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
@@ -77,6 +78,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private static final String MAIN_CONTROLLER = "component";
 	
 	private static final String COACH_SCOPE = "coach";
+	private static final String OWNER_SCOPE = "owner";
 	private static final String PRINCIPAL_SCOPE = "principal";
 	private static final String LINE_MANAGER_SCOPE = "linemanager";
 	private static final String EDU_MANAGER_SCOPE = "educationmanager";
@@ -89,20 +91,18 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private final ScopeSelection searchScopes;
 	private final List<Scope> scopes;
 
-	private List<RelationRole> userRelationRoles;
-	
-	private StudentListController studentListCtrl;
-	private OrganisationListController organisationListCtrl;
-	private UserRelationListController userRelationsListController;
-	private UserSearchTableController userSearchTableCtrl;
+	private final List<RelationRole> userRelationRoles;
+
 	private UserCreateController userCreateCtrl;
-	
-	@Autowired
-	private IdentityRelationshipService identityRelationsService;
-	
+	private UserSearchTableController userSearchTableCtrl;
+	private OrganisationListController organisationListCtrl;
+	private CoachParticipantsListController ownerParticipantsCtrl;
+	private UserRelationListController userRelationsListController;
+
 	@Autowired
 	private OrganisationService organisationService;
-
+	@Autowired
+	private IdentityRelationshipService identityRelationsService;
 	@Autowired
 	private IdentityPowerSearchQueries identityPowerSearchQueries;
 
@@ -115,10 +115,11 @@ public class CoachPeopleController extends BasicController implements Activateab
 		addActivatePendingAccountsButton(ureq);
 		addCreateAccountButton(ureq);
 		
-		// As coach
+		// As coach / course owner
 		scopes = new ArrayList<>(4);
 		if(coachingSec.isCoach()) {
 			scopes.add(ScopeFactory.createScope(COACH_SCOPE, translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
+			scopes.add(ScopeFactory.createScope(OWNER_SCOPE, translate("lectures.owner.menu.title"), null, "o_icon o_icon_coaching_tool"));
 		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -236,19 +237,23 @@ public class CoachPeopleController extends BasicController implements Activateab
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		List<ContextEntry> subEntries = entries.subList(1, entries.size());
 		if(COACH_SCOPE.equalsIgnoreCase(type)) {
-			doOpenAsCoach(ureq)
+			doOpenAsCoach(ureq, GroupRoles.coach, COACH_SCOPE)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(COACH_SCOPE);
+		} else if(OWNER_SCOPE.equalsIgnoreCase(type)) {
+			doOpenAsCoach(ureq, GroupRoles.owner, OWNER_SCOPE)
+				.activate(ureq, subEntries, entries.get(0).getTransientState());
+			searchScopes.setSelectedKey(OWNER_SCOPE);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(type)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.principal)
+			doOrganisationsWithRole(ureq, OrganisationRoles.principal, AbstractParticipantsListController.ALL_TAB_ID)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(PRINCIPAL_SCOPE);
 		} else if(LINE_MANAGER_SCOPE.equalsIgnoreCase(type)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.linemanager)					
+			doOrganisationsWithRole(ureq, OrganisationRoles.linemanager, AbstractParticipantsListController.RELEVANT_TAB)					
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(LINE_MANAGER_SCOPE);
 		} else if(EDU_MANAGER_SCOPE.equals(type)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.educationmanager)
+			doOrganisationsWithRole(ureq, OrganisationRoles.educationmanager, AbstractParticipantsListController.RELEVANT_TAB)
 					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(EDU_MANAGER_SCOPE);
 		} else {
@@ -292,25 +297,28 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private void cleanUp() {
 		removeAsListenerAndDispose(userRelationsListController);
 		removeAsListenerAndDispose(organisationListCtrl);
-		removeAsListenerAndDispose(studentListCtrl);
-		removeAsListenerAndDispose(userCreateCtrl);
 		removeAsListenerAndDispose(userSearchTableCtrl);
+		removeAsListenerAndDispose(userCreateCtrl);
 		userRelationsListController = null;
-		organisationListCtrl = null;
-		studentListCtrl = null;
-		userCreateCtrl = null;
 		userSearchTableCtrl = null;
+		organisationListCtrl = null;
+		userCreateCtrl = null;
 	}
 	
 	private void doOpen(UserRequest ureq, String scope) {
 		if(COACH_SCOPE.equalsIgnoreCase(scope)) {
-			doOpenAsCoach(ureq);
+			doOpenAsCoach(ureq, GroupRoles.coach, COACH_SCOPE);
+		} else if(OWNER_SCOPE.equalsIgnoreCase(scope)) {
+			doOpenAsCoach(ureq, GroupRoles.owner, OWNER_SCOPE);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(scope)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.principal);
+			doOrganisationsWithRole(ureq, OrganisationRoles.principal,
+					AbstractParticipantsListController.ALL_TAB_ID);
 		} else if(LINE_MANAGER_SCOPE.equalsIgnoreCase(scope)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.linemanager);
+			doOrganisationsWithRole(ureq, OrganisationRoles.linemanager,
+					AbstractParticipantsListController.RELEVANT_TAB);
 		} else if(EDU_MANAGER_SCOPE.equals(scope)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.educationmanager);
+			doOrganisationsWithRole(ureq, OrganisationRoles.educationmanager,
+					AbstractParticipantsListController.RELEVANT_TAB);
 		} else if(scope.startsWith(RELATION_PREFIX_SCOPE)) {
 			RelationRole relationRole = userRelationRoles.stream()
 					.filter(rel -> scope.equalsIgnoreCase(RELATION_PREFIX_SCOPE + rel.getRole()))
@@ -319,16 +327,16 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 	}
 	
-	private Activateable2 doOpenAsCoach(UserRequest ureq) {
+	private Activateable2 doOpenAsCoach(UserRequest ureq, GroupRoles role, String scope) {
 		cleanUp();
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(COACH_SCOPE, 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(scope, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		studentListCtrl = new StudentListController(ureq, bwControl, content);
-		listenTo(studentListCtrl);
-		mainVC.put(MAIN_CONTROLLER, studentListCtrl.getInitialComponent());
-		return studentListCtrl;
+		ownerParticipantsCtrl = new CoachParticipantsListController(ureq, bwControl, content, role);
+		listenTo(ownerParticipantsCtrl);
+		mainVC.put(MAIN_CONTROLLER, ownerParticipantsCtrl.getInitialComponent());
+		return ownerParticipantsCtrl;
 	}
 	
 	private Activateable2 doOpenRelation(UserRequest ureq, RelationRole relationRole) {
@@ -343,13 +351,13 @@ public class CoachPeopleController extends BasicController implements Activateab
 		return userRelationsListController;
 	}
 	
-	private Activateable2 doOrganisationsWithRole(UserRequest ureq, OrganisationRoles role) {
+	private Activateable2 doOrganisationsWithRole(UserRequest ureq, OrganisationRoles role, String initialTab) {
 		cleanUp();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(role.name(), 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		organisationListCtrl = new OrganisationListController(ureq, bwControl, content, role);
+		organisationListCtrl = new OrganisationListController(ureq, bwControl, content, role, initialTab);
 		listenTo(organisationListCtrl);
 		mainVC.put(MAIN_CONTROLLER, organisationListCtrl.getInitialComponent());
 		return organisationListCtrl;

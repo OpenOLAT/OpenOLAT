@@ -48,7 +48,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -72,7 +71,7 @@ import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.RoleSecurityCallback;
-import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.curriculum.certificate.CertificateAndEfficiencyStatementWrapperController;
 import org.olat.modules.coach.ui.curriculum.course.CourseListWrapperController;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -101,7 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class UserOverviewController extends BasicController implements Activateable2, GenericEventListener, TooledController {
+public class UserOverviewController extends BasicController implements NextPreviousController, GenericEventListener, TooledController {
 
 	public static final String usageIdentifier = UserOverviewController.class.getCanonicalName();
 
@@ -153,7 +152,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private final int index;
 	private final int numOfStudents;
 	private final Identity mentee;
-	private final StudentStatEntry statEntry;
+	private final Object statEntry;
 	private final String role;
 
 	private final RoleSecurityCallback roleSecurityCallback;
@@ -184,7 +183,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private ACReservationDAO reservationDAO;
 
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-								  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
+								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 
@@ -202,6 +201,11 @@ public class UserOverviewController extends BasicController implements Activatea
 		initTabbedPane(ureq);
 
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	public Object getUserObject() {
+		return statEntry;
 	}
 
 	@Override
@@ -378,7 +382,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		//
 	}
 
-	public StudentStatEntry getEntry() {
+	public Object getEntry() {
 		return statEntry;
 	}
 

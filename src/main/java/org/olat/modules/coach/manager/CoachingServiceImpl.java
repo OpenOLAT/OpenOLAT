@@ -26,9 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -56,8 +58,11 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -75,11 +80,15 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CoachingServiceImpl implements CoachingService {
-	
+
 	@Autowired
 	private CoachingDAO coachingDao;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -87,7 +96,7 @@ public class CoachingServiceImpl implements CoachingService {
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	@Autowired
-	private OrganisationModule organisationModule;
+	private IdentityPowerSearchQueries identityPowerSearchQueries;
 	
 	private static final String GENERATED_REPORT_FOLDER_NAME = "ooo-generated-reports-ooo"; 
 	
@@ -103,11 +112,6 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public boolean isTeacher(IdentityRef identity) {
-		return coachingDao.isTeacher(identity);
-	}
-
-	@Override
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student) {
 		return coachingDao.getStudentsCourses(coach, student);
 	}
@@ -119,18 +123,56 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		return coachingDao.getUserStatistics(source, relationRole, userPropertyHandlers, locale);
-	}
-
-	@Override
 	public List<StudentStatEntry> getUsersByOrganization(List<UserPropertyHandler> userPropertyHandlers, Identity identity, List<Organisation> organisations, OrganisationRoles organisationRole, Locale locale) {
 		return coachingDao.getUsersByOrganization(userPropertyHandlers, identity, organisations, organisationRole, locale);
 	}
-
+	
 	@Override
-	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		return coachingDao.getStudentsStatisticsNative(coach, userPropertyHandlers, locale);
+	public List<ParticipantStatisticsEntry> getParticipantsStatistics(SearchParticipantsStatisticsParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		Identity identity = params.getIdentity();
+		GroupRoles role = params.getRole();
+		RelationRole userRelation = params.getRelationRole();
+		List<Organisation> organisations = params.getOrganisations();
+		List<Group> organisationsGroups = organisations == null || organisations.isEmpty()
+				? List.of()
+				: organisations.stream().map(Organisation::getGroup).toList();
+		
+		List<ParticipantStatisticsEntry> statsEntries = coachingDao.loadParticipantsCoursesStatistics(identity, role,
+				organisationsGroups, userRelation, userPropertyHandlers, locale);
+		Map<Long,ParticipantStatisticsEntry> statisticsEntries = statsEntries.stream()
+				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, stats -> stats, (u, v) -> u));
+		
+		if(!organisationsGroups.isEmpty()) {
+			coachingDao.loadOrganisationsMembers(organisationsGroups, statsEntries, statisticsEntries, userPropertyHandlers, locale);
+		}
+		if(userRelation != null) {
+			coachingDao.loadRelationUsers(identity, userRelation, statsEntries, statisticsEntries, userPropertyHandlers, locale);
+		}
+		
+		if(params.withCourseStatus()) {
+			coachingDao.processParticipantsPassedFailedStatistics(identity, role,
+				organisationsGroups, userRelation, statisticsEntries);
+		}
+		if(params.withCourseCompletion()) {
+			coachingDao.processParticipantsCompletionStatistics(identity, role,
+				organisationsGroups, userRelation, statisticsEntries);
+		}
+		
+		if(params.withReservations()) {
+			if(curriculumModule.isEnabled()) {
+				coachingDao.loadCurriculumElementsReservations(identity, role,
+					organisationsGroups, userRelation, statisticsEntries);
+			}
+			coachingDao.loadRepositoryEntryReservation(identity, role,
+				organisationsGroups, userRelation, statisticsEntries);
+		}
+		
+		if(params.withOrganisations()) {
+			identityPowerSearchQueries.appendOrganisations(statsEntries);
+		}
+		
+		return statsEntries;
 	}
 
 	@Override

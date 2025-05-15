@@ -78,8 +78,7 @@ public class OrganisationWithParents implements OrganisationRef, Comparable<Orga
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OrganisationWithParents) {
-			OrganisationWithParents org = (OrganisationWithParents)obj;
+		if(obj instanceof OrganisationWithParents org) {
 			return organisation.equals(org.getOrganisation());
 		}
 		return false;

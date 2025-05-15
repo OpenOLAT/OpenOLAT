@@ -66,7 +66,6 @@ import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
-import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.UserDetailsController.Segment;
 import org.olat.modules.lecture.LectureModule;
@@ -85,18 +84,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <P>
  * Initial Date:  8 févr. 2012 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class EnrollmentListController extends FormBasicController implements Activateable2, GenericEventListener {
 
-	private final TooledStackedPanel stackedPanel;
 	private final Identity student;
-	private final StudentStatEntry statEntry;
+	private final Object statEntry;
 	private final RoleSecurityCallback roleSecurityCallback;
-
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private FlexiTableElement tableEl;
+	private final TooledStackedPanel stackedPanel;
 	private EfficiencyStatementEntryTableDataModel model;
 	
 	private CloseableModalController cmc;
@@ -121,7 +119,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 	private AssessmentService assessmentService;
 
 	public EnrollmentListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-									StudentStatEntry statEntry, Identity student, RoleSecurityCallback roleSecurityCallback) {
+									Object statEntry, Identity student, RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl, "user_relation_enrollments");
 		
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -210,7 +208,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 		model.putCertificate(certificate);
 	}
 	
-	public StudentStatEntry getEntry() {
+	public Object getEntry() {
 		return statEntry;
 	}
 	

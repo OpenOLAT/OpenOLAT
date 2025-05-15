@@ -24,14 +24,17 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
-import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry;
+import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,48 +43,57 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 25 May 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
  */
-public class UserRelationListController extends AbstactCoachListController {
+public class UserRelationListController extends AbstractParticipantsListController {
 
+    private final RelationRole relationRole;
+
+	private final boolean canViewReservations;
+	private final boolean canViewCoursesAndCurriculum;
+	private final boolean canViewCourseProgressAndStatus;
+	private final RoleSecurityCallback securityCallback;
+    
     @Autowired
     private CoachingService coachingService;
     @Autowired
     private IdentityRelationshipService identityRelationshipService;
 
-    private RelationRole relationRole;
-
     public UserRelationListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RelationRole relationRole) {
-        super(ureq, wControl, stackPanel);
+        super(ureq, wControl, stackPanel, "rr-" + relationRole.getKey());
 
         this.relationRole = identityRelationshipService.getRole(relationRole.getKey());
-        this.securityCallback = RoleSecurityCallbackFactory.create(this.relationRole.getRights());
+        securityCallback = RoleSecurityCallbackFactory.create(this.relationRole.getRights());
+        canViewReservations = securityCallback.canViewPendingCourseBookings();
+        canViewCoursesAndCurriculum = securityCallback.canViewCoursesAndCurriculum();
+        canViewCourseProgressAndStatus = securityCallback.canViewCourseProgressAndStatus();
 
         super.initForm(ureq);
         loadModel();
+    }  
+
+    @Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initTableForm(formLayout, ureq, canViewReservations, canViewCoursesAndCurriculum, canViewCourseProgressAndStatus, false);
+	}
+
+    @Override
+	protected List<ParticipantStatisticsEntry> loadStatistics() {
+		SearchParticipantsStatisticsParams searchParams = SearchParticipantsStatisticsParams.as(getIdentity(), relationRole);
+		searchParams
+			.withOrganisations(organisationsEnabled)
+			.withReservations(canViewReservations)
+			.withCourseCompletion(canViewCourseProgressAndStatus)
+			.withCourseStatus(canViewCourseProgressAndStatus);
+		return coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, getLocale());
     }
 
     @Override
-    protected void loadModel() {
-        List<StudentStatEntry> students = coachingService.getUserStatistics(getIdentity(), relationRole, userPropertyHandlers, getLocale());
-        model.setObjects(students);
-        if(StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())) {
-    		model.search(tableEl.getQuickSearchString());
-    	}
-        tableEl.reset(true, true, true);
-    }
-
-    @Override
-    protected UserOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
-        Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
-        OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
+    protected UserOverviewController createParticipantOverview(UserRequest ureq, ParticipantStatisticsEntry statisticsEntry) {
+        Identity user = securityManager.loadIdentityByKey(statisticsEntry.getIdentityKey());
+        OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, user.getKey());
         WindowControl bwControl = addToHistory(ureq, ores, null);
 
-        int index = model.getObjects().indexOf(studentStat);
+        int index = tableModel.getObjects().indexOf(statisticsEntry);
         String roleTranslation = RelationRolesAndRightsUIFactory.getTranslatedContraRole(relationRole, getLocale());
-        userCtrl = new UserOverviewController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), roleTranslation, securityCallback);
-        listenTo(userCtrl);
-
-        String displayName = userManager.getUserDisplayName(student);
-        stackPanel.pushController(displayName, userCtrl);
-        return userCtrl;
+        return new UserOverviewController(ureq, bwControl, stackPanel, statisticsEntry, user, index, tableModel.getRowCount(), roleTranslation, securityCallback);
     }
 }
