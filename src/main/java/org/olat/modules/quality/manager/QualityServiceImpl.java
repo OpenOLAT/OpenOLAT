@@ -345,6 +345,30 @@ public class QualityServiceImpl
 			qualityMailing.sendReminderMail(dataCollection, participation, QualityReminderType.INVITATION);
 		}
 	}
+	
+	private void sendPlainEmailParticipationMails(QualityDataCollectionRef dataCollectionRef, List<EvaluationFormParticipation> participations) {
+		// If the e-mail participation user are added to a running data collection,
+		// they have to be informed immediately.
+		
+		if (participations == null || participations.isEmpty()) {
+			return;
+		}
+		
+		QualityDataCollection dataCollection = loadDataCollectionByKey(dataCollectionRef);
+		if (QualityDataCollectionStatus.RUNNING != dataCollection.getStatus()) {
+			return;
+		}
+		
+		QualityReminder invitationReminder = loadReminder(dataCollection, QualityReminderType.INVITATION);
+		if (invitationReminder != null && !invitationReminder.isSent()) {
+			// E-mail invitees will be informed by the invitation.
+			return;
+		}
+		
+		for (EvaluationFormParticipation participation : participations) {
+			qualityMailing.sendReminderMail(dataCollection, participation, QualityReminderType.INVITATION);
+		}
+	}
 
 	private void sendDoneMails(QualityDataCollection dataCollection) {
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
@@ -619,6 +643,7 @@ public class QualityServiceImpl
 		Map<String, EvaluationFormParticipation> emailToParticipation = evaluationFormManager
 				.loadParticipationByEmails(survey, emailAddresses).stream()
 				.collect(Collectors.toMap(EvaluationFormParticipation::getEmail, Function.identity()));
+		List<EvaluationFormParticipation> addedParticipations = new ArrayList<>(emailExecutors.size());
 		
 		for (EvaluationFormEmailExecutor emailExecutor: emailExecutors) {
 			if (emailToParticipation.keySet().contains(emailExecutor.email())) {
@@ -635,9 +660,12 @@ public class QualityServiceImpl
 				DefaultQualityContextBuilder.builder(dataCollection, participation)
 					.withRole(QualityContextRole.email)
 					.build();
+				addedParticipations.add(participation);
 				emailToParticipation.put(emailExecutor.email(), participation);
 			}
 		}
+		
+		sendPlainEmailParticipationMails(dataCollection, addedParticipations);
 	}
 	
 	@Override
