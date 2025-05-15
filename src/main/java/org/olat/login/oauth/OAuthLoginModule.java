@@ -63,8 +63,11 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	
 	
 	
+	@Value("${oauth.registrationallowUserCreation:true}")
 	private boolean allowUserCreation;
+	@Value("${oauth.registration.skipDisclaimerDialog:true}")
 	private boolean skipDisclaimerDialog;
+	@Value("${oauth.registration.skipRegistrationDialog:true}")
 	private boolean skipRegistrationDialog;
 	
 	@Value("${oauth.registration.username.allowChanges:true}")
@@ -174,11 +177,11 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	}
 
 	private void updateProperties() {
-		String allowUserCreationObj = getStringPropertyValue("allowUserCreation", true);
+		String allowUserCreationObj = getStringPropertyValue("allowUserCreation", Boolean.toString(allowUserCreation));
 		allowUserCreation = "true".equals(allowUserCreationObj);
-		String skipDisclaimerDialogObj = getStringPropertyValue(SKIP_DISCLAIMER_DIALOG, true);
+		String skipDisclaimerDialogObj = getStringPropertyValue(SKIP_DISCLAIMER_DIALOG, Boolean.toString(skipDisclaimerDialog));
 		skipDisclaimerDialog = "true".equals(skipDisclaimerDialogObj);
-		String skipRegistrationDialogObj = getStringPropertyValue(SKIP_REGISTRATION_DIALOG, true);
+		String skipRegistrationDialogObj = getStringPropertyValue(SKIP_REGISTRATION_DIALOG, Boolean.toString(skipRegistrationDialog));
 		skipRegistrationDialog = "true".equals(skipRegistrationDialogObj);
 		
 		//linkedin
