@@ -65,6 +65,7 @@ public class CustomLinkChooserController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("internallinkchooser");
 		jumpInSelectionTree = new MenuTree(null, "internalLinkTree", this, getTranslator());
+		jumpInSelectionTree.setScrollTopOnClick(false);
 		jumpInSelectionTree.setTreeModel(customLinkTreeModel);
 		mainVC.put("internalLinkTree", jumpInSelectionTree);
 

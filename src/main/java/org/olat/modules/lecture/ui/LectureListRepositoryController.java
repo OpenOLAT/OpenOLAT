@@ -837,6 +837,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		loadModel(ureq);
 	}
+	
+	
 
 	public void loadModel(UserRequest ureq) {
 		loadModel(ureq, false);
@@ -1123,6 +1125,19 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		return searchParams;
 	}
 	
+	private void reloadModelWithDetails(UserRequest ureq, LectureBlock lectureBlock) {
+		int row = tableModel.getIndexByKey(lectureBlock.getKey());
+		boolean expanded = tableEl.isDetailsExpended(row);
+		loadModel(ureq, true);
+		if(expanded) {
+			int index = tableModel.getIndexByKey(lectureBlock.getKey());
+			LectureBlockRow detailsRow = tableModel.getObject(index);
+			if(detailsRow != null) {
+				doOpenLectureBlockDetails(ureq, detailsRow);
+			}
+		}
+	}
+	
 	private void reloadModel(UserRequest ureq, LectureBlock lectureBlock) {
 		LectureBlockRow row = tableModel.getObject(lectureBlock);
 		if(row == null) {
@@ -1321,7 +1336,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			cleanUp();
 		} else if(editLectureCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel(ureq, true);
+				reloadModelWithDetails(ureq, editLectureCtrl.getLectureBlock());
 			}
 			cmc.deactivate();
 			cleanUp();

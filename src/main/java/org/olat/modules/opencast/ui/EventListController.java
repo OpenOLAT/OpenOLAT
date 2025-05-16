@@ -56,11 +56,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EventListController extends FormBasicController {
 	
-	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_PUBLIC = "Public";
+	private static final String TAB_ID_PRIVATE = "Private";
 	private static final String CMD_SELECT = "select";
 	
-	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabPrivate;
 	private FlexiFiltersTab tabPublic;
 	private FlexiTableElement tableEl;
 	private EventDataModel dataModel;
@@ -101,12 +101,11 @@ public class EventListController extends FormBasicController {
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
 		
-		tabAll = FlexiFiltersTabFactory.tab(
-				TAB_ID_ALL,
-				translate("all"),
+		tabPrivate = FlexiFiltersTabFactory.tab(
+				TAB_ID_PRIVATE,
+				translate("tab.my.events"),
 				TabSelectionBehavior.nothing);
-		tabs.add(tabAll);
-		
+		tabs.add(tabPrivate);
 		tabPublic = FlexiFiltersTabFactory.tab(
 				TAB_ID_PUBLIC,
 				translate("tab.public"),
@@ -114,7 +113,7 @@ public class EventListController extends FormBasicController {
 		tabs.add(tabPublic);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabAll);
+		tableEl.setSelectedFilterTab(ureq, tabPrivate);
 	}
 
 	private void loadModel() {
@@ -130,8 +129,10 @@ public class EventListController extends FormBasicController {
 	private Predicate<? super OpencastEvent> publicFilter() {
 		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabPublic) {
 			return OpencastEvent::isPublicAvailable;
+		} else if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabPrivate) {
+			return OpencastEvent::isOwnedByUser;
 		}
-		
+
 		return event -> true;
 	}
 

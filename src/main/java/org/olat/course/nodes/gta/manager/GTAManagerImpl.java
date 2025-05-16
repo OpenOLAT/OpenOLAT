@@ -1628,7 +1628,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			deadline = refDate;
 		}
 		
-		if(deadline != null && overridenDate != null && overridenDate.after(deadline)) {
+		if(deadline != null && overridenDate != null) {
 			deadline = overridenDate;
 		} else if(deadline == null && overridenDate != null) {
 			deadline = overridenDate;

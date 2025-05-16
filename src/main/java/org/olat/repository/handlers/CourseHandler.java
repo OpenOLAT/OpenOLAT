@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -707,6 +708,9 @@ public class CourseHandler implements RepositoryHandler {
 					clonedReminder.setDescription(reminder.getDescription());
 					clonedReminder.setEmailSubject(reminder.getEmailSubject());
 					clonedReminder.setEmailBody(reminder.getEmailBody());
+					clonedReminder.setEmailCopyOnly(reminder.isEmailCopyOnly());
+					clonedReminder.setEmailCopy(new HashSet<>(reminder.getEmailCopy()));
+					clonedReminder.setCustomEmailCopy(reminder.getCustomEmailCopy());
 					clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
 					reminderService.save(clonedReminder);
 				}
@@ -737,6 +741,9 @@ public class CourseHandler implements RepositoryHandler {
 			clonedReminder.setDescription(reminder.getDescription());
 			clonedReminder.setEmailSubject(reminder.getEmailSubject());
 			clonedReminder.setEmailBody(reminder.getEmailBody());
+			clonedReminder.setEmailCopyOnly(reminder.isEmailCopyOnly());
+			clonedReminder.setEmailCopy(new HashSet<>(reminder.getEmailCopy()));
+			clonedReminder.setCustomEmailCopy(reminder.getCustomEmailCopy());
 			clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
 			reminderService.save(clonedReminder);
 		}

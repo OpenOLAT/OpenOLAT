@@ -56,12 +56,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SeriesListController extends FormBasicController {
 	
-	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_PUBLIC = "Public";
+	private static final String TAB_ID_PRIVATE = "Private";
 	private static final String CMD_SELECT = "select";
 	
-	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabPublic;
+	private FlexiFiltersTab tabPrivate;
 	private FlexiTableElement tableEl;
 	private SeriesDataModel dataModel;
 	
@@ -100,11 +100,11 @@ public class SeriesListController extends FormBasicController {
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
 		
-		tabAll = FlexiFiltersTabFactory.tab(
-				TAB_ID_ALL,
-				translate("all"),
+		tabPrivate = FlexiFiltersTabFactory.tab(
+				TAB_ID_PRIVATE,
+				translate("tab.my.series"),
 				TabSelectionBehavior.nothing);
-		tabs.add(tabAll);
+		tabs.add(tabPrivate);
 		
 		tabPublic = FlexiFiltersTabFactory.tab(
 				TAB_ID_PUBLIC,
@@ -113,7 +113,7 @@ public class SeriesListController extends FormBasicController {
 		tabs.add(tabPublic);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabAll);
+		tableEl.setSelectedFilterTab(ureq, tabPrivate);
 	}
 
 	private void loadModel() {
@@ -129,8 +129,10 @@ public class SeriesListController extends FormBasicController {
 	private Predicate<? super OpencastSeries> publicFilter() {
 		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabPublic) {
 			return OpencastSeries::isPublicAvailable;
+		} else if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabPrivate) {
+			return OpencastSeries::isOwnedByUser;
 		}
-		
+
 		return series -> true;
 	}
 

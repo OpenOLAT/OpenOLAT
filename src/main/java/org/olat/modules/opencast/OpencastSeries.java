@@ -41,4 +41,6 @@ public interface OpencastSeries {
 	
 	boolean isPublicAvailable();
 
+	boolean isOwnedByUser();
+
 }

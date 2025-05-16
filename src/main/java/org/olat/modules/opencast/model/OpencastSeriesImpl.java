@@ -37,21 +37,22 @@ public class OpencastSeriesImpl implements OpencastSeries {
 	private List<String> contributors;
 	private List<String> subjects;
 	private boolean publicAvailable;
+	private boolean ownedByUser;
 	
 	@Override
 	public String getIdentifier() {
 		return identifier;
-
 	}
+	
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
-
 	}
+	
 	@Override
 	public String getTitle() {
 		return title;
-
 	}
+	
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -87,8 +88,17 @@ public class OpencastSeriesImpl implements OpencastSeries {
 	public boolean isPublicAvailable() {
 		return publicAvailable;
 	}
+	
 	public void setPublicAvailable(boolean publicAvailable) {
 		this.publicAvailable = publicAvailable;
 	}
+
+	@Override
+	public boolean isOwnedByUser() {
+		return ownedByUser;
+	}
 	
+	public void setOwnedByUser(boolean ownedByUser) {
+		this.ownedByUser = ownedByUser;
+	}
 }
