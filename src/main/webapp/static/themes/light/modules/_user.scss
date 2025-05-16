@@ -797,12 +797,10 @@ dialog.popover {
 }
 
 .o_callout_tree .o_icon_caret {
-	margin-right: 6px;
 	vertical-align: middle;
 }
 
 .o_callout_tree .o_icon_selected_dot {
-	margin-right: 6px;
 	vertical-align: middle;
 }
 
@@ -810,6 +808,6 @@ dialog.popover {
 .o_callout_tree .o_tree_spacer {
 	display: inline-block;
 	width: 1em;      /* same width as a caret icon */
-	margin-right: 6px;
+	margin-right: 3px;
 	vertical-align: middle;
 }
