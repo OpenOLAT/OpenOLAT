@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.OrganisationRoleRightImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,17 +46,36 @@ public class OrganisationRoleRightDAO {
     private DB dbInstance;
 
     public List<String> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role) {
-        StringBuilder sb = new StringBuilder(128);
-        sb.append("select roleRight.right from organisationroleright as roleRight")
-                .append(" inner join roleRight.organisation org")
-                .append(" where org.key=:organisationKey and roleRight.role=:organisationRole");
+        String sb = """
+        	select roleRight.right from organisationroleright as roleRight
+        	inner join roleRight.organisation org
+        	where org.key=:organisationKey and roleRight.role=:organisationRole""";
 
         return dbInstance.getCurrentEntityManager()
-                .createQuery(sb.toString(), String.class)
+                .createQuery(sb, String.class)
                 .setParameter("organisationKey", organisation.getKey())
                 .setParameter("organisationRole", role)
                 .getResultList();
     }
+    
+    public List<String> getGrantedOrganisationsRights(Collection<OrganisationRef> organisations, OrganisationRoles role) {
+    	if(organisations == null || organisations.isEmpty()) return new ArrayList<>();
+    	
+        String sb = """
+        	select roleRight.right from organisationroleright as roleRight
+        	inner join roleRight.organisation org
+        	where org.key in (:organisationsKeys) and roleRight.role=:organisationRole""";
+        
+        List<Long> organisationsKeys = organisations.stream()
+        		.map(OrganisationRef::getKey)
+        		.toList();
+        return dbInstance.getCurrentEntityManager()
+                .createQuery(sb, String.class)
+                .setParameter("organisationsKeys", organisationsKeys)
+                .setParameter("organisationRole", role)
+                .getResultList();
+    }
+    
 
     public Collection<OrganisationRoleRight> getOrganisationRoleRights(OrganisationRoles orgRole) {
 		String sb = "select roleRight from organisationroleright as roleRight where roleRight.role = :orgRole";

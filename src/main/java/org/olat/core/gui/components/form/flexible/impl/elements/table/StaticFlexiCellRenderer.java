@@ -255,7 +255,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				if(StringHelper.containsNonWhitespace(linkTitle) && isIconLink) {
 					target.append(" title=\"").appendHtmlAttributeEscaped(linkTitle).append("\"");
 				}
-				target.append(">&nbsp;</i> ");
+				target.append("> </i> ");
 			}
 			
 			if (StringHelper.containsNonWhitespace(label)) {
@@ -269,7 +269,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				if(StringHelper.containsNonWhitespace(linkTitle) && isIconLink) {
 					target.append(" title=\"").appendHtmlAttributeEscaped(linkTitle).append("\"");
 				}
-				target.append(">&nbsp;</i>");
+				target.append("> </i>");
 			}
 			target.append("</a>");
 			if (Settings.isDebuging() && isIconLink && !StringHelper.containsNonWhitespace(linkTitle)) {

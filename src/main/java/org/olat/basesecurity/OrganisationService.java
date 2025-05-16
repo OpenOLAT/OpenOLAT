@@ -366,6 +366,8 @@ public interface OrganisationService {
 	 * @return A list of rights for the role of a given organisation
 	 */
 	public List<RightProvider> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role);
+	
+	public List<RightProvider> getGrantedOrganisationsRights(List<Organisation> organisations, OrganisationRoles role);
 
 	/**
 	 * @param roles Given organisation role
