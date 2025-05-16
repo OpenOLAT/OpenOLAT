@@ -67,10 +67,10 @@ public class OrganisationListController extends AbstractParticipantsListControll
         super(ureq, wControl, stackPanel, role.name());
 
         organisationRole = role;
+
         organisations = organisationService.getOrganisations(getIdentity(), role);
         
-		Organisation organisation = (organisations == null || organisations.isEmpty()) ? null : organisations.get(0);
-		securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationRights(organisation, organisationRole));
+		securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(List.copyOf(organisations), organisationRole));
         canViewReservations = securityCallback.canViewPendingCourseBookings();
         canViewCoursesAndCurriculum = securityCallback.canViewCoursesAndCurriculum();
         canViewCourseProgressAndStatus = securityCallback.canViewCourseProgressAndStatus();

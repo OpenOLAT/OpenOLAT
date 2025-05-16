@@ -38,7 +38,7 @@ public class ActionsCellRenderer extends StaticFlexiCellRenderer {
 	
 	public ActionsCellRenderer(Translator translator) {
 		super("", CMD_ACTIONS);
-		setIconLeftCSS("o_icon-lg o_icon_actions");
+		setIconLeftCSS("o_icon-lg o_icon-fws o_icon_actions");
 		setLinkTitle(translator.translate("action.more"));
 	}
 	

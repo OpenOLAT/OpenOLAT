@@ -87,6 +87,22 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
         Assert.assertNotNull(rightsFromChild);
         Assert.assertEquals(allRights.size(), rightsFromChild.size());
     }
+    
+    @Test
+    public void getRightsForChildOrganisations() {
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 3b", "Org-b-role-rights 3b", null, null, null, JunitTestHelper.getDefaultActor());
+    	Organisation child = organisationService.createOrganisation("Org-role-rights 3b.1", "Org--brole-rights 3b.1", null, root, null, JunitTestHelper.getDefaultActor());
+    	dbInstance.commitAndCloseSession();
+    	
+        List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
+        Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
+        organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
+        dbInstance.commitAndCloseSession();
+
+        List<RightProvider> rightsFromChild = organisationService.getGrantedOrganisationsRights(List.of(child), OrganisationRoles.linemanager);
+        Assert.assertNotNull(rightsFromChild);
+        Assert.assertEquals(allRights.size(), rightsFromChild.size());
+    }
 
     @Test
     public void moveOrganisation() {
@@ -122,4 +138,5 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
         Assert.assertNotNull(rightsFromOrgRole);
         Assert.assertEquals(0, rightsFromOrgRole.size());
     }
+
 }

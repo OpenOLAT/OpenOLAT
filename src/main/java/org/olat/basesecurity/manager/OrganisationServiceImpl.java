@@ -880,10 +880,24 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public List<RightProvider> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role) {
 		if (organisation == null) {
-			return Collections.emptyList();
+			return List.of();
 		}
 		List<String> organisationRights = organisationRoleRightDAO.getGrantedOrganisationRights(organisation.getRoot() != null ? organisation.getRoot() : organisation, role);
 
+		return allRights.stream().filter(right -> organisationRights.contains(right.getRight())).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<RightProvider> getGrantedOrganisationsRights(List<Organisation> organisations, OrganisationRoles role) {
+		if (organisations == null || organisations.isEmpty()) {
+			return List.of();
+		}
+		Set<OrganisationRef> rootOrganisations = new HashSet<>();
+		for(Organisation organisation:organisations) {
+			Organisation rootOrganisation = organisation.getRoot() != null ? organisation.getRoot() : organisation;
+			rootOrganisations.add(rootOrganisation);
+		}
+		List<String> organisationRights = organisationRoleRightDAO.getGrantedOrganisationsRights(rootOrganisations, role);
 		return allRights.stream().filter(right -> organisationRights.contains(right.getRight())).collect(Collectors.toList());
 	}
 
