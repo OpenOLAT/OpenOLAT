@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.2.6</org.springframework.version>
+		<org.springframework.version>6.2.7</org.springframework.version>
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -2186,7 +2186,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.16.0</version>
+			<version>1.16.1</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
