@@ -658,12 +658,12 @@ public class EditLectureBlockController extends FormBasicController {
 					List<RepositoryEntry> curriculumElementEntries = curriculumService.getRepositoryEntries(curriculumElement);
 					singleEntry = curriculumElementEntries.size() == 1 ? curriculumElementEntries.get(0) : null;
 				}
-				lectureBlock = lectureBlock.getKey() == null
+				lectureBlock = lectureBlock != null && lectureBlock.getKey() == null
 						? lectureBlock
 						: lectureService.createLectureBlock(curriculumElement, singleEntry);
 				selectedGroups.add(curriculumElement.getGroup());
 			} else if(entry != null) {
-				lectureBlock = lectureBlock.getKey() == null
+				lectureBlock = lectureBlock != null && lectureBlock.getKey() == null
 						? lectureBlock
 						: lectureService.createLectureBlock(entry);
 				// Add default group and business groups automatically
