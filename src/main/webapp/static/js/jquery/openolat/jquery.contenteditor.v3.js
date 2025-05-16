@@ -252,7 +252,7 @@
 							let elementUrl = element.data("oo-content-editor-url");
 							closeMathLive();
 							o_XHREvent(elementUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
-						} else if(!edited) {
+						} else if(!edited && jQuery("dialog[open]").length === 0) {
 							closeMathLive();
 							unfocusEditor();
 							o_afterserver();
