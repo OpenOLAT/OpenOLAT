@@ -21,6 +21,7 @@ package org.olat.modules.reminder.model;
 
 import java.io.Serializable;
 
+import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 
 /**
@@ -37,6 +38,9 @@ public class ImportExportReminder implements Serializable {
 	private String configuration;
 	private String emailSubject;	// added in OO 12.0
 	private String emailBody;
+	private boolean emailCopyOnly;
+	private String emailCopyStr;
+	private String customEmailCopy;
 	
 	public ImportExportReminder() {
 		//
@@ -47,6 +51,9 @@ public class ImportExportReminder implements Serializable {
 		configuration = reminder.getConfiguration();
 		emailSubject = reminder.getEmailSubject();
 		emailBody = reminder.getEmailBody();
+		emailCopyOnly = reminder.isEmailCopyOnly();
+		emailCopyStr = EmailCopy.join(reminder.getEmailCopy());
+		customEmailCopy = reminder.getCustomEmailCopy();
 	}
 	
 	public String getDescription() {
@@ -79,6 +86,30 @@ public class ImportExportReminder implements Serializable {
 	
 	public void setEmailBody(String emailBody) {
 		this.emailBody = emailBody;
+	}
+
+	public boolean isEmailCopyOnly() {
+		return emailCopyOnly;
+	}
+
+	public void setEmailCopyOnly(boolean emailCopyOnly) {
+		this.emailCopyOnly = emailCopyOnly;
+	}
+
+	public String getEmailCopyStr() {
+		return emailCopyStr;
+	}
+
+	public void setEmailCopyStr(String emailCopyStr) {
+		this.emailCopyStr = emailCopyStr;
+	}
+
+	public String getCustomEmailCopy() {
+		return customEmailCopy;
+	}
+
+	public void setCustomEmailCopy(String customEmailCopy) {
+		this.customEmailCopy = customEmailCopy;
 	}
 
 }

@@ -223,6 +223,9 @@ public class ReminderServiceImpl implements ReminderService {
 					reminder.setEmailBody(importReminder.getEmailBody());	
 					reminder.setEmailSubject(importReminder.getEmailSubject() == null ? importReminder.getDescription() : importReminder.getEmailSubject());
 					reminder.setConfiguration(importReminder.getConfiguration());
+					reminder.setEmailCopyOnly(importReminder.isEmailCopyOnly());
+					reminder.setEmailCopy(EmailCopy.split(importReminder.getEmailCopyStr()));
+					reminder.setCustomEmailCopy(importReminder.getCustomEmailCopy());
 					reminders.add(reminder);
 				}
 			} catch(Exception e) {
