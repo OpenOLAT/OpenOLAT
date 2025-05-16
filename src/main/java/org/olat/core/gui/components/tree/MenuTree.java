@@ -128,7 +128,7 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	private boolean unselectNodes;
 	private boolean showInsertTool;
 	private boolean multiSelect;
-	private boolean scrollTopOnClick;
+	private boolean scrollTopOnClick = true;
 	private String dndAcceptJSMethod = "treeAcceptDrop_notWithChildren";
 
 	private boolean dirtyForUser = false;
@@ -183,6 +183,9 @@ public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	}
 	
 	private void scrollTop(UserRequest ureq) {
+		if (!scrollTopOnClick) {
+			return;
+		}
 		Window window = Windows.getWindows(ureq).getWindow(ureq);
 		if(window != null) {
 			window.getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());

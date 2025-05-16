@@ -89,7 +89,7 @@ public class ParagraphPageElementHandler implements PageElementHandler, PageElem
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		TextComponent cmp = null;
 		if (element instanceof ParagraphPart paragraphPart) {
-			cmp = ComponentsFactory.getContent(paragraphPart);
+			cmp = ComponentsFactory.getContent(paragraphPart, options.isEditable());
 			cmp.setCssClass(ComponentsFactory.getCssClass(paragraphPart, false));
 		}
 		return new TextRunComponent(cmp, false);

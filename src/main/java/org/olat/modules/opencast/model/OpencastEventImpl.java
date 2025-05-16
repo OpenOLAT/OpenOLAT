@@ -41,6 +41,7 @@ public class OpencastEventImpl implements OpencastEvent {
 	private Date end;
 	private String series;
 	private boolean publicAvailable;
+	private boolean ownedByUser;
 
 	@Override
 	public String getIdentifier() {
@@ -121,6 +122,15 @@ public class OpencastEventImpl implements OpencastEvent {
 
 	public void setPublicAvailable(boolean publicAvailable) {
 		this.publicAvailable = publicAvailable;
+	}
+
+	@Override
+	public boolean isOwnedByUser(){
+		return ownedByUser;
+	}
+	
+	public void setOwnedByUser(boolean ownedByUser){
+		this.ownedByUser = ownedByUser;
 	}
 
 }

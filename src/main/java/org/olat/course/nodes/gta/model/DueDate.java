@@ -47,7 +47,7 @@ public class DueDate {
 		this(relative, dueDate, referenceDueDate, overridenDueDate, startDate, null, null);
 	}
 	
-	public DueDate(boolean relative, Date dueDate, Date referenceDueDate, Date overridenDueDate, Date startDate, String messageKey, String messageArg) {
+	private DueDate(boolean relative, Date dueDate, Date referenceDueDate, Date overridenDueDate, Date startDate, String messageKey, String messageArg) {
 		this.dueDate = dueDate;
 		this.relative = relative;
 		this.messageKey = messageKey;
