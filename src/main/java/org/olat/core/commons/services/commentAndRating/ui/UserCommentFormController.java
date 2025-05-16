@@ -221,7 +221,8 @@ public class UserCommentFormController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		String commentText = commentElem.getValue();
 
-		if (!StringHelper.containsNonWhitespace(commentText) || containsEmptyPTag(commentText)) {
+		if ((!StringHelper.containsNonWhitespace(commentText) || containsEmptyPTag(commentText))
+				&& uploadedFiles.isEmpty()) {
 			commentElem.setErrorKey("comments.form.input.invalid");
 			allOk = false;
 		} else if (commentText.length() <= MAX_COMMENT_LENGTH) {
@@ -321,6 +322,7 @@ public class UserCommentFormController extends FormBasicController {
 
 			uploadedAttachmentLeafs.addAll(selectedFiles);
 			doCopyTemp(ureq);
+			markDirty();
 		}
 		cmc.deactivate();
 		cleanUp();
@@ -488,7 +490,7 @@ public class UserCommentFormController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String commentText = commentElem.getValue();
-		if (StringHelper.containsNonWhitespace(commentText)) {
+		if (StringHelper.containsNonWhitespace(commentText) || !uploadedFiles.isEmpty()) {
 			handleSubscription();
 
 			if (toBeUpdatedComment == null) {

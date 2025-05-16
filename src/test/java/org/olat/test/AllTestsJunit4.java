@@ -698,6 +698,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
+	org.olat.core.gui.components.form.flexible.impl.elements.JsDateChooserEvalTest.class,
 	org.olat.core.util.DateUtilsTest.class,
 	org.olat.core.util.tree.TreeHelperTest.class,
 	org.olat.core.util.resource.OresHelperTest.class,

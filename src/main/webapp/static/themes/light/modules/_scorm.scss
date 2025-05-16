@@ -10,6 +10,9 @@
 }
 
 body.o_scorm_full_width {
+	margin: 0;
+	padding: 0;
+
 	.o_toolbar {
 		display:none;
 	}
@@ -23,38 +26,50 @@ body.o_scorm_full_width {
 		display: none;
 	}
 	
-	.o_scorm {
+	#o_main_wrapper #o_main_container,
+	#o_main_wrapper #o_main_container #o_main_center #o_main_center_content #o_main_center_content_inner {
+		margin: 0;
+		padding: 0;
+	}
 	
+	.o_scorm {
 		.o_iframedisplay {
 			margin: 0;
 			padding: 0;
-			overflow:hidden;
+			width: 100vw;
+			height: 100vh !important;
+ 			border: none;
 			
 			>iframe {
-				display: block;
-				border: none;
-				height:100%;
-				width:100%;
-				position: fixed;
-				top: 0;
-				bottom:0;
-				left:0;
-				right:0;
-				padding: 0;
-				min-height:600px
+				display: block; 
+ 				width: 100vw;
+ 				height: 100vh !important;
+ 				min-height: 100vh !important;
+ 				border: none; 
+				overflow-y: auto; 
+				overflow-x: auto;
 			}
 		}
 	}
 	
 	&.o_scorm_with_back {
 		.o_toolbar {
-			margin: 10px 0;
+			margin: 10px 15px;
 			display: block;
+			width: calc(100vw - 30px);
+			height: 30px !important;
+			overflow: hidden;
 		}
 		
-		.o_scorm .o_iframedisplay > iframe {
-			top: 47px;
-			padding-bottom: 47px;
+		.o_scorm {
+			.o_iframedisplay {
+				height: calc(100vh - 50px) !important;
+			
+				>iframe {
+ 					height: calc(100vh - 50px) !important;
+ 					min-height: calc(100vh - 50px) !important;
+				}
+			}
 		}
 	}
 }
