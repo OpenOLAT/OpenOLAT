@@ -75,6 +75,9 @@ public class TextRunComponent extends PageRunComponent {
 				}
 			}
 			if (getComponent() instanceof TextComponent textComponent) {
+				if (source instanceof PageElementEditorController && element instanceof ParagraphElement paragraphElement) {
+					newValue = ComponentsFactory.getContent(paragraphElement, true).getDisplayText();
+				}
 				if (newValue != null && !Objects.equal(newValue, textComponent.getDisplayText())) {
 					textComponent.setText(newValue);
 				}

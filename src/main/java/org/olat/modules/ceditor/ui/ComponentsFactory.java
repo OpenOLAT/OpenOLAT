@@ -59,12 +59,23 @@ public class ComponentsFactory {
 	}
 	
 	public static final TextComponent getContent(ParagraphElement element) {
+		return getContent(element, false);
+	}
+	
+	public static final TextComponent getContent(ParagraphElement element, boolean editMode) {
 		String content = Formatter.formatLatexFormulas(element.getContent());
+		if (editMode) {
+			content = deactivateLinks(content);
+		}
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
 	}
 
+	private static String deactivateLinks(String content) {
+		return content.replaceAll("href=\"javascript:[^\"]*\"", "href=\"javascript:;\"");
+	}
+	
 	public static String getCssClass(HTMLElement htmlElement, boolean inForm) {
 		return BlockLayoutClassFactory.buildClass(htmlElement.getTextSettings(), inForm);
 	}
