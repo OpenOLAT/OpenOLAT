@@ -1045,8 +1045,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		
 		// Standard date
 		else if(refDate != null && now.before(refDate)) {
-			boolean dateOnly = isDateOnly(refDate);
-			dueDateArgs = formatDueDateArguments(refDate, now, false, true, userDeadLine);
+			// There is a reference date limit, but we need due date because the date was perhaps overriden
+			boolean dateOnly = isDateOnly(dueDate.getDueDate());
+			dueDateArgs = formatDueDateArguments(dueDate.getDueDate(), now, false, true, userDeadLine);
 			
 			String i18nKey;
 			if(done) {
