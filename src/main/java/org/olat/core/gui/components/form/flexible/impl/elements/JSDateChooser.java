@@ -171,7 +171,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		if(!isEnabled()) return;
 		
 		// If only two digit year is entered, expand to to 20xx
-		value = Formatter.formatTwoDigitsYearsAsFourDigitsYears(value);
+		value = expandYearToFourDigits(value);
 		
 		try {
 			String receiverId = component.getFormDispatchId();
@@ -194,11 +194,28 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 				secondHour = getRequestValue("o_dch_".concat(secondReceiverId));
 				secondMinute = getRequestValue("o_dcm_".concat(secondReceiverId));
 				secondValue = getRootForm().getRequestParameter(secondReceiverId);
-				secondValue = Formatter.formatTwoDigitsYearsAsFourDigitsYears(secondValue);
+				secondValue = expandYearToFourDigits(secondValue);
 			}
 		} catch (NumberFormatException e) {
 			log.error("", e);
 		}
+	}
+	
+	protected static final String expandYearToFourDigits(String val) {
+		if (StringHelper.containsNonWhitespace(val)) {
+			
+			if(val.indexOf(". ") >= 0) {
+				// Slovakia has a date format like 16. 5. 25
+				val = val.trim();
+				int lastIndex = val.lastIndexOf(". ");
+				if(val.length() - (lastIndex + 2) == 2) {
+					val = val.substring(0, lastIndex + 2) + "20" + val.substring(lastIndex + 2);
+				}
+			} else {
+				val = Formatter.formatTwoDigitsYearsAsFourDigitsYears(val);
+			}
+		}
+		return val;
 	}
 	
 	public String getSecondValue() {
