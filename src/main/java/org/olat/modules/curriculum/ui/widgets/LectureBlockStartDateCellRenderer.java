@@ -50,13 +50,15 @@ public class LectureBlockStartDateCellRenderer implements FlexiCellRenderer {
 		Object rowValue = source.getFormItem().getTableDataModel().getObject(row);
 		if(rowValue instanceof LectureBlockWidgetRow blockRow && blockRow.getLectureBlock().getStartDate() != null) {
 			LectureBlock lectureBlock = blockRow.getLectureBlock();
-			target.append("<span class='o_lecture_date'>");
+			target.append("<span class='o_lecture_date'>")
+			      .append("<i class='o_icon o_icon-fw o_icon_calendar'> </i>")
+			      .append("<span>");
 			// Day
-			target.append("<span class='o_lecture_day'><i class='o_icon o_icon-fw o_icon_calendar'> </i> ")
+			target.append("<span class='o_lecture_day'>")
 			      .append(formatter.formatDateWithDay(lectureBlock.getStartDate()))
 			      .append("</span>");
 			// Hour
-			target.append("<span class='o_lecture_time'><i class='o_icon o_icon-fw o_icon_time'> </i> ")
+			target.append("<span class='o_lecture_time'>")
 		          .append(formatter.formatTimeShort(lectureBlock.getStartDate()))
 		          .append("</span>");
 			// Duration
@@ -64,7 +66,7 @@ public class LectureBlockStartDateCellRenderer implements FlexiCellRenderer {
 				String duration = Formatter.formatDurationCompact(lectureBlock.getEndDate().getTime() - lectureBlock.getStartDate().getTime());
 				target.append(", <span class='o_lecture_duration'>").append(duration).append("</span>");
 			}
-			target.append("</span>");
+			target.append("</span></span>");
 		}
 	}
 }

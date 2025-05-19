@@ -21,24 +21,48 @@ package org.olat.modules.curriculum.ui.widgets;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 
 /**
  * 
  * Initial date: 9 sept. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LectureBlockWidgetRow {
 	
 	private final LectureBlock lectureBlock;
+	private final boolean onlineMeeting;
+	private final boolean nextScheduledEvent;
+	private final LectureBlockVirtualStatus virtualStatus;
 	private FormLink toolsLink;
 
-	public LectureBlockWidgetRow(LectureBlock lectureBlock) {
+	public LectureBlockWidgetRow(LectureBlock lectureBlock, LectureBlockVirtualStatus virtualStatus,
+			boolean onlineMeeting, boolean nextScheduledEvent) {
 		this.lectureBlock = lectureBlock;
+		this.onlineMeeting = onlineMeeting;
+		this.virtualStatus = virtualStatus;
+		this.nextScheduledEvent = nextScheduledEvent;
 	}
 	
 	public LectureBlock getLectureBlock() {
 		return lectureBlock;
+	}
+	
+	public String getLocation() {
+		return lectureBlock.getLocation();
+	}
+	
+	public boolean hasOnlineMeeting() {
+		return onlineMeeting;
+	}
+	
+	public boolean isNextScheduledEvent() {
+		return nextScheduledEvent;
+	}
+
+	public LectureBlockVirtualStatus getVirtualStatus() {
+		return virtualStatus;
 	}
 
 	public FormLink getToolsLink() {

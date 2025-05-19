@@ -574,21 +574,22 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			td:first-child {
 				width: 40%;
 			}
-			
 			td:last-child {
 				width: 150px;
+			}
+			td:has(.o_labeled_light) {
+				text-align: right;
 			}
 			
 			.o_curriculum_date > td:first-child,
 			.o_curriculum_today > td:first-child {
 				border-left: 3px solid #fff;
 			}
-			
-			.o_curriculum_now > td:first-child {
-				border-left: 3px solid $brand-primary;
+			.o_curriculum_today.o_next > td:first-child {
+				border-left: 3px solid $o-labeled-blue-light-border-color;
 			}
-			.o_curriculum_now {
-				background-color: $o-curriculum-widget-now-bg-color;
+			.o_curriculum_today.o_running > td:first-child {
+				border-left: 3px solid $o-labeled-orange-light-border-color;
 			}
 		}
 		
@@ -604,16 +605,18 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			height: 16px;
 		}
 		
-		.o_lecture_day {
-			display: block;
-		}
+		.o_lecture_date {
+			display: grid;
+			grid-template-columns: 26px 1fr;
+			margin-left: -26px;
+			
+			.o_icon_calendar {
+				align-self: center;
+			}
 		
-		.o_curriculum_today .o_lecture_day,
-		.o_curriculum_now .o_lecture_day {
-			display: none;
-		}
-		.o_curriculum_now .o_lecture_time i.o_icon_time {
-			@include o-add-icon('hourglass-half', false);
+			.o_lecture_day {
+				display: block;
+			}
 		}
 	}
 	
