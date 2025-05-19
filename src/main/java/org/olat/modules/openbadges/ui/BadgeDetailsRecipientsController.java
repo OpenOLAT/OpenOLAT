@@ -91,22 +91,18 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	private final RepositoryEntrySecurity reSecurity;
 	private String name;
 	private FormLink editDetailsButton;
-	private FormLink awardManually;
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
 	private StaticTextElement issuerEl;
 	private StaticTextElement languageEl;
 	private StaticTextElement versionEl;
 	private StaticTextElement issuedManuallyEl;
-	private FormLink awardBadgeButton;
 	private TableModel tableModel;
 	private FlexiTableElement tableEl;
 	private CloseableModalController cmc;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
 	private StepsMainRunController stepsController;
-	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
-	private IssueCourseBadgeController issueCourseBadgeCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ToolsController toolsCtrl;
 	private DialogBoxController confirmRevokeCtrl;
@@ -134,9 +130,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		editDetailsButton = uifactory.addFormLink("class.edit.details", formLayout, Link.BUTTON);
 		editDetailsButton.setElementCssClass("o_right");
 		
-		awardManually = uifactory.addFormLink("award.manually", formLayout, Link.BUTTON);
-		awardManually.setElementCssClass("o_right");
-
 		courseEl = uifactory.addFormLink("form.course", "goToCourse", "", translate("form.course"), formLayout, Link.NONTRANSLATED);
 		uifactory.addStaticTextElement("form.createdOn",
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate()), formLayout);
@@ -147,9 +140,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		versionEl.setVisible(badgeClass.getVersionType() != null);
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
-
-		awardBadgeButton = uifactory.addFormLink("award.badge.manually", formLayout, Link.BUTTON);
-		awardBadgeButton.setElementCssClass("o_right");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
@@ -259,18 +249,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 			if (event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}
-		} else if (source == issueGlobalBadgeCtrl) {
-			cmc.deactivate();
-			cleanUp();
-			if (event == Event.DONE_EVENT) {
-				loadData();
-			}
-		} else if (source == issueCourseBadgeCtrl) {
-			cmc.deactivate();
-			cleanUp();
-			if (event == Event.DONE_EVENT) {
-				loadData();
-			}
 		} else if (source == toolsCtrl) {
 			if (calloutCtrl != null) {
 				calloutCtrl.deactivate();
@@ -287,14 +265,10 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(badgeAssertionPublicController);
-		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
-		removeAsListenerAndDispose(issueCourseBadgeCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		cmc = null;
 		badgeAssertionPublicController = null;
-		issueGlobalBadgeCtrl = null;
-		issueCourseBadgeCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 	}
@@ -311,8 +285,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 			}
 		} else if (source == editDetailsButton) {
 			doEdit(ureq);
-		} else if (source == awardBadgeButton) {
-			doAwardBadge(ureq);
 		} else if (source == courseEl) {
 			fireEvent(ureq, FormEvent.BACK_EVENT);
 		} else if (source instanceof FormLink link) {
@@ -356,31 +328,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		listenTo(stepsController);
 		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
 	}
-
-	private void doAwardBadge(UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
-
-		if (badgeClass.getEntry() == null) {
-			issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), badgeClass);
-			listenTo(issueGlobalBadgeCtrl);
-
-			String title = translate("issueGlobalBadge");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					issueGlobalBadgeCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			issueCourseBadgeCtrl = new IssueCourseBadgeController(ureq, getWindowControl(), badgeClass);
-			listenTo(issueCourseBadgeCtrl);
-
-			String title = translate("issueBadge");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					issueCourseBadgeCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-
 
 	private void doSelect(UserRequest ureq, Row row) {
 		BadgeAssertion badgeAssertion = row.badgeAssertion();

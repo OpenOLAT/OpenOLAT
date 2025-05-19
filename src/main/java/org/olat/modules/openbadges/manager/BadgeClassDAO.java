@@ -238,7 +238,7 @@ public class BadgeClassDAO {
 
 		sb.append("select bc from badgeclass bc ");
 		sb.append(" where bc.rootId = :rootId ");
-		sb.append(" and bc.versionType = '").append(BadgeClass.BadgeClassVersionType.current.name()).append("'");
+		sb.append(" and bc.nextVersion is null");
 		
 		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BadgeClass.class)
@@ -254,17 +254,6 @@ public class BadgeClassDAO {
 
 	public void deleteBadgeClass(BadgeClass badgeClass) {
 		dbInstance.deleteObject(badgeClass);
-	}
-
-	public List<String> getBadgeClassNames(Collection<Long> badgeClassKeys) {
-		QueryBuilder sb = new QueryBuilder();
-		sb
-				.append("select bc.name from badgeclass bc")
-				.append(" where bc.key in (:badgeClassKeys)");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), String.class)
-				.setParameter("badgeClassKeys", badgeClassKeys)
-				.getResultList();
 	}
 
 	public List<String> getBadgeClassNamesForRootIds(Collection<String> badgeClassRootIds) {

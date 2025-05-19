@@ -241,12 +241,14 @@ public class BadgeDetailsController extends BasicController {
 			cleanUp();
 			if (event == Event.DONE_EVENT) {
 				loadData();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == issueCourseBadgeCtrl) {
 			cmc.deactivate();
 			cleanUp();
 			if (event == Event.DONE_EVENT) {
 				loadData();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == stepsController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
