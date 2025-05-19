@@ -540,9 +540,6 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			listenTo(userInfosCtrl);
 			wrapperVC.put("userInfos", userInfosCtrl.getInitialComponent());
 			
-
-			wrapperVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
-			
 			userTaskCtrl = new GTACoachController(ureq, wControl, assessedIdentityStackPanel,
 					courseEnv, gtaNode, coachCourseEnv, assessedIdentity, false, true, false, false);
 			listenTo(userTaskCtrl);
