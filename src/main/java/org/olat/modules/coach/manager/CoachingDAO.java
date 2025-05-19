@@ -896,11 +896,11 @@ public class CoachingDAO {
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(" )");
 		} else if(!organisationsGroups.isEmpty()) {
-			sb.append("participant.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
+			sb.append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
 			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
 			  .append(")");
 		} else if(userRelation != null) {
-			sb.append("participant.key in (select relation.target.key from identitytoidentity as relation")
+			sb.append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
 			  .append(")");
 		}
@@ -950,11 +950,11 @@ public class CoachingDAO {
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(" )");
 		} else if(!organisationsGroups.isEmpty()) {
-			sb.append("participant.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
+			sb.append("participant.identity.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
 			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
 			  .append(")");
 		} else if(userRelation != null) {
-			sb.append("participant.key in (select relation.target.key from identitytoidentity as relation")
+			sb.append("participant.identity.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
 			  .append(")");
 		}
