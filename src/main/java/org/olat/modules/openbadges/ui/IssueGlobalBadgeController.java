@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.user.UserManager;
@@ -146,7 +147,7 @@ public class IssueGlobalBadgeController extends FormBasicController {
 		} else if (source == userSearchController) {
 			if (event instanceof SingleIdentityChosenEvent singleIdentityChosenEvent) {
 				recipient = singleIdentityChosenEvent.getChosenIdentity();
-				String recipientDisplayName = userManager.getUserDisplayName(recipient.getUser());
+				String recipientDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(recipient.getUser()));
 				recipientButton.setI18nKey(recipientDisplayName);
 			}
 			ccwc.deactivate();
