@@ -242,7 +242,7 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 	private boolean acceptNotVisited(Boolean notVisited, ParticipantStatisticsEntry entry) {
 		if(notVisited == null) return true;
 		
-		return (Boolean.TRUE.equals(notVisited) && entry.getEntries().numOfVisited() == 0);
+		return (Boolean.TRUE.equals(notVisited) && entry.getEntries().numOfNotVisited() > 0);
 	}
 	
 	private ConfirmationByEnum getFilteredConfirmedBy(List<FlexiTableFilter> filters) {

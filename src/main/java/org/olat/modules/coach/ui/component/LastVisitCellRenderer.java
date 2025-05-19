@@ -58,8 +58,8 @@ public class LastVisitCellRenderer implements FlexiCellRenderer {
 		Date now = new Date();
 		
 		long diff = now.getTime() - date.getTime();
-		if(diff < 0) {
-			target.append(translator.translate("last.visit.hours", "0"));
+		if(diff < HOUR) {
+			target.append(translator.translate("last.visit.now"));
 		} else if(diff < DAY) {
 			long numOfHours = diff / HOUR;
 			target.append(translator.translate("last.visit.hours", Long.toString(numOfHours)));
