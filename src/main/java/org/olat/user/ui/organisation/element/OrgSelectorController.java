@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -46,6 +47,9 @@ import org.olat.core.util.StringHelper;
 public class OrgSelectorController extends FormBasicController {
 	private static final String PARAMETER_NAME_ORG = "org_name_";
 
+	private static final String PARAMETER_VALUE_ORG_ID = "org_id_";
+	private static final String PARAMETER_VALUE_SEL_ORG_ID = "sel_org_id_";
+	
 	private static final int PAGE_SIZE = 50;
 
 	private FormLink applyButton;
@@ -59,6 +63,8 @@ public class OrgSelectorController extends FormBasicController {
 	private List<OrgUIRow> orgUIRows;
 	private int maxUnselectedRows = PAGE_SIZE;
 
+	private final boolean multipleSelection;
+
 	public record OrgUIRow(Long key, String path, String displayPath, String title, String location, String numberOfElements, boolean checked) {}
 
 	public OrgSelectorController(UserRequest ureq, WindowControl wControl, List<OrgSelectorElementImpl.OrgRow> orgRows,
@@ -67,6 +73,7 @@ public class OrgSelectorController extends FormBasicController {
 
 		this.selectedKeys = selectedKeys;
 		this.orgRows = orgRows;
+		this.multipleSelection = multipleSelection;
 
 		buildUIRows();
 
@@ -129,6 +136,12 @@ public class OrgSelectorController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		updateSelection(ureq);
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (applyButton == source) {
 			doApply(ureq);
@@ -140,6 +153,44 @@ public class OrgSelectorController extends FormBasicController {
 			doLoadMore(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateSelection(UserRequest ureq) {
+		String orgId = ureq.getParameter("update_selection");
+		if (!StringHelper.containsNonWhitespace(orgId)) {
+			return;
+		}
+		
+		if (orgId.startsWith(PARAMETER_VALUE_ORG_ID)) {
+			orgId = orgId.substring(PARAMETER_VALUE_ORG_ID.length());
+		} else if (orgId.startsWith(PARAMETER_VALUE_SEL_ORG_ID)) {
+			orgId = orgId.substring(PARAMETER_VALUE_SEL_ORG_ID.length());
+		}
+
+		String selectedString = ureq.getParameter("selected");
+		if (!StringHelper.containsNonWhitespace(selectedString)) {
+			return;
+		}
+
+		boolean selected = Boolean.parseBoolean(selectedString);
+
+		try {
+			Long orgKey = Long.parseLong(orgId);
+			if (multipleSelection) {
+				if (selected) {
+					selectedKeys.add(orgKey);
+				} else {
+					selectedKeys.remove(orgKey);
+				}
+			} else {
+				if (selected) {
+					selectedKeys.clear();
+					selectedKeys.add(orgKey);
+				}
+			}
+		} catch (NumberFormatException e) {
+			//
+		}
 	}
 
 	@Override

@@ -132,6 +132,7 @@
 			jQuery(`#${otherGroupId} #${orgId}`).prop('checked', element.checked);
 			var nbSelected = Math.max(jQuery(`#${otherGroupId} input:checked`).length, jQuery(`#${ownGroupId} input:checked`).length);
 			jQuery("#$r.getId('_selection_number_')").html(`(${nbSelected})`);
+			$f.openFfXHREvent(false, false, false), 'update_selection', orgId, 'selected', element.checked ? 'true' : 'false');
 		#else
 			if (element.checked) {
 				var value = element.getAttribute('value');
@@ -140,6 +141,7 @@
 
 				jQuery(`#${ownGroupId} input`).prop('checked', false);
 				jQuery(`#${ownGroupId} input[value="${value}"]`).prop('checked', true);
+				$f.openFfXHREvent(false, false, false), 'update_selection', orgId, 'selected', 'true');
 			}
 		#end
 	}
