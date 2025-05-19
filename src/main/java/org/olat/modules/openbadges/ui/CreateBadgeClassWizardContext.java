@@ -217,6 +217,12 @@ public class CreateBadgeClassWizardContext {
 	
 	private void deleteImage(OpenBadgesManager openBadgesManager, BadgeClass badgeClass) {
 		VFSLeaf imageLeaf = openBadgesManager.getBadgeClassVfsLeaf(badgeClass.getImage());
+		if (imageLeaf == null) {
+			return;
+		}
+		if (!imageLeaf.exists()) {
+			return;
+		}
 		imageLeaf.deleteSilently();
 	}
 
