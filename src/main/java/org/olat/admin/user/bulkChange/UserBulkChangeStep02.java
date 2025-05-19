@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -218,13 +219,13 @@ class UserBulkChangeStep02 extends BasicStep {
 				String userLanguage = identity.getUser().getPreferences().getLanguage();
 				if (attributeChangeMap.containsKey(UserBulkChangeManager.LANG_IDENTIFYER)) {
 					String inputLanguage = attributeChangeMap.get(UserBulkChangeManager.LANG_IDENTIFYER);
-					if (userLanguage.equals(inputLanguage)) {
+					if (userLanguage.equals(StringHelper.escapeHtml(inputLanguage))) {
 						userDataArray.add(userLanguage);
 					} else {
 						userDataArray.add(decorateChangedCell(inputLanguage));
 					}
 				} else {
-					userDataArray.add(userLanguage);
+					userDataArray.add(StringHelper.escapeHtml(userLanguage));
 				}
 
 				Context vcContext = new VelocityContext();
@@ -252,7 +253,7 @@ class UserBulkChangeStep02 extends BasicStep {
 					} else {
 						// property has not been checked in step00 but should be in
 						// overview-table
-						userDataArray.add(userValue);
+						userDataArray.add(StringHelper.escapeHtml(userValue));
 					}
 
 				} // for
@@ -332,7 +333,7 @@ class UserBulkChangeStep02 extends BasicStep {
 
 		
 		private String decorateChangedCell(String val) {
-			return "<span class='o_userbulk_changedcell'><i class='o_icon o_icon_new'> </i> " + val + "</span>";
+			return "<span class='o_userbulk_changedcell'><i class='o_icon o_icon_new'> </i> " + StringHelper.escapeHtml(val) + "</span>";
 		}
 	}
 }
