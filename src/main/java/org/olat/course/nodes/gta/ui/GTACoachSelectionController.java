@@ -537,8 +537,6 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			
 			VelocityContainer wrapperVC = createVelocityContainer("coach_wrapper");
 			
-			wrapperVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
-			
 			userTaskCtrl = new GTACoachController(ureq, wControl, assessedIdentityStackPanel,
 					courseEnv, gtaNode, coachCourseEnv, assessedIdentity, false, true, false, false);
 			listenTo(userTaskCtrl);

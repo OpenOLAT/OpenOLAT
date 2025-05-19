@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.timeline.TimelineBuilder;
@@ -101,9 +100,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected final ModuleConfiguration config;
 	protected final RepositoryEntry courseEntry;
 	
-	private final boolean withSubscription;
-	private final PublisherData publisherData;
-	private final SubscriptionContext subsContext;
+	protected final boolean withSubscription;
+	protected final PublisherData publisherData;
+	protected final SubscriptionContext subsContext;
 
 	protected final boolean withTitle;
 	protected final boolean withGrading;
@@ -219,11 +218,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 		List<TaskRevision> taskRevisions = gtaManager.getTaskRevisions(task);
 		
-		if (withSubscription && subsContext != null) {
-			ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
-			listenTo(contextualSubscriptionCtr);
-			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
-		}
+		initNotifications(ureq);
 		
 		boolean optional = gtaNode.isOptional(courseEnv, userCourseEnv);
 		boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
@@ -298,6 +293,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	}
 	
 	protected abstract void resetTask(UserRequest ureq, Task task);
+	
+	protected abstract void initNotifications(UserRequest ureq);
 	
 	protected final void collapsedContents(Task currentTask) {
 		TaskProcess status = null;
