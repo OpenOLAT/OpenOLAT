@@ -447,7 +447,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	}
 
 	private void doSelectRepositoryEntry(UserRequest ureq) {
-		Confirm confirmation = referenceProvider.confirmCanReplace();
+		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(searchCtrl);
@@ -466,7 +466,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	}
 	
 	private void doCreateRepositoryEntry(UserRequest ureq, RepositoryHandler handler) {
-		Confirm confirmation = referenceProvider.confirmCanReplace();
+		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(createCtrl);
 			createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl(), false);
@@ -483,7 +483,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	}
 	
 	private void doImportRepositoryEntry(UserRequest ureq) {
-		Confirm confirmation = referenceProvider.confirmCanReplace();
+		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(importCtrl);
 			importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl(), referenceProvider.getResourceTypes().stream().toArray(String[]::new));
@@ -499,7 +499,7 @@ public class RepositoryEntryReferenceController extends BasicController {
 	}
 	
 	private void doImportUrlRepositoryEntry(UserRequest ureq) {
-		Confirm confirmation = referenceProvider.confirmCanReplace();
+		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(importCtrl);
 			importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl());

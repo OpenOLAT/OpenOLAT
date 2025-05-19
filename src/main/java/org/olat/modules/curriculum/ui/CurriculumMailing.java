@@ -63,6 +63,8 @@ import org.olat.user.UserManager;
  */
 public class CurriculumMailing {
 	
+	private static int counter = 0;
+	
 	public static MailTemplate getStatusConfirmedMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.status.confirmed.subject";
 		String bodyKey = "notification.mail.status.confirmed.body";
@@ -348,7 +350,9 @@ public class CurriculumMailing {
 		}
 		
 		MailerResult result = new MailerResult();
-		String metaId = mailing.getUuid();
+		// Every e-mail is sent separately to the recipient with some text customization, it's not
+		// the same e-mails, needs a different ID.
+		String metaId = mailing.getUuid() == null ? null : mailing.getUuid() + "-" + (++counter);
 		MailManager mailService = CoreSpringFactory.getImpl(MailManager.class);
 		MailBundle bundle = mailService.makeMailBundle(context, identity, template, ureqIdentity, metaId, result);
 		if(bundle != null) {

@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -114,6 +115,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private ConfirmResetTaskController confirmResetTaskCtrl;
 	private CloseableCalloutWindowController chooserCalloutCtrl;
 	private BusinessGroupChooserController businessGroupChooserCtrl;
+	private ContextualSubscriptionController contextualSubscriptionCtr;
 	private GTAParticipantRevisionAndCorrectionsController revisionDocumentsCtrl;
 	private ConfirmOptionalTaskAssignmentController confirmOptionalAssignmentCtrl;
 	private GTAParticipantPeerReviewsAwardedListController peerReviewsAwardedListCtrl;
@@ -186,6 +188,16 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		}
 	}
 	
+	@Override
+	protected void initNotifications(UserRequest ureq) {
+		if (withSubscription && subsContext != null) {
+			removeControllerListener(contextualSubscriptionCtr);
+			contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
+			listenTo(contextualSubscriptionCtr);
+			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
+		}
+	}
+
 	@Override
 	protected Task stepAssignment(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepAssignment(ureq, assignedTask);

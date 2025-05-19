@@ -58,7 +58,7 @@ public interface RepositoryEntryReferenceProvider {
 	 * 
 	 * @return confirmation true/false and eventual an error message if false
 	 */
-	public Confirm confirmCanReplace();
+	public Confirm confirmCanReplace(UserRequest ureq);
 	
 	public String getWarningMessage();
 	

@@ -207,8 +207,8 @@ public class IQConfigurationController extends BasicController implements Refere
 		}
 
 		@Override
-		public Confirm confirmCanReplace() {
-			if(newReference || canPublish()) {
+		public Confirm confirmCanReplace(UserRequest ureq) {
+			if(newReference || canPublish(ureq)) {
 				return new Confirm(true, null);
 			}
 			String warning = translate("warning.publish");
@@ -450,7 +450,9 @@ public class IQConfigurationController extends BasicController implements Refere
 		}
 	}
 	
-	private boolean canPublish() {
+	private boolean canPublish(UserRequest ureq) {
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
 		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
