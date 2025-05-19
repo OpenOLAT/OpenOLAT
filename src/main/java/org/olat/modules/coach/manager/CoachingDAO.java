@@ -55,8 +55,8 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
-import org.olat.modules.coach.model.ParticipantStatisticsEntry.Entries;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.Entries;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -774,7 +774,7 @@ public class CoachingDAO {
 		  .append("  max(courseInfos.recentLaunch) as lastvisit,")
 		  .append("  sum(case when certificateConfig.automaticCertificationEnabled=true or certificateConfig.manualCertificationEnabled=true then 1 else 0 end) as numOfCoursesWithCertificate,")
 		  .append("  count(certificate.key) as numOfCertificates,")
-		  .append("  sum(case when certificate.nextRecertificationDate>:now then 1 else 0 end) as numOfInvalidCertificates")
+		  .append("  sum(case when certificate.nextRecertificationDate<:now then 1 else 0 end) as numOfInvalidCertificates")
 		  .append(" from repositoryentry as re")
 		  .append(" inner join re.groups as reToParticipantGroup")
 		  .append(" inner join reToParticipantGroup.group as participantGroup")
@@ -823,13 +823,13 @@ public class CoachingDAO {
 				userProperties[i] = (String)rawStat[pos++];
 			}
 	
-			long numOfCourses = PersistenceHelper.extractLong(rawStat, pos++);
-			long numOfVisited = PersistenceHelper.extractLong(rawStat, pos++);
+			long numOfCourses = PersistenceHelper.extractPrimitiveLong(rawStat, pos++);
+			long numOfVisited = PersistenceHelper.extractPrimitiveLong(rawStat, pos++);
 			Date lastVisit = (Date)rawStat[pos++];
 			
-			long numOfCoursesWithCertificate = PersistenceHelper.extractLong(rawStat, pos++);
-			long numOfCertificates = PersistenceHelper.extractLong(rawStat, pos++);
-			long numOfInvalidCertificates = PersistenceHelper.extractLong(rawStat, pos);
+			long numOfCoursesWithCertificate = PersistenceHelper.extractPrimitiveLong(rawStat, pos++);
+			long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, pos++);
+			long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, pos);
 
 			ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(identityKey, userPropertyHandlers, userProperties, locale);
 			entry.setEntries(new Entries(numOfCourses, numOfVisited, numOfCourses - numOfVisited));
@@ -914,9 +914,9 @@ public class CoachingDAO {
 			Long identityKey = ((Number)rawObjects[0]).longValue();
 			ParticipantStatisticsEntry stats = statEntries.get(identityKey);
 			if(stats != null) {
-				long numPassed = PersistenceHelper.extractLong(rawObjects, 1);
-				long numFailed = PersistenceHelper.extractLong(rawObjects, 2);
-				long total = PersistenceHelper.extractLong(rawObjects, 3);
+				long numPassed = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
+				long numFailed = PersistenceHelper.extractPrimitiveLong(rawObjects, 2);
+				long total = PersistenceHelper.extractPrimitiveLong(rawObjects, 3);
 				long numUndefined = total - numFailed - numPassed;
 				stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
 			}
@@ -1017,9 +1017,9 @@ public class CoachingDAO {
 			Long identityKey = ((Number)rawObjects[0]).longValue();
 			ParticipantStatisticsEntry stats = statEntries.get(identityKey);
 			if(stats != null) {
-				long reservations = PersistenceHelper.extractLong(rawObjects, 1);
-				long confirmedByUser = PersistenceHelper.extractLong(rawObjects, 2);
-				long confirmedByAdmin = PersistenceHelper.extractLong(rawObjects, 3);
+				long reservations = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
+				long confirmedByUser = PersistenceHelper.extractPrimitiveLong(rawObjects, 2);
+				long confirmedByAdmin = PersistenceHelper.extractPrimitiveLong(rawObjects, 3);
 				stats.addReservations(reservations);
 				stats.addReservationsConfirmedByUser(confirmedByUser);
 				stats.addReservationsConfirmedByAdmin(confirmedByAdmin);
@@ -1068,9 +1068,9 @@ public class CoachingDAO {
 			Long identityKey = ((Number)rawObjects[0]).longValue();
 			ParticipantStatisticsEntry stats = statEntries.get(identityKey);
 			if(stats != null) {
-				long reservations = PersistenceHelper.extractLong(rawObjects, 1);
-				long confirmedByUser = PersistenceHelper.extractLong(rawObjects, 2);
-				long confirmedByAdmin = PersistenceHelper.extractLong(rawObjects, 3);
+				long reservations = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
+				long confirmedByUser = PersistenceHelper.extractPrimitiveLong(rawObjects, 2);
+				long confirmedByAdmin = PersistenceHelper.extractPrimitiveLong(rawObjects, 3);
 				stats.addReservations(reservations);
 				stats.addReservationsConfirmedByUser(confirmedByUser);
 				stats.addReservationsConfirmedByAdmin(confirmedByAdmin);

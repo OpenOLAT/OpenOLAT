@@ -51,16 +51,20 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumDashboardController;
-import org.olat.modules.curriculum.ui.CurriculumElementLectureBlocksTableModel.BlockCols;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetTableModel.BlockCols;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.addwizard.AddLectureBlock1ResourcesStep;
 import org.olat.modules.lecture.ui.addwizard.AddLectureBlockStepCallback;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -97,7 +101,8 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
 			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "events_widget", Util
-				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale()));
+				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale(), Util
+						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale())));
 		this.secCallback = secCallback;
 		preferencesId = "widget-cur-mgmt";
 		initForm(ureq);
@@ -107,7 +112,8 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
 			Curriculum curriculum, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "events_widget", Util
-				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale()));
+				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale(), Util
+						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale())));
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		preferencesId = "widget-lectures-cur-" + curriculum.getKey();
@@ -118,7 +124,8 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "events_widget", Util
-				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale()));
+				.createPackageTranslator(CurriculumDashboardController.class, ureq.getLocale(), Util
+						.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale())));
 		this.curriculumElement = curriculumElement;
 		this.secCallback = secCallback;
 		preferencesId = "widget-lectures-cur-el-" + curriculumElement.getKey();
@@ -157,19 +164,28 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		todayLink = uifactory.addFormLink("curriculum.lectures.today", formLayout);
 		upcomingLink = uifactory.addFormLink("curriculum.lectures.next.days", formLayout);
 		
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, "select",
+		FlexiTableColumnModel todayColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		todayColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, "select",
 				new LectureBlockTitleCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
+		todayColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
 				new LectureBlockLocationCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title,
-				new LectureBlockStartDateCellRenderer(getLocale())));
-
-		todayTableModel = new LectureBlocksWidgetTableModel(columnsModel);
+		todayColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status,
+				new LectureBlockWidgetStatusCellRenderer(getTranslator())));
+		todayColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date,
+				new LectureBlockTodayDateCellRenderer(getLocale())));
+		todayTableModel = new LectureBlocksWidgetTableModel(todayColumnsModel);
 		todayTableEl = initTable(formLayout, "today", todayTableModel);
 		todayTableEl.setEmptyTableMessageKey("empty.today.lectures");
-
-		nextDaysTableModel = new LectureBlocksWidgetTableModel(columnsModel);
+		
+		
+		FlexiTableColumnModel nextDaysColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		nextDaysColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, "select",
+				new LectureBlockTitleCellRenderer()));
+		nextDaysColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
+				new LectureBlockLocationCellRenderer()));
+		nextDaysColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date,
+				new LectureBlockStartDateCellRenderer(getLocale())));
+		nextDaysTableModel = new LectureBlocksWidgetTableModel(nextDaysColumnsModel);
 		nextDaysTableEl = initTable(formLayout, "nextDays", nextDaysTableModel);
 		nextDaysTableEl.setEmptyTableMessageKey("empty.next.days.lectures");
 	}
@@ -200,6 +216,10 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		searchParams.setStartDate(DateUtils.getStartOfDay(now));
 		searchParams.setEndDate(DateUtils.getEndOfDay(now));
 		searchParams.setManager(getIdentity());
+
+		LecturesBlockSearchParameters nextParams = getSearchParameters();
+		nextParams.setStartDate(now);
+		LectureBlockRef nextScheduledBlock = lectureService.getNextScheduledLectureBlock(nextParams);
 		
 		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
 		long numOfBlocks = lectureBlocks.size();
@@ -208,13 +228,20 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			lectureBlocks = new ArrayList<>(lectureBlocks.subList(0, 5));
 		}
 		List<LectureBlockWidgetRow> rows = lectureBlocks.stream()
-				.map(LectureBlockWidgetRow::new)
+				.map(b -> forgeRow(b, nextScheduledBlock))
 				.toList();
 		todayTableModel.setObjects(rows);
 		todayTableEl.reset(true, true, true);
 		
 		String text = getText(translate("num.of.events.today"), Long.toString(numOfBlocks));
 		eventsTodayLink.setI18nKey(text);
+	}
+	
+	private LectureBlockWidgetRow forgeRow(LectureBlock lectureBlock, LectureBlockRef nextScheduledBlock) {
+		LectureBlockVirtualStatus vStatus = LectureBlockStatusCellRenderer.calculateStatus(lectureBlock);
+		boolean onlineMeeting = lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null;
+		boolean nextScheduled = nextScheduledBlock != null && nextScheduledBlock.getKey().equals(lectureBlock.getKey());
+		return new LectureBlockWidgetRow(lectureBlock, vStatus, onlineMeeting, nextScheduled);
 	}
 	
 	private void trimBeforeNow(List<LectureBlock> lectureBlocks, Date now) {
@@ -237,7 +264,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			numOfBlocks = lectureService.countLectureBlocks(searchParams);
 		}
 		List<LectureBlockWidgetRow> rows = lectureBlocks.stream()
-				.map(LectureBlockWidgetRow::new)
+				.map(b -> forgeRow(b, null))
 				.toList();
 		nextDaysTableModel.setObjects(rows);
 		nextDaysTableEl.reset(true, true, true);

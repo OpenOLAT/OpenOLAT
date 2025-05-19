@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
 
 /**
  * 
@@ -61,11 +62,15 @@ public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<Le
 		final LectureBlockWidgetRow blockRow = getObject(row);
 		if(blockRow != null && blockRow.getLectureBlock().getStartDate() != null) {
 			Date startDate = blockRow.getLectureBlock().getStartDate();
-			Date endDate = blockRow.getLectureBlock().getEndDate();
-			if(endDate != null && startDate.getTime() <= now.getTime() && endDate.getTime() >= now.getTime()) {
-				return "o_curriculum_now";
-			}
 			if(DateUtils.isSameDay(startDate, now)) {
+				if(blockRow.isNextScheduledEvent()) {
+					return "o_curriculum_today o_next";	
+				}
+				
+				LectureBlockVirtualStatus status = blockRow.getVirtualStatus();
+				if(status == LectureBlockVirtualStatus.RUNNING) {
+					return "o_curriculum_today o_running";	
+				}
 				return "o_curriculum_today";
 			}
 		}
@@ -80,9 +85,10 @@ public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<Le
 			case key -> lectureBlock.getKey();
 			case externalId -> lectureBlock.getExternalId();
 			case title -> lectureBlock.getTitle();
-			case location -> lectureBlock.getLocation();
+			case location -> blockRow;
 			case date -> lectureBlock.getStartDate();
 			case startTime -> lectureBlock.getStartDate();
+			case status -> blockRow;
 			default -> "ERROR";
 		};
 	}
@@ -93,7 +99,8 @@ public class LectureBlocksWidgetTableModel extends DefaultFlexiTableDataModel<Le
 		title("table.header.title"),
 		location("table.header.location"),
 		date("table.header.date"),
-		startTime("table.header.start.time");
+		startTime("table.header.start.time"),
+		status("table.header.status");
 		
 		private final String i18nHeaderKey;
 		

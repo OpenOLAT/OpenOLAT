@@ -19,37 +19,48 @@
  */
 package org.olat.modules.curriculum.ui.widgets;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.Formatter;
+import org.olat.modules.lecture.LectureBlock;
 
 /**
  * 
- * Initial date: 22 oct. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Initial date: 19 mai 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockLocationCellRenderer implements FlexiCellRenderer {
+public class LectureBlockTodayDateCellRenderer implements FlexiCellRenderer {
+	
+	private final Formatter formatter;
+	
+	public LectureBlockTodayDateCellRenderer(Locale locale) {
+		formatter = Formatter.getInstance(locale);
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof LectureBlockWidgetRow blockRow) {
-			boolean onlineMeeting = blockRow.hasOnlineMeeting();
-			boolean location = StringHelper.containsNonWhitespace(blockRow.getLocation());	
-			if(onlineMeeting || location) {
-				target.append("<span><i class='o_icon o_icon-fw ").append("o_vc_icon", "o_icon_location", onlineMeeting).append("'> </i> ");
-				if(StringHelper.containsNonWhitespace(blockRow.getLocation())) {
-					target.appendHtmlEscaped(blockRow.getLocation());
-				} else if(onlineMeeting) {
-					target.append(translator.translate("lecture.online.meeting"));
-				}
-				target.append("</span>");
+		Object rowValue = source.getFormItem().getTableDataModel().getObject(row);
+		if(rowValue instanceof LectureBlockWidgetRow blockRow && blockRow.getLectureBlock().getStartDate() != null) {
+			LectureBlock lectureBlock = blockRow.getLectureBlock();
+			target.append("<span>");
+			// Hour
+			target.append("<span class='o_lecture_time'>")
+		          .append(formatter.formatTimeShort(lectureBlock.getStartDate()))
+		          .append("</span>");
+			// Duration
+			if(lectureBlock.getEndDate() != null) {
+				String duration = Formatter.formatDurationCompact(lectureBlock.getEndDate().getTime() - lectureBlock.getStartDate().getTime());
+				target.append(", <span class='o_lecture_duration'>").append(duration).append("</span>");
 			}
+			target.append("</span>");
 		}
 	}
 }

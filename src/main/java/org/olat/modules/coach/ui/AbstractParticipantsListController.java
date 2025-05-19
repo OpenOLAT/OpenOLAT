@@ -226,7 +226,7 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 
         if(withResources) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.courses));
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ParticipantCols.coursesNotAttended));
+            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.coursesNotAttended));
         }
         
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.lastVisit,
@@ -254,7 +254,7 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
-        tableEl.setAndLoadPersistedPreferences(ureq, "coaching-" + tableId + "-v1.1");
+        tableEl.setAndLoadPersistedPreferences(ureq, "coaching-" + tableId + "-v1.2");
         
         batchContactButton = uifactory.addFormLink("contact.link", formLayout, Link.BUTTON);
         batchContactButton.setIconLeftCSS("o_icon o_icon_mail");
