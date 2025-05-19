@@ -104,7 +104,7 @@ public class CourseNodeReferenceProvider implements RepositoryEntryReferenceProv
 	}
 	
 	@Override
-	public Confirm confirmCanReplace() {
+	public Confirm confirmCanReplace(UserRequest ureq) {
 		return new Confirm(true, null);
 	}
 
