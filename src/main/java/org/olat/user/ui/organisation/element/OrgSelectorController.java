@@ -46,6 +46,7 @@ import org.olat.core.util.StringHelper;
  */
 public class OrgSelectorController extends FormBasicController {
 	private static final String PARAMETER_NAME_ORG = "org_name_";
+	private static final String PARAMETER_NAME_SEL_ORG = "sel_org_name_";
 
 	private static final String PARAMETER_VALUE_ORG_ID = "org_id_";
 	private static final String PARAMETER_VALUE_SEL_ORG_ID = "sel_org_id_";
@@ -231,6 +232,10 @@ public class OrgSelectorController extends FormBasicController {
 		for (String name : ureq.getParameterSet()) {
 			if (name.startsWith(PARAMETER_NAME_ORG)) {
 				String keyString = name.substring(PARAMETER_NAME_ORG.length());
+				selectedKeys.add(Long.parseLong(keyString));
+			}
+			if (name.startsWith(PARAMETER_NAME_SEL_ORG)) {
+				String keyString = name.substring(PARAMETER_NAME_SEL_ORG.length());
 				selectedKeys.add(Long.parseLong(keyString));
 			}
 		}
