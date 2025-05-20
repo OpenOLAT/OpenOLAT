@@ -956,6 +956,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		Date refDate = dueDate.getReferenceDueDate();
 		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
 		Date extensionDate = dueDate.getOverridenDueDate();
+		boolean closed = done || (dueDate.getDueDate() != null && dueDate.getDueDate().before(now));
 
 		String text = null;
 		DueDateArguments dueDateArgs = null;
@@ -1062,7 +1063,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			dueDateArgs = formatDueDateArguments(dueDate.getDueDate(), now, false, true, userDeadLine);
 			
 			String i18nKey;
-			if(done) {
+			if(done || closed) {
 				i18nKey = dateOnly ? "msg.end.dateonly.done" : "msg.end.done";
 			} else if(dueDateArgs.days() > 1) {// 2 days
 				i18nKey = dateOnly ? "msg.end.dateonly.within.days" : "msg.end.within.days";
@@ -1084,8 +1085,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			text = translate(i18nKey, dueDateArgs.args());
 		}
 
-		long remainingTime = (dueDateArgs == null ? -1l : dueDateArgs.timeDiffInMillSeconds());
-		long lateRemainingTime = (lateDueDateArgs == null ? -1l : lateDueDateArgs.timeDiffInMillSeconds());
+		long remainingTime = (dueDateArgs == null || closed ? -1l : dueDateArgs.timeDiffInMillSeconds());
+		long lateRemainingTime = (lateDueDateArgs == null || closed ? -1l : lateDueDateArgs.timeDiffInMillSeconds());
 		return new DueDateValues(text, remainingTime, lateRemainingTime);
 	}
 
