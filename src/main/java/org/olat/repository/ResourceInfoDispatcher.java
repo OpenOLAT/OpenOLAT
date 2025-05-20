@@ -29,7 +29,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.AuthHelper;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.robots.SitemapWriter;
 import org.olat.core.commons.services.robots.model.SitemapItem;
