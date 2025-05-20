@@ -102,6 +102,7 @@ public class UserRolesController extends FormBasicController {
 	private final Identity editedIdentity;
 	private final Set<Organisation> justAddedOrganisation = new HashSet<>();
 	private List<Organisation> organisations;
+	private List<Organisation> affOrganisations;
 
 	private final Roles managerRoles;
 	private final List<Organisation> manageableOrganisations;
@@ -223,7 +224,7 @@ public class UserRolesController extends FormBasicController {
 			affiliationSelectorEl.setMandatory(true);
 			affiliationSelectorEl.setMultipleSelection(true);
 
-			List<Organisation> assignedToUserRole = organisations.stream()
+			affOrganisations = organisations.stream()
 					.filter(org -> {
 						RolesByOrganisation roles = editedRoles.getRoles(org);
 						if (roles == null) return false;
@@ -236,14 +237,14 @@ public class UserRolesController extends FormBasicController {
 					})
 					.toList();
 
-			affiliationSelectorEl.setSelection(assignedToUserRole.stream().map(Organisation::getKey).toList());
+			affiliationSelectorEl.setSelection(affOrganisations.stream().map(Organisation::getKey).toList());
 			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
 
 			affiliationTreeEl = uifactory.addOrgStructureElement(
 					"orgTreeAff",
 					formLayout,
 					getWindowControl(),
-					assignedToUserRole
+					affOrganisations
 			);
 			affiliationTreeEl.setCollapseUnrelatedBranches(true);
 		}
@@ -374,7 +375,6 @@ public class UserRolesController extends FormBasicController {
 			}
 		}
 	}
-
 
 	private void fillOrderedRoles(List<String> roleKeys, List<String> roleValues) {
 		OrganisationRoles[] orderedRoles = {
@@ -552,21 +552,21 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-
-		return allOk;
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (addToOrganisationButton == source) {
 			doAddToOrganisation(ureq);
 		} else if (source == affiliationSelectorEl) {
 			// get all selected keys
 			Set<Long> selKeys = affiliationSelectorEl.getSelection();
+
+			affiliationSelectorEl.clearError();
+			if (selKeys.isEmpty()) {
+				affiliationSelectorEl.setErrorKey("error.roles.atleastone");
+				return;
+			}
+
 			// map back to Organisation objects
-			List<Organisation> active = organisations.stream()
+			List<Organisation> active = affOrganisations.stream()
 					.filter(o -> selKeys.contains(o.getKey()))
 					.toList();
 			// push into the tree
@@ -574,7 +574,7 @@ public class UserRolesController extends FormBasicController {
 			affiliationTreeEl.getComponent().setDirty(true);
 
 			// Current user orgs (where they have the "user" role)
-			Set<Long> currentOrgKeys = organisations.stream()
+			Set<Long> currentOrgKeys = affOrganisations.stream()
 					.map(Organisation::getKey)
 					.collect(Collectors.toSet());
 
@@ -659,7 +659,6 @@ public class UserRolesController extends FormBasicController {
 		}
 
 		dbInstance.commit();
-		updateRoles();
 	}
 
 	@Override
