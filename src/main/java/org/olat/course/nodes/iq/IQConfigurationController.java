@@ -55,6 +55,7 @@ import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.QTICourseNode;
@@ -208,7 +209,7 @@ public class IQConfigurationController extends BasicController implements Refere
 
 		@Override
 		public Confirm confirmCanReplace(UserRequest ureq) {
-			if(newReference || canPublish(ureq)) {
+			if(newReference || isNewCourseNode() || canPublish(ureq)) {
 				return new Confirm(true, null);
 			}
 			String warning = translate("warning.publish");
@@ -424,9 +425,11 @@ public class IQConfigurationController extends BasicController implements Refere
 		try {
 			RepositoryEntry currentEntry = courseNode.getReferencedRepositoryEntry();
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			
-			Set<Identity> assessedIdentities = new HashSet<>(); 
-			if(currentEntry != null) {
+			CourseNode publishedNode = course.getRunStructure().getNode(courseNode.getIdent());
+		
+			Set<Identity> assessedIdentities = new HashSet<>();
+			// If there is already a test linked to this course element and the element was published at least once
+			if(currentEntry != null && publishedNode != null) {
 				List<AssessmentTestSession> assessmentTestSessions = qti21service.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), currentEntry);
 				for(AssessmentTestSession assessmentTestSession:assessmentTestSessions) {
 					if(assessmentTestSession.getIdentity() != null) {
@@ -448,6 +451,11 @@ public class IQConfigurationController extends BasicController implements Refere
 			logError("", e);
 			showError("error.resource.corrupted");
 		}
+	}
+	
+	private boolean isNewCourseNode() {
+		CourseNode publishedNode = course.getRunStructure().getNode(courseNode.getIdent());
+		return publishedNode == null;
 	}
 	
 	private boolean canPublish(UserRequest ureq) {
