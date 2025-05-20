@@ -384,7 +384,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
 			currentContentStream.newLineAtOffset(headerX, headerY);
-			currentContentStream.showText(translator.translate("pdf.table.header.participants"));
+			showTextToStream(translator.translate("pdf.table.header.participants"), currentContentStream);
 			currentContentStream.endText();
 			
 			headerX += nameMaxSizeWithMargin;
@@ -401,7 +401,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
 			currentContentStream.newLineAtOffset(headerX, headerY);
-			currentContentStream.showText(translator.translate("pdf.table.header.all"));
+			showTextToStream(translator.translate("pdf.table.header.all"), currentContentStream);
 			currentContentStream.endText();
 			headerX += allColWidth;
 			
@@ -409,7 +409,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				currentContentStream.beginText();
 				currentContentStream.setFont(fontBold, fontSize);
 				currentContentStream.newLineAtOffset(headerX, headerY);
-				currentContentStream.showText(translator.translate("pdf.table.header.authorised"));
+				showTextToStream(translator.translate("pdf.table.header.authorised"), currentContentStream);
 				currentContentStream.endText();
 				headerX += authorisedColWidth;	
 			}
@@ -417,7 +417,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
 			currentContentStream.newLineAtOffset(headerX, headerY);
-			currentContentStream.showText(translator.translate("pdf.table.header.comment"));
+			showTextToStream(translator.translate("pdf.table.header.comment"), currentContentStream);
 			currentContentStream.endText();
 		}
 
@@ -438,7 +438,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
 					currentContentStream.newLineAtOffset(textx, lineTexty);
-					currentContentStream.showText(textLine);
+					showTextToStream(textLine, currentContentStream);
 					currentContentStream.endText();
 					lineTexty -= (lineHeightFactory * fontSize);
 				}
@@ -446,7 +446,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				currentContentStream.beginText();
 				currentContentStream.setFont(font, fontSize);
 				currentContentStream.newLineAtOffset(textx, texty);
-				currentContentStream.showText(text);
+				showTextToStream(text, currentContentStream);
 				currentContentStream.endText();
 			}
 			
