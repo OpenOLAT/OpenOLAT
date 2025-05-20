@@ -394,10 +394,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private void doCreateNewVersion(UserRequest ureq, BadgeClassRow row) {
-		openBadgesManager.createNewBadgeClassVersion(row.badgeClassWithSizeAndCount().badgeClass().getKey(),
-				getIdentity());
-		
-		loadModel(ureq);
+		doCreateNewVersionAndEdit(ureq, row);
 	}
 
 	private void doCopy(UserRequest ureq, BadgeClassRow row) {
@@ -479,7 +476,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		if (reloadedBadgeClass == null) {
 			return;
 		}
-		doEdit(ureq, badgeClass, true);
+		doEdit(ureq, reloadedBadgeClass, true);
 	}
 
 	private void updateImage(CreateBadgeClassWizardContext createContext, BadgeClass badgeClass) {
