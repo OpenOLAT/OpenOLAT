@@ -12,10 +12,12 @@
 						$r.escapeHtml($externalRef)
 					</div>
 				#end
-				<h2>
-					<i class="o_icon o_icon-lg $iconCssClass"> </i>
-					$r.escapeHtml($title)
-				</h2>
+				#if($title)
+					<h2>
+						<i class="o_icon o_icon-lg $iconCssClass"> </i>
+						$r.escapeHtml($title)
+					</h2>
+				#end
 				
 				#if($r.isNotEmpty($teaser))
 					<p class="o_teaser">$r.escapeHtml($teaser)</p>
@@ -51,6 +53,9 @@
 			<div class="o_header_offers">
 				#if($r.available("offers") && $r.visible("offers"))
 					$r.render("offers")
+				#elseif($r.available("catalog.bookable"))
+					$r.render("catalog.bookable")
+					$r.render("showCatalog")
 				#elseif($r.available("start") && $r.visible("start"))
 					$r.render("start")
 				#end

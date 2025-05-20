@@ -31,18 +31,26 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.catalog.CatalogEntrySearchParams;
+import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,12 +60,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryResourceInfoDetailsHeaderController extends FormBasicController {
 
 	public static final Event START_EVENT = new Event("start");
+
 	private final RepositoryEntry entry;
+	private final List<PriceMethod> types = new ArrayList<>(1);
+
 	@Autowired
 	protected RepositoryService repositoryService;
 	@Autowired
 	protected OAIPmhModule oaiPmhModule;
-	private List<PriceMethod> types = new ArrayList<>(1);
+	@Autowired
+	private CatalogV2Module catalogModule;
+	@Autowired
+	private CatalogV2Service catalogService;
+
 
 	public RepositoryEntryResourceInfoDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_header.html");
@@ -73,44 +88,80 @@ public class RepositoryEntryResourceInfoDetailsHeaderController extends FormBasi
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (formLayout instanceof FormLayoutContainer formLayoutContainer) {
-			FormLayoutContainer layoutCont = formLayoutContainer;
+			formLayoutContainer.contextPut("v", entry);
 
-			layoutCont.contextPut("v", entry);
-
-			// thumbnail and movie
-			VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
-			VFSLeaf image = repositoryService.getIntroductionImage(entry);
-			if (image != null || movie != null) {
-				ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");
-				if (movie != null) {
-					ic.setMedia(movie);
-					ic.setMaxWithAndHeightToFitWithin(RepositoryManager.PICTURE_WIDTH, RepositoryManager.PICTURE_HEIGHT);
-					if (image != null) {
-						ic.setPoster(image);
-					}
-				} else {
-					ic.setMedia(image);
-					ic.setMaxWithAndHeightToFitWithin(RepositoryManager.PICTURE_WIDTH, RepositoryManager.PICTURE_HEIGHT);
-				}
-				layoutCont.put("thumbnail", ic);
-			}
-
-			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
-			layoutCont.contextPut("cssClass", cssClass);
-
-			if (entry.getEducationalType() != null) {
-				String educationalType = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
-				layoutCont.contextPut("educationalType", educationalType);
-			}
-
-			boolean isGuestAccess = oaiPmhModule.getOffers(entry.getOlatResource()).stream().anyMatch(Offer::isGuestAccess);
-
-			if ((ureq.getUserSession().getRoles() != null && !ureq.getUserSession().getRoles().isGuestOnly()) || isGuestAccess) {
-				createStartLink(layoutCont);
-			} else {
-				createLoginLink(layoutCont);
-			}
+			addThumbnailIfPresent(ureq, formLayoutContainer);
+			setupContext(formLayoutContainer);
+			setupAccessLinks(ureq, formLayoutContainer);
 		}
+	}
+
+	private void addThumbnailIfPresent(UserRequest ureq, FormLayoutContainer container) {
+		VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
+		VFSLeaf image = repositoryService.getIntroductionImage(entry);
+		if (image != null || movie != null) {
+			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");
+			if (movie != null) {
+				ic.setMedia(movie);
+				ic.setMaxWithAndHeightToFitWithin(RepositoryManager.PICTURE_WIDTH, RepositoryManager.PICTURE_HEIGHT);
+				if (image != null) {
+					ic.setPoster(image);
+				}
+			} else {
+				ic.setMedia(image);
+				ic.setMaxWithAndHeightToFitWithin(RepositoryManager.PICTURE_WIDTH, RepositoryManager.PICTURE_HEIGHT);
+			}
+			container.put("thumbnail", ic);
+		}
+	}
+
+	private void setupContext(FormLayoutContainer container) {
+		container.contextPut("v", entry);
+		container.contextPut("cssClass", RepositoyUIFactory.getIconCssClass(entry));
+
+		if (entry.getEducationalType() != null) {
+			String educationalType = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
+			container.contextPut("educationalType", educationalType);
+		}
+	}
+
+	private void setupAccessLinks(UserRequest ureq, FormLayoutContainer container) {
+		if (isUserLoggedInOrGuestAccess(ureq)) {
+			createStartLink(container);
+		} else if (isAvailableInCatalog()) {
+			uifactory.addStaticTextElement(
+					"catalog.bookable", null, translate("catalog.bookable"), container);
+
+			String catalogUrl = CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource());
+
+			ExternalLink catalogLink = LinkFactory.createExternalLink("showCatalog", "", catalogUrl);
+			catalogLink.setElementCssClass("o_offer_login_buton btn btn-default btn-primary");
+			catalogLink.setName(translate("catalog.button.label"));
+			catalogLink.setTarget("_self");
+			container.put("showCatalog", catalogLink);
+		} else {
+			createLoginLink(container);
+		}
+	}
+
+	private boolean isUserLoggedInOrGuestAccess(UserRequest ureq) {
+		boolean isGuestAccess = oaiPmhModule.getOffers(entry.getOlatResource()).stream().anyMatch(Offer::isGuestAccess);
+		return (ureq.getUserSession().getRoles() != null && !ureq.getUserSession().getRoles().isGuestOnly()) || isGuestAccess;
+	}
+
+	private boolean isAvailableInCatalog() {
+		if (catalogModule.isEnabled()
+				&& catalogModule.isWebPublishEnabled()
+				&& !catalogModule.isWebPublishTemporarilyDisabled()) {
+			OLATResource resource = entry.getOlatResource();
+			CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
+			searchParams.setWebPublish(true);
+			searchParams.setResourceKeys(List.of(resource.getKey()));
+			List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(searchParams);
+
+			return !catalogEntries.isEmpty();
+		}
+		return false;
 	}
 
 	private FormLink createStartLink(FormLayoutContainer layoutCont) {
@@ -134,8 +185,7 @@ public class RepositoryEntryResourceInfoDetailsHeaderController extends FormBasi
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink formLinkSource) {
-			FormLink link = formLinkSource;
-			String cmd = link.getCmd();
+			String cmd = formLinkSource.getCmd();
 			if ("start".equals(cmd)) {
 				fireEvent(ureq, START_EVENT);
 			} else if ("login".equals(cmd)) {
