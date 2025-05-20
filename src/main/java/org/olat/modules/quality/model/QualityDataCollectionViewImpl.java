@@ -53,6 +53,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final String topicCurriculumElementIdentifier;
 	private final Long topicCurriculumElementCurriculumKey;
 	private final String previousTitle;
+	private final String publicParticipationIdentifier;
 	private final Long numberOfParticipants;
 	private final Long numToDoTaskDone;
 	private final Long numToDoTaskTotal;
@@ -62,7 +63,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 			String formName, QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
 			Long topicRepositoryKey, String topicRepositoryExternalRef, Long topicCurriculumElementKey,
 			String topicCurriculumElementIdentifier, Long topicCurriculumElementCurriculumKey, String previousTitle,
-			Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
+			String publicParticipationIdentifier, Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
 		super();
 		this.key = key;
 		this.status = status;
@@ -83,6 +84,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		this.topicCurriculumElementIdentifier = topicCurriculumElementIdentifier;
 		this.topicCurriculumElementCurriculumKey = topicCurriculumElementCurriculumKey;
 		this.previousTitle = previousTitle;
+		this.publicParticipationIdentifier = publicParticipationIdentifier;
 		this.numberOfParticipants = numberOfParticipants;
 		this.numToDoTaskDone = numToDoTaskDone;
 		this.numToDoTaskTotal = numToDoTaskTotal;
@@ -191,6 +193,11 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	@Override
 	public String getPreviousTitle() {
 		return previousTitle;
+	}
+
+	@Override
+	public String getPublicParticipationIdentifier() {
+		return publicParticipationIdentifier;
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.model.QualityParticipationStats;
 import org.olat.modules.quality.ui.QualityUIContextsBuilder.Attribute;
 import org.olat.modules.quality.ui.QualityUIContextsBuilder.UIContext;
 
@@ -53,9 +54,12 @@ public class FiguresFactory {
 
 		FiguresBuilder builder = FiguresBuilder.builder();
 		QualityExecutorParticipationSearchParams countSearchParams = new QualityExecutorParticipationSearchParams();
-		countSearchParams.setDataCollectionRef(dataCollection);
-		Long participationCount = qualityService.getExecutorParticipationCount(countSearchParams);
-		builder.withNumberOfParticipations(participationCount);
+		countSearchParams.setDataCollections(List.of(dataCollection));
+		QualityParticipationStats stats = qualityService.getExecutorParticipationStats(countSearchParams);
+		builder.withNumberOfParticipations(stats.numExecutor() + stats.numEmail());
+		if (StringHelper.containsNonWhitespace(dataCollectionView.getPublicParticipationIdentifier())) {
+			builder.withNumberOfPublicParticipations(stats.numPublic());
+		}
 		builder.addCustomFigure(translator.translate("data.collection.figures.title"), dataCollectionView.getTitle());
 		builder.addCustomFigure(translator.translate("data.collection.figures.topic"), formatTopic(dataCollectionView, locale));
 		if (StringHelper.containsNonWhitespace(dataCollectionView.getPreviousTitle())) {

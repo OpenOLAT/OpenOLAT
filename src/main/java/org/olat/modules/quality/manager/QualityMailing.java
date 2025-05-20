@@ -244,7 +244,7 @@ class QualityMailing {
 		
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setParticipationRef(evaParticipation);
-		searchParams.setDataCollectionRef(dataCollection);
+		searchParams.setDataCollections(List.of(dataCollection));
 		searchParams.setDataCollectionStatus(STATUS_FILTER);
 		List<QualityExecutorParticipation> participations = participationDao.loadExecutorParticipations(translator, searchParams , 0, -1);
 		QualityExecutorParticipation participation = null;

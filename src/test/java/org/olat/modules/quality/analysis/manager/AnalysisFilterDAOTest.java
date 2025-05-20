@@ -23,11 +23,13 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.curriculum.CurriculumCalendars.disabled;
+import static org.olat.modules.forms.EvaluationFormDispatcher.PUBLIC_PARTICIPATION_TYPE;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORGANISATION;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_TAXONOMY_LEVEL;
 import static org.olat.modules.quality.analysis.GroupBy.TOPIC_ORGANISATION;
 import static org.olat.modules.quality.analysis.MultiKey.of;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -55,13 +57,16 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AnlaysisFigures;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistics;
@@ -137,32 +142,50 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("e1");
 		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("e2");
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-4", "", null, null,
-				null, JunitTestHelper.getDefaultActor());
+		Organisation dcOrganisation1 = organisationService.createOrganisation("Org-4", "", null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation dcOrganisation2 = organisationService.createOrganisation("Org-4", "", null, null, null, JunitTestHelper.getDefaultActor());
+		
 		// Data collection with two participations
-		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation1, dcOrganisation2), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, asList(executor1, executor2));
 		qualityService.createContextBuilder(dc1, participations1.get(0)).build();
 		qualityService.createContextBuilder(dc1, participations1.get(1)).build();
 		// Another data collection with one participations
-		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation1, dcOrganisation2), formEntry);
 		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, asList(executor1));
 		qualityService.createContextBuilder(dc2, participations2.get(0)).build();
 		// Another data collection with a done participation. Only a session exists
-		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation1, dcOrganisation2), formEntry);
 		List<EvaluationFormParticipation> participations3 = qualityService.addParticipations(dc3, asList(executor1));
 		qualityService.createContextBuilder(dc3, participations3.get(0)).build();
 		EvaluationFormSession session = evaManager.createSession(participations3.get(0));
 		evaManager.finishSession(session);
 		// Data collection without participation
-		QualityDataCollection dcWithout = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dcWithout = qualityService.createDataCollection(asList(dcOrganisation1, dcOrganisation2), formEntry);
 		finish(asList(dc1, dc2, dc3, dcWithout));
+		dbInstance.commitAndCloseSession();
+		// Public participations (2 done, 1 running)
+		EvaluationFormSurvey survey1 = qualityService.loadSurvey(dc1);
+		EvaluationFormParticipation publicParticipation1 = evaManager.createParticipation(survey1, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		qualityService.onPublicParticipationCreated(publicParticipation1);
+		EvaluationFormSession sessionPP1 = evaManager.createSession(publicParticipation1);
+		evaManager.finishSession(sessionPP1);
+		EvaluationFormParticipation publicParticipation2 = evaManager.createParticipation(survey1, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		qualityService.onPublicParticipationCreated(publicParticipation2);
+		EvaluationFormSession sessionPP2 = evaManager.createSession(publicParticipation2);
+		evaManager.finishSession(sessionPP2);
+		EvaluationFormParticipation publicParticipation3 = evaManager.createParticipation(survey1, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		qualityService.onPublicParticipationCreated(publicParticipation3);
+		evaManager.createSession(publicParticipation3);
+		
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		Long count = sut.loadAnalyticFigures(searchParams).getParticipationCount();
+		AnlaysisFigures figures = sut.loadAnalyticFigures(searchParams);
 		
-		assertThat(count).isEqualTo(4);
+		assertThat(figures.getDataCollectionCount()).isEqualTo(4);
+		assertThat(figures.getParticipationCount()).isEqualTo(4);
+		assertThat(figures.getPublicParticipationCount()).isEqualTo(2);
 	}
 	
 	@Test
@@ -1111,18 +1134,6 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		RawGroupedStatistic statistic12 = statistics.getStatistic(null, of(organisation2.getKey().toString()));
 		assertThat(statistic12.getCount()).isEqualTo(2);
 		assertThat(statistic12.getRawAvg()).isEqualTo(5);
-		
-//		RawGroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey().toString()));
-//		assertThat(statistic11.getCount()).isEqualTo(2);
-//		assertThat(statistic11.getRawAvg()).isEqualTo(10);
-//		RawGroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey().toString()));
-//		assertThat(statistic12.getCount()).isEqualTo(2);
-//		assertThat(statistic12.getRawAvg()).isEqualTo(5);
-//		RawGroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey().toString()));
-//		assertThat(statistic21.getCount()).isEqualTo(1);
-//		assertThat(statistic21.getRawAvg()).isEqualTo(1);
-//		RawGroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey().toString()));
-//		assertThat(statistic22).isNull();
 	}
 	
 	@Test
@@ -1332,6 +1343,32 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(dataCollections)
 				.containsExactlyInAnyOrder(dc1, dc2)
 				.doesNotContain(dcOther);
+	}
+	
+	@Test
+	public void shouldFilterByDataCollectionOrganisations() {
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
+		Organisation dcOrganisation1 = qualityTestHelper.createOrganisation();
+		Organisation dcOrganisation2 = qualityTestHelper.createOrganisation();
+		Organisation dcOrganisation3 = qualityTestHelper.createOrganisation();
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation1, dcOrganisation2, dcOrganisation3), formEntry);
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation1, dcOrganisation2), formEntry);
+		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation1), formEntry);
+		finish(asList(dc1, dc2, dc3));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setFormEntryRef(formEntry);
+		assertThat(sut.loadAnalyticFigures(searchParams).getDataCollectionCount()).isEqualTo(3);
+		
+		searchParams.setDataCollectionOrganisationRefs(List.of(dcOrganisation1, dcOrganisation2, dcOrganisation3));
+		assertThat(sut.loadAnalyticFigures(searchParams).getDataCollectionCount()).isEqualTo(3);
+		
+		searchParams.setDataCollectionOrganisationRefs(List.of(dcOrganisation2, dcOrganisation3));
+		assertThat(sut.loadAnalyticFigures(searchParams).getDataCollectionCount()).isEqualTo(2);
+		
+		searchParams.setDataCollectionOrganisationRefs(List.of(dcOrganisation3));
+		assertThat(sut.loadAnalyticFigures(searchParams).getDataCollectionCount()).isEqualTo(1);
 	}
 	
 	@Test

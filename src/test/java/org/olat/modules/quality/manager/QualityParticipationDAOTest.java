@@ -22,6 +22,7 @@ package org.olat.modules.quality.manager;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.forms.EvaluationFormDispatcher.PUBLIC_PARTICIPATION_TYPE;
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
@@ -50,6 +51,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityParticipation;
+import org.olat.modules.quality.model.QualityParticipationStats;
 import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorParticipationCols;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -161,23 +163,60 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldGetExecutorParticipationCount() {
+	public void shouldGetParticipationStats() {
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection();
+		EvaluationFormSurvey survey = qualityTestHelper.createSurvey(dataCollection1);
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection();
+		EvaluationFormSurvey survey2 = qualityTestHelper.createSurvey(dataCollection2);
+		QualityDataCollection dataCollectionOther = qualityTestHelper.createDataCollection();
+		EvaluationFormSurvey surveyOther = qualityTestHelper.createSurvey(dataCollectionOther);
+		
+		// Executor
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		qualityTestHelper.addParticipations(dataCollection1, Arrays.asList(identity, otherIdentity));
 		qualityTestHelper.addParticipations(dataCollection2, Arrays.asList(identity));
-		EvaluationFormSurvey otherSurvey = qualityTestHelper.createRandomSurvey();
-		qualityTestHelper.createParticipation(otherSurvey, identity);
+		qualityTestHelper.addParticipations(dataCollectionOther, Arrays.asList(identity));
+		
+		// E-Mail
+		evaManager.createParticipation(survey, new EvaluationFormEmailExecutor(random(), random(), random()));
+		evaManager.createParticipation(survey, new EvaluationFormEmailExecutor(random(), random(), random()));
+		evaManager.createParticipation(survey, new EvaluationFormEmailExecutor(random(), random(), random()));
+		evaManager.createParticipation(survey2, new EvaluationFormEmailExecutor(random(), random(), random()));
+		evaManager.createParticipation(surveyOther, new EvaluationFormEmailExecutor(random(), random(), random()));
+		
+		// Public (count only done)
+		EvaluationFormParticipation participation1 = evaManager.createParticipation(survey, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		EvaluationFormSession session1 = evaManager.createSession(participation1);
+		evaManager.finishSession(session1);
+		EvaluationFormParticipation participation2 = evaManager.createParticipation(survey, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		EvaluationFormSession session2 = evaManager.createSession(participation2);
+		evaManager.finishSession(session2);
+		EvaluationFormParticipation participation3 = evaManager.createParticipation(survey, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		EvaluationFormSession session3 = evaManager.createSession(participation3);
+		evaManager.finishSession(session3);
+		EvaluationFormParticipation participation4 = evaManager.createParticipation(survey, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		EvaluationFormSession session4 = evaManager.createSession(participation4);
+		evaManager.finishSession(session4);
+		EvaluationFormParticipation participation5 = evaManager.createParticipation(survey2, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		EvaluationFormSession session5 = evaManager.createSession(participation5);
+		evaManager.finishSession(session5);
+		EvaluationFormParticipation participation6 = evaManager.createParticipation(survey, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		evaManager.createSession(participation6); // not finished
+		EvaluationFormParticipation participationOther = evaManager.createParticipation(surveyOther, new EvaluationFormParticipationIdentifier(PUBLIC_PARTICIPATION_TYPE, random()));
+		EvaluationFormSession sessionOther = evaManager.createSession(participationOther);
+		evaManager.finishSession(sessionOther);
 		dbInstance.commitAndCloseSession();
 		
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
-		searchParams.setExecutorRef(identity);
+		searchParams.setDataCollections(List.of(dataCollection1, dataCollection2));
 		searchParams.setDataCollectionStatus(asList(FINISHED, PREPARATION, READY, RUNNING));
-		Long count = sut.getExecutorParticipationCount(searchParams);
+		QualityParticipationStats stats = sut.getExecutorParticipationStats(searchParams);
 		
-		assertThat(count).isEqualTo(2);
+		assertThat(stats.numExecutor()).isEqualTo(3);
+		assertThat(stats.numEmail()).isEqualTo(4);
+		assertThat(stats.numPublic()).isEqualTo(5);
+		assertThat(stats.total()).isEqualTo(12);
 	}
 	
 	@Test
@@ -291,7 +330,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
-		searchParams.setDataCollectionRef(dataCollection);
+		searchParams.setDataCollections(List.of(dataCollection));
 		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
 				-1);
 

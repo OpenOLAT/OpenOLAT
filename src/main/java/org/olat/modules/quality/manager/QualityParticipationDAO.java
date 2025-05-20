@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormDispatcher;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -38,6 +39,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
 import org.olat.modules.quality.QualityParticipation;
+import org.olat.modules.quality.model.QualityParticipationStats;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -100,19 +102,25 @@ class QualityParticipationDAO {
 		return query.getResultList();
 	}
 
-	Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {
-		if (searchParam == null) return 0l;
+	QualityParticipationStats getExecutorParticipationStats(QualityExecutorParticipationSearchParams searchParam) {
+		if (searchParam == null) return QualityParticipationStats.ZEROS;
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(participation.key)");
+		sb.append("select new org.olat.modules.quality.model.QualityParticipationStats(");
+		sb.append("       sum(case when participation.executor is not null then 1 else 0 end)");
+		sb.append("     , sum(case when participation.identifier.type = '").append(EvaluationFormDispatcher.EMAIL_PARTICIPATION_TYPE).append("' then 1 else 0 end)");
+		sb.append("     , sum(case when participation.identifier.type = '").append(EvaluationFormDispatcher.PUBLIC_PARTICIPATION_TYPE).append("'");
+		sb.append("                 and participation.status = '").append(EvaluationFormParticipationStatus.done).append("'");
+		sb.append("                then 1 else 0 end)");
+		sb.append("     )");
 		appendFrom(sb);
 		appendWhereClause(sb, searchParam);
 		
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class);
+		TypedQuery<QualityParticipationStats> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityParticipationStats.class);
 		appendWhereParameters(query, searchParam);
-		List<Long> counts = query.getResultList();
-		return counts.get(0);
+		List<QualityParticipationStats> stats = query.getResultList();
+		return stats != null && !stats.isEmpty()? stats.get(0): QualityParticipationStats.ZEROS;
 	}
 
 	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
@@ -203,8 +211,8 @@ class QualityParticipationDAO {
 		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
 			sb.and().append("executor.key = :executorKey");
 		}
-		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
-			sb.and().append("collection.key = :dataCollectionKey");
+		if (searchParam.getDataCollectionKeys() != null && !searchParam.getDataCollectionKeys().isEmpty()) {
+			sb.and().append("collection.key in (:dataCollectionKeys)");
 		}
 		if (searchParam.getParticipationRef() != null && searchParam.getParticipationRef().getKey() != null) {
 			sb.and().append("participation.key = :participationKey");
@@ -221,8 +229,8 @@ class QualityParticipationDAO {
 		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
 			query.setParameter("executorKey", searchParam.getExecutorRef().getKey());
 		}
-		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
-			query.setParameter("dataCollectionKey", searchParam.getDataCollectionRef().getKey());
+		if (searchParam.getDataCollectionKeys() != null && !searchParam.getDataCollectionKeys().isEmpty()) {
+			query.setParameter("dataCollectionKeys", searchParam.getDataCollectionKeys());
 		}
 		if (searchParam.getParticipationRef() != null && searchParam.getParticipationRef().getKey() != null) {
 			query.setParameter("participationKey", searchParam.getParticipationRef().getKey());

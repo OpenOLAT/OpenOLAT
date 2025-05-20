@@ -76,15 +76,20 @@ public class EvaluationFormOverviewController extends BasicController {
 		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(filter);
 		
 		long numOfDoneSessions = statistic.getNumOfDoneSessions();
+		if (figures != null && figures.getNumberOfPublicParticipations() != null) {
+			numOfDoneSessions -= figures.getNumberOfPublicParticipations().longValue();
+		}
 		if (figures != null && figures.getNumberOfParticipations() != null) {
-			double percent = figures.getNumberOfParticipations() > 0
-					? (double)numOfDoneSessions / figures.getNumberOfParticipations() * 100.0d
+			long numberOfParticipations = figures.getNumberOfParticipations().longValue();
+			
+			double percent = numberOfParticipations > 0
+					? (double)numOfDoneSessions / numberOfParticipations * 100.0d
 					: 0.0;
 			long percentRounded = Math.round(percent);
 			
 			String[] args = new String[] {
 					String.valueOf(numOfDoneSessions),
-					String.valueOf(figures.getNumberOfParticipations()),
+					String.valueOf(numberOfParticipations),
 					String.valueOf(percentRounded)
 			};
 			String numberSessions = translate("report.overview.figures.number.done.session.of", args);
@@ -95,7 +100,12 @@ public class EvaluationFormOverviewController extends BasicController {
 			allFigures.add(new Figure(translate("report.overview.figures.number.done.session"),
 					numberSessions));
 		}
-
+		
+		if (figures != null && figures.getNumberOfPublicParticipations() != null) {
+			allFigures.add(new Figure(translate("report.overview.figures.number.public.participations"),
+					String.valueOf(figures.getNumberOfPublicParticipations())));
+		}
+		
 		String submissionPeriod = EvaluationFormFormatter.period(statistic.getFirstSubmission(),
 				statistic.getLastSubmission(), getLocale());
 		allFigures.add(

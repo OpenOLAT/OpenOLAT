@@ -493,6 +493,7 @@ public class QualityDataCollectionDAO {
 		sb.append("     , curriculumElement.identifier as topicCurriculumElementIdentifier");
 		sb.append("     , curriculumElement.curriculum.key as topicCurriculumElementCurriculumKey");
 		sb.append("     , previousCollection.title as previousTitle");
+		sb.append("     , survey.publicParticipationIdentifier as publicParticipationIdentifier");
 		sb.append("     , ( select count(participation.key)");
 		sb.append("           from evaluationformparticipation participation");
 		sb.append("          where participation.survey.key = survey.key");

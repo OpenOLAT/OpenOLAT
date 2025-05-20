@@ -98,7 +98,9 @@ public class AnalysisFilterDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.analysis.model.AnalysisFiguresImpl(");
 		sb.append("       count(distinct collection.key)");
-		sb.append("     , count(distinct context.evaluationFormParticipation.key) + count(distinct context.evaluationFormSession.key)");
+		sb.append("     , count(distinct context.evaluationFormParticipation.key) + count(distinct context.evaluationFormSession.key) as totalCount");
+		sb.append("     , sum(case when context.role = '").append(QualityContextRole.publicParticipation.name()).append("' then 1 else 0 end) as publicCount");
+		sb.append("     , sum(case when context.role = '").append(QualityContextRole.publicParticipation.name()).append("' and context.evaluationFormParticipation is null then 1 else 0 end) as publicDoneCount");
 		sb.append("       )");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
@@ -543,9 +545,6 @@ public class AnalysisFilterDAO {
 		sb.append("       inner join evaluationformsurvey survey");
 		sb.append("               on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("              and survey.resId = collection.key");
-		sb.append("       inner join qualitydatacollectiontoorganisation dc2org");
-		sb.append("              on dc2org.dataCollection.key = collection.key");
-		sb.append("       inner join dc2org.organisation as dcOrganisation");
 		sb.append("       left join collection.topicOrganisation topicOrganisation");
 		sb.append("       left join qualitycontext context");
 		sb.append("              on context.dataCollection.key = collection.key");
@@ -575,17 +574,19 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDataCollectionOrganisationRefs() != null && !searchParams.getDataCollectionOrganisationRefs().isEmpty()) {
 			// load the organisations and all children
 			sb.and();
+			sb.append("collection.key in (");
+			sb.append("select distinct dc2org.dataCollection.key");
+			sb.append("  from qualitydatacollectiontoorganisation dc2org");
+			sb.append("       inner join dc2org.organisation as dcOrganisation");
 			for (int i = 0; i < searchParams.getDataCollectionOrganisationRefs().size(); i++) {
 				if (i == 0) {
-					sb.append("(");
+					sb.append(" where ");
 				} else {
 					sb.append(" or ");
 				}
 				sb.append("dcOrganisation.materializedPathKeys like :dcOrgPath").append(i);
-				if (i == searchParams.getDataCollectionOrganisationRefs().size() - 1) {
-					sb.append(")");
-				}
 			}
+			sb.append(")");
 		}
 		if (searchParams.getDateRangeFrom() != null) {
 			sb.and().append("collection.deadline >= :dateRangeFrom");

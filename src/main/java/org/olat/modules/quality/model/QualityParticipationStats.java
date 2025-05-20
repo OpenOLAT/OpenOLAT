@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,25 +14,23 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
-
-import java.util.List;
+package org.olat.modules.quality.model;
 
 /**
  * 
- * Initial date: 9 Nov 2018<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: May 19, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface Figures {
+public record QualityParticipationStats(long numExecutor, long numEmail, long numPublic) {
 	
-	public Long getNumberOfParticipations();
+	public static final QualityParticipationStats ZEROS = new QualityParticipationStats(0, 0, 0);
 	
-	public Long getNumberOfPublicParticipations();
-	
-	public List<Figure> getCustomFigures();
+	public long total() {
+		return numExecutor + numEmail + numPublic;
+	}
 
 }

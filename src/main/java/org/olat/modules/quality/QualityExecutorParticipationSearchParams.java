@@ -34,7 +34,7 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
 public class QualityExecutorParticipationSearchParams {
 	
 	private IdentityRef executorRef;
-	private QualityDataCollectionRef dataCollectionRef;
+	private Collection<Long> dataCollectionKeys;
 	private EvaluationFormParticipationRef participationRef;
 	private EvaluationFormParticipationStatus participationStatus;
 	private Collection<QualityDataCollectionStatus> dataCollectionStatus;
@@ -46,13 +46,19 @@ public class QualityExecutorParticipationSearchParams {
 	public void setExecutorRef(IdentityRef executorRef) {
 		this.executorRef = executorRef;
 	}
-
-	public QualityDataCollectionRef getDataCollectionRef() {
-		return dataCollectionRef;
+	
+	public Collection<Long> getDataCollectionKeys() {
+		return dataCollectionKeys;
 	}
-
-	public void setDataCollectionRef(QualityDataCollectionRef dataCollectionRef) {
-		this.dataCollectionRef = dataCollectionRef;
+	
+	public void setDataCollectionKeys(Collection<Long> dataCollectionKeys) {
+		this.dataCollectionKeys = dataCollectionKeys;
+	}
+	
+	public void setDataCollections(Collection<? extends QualityDataCollectionRef> dataCollections) {
+		this.dataCollectionKeys = dataCollections != null
+				? dataCollections.stream().map(QualityDataCollectionRef::getKey).toList()
+				: null;
 	}
 
 	public EvaluationFormParticipationRef getParticipationRef() {

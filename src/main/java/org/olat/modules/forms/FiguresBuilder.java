@@ -31,6 +31,7 @@ import java.util.List;
 public class FiguresBuilder {
 
 	private Long numberOfParticipations;
+	private Long numberOfPubicParticipations;
 	private List<Figure> figures = new ArrayList<>();
 	
 	public static FiguresBuilder builder() {
@@ -42,6 +43,11 @@ public class FiguresBuilder {
 	
 	public FiguresBuilder withNumberOfParticipations(Long numberOfParticipations) {
 		this.numberOfParticipations = numberOfParticipations;
+		return this;
+	}
+	
+	public FiguresBuilder withNumberOfPublicParticipations(Long numberOfPubicParticipations) {
+		this.numberOfPubicParticipations = numberOfPubicParticipations;
 		return this;
 	}
 	
@@ -57,16 +63,23 @@ public class FiguresBuilder {
 	private static final class FiguresProviderImpl implements Figures {
 
 		private final Long numberOfParticipations;
+		private final Long numberOfPubicParticipations;
 		private List<Figure> figures = new ArrayList<>();
 		
 		public FiguresProviderImpl(FiguresBuilder builder) {
 			this.numberOfParticipations = builder.numberOfParticipations;
+			this.numberOfPubicParticipations = builder.numberOfPubicParticipations;
 			this.figures = new ArrayList<>(builder.figures);
 		}
 		
 		@Override
 		public Long getNumberOfParticipations() {
 			return numberOfParticipations;
+		}
+		
+		@Override
+		public Long getNumberOfPublicParticipations() {
+			return numberOfPubicParticipations;
 		}
 
 		@Override

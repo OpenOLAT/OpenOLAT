@@ -38,6 +38,7 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.model.QualityParticipationStats;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 
@@ -167,7 +168,7 @@ public interface QualityService {
 	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
 			Collection<String> identifierTypesOnly, Collection<String> identifierTypesExcluded);
 
-	public Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams);
+	public QualityParticipationStats getExecutorParticipationStats(QualityExecutorParticipationSearchParams searchParams);
 
 	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
 			QualityExecutorParticipationSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy);

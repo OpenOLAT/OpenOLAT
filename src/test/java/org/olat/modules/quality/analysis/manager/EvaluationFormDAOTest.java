@@ -154,7 +154,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		List<EvaluationFormView> forms = sut.load(searchParams);
 		
-		assertThat(forms.get(0).getSoonestDataCollectionDate()).isEqualToIgnoringMinutes(soonest);
+		assertThat(forms.get(0).getSoonestDataCollectionDate()).isCloseTo(soonest, 2000);
 	}
 	
 	@Test
@@ -183,7 +183,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		List<EvaluationFormView> forms = sut.load(searchParams);
 		
-		assertThat(forms.get(0).getLatestDataCollectionFinishedDate()).isEqualToIgnoringMinutes(latest);
+		assertThat(forms.get(0).getLatestDataCollectionFinishedDate()).isCloseTo(latest, 2000);
 	}
 	
 	@Test

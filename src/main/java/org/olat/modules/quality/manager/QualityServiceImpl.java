@@ -104,6 +104,7 @@ import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.model.QualityParticipationStats;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.todo.ToDoService;
 import org.olat.repository.RepositoryEntry;
@@ -690,8 +691,8 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams) {
-		return participationDao.getExecutorParticipationCount(searchParams);
+	public QualityParticipationStats getExecutorParticipationStats(QualityExecutorParticipationSearchParams searchParams) {
+		return participationDao.getExecutorParticipationStats(searchParams);
 	}
 
 	@Override

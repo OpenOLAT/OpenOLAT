@@ -31,10 +31,12 @@ public class AnalysisFiguresImpl implements AnlaysisFigures {
 
 	private final Long dataCollectionCount;
 	private final Long participationCount;
+	private final Long publicPparticipationCount;
 	
-	public AnalysisFiguresImpl(Long dataCollectionCount, Long participationCount) {
+	public AnalysisFiguresImpl(Long dataCollectionCount, Long totalCount, Long publicCount, Long publicDoneCount) {
 		this.dataCollectionCount = dataCollectionCount;
-		this.participationCount = participationCount;
+		this.participationCount = totalCount - publicCount;
+		this.publicPparticipationCount = publicDoneCount;
 	}
 
 	@Override
@@ -45,6 +47,11 @@ public class AnalysisFiguresImpl implements AnlaysisFigures {
 	@Override
 	public Long getParticipationCount() {
 		return participationCount;
+	}
+
+	@Override
+	public Long getPublicParticipationCount() {
+		return publicPparticipationCount;
 	}
 
 }

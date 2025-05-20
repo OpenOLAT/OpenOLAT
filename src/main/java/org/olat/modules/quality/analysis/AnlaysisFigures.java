@@ -30,5 +30,7 @@ public interface AnlaysisFigures {
 	public Long getDataCollectionCount();
 	
 	public Long getParticipationCount();
+	
+	public Long getPublicParticipationCount();
 
 }
