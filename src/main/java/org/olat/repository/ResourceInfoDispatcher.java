@@ -29,7 +29,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.AuthHelper;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.robots.SitemapWriter;
 import org.olat.core.commons.services.robots.model.SitemapItem;
@@ -152,20 +151,6 @@ public class ResourceInfoDispatcher implements Dispatcher {
 
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
-
-		if (!usess.isAuthenticated()) {
-			int loginStatus = AuthHelper.doAnonymousLogin(ureq, usess.getLocale());
-			if (loginStatus == AuthHelper.LOGIN_OK) {
-				//
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-				DispatcherModule.redirectToServiceNotAvailable(response);
-				return;
-			} else {
-				//error, redirect to login screen
-				DispatcherModule.redirectToDefaultDispatcher(response);
-				return;
-			}
-		}
 
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
 		bfwcParts.showTopNav(false);

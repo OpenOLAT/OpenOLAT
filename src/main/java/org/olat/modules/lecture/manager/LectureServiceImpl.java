@@ -1853,7 +1853,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 
 		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
-			syncCourseCalendar(lectureBlock, config.getEntry());
+			if(config != null && config.getEntry() != null) {// Entry already loaded
+				syncCourseCalendar(lectureBlock, config.getEntry());
+			} else {
+				RepositoryEntry entry = repositoryEntryDao.loadByKey(lectureBlock.getEntry().getKey());
+				syncCourseCalendar(lectureBlock, entry);
+			}
 		} else if(config != null && config.getEntry() != null) {
 			unsyncCourseCalendar(lectureBlock, config.getEntry());
 		}
