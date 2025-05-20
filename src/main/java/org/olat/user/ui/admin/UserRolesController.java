@@ -131,7 +131,7 @@ public class UserRolesController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
 		this.editedIdentity = identity;
 
-		editedRoles = securityManager.getRoles(editedIdentity, true);
+		editedRoles = securityManager.getRoles(editedIdentity, false);
 		editedRoles.getOrganisations();
 
 		organisations = editedRoles.getOrganisations().stream()
@@ -484,7 +484,7 @@ public class UserRolesController extends FormBasicController {
 
 	private void update() {
 		// reload from DB
-		editedRoles = securityManager.getRoles(editedIdentity, true);
+		editedRoles = securityManager.getRoles(editedIdentity, false);
 
 		// for each dropdown we built above
 		for (MultipleSelectionElement dd : rolesEls) {
@@ -510,7 +510,7 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void updateRoles() {
-		editedRoles = securityManager.getRoles(editedIdentity, true);
+		editedRoles = securityManager.getRoles(editedIdentity, false);
 
 		if (organisationModule.isEnabled() && rolesCont != null) {
 			if (addToOrganisationButton != null) {
@@ -659,9 +659,10 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void doAddIdentityToOrganisation(Organisation organisation) {
-		editedRoles = securityManager.getRoles(editedIdentity, true);
+		editedRoles = securityManager.getRoles(editedIdentity, false);
 		organisations = addOrganisation(organisations, organisation);
 		justAddedOrganisation.add(organisation);
+		addOrganisation(organisations, organisation);
 		updateRoles();
 	}
 
@@ -687,43 +688,20 @@ public class UserRolesController extends FormBasicController {
 		List<MultipleSelectionElement> emptyRolesEls = rolesEls.stream().filter(r -> !r.isAtLeastSelected(1)).toList();
 		if (!emptyRolesEls.isEmpty()) {
 			for (MultipleSelectionElement emtpyRolesEl : emptyRolesEls) {
-				if (!hasAnyRole(emtpyRolesEl)) {
+				if (!hasAnyExplicitRole(emtpyRolesEl)) {
 					RolesElement rolesElUserObj = (RolesElement) emtpyRolesEl.getUserObject();
 					organisations = removeOrganisation(organisations, rolesElUserObj.organisation());
 					rolesEls.remove(emtpyRolesEl);
 				}
 			}
 		}
-		if (organisationModule.isEnabled()) {
-			initAddToOrgBtn();
-		}
 	}
 
-	private boolean hasAnyRole(MultipleSelectionElement rolesEl) {
-		OrganisationRoles[] orderedRoles = {
-				OrganisationRoles.author,
-				OrganisationRoles.learnresourcemanager,
-				OrganisationRoles.linemanager,
-				OrganisationRoles.educationmanager,
-				OrganisationRoles.principal,
-				OrganisationRoles.lecturemanager,
-				OrganisationRoles.curriculummanager,
-				OrganisationRoles.projectmanager,
-				OrganisationRoles.qualitymanager,
-				OrganisationRoles.usermanager,
-				OrganisationRoles.rolesmanager,
-				OrganisationRoles.administrator,
-				OrganisationRoles.groupmanager,
-				OrganisationRoles.poolmanager,
-				OrganisationRoles.sysadmin
-		};
+	private boolean hasAnyExplicitRole(MultipleSelectionElement rolesEl) {
+		Organisation organisation = ((RolesElement) rolesEl.getUserObject()).organisation;
+		List<OrganisationMember> organisationMember = getOrganisationMember(organisation);
 
-		for (OrganisationRoles role : orderedRoles) {
-			if (StringHelper.containsNonWhitespace(rolesEl.getCssClass(role.name()))) {
-				return true;
-			}
-		}
-		return false;
+		return organisationMember.stream().anyMatch(orgMem -> orgMem.getInheritanceMode().equals(GroupMembershipInheritance.root));
 	}
 
 	/**
@@ -732,7 +710,7 @@ public class UserRolesController extends FormBasicController {
 	 * comments in SystemRolesAndRightsForm.
 	 */
 	private void saveFormData() {
-		editedRoles = securityManager.getRoles(editedIdentity, true);
+		editedRoles = securityManager.getRoles(editedIdentity, false);
 
 		for (MultipleSelectionElement rolesEl : rolesEls) {
 			if (rolesEl.isEnabled()
