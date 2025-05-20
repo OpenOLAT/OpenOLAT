@@ -99,6 +99,20 @@ public class PracticeResourceDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getCourseResourcesByRepositoryEntry() {
+		String subIdent = UUID.randomUUID().toString();
+		PracticeResource resource = practiceResourceDao.createResource(courseEntry, subIdent, testEntry, null, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(resource);
+		
+		List<PracticeResource> resources = practiceResourceDao.getAllCourseResources(courseEntry);
+		assertThat(resources)
+			.isNotNull()
+			.isNotEmpty()
+			.containsAnyOf(resource);	
+	}
+	
+	@Test
 	public void getResourcesByPool() {
 		String subIdent = UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, "Practice-1", false);
