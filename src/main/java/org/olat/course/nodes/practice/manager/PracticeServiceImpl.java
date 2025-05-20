@@ -152,7 +152,7 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	
 	@Override
 	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
-		List<PracticeResource> resources = practiceResourceDao.getResourcesOfTest(re);
+		List<PracticeResource> resources = practiceResourceDao.getAllCourseResources(re);
 		for(PracticeResource resource:resources) {
 			practiceResourceDao.deleteResource(resource);
 		}
