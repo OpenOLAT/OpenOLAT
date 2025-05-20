@@ -26,7 +26,6 @@
 package org.olat.user.ui.admin;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -555,24 +554,6 @@ public class UserRolesController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-
-		if (rolesEls.isEmpty()) {
-			return false;
-		}
-		for (MultipleSelectionElement rolesEl : rolesEls) {
-			rolesEl.clearError();
-		}
-
-		int numOfRoles = 0;
-		for (MultipleSelectionElement rolesEl : rolesEls) {
-			Collection<String> selectedRoles = rolesEl.getSelectedKeys();
-			numOfRoles += selectedRoles.size();
-		}
-
-		if (numOfRoles == 0) {
-			rolesEls.get(0).setErrorKey("error.roles.atleastone");
-			allOk = false;
-		}
 
 		return allOk;
 	}

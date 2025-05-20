@@ -175,11 +175,13 @@
 		jQuery(`#${containerId} input`).prop('checked', true);
 		var nbSelected = Math.max(jQuery(`#${containerId} .o_org_selector_selection input:checked`).length, jQuery(`#${containerId} .o_org_selector_all input:checked`).length);
 		jQuery("#$r.getId('_selection_number_')").html(`(${nbSelected})`);
+		$f.openFfXHREvent(false, false, false), 'select_all', 'true');
 	}
 	
 	function resetSelection(containerId) {
 		jQuery(`#${containerId} input`).prop('checked', false);
 		jQuery("#$r.getId('_selection_number_')").html(`(0)`);
+		$f.openFfXHREvent(false, false, false), 'reset_selection', 'true');
 	}
 	#end
 

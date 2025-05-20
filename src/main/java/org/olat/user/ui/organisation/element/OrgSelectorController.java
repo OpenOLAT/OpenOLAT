@@ -49,6 +49,9 @@ public class OrgSelectorController extends FormBasicController {
 
 	private static final String PARAMETER_VALUE_ORG_ID = "org_id_";
 	private static final String PARAMETER_VALUE_SEL_ORG_ID = "sel_org_id_";
+	private static final String COMMAND_SELECT_ALL = "select_all";
+	private static final String COMMAND_RESET_SELECTION = "reset_selection";
+	private static final String COMMAND_UPDATE_SELECTION = "update_selection";
 	
 	private static final int PAGE_SIZE = 50;
 
@@ -156,7 +159,23 @@ public class OrgSelectorController extends FormBasicController {
 	}
 	
 	private void updateSelection(UserRequest ureq) {
-		String orgId = ureq.getParameter("update_selection");
+		if (multipleSelection && StringHelper.containsNonWhitespace(ureq.getParameter(COMMAND_SELECT_ALL))) {
+			if (flc.contextGet("orgs") instanceof List<?> orgs) {
+				for (Object org : orgs) {
+					if (org instanceof OrgUIRow orgUIRow) {
+						selectedKeys.add(orgUIRow.key());
+					}
+				}
+			}
+			return;
+		}
+
+		if (multipleSelection && StringHelper.containsNonWhitespace(ureq.getParameter(COMMAND_RESET_SELECTION))) {
+			selectedKeys.clear();
+			return;
+		}
+		
+		String orgId = ureq.getParameter(COMMAND_UPDATE_SELECTION);
 		if (!StringHelper.containsNonWhitespace(orgId)) {
 			return;
 		}
