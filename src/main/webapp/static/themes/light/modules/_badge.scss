@@ -1,23 +1,8 @@
 .o_rendertype_custom {
 	.o_badge_tool_rows {
 		display: grid;
-		grid-template-columns: 1fr;
-		@media (min-width: $screen-xs-min) {
-			grid-template-columns: 1fr 1fr;
-		}
-		@media (min-width: $screen-sm-min) {
-			grid-template-columns: 1fr 1fr;
-		}
-		@media (min-width: $screen-md-min) {
-			grid-template-columns: 1fr 1fr 1fr;
-		}
-		@media (min-width: $screen-lg-min) {
-			grid-template-columns: 1fr 1fr 1fr 1fr;
-		}
+		grid-template-columns: repeat(auto-fill, minmax(250px, auto));
 		gap: 10px;
-
-		.o_badge_tool_row {
-		}
 	}
 }
 
@@ -43,7 +28,7 @@
 
 .o_badge_row {
 
-	max-width: 250px;
+	max-width: 280px;
 	height: calc(100% - $line-height-computed);
 	display: flex;
 	flex-direction: column;
