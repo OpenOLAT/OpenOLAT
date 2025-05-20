@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.nodes.gta.ui;
@@ -34,9 +34,11 @@ import org.olat.core.gui.components.timeline.TimelineBuilder;
 import org.olat.core.gui.components.timeline.TimelineController;
 import org.olat.core.gui.components.timeline.TimelineModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -51,6 +53,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -79,7 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 20.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public abstract class GTAAbstractController extends BasicController implements GenericEventListener {
@@ -133,6 +136,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	protected CourseModule courseModule;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean withTitle, boolean withGrading, boolean withSubscription) {
@@ -195,14 +200,45 @@ public abstract class GTAAbstractController extends BasicController implements G
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof TaskMultiUserEvent) {
-			TaskMultiUserEvent ste = (TaskMultiUserEvent)event;
+		if(event instanceof TaskMultiUserEvent ste) {
 			if(!getIdentity().getKey().equals(ste.getEmitterKey())
 					&& ((assessedGroup != null && assessedGroup.getKey().equals(ste.getForGroupKey()))
 							|| (assessedIdentity != null && assessedIdentity.getKey().equals(ste.getForIdentityKey())))) {
 				processEvent(ste);
 			}
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (timelineCtrl == source && "downloadTimeline".equals(event.getCommand())) {
+			doDownloadLog(ureq);
+		}
+	}
+
+	private void doDownloadLog(UserRequest ureq) {
+		String nodeLog = courseAssessmentService.getAuditLog(gtaNode, userCourseEnv);
+		String fileTitle = gtaNode.getShortTitle() + "-" + assessedIdentity.getKey();
+
+		StringMediaResource resource = createLogMediaResource(nodeLog, fileTitle);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+	public static StringMediaResource createLogMediaResource(String nodeLog, String nodeTitle) {
+		StringMediaResource resource = new StringMediaResource();
+
+		resource.setData(nodeLog);
+		resource.setDownloadable(true, createLogFilename(nodeTitle));
+
+		resource.setContentType("text/plain");
+		resource.setEncoding("UTF-8");
+
+		return resource;
+	}
+
+	private static String createLogFilename(String nodeTitle) {
+		String sanitizedTitle = nodeTitle.replaceAll("[^a-zA-Z0-9\\-_]", "_");
+		return sanitizedTitle + "_log.txt";
 	}
 	
 	protected abstract void processEvent(TaskMultiUserEvent event);
