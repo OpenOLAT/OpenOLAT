@@ -49,8 +49,7 @@ public class CourseNodeBadgesController extends BasicController {
 
 		BreadcrumbedStackedPanel badgesStackPanel = new BreadcrumbedStackedPanel("badges-stack", getTranslator(), this);
 		BadgeClassesController badgeClassesController = new BadgeClassesController(ureq, wControl, entry,
-				courseNode, reSecurity, badgesStackPanel, null, "form.create.new.badge",
-				"form.edit.badge");
+				courseNode, reSecurity, badgesStackPanel, null, "form.create.new.badge");
 		listenTo(badgeClassesController);
 		badgesStackPanel.setInvisibleCrumb(0);
 		badgesStackPanel.pushController(translate("badges"), badgeClassesController);

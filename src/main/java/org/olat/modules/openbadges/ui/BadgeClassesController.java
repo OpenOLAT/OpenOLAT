@@ -71,6 +71,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.ui.CreateBadgeClassWizardContext.Mode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT_BADGE = "editBadge";
+	private static final String CMD_CREATE_NEW_VERSION = "createNewVersion";
 	private static final String CMD_AWARD_MANUALLY = "awardManually";
 
 	private final RepositoryEntry entry;
@@ -91,7 +93,6 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private final RepositoryEntrySecurity reSecurity;
 	private final BreadcrumbPanel breadcrumbPanel;
 	private final String createKey;
-	private final String editKey;
 	private BadgeClassTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink createLink;
@@ -113,7 +114,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	public BadgeClassesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 								  CourseNode courseNode, RepositoryEntrySecurity reSecurity,
-								  BreadcrumbPanel breadcrumbPanel, String contextHelp, String createKey, String editKey) {
+								  BreadcrumbPanel breadcrumbPanel, String contextHelp, String createKey) {
 		super(ureq, wControl, "badge_classes");
 		flc.contextPut("contextHelp", contextHelp);
 		flc.contextPut("title", entry == null ? translate("form.global.badges") : translate("badges"));
@@ -122,7 +123,6 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		this.reSecurity = reSecurity;
 		this.breadcrumbPanel = breadcrumbPanel;
 		this.createKey = createKey;
-		this.editKey = editKey;
 		initForm(ureq);
 		loadModel(ureq);
 	}
@@ -180,8 +180,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					false);
 		}
 
-		createLink = uifactory.addFormLink("create", createKey, null, formLayout, Link.BUTTON);
+		createLink = uifactory.addFormLink("create", "form.create.new.badge", null, formLayout, Link.BUTTON);
 		createLink.setElementCssClass("o_sel_badge_classes_create");
+		createLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		createLink.setVisible(owner);
 	}
@@ -216,11 +217,21 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		if (bc.badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
 			editBadgeLink = uifactory.addFormLink(editBadgeLinkId, CMD_EDIT_BADGE, "form.edit.badge",
 					null, flc, Link.BUTTON);
+			editBadgeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		}
+		
+		String createNewVersionLinkId = "create_new_badge_" + bc.badgeClass().getUuid();
+		FormLink createNewVersionLink = null;
+		if (bc.badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
+			createNewVersionLink = uifactory.addFormLink(createNewVersionLinkId, CMD_CREATE_NEW_VERSION, 
+					"create.a.new.version", null, flc, Link.BUTTON);
+			createNewVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		}
 
 		String awardManuallyLinkId = "award_manually_" + bc.badgeClass().getUuid();
 		FormLink awardManuallyLink = uifactory.addFormLink(awardManuallyLinkId, CMD_AWARD_MANUALLY,
 				"award.manually", null, flc,  Link.BUTTON);
+		awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
 
 		String criteriaXmlString = bc.badgeClass().getCriteria();
 		CriteriaViewController criteriaViewController = new CriteriaViewController(ureq, getWindowControl(), entry,
@@ -232,14 +243,22 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		if (editBadgeLink != null) {
 			detailsVC.put(editBadgeLinkId, editBadgeLink.getComponent());
 		}
+		
+		if (createNewVersionLink != null) {
+			detailsVC.put(createNewVersionLinkId, createNewVersionLink.getComponent());
+		}
 
 		detailsVC.put(awardManuallyLinkId, awardManuallyLink.getComponent());
 
 		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-		BadgeClassRow row = new BadgeClassRow(bc, toolLink, criteriaComponentName, editBadgeLink, awardManuallyLink);
+		BadgeClassRow row = new BadgeClassRow(bc, toolLink, criteriaComponentName, editBadgeLink, awardManuallyLink,
+				createNewVersionLink);
 		toolLink.setUserObject(row);
 		if (editBadgeLink != null) {
 			editBadgeLink.setUserObject(row);
+		}
+		if (createNewVersionLink != null) {
+			createNewVersionLink.setUserObject(row);
 		}
 		awardManuallyLink.setUserObject(row);
 		return row;
@@ -264,6 +283,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				doOpenTools(ureq, link, row);
 			} else if (CMD_EDIT_BADGE.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
 				doEdit(ureq, row);
+			} else if (CMD_CREATE_NEW_VERSION.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
+				doCreateNewVersionAndEdit(ureq, row);
 			} else if (CMD_AWARD_MANUALLY.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
 				doAwardManually(ureq, row);
 			}
@@ -422,7 +443,12 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			showError("warning.badge.cannot.be.edited");
 			return;
 		}
-		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity, getTranslator());
+		doEdit(ureq, badgeClass, false);
+	}
+	
+	private void doEdit(UserRequest ureq, BadgeClass badgeClass, boolean newVersion) {
+		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity, getTranslator(),
+				newVersion ? Mode.editNewVersion : Mode.edit);
 
 		Step start;
 		if (createBadgeClassContext.isEditWithVersion()) {
@@ -440,9 +466,20 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		};
 
 		stepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate(editKey), "o_sel_edit_badge_wizard");
+				translate(newVersion ? "form.create.new.badge.version" : "form.edit.badge"),
+				"o_sel_edit_badge_wizard");
 		listenTo(stepsController);
 		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
+	}
+	
+	private void doCreateNewVersionAndEdit(UserRequest ureq, BadgeClassRow row) {
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(row.badgeClassWithSizeAndCount().badgeClass().getKey());
+		openBadgesManager.createNewBadgeClassVersion(badgeClass.getKey(), getIdentity());
+		BadgeClass reloadedBadgeClass = openBadgesManager.getCurrentBadgeClass(badgeClass.getRootId());
+		if (reloadedBadgeClass == null) {
+			return;
+		}
+		doEdit(ureq, badgeClass, true);
 	}
 
 	private void updateImage(CreateBadgeClassWizardContext createContext, BadgeClass badgeClass) {

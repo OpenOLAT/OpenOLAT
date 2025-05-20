@@ -29,6 +29,6 @@ import org.olat.modules.openbadges.OpenBadgesManager;
  */
 public record BadgeClassRow(OpenBadgesManager.BadgeClassWithSizeAndCount badgeClassWithSizeAndCount,
 							FormLink toolLink, String criteriaComponentName, FormLink editBadgeLink,
-							FormLink awardManuallyLink) {
+							FormLink awardManuallyLink, FormLink createNewVersionLink) {
 }
 

@@ -5,6 +5,9 @@
 			#if($r.isNotEmpty($row.editBadgeLink()))
 				$r.render($row.editBadgeLink().getName())
 			#end
+			#if($r.isNotEmpty($row.createNewVersionLink()))
+				$r.render($row.createNewVersionLink().getName())
+			#end
 			$r.render($row.awardManuallyLink().getName())
 		</div>
 	</div>
