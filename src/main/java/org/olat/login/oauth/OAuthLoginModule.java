@@ -63,7 +63,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	
 	
 	
-	@Value("${oauth.registrationallowUserCreation:true}")
+	@Value("${oauth.registration.allowUserCreation:true}")
 	private boolean allowUserCreation;
 	@Value("${oauth.registration.skipDisclaimerDialog:true}")
 	private boolean skipDisclaimerDialog;
