@@ -44,6 +44,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -241,6 +242,17 @@ public class UserRolesController extends FormBasicController {
 			affiliationSelectorEl.setSelection(affOrganisations.stream().map(Organisation::getKey).toList());
 			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
 
+			List<Organisation> notManageableOrgs = affOrganisations.stream()
+					.filter(org -> !manageableOrganisations.contains(org))
+					.toList();
+			if (!notManageableOrgs.isEmpty()) {
+				String notManageableOrgNames = notManageableOrgs.stream()
+						.map(Organisation::getDisplayName)
+						.collect(Collectors.joining(", "));
+
+				affiliationSelectorEl.setExampleKey("affiliation.orgs.information", new String[]{notManageableOrgNames});
+			}
+
 			affiliationTreeEl = uifactory.addOrgStructureElement(
 					"orgTreeAff",
 					formLayout,
@@ -336,6 +348,21 @@ public class UserRolesController extends FormBasicController {
 		RolesElement wrapper = new RolesElement(roleKeys, organisation, rolesEl);
 		rolesEl.setUserObject(wrapper);
 		rolesEls.add(rolesEl);
+
+		List<OrganisationWithParents> tree = organisationService.getOrderedTreeOrganisationsWithParents();
+		Map<Long, List<Organisation>> childrenByParent = new HashMap<>();
+		for (OrganisationWithParents entry : tree) {
+			Organisation org = entry.getOrganisation();
+			Organisation parent = org.getParent();
+			if (parent != null) {
+				childrenByParent.computeIfAbsent(parent.getKey(), k -> new ArrayList<>()).add(org);
+			}
+		}
+
+		List<Organisation> children = childrenByParent.getOrDefault(organisation.getKey(), List.of());
+		if (!children.isEmpty()) {
+			rolesEl.setExampleKey("rightsForm.child.orgs", new String[] { String.valueOf(children.size()) });
+		}
 
 		OrgStructureElement orgStructureElement = uifactory.addOrgStructureElement(
 				"orgTree_" + currentIndex, formLayout,
