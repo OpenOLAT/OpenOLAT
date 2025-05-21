@@ -64,6 +64,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BadgeDetailsOverviewController extends FormBasicController {
 
+	public static final Event SHOW_RECIPIENTS_EVENT = new Event("show-recipients");
+	
 	private final Long badgeClassKey;
 	private final String mediaUrl;
 	private String name;
@@ -73,7 +75,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	private StaticTextElement issuerEl;
 	private StaticTextElement languageEl;
 	private StaticTextElement versionEl;
-	private StaticTextElement recipientsEl;
+	private FormLink recipientsEl;
 	private StaticTextElement issuedManuallyEl;
 
 	@Autowired
@@ -101,7 +103,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 			versionSelectionEl.select(badgeClass.getUuid(), true);
 		}
 
-		courseEl = uifactory.addFormLink("form.course", "goToCourse", "", translate("form.course"), formLayout, Link.NONTRANSLATED);
+		courseEl = uifactory.addFormLink("form.course", "goToCourse", "", 
+				translate("form.course"), formLayout, Link.NONTRANSLATED);
 		uifactory.addStaticTextElement("form.createdOn",
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate()), formLayout);
 		validityPeriodEl = uifactory.addStaticTextElement("form.valid", "", formLayout);
@@ -109,7 +112,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		languageEl = uifactory.addStaticTextElement("form.language", "", formLayout);
 		versionEl = uifactory.addStaticTextElement("form.version", "", formLayout);
 		versionEl.setVisible(badgeClass.getPreviousVersion() != null);
-		recipientsEl = uifactory.addStaticTextElement("form.recipients", "", formLayout);
+		recipientsEl = uifactory.addFormLink("form.recipients", "goToRecipients", "", 
+				translate("form.recipients"), formLayout, Link.NONTRANSLATED);
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
 
@@ -167,8 +171,13 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		}
 
 		versionEl.setValue(badgeClass.getVersionWithScan());
-		recipientsEl.setValue(Long.toString(nbRecipients));
-		recipientsEl.setVisible(nbRecipients > 0);
+		
+		if (nbRecipients > 0) {
+			recipientsEl.setI18nKey(Long.toString(nbRecipients));
+			recipientsEl.setVisible(true);
+		} else {
+			recipientsEl.setVisible(false);
+		}
 
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		flc.contextPut("criteriaDescription", badgeCriteria.getDescriptionWithScan());
@@ -197,6 +206,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 			fireEvent(ureq, FormEvent.BACK_EVENT);
 		} else if (source == versionSelectionEl) {
 			loadData();
+		} else if (source == recipientsEl) {
+			fireEvent(ureq, SHOW_RECIPIENTS_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

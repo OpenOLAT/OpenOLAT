@@ -259,6 +259,10 @@ public class BadgeDetailsController extends BasicController {
 			if (event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}
+		} else if (source == overviewCtrl) {
+			if (event == BadgeDetailsOverviewController.SHOW_RECIPIENTS_EVENT) {
+				tabPane.setSelectedPane(ureq, recipientsTab);
+			}
 		}
 	}
 
