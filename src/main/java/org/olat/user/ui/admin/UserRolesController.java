@@ -241,6 +241,17 @@ public class UserRolesController extends FormBasicController {
 			affiliationSelectorEl.setSelection(affOrganisations.stream().map(Organisation::getKey).toList());
 			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
 
+			List<Organisation> notManageableOrgs = affOrganisations.stream()
+					.filter(org -> !manageableOrganisations.contains(org))
+					.toList();
+			if (!notManageableOrgs.isEmpty()) {
+				String notManageableOrgNames = notManageableOrgs.stream()
+						.map(Organisation::getDisplayName)
+						.collect(Collectors.joining(", "));
+
+				affiliationSelectorEl.setExampleKey("affiliation.orgs.information", new String[]{notManageableOrgNames});
+			}
+
 			affiliationTreeEl = uifactory.addOrgStructureElement(
 					"orgTreeAff",
 					formLayout,
