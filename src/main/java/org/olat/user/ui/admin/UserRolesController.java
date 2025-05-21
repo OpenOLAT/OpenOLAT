@@ -359,9 +359,9 @@ public class UserRolesController extends FormBasicController {
 			}
 		}
 
-		List<Organisation> children = childrenByParent.getOrDefault(organisation.getKey(), List.of());
-		if (!children.isEmpty()) {
-			rolesEl.setExampleKey("rightsForm.child.orgs", new String[] { String.valueOf(children.size()) });
+		int descendantCount = countDescendants(organisation, childrenByParent);
+		if (descendantCount > 0) {
+			rolesEl.setExampleKey("rightsForm.child.orgs", new String[] { String.valueOf(descendantCount) });
 		}
 
 		OrgStructureElement orgStructureElement = uifactory.addOrgStructureElement(
@@ -369,6 +369,15 @@ public class UserRolesController extends FormBasicController {
 				getWindowControl(), Collections.singletonList(organisation)
 		);
 		orgStructureElement.setCollapseUnrelatedBranches(true);
+	}
+
+	int countDescendants(Organisation org, Map<Long, List<Organisation>> childrenMap) {
+		List<Organisation> children = childrenMap.getOrDefault(org.getKey(), List.of());
+		int count = children.size();
+		for (Organisation child : children) {
+			count += countDescendants(child, childrenMap);
+		}
+		return count;
 	}
 
 	private List<Organisation> sortOrganisationsHierarchically(List<Organisation> flatList) {
