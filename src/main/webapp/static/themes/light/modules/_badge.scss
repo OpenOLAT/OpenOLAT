@@ -165,6 +165,75 @@
 	}
 }
 
+.o_badge_details_overview {
+	
+	.o_badge_details_header {
+		display: flex;
+		justify-content: space-between;
+		gap: 10px;
+
+		.o_badge_details_image_wrapper {
+			width: 20%;
+			min-width: 54px;
+			max-width: 180px;
+		}
+
+		.o_badge_details_title {
+			flex-grow: 1;
+			text-align: left;
+		}
+	}
+
+	.o_badge_details_metadata {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, auto));
+
+		padding: 15px;
+		margin-top: 20px;
+		margin-bottom: 20px;
+
+		background-color: #f8f8f8;
+		border-color: #e7e7e7;
+		border-radius: 4px;
+		border-style: solid;
+		border-width: 1px;
+
+		.o_badge_details_metadata_item {
+			min-width: 300px;
+			max-width: 450px;
+
+			.o_badge_details_label_wrapper {
+				display: inline-block;
+				width: calc(40% - 2px);
+				text-align: right;
+				padding: 0 5px;
+			}
+
+			.o_badge_details_value_wrapper {
+				display: inline-block;
+				width: calc(60% - 2px);
+				padding: 0 5px;
+
+				a {
+					line-height: 20px;
+					padding-top: 7px;
+					padding-bottom: 7px;
+					display: block;
+					white-space: nowrap;
+					overflow: clip;
+					text-overflow: ellipsis;
+				}
+
+				p {
+					white-space: nowrap;
+					overflow: clip;
+					text-overflow: ellipsis;
+				}
+			}
+		}
+	}
+}
+
 .o_badge_template_edit {
 	.o_description {
 		.form-control {
