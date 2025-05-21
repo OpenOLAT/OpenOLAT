@@ -162,6 +162,7 @@ public class UserRolesController extends FormBasicController {
 			rolesCont.setFormTitle(translate("form.additional.roles"));
 			formLayout.add(rolesCont);
 			initAdditionalRoles();
+			removeEmptyRolesEls();
 		} else {
 			simpleRolesCont = FormLayoutContainer
 					.createDefaultFormLayout("rolesCont", getTranslator());
@@ -661,11 +662,11 @@ public class UserRolesController extends FormBasicController {
 		dbInstance.commit();
 	}
 
-	@Override
-	protected void formOK(UserRequest ureq) {
-		saveFormData();
-		updateRoles();
-		List<MultipleSelectionElement> emptyRolesEls = rolesEls.stream().filter(r -> !r.isAtLeastSelected(1)).toList();
+	private void removeEmptyRolesEls() {
+		List<MultipleSelectionElement> emptyRolesEls =
+				rolesEls.stream()
+						.filter(r -> !r.isAtLeastSelected(1))
+						.toList();
 		if (!emptyRolesEls.isEmpty()) {
 			for (MultipleSelectionElement emtpyRolesEl : emptyRolesEls) {
 				if (!hasAnyExplicitRole(emtpyRolesEl)) {
@@ -675,6 +676,13 @@ public class UserRolesController extends FormBasicController {
 				}
 			}
 		}
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		saveFormData();
+		updateRoles();
+		removeEmptyRolesEls();
 	}
 
 	private boolean hasAnyExplicitRole(MultipleSelectionElement rolesEl) {
