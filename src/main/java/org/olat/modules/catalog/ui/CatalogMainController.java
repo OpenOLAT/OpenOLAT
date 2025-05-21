@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -64,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogMainController extends BasicController implements Activateable2 {
 	
 	private VelocityContainer mainVC;
+	private TooledStackedPanel taxonomyStackPanel;
 	private CatalogSearchHeaderController headerSearchCtrl;
 	private BreadcrumbedStackedPanel stackPanel;
 	private CatalogLaunchersController launchersCtrl;
@@ -94,20 +96,27 @@ public class CatalogMainController extends BasicController implements Activateab
 		
 		List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(defaultSearchParams);
 		
-		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, secCallback, defaultSearchParams.isWebPublish());
+		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, defaultSearchParams.isWebPublish());
 		listenTo(headerSearchCtrl);
 		headerSearchCtrl.setTotalCatalogEntries(catalogEntries.size());
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
+		
+		taxonomyStackPanel = new TooledStackedPanel("taxonomystack", getTranslator(), this);
+		taxonomyStackPanel.setInvisibleCrumb(0);
+		taxonomyStackPanel.setToolbarEnabled(false);
+		taxonomyStackPanel.setVisible(false);
+		mainVC.put("taxonomy", taxonomyStackPanel);
 		
 		stackPanel = new BreadcrumbedStackedPanel("catalogstack", getTranslator(), this);
 		stackPanel.setCssClass("o_catalog_breadcrumb");
 		stackPanel.setInvisibleCrumb(0);
 		mainVC.put("stack", stackPanel);
 		
-		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), defaultSearchParams.copy());
+		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), defaultSearchParams.copy(), secCallback);
 		listenTo(launchersCtrl);
 		launchersCtrl.update(ureq, catalogEntries);
 		stackPanel.pushController(translate("overview"), launchersCtrl);
+		taxonomyStackPanel.pushController(translate("overview"), launchersCtrl);
 	}
 
 	protected CatalogSecurityCallback createSecCallback(UserRequest ureq) {
@@ -139,7 +148,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				doActivateTaxonomy(ureq, ores.getResourceableId());
 			} else if (CatalogBCFactory.ORES_TYPE_TAXONOMY_ADMIN.equalsIgnoreCase(ores.getResourceableTypeName())) {
 				if (secCallback.canEditTaxonomy()) {
-					doTaxonomyAdmin(ureq);
+					doOpenTaxonomyAdmin(ureq);
 				}
 			}
 		}
@@ -151,13 +160,13 @@ public class CatalogMainController extends BasicController implements Activateab
 			if (event instanceof CatalogSearchEvent cse) {
 				headerSearchCtrl.setExploreLinkVisibile(false);
 				doSearch(ureq, cse.getSearchString(), null);
-			} else if (event == CatalogSearchHeaderController.OPEN_ADMIN_EVENT) {
-				doOpenAdmin(ureq);
-			} else if (event == CatalogSearchHeaderController.TAXONOMY_ADMIN_EVENT) {
-				doTaxonomyAdmin(ureq);
 			}
 		} else if (source == launchersCtrl) {
-			if (event instanceof OpenSearchEvent ose) {
+			if (event == CatalogLaunchersController.OPEN_ADMIN_EVENT) {
+				doOpenAdmin(ureq);
+			} else if (event == CatalogLaunchersController.TAXONOMY_ADMIN_EVENT) {
+				doOpenTaxonomyAdmin(ureq);
+			} else if (event instanceof OpenSearchEvent ose) {
 				headerSearchCtrl.setSearchString(null);
 				String header = ose.getState() != null? ose.getState().getSpecialFilterLabel(): null;
 				headerSearchCtrl.setHeaderOnly(header);
@@ -176,9 +185,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
 			}
 		} else if (source == taxonomyAdminCtrl) {
-			if (event == Event.BACK_EVENT) {
-				getWindowControl().pop();
-			} else if (event == CatalogTaxonomyEditController.OPEN_ADMIN_EVENT) {
+			if (event == CatalogTaxonomyEditController.OPEN_ADMIN_EVENT) {
 				doOpenAdmin(ureq);
 			}
 		}
@@ -187,7 +194,11 @@ public class CatalogMainController extends BasicController implements Activateab
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == stackPanel) {
+		if (source == taxonomyStackPanel) {
+			if (taxonomyStackPanel.getLastController() == taxonomyStackPanel.getRootController()) {
+				doCloseTaxonomyAdmin();
+			}
+		} else if (source == stackPanel) {
 			if (event instanceof PopEvent) {
 				if (stackPanel.getLastController() == stackPanel.getRootController()) {
 					// Clicked on root breadcrumb
@@ -202,7 +213,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			}
 		}
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		if (stackPanel != null) {
@@ -317,16 +328,22 @@ public class CatalogMainController extends BasicController implements Activateab
 		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
 	}
 
-	@SuppressWarnings("deprecation")
-	private void doTaxonomyAdmin(UserRequest ureq) {
-		removeAsListenerAndDispose(taxonomyAdminCtrl);
+	private void doOpenTaxonomyAdmin(UserRequest ureq) {
+		taxonomyStackPanel.popUpToRootController(ureq);
 		
+		removeAsListenerAndDispose(taxonomyAdminCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(CatalogBCFactory.ORES_TYPE_TAXONOMY_ADMIN),
 				null);
-		taxonomyAdminCtrl = new CatalogTaxonomyEditController(ureq, swControl, secCallback);
+		taxonomyAdminCtrl = new CatalogTaxonomyEditController(ureq, swControl, taxonomyStackPanel, secCallback);
 		listenTo(taxonomyAdminCtrl);
-		
-		getWindowControl().pushToMainArea(taxonomyAdminCtrl.getInitialComponent());
+		taxonomyStackPanel.pushController(translate("taxonomy.management"), taxonomyAdminCtrl);
+		taxonomyStackPanel.setVisible(true);
+		mainVC.setDirty(true);
+	}
+
+	private void doCloseTaxonomyAdmin() {
+		taxonomyStackPanel.setVisible(false);
+		mainVC.setDirty(true);
 	}
 
 	private void doOpenAdmin(UserRequest ureq) {

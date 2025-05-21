@@ -45,6 +45,19 @@ public class TaxonomyRow implements TaxonomyRef {
 	private final FormLink curriculumLink;
 	private final FormLink mediaLink;
 	
+	public TaxonomyRow(TaxonomyInfos taxonomy) {
+		this.taxonomy = taxonomy;
+		this.openLink = null;
+		this.repoLink = null;
+		this.qPoolLink = null;
+		this.docPoolLink = null;
+		this.ePortfolioLink = null;
+		this.documentPoolEnabled = false;
+		this.questionPoolEnabled = false;
+		this.curriculumLink = null;
+		this.mediaLink = null;
+	}
+	
 	public TaxonomyRow(TaxonomyInfos taxonomy, boolean documentPoolEnabled, boolean questionPoolEnabled,
 			FormLink openLink, FormLink repoLink, FormLink docPoolLink, FormLink qPoolLink, FormLink ePortfolioLink,
 			FormLink curriculumLink, FormLink mediaLink) {
@@ -71,6 +84,10 @@ public class TaxonomyRow implements TaxonomyRef {
 	
 	public String getIdentifier() {
 		return taxonomy.getIdentifier();
+	}
+	
+	public String getExternalId() {
+		return taxonomy.getExternalId();
 	}
 	
 	public String getDisplayName() {

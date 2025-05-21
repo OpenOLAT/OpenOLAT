@@ -72,7 +72,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelRelationRow> {
 		key("table.header.key"),
 		type("table.header.competence.type"),
 		displayName("table.header.displayName"),
-		externalId("table.header.relation.externalId");
+		externalId("table.header.relation.external.id");
 		
 		private final String i18nHeaderKey;
 		

@@ -6,11 +6,31 @@
 	}
 }
 
-.o_taxonomy_level_overview {
-	margin-bottom: 20px;
-	.control-label,
-	.form-control-static {
-		padding-top: 0;
+.o_taxonomy_overview_header {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: start;
+	gap: 10px;
+	
+	.o_taxonomy_avatar_title_ref {
+		display: flex;
+		gap: 15px;
+		
+		.o_taxonomy_title_ref {
+			display: flex;
+			flex-direction: column;
+			justify-content: start;
+			.o_taxonomy_title {
+				h2 {
+					padding: 0px;
+					margin: 0px;
+				}
+			}
+		}
+	}
+	
+	.o_taxonomy_title_cmds {
+		margin-left: auto;
 	}
 }
 

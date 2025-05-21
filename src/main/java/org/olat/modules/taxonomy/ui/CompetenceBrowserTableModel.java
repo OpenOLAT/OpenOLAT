@@ -94,8 +94,8 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 	public enum CompetenceBrowserCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		competences("table.header.competence"),
-		identifier("table.header.taxonomy.level.identifier"),
-		externalId("table.header.taxonomy.level.externalId"),
+		identifier("table.header.taxonomy.level.external.ref"),
+		externalId("table.header.taxonomy.level.external.id"),
 		details("table.header.info", "o_icon o_icon_fw o_icon_description"),
 		type("table.header.taxonomy.level.type");
 		

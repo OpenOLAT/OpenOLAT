@@ -4,13 +4,10 @@
 			<h3 class="o_flex_item_max">$r.escapeHtml($header)</h3>
 		#else
 			<div class="o_search_box">
-				<div class="o_catalog_title o_flex_first_grow">
+				<div class="o_catalog_title">
 					<div>
 						<h2>$r.escapeHtml($r.translate("header.search.title"))</h2>
 					</div>
-					#if($r.visible("tools"))
-						$r.render("tools")
-					#end
 				</div>
 				<div class="o_search_row">
 					$r.render("searchWrapper")

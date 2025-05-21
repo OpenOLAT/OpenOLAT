@@ -921,5 +921,12 @@
 			}
 		}
 	}
+	
+	.o_taxonomy_mgmt {
+		.o_taxonomy_hint {
+			@extend %o_flex_first_grow;
+			column-gap: 15px;
+		}
+	}
 }
 

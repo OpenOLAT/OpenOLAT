@@ -1,20 +1,14 @@
-<div class="o_flex_first_grow">
-	<div>
-		$r.render("backLink")
+<div class="o_taxonomy_mgmt">
+	<h2>$r.translate("taxonomy.management")</h2>
+	<div class="o_taxonomy_hint o_block_large">
+		<div>
+			<span class="o_hint">$r.translate("taxonomy.edit.description") $r.contextHelpAdditionalInfo("manual_admin/administration/Modules_Taxonomy/")</span>
+		</div>
+		<div>
+			#if($r.available("open.admin"))
+				$r.render("open.admin")
+			#end
+		</div>
 	</div>
-	<div>
-		#if($r.available("open.admin"))
-			$r.render("open.admin")
-		#end
-	</div>
+	$r.render("taxonomy.selection")
 </div>
-<fieldset class="o_block_large_top">
-	<legend>$r.translate("taxonomy.title")</legend>
-	<p><span class="o_hint">$r.translate("taxonomy.edit.description") $r.contextHelpAdditionalInfo("manual_admin/administration/Modules_Taxonomy/")</span></p>
-</fieldset>
-#if($r.available("taxonomy.selection"))
-	<div class="o_block">
-		$r.render("taxonomy.selection")
-	</div>
-#end
-$r.render("stack")

@@ -78,7 +78,7 @@ public class EditTaxonomyController extends FormBasicController {
 		identifierEl.setMandatory(true);
 
 		String displayName = taxonomy == null ? "" : taxonomy.getDisplayName();
-		displayNameEl = uifactory.addTextElement("taxonomy.displayname", "taxonomy.displayname", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("taxonomy.displayname", "taxonomy.title", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
 		

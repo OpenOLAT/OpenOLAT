@@ -19,10 +19,6 @@
  */
 package org.olat.modules.catalog.ui.admin;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,15 +29,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogSecurityCallback;
-import org.olat.modules.catalog.ui.CatalogTaxonomySelectionController;
-import org.olat.modules.catalog.ui.CatalogTaxonomySelectionController.TaxonomySelectionEvent;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.ui.TaxonomyTreeTableController;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
+import org.olat.modules.taxonomy.ui.TaxonomyOverviewController;
+import org.olat.modules.taxonomy.ui.TaxonomySelectionController;
+import org.olat.modules.taxonomy.ui.TaxonomySelectionController.TaxonomySelectionEvent;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,61 +50,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogTaxonomyEditController extends BasicController {
 	
 	public static final Event OPEN_ADMIN_EVENT = new Event("open.admin");
+	private static final TaxonomySecurityCallback SEC_CALLBACK = new CatalogTaxonomySecurityCallback();
 	
 	private TooledStackedPanel stackPanel;
 	private VelocityContainer mainVC;
-	private Link backLink;
 	private Link openAdminLink;
 
-	private CatalogTaxonomySelectionController taxonomySelectionCtrl;
-	private TaxonomyTreeTableController taxonomyCtrl;
+	private TaxonomySelectionController taxonomySelectionCtrl;
+	private TaxonomyOverviewController taxonomyCtrl;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
-	@Autowired
-	private TaxonomyService taxonomyService;
 
-	public CatalogTaxonomyEditController(UserRequest ureq, WindowControl wControl, CatalogSecurityCallback secCallback) {
+	public CatalogTaxonomyEditController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CatalogSecurityCallback secCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, getLocale(), getTranslator()));
+		this.stackPanel = stackPanel;
 		
 		mainVC = createVelocityContainer("taxonomy_edit");
 		
-		backLink = LinkFactory.createLinkBack(mainVC, this);
 		if (secCallback.canEditCatalogAdministration()) {
 			openAdminLink = LinkFactory.createLink("open.admin", mainVC, this);
+			openAdminLink.setIconLeftCSS("o_icon o_icon_external_link");
 		}
 		
-		stackPanel = new TooledStackedPanel("taxonomy", getTranslator(), this);
-		stackPanel.setToolbarEnabled(false);
-		mainVC.put("stack", stackPanel);
-		
-		Set<Long> taxonomyKeys = repositoryModule.getTaxonomyRefs().stream()
-				.map(TaxonomyRef::getKey)
-				.collect(Collectors.toSet());
-		List<Taxonomy> taxonomies = taxonomyService.getTaxonomyList().stream()
-				.filter(taxonomy -> taxonomyKeys.contains(taxonomy.getKey()))
-				.sorted((t1, t2) -> t1.getDisplayName().compareTo(t2.getDisplayName()))
-				.collect(Collectors.toList());
-		
-		if (taxonomies.size() > 1) {
-			taxonomySelectionCtrl = new CatalogTaxonomySelectionController(ureq, wControl, taxonomies);
-			listenTo(taxonomySelectionCtrl);
-			mainVC.put("taxonomy.selection", taxonomySelectionCtrl.getInitialComponent());
-		}
-		
-		if (!taxonomies.isEmpty()) {
-			doSelectTaxonomy(ureq, taxonomies.get(0));
-		}
+		taxonomySelectionCtrl = new TaxonomySelectionController(ureq, wControl, repositoryModule.getTaxonomyRefs());
+		listenTo(taxonomySelectionCtrl);
+		mainVC.put("taxonomy.selection", taxonomySelectionCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == backLink) {
-			fireEvent(ureq, Event.BACK_EVENT);
-		} else if (source == openAdminLink) {
+		if (source == openAdminLink) {
 			fireEvent(ureq, OPEN_ADMIN_EVENT);
 		}
 	}
@@ -132,9 +108,23 @@ public class CatalogTaxonomyEditController extends BasicController {
 	private void doSelectTaxonomy(UserRequest ureq, Taxonomy taxonomy) {
 		removeAsListenerAndDispose(taxonomyCtrl);
 		
-		taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), taxonomy);
+		taxonomyCtrl = new TaxonomyOverviewController(ureq, getWindowControl(), taxonomy, SEC_CALLBACK);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
-		stackPanel.pushController(taxonomy.getDisplayName(), taxonomyCtrl);
+		stackPanel.pushController(StringHelper.escapeHtml(taxonomy.getDisplayName()), taxonomyCtrl);
+	}
+	
+	private static final class CatalogTaxonomySecurityCallback implements TaxonomySecurityCallback {
+		
+		@Override
+		public boolean canViewTypes() {
+			return false;
+		}
+		
+		@Override
+		public boolean canViewLostFound() {
+			return false;
+		}
+		
 	}
 
 }

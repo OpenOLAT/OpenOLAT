@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -143,6 +145,10 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	
 	public Integer getOrder() {
 		return taxonomyLevel.getSortOrder();
+	}
+	
+	public Date getCreationDate() {
+		return taxonomyLevel.getCreationDate();
 	}
 	
 	public String getDescription() {

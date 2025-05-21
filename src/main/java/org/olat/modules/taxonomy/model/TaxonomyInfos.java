@@ -33,19 +33,21 @@ import org.olat.modules.taxonomy.TaxonomyRef;
  */
 public class TaxonomyInfos implements TaxonomyRef, CreateInfo {
 	
-	private Long key;
-	private Date creationDate;
+	private final Long key;
+	private final Date creationDate;
 	
-	private String identifier;
-	private String displayName;
-	private String description;
+	private final String identifier;
+	private final String externalId;
+	private final String displayName;
+	private final String description;
 	
-	private int numOfLevels;
+	private final int numOfLevels;
 	
 	public TaxonomyInfos(Taxonomy taxonomy, int numOfLevels) {
 		key = taxonomy.getKey();
 		creationDate = taxonomy.getCreationDate();
 		identifier = taxonomy.getIdentifier();
+		externalId = taxonomy.getExternalId();
 		displayName = taxonomy.getDisplayName();
 		description = taxonomy.getDescription();
 		this.numOfLevels = numOfLevels;
@@ -65,6 +67,10 @@ public class TaxonomyInfos implements TaxonomyRef, CreateInfo {
 		return identifier;
 	}
 
+	public String getExternalId() {
+		return externalId;
+	}
+
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -77,6 +83,4 @@ public class TaxonomyInfos implements TaxonomyRef, CreateInfo {
 		return numOfLevels;
 	}
 	
-	
-
 }

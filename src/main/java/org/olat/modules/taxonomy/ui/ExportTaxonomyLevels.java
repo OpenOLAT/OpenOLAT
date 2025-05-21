@@ -119,7 +119,7 @@ public class ExportTaxonomyLevels implements MediaResource {
 		int col = 0;
 
 		headerRow.addCell(col++, translator.translate("taxonomy.level.path"));
-		headerRow.addCell(col++, translator.translate("level.identifier"));
+		headerRow.addCell(col++, translator.translate("level.ext.ref"));
 		headerRow.addCell(col++, translator.translate("level.type"));
 		headerRow.addCell(col++, translator.translate("level.sort.order"));
 
@@ -127,7 +127,7 @@ public class ExportTaxonomyLevels implements MediaResource {
 
 		for (int i = 0; i < validLanguages.size(); i++) {
 			headerRow.addCell(col++, translator.translate("level.language"));
-			headerRow.addCell(col++, translator.translate("level.displayname"));
+			headerRow.addCell(col++, translator.translate("level.title"));
 			headerRow.addCell(col++, translator.translate("level.description"));
 		}
 	}

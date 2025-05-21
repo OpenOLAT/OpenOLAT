@@ -210,6 +210,9 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		if (taxonomy != null) {
 		  sb.where().append("level.taxonomy.key=:taxonomyKey");
 		}
+		if (searchParams.getParentLevel() != null) {
+			sb.where().append("level.key != :levelKey and level.materializedPathKeys like :materializedPath");
+		}
 
 		//quick search
 		Long quickId = null;
@@ -248,6 +251,10 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			.createQuery(sb.toString(), TaxonomyLevel.class);
 		if (taxonomy != null) {
 			query.setParameter("taxonomyKey", taxonomy.getKey());
+		}
+		if (searchParams.getParentLevel() != null) {
+			query.setParameter("materializedPath", searchParams.getParentLevel().getMaterializedPathKeys() + "%");
+			query.setParameter("levelKey", searchParams.getParentLevel().getKey());
 		}
 		if(quickId != null) {
 			query.setParameter("quickVKey", quickId);

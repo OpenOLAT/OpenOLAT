@@ -509,16 +509,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		pushController(displayName, iconLeftCss, null, uobject);
 	}
 
-	/**
-	 * Push the controller in the stack. If the breadcrumb has no controller, the method
-	 * prevent the last breadcrumb to be the same has the new one and be same, it's mean
-	 * the same uobject.
-	 * 
-	 * @param displayName
-	 * @param iconLeftCss
-	 * @param controller
-	 * @param uobject
-	 */
+	@Override
 	public void pushController(String displayName, String iconLeftCss, Controller controller, Object uobject) {
 		//deduplicate last crumb
 		if(uobject != null && controller == null && !stack.isEmpty()) {

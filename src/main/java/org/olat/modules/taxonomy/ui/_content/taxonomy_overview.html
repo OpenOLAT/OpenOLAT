@@ -1,7 +1,19 @@
+<div class="o_taxonomy_overview_header o_block_large">
+	<div class="o_taxonomy_avatar_title_ref">
+		<div class="o_taxonomy_title_ref">
+			#if($r.isNotEmpty($identifier))
+				<div class="o_taxonomy_level_ref">
+					$r.escapeHtml($identifier)
+				</div>
+			#end
+			#if($title)
+				<div class="o_taxonomy_title">
+					<h2>$r.escapeHtml($title)</h2>
+				</div>
+			#end
+		</div>
+	</div>
+</div>
 <div class="clearfix">
-	$r.render("segments") <br/>	
-		
-	#if($r.available("segmentCmp"))
-		$r.render("segmentCmp")
-	#end
+	$r.render("tabs")
 </div>

@@ -1,29 +1,40 @@
-<div class="o_flex_first_grow">
-<div>
-#if($title)
-<h3>$r.escapeHtml($title)</h3>
-#end
-</div>
-#if($r.available("actions"))
-<div class="o_button_group o_button_group_right">
-	$r.render("actions")
-</div>
-#end
-</div>
-<div class="o_form form-horizontal o_taxonomy_level_overview clearfix">
-	<div>
-		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.key")</label>
-	</div>
-	<div class='col-sm-9'><p class='form-control-static'>$r.escapeHtml($id)</p></div>
-	#if($r.isNotEmpty($externalId))
-	<div>
-		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.external.id")</label>
-	</div>
-	<div class='col-sm-9'><p class='form-control-static'>$r.escapeHtml($externalId)</p></div>
+<div class="o_taxonomy_overview_header o_block_large">
+	#if($imageUrl)
+		<div class="o_catalog2">
+		<div class="o_taxonomy_launchers #if($square)o_launchers_square#end">
+		<div class="o_taxonomy_launcher o_tax_teaser_preview">
+			<div class="o_visual">
+				<span class="o_visual_not_available o_visual_available" style="background-image:url('$imageUrl');" ></span>
+			</div>
+		</div>
+		</div>
+		</div>
 	#end
-	<div>
-		<label class="control-label col-sm-3" for="tax_level_key">$r.translate("taxonomy.level.path")</label>
+	<div class="o_taxonomy_avatar_title_ref">
+		<div class="o_taxonomy_title_ref">
+			#if($r.isNotEmpty($identifier))
+				<div class="o_taxonomy_ref">
+					$r.escapeHtml($identifier)
+				</div>
+			#end
+			#if($title)
+				<div class="o_taxonomy_title">
+					<h2>$r.escapeHtml($title)</h2>
+				</div>
+			#end
+			#if($r.isNotEmpty($typeName))
+				<div class="o_taxonomy_type">
+					<span class="o_curriculum_type"><i class="o_icon o_icon_taxonomy_type" title="$r.translate("level.type")"> </i> $r.escapeHtml($typeName)</span>
+				</div>
+			#end
+		</div>
 	</div>
-	<div class='col-sm-9'><p class='form-control-static'>$r.escapeHtml($path)</p></div>
+	#if($r.available("actions"))
+		<div class="o_taxonomy_title_cmds">
+			$r.render("actions")
+		</div>
+	#end
 </div>
-<div class="clearfix">$r.render("tabs")</div>
+<div class="clearfix">
+	$r.render("tabs")
+</div>

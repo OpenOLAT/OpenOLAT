@@ -1,7 +1,7 @@
-#if($r.available("taxonomy.edit") || $r.available("open.admin"))
+#if($r.available("taxonomy.management.open") || $r.available("open.admin"))
 	<div class="o_button_group o_button_group_right">
-		#if($r.available("taxonomy.edit"))
-			$r.render("taxonomy.edit")
+		#if($r.available("taxonomy.management.open"))
+			$r.render("taxonomy.management.open")
 		#end
 		#if($r.available("open.admin"))
 			$r.render("open.admin")

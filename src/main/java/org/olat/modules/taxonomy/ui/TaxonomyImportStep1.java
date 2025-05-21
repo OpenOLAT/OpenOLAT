@@ -83,7 +83,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 	private static final Logger log = Tracing.createLoggerFor(TaxonomyImportStep1.class);
 	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	private static final String ERROR_MEDIA_ZIP_UPLOAD = "error.upload.media.zip";
-	private static final String LEVEL_DISPLAYNAME = "level.displayname";
+	private static final String LEVEL_DISPLAYNAME = "level.title";
 	private static final String LEVEL_DESCRIPTION = "level.description";
 	private static final String LEVEL_LANGUAGE = "level.language";
 	private static final String BACKGROUND = "background";
@@ -100,7 +100,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 		
 		this.context = context;
 	
-		setI18nTitleAndDescr("import.taxonomy.step.1.title", "import.taxonomy.step.1.desc");
+		setI18nTitleAndDescr("import.taxonomy.step.1.title", "import.taxonomy.step1.desc");
 		setNextStep(new TaxonomyImportStep2(ureq));
 	}
 
@@ -156,7 +156,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 			mediaLayout.setRootForm(formLayout.getRootForm());
 
 			importLayout.setFormTitle(translate("import.taxonomy.structure.title"));
-			importLayout.setFormDescription(translate("import.taxonomy.step.1.desc"));
+			importLayout.setFormDescription(translate("import.taxonomy.step1.desc"));
 
 			// Add template download link
 			templateDownloadLink = uifactory.addFormLink("templateDownloadLink", "import.taxonomy.template.link", "import.taxonomy.template.link.label", importLayout, Link.LINK);
@@ -434,7 +434,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 			dataRow3.append("/BIO").append("\t");
 
 			// Identifier
-			headerRow.append(translate("level.identifier")).append("\t");
+			headerRow.append(translate("level.ext.ref")).append("\t");
 			dataRow1.append("MATH").append("\t");
 			dataRow2.append("GEO").append("\t");
 			dataRow3.append("BIO").append("\t");
@@ -567,7 +567,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 						} else if (!org.olat.core.util.FileUtils.validateFilename(identifier)
 								|| !org.olat.core.util.FileUtils.validateFilename(displayName)) {
 							allOk = false;
-							inputEl.setErrorKey("import.taxonomy.error.invalid");
+							inputEl.setErrorKey("import.taxonomy.error.invalid.char");
 							errorRows.add(i);
 						} else if (StringHelper.containsNonWhitespace(language)
 								&& StringHelper.containsNonWhitespace(displayName)) {

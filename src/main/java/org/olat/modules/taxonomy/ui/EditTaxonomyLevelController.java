@@ -183,6 +183,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_taxonomy_level_form");
 		
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setFormTitle(translate("taxonomy.metadata"));
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
@@ -204,7 +205,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		}
 
 		String identifier = level == null ? "" : level.getIdentifier();
-		identifierEl = uifactory.addTextElement("level.identifier", "level.identifier", 255, identifier, generalCont);
+		identifierEl = uifactory.addTextElement("level.identifier", "level.ext.ref", 255, identifier, generalCont);
 		identifierEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.identifier));
 		identifierEl.setElementCssClass("o_sel_taxonomy_level_identifier");
 		identifierEl.setMandatory(true);
@@ -239,43 +240,6 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		sortOrderEl = uifactory.addTextElement("level.sort.order", "level.sort.order", 255, sortOrder, generalCont);
 		sortOrderEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
 		
-		teaserImageCont = FormLayoutContainer.createCustomFormLayout("teaserPreview", getTranslator(), velocity_root + "/teaser_preview.html");
-		teaserImageCont.setLabel("level.image.teaser", null);
-		teaserImageCont.setRootForm(mainForm);
-		generalCont.add(teaserImageCont);
-		teaserImageCont.contextPut("square", catalogV2Module.isEnabled() && CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogV2Module.getLauncherTaxonomyLevelStyle()));
-		
-		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.teaser", generalCont);
-		teaserImageEl.setMaxUploadSizeKB(2048, null, null);
-		teaserImageEl.setExampleKey("level.image.teaser.example", null);
-		teaserImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
-		teaserImageEl.setReplaceButton(true);
-		teaserImageEl.setDeleteEnabled(true);
-		teaserImageEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf teaserImage = taxonomyService.getTeaserImage(level);
-		if (teaserImage instanceof LocalFileImpl teaserLeaf) {
-			teaserImageEl.setInitialFile(teaserLeaf.getBasefile());
-		}
-		updateTeaserImagePreview(ureq);
-
-		backgroundImageCont = FormLayoutContainer.createCustomFormLayout("backgroundPreview", getTranslator(), velocity_root + "/background_preview.html");
-		backgroundImageCont.setLabel("level.image.background", null);
-		backgroundImageCont.setRootForm(mainForm);
-		generalCont.add(backgroundImageCont);
-		
-		backgroundImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.background", generalCont);
-		backgroundImageEl.setMaxUploadSizeKB(5024, null, null);
-		backgroundImageEl.setExampleKey("level.image.background.example", null);
-		backgroundImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
-		backgroundImageEl.setReplaceButton(true);
-		backgroundImageEl.setDeleteEnabled(true);
-		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf backgroundImage = taxonomyService.getBackgroundImage(level);
-		if (backgroundImage instanceof LocalFileImpl backgroundLeaf) {
-			backgroundImageEl.setInitialFile(backgroundLeaf.getBasefile());
-		}
-		updateBackgroundImagePreview(ureq);
-		
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
 		tabbedPane.setTabIndentation(TabIndentation.defaultFormLayout);
 
@@ -294,13 +258,55 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		}
 		tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
 		
+		FormLayoutContainer imagelCont = FormLayoutContainer.createDefaultFormLayout("images", getTranslator());
+		imagelCont.setFormTitle(translate("level.images"));
+		imagelCont.setRootForm(mainForm);
+		formLayout.add(imagelCont);
+		
+		teaserImageCont = FormLayoutContainer.createCustomFormLayout("teaserPreview", getTranslator(), velocity_root + "/teaser_preview.html");
+		teaserImageCont.setLabel("level.image.teaser", null);
+		teaserImageCont.setRootForm(mainForm);
+		imagelCont.add(teaserImageCont);
+		teaserImageCont.contextPut("square", catalogV2Module.isEnabled() && CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogV2Module.getLauncherTaxonomyLevelStyle()));
+		
+		teaserImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.teaser", imagelCont);
+		teaserImageEl.setMaxUploadSizeKB(2048, null, null);
+		teaserImageEl.setExampleKey("level.image.teaser.example", null);
+		teaserImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
+		teaserImageEl.setReplaceButton(true);
+		teaserImageEl.setDeleteEnabled(true);
+		teaserImageEl.addActionListener(FormEvent.ONCHANGE);
+		VFSLeaf teaserImage = taxonomyService.getTeaserImage(level);
+		if (teaserImage instanceof LocalFileImpl teaserLeaf) {
+			teaserImageEl.setInitialFile(teaserLeaf.getBasefile());
+		}
+		updateTeaserImagePreview(ureq);
+		
+		backgroundImageCont = FormLayoutContainer.createCustomFormLayout("backgroundPreview", getTranslator(), velocity_root + "/background_preview.html");
+		backgroundImageCont.setLabel("level.image.background", null);
+		backgroundImageCont.setRootForm(mainForm);
+		imagelCont.add(backgroundImageCont);
+		
+		backgroundImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "level.image.background", imagelCont);
+		backgroundImageEl.setMaxUploadSizeKB(5024, null, null);
+		backgroundImageEl.setExampleKey("level.image.background.example", null);
+		backgroundImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
+		backgroundImageEl.setReplaceButton(true);
+		backgroundImageEl.setDeleteEnabled(true);
+		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
+		VFSLeaf backgroundImage = taxonomyService.getBackgroundImage(level);
+		if (backgroundImage instanceof LocalFileImpl backgroundLeaf) {
+			backgroundImageEl.setInitialFile(backgroundLeaf.getBasefile());
+		}
+		updateBackgroundImagePreview(ureq);
+		
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		buttonsWrapperCont.setRootForm(mainForm);
 		formLayout.add(buttonsWrapperCont);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttonsCont", getTranslator());
 		buttonsWrapperCont.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private void buildPathKeysAndValues(List<String> pathKeyList, List<String> pathValueList) {
@@ -325,7 +331,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		formLayout.add(cont);
 		tabbedPane.addTab(locale.getDisplayLanguage(getLocale()), cont);
 		
-		TextElement displayNameEl = uifactory.addTextElement("level.displayname." + elementSuffix, "level.displayname", 255, displayName, cont);
+		TextElement displayNameEl = uifactory.addTextElement("level.displayname." + elementSuffix, "level.title", 255, displayName, cont);
 		displayNameEl.setElementCssClass("o_sel_taxonomy_level_name");
 		displayNameEl.setEnabled(displayNameEnabled);
 		if (defaultLocale.equals(locale)) {

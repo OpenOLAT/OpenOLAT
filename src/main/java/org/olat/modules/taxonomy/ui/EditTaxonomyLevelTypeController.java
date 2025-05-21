@@ -78,7 +78,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String identifier = levelType == null ? "" : levelType.getIdentifier();
-		identifierEl = uifactory.addTextElement("level.identifier", "level.identifier", 255, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.identifier));
 		identifierEl.setMandatory(true);
 		if(!StringHelper.containsNonWhitespace(identifier)) {
@@ -86,7 +86,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		}
 		
 		String displayName = levelType == null ? "" : levelType.getDisplayName();
-		displayNameEl = uifactory.addTextElement("level.displayname", "level.displayname", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("level.displayname", "level.title", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
 

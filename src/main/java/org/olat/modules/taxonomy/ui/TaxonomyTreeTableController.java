@@ -47,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -117,6 +116,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private StepsMainRunController importWizardCtrl;
 	
 	private final Taxonomy taxonomy;
+	private final TaxonomyLevel parentLevel;
 	private boolean dirty = false;
 	
 	@Autowired
@@ -126,9 +126,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	@Autowired
 	private I18nManager i18nManager;
 
-	public TaxonomyTreeTableController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
+	public TaxonomyTreeTableController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy, TaxonomyLevel parentLevel) {
 		super(ureq, wControl, "admin_taxonomy_levels");
 		this.taxonomy = taxonomy;
+		this.parentLevel = parentLevel;
 		initForm(ureq);
 		loadModel(true, true);
 	}
@@ -158,20 +159,14 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(ACTION_SELECT);
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, treeNodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.order));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier, ACTION_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.externalId, ACTION_SELECT));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.typeIdentifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.order));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
-		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", -1);
-		selectColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "tt-focus", null, "o_icon o_icon-fw o_icon_enlarge", translate("show.sublevels")));
-		selectColumn.setIconHeader("o_icon o_icon_enlarge");
-		selectColumn.setHeaderLabel(translate("show.sublevels"));
-		selectColumn.setExportable(false);
-		selectColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(selectColumn);
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TaxonomyLevelCols.tools));
-
+		
 		model = new TaxonomyTreeTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
@@ -184,8 +179,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setFilters(null, getFilters(), true);
-		tableEl.setRootCrumb(new TaxonomyCrumb(taxonomy.getDisplayName()));
-		tableEl.setAndLoadPersistedPreferences(ureq, "tax-tree-" + taxonomy.getKey());
+		tableEl.setAndLoadPersistedPreferences(ureq, "tax-tree-v2-" + taxonomy.getKey());
 
 		tableEl.addBatchButton(typeButton);
 		tableEl.addBatchButton(moveButton);
@@ -207,6 +201,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	
 	private void loadModel(boolean resetPage, boolean resetInternal) {
 		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
+		searchParams.setParentLevel(parentLevel);
 		searchParams.setQuickSearch(tableEl.getQuickSearchString());
 		Set<String> quickSearchI18nSuffix = i18nManager.findI18nKeysByOverlayValue(
 						tableEl.getQuickSearchString(),
@@ -272,7 +267,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("TaxonomyLevel".equalsIgnoreCase(type)) {
 			Long levelKey = entries.get(0).getOLATResourceable().getResourceableId();
-			List<TaxonomyLevelRow> rows = model.getObjects();
+			List<TaxonomyLevelRow> rows = model.getAllRows();
 			for(TaxonomyLevelRow row:rows) {
 				if(levelKey.equals(row.getKey())) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -547,9 +542,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private TaxonomyLevelType getLevelType(TaxonomyLevel level, List<TaxonomyLevelType> createdTypes) {
 		if (level.getType().getKey() == null) {
 			return createdTypes.stream().filter(type -> type.getIdentifier().equals(level.getType().getIdentifier())).findFirst().orElse(null);
-		} else {
-			return level.getType();
 		}
+		return level.getType();
 	}
 
 	private void saveOrUpdateI18nItemForTaxonomyLevel(TaxonomyLevel level, TaxonomyImportContext context) {
@@ -613,13 +607,26 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			loadModel(false, false);
 			return null;
 		}
+		addIntermediatePath(taxonomyLevel);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", taxonomyLevel.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, reloadedTaxonomyLevel);
+		TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, stackPanel, reloadedTaxonomyLevel);
 		listenTo(detailsLevelCtrl);
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), reloadedTaxonomyLevel);
-		stackPanel.pushController(displayName, detailsLevelCtrl);
+		stackPanel.pushController(displayName, null, detailsLevelCtrl, reloadedTaxonomyLevel);
 		return detailsLevelCtrl;
+	}
+	
+	private void addIntermediatePath(TaxonomyLevel taxonomyLevel) {
+		List<TaxonomyLevel> parentLine = taxonomyService.getTaxonomyLevelParentLine(taxonomyLevel, taxonomy);
+		for(TaxonomyLevel parent:parentLine) {
+			stackPanel.popUserObject(parent);
+		}
+		
+		parentLine.remove(taxonomyLevel);
+		for(TaxonomyLevel parent:parentLine) {
+			stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), parent), null, parent);
+		}
 	}
 	
 	private void doNewLevel(UserRequest ureq) {
@@ -787,8 +794,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 			List<String> links = new ArrayList<>(3);
 
-			exportLink = addLink("export.taxonomy.levels", null, links);
-			importLink = addLink("import.taxonomy.levels", null, links);
+			exportLink = addLink("export.taxonomy.levels", "o_icon_download", links);
+			importLink = addLink("import.taxonomy.levels", "o_icon_import", links);
 
 			mainVC.contextPut("links", links);
 
@@ -829,25 +836,6 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
-		}
-	}
-	
-	private static class TaxonomyCrumb implements FlexiTreeTableNode {
-		
-		private final String taxonomyDisplayName;
-		
-		public TaxonomyCrumb(String taxonomyDisplayName) {
-			this.taxonomyDisplayName = taxonomyDisplayName;
-		}
-
-		@Override
-		public FlexiTreeTableNode getParent() {
-			return null;
-		}
-
-		@Override
-		public String getCrump() {
-			return taxonomyDisplayName;
 		}
 	}
 	

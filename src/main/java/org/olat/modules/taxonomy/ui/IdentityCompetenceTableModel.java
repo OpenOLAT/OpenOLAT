@@ -78,13 +78,13 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 	
 	public enum IdCompetenceCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		taxonomyIdentifier("table.header.taxonomy.identifier"),
+		taxonomyIdentifier("table.header.taxonomy.external.ref"),
 		taxonomyDisplayName("table.header.taxonomy.displayName"),
-		taxonomyExternalId("table.header.taxonomy.externalId"),
-		taxonomyLevelIdentifier("table.header.taxonomy.level.identifier"),
+		taxonomyExternalId("table.header.taxonomy.external.id"),
+		taxonomyLevelIdentifier("table.header.taxonomy.level.external.ref"),
 		taxonomyLevelDisplayName("table.header.taxonomy.level.displayName"),
 		taxonomyLevelType("table.header.taxonomy.level.type"),
-		taxonomyLevelExternalId("table.header.taxonomy.level.externalId"),
+		taxonomyLevelExternalId("table.header.taxonomy.level.external.id"),
 		type("table.header.competence.type"),
 		expiration("table.header.competence.expiration"),
 		remove("remove");

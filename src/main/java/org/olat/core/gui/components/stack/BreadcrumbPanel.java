@@ -70,10 +70,21 @@ public interface BreadcrumbPanel extends StackedPanel {
 	 * 
 	 * @param displayName The name shown as bread crumb
 	 * @param iconLeftCss The icon shown as decoration of the bread crumb
-	 * @param controller The controller to push
-	 * @param dispose If true, automatically dispose the controller, if false, you need to dispose the controller yourself.
+	 * @param uobject The uobject associated to the crumb
 	 */
 	public void pushController(String displayName, String iconLeftCss, Object uobject);
+	
+	/**
+	 * Push the controller in the stack. If the breadcrumb has no controller, the method
+	 * prevent the last breadcrumb to be the same has the new one and be same, it's mean
+	 * the same uobject.
+	 * 
+	 * @param displayName
+	 * @param iconLeftCss
+	 * @param controller
+	 * @param uobject
+	 */
+	public void pushController(String displayName, String iconLeftCss, Controller controller, Object uobject);
 	
 	/**
 	 * Change the display name of the last crumb.

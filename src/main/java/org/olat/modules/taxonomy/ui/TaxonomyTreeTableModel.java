@@ -117,6 +117,7 @@ implements FilterableFlexiTableModel  {
 			case updateWarning: return level.isUpdated();
 			case description: return level.getDescription();
 			case order: return level.getOrder();
+			case creationDate: return level.getCreationDate();
 			case path: return level.getTaxonomyLevel().getMaterializedPathIdentifiersWithoutSlash();
 			default: return "ERROR";
 		}
@@ -125,12 +126,13 @@ implements FilterableFlexiTableModel  {
 	public enum TaxonomyLevelCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.header.taxonomy.level.displayName"),
-		identifier("table.header.taxonomy.level.identifier"),
-		externalId("table.header.taxonomy.level.externalId"),
+		identifier("table.header.taxonomy.level.external.ref"),
+		externalId("table.header.taxonomy.level.external.id"),
 		typeIdentifier("table.header.taxonomy.level.type.identifier"),
-		numOfChildren("table.header.taxonomy.level.num.children"),
+		numOfChildren("table.header.taxonomy.level.sublevels"),
 		tools("action.more"),
 		order("table.header.taxonomy.level.order"),
+		creationDate("created.date"),
 		description("table.header.taxonomy.level.description"),
 		updateWarning("table.header.taxonomy.update.warning", "o_icon o_icon_fw o_icon_warn"),
 		path("table.header.taxonomy.level.path");

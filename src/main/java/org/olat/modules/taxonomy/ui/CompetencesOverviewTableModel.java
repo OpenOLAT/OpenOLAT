@@ -58,9 +58,11 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 			
 			if (objects == null || objects.isEmpty()) {
 				setFilteredObjects(new ArrayList<>());
+			} else {
+				setFilteredObjects(objects.stream()
+						.filter(row -> row.getDisplayName().toLowerCase().contains(lowerSearchString))
+						.collect(Collectors.toList()));
 			}
-			
-			setFilteredObjects(objects.stream().filter(row -> row.getDisplayName().toLowerCase().contains(lowerSearchString)).collect(Collectors.toList()));
 		} else {
 			setUnfilteredObjects();
 		}
@@ -105,13 +107,13 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 		key("table.header.key"),
 		competence("table.header.competence"),
 		resource("table.header.resource"),
-		taxonomyIdentifier("table.header.taxonomy.identifier"),
+		taxonomyIdentifier("table.header.taxonomy.external.ref.pre"),
 		taxonomyDisplayName("table.header.taxonomy.displayName"),
-		taxonomyExternalId("table.header.taxonomy.externalId"),
-		taxonomyLevelIdentifier("table.header.taxonomy.level.identifier"),
+		taxonomyExternalId("table.header.taxonomy.external.id.pre"),
+		taxonomyLevelIdentifier("table.header.taxonomy.level.external.ref.pre"),
 		taxonomyLevelDisplayName("table.header.taxonomy.level.displayName"),
 		taxonomyLevelType("table.header.taxonomy.level.type"),
-		taxonomyLevelExternalId("table.header.taxonomy.level.externalId"),
+		taxonomyLevelExternalId("table.header.taxonomy.level.external.id.pre"),
 		type("table.header.competence.type"),
 		expiration("table.header.competence.expiration"),
 		info("table.header.info", "o_icon o_icon_fw o_icon_description"),

@@ -274,6 +274,25 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertNotEquals(level2, levels.get(0));
 	}
 	
+	@Test
+	public void searchLevelsByParentLevel() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy(random(), "Named taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "A numerated level", "", null, null, null, null, taxonomy);
+		TaxonomyLevel level11 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "A numerated level", "", null, null, level1, null, taxonomy);
+		TaxonomyLevel level111 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "A numerated level", "", null, null, level11, null, taxonomy);
+		TaxonomyLevel level1111 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), "A numerated level", "", null, null, level111, null, taxonomy);
+		taxonomyLevelDao.createTaxonomyLevel(random(), random(), "A numerated level", "", null, null, level1, null, taxonomy);
+		taxonomyLevelDao.createTaxonomyLevel(random(), random(), "A numerated level", "", null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
+		searchParams.setParentLevel(level11);
+		List<TaxonomyLevel> levels = taxonomyLevelDao.searchLevels(taxonomy, searchParams);
+		Assert.assertNotNull(levels);
+		Assert.assertEquals(2, levels.size());
+		Assert.assertTrue(levels.contains(level111));
+		Assert.assertTrue(levels.contains(level1111));
+	}
 	
 	@Test
 	public void updateTaxonomyLevel_simple() {

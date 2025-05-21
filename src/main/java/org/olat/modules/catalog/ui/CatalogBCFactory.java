@@ -53,7 +53,7 @@ public class CatalogBCFactory {
 	private static final String ORES_TYPE_INFOS = "Infos";
 	private static final String ORES_TYPE_OFFER = "Offer";
 	private static final String ORES_TYPE_TAXONOMY = "Microsite";
-	public static final String ORES_TYPE_TAXONOMY_ADMIN = "TaxonomyAdmin";
+	public static final String ORES_TYPE_TAXONOMY_ADMIN = "Management";
 	
 	private static final CatalogBCFactory CATALOG_FACTORY = new CatalogBCFactory(false);
 	private static final CatalogBCFactory WEB_CATALOG_FACTORY = new CatalogBCFactory(true);

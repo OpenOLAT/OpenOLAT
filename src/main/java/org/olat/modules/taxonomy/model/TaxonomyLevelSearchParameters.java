@@ -22,6 +22,8 @@ package org.olat.modules.taxonomy.model;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.modules.taxonomy.TaxonomyLevel;
+
 /**
  * 
  * Initial date: 11 déc. 2017<br>
@@ -30,10 +32,19 @@ import java.util.List;
  */
 public class TaxonomyLevelSearchParameters {
 	
+	private TaxonomyLevel parentLevel;
 	private String quickSearch;
 	private Collection<String> quickSearchI18nSuffix;
 	private Boolean allowedAsSubject;
 	private List<Long> taxonomyKeys;
+
+	public TaxonomyLevel getParentLevel() {
+		return parentLevel;
+	}
+
+	public void setParentLevel(TaxonomyLevel parentLevel) {
+		this.parentLevel = parentLevel;
+	}
 
 	public String getQuickSearch() {
 		return quickSearch;

@@ -1,6 +1,10 @@
 <div class="o_catalog2">
-	<div class="o_catalog_header">
-		$r.render("header")
-	</div>
-	$r.render("stack")
+	#if($r.available("taxonomy") && $r.visible("taxonomy"))
+		$r.render("taxonomy")
+	#else
+		<div class="o_catalog_header">
+			$r.render("header")
+		</div>
+		$r.render("stack")
+	#end
 </div>

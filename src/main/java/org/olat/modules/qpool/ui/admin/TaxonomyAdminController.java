@@ -52,7 +52,7 @@ public class TaxonomyAdminController extends BasicController implements Breadcru
 		
 		Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
 		VelocityContainer mainVC = createVelocityContainer("admin_study_fields");
-		taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), taxonomy);
+		taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), taxonomy, null);
 		listenTo(taxonomyCtrl);
 		mainVC.put("taxonomy", taxonomyCtrl.getInitialComponent());
 		putInitialPanel(mainVC);

@@ -897,6 +897,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_taxonomy { @include o-add-icon('cube');}
 .o_icon_taxonomy_level { @include o-add-icon('cubes');}
 .o_icon_taxonomy_level_leaf { @include o-add-icon('folder-open', false);}
+.o_icon_taxonomy_level_type { @include o-add-icon('square-share-nodes');}
 .o_icon_taxonomy_templates { @include o-add-icon('copy', false);} // files not in FA6 public set!
 .o_icon_taxonomy_levels { @include o-add-icon('sitemap');}
 

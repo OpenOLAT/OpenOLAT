@@ -68,7 +68,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 	
 	public enum TypesCols implements FlexiSortableColumnDef {
 		identifier("table.header.type.identifier"),
-		displayName("table.header.type.displayName"),
+		displayName("table.header.type.title"),
 		allowedAsCompetence("table.header.type.competence.allowed"),
 		allowedAsSubject("table.header.type.subject.allowed"),
 		tools("action.more");

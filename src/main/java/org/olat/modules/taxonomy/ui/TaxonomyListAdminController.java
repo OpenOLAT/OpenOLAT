@@ -57,6 +57,7 @@ import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.ui.TaxonomyListDataModel.TaxonomyCols;
@@ -70,6 +71,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TaxonomyListAdminController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2, BreadcrumbPanelAware {
+	
+	private static final TaxonomySecurityCallback SEC_CALLBACK = new AdminTaxonomySecurityCallback();
 	
 	private FlexiTableElement tableEl;
 	private TaxonomyListDataModel model;
@@ -120,7 +123,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyCols.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyCols.displayName, "select"));
 
-		model = new TaxonomyListDataModel(columnsModel);
+		model = new TaxonomyListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
@@ -331,7 +334,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Taxonomy", row.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		Taxonomy taxonomy = taxonomyService.getTaxonomy(row);
-		taxonomyCtrl = new TaxonomyOverviewController(ureq, bwControl, taxonomy);
+		taxonomyCtrl = new TaxonomyOverviewController(ureq, bwControl, taxonomy, SEC_CALLBACK);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		listenTo(taxonomyCtrl);
 		
@@ -357,4 +360,19 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 			return "o_taxonomy_row";
 		}
 	}
+	
+	private static final class AdminTaxonomySecurityCallback implements TaxonomySecurityCallback {
+		
+		@Override
+		public boolean canViewTypes() {
+			return true;
+		}
+		
+		@Override
+		public boolean canViewLostFound() {
+			return true;
+		}
+		
+	}
+	
 }

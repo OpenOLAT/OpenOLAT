@@ -19,13 +19,13 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-
-import java.util.Locale;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
@@ -61,7 +61,7 @@ public class TaxonomyImportTreeTableModel extends DefaultFlexiTableDataModel<Tax
 
     public enum TaxonomyImportLevelCols implements FlexiSortableColumnDef {
         key("table.header.key"),
-        identifier("table.header.taxonomy.level.identifier"),
+        identifier("table.header.taxonomy.level.external.ref"),
         typeIdentifier("table.header.taxonomy.level.type.identifier"),
         order("table.header.taxonomy.level.order"),
         language("table.header.taxonomy.level.language"),
