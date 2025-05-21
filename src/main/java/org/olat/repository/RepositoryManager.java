@@ -613,6 +613,7 @@ public class RepositoryManager {
 
 		boolean isAuthor = false;
 		boolean isEntryAdmin = false;
+		boolean isAdministrativeUser = false;
 		boolean isPrincipal = false;
 		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
@@ -726,11 +727,15 @@ public class RepositoryManager {
 					canLaunch = acService.isAccessible(re, identity, Boolean.FALSE, false, null, false).isAccessible();
 				}
 			}
+
+			if (isAdministrator || isLearnRessourceManager || isAuthor){
+				isAdministrativeUser = true;
+			}
 		}
 
 		boolean readOnly = re.getEntryStatus().decommissioned();
 
-		return new RepositoryEntrySecurityImpl(isEntryAdmin, isOwner,
+		return new RepositoryEntrySecurityImpl(isEntryAdmin, isAdministrativeUser, isOwner,
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach, isGroupWaiting,
 				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,

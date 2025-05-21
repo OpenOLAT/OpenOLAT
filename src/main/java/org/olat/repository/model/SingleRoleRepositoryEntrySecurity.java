@@ -185,6 +185,11 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	}
 
 	@Override
+	public boolean isAdministrativeUser() {
+		return Role.administrator == currentRole || Role.learningResourceManager == currentRole || isAuthor();
+	}
+
+	@Override
 	public boolean canLaunch() {
 		return wrappedSecurity.canLaunch();
 	}

@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,6 +34,10 @@ import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.core.CoreSpringFactory;
@@ -212,6 +217,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
@@ -351,6 +357,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private QualityModule qualityModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -936,7 +944,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super.initToolsMenuEdition(toolsDropdown);
 		if (copyLink != null) {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			if (course != null && !LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+			boolean canConvert = reSecurity.isAdministrativeUser() && hasMatchingOrgRole();
+			if (course != null && !LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType()) && canConvert) {
 				Integer index = toolsDropdown.getComponentIndex(copyLink);
 				if(index != null) {
 					convertLearningPathLink = LinkFactory.createToolLink("convert.course.learning.path",
@@ -949,8 +958,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	protected void initToolsBeta(Dropdown toolsDropdown, ICourse course) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
-		boolean canCopy = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged;
-		
+		boolean canCopy = reSecurity.isAdministrativeUser() && !copyManaged && hasMatchingOrgRole();
+
 		if (canCopy && course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
 			Integer index = toolsDropdown.getComponentIndex(copyLink);
 			if(index != null) {
@@ -960,12 +969,29 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 
+	private boolean hasMatchingOrgRole() {
+		for (RepositoryEntryToOrganisation orgEntry : re.getOrganisations()) {
+			SearchMemberParameters params = new SearchMemberParameters();
+			params.setIdentityKey(getIdentity().getKey());
+			List<OrganisationMember> members = organisationService.getMembers(orgEntry.getOrganisation(), params);
+
+			for (OrganisationMember member : members) {
+				if (Objects.equals(member.getRole(), OrganisationRoles.administrator.name())
+						|| Objects.equals(member.getRole(), OrganisationRoles.author.name())
+						|| Objects.equals(member.getRole(), OrganisationRoles.learnresourcemanager.name())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	@Override
 	protected void initToolsMenuDelete(Dropdown settingsDropdown) {
 		RepositoryEntry re = getRepositoryEntry();
 		boolean closeManged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
 		
-		if(reSecurity.isEntryAdmin()) {
+		if(reSecurity.isEntryAdmin() && hasMatchingOrgRole()) {
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
 			if(settingsDropdown.size() > 0 && !deleteManaged) {
 				settingsDropdown.addComponent(new Spacer("close-delete"));

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui;
@@ -22,8 +22,13 @@ package org.olat.repository.ui;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.services.mark.Mark;
@@ -83,6 +88,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -117,7 +123,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 14.08.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class RepositoryEntryRuntimeController extends MainLayoutBasicController implements Activateable2, GenericEventListener {
@@ -217,6 +223,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private UserCourseInformationsManager userCourseInfoMgr;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -570,7 +578,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
-		boolean canCopy = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged;
+		boolean canCopy = reSecurity.isAdministrativeUser() && !copyManaged && hasMatchingOrgRole();
 		
 		boolean canDownload = re.getCanDownload() && handler.supportsDownload();
 		// disable download for courses if not author or owner
@@ -595,6 +603,23 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				toolsDropdown.addComponent(downloadLink);
 			}
 		}
+	}
+
+	private boolean hasMatchingOrgRole() {
+		for (RepositoryEntryToOrganisation orgEntry : re.getOrganisations()) {
+			SearchMemberParameters params = new SearchMemberParameters();
+			params.setIdentityKey(getIdentity().getKey());
+			List<OrganisationMember> members = organisationService.getMembers(orgEntry.getOrganisation(), params);
+
+			for (OrganisationMember member : members) {
+				if (Objects.equals(member.getRole(), OrganisationRoles.administrator.name())
+						|| Objects.equals(member.getRole(), OrganisationRoles.author.name())
+						|| Objects.equals(member.getRole(), OrganisationRoles.learnresourcemanager.name())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

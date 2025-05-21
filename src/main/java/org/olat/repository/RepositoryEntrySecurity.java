@@ -47,6 +47,8 @@ public interface RepositoryEntrySecurity {
 
 	boolean isEntryAdmin();
 
+	boolean isAdministrativeUser();
+
 	boolean canLaunch();
 
 	boolean isReadOnly();

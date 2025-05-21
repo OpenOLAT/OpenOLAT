@@ -32,6 +32,7 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 	private final boolean owner;
 	private final boolean canLaunch;
 	private final boolean entryAdmin;
+	private final boolean administrativeUser;
 	private final boolean readOnly;
 	private final boolean author;
 	private final boolean administrator;
@@ -48,7 +49,7 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 	private final boolean curriculumCoach;
 	
 	
-	public RepositoryEntrySecurityImpl(boolean entryAdmin, boolean owner,
+	public RepositoryEntrySecurityImpl(boolean entryAdmin, boolean administrativeUser, boolean owner,
 			boolean courseParticipant, boolean courseCoach,
 			boolean groupParticipant, boolean groupCoach, boolean groupWaiting,
 			boolean curriculumParticipant, boolean curriculumCoach, boolean masterCoach,
@@ -57,6 +58,7 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 		this.owner = owner;
 		this.canLaunch = canLaunch;
 		this.entryAdmin = entryAdmin;
+		this.administrativeUser = administrativeUser;
 		this.author = author;
 		this.administrator = administrator;
 		this.learnResourceManager = learnResourceManager;
@@ -107,7 +109,12 @@ public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 	public boolean isEntryAdmin() {
 		return entryAdmin;
 	}
-	
+
+	@Override
+	public boolean isAdministrativeUser() {
+		return administrativeUser;
+	}
+
 	@Override
 	public boolean canLaunch() {
 		return canLaunch;
