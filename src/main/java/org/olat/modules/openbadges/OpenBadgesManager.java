@@ -185,6 +185,8 @@ public interface OpenBadgesManager {
 	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry,
 															 boolean nullEntryMeansAll);
 
+	Long getNumberOfBadgeAssertions(Long badgeClassKey);
+
 	boolean isBadgeAssertionExpired(BadgeAssertion badgeAssertion);
 
 	BadgeAssertion getBadgeAssertion(String uuid);

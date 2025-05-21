@@ -1673,6 +1673,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public boolean badgeAssertionExists(Identity recipient, BadgeClass badgeClass) {
 		return badgeAssertionDAO.getNumberOfBadgeAssertions(recipient, badgeClass) > 0;
 	}
+	
+	public Long getNumberOfBadgeAssertions(Long badgeClassKey) {
+		return badgeAssertionDAO.getNumberOfBadgeAssertions(badgeClassKey);
+	}
 
 	@Override
 	public List<BadgeAssertion> getBadgeAssertions(BadgeClass badgeClass, boolean allVersions) {

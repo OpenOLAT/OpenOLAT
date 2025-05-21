@@ -73,6 +73,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	private StaticTextElement issuerEl;
 	private StaticTextElement languageEl;
 	private StaticTextElement versionEl;
+	private StaticTextElement recipientsEl;
 	private StaticTextElement issuedManuallyEl;
 
 	@Autowired
@@ -107,7 +108,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		issuerEl = uifactory.addStaticTextElement("class.issuer", "", formLayout);
 		languageEl = uifactory.addStaticTextElement("form.language", "", formLayout);
 		versionEl = uifactory.addStaticTextElement("form.version", "", formLayout);
-		versionEl.setVisible(badgeClass.getVersionType() != null);
+		versionEl.setVisible(badgeClass.getPreviousVersion() != null);
+		recipientsEl = uifactory.addStaticTextElement("form.recipients", "", formLayout);
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
 
@@ -126,6 +128,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		} else {
 			badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 		}
+		Long nbRecipients = openBadgesManager.getNumberOfBadgeAssertions(badgeClass.getKey());
 
 		name = badgeClass.getNameWithScan();
 
@@ -164,6 +167,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		}
 
 		versionEl.setValue(badgeClass.getVersionWithScan());
+		recipientsEl.setValue(Long.toString(nbRecipients));
+		recipientsEl.setVisible(nbRecipients > 0);
 
 		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		flc.contextPut("criteriaDescription", badgeCriteria.getDescriptionWithScan());

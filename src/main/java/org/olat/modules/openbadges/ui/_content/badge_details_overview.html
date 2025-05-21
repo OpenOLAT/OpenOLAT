@@ -31,6 +31,28 @@
 			</div>
 		</div>
 
+		#if($r.available("form.version") && $r.visible("form.version"))
+		<div class="o_badge_details_metadata_item">
+			<div class="o_badge_details_label_wrapper">
+				$r.render("form.version", "label")
+			</div>
+			<div class="o_badge_details_value_wrapper">
+				$r.render("form.version")
+			</div>
+		</div>
+		#end
+
+		#if($r.available("form.language") && $r.visible("form.language"))
+		<div class="o_badge_details_metadata_item">
+			<div class="o_badge_details_label_wrapper">
+				$r.render("form.language", "label")
+			</div>
+			<div class="o_badge_details_value_wrapper">
+				$r.render("form.language")
+			</div>
+		</div>
+		#end
+
 		#if($r.available("form.course") && $r.visible("form.course"))
 		<div class="o_badge_details_metadata_item">
 			<div class="o_badge_details_label_wrapper">
@@ -42,13 +64,13 @@
 		</div>
 		#end
 
-		#if($r.available("form.version") && $r.visible("form.version"))
+		#if($r.available("form.recipients") && $r.visible("form.recipients"))
 		<div class="o_badge_details_metadata_item">
 			<div class="o_badge_details_label_wrapper">
-				$r.render("form.version", "label")
+				$r.render("form.recipients", "label")
 			</div>
 			<div class="o_badge_details_value_wrapper">
-				$r.render("form.version")
+				$r.render("form.recipients")
 			</div>
 		</div>
 		#end
@@ -80,17 +102,6 @@
 			</div>
 			<div class="o_badge_details_value_wrapper">
 				$r.render("class.issuer.url")
-			</div>
-		</div>
-		#end
-
-		#if($r.available("form.language") && $r.visible("form.language"))
-		<div class="o_badge_details_metadata_item">
-			<div class="o_badge_details_label_wrapper">
-				$r.render("form.language", "label")
-			</div>
-			<div class="o_badge_details_value_wrapper">
-				$r.render("form.language")
 			</div>
 		</div>
 		#end
