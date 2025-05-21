@@ -149,10 +149,14 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append(" value='").append(key).append("'");
 			sb.append(" data-value='").append(StringHelper.escapeForHtmlAttribute(check.getValue())).append("'");
 			sb.append(" data-checked='").append(selected).append("'");
-			if (selected) {
+
+			// Determine inherited from class
+			boolean isInherited = cssClass != null && cssClass.contains("inherited");
+
+			if (selected || isInherited) {
 				sb.append(" checked='checked' ");
 			}
-			if(!stC.isEnabled() || !check.isEnabled()) {
+			if(!stC.isEnabled() || !check.isEnabled() || isInherited) {
 				sb.append(" disabled='disabled' ");
 			}
 			sb.append("> ");
@@ -191,6 +195,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append("jQuery('#").append(aId).append("').on('click', function(event) {");
 				sb.append("   var $target = jQuery(event.currentTarget);");
 				sb.append("   var $inp = $target.find('input');");
+				sb.append("   if ($inp.prop('disabled')) { event.preventDefault(); event.stopPropagation(); return false; }");
 				sb.append("   var $check = !$inp.data('checked');");
 				sb.append("   setTimeout( function() {");
 				sb.append("     $inp.prop('checked', $check);");
@@ -237,33 +242,31 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				.append("  var listId = '").append(listId).append("';\n")
 				.append("  var fallbackText = '").append(escapedFallback).append("';\n\n")
 				.append("  function updateBadges() {\n")
-				.append("    var pills = jQuery('#'+listId+' li label input')\n")
-				.append("      .map(function(){\n")
-				.append("      var $chk = jQuery(this);\n")
-				.append("      var val = $chk.data('value');\n")
-				.append("      var li = $chk.closest('li');\n")
-				.append("      var isChecked = $chk.is(':checked');\n")
-				.append("      var isInherited = li.hasClass('inherited');\n")
-				.append("      var isRoot = li.hasClass('root');\n")
-				.append("      if (!isChecked && !isInherited) return null;\n")
-				.append("      var iconClass = '';\n")
-				.append("      if (isInherited) {\n")
-				.append("        iconClass = 'o_icon o_icon_inheritance_inherited';\n")
-				.append("      } else if (isRoot) {\n")
-				.append("        iconClass = 'o_icon o_icon_inheritance_root';\n")
-				.append("      }\n")
-				.append("      var iconHtml = iconClass ? '<i class=\"' + iconClass + '\"></i>&nbsp;' : '';\n")
-				.append("      return '<span class=\"o_labeled_light\">' + iconHtml + val + '</span>';\n")
-				.append("    }).get().join(' ');\n")
+				.append("    var pills = jQuery('#' + listId + ' li label input')\n")
+				.append("      .filter(':checked')\n")
+				.append("      .map(function() {\n")
+				.append("        var $chk = jQuery(this);\n")
+				.append("        var val = $chk.data('value');\n")
+				.append("        var li = $chk.closest('li');\n")
+				.append("        var isInherited = li.hasClass('inherited');\n")
+				.append("        var isRoot = li.hasClass('root');\n")
+				.append("        var iconClass = '';\n")
+				.append("        if (isInherited) {\n")
+				.append("          iconClass = 'o_icon o_icon_inheritance_inherited';\n")
+				.append("        } else if (isRoot) {\n")
+				.append("          iconClass = 'o_icon o_icon_inheritance_root';\n")
+				.append("        }\n")
+				.append("        var iconHtml = iconClass ? '<i class=\"' + iconClass + '\"></i>&nbsp;' : '';\n")
+				.append("        return '<span class=\"o_labeled_light\">' + iconHtml + val + '</span>';\n")
+				.append("      }).get().join(' ');\n")
 				.append("    if (!pills) pills = fallbackText;\n")
-				.append("    jQuery('#'+titleId).html(pills);\n")
+				.append("    jQuery('#' + titleId).html(pills);\n")
 				.append("  }\n")
 				.append("  jQuery(document).ready(updateBadges);\n")
-				.append("  jQuery(document).on('change', '#' + listId + \" input[type=checkbox]\", updateBadges);\n");
+				.append("  jQuery(document).on('change', '#' + listId + \" input[type=checkbox]:not(:disabled)\", updateBadges);\n");
 
 		return sb;
 	}
-
 
 	private StringBuilder getJsSetButtonText(MultipleSelectionElementImpl stF, long buttonTitleId, long listId) {
 		StringBuilder sb = new StringBuilder();
