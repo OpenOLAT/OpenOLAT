@@ -44,7 +44,7 @@ public class CertificatesCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void render(StringOutput target, Certificates certificates) {
-		target.append(certificates.numOfCertificates()).append("/")
+		target.append(certificates.numOfCertificates()).append("\u202F/\u202F")
 		      .append(certificates.numOfCoursesWithCertificates());
 	}
 }
