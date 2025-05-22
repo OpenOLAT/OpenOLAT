@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.21.0</swagger.ui.version>
 		<com.mysql.version>9.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.5</org.postgresql.version>
-		<org.infinispan.version>15.2.1.Final</org.infinispan.version>
+		<org.infinispan.version>15.2.2.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.32.0</version.selenium>
 		<activemq.artemis.version>2.41.0</activemq.artemis.version>
@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.38.0</version>
+			<version>6.39.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2342,7 +2342,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.19.4</version>
+			<version>3.20.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -2368,7 +2368,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.17.0</version>
+			<version>5.18.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
