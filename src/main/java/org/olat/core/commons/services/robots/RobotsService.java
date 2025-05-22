@@ -33,7 +33,7 @@ public interface RobotsService {
 
 	List<String> getRobotsAllows();
 
-	String getSitemapIndexUrl();
+	String getSitemapIndexPath();
 
 	List<SitemapIndexItem> getSitemapIndexItems();
 

@@ -26,7 +26,6 @@ import org.olat.core.commons.services.robots.RobotsProvider;
 import org.olat.core.commons.services.robots.RobotsService;
 import org.olat.core.commons.services.robots.SitemapProvider;
 import org.olat.core.commons.services.robots.model.SitemapIndexItem;
-import org.olat.core.helpers.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +39,7 @@ import org.springframework.stereotype.Service;
 public class RobotsServiceImpl implements RobotsService {
 	
 	// Defined in spring (dispatcherContext.xml)
-	private static final String SITEMAP_URL =  Settings.getServerContextPathURI() + "/sitemap.xml";
+	private static final String SITEMAP_PATH = "/sitemap.xml";
 	
 	@Autowired
 	private List<RobotsProvider> robotsProviders;
@@ -58,11 +57,11 @@ public class RobotsServiceImpl implements RobotsService {
 	}
 
 	@Override
-	public String getSitemapIndexUrl() {
+	public String getSitemapIndexPath() {
 		boolean hasSitemap = sitemapProviders.stream()
 				.map(SitemapProvider::getSitemapUrls)
 				.anyMatch(urls -> urls != null && !urls.isEmpty());
-		return hasSitemap? SITEMAP_URL: null;
+		return hasSitemap? SITEMAP_PATH: null;
 	}
 
 	@Override

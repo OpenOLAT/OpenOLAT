@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,10 +64,10 @@ public class RobotsDispatcher implements Dispatcher {
 				writer.write("\nAllow: " + allow);
 			}
 			
-			String sitemapIndexUrl = robotsService.getSitemapIndexUrl();
-			if (StringHelper.containsNonWhitespace(sitemapIndexUrl)) {
-				writer.write("\nAllow: " + sitemapIndexUrl);
-				writer.write("\n\nSitemap: " + sitemapIndexUrl);
+			String sitemapIndexPath = robotsService.getSitemapIndexPath();
+			if (StringHelper.containsNonWhitespace(sitemapIndexPath)) {
+				writer.write("\nAllow: " + sitemapIndexPath);
+				writer.write("\n\nSitemap: " + Settings.getServerContextPathURI() + sitemapIndexPath);
 			}
 		} catch(IOException e) {
 			log.error("", e);
