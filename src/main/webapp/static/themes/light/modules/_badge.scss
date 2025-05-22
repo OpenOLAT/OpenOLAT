@@ -199,6 +199,7 @@
 		border-width: 1px;
 
 		.o_badge_details_metadata_item {
+			display: flex;
 			min-width: 300px;
 			max-width: 450px;
 
@@ -207,6 +208,12 @@
 				width: calc(40% - 2px);
 				text-align: right;
 				padding: 0 5px;
+				
+				label.control-label {
+					padding: 0;
+					margin: 0;
+					line-height: 34px;
+				}
 			}
 
 			.o_badge_details_value_wrapper {
