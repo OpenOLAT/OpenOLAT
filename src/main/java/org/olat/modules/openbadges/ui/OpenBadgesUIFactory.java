@@ -19,11 +19,14 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.openbadges.BadgeAssertion;
 
 import org.apache.logging.log4j.Level;
 
@@ -74,5 +77,15 @@ public class OpenBadgesUIFactory {
 			return "";
 		}
 		return StringHelper.xssScan(translation);
+	}
+	
+	public static SelectionValues badgeAssertionStatusKV(Translator translator) {
+		SelectionValues statusKV = new SelectionValues();
+		List.of(BadgeAssertion.BadgeAssertionStatus.values())
+				.stream()
+				.filter(status -> status != BadgeAssertion.BadgeAssertionStatus.editing)
+				.forEach(status -> statusKV.add(SelectionValues.entry(status.name(), 
+						translator.translate("assertion.status." + status))));
+		return statusKV;
 	}
 }

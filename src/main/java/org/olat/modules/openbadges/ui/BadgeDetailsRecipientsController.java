@@ -21,16 +21,17 @@ package org.olat.modules.openbadges.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
@@ -39,9 +40,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -51,30 +55,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
-import org.olat.modules.openbadges.criteria.BadgeCriteria;
-import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
-import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
-import jakarta.servlet.http.HttpServletRequest;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,22 +75,10 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	private final static String CMD_SELECT = "select";
 
 	private final Long badgeClassKey;
-	private final String mediaUrl;
-	private final RepositoryEntrySecurity reSecurity;
-	private String name;
-	private FormLink editDetailsButton;
-	private FormLink courseEl;
-	private StaticTextElement validityPeriodEl;
-	private StaticTextElement issuerEl;
-	private StaticTextElement languageEl;
-	private StaticTextElement versionEl;
-	private StaticTextElement issuedManuallyEl;
 	private TableModel tableModel;
 	private FlexiTableElement tableEl;
 	private CloseableModalController cmc;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
-	private CreateBadgeClassWizardContext createBadgeClassContext;
-	private StepsMainRunController stepsController;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ToolsController toolsCtrl;
 	private DialogBoxController confirmRevokeCtrl;
@@ -112,35 +88,17 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public BadgeDetailsRecipientsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey,
-											RepositoryEntrySecurity reSecurity) {
-		super(ureq, wControl, "badge_details_recipients");
+	public BadgeDetailsRecipientsController(UserRequest ureq, WindowControl wControl, Long badgeClassKey) {
+		super(ureq, wControl, FormBasicController.LAYOUT_BAREBONE);
 		this.badgeClassKey = badgeClassKey;
 
-		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
-		this.reSecurity = reSecurity;
-
 		initForm(ureq);
+		loadData(null);
+		initFilters();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
-
-		editDetailsButton = uifactory.addFormLink("class.edit.details", formLayout, Link.BUTTON);
-		editDetailsButton.setElementCssClass("o_right");
-		
-		courseEl = uifactory.addFormLink("form.course", "goToCourse", "", translate("form.course"), formLayout, Link.NONTRANSLATED);
-		uifactory.addStaticTextElement("form.createdOn",
-				Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate()), formLayout);
-		validityPeriodEl = uifactory.addStaticTextElement("form.valid", "", formLayout);
-		issuerEl = uifactory.addStaticTextElement("class.issuer", "", formLayout);
-		languageEl = uifactory.addStaticTextElement("form.language", "", formLayout);
-		versionEl = uifactory.addStaticTextElement("form.version", "", formLayout);
-		versionEl.setVisible(badgeClass.getVersionType() != null);
-		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
-				translate("badge.issued.manually"), formLayout);
-
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
@@ -152,86 +110,81 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		tableModel = new TableModel(columnModel, userManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
-
-		loadData();
+		tableEl.setEmptyTableMessageKey("form.recipients.none");
 	}
 
-	void loadData() {
+	void loadData(List<FlexiTableFilter> filters) {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
-		name = badgeClass.getNameWithScan();
-
-		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
-		flc.contextPut("imgAlt", translate("badge.image") + ": " + badgeClass.getNameWithScan());
-		flc.contextPut("badgeClass", badgeClass);
-		flc.contextPut("isCourseBadge", badgeClass.getEntry() != null);
-
-		RepositoryEntry courseEntry = badgeClass.getEntry();
-		if (courseEntry != null) {
-			ICourse course = CourseFactory.loadCourse(courseEntry);
-			courseEl.setI18nKey(StringHelper.xssScan(course.getCourseTitle()));
-			courseEl.setVisible(true);
-		} else {
-			courseEl.setVisible(false);
-		}
-
-		if (badgeClass.isValidityEnabled()) {
-			String validityPeriod = badgeClass.getValidityTimelapse() + " " +
-					translate("form.time." + badgeClass.getValidityTimelapseUnit().name());
-			validityPeriodEl.setValue(validityPeriod);
-			validityPeriodEl.setVisible(true);
-		} else {
-			validityPeriodEl.setVisible(false);
-		}
-
-		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
-		issuerEl.setValue(issuer.getNameWithScan());
-
-		if (badgeClass.getLanguage() != null) {
-			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
-			languageEl.setValue(languageDisplayName);
-			languageEl.setVisible(true);
-		} else {
-			languageEl.setVisible(false);
-		}
-
-		versionEl.setValue(badgeClass.getVersionWithScan());
-
-		BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
-		flc.contextPut("criteriaDescription", badgeCriteria.getDescriptionWithScan());
-		flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
-
-		List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
-		List<Condition> conditions = new ArrayList<>();
-		for (int i = 0; i < badgeConditions.size(); i++) {
-			BadgeCondition badgeCondition = badgeConditions.get(i);
-			Condition condition = new Condition(badgeCondition, i == 0, getTranslator(), badgeClass.getEntry());
-			conditions.add(condition);
-		}
-		flc.contextPut("conditions", conditions);
-
-		issuedManuallyEl.setVisible(!badgeCriteria.isAwardAutomatically());
-
-		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.preparation) {
-			editDetailsButton.setVisible(false);
-		} else {
-			editDetailsButton.setVisible(true);
-		}
 
 		List<Row> rows = openBadgesManager
 				.getBadgeAssertions(badgeClass, true)
 				.stream()
 				.map(this::mapBadgeAssertionToRow)
 				.toList();
-		tableModel.setObjects(rows);
-		tableEl.reset();
+		
+		if (filters == null) {
+			tableModel.setObjects(rows);
+		} else {
+			List<Row> filteredRows = rows.stream().filter(r -> {
+				String version = r.badgeAssertion.getBadgeClass().getVersion();
+				String status = r.badgeAssertion.getStatus().name();
 
-		flc.contextPut("hasRecipients", !rows.isEmpty());
+				for (FlexiTableFilter filter : filters) {
+					boolean matchFound = false;
+					if (filter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter) {
+						if (multiSelectionFilter.getValues() == null || multiSelectionFilter.getValues().isEmpty()) {
+							continue;
+						}
+						if (Filter.VERSION.name().equals(filter.getFilter())) {
+							for (String value : multiSelectionFilter.getValues()) {
+								if (version.equals(value)) {
+									matchFound = true;
+									break;
+								}
+							}
+						} else if (Filter.STATUS.name().equals(filter.getFilter())) {
+							for (String value : multiSelectionFilter.getValues()) {
+								if (status.equals(value)) {
+									matchFound = true;
+									break;
+								}
+							}
+						}
+					}
+					if (!matchFound) {
+						return false;
+					}
+				}
+				return true;
+			}).toList();
+			tableModel.setObjects(filteredRows);
+		}
+		
+		tableEl.reset();
 	}
 
 	private Row mapBadgeAssertionToRow(BadgeAssertion badgeAssertion) {
 		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolLink.setUserObject(badgeAssertion);
 		return new Row(badgeAssertion, toolLink);
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues statusKV = OpenBadgesUIFactory.badgeAssertionStatusKV(getTranslator());
+		
+		SelectionValues versionKV = new SelectionValues();
+		Set<String> versions = tableModel.getObjects().stream()
+				.map(r -> r.badgeAssertion.getBadgeClass().getVersion()).collect(Collectors.toSet());
+		versions.forEach(version -> versionKV.add(SelectionValues.entry(version, version)));
+		
+		filters.add(new FlexiTableMultiSelectionFilter(translate(Filter.VERSION.getI18nKey()),
+				Filter.VERSION.name(), versionKV, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate(Filter.STATUS.getI18nKey()),
+				Filter.STATUS.name(), statusKV, true));
+		
+		tableEl.setFilters(true, filters, true, true);
 	}
 
 	@Override
@@ -241,14 +194,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		} else if (source == badgeAssertionPublicController) {
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == stepsController) {
-			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				getWindowControl().pop();
-				removeAsListenerAndDispose(stepsController);
-			}
-			if (event == Event.CHANGED_EVENT) {
-				fireEvent(ureq, event);
-			}
 		} else if (source == toolsCtrl) {
 			if (calloutCtrl != null) {
 				calloutCtrl.deactivate();
@@ -282,11 +227,10 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 				if (CMD_SELECT.equals(command)) {
 					doSelect(ureq, row);
 				}
+			} else if (event instanceof FlexiTableSearchEvent searchEvent
+					&& FlexiTableSearchEvent.FILTER.equals(searchEvent.getCommand())) {
+				loadData(searchEvent.getFilters());
 			}
-		} else if (source == editDetailsButton) {
-			doEdit(ureq);
-		} else if (source == courseEl) {
-			fireEvent(ureq, FormEvent.BACK_EVENT);
 		} else if (source instanceof FormLink link) {
 			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof BadgeAssertion badgeAssertion) {
 				doOpenTools(ureq, link, badgeAssertion);
@@ -303,30 +247,6 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
-	}
-
-	private void doEdit(UserRequest ureq) {
-		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
-		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass, reSecurity, getTranslator());
-
-		Step start;
-		if (createBadgeClassContext.showCriteriaStep()) {
-			start = new CreateBadge03CriteriaStep(ureq, createBadgeClassContext);
-		} else {
-			start = new CreateBadge01ImageStep(ureq, createBadgeClassContext);
-		}
-
-		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
-			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
-			openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			loadData();
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-
-		stepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("form.edit.badge"), "o_sel_edit_badge_wizard");
-		listenTo(stepsController);
-		getWindowControl().pushAsModalDialog(stepsController.getInitialComponent());
 	}
 
 	private void doSelect(UserRequest ureq, Row row) {
@@ -362,24 +282,12 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 
 	private void doRevoke(BadgeAssertion badgeAssertion) {
 		openBadgesManager.revokeBadgeAssertion(badgeAssertion.getKey());
-		loadData();
+		loadData(null);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-
-	private class BadgeClassMediaFileMapper implements Mapper {
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			VFSLeaf classFileLeaf = openBadgesManager.getBadgeClassVfsLeaf(relPath);
-			if (classFileLeaf != null) {
-				return new VFSMediaResource(classFileLeaf);
-			}
-			return new NotFoundMediaResource();
-		}
 	}
 
 	public record Condition(BadgeCondition badgeCondition, boolean first, Translator translator, RepositoryEntry courseEntry) {
@@ -441,6 +349,21 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 			};
 		}
 	}
+	
+	private enum Filter {
+		VERSION("form.version"),
+		STATUS("form.status");
+		
+		private final String i18nKey;
+		
+		Filter(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		public String getI18nKey() {
+			return i18nKey;
+		}
+	}
 
 	private class ToolsController extends BasicController {
 
@@ -474,9 +397,5 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 				doViewBadgeInfo(ureq, badgeAssertion);
 			}
 		}
-	}
-
-	public String getName() {
-		return name;
 	}
 }

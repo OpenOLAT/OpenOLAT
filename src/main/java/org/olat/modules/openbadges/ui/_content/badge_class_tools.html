@@ -12,6 +12,8 @@
 	#if($r.available("revoke"))
 	<li>$r.render("revoke")</li>
 	#end
+	#if($r.available("createNewVersion") || $r.available("edit") || $r.available("revoke"))
 	<li class="divider"></li>
+	#end
 	<li>$r.render("delete")</li>
 </ul>

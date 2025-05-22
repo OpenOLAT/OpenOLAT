@@ -178,11 +178,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 
-		SelectionValues statusKV = new SelectionValues();
-		List.of(BadgeAssertion.BadgeAssertionStatus.values())
-				.stream()
-				.filter(status -> status != BadgeAssertion.BadgeAssertionStatus.editing)
-				.forEach(status -> statusKV.add(SelectionValues.entry(status.name(), translate("assertion.status." + status))));
+		SelectionValues statusKV = OpenBadgesUIFactory.badgeAssertionStatusKV(getTranslator());
 		filters.add(new FlexiTableMultiSelectionFilter(translate(IssuedBadgesTableModel.IssuedBadgesFilter.STATUS.getI18nKey()),
 				IssuedBadgesTableModel.IssuedBadgesFilter.STATUS.name(), statusKV, true));
 

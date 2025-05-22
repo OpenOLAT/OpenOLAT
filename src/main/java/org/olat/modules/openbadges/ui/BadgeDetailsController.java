@@ -123,7 +123,7 @@ public class BadgeDetailsController extends BasicController {
 		});
 		
 		recipientsTab = tabPane.addTab(ureq, translate("tab.recipients"), uureq -> {
-			recipientsCtrl = new BadgeDetailsRecipientsController(uureq, getWindowControl(), badgeClassKey, reSecurity);
+			recipientsCtrl = new BadgeDetailsRecipientsController(uureq, getWindowControl(), badgeClassKey);
 			listenTo(recipientsCtrl);
 			return recipientsCtrl.getInitialComponent();
 		});
@@ -165,7 +165,7 @@ public class BadgeDetailsController extends BasicController {
 			overviewCtrl.loadData();
 		}
 		if (recipientsCtrl != null) {
-			recipientsCtrl.loadData();
+			recipientsCtrl.loadData(null);
 		}
 	}
 
