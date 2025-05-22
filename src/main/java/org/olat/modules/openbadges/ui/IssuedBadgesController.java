@@ -152,6 +152,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.title, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status, new BadgeAssertionStatusRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuer));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.version, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuedOn));
 		if (identity == null) {
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.recipient));
@@ -316,7 +317,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			String uuid = row.getBadgeAssertion().getUuid();
 			doOpenDetails(ureq, uuid);
 		} else if (source == flc) {
-			String selectString = ureq.getParameter("select");
+			String selectString = ureq.getParameter(CMD_SELECT);
 			if (selectString != null) {
 				Long assertionKey = Long.parseLong(selectString);
 				tableModel.getObjects().stream()
