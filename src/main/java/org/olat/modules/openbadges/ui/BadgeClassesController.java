@@ -224,7 +224,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		FormLink createNewVersionLink = null;
 		if (bc.badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
 			createNewVersionLink = uifactory.addFormLink(createNewVersionLinkId, CMD_CREATE_NEW_VERSION, 
-					"create.a.new.version", null, flc, Link.BUTTON);
+					"create.a.new.version.and.edit", null, flc, Link.BUTTON);
 			createNewVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		}
 
@@ -344,7 +344,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
 			
 			if (badgeClass.getStatus().equals(BadgeClass.BadgeClassStatus.active)) {
-				createNewVersionLink = LinkFactory.createLink("create.a.new.version", "createNewVersion",
+				createNewVersionLink = LinkFactory.createLink("create.a.new.version.and.edit", "createNewVersion",
 						getTranslator(), mainVC, this, Link.LINK);
 				createNewVersionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 				mainVC.put("createNewVersion",  createNewVersionLink);
@@ -572,6 +572,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			cleanUp();
 		} else if (source == stepsController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				if (Event.CANCELLED_EVENT.equals(event)) {
+					createBadgeClassContext.cancel();
+				}
 				getWindowControl().pop();
 				removeAsListenerAndDispose(stepsController);
 			}

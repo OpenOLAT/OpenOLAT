@@ -153,6 +153,8 @@ public interface OpenBadgesManager {
 	List<BadgeClassDAO.NameAndVersion> getBadgeClassNameVersionTuples(boolean excludeBadgeClass, BadgeClass badgeClass);
 
 	int upgradeBadgeDependencyConditions();
+	
+	void cancelNewBadgeClassVersion(Long badgeClassKey);
 
 	//
 	// Assertion

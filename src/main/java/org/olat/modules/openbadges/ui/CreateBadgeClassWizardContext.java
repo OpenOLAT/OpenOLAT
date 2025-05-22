@@ -226,6 +226,13 @@ public class CreateBadgeClassWizardContext {
 		imageLeaf.deleteSilently();
 	}
 
+	public void cancel() {
+		if (Mode.editNewVersion.equals(mode)) {
+			OpenBadgesManager openBadgesManager = CoreSpringFactory.getImpl(OpenBadgesManager.class);
+			openBadgesManager.cancelNewBadgeClassVersion(badgeClass.getKey());
+		}
+	}
+
 	public enum Mode {
 		create, edit, editNewVersion
 	}

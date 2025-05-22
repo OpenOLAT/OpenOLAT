@@ -252,6 +252,9 @@ public class BadgeDetailsController extends BasicController {
 			}
 		} else if (source == stepsController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				if (event == Event.CANCELLED_EVENT) {
+					createBadgeClassContext.cancel();
+				}
 				getWindowControl().pop();
 				removeAsListenerAndDispose(stepsController);
 				loadData();

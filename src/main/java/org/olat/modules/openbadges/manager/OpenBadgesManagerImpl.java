@@ -1078,6 +1078,27 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return totalUpdateCount;
 	}
 
+	@Override
+	public void cancelNewBadgeClassVersion(Long badgeClassKey) {
+		BadgeClass newVersion = badgeClassDAO.getBadgeClassByKey(badgeClassKey);
+		
+		if (newVersion.getPreviousVersion() == null || newVersion.getNextVersion() != null) {
+			return;
+		}
+		
+		BadgeClass previousVersion = newVersion.getPreviousVersion();
+		
+		deleteBadgeClass(newVersion);
+		
+		previousVersion.setNextVersion(null);
+		if (previousVersion.hasPreviousVersion()) {
+			previousVersion.setVersionType(BadgeClass.BadgeClassVersionType.current);
+		} else {
+			previousVersion.setVersionType(null);
+		}
+		badgeClassDAO.updateBadgeClass(previousVersion);
+	}
+
 	//
 	// Assertion
 	//
