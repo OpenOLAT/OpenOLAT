@@ -22,14 +22,9 @@ package org.olat.repository.ui;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationMember;
-import org.olat.basesecurity.model.SearchMemberParameters;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -88,7 +83,6 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -223,8 +217,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private UserCourseInformationsManager userCourseInfoMgr;
-	@Autowired
-	private OrganisationService organisationService;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -578,7 +570,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
-		boolean canCopy = reSecurity.isAdministrativeUser() && !copyManaged && hasMatchingOrgRole();
+		boolean canCopy = !copyManaged && hasCopyDeletePermissions();
 		
 		boolean canDownload = re.getCanDownload() && handler.supportsDownload();
 		// disable download for courses if not author or owner
@@ -604,19 +596,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 	}
+	
+	/**
+	 * @see https://track.frentix.com/issue/OO-8646
+	 * @return
+	 */
+	protected final boolean hasCopyDeletePermissions() {
+		return (reSecurity.isAdministrativeUser() && hasMatchingOrgRole())
+				||
+				(reSecurity.isEntryAdmin() && reSecurity.getWrappedSecurity().isAdministrativeUser() && hasMatchingOrgRole());
+	}
 
-	private boolean hasMatchingOrgRole() {
-		for (RepositoryEntryToOrganisation orgEntry : re.getOrganisations()) {
-			SearchMemberParameters params = new SearchMemberParameters();
-			params.setIdentityKey(getIdentity().getKey());
-			List<OrganisationMember> members = organisationService.getMembers(orgEntry.getOrganisation(), params);
-
-			for (OrganisationMember member : members) {
-				if (Objects.equals(member.getRole(), OrganisationRoles.administrator.name())
-						|| Objects.equals(member.getRole(), OrganisationRoles.author.name())
-						|| Objects.equals(member.getRole(), OrganisationRoles.learnresourcemanager.name())) {
-					return true;
-				}
+	protected final boolean hasMatchingOrgRole() {
+		for(OrganisationRef organisation:organisations) {
+			if(roles.hasSomeRoles(organisation, OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author)) {
+				return true;
 			}
 		}
 		return false;
@@ -1221,7 +1215,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
 		List<? extends OrganisationRef> offerOrganisations = acService.getOfferOrganisations(identity);
-		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
+		return acService.getOffers(re, true, false, null, true, null, offerOrganisations);
 	}
 	
 	protected boolean doMark(UserRequest ureq) {

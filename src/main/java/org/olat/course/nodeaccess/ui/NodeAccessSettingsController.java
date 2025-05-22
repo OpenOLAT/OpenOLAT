@@ -25,16 +25,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationMember;
-import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,6 +47,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingAction;
@@ -84,8 +82,8 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
-import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -112,21 +110,23 @@ public class NodeAccessSettingsController extends FormBasicController {
 	private final CourseConfig courseConfig;
 
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private LearningPathService learningPathService;
 	@Autowired
 	private CourseNodeService courseNodeService;
 	@Autowired
-	private OrganisationService organisationService;
+	private RepositoryService repositoryService;
 	
 	public NodeAccessSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, boolean readOnly) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
 		this.readOnly = readOnly;
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		this.courseConfig = course.getCourseConfig();
-		this.reSecurity = RepositoryManager.getInstance().isAllowed(ureq, courseEntry);
+		courseConfig = course.getCourseConfig();
+		reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
 		initForm(ureq);
 	}
 
@@ -138,8 +138,8 @@ public class NodeAccessSettingsController extends FormBasicController {
 				getLocale());
 		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);
 
-		boolean canConvert = reSecurity.isAdministrativeUser() && hasMatchingOrgRole();
-		if (canConvert && !LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType()) && !readOnly) {
+		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType()) && !readOnly
+				&& reSecurity.isAdministrativeUser() && hasMatchingOrgRole(ureq)) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
 			formLayout.add(migrationCont);
 			migrateLink = uifactory.addFormLink("settings.convert", migrationCont, Link.BUTTON);
@@ -157,18 +157,13 @@ public class NodeAccessSettingsController extends FormBasicController {
 		}
 	}
 
-	private boolean hasMatchingOrgRole() {
-		for (RepositoryEntryToOrganisation orgEntry : courseEntry.getOrganisations()) {
-			SearchMemberParameters params = new SearchMemberParameters();
-			params.setIdentityKey(getIdentity().getKey());
-			List<OrganisationMember> members = organisationService.getMembers(orgEntry.getOrganisation(), params);
-
-			for (OrganisationMember member : members) {
-				if (Objects.equals(member.getRole(), OrganisationRoles.administrator.name())
-						|| Objects.equals(member.getRole(), OrganisationRoles.author.name())
-						|| Objects.equals(member.getRole(), OrganisationRoles.learnresourcemanager.name())) {
-					return true;
-				}
+	private boolean hasMatchingOrgRole(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		List<OrganisationRef> organisations = repositoryService.getOrganisationReferences(courseEntry);
+		for (OrganisationRef organisation : organisations) {
+			if(roles.hasSomeRoles(organisation, OrganisationRoles.administrator, OrganisationRoles.author,
+					OrganisationRoles.learnresourcemanager)) {
+				return true;
 			}
 		}
 		return false;
