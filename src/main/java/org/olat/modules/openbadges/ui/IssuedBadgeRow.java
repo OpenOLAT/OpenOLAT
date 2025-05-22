@@ -23,6 +23,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
@@ -35,6 +36,7 @@ public class IssuedBadgeRow {
 	private final OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize;
 	private Component badgeImage;
 	private String name;
+	private String version;
 	private String issuedOn;
 	private String issuer;
 	private String downloadUrl;
@@ -43,7 +45,9 @@ public class IssuedBadgeRow {
 	private String recipientName;
 
 	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
-		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
+		BadgeClass badgeClass = badgeAssertionWithSize.badgeAssertion().getBadgeClass();
+		this.name = badgeClass.getName();
+		this.version = badgeClass.getVersion();
 		this.badgeAssertionWithSize = badgeAssertionWithSize;
 	}
 
@@ -65,6 +69,14 @@ public class IssuedBadgeRow {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
 	}
 
 	public String getIssuedOn() {
