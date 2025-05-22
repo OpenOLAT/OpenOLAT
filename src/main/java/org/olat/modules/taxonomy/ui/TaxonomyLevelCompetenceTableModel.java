@@ -35,6 +35,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  */
 public class TaxonomyLevelCompetenceTableModel extends DefaultFlexiTableDataModel<TaxonomyLevelCompetenceRow>
 implements SortableFlexiTableDataModel<TaxonomyLevelCompetenceRow> {
+	
+	static final int USER_PROPS_OFFSET = 500;
 
 	public TaxonomyLevelCompetenceTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -56,7 +58,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelCompetenceRow> {
 	
 	@Override
 	public Object getValueAt(TaxonomyLevelCompetenceRow row, int col) {
-		if(col < TaxonomyLevelCompetenceController.USER_PROPS_OFFSET) {
+		if(col < USER_PROPS_OFFSET) {
 			switch(CompetenceCols.values()[col]) {
 				case key: return row.getKey();
 				case type: return row.getCompetenceType(); 
@@ -65,7 +67,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelCompetenceRow> {
 				case expiration: return row.getExpiration();
 			}
 		} else {
-			int propPos = col - TaxonomyLevelCompetenceController.USER_PROPS_OFFSET;
+			int propPos = col - USER_PROPS_OFFSET;
 			return row.getIdentityProp(propPos);
 		}
 		return null;

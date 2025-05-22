@@ -100,6 +100,10 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Assert.assertEquals(level, competence.getTaxonomyLevel());
 		Assert.assertEquals(id, competence.getIdentity());
 		Assert.assertEquals(TaxonomyCompetenceTypes.target, competence.getCompetenceType());
+		
+		Assert.assertEquals(1, taxonomyCompetenceDao.getCompetenceByLevel(level, TaxonomyCompetenceTypes.target).size());
+		Assert.assertEquals(1, taxonomyCompetenceDao.getCompetenceByLevel(level, TaxonomyCompetenceTypes.target, TaxonomyCompetenceTypes.have).size());
+		Assert.assertEquals(0, taxonomyCompetenceDao.getCompetenceByLevel(level, TaxonomyCompetenceTypes.have).size());
 	}
 	
 	@Test

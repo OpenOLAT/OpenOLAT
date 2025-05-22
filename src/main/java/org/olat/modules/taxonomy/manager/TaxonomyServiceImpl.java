@@ -424,8 +424,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	}
 
 	@Override
-	public List<TaxonomyCompetence> getTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel) {
-		return taxonomyCompetenceDao.getCompetenceByLevel(taxonomyLevel);
+	public List<TaxonomyCompetence> getTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, TaxonomyCompetenceTypes... types) {
+		return taxonomyCompetenceDao.getCompetenceByLevel(taxonomyLevel, types);
 	}
 
 	@Override

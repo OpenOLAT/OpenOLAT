@@ -81,9 +81,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaxonomyLevelCompetenceController extends FormBasicController {
 	
-	protected static final String USER_PROPS_ID = TaxonomyLevelCompetenceController.class.getCanonicalName();
-	
-	public static final int USER_PROPS_OFFSET = 500;
+	static final String USER_PROPS_ID = TaxonomyLevelCompetenceController.class.getCanonicalName();
+
+	private static final TaxonomyCompetenceTypes[] ALL_WITHOUT_MANAGE = new TaxonomyCompetenceTypes[] {
+			TaxonomyCompetenceTypes.teach, TaxonomyCompetenceTypes.have, TaxonomyCompetenceTypes.target
+	};
 	
 	private FlexiTableElement tableEl;
 	private TaxonomyLevelCompetenceTableModel tableModel;
@@ -122,9 +124,9 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//TODO uh remove manage everywhere
 		boolean multiSelect = false;
-		if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.manageCompetence)
-				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.teachCompetence)
+		if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.teachCompetence)
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.haveCompetence)
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.targetCompetence)) {
 			addCompetencesButton = uifactory.addFormLink("add.competences", formLayout, Link.BUTTON);
@@ -137,7 +139,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceCols.key));
 
-		int colPos = USER_PROPS_OFFSET;
+		int colPos = TaxonomyLevelCompetenceTableModel.USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 
@@ -166,7 +168,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyLevelCompetences(taxonomyLevel);
+		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyLevelCompetences(taxonomyLevel, ALL_WITHOUT_MANAGE);
 		List<TaxonomyLevelCompetenceRow> rows = competences.stream()
 				.map(c -> new TaxonomyLevelCompetenceRow(c, userPropertyHandlers, getLocale()))
 				.collect(Collectors.toList());
@@ -309,9 +311,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 			TaxonomyLevelCompetenceRow selectedRow = tableModel.getObject(i.intValue());
 			
 			boolean managed = false;
-			if(selectedRow.getCompetenceType() == TaxonomyCompetenceTypes.manage) {
-				managed = TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.manageCompetence);
-			} else if(selectedRow.getCompetenceType() == TaxonomyCompetenceTypes.teach) {
+			if(selectedRow.getCompetenceType() == TaxonomyCompetenceTypes.teach) {
 				managed = TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.teachCompetence);
 			} else if(selectedRow.getCompetenceType() == TaxonomyCompetenceTypes.have) {
 				managed = TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.haveCompetence);
@@ -359,9 +359,6 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 			
 			toolVC = createVelocityContainer("tools");
 			List<String> links = new ArrayList<>();
-			if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.manageCompetence)) {
-				addLink("add.competence.manage", TaxonomyCompetenceTypes.manage, links);
-			}
 			if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.teachCompetence)) {
 				addLink("add.competence.teach", TaxonomyCompetenceTypes.teach, links);
 			}

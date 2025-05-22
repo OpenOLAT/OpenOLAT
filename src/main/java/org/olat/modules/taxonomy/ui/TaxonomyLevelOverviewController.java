@@ -76,6 +76,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	private TaxonomyTreeTableController taxonomyLevelsCtrl;
 	private TaxonomyLevelRelationsController relationsCtrl;
 	private DeleteTaxonomyLevelController confirmDeleteCtrl;
+	private TaxonomyLevelManagementController managementCtrl;
 	private TaxonomyLevelCompetenceController competencesCtrl;
 	private CloseableCalloutWindowController actionsCalloutCtrl;
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
@@ -136,6 +137,13 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 			taxonomyLevelsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyLevelsCtrl);
 			return taxonomyLevelsCtrl.getInitialComponent();
+		}, true);
+		
+		tabPane.addTab(ureq, translate("taxonomy.level.management"), "o_sel_taxonomy_level_management", uureq -> {
+			removeAsListenerAndDispose(managementCtrl);
+			managementCtrl = new TaxonomyLevelManagementController(uureq, getWindowControl(), taxonomyLevel);
+			listenTo(managementCtrl);
+			return managementCtrl.getInitialComponent();
 		}, true);
 		
 		tabPane.addTab(ureq, translate("taxonomy.level.competences"), "o_sel_taxonomy_level_competences", uureq -> {

@@ -297,9 +297,10 @@ public interface TaxonomyService {
 	/**
 	 * The competence at a specified level of the taxonomy tree.
 	 * @param taxonomyLevel The taxonomy level (mandatory)
+	 * @param competences The list of competences to search
 	 * @return A list of competences
 	 */
-	public List<TaxonomyCompetence> getTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel);
+	public List<TaxonomyCompetence> getTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, TaxonomyCompetenceTypes... types);
 	
 	/**
 	 * The competences at a specific level for the specified user. The expiration date is

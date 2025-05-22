@@ -92,17 +92,25 @@ public class TaxonomyCompetenceDAO {
 		return competences == null || competences.isEmpty() ? null : competences.get(0);
 	}
 	
-	public List<TaxonomyCompetence> getCompetenceByLevel(TaxonomyLevelRef taxonomyLevel) {
+	public List<TaxonomyCompetence> getCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyCompetenceTypes... competenceTypes) {
+		List<String> typeList = getTypesAsList(competenceTypes);
+		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence from ctaxonomycompetence competence")
 		  .append(" inner join fetch competence.identity ident")
 		  .append(" inner join fetch competence.taxonomyLevel taxonomyLevel")
 		  .append(" where taxonomyLevel.key=:taxonomyLevelKey");
+		if (!typeList.isEmpty()) {
+			sb.append(" and competence.type in (:types)");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), TaxonomyCompetence.class)
-			.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
-			.getResultList();	
+		TypedQuery<TaxonomyCompetence> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TaxonomyCompetence.class)
+				.setParameter("taxonomyLevelKey", taxonomyLevel.getKey());
+		if (!typeList.isEmpty()) {
+			query.setParameter("types", typeList);
+		}
+		return query.getResultList();
 	}
 	
 	public List<TaxonomyCompetence> getCompetences(IdentityRef identity, TaxonomyCompetenceTypes... competenceTypes) {
@@ -115,14 +123,14 @@ public class TaxonomyCompetenceDAO {
 		  .append(" inner join fetch taxonomyLevel.taxonomy taxonomy")
 		  .append(" left join fetch taxonomyLevel.type taxonomyLevelType")
 		  .append(" where ident.key=:identityKey");
-		if(typeList.size() > 0) {
+		if (!typeList.isEmpty()) {
 			sb.append(" and competence.type in (:types)");
 		}
 		
 		TypedQuery<TaxonomyCompetence> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyCompetence.class)
 			.setParameter("identityKey", identity.getKey());
-		if(typeList.size() > 0) {
+		if (!typeList.isEmpty()) {
 			query.setParameter("types", typeList);
 		}
 		return query.getResultList();
@@ -180,7 +188,7 @@ public class TaxonomyCompetenceDAO {
 		
 		List<Long> taxonomyLevelKeys = taxonomyLevels
 				.stream()
-				.map(l -> l.getKey())
+				.map(TaxonomyLevelRef::getKey)
 				.collect(Collectors.toList());
 		
 		List<Number> counts = dbInstance.getCurrentEntityManager()
@@ -315,7 +323,7 @@ public class TaxonomyCompetenceDAO {
 	public int deleteCompetences(List<? extends TaxonomyLevelRef> levels) {
 		String q = "delete from ctaxonomycompetence as competence where competence.taxonomyLevel.key in :levelKeys";
 		
-		List<Long> levelKeys = levels.stream().map(level -> level.getKey()).collect(Collectors.toList());
+		List<Long> levelKeys = levels.stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q)
@@ -340,7 +348,7 @@ public class TaxonomyCompetenceDAO {
 	}
 
 	private List<String> getTypesAsList(TaxonomyCompetenceTypes... competenceTypes) {
-		List<String> typeList = new ArrayList<>(4);
+		List<String> typeList = new ArrayList<>(3);
 		if(competenceTypes != null && competenceTypes.length > 0 && competenceTypes[0] != null) {
 			for(TaxonomyCompetenceTypes competenceType: competenceTypes) {
 				if(competenceType != null) {
