@@ -48,6 +48,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -166,7 +167,9 @@ public abstract class AbstractPeerReviewsAssignmentController extends FormBasicC
 		SelectionValues taskNamesKV = new SelectionValues();
 		List<String> taskNames = tableModel.getTaskNames();
 		for(String taskName:taskNames) {
-			taskNamesKV.add(SelectionValues.entry(taskName, taskName));
+			if(StringHelper.containsNonWhitespace(taskName)) {
+				taskNamesKV.add(SelectionValues.entry(taskName, taskName));
+			}
 		}
 		FlexiTableMultiSelectionFilter taskFilter = new FlexiTableMultiSelectionFilter(translate("filter.taskname"),
 				FILTER_TASK_NAME, taskNamesKV, true);
