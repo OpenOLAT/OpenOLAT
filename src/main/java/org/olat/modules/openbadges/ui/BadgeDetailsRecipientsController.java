@@ -186,6 +186,14 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		
 		tableEl.setFilters(true, filters, true, true);
 	}
+	
+	public void setVersionFilter(String version) {
+		FlexiTableFilter versionFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), Filter.VERSION.name());
+		if (versionFilter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter) {
+			tableEl.setFilterValue(multiSelectionFilter, version);
+			loadData(tableEl.getFilters());
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

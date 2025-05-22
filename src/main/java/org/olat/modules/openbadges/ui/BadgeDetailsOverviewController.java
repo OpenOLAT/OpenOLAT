@@ -69,6 +69,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	private final Long badgeClassKey;
 	private final String mediaUrl;
 	private String name;
+	private String version;
 	private SingleSelection versionSelectionEl;
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
@@ -135,6 +136,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		Long nbRecipients = openBadgesManager.getNumberOfBadgeAssertions(badgeClass.getKey());
 
 		name = badgeClass.getNameWithScan();
+		version = badgeClass.getVersion();
 
 		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
 		flc.contextPut("imgAlt", translate("badge.image") + ": " + badgeClass.getNameWithScan());
@@ -238,5 +240,9 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getVersion() {
+		return version;
 	}
 }

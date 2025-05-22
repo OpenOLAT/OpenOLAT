@@ -262,6 +262,8 @@ public class BadgeDetailsController extends BasicController {
 		} else if (source == overviewCtrl) {
 			if (event == BadgeDetailsOverviewController.SHOW_RECIPIENTS_EVENT) {
 				tabPane.setSelectedPane(ureq, recipientsTab);
+				String version = overviewCtrl.getVersion();
+				recipientsCtrl.setVersionFilter(version);
 			}
 		}
 	}
