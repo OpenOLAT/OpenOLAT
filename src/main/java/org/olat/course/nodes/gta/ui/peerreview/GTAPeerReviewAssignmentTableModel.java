@@ -123,6 +123,7 @@ implements SortableFlexiTableDataModel<PeerReviewAssignmentRow> {
 	public List<String> getTaskNames() {
 		Set<String> names = backupRows.stream()
 				.map(PeerReviewAssignmentRow::getTaskName)
+				.filter(name -> StringHelper.containsNonWhitespace(name))
 				.collect(Collectors.toSet());
 		return new ArrayList<>(names);
 	}
