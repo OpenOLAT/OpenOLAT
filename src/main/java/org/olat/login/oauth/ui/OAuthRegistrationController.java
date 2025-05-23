@@ -395,7 +395,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private boolean isMailUnchanged(TextElement mailEl) {
-		return mailEl != null && (initialEmail.equals(mailEl.getValue()) || mailValidationCtrl != null);
+		return mailEl != null && ((initialEmail != null && initialEmail.equals(mailEl.getValue())) || mailValidationCtrl != null);
 	}
 
 	private void handleUserRegistration(UserRequest ureq) {

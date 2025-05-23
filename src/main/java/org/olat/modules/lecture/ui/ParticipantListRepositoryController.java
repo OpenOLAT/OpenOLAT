@@ -94,7 +94,8 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private final boolean rollCallEnabled;
 	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
-	
+
+	private final String prefsId;
 	private final boolean printView;
 	private final RepositoryEntry entry;
 	private final LecturesSecurityCallback secCallback;
@@ -112,11 +113,12 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private BaseSecurity securityManager;
 	
 	public ParticipantListRepositoryController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, LecturesSecurityCallback secCallback, boolean printView) {
+			RepositoryEntry entry, LecturesSecurityCallback secCallback, String prefsId, boolean printView) {
 		super(ureq, wControl, "participant_list_overview");
 		this.entry = entry;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
+		this.prefsId = prefsId;
 		this.printView = printView;
 		this.secCallback = secCallback;
 		
@@ -225,7 +227,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmptyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v5");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-" + prefsId);
 	}
 	
 	private void loadModel() {
@@ -308,7 +310,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-			Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, secCallback, true);
+			Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, secCallback, "print-" + prefsId, true);
 			listenTo(printCtrl);
 			return printCtrl;
 		};
