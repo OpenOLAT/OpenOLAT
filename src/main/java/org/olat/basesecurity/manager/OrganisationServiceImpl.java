@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.IdentityRef;
@@ -867,6 +868,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	public List<OrganisationMembershipStats> getOrganisationStatistics(OrganisationRef organisation,
 			List<IdentityRef> identities) {
 		return organisationDao.getStatistics(organisation, identities);
+	}
+	
+	@Override
+	public List<GroupMembershipHistory> getMembershipHistory(IdentityRef identity) {
+		return this.organisationDao.loadMembershipHistory(identity);
 	}
 
 	@Override

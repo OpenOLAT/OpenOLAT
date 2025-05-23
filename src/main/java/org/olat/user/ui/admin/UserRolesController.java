@@ -127,7 +127,7 @@ public class UserRolesController extends FormBasicController {
 	 * @param ureq
 	 * @param identity identity to be edited
 	 */
-	public UserRolesController(WindowControl wControl, UserRequest ureq, Identity identity) {
+	public UserRolesController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
 		this.editedIdentity = identity;
@@ -165,16 +165,13 @@ public class UserRolesController extends FormBasicController {
 			initAdditionalRoles();
 			removeEmptyRolesEls();
 		} else {
-			simpleRolesCont = FormLayoutContainer
-					.createDefaultFormLayout("rolesCont", getTranslator());
+			simpleRolesCont = uifactory.addDefaultFormLayout("rolesCont", null, formLayout);
 			simpleRolesCont.setFormTitle(translate("form.additional.roles"));
-			formLayout.add(simpleRolesCont);
 			initFormSimpleRoles(simpleRolesCont);
 		}
-		FormLayoutContainer statusCont = FormLayoutContainer.createDefaultFormLayout("statusc", getTranslator());
-		formLayout.add(statusCont);
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
-		statusCont.add(buttonGroupLayout);
+		
+		FormLayoutContainer statusCont = uifactory.addDefaultFormLayout("statusc", null, formLayout);
+		FormLayoutContainer buttonGroupLayout = uifactory.addButtonsFormLayout("buttonGroupLayout", null, statusCont);
 		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
@@ -512,6 +509,7 @@ public class UserRolesController extends FormBasicController {
 						 learnresourcemanager, lecturemanager, linemanager,
 						 poolmanager, projectmanager, qualitymanager,
 						 rolesmanager, usermanager, educationmanager -> enable = true;
+					default -> { }
 				}
 			}
 			rolesDD.setEnabled(k, enable);
@@ -719,6 +717,7 @@ public class UserRolesController extends FormBasicController {
 		saveFormData();
 		updateRoles();
 		removeEmptyRolesEls();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private boolean hasAnyExplicitRole(MultipleSelectionElement rolesEl) {

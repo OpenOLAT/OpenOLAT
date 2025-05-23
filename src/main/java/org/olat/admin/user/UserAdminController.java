@@ -92,7 +92,7 @@ import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.admin.ReloadIdentityEvent;
 import org.olat.user.ui.admin.UserAccountController;
 import org.olat.user.ui.admin.UserQuotaController;
-import org.olat.user.ui.admin.UserRolesController;
+import org.olat.user.ui.admin.UserRoleOverviewController;
 import org.olat.user.ui.admin.authentication.UserAuthenticationsEditorController;
 import org.olat.user.ui.admin.authentication.UserOpenOlatAuthenticationAdminController;
 import org.olat.user.ui.admin.lifecycle.ConfirmDeleteUserController;
@@ -166,8 +166,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private Controller propertiesCtr;
 	private Controller guiPrefsCtrl;
 	private UserQuotaController quotaCtr;
-	private UserRolesController rolesCtr;
 	private UserAccountController accountCtrl;
+	private UserRoleOverviewController rolesCtr;
 	private CurriculumListController curriculumCtr;
 	private UserRelationsController relationsCtrl;
 	private InviteeBindersAdminController portfolioCtr;
@@ -513,7 +513,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if(!isInvitee && !isGuest) {
 			// the controller manager is read-write permissions
 			rolesTab = userTabP.addTab(ureq, translate(NLS_EDIT_UROLES), uureq -> {
-				rolesCtr = new UserRolesController(getWindowControl(), uureq, identity);
+				rolesCtr = new UserRoleOverviewController(uureq, getWindowControl(), identity);
 				listenTo(rolesCtr);
 				return rolesCtr.getInitialComponent();
 			});
