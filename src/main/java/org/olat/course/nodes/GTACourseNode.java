@@ -775,6 +775,15 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fNodeExportDir);
 			reie.exportDoExport(withReferences);
 		}
+
+		// Peer-review evaluation form
+		RepositoryEntry peerReviewEntry = getPeerReviewEvaluationForm(getModuleConfiguration());
+		if (peerReviewEntry != null && (withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE || withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY)) {
+			File peerReviewExportDir = new File(fNodeExportDir, "peerreview");
+			peerReviewExportDir.mkdirs();
+			RepositoryEntryImportExport reie = new RepositoryEntryImportExport(peerReviewEntry, peerReviewExportDir);
+			reie.exportDoExport(withReferences);
+		}
 	}
 	
 	@Override
@@ -808,7 +817,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		gtaManager.createIfNotExists(entry, this);
 		
 		// Import evaluation form
-		
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EvaluationFormResource.TYPE_NAME);
@@ -819,6 +827,20 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			// Do nothing, keep the reference
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
+		}
+		
+		// Import peer-review evaluation form ( export/NodeIdent/peerreview )
+		File peerReviewImportDir = new File(importDirectory, getIdent());
+		RepositoryEntryImportExport peerReviewRie = new RepositoryEntryImportExport(peerReviewImportDir, "peerreview");
+		if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_REFERENCE && peerReviewRie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EvaluationFormResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, peerReviewRie.getInitialAuthor(), peerReviewRie.getDisplayName(),
+					peerReviewRie.getDescription(), RepositoryEntryImportExportLinkEnum.NONE, organisation, locale, peerReviewRie.importGetExportedFile(), null);
+			setPeerReviewEvaluationFormReference(re, getModuleConfiguration());
+		} else if(withReferences == RepositoryEntryImportExportLinkEnum.WITH_SOFT_KEY) {
+			// Do nothing, keep the reference
+		} else {
+			removePeerReviewEvaluationFormReference(getModuleConfiguration());
 		}
 	}
 
