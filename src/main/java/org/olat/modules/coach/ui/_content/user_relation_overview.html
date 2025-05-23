@@ -1,9 +1,25 @@
 <div class="o_header_with_buttons">
 	<h3><i class="o_icon o_icon_user"> </i> $relationAndName</h3>
-	#if($r.available("user_details"))
-		<div class='o_user_details'>
-			$r.render("user_details")
-		</div>
+	#if($r.available("previous"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("previous")
+		$r.render("next")
+	</div>
 	#end
 </div>
+#if($r.available("userDetails"))
+<div class="o_block_bottom">
+	$r.render("userDetails")
+</div>
+#end
+#if($r.available("bookOnBehalf") || $r.available("moreMenu"))
+<div class="o_button_group o_button_group_right">
+	#if($r.available("bookOnBehalf"))
+		$r.render("bookOnBehalf")
+	#end
+	#if($r.available("moreMenu"))
+		$r.render("moreMenu")
+	#end
+</div>
+#end
 $r.render("functionsTabbedPane")

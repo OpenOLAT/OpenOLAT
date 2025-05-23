@@ -2328,9 +2328,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
 				boolean readOnlyManaged = isCourseManagedByCurriculum() || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
+				boolean adminRole = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+				boolean masterCoachRole = reSecurity.isMasterCoach();
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
-								readOnlyDetails, readOnlyManaged);
+						.getSecurityCallback(adminRole, masterCoachRole, false, readOnlyDetails, readOnlyManaged);
 				LectureListRepositoryConfig config = getLecturesAdminConfig();
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, entry, config, secCallback);
 				listenTo(ctrl);
