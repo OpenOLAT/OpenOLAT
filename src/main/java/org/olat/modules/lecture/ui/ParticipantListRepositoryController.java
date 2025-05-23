@@ -225,7 +225,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmptyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v4");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v5");
 	}
 	
 	private void loadModel() {
