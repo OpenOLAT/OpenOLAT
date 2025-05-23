@@ -55,8 +55,9 @@ public class MembersDisplayRunController extends BasicController {
 	
 	private MembersAvatarDisplayRunController membersAvatarController;
 	private MembersListDisplayRunController membersListController;
-	
-	private Link tableCustomLink, tableLink;
+
+	private final Link tableLink;
+	private final Link tableCustomLink;
 	
 	private BusinessGroup businessGroup;
 	private UserCourseEnvironment userCourseEnv;
@@ -111,10 +112,12 @@ public class MembersDisplayRunController extends BasicController {
 		tableCustomLink = LinkFactory.createLink(null, "tableCustomLink", "select.custom", "blank", getTranslator(), mainVC, this, Link.BUTTON);
 		tableCustomLink.setIconLeftCSS("o_icon o_icon_table_custom o_icon-lg");
 		tableCustomLink.setElementCssClass("o_sel_cmembers_thumbnails_view");
+		tableCustomLink.setTitle("aria.view.table");
 		
 		tableLink = LinkFactory.createLink(null, "tableLink", "select.table", "blank", getTranslator(), mainVC, this, Link.BUTTON);
 		tableLink.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
 		tableLink.setElementCssClass("o_sel_cmembers_table_view");
+		tableLink.setTitle("select.table");
 			
 		if (doLoadMemberListConfig(ureq)) {
 			doOpenPortraitView(ureq);
