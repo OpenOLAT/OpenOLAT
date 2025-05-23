@@ -173,7 +173,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			
 			user.setFirstName(getValue(obj, firstNameAttributeName, user.getFirstName()));
 			user.setLastName(getValue(obj, lastNameAttributeName, user.getLastName()));
-			//user.setEmail(getValue(obj, emailAttributeName, user.getEmail()));
+			user.setEmail(getValue(obj, emailAttributeName, user.getEmail()));
 			user.setInstitutionalUserIdentifier(getValue(obj, institutionalUserIdentifierAttributeName, user.getInstitutionalUserIdentifier()));
 			if(!StringHelper.containsNonWhitespace(user.getId())) {
 				user.setId(user.getInstitutionalUserIdentifier());
@@ -201,7 +201,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			user.setId(getValue(obj, idAttributeName, user.getId()));
 			user.setFirstName(getValue(obj, firstNameAttributeName, user.getFirstName()));
 			user.setLastName(getValue(obj, lastNameAttributeName, user.getLastName()));
-			//user.setEmail(getValue(obj, emailAttributeName, user.getEmail()));
+			user.setEmail(getValue(obj, emailAttributeName, user.getEmail()));
 			user.setInstitutionalUserIdentifier(getValue(obj, institutionalUserIdentifierAttributeName, user.getInstitutionalUserIdentifier()));
 			if(!StringHelper.containsNonWhitespace(user.getId())) {
 				user.setId(user.getInstitutionalUserIdentifier());
