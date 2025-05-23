@@ -40,7 +40,7 @@ public class TaxonomyPage {
 	/**
 	 * Assert on the edit page of the taxonomy.
 	 * 
-	 * @return Itsefl
+	 * @return Itself
 	 */
 	public TaxonomyPage assertOnMetadata() {
 		By selectLevelsBy = By.cssSelector(".o_sel_taxonomy_form");
@@ -55,7 +55,7 @@ public class TaxonomyPage {
 	 * @return The taxonomy tree page
 	 */
 	public TaxonomyTreePage selectTaxonomyTree() {
-		By selectLevelsBy = By.cssSelector("a.o_sel_taxonomy_levels");
+		By selectLevelsBy = By.cssSelector("li.o_sel_taxonomy_levels > a");
 		OOGraphene.waitElement(selectLevelsBy, browser).click();
 		return new TaxonomyTreePage(browser).assertOnTaxonomyTree();
 	}

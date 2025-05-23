@@ -121,7 +121,7 @@ public class QuestionPoolTest extends Deployments {
 			.assertOnMetadata()
 			.selectTaxonomyTree()
 			.atLeastOneLevel("at-least-one", "At least one")
-			.selectTaxonomyLevel("at-least-one")
+			.selectTaxonomyLevel("at-least-one", "At least one")
 			.selectCompetence()
 			.addCompetence(reviewer, TaxonomyCompetenceTypes.teach);
 		

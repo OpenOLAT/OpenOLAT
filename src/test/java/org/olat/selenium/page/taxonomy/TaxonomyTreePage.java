@@ -52,7 +52,7 @@ public class TaxonomyTreePage {
 	 * @return Itself
 	 */
 	public TaxonomyTreePage atLeastOneLevel(String identifier, String name) {
-		By tableTreeBy = By.cssSelector("div.o_sel_taxonomy_levels_tree div.o_table_flexi_breadcrumb");
+		By tableTreeBy = By.cssSelector("div.o_sel_taxonomy_levels_tree");
 		OOGraphene.waitElement(tableTreeBy, browser);
 		
 		By tableBy = By.xpath("//div[contains(@class,'o_taxonomy_level_listing')]//table//tr/td/a[text()[contains(.,'" + identifier + "')]]");
@@ -71,11 +71,10 @@ public class TaxonomyTreePage {
 		return this;
 	}
 	
-	public TaxonomyLevelPage selectTaxonomyLevel(String identifier) {
+	public TaxonomyLevelPage selectTaxonomyLevel(String identifier, String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_sel_taxonomy_levels_tree')]//table//tr/td/a[contains(@onclick,'select')][text()[contains(.,'" + identifier + "')]]");
 		OOGraphene.waitElement(selectBy, browser).click();
-		OOGraphene.waitBusy(browser);
-		return new TaxonomyLevelPage(browser).assertOnTaxonomyLevel();
+		return new TaxonomyLevelPage(browser).assertOnTaxonomyLevel(title);
 	}
 	
 	public TaxonomyTreePage newLevel(String identifier, String name) {

@@ -39,8 +39,8 @@ public class TaxonomyLevelPage {
 		this.browser = browser;
 	}
 	
-	public TaxonomyLevelPage assertOnTaxonomyLevel() {
-		By overviewBy = By.cssSelector("div.o_taxonomy_level_overview");
+	public TaxonomyLevelPage assertOnTaxonomyLevel(String title) {
+		By overviewBy = By.xpath("//div[contains(@class,'o_taxonomy_overview_header')]//div[contains(@class,'o_taxonomy_title')]/h2[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(overviewBy, browser);
 		return this;
 	}
