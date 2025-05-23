@@ -245,8 +245,8 @@ public class CourseHandler implements RepositoryHandler {
 		if(Files.isDirectory(export)) {
 			try(DirectoryStream<Path> directory = Files.newDirectoryStream(export)) {
 			    for (Path p : directory) {
-			    	Path repoXml = p.resolve("repo.xml");
-			    	if(Files.exists(repoXml)) {
+			    	if(Files.exists(p.resolve("repo.xml"))
+			    			|| Files.exists(p.resolve("peerreview/repo.xml"))) {
 			    		hasReferences = true;
 			    		break;
 			    	}
