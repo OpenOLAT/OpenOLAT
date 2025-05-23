@@ -565,8 +565,10 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
     }
 
     private Activateable2 doSelect(UserRequest ureq, ParticipantStatisticsEntry entry) {
-    	removeAsListenerAndDispose(userOverviewCtrl);
-    	stackPanel.popUpToController(this);
+    	if(userOverviewCtrl != null) {
+    		removeAsListenerAndDispose(userOverviewCtrl);
+    		stackPanel.popController(userOverviewCtrl);
+    	}
     	
         userOverviewCtrl = createParticipantOverview(ureq, entry);
         listenTo(userOverviewCtrl);

@@ -35,11 +35,11 @@ import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -48,7 +48,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -84,8 +83,6 @@ import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
-import org.olat.user.HomePageConfig;
-import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
@@ -100,7 +97,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class UserOverviewController extends BasicController implements NextPreviousController, GenericEventListener, TooledController {
+public class UserOverviewController extends BasicController implements NextPreviousController, GenericEventListener {
 
 	public static final String usageIdentifier = UserOverviewController.class.getCanonicalName();
 
@@ -126,15 +123,17 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private int profileTabIndex;
 	private int accountTabIndex;
 	
-	private Link homeLink, contactLink, resetLink, bookOnBehalfOfLink;
-	private Link nextStudent, detailsStudentCmp, previousStudent;
+	private Link contactLink;
+	private Link resetLink;
+	private Link nextStudent;
+	private Link previousStudent;
+	private Link bookOnBehalfOfLink;
 
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
 	private ContactFormController contactController;
 	private UserChangePasswordController userChangePasswordController;
-	private ToggleBoxController userDetailsToggleController;
 	private ProfileAndHomePageEditController profileAndHomePageEditController;
 	private HomePageDisplayController homePageDisplayController;
 	private GroupOverviewController groupOverviewController;
@@ -163,8 +162,6 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private BaseSecurityManager securityManager;
 	@Autowired
 	private CalendarManager calendarManager;
-	@Autowired
-	private HomePageConfigManager homePageConfigManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -198,6 +195,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		mainVC = createVelocityContainer("user_relation_overview");
 
 		initUserDetails(ureq, mentee);
+		initButtons();
 		initTabbedPane(ureq);
 
 		putInitialPanel(mainVC);
@@ -208,69 +206,61 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		return statEntry;
 	}
 
-	@Override
-	public void initTools() {
+	private void initButtons() {
+		Dropdown moreDropdown = DropdownUIFactory.createMoreDropdown("details", getTranslator());
+		moreDropdown.setButton(true);
+		
 		if (roleSecurityCallback.canContact()) {
 			contactLink = LinkFactory.createToolLink("contact.link", translate("contact.link"), this);
 			contactLink.setIconLeftCSS("o_icon o_icon_mail");
-			stackPanel.addTool(contactLink, Align.left, true);
+			moreDropdown.addComponent(contactLink);
 		}
-
-		homeLink = LinkFactory.createToolLink("home.link", translate("home.link"), this);
-		homeLink.setIconLeftCSS("o_icon o_icon_home");
-		stackPanel.addTool(homeLink, Align.left, true);
 
 		if (roleSecurityCallback.canResetPassword()) {
 			Roles roles = securityManager.getRoles(mentee);
 			if (!(roles.isAuthor() || roles.isManager() || roles.isAdministrator() || roles.isSystemAdmin() || roles.isPrincipal())) {
 				resetLink = LinkFactory.createToolLink("reset.link", translate("reset.link"), this);
 				resetLink.setIconLeftCSS("o_icon o_icon_password");
-				stackPanel.addTool(resetLink, Align.left, true);
+				moreDropdown.addComponent(resetLink);
 			}
 		}
 		
+		if(moreDropdown.size() > 0) {
+			mainVC.put("moreMenu", moreDropdown);
+		}
+		
 		if (roleSecurityCallback.canCreateBookingOnBehalfOf()) {
-			bookOnBehalfOfLink = LinkFactory.createToolLink("book.on.behalf.of.link", 
-					translate("book.on.behalf.of.link"), this);
+			bookOnBehalfOfLink = LinkFactory.createButton("book.on.behalf.of.link", mainVC, this);
 			bookOnBehalfOfLink.setIconLeftCSS("o_icon o_icon_booking");
-			stackPanel.addTool(bookOnBehalfOfLink, Align.left, true);
+			mainVC.put("bookOnBehalf", bookOnBehalfOfLink);
 		}
 
-		previousStudent = LinkFactory.createToolLink("previous.student", translate("previous.student"), this);
-		previousStudent.setIconLeftCSS("o_icon o_icon_previous");
-		previousStudent.setEnabled(numOfStudents > 1);
+		previousStudent = LinkFactory.createLink("previous.student", "previous.student", "previous.student", null, getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
+		previousStudent.setIconLeftCSS("o_icon o_icon_slide_backward");
+		previousStudent.setTitle(translate("previous.student"));
+		previousStudent.setEnabled(index > 0 && numOfStudents > 1);
+		mainVC.put("previous", previousStudent);
 
-		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(mentee));
-		String details = translate("students.details", fullName, Integer.toString(index + 1), Integer.toString(numOfStudents));
-		detailsStudentCmp = LinkFactory.createToolLink("details.student", details, this);
-		detailsStudentCmp.setIconLeftCSS("o_icon o_icon_user");
-		stackPanel.addTool(detailsStudentCmp, true);
-
-		nextStudent = LinkFactory.createToolLink("next.student", translate("next.student"), this);
-		nextStudent.setIconLeftCSS("o_icon o_icon_next");
-		nextStudent.setEnabled(numOfStudents > 1);
-		stackPanel.addListener(this);
+		nextStudent = LinkFactory.createLink("next.student", "next.student", "next.student", null, getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
+		nextStudent.setIconLeftCSS("o_icon o_icon_slide_forward");
+		nextStudent.setTitle(translate("next.student"));
+		nextStudent.setEnabled(index < (numOfStudents - 1) && numOfStudents > 1);
+		mainVC.put("next", nextStudent);
 	}
 
 	private void initUserDetails(UserRequest ureq, Identity identity) {
 		// Add user's name and relation
 		StringBuilder relationAndName = new StringBuilder(256);
-		relationAndName.append(role != null ? role + " " : "");
-		relationAndName.append(StringHelper.escapeHtml(mentee.getUser().getFirstName())).append(" ");
-		relationAndName.append(StringHelper.escapeHtml(mentee.getUser().getLastName()));
+		relationAndName.append(role != null ? role + " " : "")
+		               .append(StringHelper.escapeHtml(mentee.getUser().getFirstName()))
+		               .append(" ")
+		               .append(StringHelper.escapeHtml(mentee.getUser().getLastName()));
 		mainVC.contextPut("relationAndName", relationAndName);
 
 		// Add user details
-		VelocityContainer userDetails = createVelocityContainer("user_relation_overview_details");
-		userDetails.setDomReplacementWrapperRequired(false);
-
-		userDetailsToggleController = new ToggleBoxController(ureq, getWindowControl(), "user_details",
-				translate("user.details.open"), translate("user.details.close"), userDetails);
-		mainVC.put("user_details", userDetailsToggleController.getInitialComponent());
-		
 		UserPropertiesInfoController infoCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), identity);
 		listenTo(infoCtrl);
-		userDetails.put("userInfo", infoCtrl.getInitialComponent());
+		mainVC.put("userDetails", infoCtrl.getInitialComponent());
 	}
 	
 	private void initTabbedPane(UserRequest ureq) {
@@ -278,11 +268,10 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		functionsTabbedPane.addListener(this);
 
 		if (roleSecurityCallback.canViewCoursesAndCurriculum()) {
-			List<CurriculumRef> curriculumRefs = curriculumService.getMyActiveCurriculumRefs(mentee);
-			CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
-
 			courseTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("enrollments"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ENROLLMENTS), null);
+				List<CurriculumRef> curriculumRefs = curriculumService.getMyActiveCurriculumRefs(mentee);
+				CurriculumSecurityCallback curriculumSecurityCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
 				courseListWrapperController = new CourseListWrapperController(uureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback, curriculumRefs, statEntry);
 				listenTo(courseListWrapperController);
 				return courseListWrapperController;
@@ -390,14 +379,12 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(previousStudent == source || nextStudent == source) {
 			fireEvent(ureq, event);
-		} else if (source == homeLink) {
-			openHome(ureq);
 		} else if (source == contactLink) {
 			contact(ureq);
 		} else if (source == resetLink) {
 			resetPassword(ureq);
 		} else if (source == bookOnBehalfOfLink) {
-			bookOnBehalfOf(ureq);
+			doBookOnBehalfOf(ureq);
 		} else if (source == functionsTabbedPane) {
 			if(event instanceof TabbedPaneChangedEvent pce && pce.getNewController() != null) {
 				addToHistory(ureq, pce.getNewController());
@@ -533,23 +520,13 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		return null;
 	}
 	
-	private void bookOnBehalfOf(UserRequest ureq) {
+	private void doBookOnBehalfOf(UserRequest ureq) {
 		cleanUpNonModalControllers();
 
 		bookOnBehalfOfController = new BookOnBehalfOfController(ureq, getWindowControl(), mentee, stackPanel);
 		listenTo(bookOnBehalfOfController);
 
 		stackPanel.pushController(translate("book.on.behalf.of.link"), bookOnBehalfOfController);
-	}
-
-	private void openHome(UserRequest ureq) {
-		cleanUpNonModalControllers();
-
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(mentee);
-		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), mentee, homePageConfig);
-		listenTo(homePageDisplayController);
-
-		stackPanel.pushController(translate("home.link"), homePageDisplayController);
 	}
 
 	private WeeklyCalendarController doOpenCalendar(UserRequest ureq) {

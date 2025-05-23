@@ -21,21 +21,15 @@ package org.olat.modules.coach.ui.curriculum.course;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.course.certificate.CertificateLight;
-import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
-import org.olat.modules.coach.model.IdentityResourceKey;
-import org.olat.modules.coach.ui.ProgressValue;
 import org.olat.modules.curriculum.CurriculumElementStatus;
-import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
  * 
@@ -45,9 +39,6 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
  */
 public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CourseCurriculumTreeWithViewsRow> implements FlexiBusinessPathModel {
 
-	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
-	private ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap;
-
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
@@ -55,15 +46,23 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			FlexiTableFilter filter = filters.get(0);
-			if(filter == null || filter.isShowAll()) {
+			CurriculumElementStatus status = null;
+			FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, CurriculumElementListController.FILTER_STATUS);
+			if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+				List<String> filterValues = extendedFilter.getValues();
+				if(filterValues != null && filterValues.size() == 1) {
+					status = CurriculumElementStatus.valueOf(filterValues.get(0));
+				}
+			}
+			
+			if(status == null) {
 				setUnfilteredObjects();
 			} else {
 				List<CourseCurriculumTreeWithViewsRow> filteredRows = new ArrayList<>(backupRows.size());
 				// curriculum element inactive -> all repo are inactives
 				// parent inactive, child is active -> parent is forced active
 				for(CourseCurriculumTreeWithViewsRow row:backupRows) {
-					boolean accept = active(row);
+					boolean accept = (status == CurriculumElementStatus.active && active(row));
 					if(accept) {
 						filteredRows.add(row);
 					}
@@ -88,6 +87,13 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 			}
 		}
 		return active;
+	}
+	
+	public CourseCurriculumTreeWithViewsRow getObjectByKey(Long key) {
+		List<CourseCurriculumTreeWithViewsRow> rows = this.getObjects();
+		return rows.stream().filter(row -> key.equals(row.getKey()))
+				.findFirst()
+				.orElse(null);
 	}
 	
 	@Override
@@ -119,121 +125,32 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 				}
 				return identifier;
 			}
-			case mark: return curriculum.getMarkLink();
-			case select: return curriculum.getSelectLink();
-			case details: return curriculum.getDetailsLink();
-			case start: return curriculum.getStartLink();
 			case calendars: return curriculum.getCalendarsLink();
 			case completion: return curriculum.getCompletionItem();
-			case score: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getScore() : null;
-			case passed: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getPassed() : null;
-			case certificate: return getCertificate(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-			case recertification: {
-				CertificateLight certificate = getCertificate(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return certificate == null ? null : certificate.getNextRecertificationDate();
-			}
-			case numberAssessments: {
-				ProgressValue val = null;
-				Integer totalNodes = curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getTotalNodes() : null;
-				if (totalNodes != null && totalNodes.intValue() > 0) {
-					val = new ProgressValue();
-					val.setTotal(totalNodes.intValue());
-					Integer attemptedNodes = curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getAttemptedNodes() : null;
-					val.setGreen(attemptedNodes == null ? 0 : attemptedNodes.intValue());
-				}
-				return val;
-			}
-			case progress: {
-				Integer totalNodes = curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getTotalNodes() : null;
-				if(totalNodes == null) {
-					ProgressValue val = new ProgressValue();
-					val.setTotal(100);
-					val.setGreen(0);
-					return val;
-				}
-
-				ProgressValue val = new ProgressValue();
-				val.setTotal(totalNodes.intValue());
-				Integer attemptedNodes = curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getAttemptedNodes() : null;
-				val.setGreen(attemptedNodes == null ? 0 : attemptedNodes.intValue());
-				return val;
-			}
-			case lastModification: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastModified() : null;
-			case lastUserModified: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastUserModified() : null;
-			case lastCoachModified: return curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry().getLastCoachModified() : null;
-			case plannedLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalPersonalPlannedLectures();
-			}
-			case attendedLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalAttendedLectures();
-			}
-			case unauthorizedAbsenceLectures:
-			case absentLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalAbsentLectures();
-			}
-			case authorizedAbsenceLectures: {
-				LectureBlockStatistics statistics = getLectureBlockStatistics(curriculum.getEfficiencyStatementEntry() != null ? curriculum.getEfficiencyStatementEntry() : null);
-				return statistics == null ? null : statistics.getTotalAuthorizedAbsentLectures();
-			}
 			default: return "ERROR";
 		}
 	}
-
-	private CertificateLight getCertificate(EfficiencyStatementEntry entry) {
-		if(certificateMap != null) {
-			IdentityResourceKey key = new IdentityResourceKey(entry.getIdentityKey(), entry.getCourse().getOlatResource().getKey());
-			return certificateMap.get(key);
+	
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if("select".equals(action) && object instanceof CourseCurriculumTreeWithViewsRow) {
+			CourseCurriculumTreeWithViewsRow row = (CourseCurriculumTreeWithViewsRow)object;
+			if(row.getStartUrl() != null) {
+				return row.getStartUrl();
+			}
+			if(row.getDetailsUrl() != null) {
+				return row.getDetailsUrl();
+			}
 		}
 		return null;
-	}
-
-	private LectureBlockStatistics getLectureBlockStatistics(EfficiencyStatementEntry entry) {
-		if(lecturesStatisticsMap != null) {
-			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(entry);
-			return lecturesStatisticsMap.get(key);
-		}
-		return null;
-	}
-
-	public void setObjects(List<CourseCurriculumTreeWithViewsRow> objects, ConcurrentMap<IdentityResourceKey, CertificateLight> certificates) {
-		setObjects(objects, certificates, null);
-	}
-
-	public void setObjects(List<CourseCurriculumTreeWithViewsRow> objects,
-						   ConcurrentMap<IdentityResourceKey, CertificateLight> certificates,
-						   ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap) {
-		setObjects(objects);
-		this.certificateMap = certificates;
-		this.lecturesStatisticsMap = lecturesStatisticsMap;
 	}
 
 	public enum ElementViewCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.header.curriculum.element.display.name"),
 		identifier("table.header.curriculum.element.identifier"),
-		mark("table.header.mark"),
-		select("table.header.displayName"),
 		completion("table.header.completion"),
-		details("table.header.details"),
-		start("table.header.start"),
-		calendars("table.header.calendars"),
-		score("table.header.score"),
-		passed("table.header.passed"),
-		certificate("table.header.certificate"),
-		recertification("table.header.certificate.validity"),
-		numberAssessments("table.header.number.assessments"),
-		progress("table.header.progress"),
-		lastModification("table.header.lastScoreDate"),
-		lastUserModified("table.header.lastUserModificationDate"),
-		lastCoachModified("table.header.lastCoachModificationDate"),
-		plannedLectures("table.header.planned.lectures"),
-		attendedLectures("table.header.attended.lectures"),
-		absentLectures("table.header.absent.lectures"),
-		unauthorizedAbsenceLectures("table.header.unauthorized.absence"),
-		authorizedAbsenceLectures("table.header.authorized.absence");
+		calendars("table.header.calendars");
 		
 		private final String i18nHeaderKey;
 		
@@ -255,19 +172,5 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		public String i18nHeaderKey() {
 			return i18nHeaderKey;
 		}
-	}
-
-	@Override
-	public String getUrl(Component source, Object object, String action) {
-		if("select".equals(action) && object instanceof CourseCurriculumTreeWithViewsRow) {
-			CourseCurriculumTreeWithViewsRow row = (CourseCurriculumTreeWithViewsRow)object;
-			if(row.getStartUrl() != null) {
-				return row.getStartUrl();
-			}
-			if(row.getDetailsUrl() != null) {
-				return row.getDetailsUrl();
-			}
-		}
-		return null;
 	}
 }
