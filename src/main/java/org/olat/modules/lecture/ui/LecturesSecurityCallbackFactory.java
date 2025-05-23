@@ -102,7 +102,7 @@ public class LecturesSecurityCallbackFactory {
 			if(masterCoachRole && lectureModule.isMasterCoachCanReopenLectureBlocks() && !courseReadOnlyByStatus) {
 				return true;
 			}
-			if(isReadOnly()) {
+			if(courseReadOnlyByStatus || courseReadOnlyByRole) {
 				return false;
 			}
 			return adminRole;
@@ -110,7 +110,7 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canChangeRates() {
-			if(isReadOnly()) return false;
+			if(courseReadOnlyByStatus || courseReadOnlyByRole) return false;
 			
 			return adminRole;
 		}
@@ -155,7 +155,7 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canApproveAppeal() {
-			if(isReadOnly()) return false;
+			if(courseReadOnlyByStatus || courseReadOnlyByRole) return false;
 			
 			if(adminRole) {
 				return true;
