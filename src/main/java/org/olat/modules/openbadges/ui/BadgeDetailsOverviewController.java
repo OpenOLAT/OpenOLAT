@@ -122,8 +122,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	}
 
 	private String versionString(BadgeClass badgeClass) {
-		return translate("class.version", badgeClass.getVersion(), 
-				Formatter.formatDateFilesystemSave(badgeClass.getCreationDate()));
+		return OpenBadgesUIFactory.versionString(getTranslator(), badgeClass, true, true);
 	}
 
 	void loadData() {

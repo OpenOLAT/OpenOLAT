@@ -226,11 +226,6 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
-	public void setVersionWithScan(String version) {
-		setVersion(StringHelper.unescapeHtml(FilterFactory.getHtmlTagsFilter().filter(StringHelper.xssScan(version))));
-	}
-
-	@Override
 	public String getLanguage() {
 		return language;
 	}

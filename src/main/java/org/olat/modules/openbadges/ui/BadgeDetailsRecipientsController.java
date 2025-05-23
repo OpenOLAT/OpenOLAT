@@ -107,7 +107,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 
 		columnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 
-		tableModel = new TableModel(columnModel, userManager);
+		tableModel = new TableModel(columnModel, userManager, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
 		tableEl.setEmptyTableMessageKey("form.recipients.none");
@@ -339,10 +339,12 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 
 	private class TableModel extends DefaultFlexiTableDataModel<Row> {
 		private final UserManager userManager;
+		private final Translator translator;
 
-		public TableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
+		public TableModel(FlexiTableColumnModel columnModel, UserManager userManager, Translator translator) {
 			super(columnModel);
 			this.userManager = userManager;
+			this.translator = translator;
 		}
 
 		@Override
@@ -352,7 +354,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion.getStatus();
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
-				case version -> badgeAssertion.getBadgeClass().getVersion();
+				case version -> OpenBadgesUIFactory.versionString(translator, badgeAssertion.getBadgeClass(), true, false);
 				case tools -> getObject(row).toolLink();
 			};
 		}

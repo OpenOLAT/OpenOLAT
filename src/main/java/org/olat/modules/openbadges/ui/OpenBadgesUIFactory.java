@@ -24,9 +24,11 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.BadgeClass;
 
 import org.apache.logging.log4j.Level;
 
@@ -36,10 +38,6 @@ import org.apache.logging.log4j.Level;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class OpenBadgesUIFactory {
-
-	public static boolean isSpecifyVersion() {
-		return false;
-	}
 
 	public static String getBundleName() {
 		return OpenBadgesUIFactory.class.getPackage().getName();
@@ -87,5 +85,16 @@ public class OpenBadgesUIFactory {
 				.forEach(status -> statusKV.add(SelectionValues.entry(status.name(), 
 						translator.translate("assertion.status." + status))));
 		return statusKV;
+	}
+	
+	public static String versionString(Translator translator, BadgeClass badgeClass, boolean showVersionOne, boolean withCreationDate) {
+		if (!badgeClass.hasPreviousVersion() && !showVersionOne) {
+			return "";
+		}
+		if (withCreationDate) {
+			return translator.translate("class.version.date", badgeClass.getVersionDisplayString(), 
+					Formatter.formatDateFilesystemSave(badgeClass.getCreationDate()));
+		}
+		return translator.translate("class.version", badgeClass.getVersionDisplayString());
 	}
 }

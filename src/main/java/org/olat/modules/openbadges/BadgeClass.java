@@ -73,8 +73,6 @@ public interface BadgeClass {
 	
 	void setVersion(String version);
 
-	void setVersionWithScan(String version);
-
 	String getLanguage();
 
 	void setLanguage(String language);

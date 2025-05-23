@@ -53,7 +53,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		return switch (BadgeClassCols.values()[col]) {
 			case image -> badgeClass.getImage();
 			case name -> badgeClass.getName();
-			case version -> getVersion(badgeClass);
+			case version -> OpenBadgesUIFactory.versionString(translator, badgeClass, false, false);
 			case creationDate -> Formatter.getInstance(translator.getLocale()).formatDateAndTime(badgeClass.getCreationDate());
 			case status -> badgeClass.getStatus();
 			case type -> translator.translate(BadgeCriteriaXStream.fromXml(badgeClass.getCriteria()).isAwardAutomatically() ?
@@ -72,13 +72,6 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		} else {
 			return Long.toString(currentCount);
 		}
-	}
-
-	private String getVersion(BadgeClass badgeClass) {
-		if (!badgeClass.hasPreviousVersion()) {
-			return "";
-		}
-		return badgeClass.getVersionDisplayString();
 	}
 
 	public enum BadgeClassCols implements FlexiSortableColumnDef {
