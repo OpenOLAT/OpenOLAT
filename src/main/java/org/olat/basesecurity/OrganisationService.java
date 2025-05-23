@@ -383,6 +383,8 @@ public interface OrganisationService {
 	 * @param rights
 	 */
 	public void setGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> rights);
+	
+	public List<GroupMembershipHistory> getMembershipHistory(IdentityRef identity);
 
 	/**
 	 * Upgrade line manager roles to the new configuration (same as educationmanager) used in release 20, if needed.

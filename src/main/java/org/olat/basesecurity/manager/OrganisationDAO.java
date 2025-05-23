@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -452,6 +453,21 @@ public class OrganisationDAO {
 		  .append(" )");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
+				.getResultList();
+	}
+	
+	public List<GroupMembershipHistory> loadMembershipHistory(IdentityRef identity) {
+		String query = """
+				select history from bgroupmemberhistory history
+				inner join fetch history.group hGroup
+				inner join organisation as org on (org.group.key=hGroup.key)
+				left join fetch history.creator as creator
+				left join fetch creator.user as creatorUser
+				where history.identity.key=:identityKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, GroupMembershipHistory.class)
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
 	
