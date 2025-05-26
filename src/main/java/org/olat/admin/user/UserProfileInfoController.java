@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
@@ -81,6 +82,8 @@ public class UserProfileInfoController extends UserInfoController {
 	private UserManager userManager;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	public UserProfileInfoController(UserRequest ureq, WindowControl wControl,
 									 UserInfoProfileConfig profileConfig, PortraitUser portraitUser,
@@ -96,22 +99,22 @@ public class UserProfileInfoController extends UserInfoController {
 	protected void initFormItems(FormLayoutContainer itemsCont, Controller listener, UserRequest ureq) {
 		super.initFormItems(itemsCont, listener, ureq);
 
-		// 2. User ID
+		// 1. User ID
 		addUserId(itemsCont);
 
-		// 3. Organisations (with user role only)
+		// 2. Organisations (with user role only)
 		addUserOrganisations(itemsCont, editedRoles);
 
-		// 5. Roles (excluding 'user')
+		// 3. Roles (excluding 'user')
 		addRoles(itemsCont, editedRoles);
 
-		// 6. User mail
+		// 4. User mail
 		addUserMail(itemsCont);
 
-		// 7. Account type (invitee, guest, user)
+		// 5. Account type (invitee, guest, user)
 		addAccountType(itemsCont, editedRoles);
 
-		// 8. Username
+		// 6. Username
 		addUsername(itemsCont);
 	}
 
@@ -218,7 +221,8 @@ public class UserProfileInfoController extends UserInfoController {
 	}
 
 	private void addUsername(FormLayoutContainer itemsCont) {
-		uifactory.addStaticTextElement("username", "user.username", identity.getName(), itemsCont);
+		String name = securityManager.findAuthenticationName(identity);
+		uifactory.addStaticTextElement("username", "user.username", name, itemsCont);
 	}
 
 	@Override
