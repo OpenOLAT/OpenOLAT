@@ -259,8 +259,17 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 			doSetCustomScope(ureq, customDateScope.getDateRange());
 		}
 	}
-	
+
 	private void doSetCustomScope(UserRequest ureq, DateRange dateRange) {
+		String deselectedKey = setCustomScope(dateRange);
+		fireEvent(ureq, new DateScopeEvent(deselectedKey, ADDITIONAL_IDENTIFIER, dateRange));
+	}
+	
+	/**
+	 * @param dateRange The range of the custom scope
+	 * @return The deselected scope if one was selected
+	 */
+	public String setCustomScope(DateRange dateRange) {
 		String deselectedKey = selectedKey;
 		selectedKey = ADDITIONAL_IDENTIFIER;
 		
@@ -284,7 +293,7 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 		setScopeItems(scopeItems);
 		setDirty(true);
 		
-		fireEvent(ureq, new DateScopeEvent(deselectedKey, ADDITIONAL_IDENTIFIER, dateRange));
+		return deselectedKey;
 	}
 	
 	private void doResetCustomScope(UserRequest ureq) {

@@ -82,6 +82,10 @@ public class FormDateScopeSelection extends FormItemImpl implements ComponentEve
 	public void setCustomScopeLimit(DateRange customScopeLimit) {
 		component.setCustomScopeLimit(customScopeLimit);
 	}
+	
+	public void setCustomScope(DateRange customScopeLimit) {
+		component.setCustomScope(customScopeLimit);
+	}
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
