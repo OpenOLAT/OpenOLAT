@@ -21,6 +21,7 @@ package org.olat.modules.taxonomy.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -67,7 +68,14 @@ public class TaxonomySelectionController extends FormBasicController {
 		initForm(ureq);
 		loadModel();
 	}
-
+	
+	public Taxonomy getTaxonomy(Long taxonomyKey) {
+		Optional<TaxonomyRow> foundRow = dataModel.getObjects().stream()
+				.filter(row -> row.getKey().equals(taxonomyKey))
+				.findFirst();
+		return foundRow.isPresent()? taxonomyService.getTaxonomy(() -> foundRow.get().getKey()): null;
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

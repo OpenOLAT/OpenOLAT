@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.ui.admin;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -29,9 +31,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -48,9 +55,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogTaxonomyEditController extends BasicController {
+public class CatalogTaxonomyEditController extends BasicController implements Activateable2 {
 	
 	public static final Event OPEN_ADMIN_EVENT = new Event("open.admin");
+
+	private static final String ORES_TYPE_TAXONOMY = "Taxonomy";
 	
 	private TooledStackedPanel stackPanel;
 	private VelocityContainer mainVC;
@@ -83,6 +92,24 @@ public class CatalogTaxonomyEditController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries == null || entries.isEmpty()) {
+			return;
+		}
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if (ORES_TYPE_TAXONOMY.equalsIgnoreCase(type)) {
+			Long taxonomyKey = entries.get(0).getOLATResourceable().getResourceableId();
+			Taxonomy taxonomy = taxonomySelectionCtrl.getTaxonomy(taxonomyKey);
+			if (taxonomy != null) {
+				doSelectTaxonomy(ureq, taxonomy);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				taxonomyCtrl.activate(ureq, subEntries, state);
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == openAdminLink) {
 			fireEvent(ureq, OPEN_ADMIN_EVENT);
@@ -108,12 +135,15 @@ public class CatalogTaxonomyEditController extends BasicController {
 	private void doSelectTaxonomy(UserRequest ureq, Taxonomy taxonomy) {
 		removeAsListenerAndDispose(taxonomyCtrl);
 		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_TAXONOMY, taxonomy.getKey());
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		
 		Roles roles = ureq.getUserSession().getRoles();
 		TaxonomySecurityCallback secCallback = roles != null && roles.isSystemAdmin()
 				? TaxonomySecurityCallback.FULL
 				: new CatalogTaxonomySecurityCallback(taxonomy, getIdentity());
-		taxonomyCtrl = new TaxonomyOverviewController(ureq, getWindowControl(),
-				secCallback, taxonomy);
+		
+		taxonomyCtrl = new TaxonomyOverviewController(ureq, swControl, secCallback, taxonomy);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		stackPanel.pushController(StringHelper.escapeHtml(taxonomy.getDisplayName()), taxonomyCtrl);
 	}

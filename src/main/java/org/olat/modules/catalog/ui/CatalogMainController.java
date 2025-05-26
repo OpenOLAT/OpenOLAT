@@ -149,6 +149,8 @@ public class CatalogMainController extends BasicController implements Activateab
 			} else if (CatalogBCFactory.ORES_TYPE_TAXONOMY_ADMIN.equalsIgnoreCase(ores.getResourceableTypeName())) {
 				if (secCallback.canEditTaxonomy()) {
 					doOpenTaxonomyAdmin(ureq);
+					entries = entries.subList(1, entries.size());
+					taxonomyAdminCtrl.activate(ureq, entries, state);
 				}
 			}
 		}
