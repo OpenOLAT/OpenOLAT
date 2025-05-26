@@ -952,7 +952,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	
 	@Override
 	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
-		return reToGroupDao.getRoleToCountMemebers(re);
+		return reToGroupDao.getRoleToCountMembers(re, false);
 	}
 
 	@Override
@@ -1248,7 +1248,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(reToGroupDao.hasMembers(entry, GroupRoles.participant.name())) {
 			return RuntimeTypeCheckDetails.participantExists;
 		}
-		if(reToGroupDao.hasMembers(entry, GroupRoles.participant.name())) {
+		if(reToGroupDao.hasMembers(entry, GroupRoles.coach.name())) {
 			return RuntimeTypeCheckDetails.coachExists;
 		}
 		
@@ -1262,7 +1262,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	private RuntimeTypeCheckDetails canSwitchToCurricular(RepositoryEntry entry) {
-		Map<String, Long> roleToCount = reToGroupDao.getRoleToCountMemebers(entry);
+		Map<String, Long> roleToCount = reToGroupDao.getRoleToCountMembers(entry, true);
 
 		if (roleToCount.containsKey(GroupRoles.participant.name()) && roleToCount.get(GroupRoles.participant.name()) > 0) {
 			return RuntimeTypeCheckDetails.participantExists;
