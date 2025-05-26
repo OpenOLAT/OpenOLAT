@@ -703,7 +703,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		if(levelsToDelete.isEmpty()) {
 			showWarning("warning.atleastone.level");
 		} else {
-			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelsToDelete, taxonomy);
+			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), secCallback, levelsToDelete, taxonomy);
 			listenTo(confirmDeleteCtrl);
 			
 			String title = translate("confirmation.delete.level.title");
@@ -721,7 +721,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
 		List<TaxonomyLevel> levelToDelete = Collections.singletonList(taxonomyLevel);
-		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelToDelete, taxonomy);
+		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), secCallback, levelToDelete, taxonomy);
 		listenTo(confirmDeleteCtrl);
 		
 		String title = translate("confirmation.delete.level.title");
@@ -745,7 +745,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 
 	private void doMove(UserRequest ureq, List<TaxonomyLevel> taxonomyLevels) {
-		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevels, taxonomy);
+		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), secCallback, taxonomyLevels, taxonomy);
 		listenTo(moveLevelCtrl);
 		
 		String title = translate("move.taxonomy.levels.title");

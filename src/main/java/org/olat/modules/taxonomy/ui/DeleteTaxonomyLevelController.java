@@ -42,6 +42,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyModel;
@@ -57,7 +58,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DeleteTaxonomyLevelController extends FormBasicController {
 	
-	private List<TaxonomyLevel> levels;
+	private final TaxonomySecurityCallback secCallback;
+	private final List<TaxonomyLevel> levels;
 	private final TaxonomyModel treeModel;
 	private final Set<String> selectedNodeIds = new HashSet<>();
 	
@@ -71,8 +73,9 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 	private CurriculumService curriculumService;
 	
 	public DeleteTaxonomyLevelController(UserRequest ureq, WindowControl wControl,
-			List<TaxonomyLevel> levels, Taxonomy taxonomy) {
+			TaxonomySecurityCallback secCallback, List<TaxonomyLevel> levels, Taxonomy taxonomy) {
 		super(ureq, wControl, "confirm_delete_levels");
+		this.secCallback = secCallback;
 		this.levels = levels;
 		
 		treeModel = new TaxonomyAllTreesBuilder(getLocale()).buildTreeModel(taxonomy);
@@ -195,6 +198,25 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		layoutCont.contextPut("mergeToMessage", translate("info.delete.merge.to"));	
 		
 		return surveys == 0;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		mergeToEl.clearError();
+		TaxonomyLevel mergeTo = null;
+		if (mergeToEl.isOneSelected() && !"-".equals(mergeToEl.getSelectedKey())) {
+			String selectedNodeKey = mergeToEl.getSelectedKey();
+			TreeNode selectedNode = treeModel.getNodeById(selectedNodeKey);
+			mergeTo = (TaxonomyLevel)selectedNode.getUserObject();
+			if (!secCallback.canCreateChild(mergeTo)) {
+				mergeToEl.setErrorKey("error.delete.merge.to.not.allowed");
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override

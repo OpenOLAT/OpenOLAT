@@ -269,7 +269,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
 		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
 		List<TaxonomyLevel> levelToDelete = Collections.singletonList(taxonomyLevel);
-		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelToDelete, taxonomy);
+		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), secCallback, levelToDelete, taxonomy);
 		listenTo(confirmDeleteCtrl);
 
 		String title = translate("confirmation.delete.level.title");
@@ -284,7 +284,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
 		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
 		List<TaxonomyLevel> levelsToMove = Collections.singletonList(taxonomyLevel);
-		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), levelsToMove, taxonomy);
+		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), secCallback, levelsToMove, taxonomy);
 		listenTo(moveLevelCtrl);
 		
 		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)) });

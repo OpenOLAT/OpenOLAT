@@ -41,6 +41,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyModel;
@@ -57,6 +58,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	private MenuTreeItem taxonomyEl;
 	private TaxonomyModel taxonomyModel;
 	
+	private final TaxonomySecurityCallback secCallback;
 	private final Taxonomy taxonomy;
 	private TaxonomyLevel movedLevel;
 	private final List<TaxonomyLevel> levelsToMove;
@@ -66,9 +68,10 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	public MoveTaxonomyLevelController(UserRequest ureq, WindowControl wControl,
+	public MoveTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomySecurityCallback secCallback,
 			List<TaxonomyLevel> levelsToMove, Taxonomy taxonomy) {
 		super(ureq, wControl, "move_taxonomy_level");
+		this.secCallback = secCallback;
 		this.taxonomy = taxonomy;
 		this.levelsToMove = levelsToMove;
 		allowedTypes = getAllowedTypes();
@@ -130,7 +133,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 		if(uobject instanceof TaxonomyLevel) {
 			TaxonomyLevel level = (TaxonomyLevel)uobject;
 			TaxonomyLevelType type = level.getType();
-			if(type == null || allowedTypes.contains(type)) {
+			if((type == null || allowedTypes.contains(type)) && secCallback.canMove(level)) {
 				openedNodes.add(node);
 				((GenericTreeNode)node).setIconCssClass("o_icon_node_under o_icon-rotate-180");
 				targetableNodes.add(node);

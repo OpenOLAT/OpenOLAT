@@ -82,12 +82,12 @@ public class CatalogTaxonomySecurityCallback implements TaxonomySecurityCallback
 
 	@Override
 	public boolean canDelete(TaxonomyLevel level) {
-		return false;
+		return editableLevelKeys.contains(level.getKey());
 	}
 	
 	@Override
 	public boolean canMove(TaxonomyLevel level) {
-		return false;
+		return editableLevelKeys.contains(level.getKey());
 	}
 
 	@Override
