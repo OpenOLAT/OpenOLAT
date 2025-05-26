@@ -543,7 +543,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(CurriculumLectures.isEnabled(curriculumElement, curriculumElement.getType())) {
 			absencesTab = tabPane.addTab(ureq, translate("tab.absences"), "o_sel_curriculum_absences", uureq -> {
 				absencesCtrl = new CurriculumElementLecturesController(uureq, getWindowControl(), toolbarPanel,
-						curriculum, curriculumElement, false, secCallback);
+						curriculum, curriculumElement, true, secCallback);
 				listenTo(absencesCtrl);
 				return absencesCtrl.getInitialComponent();
 			}, true);
