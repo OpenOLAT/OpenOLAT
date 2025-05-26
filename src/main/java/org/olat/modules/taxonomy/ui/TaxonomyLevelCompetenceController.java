@@ -342,7 +342,13 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	
 	private void doRemoveCompetences(List<TaxonomyLevelCompetenceRow> rows) {
 		for(TaxonomyLevelCompetenceRow row:rows) {
-			taxonomyService.removeTaxonomyLevelCompetence(row.getCompetence());
+			TaxonomyCompetence competence = taxonomyService.getTaxonomyCompetence(row.getCompetence());
+			if (competence != null) {
+				String before = taxonomyService.toAuditXml(competence);
+				taxonomyService.removeTaxonomyLevelCompetence(competence);
+				taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.removeCompetence, before, null, null,
+						taxonomyLevel.getTaxonomy(), competence, competence.getIdentity(), getIdentity());
+			}
 		}
 		showInfo("confirm.removed.competence");
 		loadModel();
