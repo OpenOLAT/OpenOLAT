@@ -167,9 +167,17 @@ public class Deployments {
 		    options.addPreference("remote.active-protocols", 1);
 		    
 			FirefoxProfile profile = new FirefoxProfile();
-			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
+			profile.setPreference("browser.crashReports.unsubmittedCheck.autoSubmit2", Boolean.TRUE);
+			profile.setPreference("browser.migration.version", 140);
+			profile.setPreference("browser.startup.page", 1);
+			profile.setPreference("browser.sessionstore.resume_from_crash", Boolean.FALSE);
+			profile.setPreference("browser.sessionstore.max_resumed_crashes", 0);
+			profile.setPreference("fission.webContentIsolationStrategy", 0);
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
+			profile.setPreference("pdfjs.enabledCache.initialized", Boolean.TRUE);
+			profile.setPreference("pdfjs.enabledCache.state", Boolean.TRUE);
 			profile.setPreference("remote.events.async.enabled", Boolean.FALSE);
+			profile.setPreference("sidebar.visibility", "hide-sidebar");
 
 			options.setProfile(profile);
 			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
