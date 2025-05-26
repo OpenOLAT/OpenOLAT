@@ -397,11 +397,11 @@ public class RepositoryEntryRelationDAO {
 	}
 	
 	/**
-	 * Check all the relations to find to find the first one.
+	 * Check all the relations to find the first one. Ignores curriculum element memberships.
 	 * 
 	 * @param re The repository entry (mandatory)
 	 * @param role The roles (mandatory)
-	 * @return true if at least one membership with the specified role si found 
+	 * @return true if at least one membership with the specified role is found 
 	 */
 	public boolean hasMembers(RepositoryEntryRef re, String... role) {
 		if(role == null || role.length == 0 || role[0] == null) return false;
@@ -412,6 +412,8 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as memberships")
+		  .append(" left join curriculumelement ce on ce.group.key = baseGroup.key")		
+		  .where().append("ce is null")		
 		  .where().append("v.key=:repoKey and memberships.role in (:roles)");
 		
 		List<String> roles = new ArrayList<>();
@@ -469,13 +471,17 @@ public class RepositoryEntryRelationDAO {
 		return repoKeyToCountMembers;
 	}
 	
-	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
-		StringBuilder sb = new StringBuilder(256);
+	public Map<String, Long> getRoleToCountMembers(RepositoryEntryRef re, boolean ignoreCurriculumElementRoles) {
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select members.role, count(distinct members.identity.id) from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as members")
-		  .append(" where v.key=:repoKey")
+		  .append(" inner join baseGroup.members as members");
+		if (ignoreCurriculumElementRoles) {
+			sb.append(" left join curriculumelement ce on ce.group.key = baseGroup.key");
+			sb.where().append(" ce is null");
+		}
+		sb.where().append(" v.key=:repoKey")
 		  .append(" group by members.role");
 		
 		List<Object[]> resultList = dbInstance.getCurrentEntityManager()

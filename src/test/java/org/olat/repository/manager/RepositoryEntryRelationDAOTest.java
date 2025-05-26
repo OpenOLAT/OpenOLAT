@@ -48,6 +48,8 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
@@ -86,6 +88,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	@Test
 	public void getDefaultGroup() {
@@ -322,7 +326,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getRoleToCountMemebers() {
+	public void getRoleToCountMembers() {
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
 				null, JunitTestHelper.getDefaultActor());
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1,
@@ -351,10 +355,43 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		organisationService.addMember(organisation4, author4, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
-		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMemebers(repositoryEntry);
+		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, false);
 		
 		Assert.assertEquals(Long.valueOf(2), roleToCountMemebers.get(GroupRoles.participant.name()));
 		Assert.assertEquals(Long.valueOf(3), roleToCountMemebers.get(OrganisationRoles.author.name()));
+	}
+
+	@Test
+	public void getRoleToCountMembersIgnoringCurriculumElements() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity curriculumElementParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity curriculumElementCoach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity courseParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+
+		Curriculum curriculum = curriculumService.createCurriculum("cur-1", "Curriculum 1",
+				"Curriculum 1", false, null);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("cur-el-1",
+				"Curriculum Element 1", CurriculumElementStatus.active, null, null,
+				null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled,
+				CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(curriculumElement, curriculumElementParticipant, CurriculumRoles.participant, owner);
+		curriculumService.addMember(curriculumElement, curriculumElementCoach, CurriculumRoles.coach, owner);
+
+		RepositoryEntry repositoryEntry = repositoryService.create(null, random(), random(), random(),
+				null, null, RepositoryEntryStatusEnum.published,
+				RepositoryEntryRuntimeType.standalone, null);
+		repositoryEntryRelationDao.addRole(courseParticipant, repositoryEntry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(courseCoach, repositoryEntry, GroupRoles.coach.name());
+		curriculumService.addRepositoryEntry(curriculumElement, repositoryEntry, false);
+		
+		Map<String,Long> countIgnoringCurriculumElements = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, true);
+		Map<String,Long> countNotIgnoringCurriculumElements = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, false);
+
+		Assert.assertEquals(Long.valueOf(1), countIgnoringCurriculumElements.get(GroupRoles.participant.name()));
+		Assert.assertEquals(Long.valueOf(1), countIgnoringCurriculumElements.get(GroupRoles.coach.name()));
+		Assert.assertEquals(Long.valueOf(2), countNotIgnoringCurriculumElements.get(GroupRoles.participant.name()));
+		Assert.assertEquals(Long.valueOf(2), countNotIgnoringCurriculumElements.get(GroupRoles.coach.name()));
 	}
 	
 	@Test
