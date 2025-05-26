@@ -13,9 +13,9 @@
         </div>
     #end
 
-    <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="o_additional_roles_dropdowns">
         #if($r.available("rightsForm.add.to.organisation"))
-            <div style="display: flex; flex-direction: row-reverse;">
+            <div class="o_add_additional_roles_btn">
                 $r.render("rightsForm.add.to.organisation")
             </div>
         #end
