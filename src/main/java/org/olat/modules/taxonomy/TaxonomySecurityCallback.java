@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy;
 
+import org.olat.modules.taxonomy.model.FullTaxonomySecurityCallback;
+
 /**
  * 
  * Initial date: May 21, 2025<br>
@@ -27,8 +29,28 @@ package org.olat.modules.taxonomy;
  */
 public interface TaxonomySecurityCallback {
 	
-	boolean canViewTypes();
+	static final TaxonomySecurityCallback FULL = new FullTaxonomySecurityCallback();
+
+	void refresh();
 	
+	boolean canEditTaxonomyMetadata();
+	
+	boolean canImportExport();
+	
+	boolean canCreateChild(TaxonomyLevel level);
+	
+	boolean canDelete(TaxonomyLevel level);
+
+	boolean canMove(TaxonomyLevel level);
+	
+	boolean canEditMetadata(TaxonomyLevel level);
+	
+	boolean canViewLevelTypes();
+	
+	boolean canViewManagement(TaxonomyLevel level);
+	
+	boolean canViewCompetences();
+
 	boolean canViewLostFound();
 
 }

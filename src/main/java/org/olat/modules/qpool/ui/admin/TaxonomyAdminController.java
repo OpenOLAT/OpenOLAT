@@ -31,6 +31,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.ui.TaxonomyTreeTableController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,7 +53,7 @@ public class TaxonomyAdminController extends BasicController implements Breadcru
 		
 		Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
 		VelocityContainer mainVC = createVelocityContainer("admin_study_fields");
-		taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), taxonomy, null);
+		taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), TaxonomySecurityCallback.FULL, taxonomy, null);
 		listenTo(taxonomyCtrl);
 		mainVC.put("taxonomy", taxonomyCtrl.getInitialComponent());
 		putInitialPanel(mainVC);

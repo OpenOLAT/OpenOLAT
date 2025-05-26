@@ -21,7 +21,9 @@ package org.olat.modules.taxonomy.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.FlushModeType;
@@ -294,6 +296,52 @@ public class TaxonomyCompetenceDAO {
 		
 		List<Long> keys = query.getResultList();
 		return keys != null && keys.size() > 0 && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
+	
+	public Set<Long> getManagedTaxonomyLevelKeys(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cTaxonomyLevel.materializedPathKeys");
+		sb.append("  from ctaxonomycompetence competence");
+		sb.append("       inner join competence.taxonomyLevel cTaxonomyLevel");
+		sb.append(" where cTaxonomyLevel.taxonomy.key = :taxonomyKey");
+		sb.append("   and competence.identity.key=:identityKey");
+		sb.append("   and competence.type = '").append(TaxonomyCompetenceTypes.manage.name()).append("'");
+		sb.append("   and (competence.expiration is null or competence.expiration>=:date)");
+		
+		List<String> matPathKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("taxonomyKey", taxonomy.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("date", CalendarUtils.removeTime(date))
+				.getResultList();
+		
+		if (matPathKeys.isEmpty()) {
+			return Set.of();
+		}
+		
+		
+		sb = new StringBuilder();
+		sb.append("select distinct taxonomyLevel.key");
+		sb.append("  from ctaxonomylevel taxonomyLevel");
+		sb.append(" where taxonomyLevel.taxonomy.key = :taxonomyKey");
+		sb.append("   and (");
+		for (int i = 0; i < matPathKeys.size(); i++) {
+			if (i > 0) {
+				sb.append(" or ");
+			}
+			sb.append("taxonomyLevel.materializedPathKeys like :matPathKey").append(i);
+		}
+		sb.append(")");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("taxonomyKey", taxonomy.getKey());
+		for (int i = 0; i < matPathKeys.size(); i++) {
+			query.setParameter("matPathKey" + i,  matPathKeys.get(i) + "%");
+		}
+		
+		return new HashSet<>(query.getResultList());
 	}
 	
 	public int replace(TaxonomyLevel source, TaxonomyLevel target) {

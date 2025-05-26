@@ -124,7 +124,6 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//TODO uh remove manage everywhere
 		boolean multiSelect = false;
 		if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.teachCompetence)
 				|| !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.haveCompetence)

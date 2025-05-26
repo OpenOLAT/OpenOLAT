@@ -62,6 +62,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -90,6 +91,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	private FileElement backgroundImageEl;
 	
 	private final String i18nSuffix;
+	private final boolean canEdit;
 	private TaxonomyLevel level;
 	private TaxonomyLevel parentLevel;
 	private Taxonomy taxonomy;
@@ -114,9 +116,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	@Autowired
 	private CatalogV2Module catalogV2Module;
 
-	public EditTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomyLevel level) {
+	public EditTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomySecurityCallback secCallback, TaxonomyLevel level) {
 		super(ureq, wControl, "admin_metadata");
 		this.level = level;
+		this.canEdit = secCallback.canEditMetadata(level);
 		this.i18nSuffix = level.getI18nSuffix();
 		this.parentLevel = level.getParent();
 		this.taxonomy = level.getTaxonomy();
@@ -127,6 +130,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	public EditTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomyLevel parentLevel, Taxonomy rootTaxonomy) {
 		super(ureq, wControl, "admin_metadata");
 		this.level = null;
+		this.canEdit = true;
 		this.i18nSuffix = taxonomyService.createI18nSuffix();
 		this.parentLevel = parentLevel;
 		this.taxonomy = rootTaxonomy;
@@ -136,9 +140,9 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	
 	private void initTranslation() {
 		this.displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + i18nSuffix;
-		this.displayNameEnabled = !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName);
+		this.displayNameEnabled = canEdit && !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName);
 		this.descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + i18nSuffix;
-		this.descriptionEnabled = !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.description);
+		this.descriptionEnabled = canEdit && !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.description);
 		this.defaultLocale = I18nModule.getDefaultLocale();
 	}
 	
@@ -201,12 +205,12 @@ public class EditTaxonomyLevelController extends FormBasicController {
 				pathValues = new String[] { parentLevel.getMaterializedPathIdentifiers() };
 			}
 			pathEl = uifactory.addDropdownSingleselect("level.path", "taxonomy.level.path", generalCont, pathKeys, pathValues, null);
-			pathEl.setEnabled(parentLevel == null);
+			pathEl.setEnabled(canEdit && parentLevel == null);
 		}
 
 		String identifier = level == null ? "" : level.getIdentifier();
 		identifierEl = uifactory.addTextElement("level.identifier", "level.ext.ref", 255, identifier, generalCont);
-		identifierEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.identifier));
+		identifierEl.setEnabled(canEdit && !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.identifier));
 		identifierEl.setElementCssClass("o_sel_taxonomy_level_identifier");
 		identifierEl.setMandatory(true);
 
@@ -220,7 +224,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			typeValues[i+1] = types.get(i).getDisplayName();
 		}
 		taxonomyLevelTypeEl = uifactory.addDropdownSingleselect("level.type", "level.type", generalCont, typeKeys, typeValues, null);
-		taxonomyLevelTypeEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.type));
+		taxonomyLevelTypeEl.setEnabled(canEdit && !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.type));
 		boolean typeFound = false;
 		if(level != null && level.getType() != null) {
 			String selectedTypeKey = level.getType().getKey().toString();
@@ -238,7 +242,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		
 		String sortOrder = level == null || level.getSortOrder() == null ? "" : level.getSortOrder().toString();
 		sortOrderEl = uifactory.addTextElement("level.sort.order", "level.sort.order", 255, sortOrder, generalCont);
-		sortOrderEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
+		sortOrderEl.setEnabled(canEdit && !TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
 		
 		tabbedPane = uifactory.addTabbedPane("tabPane", getLocale(), formLayout);
 		tabbedPane.setTabIndentation(TabIndentation.defaultFormLayout);
@@ -275,6 +279,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		teaserImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
 		teaserImageEl.setReplaceButton(true);
 		teaserImageEl.setDeleteEnabled(true);
+		teaserImageEl.setEnabled(canEdit);
 		teaserImageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf teaserImage = taxonomyService.getTeaserImage(level);
 		if (teaserImage instanceof LocalFileImpl teaserLeaf) {
@@ -293,6 +298,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		backgroundImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
 		backgroundImageEl.setReplaceButton(true);
 		backgroundImageEl.setDeleteEnabled(true);
+		backgroundImageEl.setEnabled(canEdit);
 		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
 		VFSLeaf backgroundImage = taxonomyService.getBackgroundImage(level);
 		if (backgroundImage instanceof LocalFileImpl backgroundLeaf) {
@@ -300,13 +306,15 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		}
 		updateBackgroundImagePreview(ureq);
 		
-		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
-		buttonsWrapperCont.setRootForm(mainForm);
-		formLayout.add(buttonsWrapperCont);
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttonsCont", getTranslator());
-		buttonsWrapperCont.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		if (canEdit) {
+			FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+			buttonsWrapperCont.setRootForm(mainForm);
+			formLayout.add(buttonsWrapperCont);
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttonsCont", getTranslator());
+			buttonsWrapperCont.add(buttonsCont);
+			uifactory.addFormSubmitButton("save", buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		}
 	}
 	
 	private void buildPathKeysAndValues(List<String> pathKeyList, List<String> pathValueList) {

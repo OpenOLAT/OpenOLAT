@@ -48,6 +48,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
@@ -81,6 +82,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	private CloseableCalloutWindowController actionsCalloutCtrl;
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
 	
+	private final TaxonomySecurityCallback secCallback;
 	private TaxonomyLevel taxonomyLevel;
 
 	@Autowired
@@ -88,9 +90,11 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	@Autowired
 	private CatalogV2Module catalogV2Module;
 	
-	public TaxonomyLevelOverviewController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, TaxonomyLevel taxonomyLevel) {
+	public TaxonomyLevelOverviewController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			TaxonomySecurityCallback secCallback, TaxonomyLevel taxonomyLevel) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		this.taxonomyLevel = taxonomyLevel;
 
 		mainVC = createVelocityContainer("taxonomy_level_overview");
@@ -100,18 +104,21 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		cmdsDropDown.setEmbbeded(true);
 		mainVC.put("actions", cmdsDropDown);
 		
-		if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.move)) {
+		if(secCallback.canMove(taxonomyLevel) && !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.move)) {
 			moveLink = LinkFactory.createToolLink("move", translate("move.taxonomy.level"), this, "o_icon_move");
 			cmdsDropDown.addComponent(moveLink);
 		}
 		
-		newLink = LinkFactory.createToolLink("new", translate("add.taxonomy.level.under"), this, "o_icon_taxonomy_levels");
-		cmdsDropDown.addComponent(newLink);
+		if (secCallback.canCreateChild(taxonomyLevel)) {
+			newLink = LinkFactory.createToolLink("new", translate("add.taxonomy.level.under"), this, "o_icon_taxonomy_levels");
+			cmdsDropDown.addComponent(newLink);
+		}
 		
-		if(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.delete)) {
+		if(secCallback.canDelete(taxonomyLevel) && !TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, TaxonomyLevelManagedFlag.delete)) {
 			deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon_delete_item");
 			cmdsDropDown.addComponent(deleteLink);
 		}
+		cmdsDropDown.setVisible(cmdsDropDown.size() > 0);
 		
 		tabPane = new TabbedPane("tabs", ureq.getLocale());
 		tabPane.setElementCssClass("o_sel_taxonomy_level_tabs");
@@ -126,32 +133,36 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	private void initTabPane(UserRequest ureq) {
 		tabPane.addTab(ureq, translate("taxonomy.metadata"), "o_sel_taxonomy_level_edit_details", uureq -> {
 			removeAsListenerAndDispose(metadataCtrl);
-			metadataCtrl = new EditTaxonomyLevelController(uureq, getWindowControl(), taxonomyLevel);
+			metadataCtrl = new EditTaxonomyLevelController(uureq, getWindowControl(), secCallback, taxonomyLevel);
 			listenTo(metadataCtrl);
 			return metadataCtrl.getInitialComponent();
 		}, true);
 		
 		tabPane.addTab(ureq, translate("taxonomy.levels.tab"), "o_sel_taxonomy_level_levels", uureq -> {
 			removeAsListenerAndDispose(taxonomyLevelsCtrl);
-			taxonomyLevelsCtrl = new TaxonomyTreeTableController(uureq, getWindowControl(), taxonomyLevel.getTaxonomy(), taxonomyLevel);
+			taxonomyLevelsCtrl = new TaxonomyTreeTableController(uureq, getWindowControl(), secCallback, taxonomyLevel.getTaxonomy(), taxonomyLevel);
 			taxonomyLevelsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyLevelsCtrl);
 			return taxonomyLevelsCtrl.getInitialComponent();
 		}, true);
 		
-		tabPane.addTab(ureq, translate("taxonomy.level.management"), "o_sel_taxonomy_level_management", uureq -> {
-			removeAsListenerAndDispose(managementCtrl);
-			managementCtrl = new TaxonomyLevelManagementController(uureq, getWindowControl(), taxonomyLevel);
-			listenTo(managementCtrl);
-			return managementCtrl.getInitialComponent();
-		}, true);
+		if (secCallback.canViewManagement(taxonomyLevel)) {
+			tabPane.addTab(ureq, translate("taxonomy.level.management"), "o_sel_taxonomy_level_management", uureq -> {
+				removeAsListenerAndDispose(managementCtrl);
+				managementCtrl = new TaxonomyLevelManagementController(uureq, getWindowControl(), taxonomyLevel);
+				listenTo(managementCtrl);
+				return managementCtrl.getInitialComponent();
+			}, true);
+		}
 		
-		tabPane.addTab(ureq, translate("taxonomy.level.competences"), "o_sel_taxonomy_level_competences", uureq -> {
-			removeAsListenerAndDispose(competencesCtrl);
-			competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
-			listenTo(competencesCtrl);
-			return competencesCtrl.getInitialComponent();
-		}, true);
+		if (secCallback.canViewCompetences()) {
+			tabPane.addTab(ureq, translate("taxonomy.level.competences"), "o_sel_taxonomy_level_competences", uureq -> {
+				removeAsListenerAndDispose(competencesCtrl);
+				competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
+				listenTo(competencesCtrl);
+				return competencesCtrl.getInitialComponent();
+			}, true);
+		}
 		
 		tabPane.addTab(ureq, translate("taxonomy.level.relations"), "o_sel_taxonomy_level_edit_relations", uureq -> {
 			removeAsListenerAndDispose(relationsCtrl);

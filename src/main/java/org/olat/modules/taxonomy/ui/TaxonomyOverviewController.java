@@ -67,7 +67,7 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	private Taxonomy taxonomy;
 	private TaxonomySecurityCallback secCallback;
 	
-	public TaxonomyOverviewController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy, TaxonomySecurityCallback secCallback) {
+	public TaxonomyOverviewController(UserRequest ureq, WindowControl wControl, TaxonomySecurityCallback secCallback, Taxonomy taxonomy) {
 		super(ureq, wControl);
 		this.taxonomy = taxonomy;
 		this.secCallback = secCallback;
@@ -92,7 +92,7 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		metadataTab = tabPane.addTab(ureq, translate("taxonomy.metadata"), "o_sel_taxonomy_metadata", uureq -> {
 			removeAsListenerAndDispose(metadataCtrl);
 			WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType("Metadata"), null);
-			metadataCtrl = new EditTaxonomyController(uureq, bwControl, taxonomy);
+			metadataCtrl = new EditTaxonomyController(uureq, bwControl, secCallback, taxonomy);
 			listenTo(metadataCtrl);
 			return metadataCtrl.getInitialComponent();
 		}, true);
@@ -100,13 +100,13 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		levelsTab = tabPane.addTab(ureq, translate("taxonomy.levels.tab"), "o_sel_taxonomy_levels", uureq -> {
 			removeAsListenerAndDispose(taxonomyLevelsCtrl);
 			WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType("Levels"), null);
-			taxonomyLevelsCtrl = new TaxonomyTreeTableController(uureq, bwControl, taxonomy, null);
+			taxonomyLevelsCtrl = new TaxonomyTreeTableController(uureq, bwControl, secCallback, taxonomy, null);
 			taxonomyLevelsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyLevelsCtrl);
 			return taxonomyLevelsCtrl.getInitialComponent();
 		}, true);
 		
-		if (secCallback.canViewTypes()) {
+		if (secCallback.canViewLevelTypes()) {
 			typeListTab = tabPane.addTab(ureq, translate("taxonomy.types"), "o_sel_taxonomy_levels", uureq -> {
 				removeAsListenerAndDispose(typeListCtrl);
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType("Types"), null);

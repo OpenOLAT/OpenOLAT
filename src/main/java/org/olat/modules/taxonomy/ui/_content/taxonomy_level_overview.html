@@ -29,7 +29,7 @@
 			#end
 		</div>
 	</div>
-	#if($r.available("actions"))
+	#if($r.available("actions") && $r.visible("actions"))
 		<div class="o_taxonomy_title_cmds">
 			$r.render("actions")
 		</div>

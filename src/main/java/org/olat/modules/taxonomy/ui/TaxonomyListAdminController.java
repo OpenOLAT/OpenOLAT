@@ -72,8 +72,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaxonomyListAdminController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2, BreadcrumbPanelAware {
 	
-	private static final TaxonomySecurityCallback SEC_CALLBACK = new AdminTaxonomySecurityCallback();
-	
 	private FlexiTableElement tableEl;
 	private TaxonomyListDataModel model;
 	private BreadcrumbPanel stackPanel;
@@ -334,7 +332,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Taxonomy", row.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		Taxonomy taxonomy = taxonomyService.getTaxonomy(row);
-		taxonomyCtrl = new TaxonomyOverviewController(ureq, bwControl, taxonomy, SEC_CALLBACK);
+		taxonomyCtrl = new TaxonomyOverviewController(ureq, bwControl, TaxonomySecurityCallback.FULL, taxonomy);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		listenTo(taxonomyCtrl);
 		
@@ -346,7 +344,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	private void doCreateTaxonomy(UserRequest ureq) {
 		if(guardModalController(editTaxonomyCtrl)) return;
 		
-		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), null);
+		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), TaxonomySecurityCallback.FULL, null);
 		listenTo(editTaxonomyCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
@@ -359,20 +357,6 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			return "o_taxonomy_row";
 		}
-	}
-	
-	private static final class AdminTaxonomySecurityCallback implements TaxonomySecurityCallback {
-		
-		@Override
-		public boolean canViewTypes() {
-			return true;
-		}
-		
-		@Override
-		public boolean canViewLostFound() {
-			return true;
-		}
-		
 	}
 	
 }

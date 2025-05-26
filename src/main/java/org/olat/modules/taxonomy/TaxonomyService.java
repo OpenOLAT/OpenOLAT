@@ -238,6 +238,8 @@ public interface TaxonomyService {
 	 */
 	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity, Date date, TaxonomyCompetenceTypes... competenceTypes);
 	
+	public Set<Long> getManagedTaxonomyLevelKeys(TaxonomyRef taxonomy, IdentityRef identity, Date date);
+	
 	/**
 	 * The available types for a specific taxonomy.
 	 * 

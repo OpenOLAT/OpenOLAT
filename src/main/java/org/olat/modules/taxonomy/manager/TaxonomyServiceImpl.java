@@ -402,6 +402,11 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			TaxonomyCompetenceTypes... competenceTypes) {
 		return taxonomyCompetenceDao.hasCompetenceByLevel(taxonomyLevel, identity, date, competenceTypes);
 	}
+	
+	@Override
+	public Set<Long> getManagedTaxonomyLevelKeys(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
+		return taxonomyCompetenceDao.getManagedTaxonomyLevelKeys(taxonomy, identity, date);
+	}
 
 	@Override
 	public List<TaxonomyLevelType> getTaxonomyLevelTypes(TaxonomyRef taxonomy) {

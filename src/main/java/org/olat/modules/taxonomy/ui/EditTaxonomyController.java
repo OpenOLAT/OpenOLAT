@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyManagedFlag;
+import org.olat.modules.taxonomy.TaxonomySecurityCallback;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,13 +46,15 @@ public class EditTaxonomyController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl, displayNameEl;
 	
+	private final boolean canEdit;
 	private Taxonomy taxonomy;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	public EditTaxonomyController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
+	public EditTaxonomyController(UserRequest ureq, WindowControl wControl, TaxonomySecurityCallback secCallback, Taxonomy taxonomy) {
 		super(ureq, wControl);
+		this.canEdit = secCallback.canEditTaxonomyMetadata();
 		this.taxonomy = taxonomy;
 		
 		initForm(ureq);
@@ -74,23 +77,25 @@ public class EditTaxonomyController extends FormBasicController {
 		
 		String identifier = taxonomy == null ? "" : taxonomy.getIdentifier();
 		identifierEl = uifactory.addTextElement("taxonomy.identifier", "taxonomy.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.identifier));
+		identifierEl.setEnabled(canEdit && !TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.identifier));
 		identifierEl.setMandatory(true);
 
 		String displayName = taxonomy == null ? "" : taxonomy.getDisplayName();
 		displayNameEl = uifactory.addTextElement("taxonomy.displayname", "taxonomy.title", 255, displayName, formLayout);
-		displayNameEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.displayName));
+		displayNameEl.setEnabled(canEdit &&!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
 		
 		String description = taxonomy == null ? "" : taxonomy.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("taxonomy.description", "taxonomy.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.description));
+		descriptionEl.setEnabled(canEdit && !TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.description));
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if (canEdit) {
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			formLayout.add(buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 
 	@Override

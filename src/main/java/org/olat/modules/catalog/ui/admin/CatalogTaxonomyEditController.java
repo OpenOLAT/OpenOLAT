@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogSecurityCallback;
@@ -50,7 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CatalogTaxonomyEditController extends BasicController {
 	
 	public static final Event OPEN_ADMIN_EVENT = new Event("open.admin");
-	private static final TaxonomySecurityCallback SEC_CALLBACK = new CatalogTaxonomySecurityCallback();
 	
 	private TooledStackedPanel stackPanel;
 	private VelocityContainer mainVC;
@@ -108,23 +108,14 @@ public class CatalogTaxonomyEditController extends BasicController {
 	private void doSelectTaxonomy(UserRequest ureq, Taxonomy taxonomy) {
 		removeAsListenerAndDispose(taxonomyCtrl);
 		
-		taxonomyCtrl = new TaxonomyOverviewController(ureq, getWindowControl(), taxonomy, SEC_CALLBACK);
+		Roles roles = ureq.getUserSession().getRoles();
+		TaxonomySecurityCallback secCallback = roles != null && roles.isSystemAdmin()
+				? TaxonomySecurityCallback.FULL
+				: new CatalogTaxonomySecurityCallback(taxonomy, getIdentity());
+		taxonomyCtrl = new TaxonomyOverviewController(ureq, getWindowControl(),
+				secCallback, taxonomy);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		stackPanel.pushController(StringHelper.escapeHtml(taxonomy.getDisplayName()), taxonomyCtrl);
-	}
-	
-	private static final class CatalogTaxonomySecurityCallback implements TaxonomySecurityCallback {
-		
-		@Override
-		public boolean canViewTypes() {
-			return false;
-		}
-		
-		@Override
-		public boolean canViewLostFound() {
-			return false;
-		}
-		
 	}
 
 }

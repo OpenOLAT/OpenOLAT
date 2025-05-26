@@ -2,5 +2,7 @@
 $r.render("general")
 $r.render("tabPane")
 $r.render("images")
-$r.render("buttons")
+#if($r.available("buttons"))
+	$r.render("buttons")
+#end
 </div>

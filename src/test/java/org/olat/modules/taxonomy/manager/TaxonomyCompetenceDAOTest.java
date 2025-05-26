@@ -23,11 +23,13 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
@@ -311,6 +313,37 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Assert.assertTrue(hasTarget);
 		boolean hasTeach = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, new Date(), TaxonomyCompetenceTypes.teach);
 		Assert.assertFalse(hasTeach);
+	}
+	
+	@Test
+	public void getManagedTaxonomyLevelKeys() {
+		Identity identity = JunitTestHelper.getDefaultAuthor();
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy(JunitTestHelper.random(), "Competence", "", null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, null, null, taxonomy);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, level1, identity, null);
+		TaxonomyLevel subLevel1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, level1, null, taxonomy);
+		TaxonomyLevel subSubLevel1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, subLevel1, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, null, null, taxonomy);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, level2, identity, null);
+		TaxonomyLevel subLevel2 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, level2, null, taxonomy);
+		TaxonomyLevel levelOtherCompetence = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, null, null, taxonomy);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, levelOtherCompetence, identity, null);
+		TaxonomyLevel levelOtherIdentity = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, null, null, taxonomy);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, levelOtherIdentity, JunitTestHelper.getDefaultActor(), null);
+		TaxonomyLevel levelOtherTaxonomy = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, null, null, 
+				taxonomyDao.createTaxonomy(JunitTestHelper.random(), "Competence Other", "", null));
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, levelOtherTaxonomy, identity, null);
+		TaxonomyLevel levelOtherDate = taxonomyLevelDao.createTaxonomyLevel(random(), random(), null, null, null, null, null, null, taxonomy);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, levelOtherDate, identity, DateUtils.addDays(new Date(), -3));
+		dbInstance.commitAndCloseSession();
+		
+		Set<Long> managedTaxonomyLevelKeys = taxonomyCompetenceDao.getManagedTaxonomyLevelKeys(taxonomy, identity, new Date());
+		Assert.assertEquals(5, managedTaxonomyLevelKeys.size());
+		Assert.assertTrue(managedTaxonomyLevelKeys.contains(level1.getKey()));
+		Assert.assertTrue(managedTaxonomyLevelKeys.contains(subLevel1.getKey()));
+		Assert.assertTrue(managedTaxonomyLevelKeys.contains(subSubLevel1.getKey()));
+		Assert.assertTrue(managedTaxonomyLevelKeys.contains(level2.getKey()));
+		Assert.assertTrue(managedTaxonomyLevelKeys.contains(subLevel2.getKey()));
 	}
 	
 	@Test
