@@ -260,7 +260,8 @@ public class LectureBlockDAO {
 		  .append(" left join block.teacherGroup tGroup")
 		  .append(" left join block.curriculumElement curEl")
 		  .append(" left join curEl.curriculum cur")
-		  .append(" left join cur.organisation organis");
+		  .append(" left join cur.organisation organis")
+		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)");
 		addSearchParametersToQuery(sb, searchParams);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -278,7 +279,9 @@ public class LectureBlockDAO {
 		  .append(" left join fetch block.teacherGroup tGroup")
 		  .append(" left join block.curriculumElement curEl")
 		  .append(" left join curEl.curriculum cur")
-		  .append(" left join cur.organisation organis");
+		  .append(" left join cur.organisation organis")
+		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)");
+
 		addSearchParametersToQuery(sb, searchParams);
 		if(orderAsc != null) {
 			sb.append(" order by block.startDate ").append("asc", "desc", orderAsc.booleanValue());

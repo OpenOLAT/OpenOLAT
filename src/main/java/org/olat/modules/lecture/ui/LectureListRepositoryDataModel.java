@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -72,13 +73,26 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 	}
 	
 	public LectureBlockRow getObject(LectureBlock lectureBlock) {
-		List<LectureBlockRow> rows = this.getObjects();
+		List<LectureBlockRow> rows = getObjects();
 		for(int i=0; i<rows.size(); i++) {
 			if(lectureBlock.equals(rows.get(i).getLectureBlock())) {
 				return rows.get(i);
 			}
 		}
 		return null;
+	}
+	
+	public Date getMinLectureBlockStartDate() {
+		List<LectureBlockRow> rows = getObjects();
+		
+		Date date = null;
+		for(int i=0; i<rows.size(); i++) {
+			LectureBlock lectureBlock = rows.get(i).getLectureBlock();
+			if(date == null || (lectureBlock.getStartDate() != null && lectureBlock.getStartDate().before(date))) {
+				date = lectureBlock.getStartDate();
+			}
+		}
+		return date;
 	}
 
 	@Override

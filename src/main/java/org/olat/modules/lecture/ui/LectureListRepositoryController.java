@@ -908,7 +908,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private void loadWarning(UserRequest ureq) {
 		if(secCallback.viewAs() == LectureRoles.teacher && pendingTab != null) {
-			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			LecturesBlockSearchParameters searchParams = getSearchParamsByContext();
 			searchParams.setTeacher(getIdentity());
 			searchParams.setEndDate(ureq.getRequestTimestamp());
 			searchParams.addRollCallStatus(LectureRollCallStatus.open, LectureRollCallStatus.reopen);
@@ -1011,8 +1011,28 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			teachersValues.add(SelectionValues.entry(teacher.getKey().toString(), fullName));
 		}
 	}
-	
+
 	private LecturesBlockSearchParameters getSearchParams() {
+		LecturesBlockSearchParameters searchParams = getSearchParamsByContext();
+		if(secCallback.viewAs() == LectureRoles.participant) {
+			searchParams.setParticipant(getIdentity());
+		} else if(secCallback.viewAs() == LectureRoles.teacher) {
+			if(allTeachersButton != null && allTeachersButton.isPrimary()) {
+				if(entry == null) {
+					searchParams.setManager(getIdentity());
+				}
+				// else can see all lecture blocks of the course
+			} else {
+				searchParams.setTeacher(getIdentity());
+			}
+		} else {
+			searchParams.setManager(getIdentity());
+		}
+		
+		return searchParams;
+	}
+	
+	private LecturesBlockSearchParameters getSearchParamsByContext() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		
 		if(curriculumElement != null) {
@@ -1030,22 +1050,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setInSomeCurriculum(true);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
 		}
-		
-		if(secCallback.viewAs() == LectureRoles.participant) {
-			searchParams.setParticipant(getIdentity());
-		} else if(secCallback.viewAs() == LectureRoles.teacher) {
-			if(allTeachersButton != null && allTeachersButton.isPrimary()) {
-				if(entry == null) {
-					searchParams.setManager(getIdentity());
-				}
-				// else can see all lecture blocks of the course
-			} else {
-				searchParams.setTeacher(getIdentity());
-			}
-		} else {
-			searchParams.setManager(getIdentity());
-		}
-		
 		return searchParams;
 	}
 	
@@ -1489,6 +1493,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		activateFilterTab(ureq, pendingTab);
 		scopeEl.setSelectedKey(null);
 		loadModel(ureq);
+		
+		Date minDate = tableModel.getMinLectureBlockStartDate();
+		if(minDate != null) {
+			DateRange range = new DateRange(DateUtils.getStartOfDay(minDate), DateUtils.getEndOfDay(ureq.getRequestTimestamp()));
+			scopeEl.setCustomScope(range);
+		}
 	}
 
 	private void doEditLectureBlock(UserRequest ureq, LectureBlockRow row) {

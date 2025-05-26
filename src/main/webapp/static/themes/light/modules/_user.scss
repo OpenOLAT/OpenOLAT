@@ -755,6 +755,17 @@ dialog.popover {
 	}
 }
 
+.o_additional_roles_dropdowns {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	.o_add_additional_roles_btn {
+		display: flex;
+		flex-direction: row-reverse;
+	}
+}
+
 .o_roles_dropdown_row {
 	display: grid;
 	grid-template-columns: 1fr auto;
