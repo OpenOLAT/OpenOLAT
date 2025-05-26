@@ -113,16 +113,20 @@
 
 .o_badge_details {
 	display: flex;
+	gap: 10px;
 
 	padding-bottom: 25px;
 	
 	.o_badge_details_summary {
 		flex-grow: 1;
 		display: flex;
+		gap: 10px;
 		
 		.o_badge_details_image {
 			min-width: 50px;
 			min-height: 50px;
+			max-width: 100px;
+			max-height: 100px;
 			margin: auto;
 		}
 		
@@ -142,7 +146,7 @@
 	.o_badge_details_actions {
 		flex-grow: 1;
 		text-align: right;
-		margin-top: auto;
+		margin-top: 0;
 		margin-bottom: auto;
 	}
 }
@@ -395,6 +399,7 @@ form {
 	.o_small_badge {
 		max-width: 250px;
 		max-height: 250px;
+		padding-bottom: 15px;
 
 		.o_image {
 			max-width: 250px;
