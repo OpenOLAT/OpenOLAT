@@ -128,6 +128,10 @@
 			max-width: 100px;
 			max-height: 100px;
 			margin: auto;
+			
+			img {
+				max-height: 100px;
+			}
 		}
 		
 		.o_badge_details_meta {
@@ -409,7 +413,6 @@ form {
 			img {
 				max-width: 250px;
 				max-height: 250px;
-				width: 100%;
 			}
 		}
 	}
