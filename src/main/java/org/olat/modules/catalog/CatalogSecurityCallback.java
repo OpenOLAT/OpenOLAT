@@ -30,5 +30,7 @@ public interface CatalogSecurityCallback {
 	public boolean canEditCatalogAdministration();
 	
 	public boolean canEditTaxonomy();
+	
+	public boolean canEditFullTaxonomies();
 
 }

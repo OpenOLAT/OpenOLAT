@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.ui.admin;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
@@ -37,14 +38,14 @@ import org.olat.modules.taxonomy.TaxonomyService;
  */
 public class CatalogTaxonomySecurityCallback implements TaxonomySecurityCallback {
 	
-	private final TaxonomyRef taxonomy;
+	private final List<TaxonomyRef> taxonomies;
 	private final IdentityRef identity;
 	private Set<Long> editableLevelKeys;
 
 	private final TaxonomyService taxonomyService;
 
 	public CatalogTaxonomySecurityCallback(TaxonomyRef taxonomy, IdentityRef identity) {
-		this.taxonomy = taxonomy;
+		this.taxonomies = List.of(taxonomy);
 		this.identity = identity;
 		
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
@@ -58,7 +59,7 @@ public class CatalogTaxonomySecurityCallback implements TaxonomySecurityCallback
 	}
 	
 	private void loadEditableLevels() {
-		editableLevelKeys = taxonomyService.getManagedTaxonomyLevelKeys(taxonomy, identity, new Date());
+		editableLevelKeys = taxonomyService.getManagedTaxonomyLevelKeys(taxonomies, identity, new Date());
 	}
 	
 	@Override

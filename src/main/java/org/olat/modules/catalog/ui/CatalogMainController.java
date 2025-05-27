@@ -120,7 +120,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	}
 
 	protected CatalogSecurityCallback createSecCallback(UserRequest ureq) {
-		return CatalogSecurityCallbackFactory.create(ureq.getUserSession().getRoles());
+		return CatalogSecurityCallbackFactory.create(getIdentity(), ureq.getUserSession().getRoles());
 	}
 	
 	protected CatalogEntrySearchParams createDefaultSearchParams(UserRequest ureq) {

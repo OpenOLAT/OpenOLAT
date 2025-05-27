@@ -404,8 +404,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	}
 	
 	@Override
-	public Set<Long> getManagedTaxonomyLevelKeys(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
-		return taxonomyCompetenceDao.getManagedTaxonomyLevelKeys(taxonomy, identity, date);
+	public Set<Long> getManagedTaxonomyLevelKeys(Collection<? extends TaxonomyRef> taxonomies, IdentityRef identity, Date date) {
+		return taxonomyCompetenceDao.getManagedTaxonomyLevelKeys(taxonomies, identity, date);
 	}
 
 	@Override

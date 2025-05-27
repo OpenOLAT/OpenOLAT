@@ -19,12 +19,18 @@
  */
 package org.olat.modules.catalog;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.repository.RepositoryModule;
 
 /**
  * 
@@ -34,39 +40,59 @@ import org.olat.modules.taxonomy.TaxonomyModule;
  */
 public class CatalogSecurityCallbackFactory {
 	
-	private static final CatalogSecurityCallback WEB_CATALOG_CALLBACK = new CatalogSecurityCallbackImpl(false, false);
+	private static final CatalogSecurityCallback WEB_CATALOG_CALLBACK = new CatalogSecurityCallbackImpl(false, false, false);
 	
 	public static CatalogSecurityCallback createWebCatalogCallback() {
 		return WEB_CATALOG_CALLBACK;
 	}
 	
-	public static CatalogSecurityCallback create(Roles roles) {
+	public static CatalogSecurityCallback create(Identity identity, Roles roles) {
 		boolean canEditCatalogAdministration = roles.isSystemAdmin();
 		boolean canEditTaxonomy = false;
+		boolean canEditFullTaxonomies = false;
 		if (CoreSpringFactory.getImpl(TaxonomyModule.class).isEnabled()) {
-			if (roles.isSystemAdmin() || roles.isAdministrator()) {
+			if (roles.isSystemAdmin() || roles.isAdministrator() || hasTaxonomyEditRole(roles)) {
 				canEditTaxonomy = true;
-			} else {
-				Set<OrganisationRoles> taxonomyEditRoles = CoreSpringFactory.getImpl(CatalogV2Module.class).getTaxonomyEditRoles();
-				for (OrganisationRoles role : taxonomyEditRoles) {
-					if (roles.hasRole(role)) {
-						canEditTaxonomy = true;
-					}
-				}
+				canEditFullTaxonomies = true;
+			} else if (hasTaxonomyLevelManagementCompetence(identity)) {
+				canEditTaxonomy = true;
 			}
 		}
 		
-		return new CatalogSecurityCallbackImpl(canEditCatalogAdministration, canEditTaxonomy);
+		return new CatalogSecurityCallbackImpl(canEditCatalogAdministration, canEditTaxonomy, canEditFullTaxonomies);
 	}
 	
+	private static boolean hasTaxonomyEditRole(Roles roles) {
+		Set<OrganisationRoles> taxonomyEditRoles = CoreSpringFactory.getImpl(CatalogV2Module.class).getTaxonomyEditRoles();
+		for (OrganisationRoles role : taxonomyEditRoles) {
+			if (roles.hasRole(role)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static boolean hasTaxonomyLevelManagementCompetence(Identity identity) {
+		List<TaxonomyRef> taxonomies = CoreSpringFactory.getImpl(RepositoryModule.class).getTaxonomyRefs();
+		if (taxonomies == null || taxonomies.isEmpty()) {
+			return false;
+		}
+		
+		return !CoreSpringFactory.getImpl(TaxonomyService.class)
+				.getManagedTaxonomyLevelKeys(taxonomies, identity, new Date())
+				.isEmpty();
+	}
+
 	private static class CatalogSecurityCallbackImpl implements CatalogSecurityCallback {
 		
 		private final boolean canEditCatalogAdministration;
 		private final boolean canEditTaxonomy;
+		private final boolean canEditFullTaxonomies;
 		
-		public CatalogSecurityCallbackImpl(boolean canEditCatalogAdministration, boolean canEditTaxonomy) {
+		public CatalogSecurityCallbackImpl(boolean canEditCatalogAdministration, boolean canEditTaxonomy, boolean canEditFullTaxonomies) {
 			this.canEditCatalogAdministration = canEditCatalogAdministration;
 			this.canEditTaxonomy = canEditTaxonomy;
+			this.canEditFullTaxonomies = canEditFullTaxonomies;
 		}
 
 		@Override
@@ -77,6 +103,11 @@ public class CatalogSecurityCallbackFactory {
 		@Override
 		public boolean canEditTaxonomy() {
 			return canEditTaxonomy;
+		}
+
+		@Override
+		public boolean canEditFullTaxonomies() {
+			return canEditFullTaxonomies;
 		}
 		
 	}

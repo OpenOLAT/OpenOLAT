@@ -337,7 +337,7 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, levelOtherDate, identity, DateUtils.addDays(new Date(), -3));
 		dbInstance.commitAndCloseSession();
 		
-		Set<Long> managedTaxonomyLevelKeys = taxonomyCompetenceDao.getManagedTaxonomyLevelKeys(taxonomy, identity, new Date());
+		Set<Long> managedTaxonomyLevelKeys = taxonomyCompetenceDao.getManagedTaxonomyLevelKeys(List.of(taxonomy), identity, new Date());
 		Assert.assertEquals(5, managedTaxonomyLevelKeys.size());
 		Assert.assertTrue(managedTaxonomyLevelKeys.contains(level1.getKey()));
 		Assert.assertTrue(managedTaxonomyLevelKeys.contains(subLevel1.getKey()));

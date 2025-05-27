@@ -33,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -68,6 +67,8 @@ public class CatalogTaxonomyEditController extends BasicController implements Ac
 	private TaxonomySelectionController taxonomySelectionCtrl;
 	private TaxonomyOverviewController taxonomyCtrl;
 	
+	private CatalogSecurityCallback secCallback;
+
 	@Autowired
 	private RepositoryModule repositoryModule;
 
@@ -76,6 +77,7 @@ public class CatalogTaxonomyEditController extends BasicController implements Ac
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("taxonomy_edit");
 		
@@ -138,12 +140,11 @@ public class CatalogTaxonomyEditController extends BasicController implements Ac
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_TAXONOMY, taxonomy.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		
-		Roles roles = ureq.getUserSession().getRoles();
-		TaxonomySecurityCallback secCallback = roles != null && roles.isSystemAdmin()
+		TaxonomySecurityCallback taxonomySecCallback = secCallback.canEditFullTaxonomies()
 				? TaxonomySecurityCallback.FULL
 				: new CatalogTaxonomySecurityCallback(taxonomy, getIdentity());
 		
-		taxonomyCtrl = new TaxonomyOverviewController(ureq, swControl, secCallback, taxonomy);
+		taxonomyCtrl = new TaxonomyOverviewController(ureq, swControl, taxonomySecCallback, taxonomy);
 		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		stackPanel.pushController(StringHelper.escapeHtml(taxonomy.getDisplayName()), taxonomyCtrl);
 	}
