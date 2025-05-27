@@ -325,7 +325,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return true;
 		}
 
 		@Override

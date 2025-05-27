@@ -97,7 +97,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return true;
 		}
 
 		@Override
