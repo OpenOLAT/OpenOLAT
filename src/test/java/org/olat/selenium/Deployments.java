@@ -34,10 +34,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.olat.core.logging.Tracing;
-import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.test.ArquillianDeployments;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -134,14 +132,7 @@ public class Deployments {
 			return drivers.get(0);
 		}
 		
-		WebDriver driver = null;
-		try {
-			driver = createWebDriver(id);
-		} catch (SessionNotCreatedException e) {
-			log.error("Cannot create a session. Try again.", e);
-			OOGraphene.waitingLong();
-			driver = createWebDriver(id);
-		}
+		WebDriver driver = createWebDriver(id);
 		drivers.add(driver);
 		driver.manage().window().setSize(new Dimension(1024,800));
 		// startDevTools(driver);
