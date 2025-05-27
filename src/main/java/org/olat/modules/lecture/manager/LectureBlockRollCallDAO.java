@@ -803,7 +803,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" where config.lectureEnabled=true and membership.role='").append(GroupRoles.participant.name()).append("'");
 	
 		// check access permission
-		if(!params.isParticipant(identity)) {
+		if(identity != null && !params.isParticipant(identity)) {
 			appendCheckAccess(sb);
 		}
 
@@ -864,7 +864,7 @@ public class LectureBlockRollCallDAO {
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		if(!params.isParticipant(identity)) {
+		if(identity != null && !params.isParticipant(identity)) {
 			rawQuery.setParameter("identityKey", identity.getKey());
 		}
 		if(curriculumKey != null) {

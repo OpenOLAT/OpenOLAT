@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.id.User;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -37,6 +39,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 public class BookingOrder {
 	User user;
 	Order order;
+	private Long identityKey;
 	private List<String> identityProps;
 	private Long curriculumKey;
 	private String curriculumName;
@@ -64,6 +67,15 @@ public class BookingOrder {
 	private String checkoutTransactionStatus;
 	private String implementationLocation;
 	private GroupMembershipStatus ordererMembershipStatus;
+	
+	private Date certificateDate;
+	private Date nextCertificationDate;
+	private List<UserEfficiencyStatementLight> efficiencyStatements;
+	
+	private Date firstVisit;
+	private Date lastVisit;
+	
+	private LectureBlockIdentityStatistics lectureBlockStatistics;
 
 	public User getUser() {
 		return user;
@@ -81,6 +93,14 @@ public class BookingOrder {
 		this.order = order;
 	}
 	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+	
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+
 	public void setIdentityProp(int index, String value) {
 		if (identityProps == null) {
 			identityProps = new ArrayList<>();
@@ -308,5 +328,53 @@ public class BookingOrder {
 
 	public GroupMembershipStatus getOrdererMembershipStatus() {
 		return ordererMembershipStatus;
+	}
+
+	public Date getCertificateDate() {
+		return certificateDate;
+	}
+
+	public void setCertificateDate(Date certificateDate) {
+		this.certificateDate = certificateDate;
+	}
+
+	public Date getNextCertificationDate() {
+		return nextCertificationDate;
+	}
+
+	public void setNextCertificationDate(Date nextCertificationDate) {
+		this.nextCertificationDate = nextCertificationDate;
+	}
+
+	public Date getFirstVisit() {
+		return firstVisit;
+	}
+
+	public void setFirstVisit(Date firstVisit) {
+		this.firstVisit = firstVisit;
+	}
+
+	public Date getLastVisit() {
+		return lastVisit;
+	}
+
+	public void setLastVisit(Date lastVisit) {
+		this.lastVisit = lastVisit;
+	}
+
+	public List<UserEfficiencyStatementLight> getEfficiencyStatements() {
+		return efficiencyStatements;
+	}
+
+	public void setEfficiencyStatements(List<UserEfficiencyStatementLight> efficiencyStatements) {
+		this.efficiencyStatements = efficiencyStatements;
+	}
+
+	public LectureBlockIdentityStatistics getLectureBlockStatistics() {
+		return lectureBlockStatistics;
+	}
+
+	public void setLectureBlockStatistics(LectureBlockIdentityStatistics lectureBlockStatistics) {
+		this.lectureBlockStatistics = lectureBlockStatistics;
 	}
 }

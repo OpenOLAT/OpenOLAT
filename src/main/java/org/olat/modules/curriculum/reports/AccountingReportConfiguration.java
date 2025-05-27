@@ -35,23 +35,28 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.modules.coach.reports.AbstractReportConfiguration;
 import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
 import org.olat.modules.coach.reports.TimeBoundReportConfiguration;
+import org.olat.modules.coach.security.CourseProgressAndStatusRightProvider;
+import org.olat.modules.coach.security.LecturesAndAbsencesRightProvider;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumReportConfiguration;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.BookingKey;
 import org.olat.modules.curriculum.manager.BookingOrder;
 import org.olat.modules.curriculum.manager.CurriculumAccountingDAO;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
@@ -59,6 +64,10 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -152,6 +161,26 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		header.addCell(pos++, translator.translate("report.header.billing.address.org.id"));
 		header.addCell(pos++, translator.translate("report.header.billing.address.org.name"));
 		
+		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
+		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
+		if(selectedRights.contains(CourseProgressAndStatusRightProvider.RELATION_RIGHT)) {
+			header.addCell(pos++, translator.translate("report.header.statement.score"));
+			header.addCell(pos++, translator.translate("report.header.statement.passed"));
+			header.addCell(pos++, translator.translate("report.header.statement.progress"));
+			header.addCell(pos++, translator.translate("report.header.statement.certificate"));
+			header.addCell(pos++, translator.translate("report.header.statement.certificate.validity"));
+			header.addCell(pos++, translator.translate("report.header.statement.first.visit"));
+			header.addCell(pos++, translator.translate("report.header.statement.last.visit"));
+		}
+		
+		if(selectedRights.contains(LecturesAndAbsencesRightProvider.RELATION_RIGHT)) {
+			header.addCell(pos++, translator.translate("report.header.absence.units"));
+			header.addCell(pos++, translator.translate("report.header.absence.attended"));
+			header.addCell(pos++, translator.translate("report.header.absence.not.excused"));
+			header.addCell(pos++, translator.translate("report.header.absence.authorized"));
+			header.addCell(pos++, translator.translate("report.header.absence.dispensed"));
+		}
+		
 		return pos;
 	}
 
@@ -172,11 +201,62 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		if (getExcludeDeletedCurriculumElements() != null) {
 			searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
 		}
+		
+		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
+		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
+		boolean withProgressAndstatus = selectedRights.contains(CourseProgressAndStatusRightProvider.RELATION_RIGHT);
+		boolean withAbsences = selectedRights.contains(LecturesAndAbsencesRightProvider.RELATION_RIGHT);
+		
 		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
+		if(withProgressAndstatus) {
+			curriculumAccountingDao.loadAssessmentsInfos(bookingOrders, searchParams);
+		}
+		if(withAbsences) {
+			loadAbsences(bookingOrders);
+		}
+		
 		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 		for (BookingOrder bookingOrder : bookingOrders) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName,
-					educationalTypeIdToName, statusTranslator, translator);
+					educationalTypeIdToName, withProgressAndstatus, withAbsences,
+					statusTranslator, translator);
+		}
+	}
+	
+	private void loadAbsences(List<BookingOrder> bookingOrders) {
+		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+		
+		Set<CurriculumElementRef> elements = new HashSet<>();
+		Map<BookingKey,List<BookingOrder>> ordersMap = new HashMap<>();
+		for(BookingOrder order:bookingOrders) {
+			BookingKey key = new BookingKey(order.getImplementationKey(), order.getIdentityKey());
+			ordersMap.computeIfAbsent(key, k -> new ArrayList<>(2))
+				.add(order);
+			if(order.getImplementationKey() != null) {
+				elements.add(new CurriculumElementRefImpl(order.getImplementationKey()));
+			}
+		}
+		
+		for(CurriculumElementRef element:elements) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
+			List<RepositoryEntry> entries = curriculumService
+						.getRepositoryEntriesWithLectures(curriculumElement, null, true);
+			
+			LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+			params.setEntries(entries);
+			List<LectureBlockIdentityStatistics> rawStatistics = lectureService
+					.getLecturesStatistics(params, List.of(), null);
+			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
+			Map<Long,LectureBlockIdentityStatistics> aggregatedStatisticsMap = aggregatedStatistics.stream()
+					.collect(Collectors.toMap(LectureBlockIdentityStatistics::getIdentityKey, u -> u, (u, v) -> u));
+			
+			for(BookingOrder order:bookingOrders) {
+				if(element.getKey().equals(order.getImplementationKey())) {
+					LectureBlockIdentityStatistics statistics = aggregatedStatisticsMap.get(order.getIdentityKey());
+					order.setLectureBlockStatistics(statistics);
+				}
+			}
 		}
 	}
 
@@ -197,6 +277,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet,
 								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder,
 								 Map<String, String> accessTypeToName, Map<String, String> educationalTypeIdToName,
+								 boolean withProgressAndStatus, boolean withAbsences,
 								 Translator statusTranslator, Translator curriculumTranslator) {
 		OpenXMLWorksheet.Row row = sheet.newRow();
 		int pos = 0;
@@ -214,8 +295,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getImplementationType());
 		row.addCell(pos++, getImplementationStatusString(bookingOrder, curriculumTranslator));
 		row.addCell(pos++, educationalTypeIdToName.get(bookingOrder.getImplementationFormat()));
-		row.addCell(pos++, formatDatetime(bookingOrder.getBeginDate()), workbook.getStyles().getDateTimeStyle());
-		row.addCell(pos++, formatDatetime(bookingOrder.getEndDate()), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, bookingOrder.getBeginDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, bookingOrder.getEndDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, bookingOrder.getImplementationLocation());
 		row.addCell(pos++, "" + bookingOrder.getOrder().getKey());
 		row.addCell(pos++, getStatusString(bookingOrder, statusTranslator));
@@ -225,7 +306,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getOfferAccount());
 		row.addCell(pos++, bookingOrder.getOrder().getPurchaseOrderNumber());
 		row.addCell(pos++, bookingOrder.getOrder().getComment());
-		row.addCell(pos++, formatDatetime(bookingOrder.getOrder().getCreationDate()), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, bookingOrder.getOrder().getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getTotal()));
 		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getCancellationFees()));
 		row.addCell(pos++, bookingOrder.getBillingAddress().getIdentifier());
@@ -242,13 +323,90 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getBillingAddress().getCountry());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgId());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgName());
+		
+		if(withProgressAndStatus) {
+			pos = generateStatementDataRow(workbook, row, pos, bookingOrder);
+		}
+		if(withAbsences) {
+			generateAbsencesDataRow(row, pos, bookingOrder);
+		}
+	}
+
+	private int generateAbsencesDataRow(OpenXMLWorksheet.Row row, int pos, BookingOrder bookingOrder) {
+		LectureBlockIdentityStatistics statistics = bookingOrder.getLectureBlockStatistics();
+		if(statistics == null) {
+			pos += 4;
+		} else {
+			row.addCell(pos++, statistics.getTotalPersonalPlannedLectures(), null);
+			row.addCell(pos++, statistics.getTotalAttendedLectures(), null);
+			row.addCell(pos++, statistics.getTotalAbsentLectures(), null);
+			row.addCell(pos++, statistics.getTotalAuthorizedAbsentLectures(), null);
+			row.addCell(pos++, statistics.getTotalDispensationLectures(), null);
+		}
+		return pos;
 	}
 	
-	private static String formatDatetime(Date d) {
-		if (d == null) {
-			return null;
+	private int generateStatementDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet.Row row, int pos, BookingOrder bookingOrder) {
+		List<UserEfficiencyStatementLight> statements = bookingOrder.getEfficiencyStatements();
+		if(statements == null || statements.size() != 1) {
+			pos += 3;
+		} else if(statements.size() == 1) {
+			UserEfficiencyStatementLight statement = statements.get(0);
+			row.addCell(pos++, statement.getScore(), null);
+			row.addCell(pos++, statement.getPassed() ? "x" : "-");
+			row.addCell(pos++, statement.getCompletion(), null);
+		} else {
+			List<Float> score = new ArrayList<>();
+			List<Boolean> passed = new ArrayList<>();
+			List<Double> completion = new ArrayList<>();
+			for(UserEfficiencyStatementLight statement:statements) {
+				if(statement.getScore() != null) {
+					score.add(statement.getScore());
+				}
+				if(statement.getPassed() != null) {
+					passed.add(statement.getPassed());
+				}
+				if(statement.getCompletion() != null) {
+					completion.add(statement.getCompletion());
+				}
+			}
+			
+			if(score.size() == 1) {
+				row.addCell(pos++, score.get(0), null);
+			} else if(score.size() > 1) {
+				StringBuilder sb = new StringBuilder();
+				for(Float s:score) {
+					if(sb.length() > 0) sb.append(",");
+					sb.append(AssessmentHelper.getRoundedScore(s));
+				}
+			}
+			
+			if(!passed.isEmpty()) {
+				StringBuilder sb = new StringBuilder();
+				for(Boolean p:passed) {
+					if(sb.length() > 0) sb.append(",");
+					sb.append(p.booleanValue() ? "x" : "-");
+				}
+			}
+			
+			if(completion.size() == 1) {
+				row.addCell(pos++, completion.get(0), null);
+			} else if(completion.size() > 1) {
+				StringBuilder sb = new StringBuilder();
+				for(Double c:completion) {
+					if(sb.length() > 0) sb.append(",");
+					sb.append(c);
+				}
+			}
 		}
-		return Formatter.formatDatetime(d);
+		
+		row.addCell(pos++, bookingOrder.getCertificateDate(), workbook.getStyles().getDateStyle());
+		row.addCell(pos++, bookingOrder.getNextCertificationDate(), workbook.getStyles().getDateStyle());
+		
+		row.addCell(pos++, bookingOrder.getFirstVisit(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, bookingOrder.getLastVisit(), workbook.getStyles().getDateTimeStyle());
+
+		return pos;
 	}
 	
 	private String getStatusString(BookingOrder bookingOrder, Translator statusTranslator) {
@@ -354,15 +512,29 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
 		List<String> worksheetNames = List.of(translator.translate("report.booking"));
 		
+		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
+		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
+		boolean withProgressAndstatus = selectedRights.contains(CourseProgressAndStatusRightProvider.RELATION_RIGHT);
+		boolean withAbsences = selectedRights.contains(LecturesAndAbsencesRightProvider.RELATION_RIGHT);
+		
 		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1, worksheetNames)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
 			generateHeader(sheet, userPropertyHandlers, locale);
+			
 			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
+			if(withProgressAndstatus) {
+				curriculumAccountingDao.loadAssessmentsInfos(bookingOrders, searchParams);
+			}
+			if(withAbsences) {
+				loadAbsences(bookingOrders);
+			}
+			
 			Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 			for (BookingOrder bookingOrder : bookingOrders) {
 				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName, 
-						educationalTypeIdToName, statusTranslator, translator);
+						educationalTypeIdToName, withProgressAndstatus, withAbsences,
+						statusTranslator, translator);
 				
 				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
 					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));

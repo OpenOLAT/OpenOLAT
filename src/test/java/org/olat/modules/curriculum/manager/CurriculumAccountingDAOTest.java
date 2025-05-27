@@ -187,6 +187,33 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 		Assert.assertEquals(GroupMembershipStatus.active, (bookingOrders.get(0).getOrdererMembershipStatus()));
 	}
 	
+	/**
+	 * The test only check query syntax
+	 */
+	@Test
+	public void loadAssessmentsInfos() {
+		// Create a curriculum with an element and an invoice offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("account-6");
+		
+		// Make curriculum
+		Organisation organisation = JunitTestHelper.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-ACCOUNTING-4", "Curriculum accounting 4", "Curriculum", false, organisation);
+		
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for reservation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		AccessResult accessResult = createOrder(id, element.getResource(), null);
+		Assert.assertTrue(accessResult.isAccessible());
+		
+		List<UserPropertyHandler> handlers = new ArrayList<>();
+		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+		searchParams.setCurriculumElement(element);
+		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, handlers);
+		
+		curriculumAccountingDao.loadAssessmentsInfos(bookingOrders, searchParams);
+	}
+	
 	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel) {
 		// Make an offer
 		Offer offer = acService.createOffer(resource, "Access curriculum element");
