@@ -20,7 +20,9 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,6 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -90,7 +94,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.revoke));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete));
 
-		tableModel = new TableModel(columnModel, userManager);
+		tableModel = new TableModel(columnModel, userManager, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("empty.badges.table", null,
@@ -237,19 +241,21 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	enum Cols implements FlexiSortableColumnDef {
-		name("form.name"),
-		recipient("form.recipient"),
-		awardedBy("form.awarded.by"),
-		issuedOn("form.issued.on"),
-		status("form.status"),
-		revoke("table.revoke"),
-		delete("table.delete");
+		name("form.name", true),
+		recipient("form.recipient", true),
+		awardedBy("form.awarded.by", true),
+		issuedOn("form.issued.on", true),
+		status("form.status", true),
+		revoke("table.revoke", false),
+		delete("table.delete", false);
 
-		Cols(String i18n) {
+		Cols(String i18n, boolean sortable) {
 			this.i18nKey = i18n;
+			this.sortable = sortable;
 		}
 
 		private final String i18nKey;
+		private final boolean sortable;
 
 		@Override
 		public String i18nHeaderKey() {
@@ -258,7 +264,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return sortable;
 		}
 
 		@Override
@@ -269,25 +275,41 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 	record Row(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize, FormLink revokeLink, FormLink deleteLink) {}
 
-	private class TableModel extends DefaultFlexiTableDataModel<Row> {
+	private class TableModel extends DefaultFlexiTableDataModel<Row> implements SortableFlexiTableDataModel<Row> {
 		private final UserManager userManager;
+		private final Locale locale;
 
-		public TableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
+		public TableModel(FlexiTableColumnModel columnModel, UserManager userManager, Locale locale) {
 			super(columnModel);
 			this.userManager = userManager;
+			this.locale = locale;
 		}
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			BadgeAssertion badgeAssertion = getObject(row).badgeAssertionWithSize.badgeAssertion();
+			Row rowObject = getObject(row);
+			return getValueAt(rowObject, col);
+		}
+
+		@Override
+		public void sort(SortKey sortKey) {
+			if (sortKey != null) {
+				List<Row> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, locale).sort();
+				super.setObjects(rows);
+			}
+		}
+
+		@Override
+		public Object getValueAt(Row row, int col) {
+			BadgeAssertion badgeAssertion = row.badgeAssertionWithSize.badgeAssertion();
 			return switch (Cols.values()[col]) {
 				case name -> badgeAssertion.getBadgeClass().getName();
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion.getStatus();
 				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy());
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
-				case revoke -> getObject(row).revokeLink();
-				case delete -> getObject(row).deleteLink();
+				case revoke -> row.revokeLink();
+				case delete -> row.deleteLink();
 			};
 		}
 	}

@@ -19,9 +19,14 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.modules.openbadges.BadgeClass;
@@ -33,7 +38,8 @@ import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassRow> {
+public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassRow> 
+		implements SortableFlexiTableDataModel<BadgeClassRow> {
 
 	private final Translator translator;
 
@@ -46,6 +52,14 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 	public Object getValueAt(int row, int col) {
 		BadgeClassRow badgeClassRow = getObject(row);
 		return getValueAt(badgeClassRow, col);
+	}
+
+	@Override
+	public void sort(SortKey sortKey) {
+		if (sortKey != null) {
+			List<BadgeClassRow> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, translator.getLocale()).sort(); 
+			super.setObjects(rows);
+		}
 	}
 
 	public Object getValueAt(BadgeClassRow row, int col) {
@@ -75,19 +89,21 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 	}
 
 	public enum BadgeClassCols implements FlexiSortableColumnDef {
-		image("form.image"),
-		name("form.name"),
-		version("form.version"),
-		creationDate("form.createdOn"),
-		status("form.status"),
-		type("form.type"),
-		awardedCount("form.awarded.to"),
-		tools("action.more");
+		image("form.image", false),
+		name("form.name", true),
+		version("form.version", true),
+		creationDate("form.createdOn", true),
+		status("form.status", true),
+		type("form.type", true),
+		awardedCount("form.awarded.to", true),
+		tools("action.more", false);
 
 		private final String i18nKey;
-
-		BadgeClassCols(String i18nKey) {
+		private final boolean sortable;
+		
+		BadgeClassCols(String i18nKey, boolean sortable) {
 			this.i18nKey = i18nKey;
+			this.sortable = sortable;
 		}
 
 		@Override
@@ -97,7 +113,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return sortable;
 		}
 
 		@Override

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +43,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -306,17 +309,19 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	}
 
 	enum Cols implements FlexiSortableColumnDef {
-		recipient("form.recipient"),
-		issuedOn("form.issued.on"),
-		version("form.version"),
-		status("form.status"),
-		tools("action.more");
+		recipient("form.recipient", true),
+		issuedOn("form.issued.on", true),
+		version("form.version", true),
+		status("form.status", true),
+		tools("action.more", false);
 
-		Cols(String i18n) {
+		Cols(String i18n, boolean sortable) {
 			this.i18nKey = i18n;
+			this.sortable = sortable;
 		}
 
 		private final String i18nKey;
+		private final boolean sortable;
 
 		@Override
 		public String i18nHeaderKey() {
@@ -325,7 +330,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return sortable;
 		}
 
 		@Override
@@ -337,7 +342,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 	record Row(BadgeAssertion badgeAssertion, FormLink toolLink) {
 	}
 
-	private class TableModel extends DefaultFlexiTableDataModel<Row> {
+	private class TableModel extends DefaultFlexiTableDataModel<Row> implements SortableFlexiTableDataModel<Row> {
 		private final UserManager userManager;
 		private final Translator translator;
 
@@ -349,13 +354,27 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
+			Row rowObject = getObject(row);
+			return getValueAt(rowObject, col);
+		}
+
+		@Override
+		public void sort(SortKey sortKey) {
+			if (sortKey != null) {
+				List<Row> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, translator.getLocale()).sort();
+				super.setObjects(rows);
+			}
+		}
+
+		@Override
+		public Object getValueAt(Row row, int col) {
+			BadgeAssertion badgeAssertion = row.badgeAssertion();
 			return switch (Cols.values()[col]) {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion.getStatus();
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 				case version -> OpenBadgesUIFactory.versionString(translator, badgeAssertion.getBadgeClass(), true, false);
-				case tools -> getObject(row).toolLink();
+				case tools -> row.toolLink();
 			};
 		}
 	}
