@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import jakarta.persistence.TypedQuery;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.resource.accesscontrol.BillingAddress;
@@ -325,6 +327,7 @@ public class CurriculumAccountingDAO {
 
 		// orderer
 		if (objects[srcIdx++] instanceof Number ordererKey) {
+			bookingOrder.setIdentityKey(ordererKey.longValue());
 			String implementationAndIdentityKey = bookingOrder.getImplementationKey() + "_" + ordererKey;
 			if (implementationAndIdentityToMembership.containsKey(implementationAndIdentityKey)) {
 				bookingOrder.setOrdererMembershipStatus(implementationAndIdentityToMembership.get(implementationAndIdentityKey));
@@ -338,5 +341,93 @@ public class CurriculumAccountingDAO {
 		}
 
 		return bookingOrder;
+	}
+	
+	public void loadAssessmentsInfos(List<BookingOrder> bookingOrders, CurriculumAccountingSearchParams searchParams) {
+		Map<BookingKey,List<BookingOrder>> ordersMap = new HashMap<>();
+		for(BookingOrder order:bookingOrders) {
+			BookingKey key = new BookingKey(order.getImplementationKey(), order.getIdentityKey());
+			ordersMap.computeIfAbsent(key, k -> new ArrayList<>(2))
+				.add(order);
+		}
+		
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select curEl.key, curEl.curriculum.key, participant.key,")
+		  .append(" statement,")
+		  .append(" certificate.creationDate, certificate.nextRecertificationDate,")
+		  .append(" courseInfos.initialLaunch, courseInfos.recentLaunch")
+		  .append(" from repositoryentry as re")
+		  .append(" inner join re.groups as reToParticipantGroup")
+		  .append(" inner join reToParticipantGroup.group as participantGroup")
+		  .append(" inner join participantGroup.members as participantMembers on (participantMembers.role='participant')")
+		  .append(" inner join participantMembers.identity as participant")
+		  .append(" inner join curriculumelement as curEl on (participantGroup.key=curEl.group.key)")
+		  .append(" left join effstatementlight as statement on (statement.identity.key=participant.key and statement.courseRepoKey=re.key and statement.lastStatement=true)")
+		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participant.key and courseInfos.resource.key=re.olatResource.key)")
+		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=re.key)")
+		  .append(" left join certificate as certificate on (certificate.identity.key=participant.key and certificate.olatResource.key=re.olatResource.key and certificate.last=true)");
+		if(searchParams.getCurriculum() != null || (searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty())) {
+			sb.and().append(" curEl.curriculum.key in (:curriculumKeys)");
+		}
+		if(searchParams.getCurriculumElement() != null) {
+			sb.and().append(" curEl.key=:curriculumElementKey");
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(searchParams.getCurriculum() != null) {
+			query.setParameter("curriculumKeys", List.of(searchParams.getCurriculum().getKey()));
+		} else if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = searchParams.getCurriculums().stream()
+					.map(CurriculumRef::getKey)
+					.toList();
+			query.setParameter("curriculumKeys", curriculumKeys);
+		}
+		if(searchParams.getCurriculumElement() != null ) {
+			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
+		}  
+		
+		List<Object[]> rawObjects = query.getResultList();
+		for(Object[] objects:rawObjects) {
+			Long curriculumElementKey = (Long)objects[0];
+			Long identityKey = (Long)objects[2];
+			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)objects[3];
+			Date certificateDate = (Date)objects[4];
+			Date nextRecertificationDate = (Date)objects[5];
+			Date initialLaunch = (Date)objects[6];
+			Date recentLaunch = (Date)objects[7];
+
+			BookingKey key = new BookingKey(curriculumElementKey, identityKey);
+			List<BookingOrder> orders = ordersMap.get(key);
+			if(orders != null) {
+				for(BookingOrder order:orders) {
+					if(certificateDate != null
+							&& (order.getCertificateDate() == null || certificateDate.after(order.getCertificateDate()))) {
+						order.setCertificateDate(certificateDate);
+					}
+					if(nextRecertificationDate != null
+							&& (order.getNextCertificationDate() == null || nextRecertificationDate.before(order.getNextCertificationDate()))) {
+						order.setNextCertificationDate(nextRecertificationDate);
+					}
+					
+					if(statement != null) {
+						if(order.getEfficiencyStatements() == null) {
+							order.setEfficiencyStatements(new ArrayList<>(2));
+						}
+						order.getEfficiencyStatements().add(statement);
+					}
+					
+					if(initialLaunch != null
+							&& (order.getFirstVisit() == null || initialLaunch.before(order.getFirstVisit()))) {
+						order.setFirstVisit(initialLaunch);
+					}
+					
+					if(recentLaunch != null
+							&& (order.getLastVisit() == null || recentLaunch.after(order.getLastVisit()))) {
+						order.setLastVisit(recentLaunch);
+					}
+				}
+			}
+		}
 	}
 }

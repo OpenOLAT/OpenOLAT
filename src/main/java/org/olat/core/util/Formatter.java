@@ -513,6 +513,19 @@ public class Formatter {
 	public static String formatHourAndSeconds(long timecode) {
 		return DurationFormatUtils.formatDuration(timecode, "H:mm", true);
 	}
+	
+	public String formatHrsMin(int minutes) {
+		int hours = minutes / 60;
+		int remainingMinutes = minutes % 60;
+		
+		if (hours > 0) {
+			return translator.translate("duration.hrs.min", String.valueOf(hours), String.valueOf(remainingMinutes));
+		}
+		if (remainingMinutes > 0) {
+			return translator.translate("duration.min", String.valueOf(remainingMinutes));
+		}
+		return "";
+	}
 
 	public static String formatKBytes(long kBytes) {
 		return formatBytes(BYTE_UNIT * kBytes);
