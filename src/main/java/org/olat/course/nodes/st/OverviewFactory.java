@@ -158,10 +158,9 @@ public class OverviewFactory {
 		
 		LearningPathStatus learningPathStatus = LearningPathStatus.of(evaluation);
 		builder.withLearningPathStatus(learningPathStatus);
-		
-		if (LearningPathStatus.done != learningPathStatus) {
-			builder.withDuration(evaluation.getDuration());
+		builder.withDuration(evaluation.getDuration());
 			
+		if (LearningPathStatus.done != learningPathStatus) {
 			Date startDate = evaluation.getStartDate();
 			if (startDate != null && startDate.after(now)) {
 				builder.withStartDateConfig(DueDateConfig.absolute(startDate));

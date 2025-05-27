@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.apache.logging.log4j.Level;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.duedate.DueDateConfig;
@@ -123,10 +124,10 @@ public class CourseStyleUIFactory {
 	}
 	
 	public static void addHandlingRangeData(Header.Builder builder, AssessmentEvaluation evaluation) {
+		builder.withDuration(evaluation.getDuration());
+			
 		LearningPathStatus learningPathStatus = LearningPathStatus.of(evaluation);
 		if (LearningPathStatus.done != learningPathStatus) {
-			builder.withDuration(evaluation.getDuration());
-			
 			Date startDate = evaluation.getStartDate();
 			if (startDate != null && startDate.after(new Date())) {
 				builder.withStartDateConfig(DueDateConfig.absolute(startDate));
@@ -154,7 +155,8 @@ public class CourseStyleUIFactory {
 			if (sb.length() > 0) {
 				sb.append(" | ");
 			}
-			sb.append(translator.translate("table.header.duration")).append(": ").append(translator.translate("minutes", new String[] {duration.toString()}));
+			String formattedDuration = Formatter.getInstance(translator.getLocale()).formatHrsMin(duration.intValue());
+			sb.append(translator.translate("table.header.duration")).append(": ").append(formattedDuration);
 		}
 		
 		return sb.toString();
