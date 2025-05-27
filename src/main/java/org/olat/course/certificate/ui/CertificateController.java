@@ -77,7 +77,7 @@ public class CertificateController extends BasicController {
 		if(downloadButton == source) {
 			VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 			String name = DownloadCertificateCellRenderer.getName(certificate);
-			MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf);
+			MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf, false);
 			ureq.getDispatchResult().setResultingMediaResource(certificateResource);
 		}
 	}

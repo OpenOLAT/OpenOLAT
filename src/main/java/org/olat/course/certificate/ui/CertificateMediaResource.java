@@ -37,10 +37,12 @@ public class CertificateMediaResource implements MediaResource {
 
 	private VFSLeaf certificate;
 	private String filename;
+	private boolean forceDownload;
 	
-	public CertificateMediaResource(String filename, VFSLeaf certificate) {
+	public CertificateMediaResource(String filename, VFSLeaf certificate, boolean forceDownload) {
 		this.certificate = certificate;
 		this.filename = filename;
+		this.forceDownload = forceDownload;
 	}
 	
 	@Override
@@ -55,7 +57,7 @@ public class CertificateMediaResource implements MediaResource {
 	
 	@Override
 	public String getContentType() {
-		return "application/pdf";
+		return forceDownload ? "application/octet-stream" : "application/pdf";
 	}
 
 	@Override
@@ -75,7 +77,11 @@ public class CertificateMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
+		if(forceDownload) {
+			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
+		} else {
+			hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
+		}
 	}
 
 	@Override
