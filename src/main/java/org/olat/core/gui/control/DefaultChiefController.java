@@ -113,7 +113,7 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 
 	@Override
-	public void unlock(UserRequest ureq) {
+	public void unlock(UserRequest ureq, Long modeKey) {
 		//
 	}
 

@@ -40,6 +40,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -253,7 +254,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		organisations = repositoryService.getOrganisationReferences(re);
 		
 		if(assessmentLock) {
-			LockRequest mode = session.getLockMode();
+			LockRequest mode = getAssessmentLockRequest(ureq);
 			assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getRequestKey());
 		}
 		
@@ -308,9 +309,28 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private final boolean isAssessmentLock(UserRequest ureq, RepositoryEntry entry, RepositoryEntrySecurity reSec) {
 		OLATResource resource = entry.getOlatResource();
 		OLATResourceable lock = ureq.getUserSession().getLockResource();
+		
+		if(getWindow() != null) {
+			ChiefController chiefCtrl = getWindow().getWindowBackOffice().getChiefController();
+			if(chiefCtrl != null && chiefCtrl.getLockResourceInfos() != null) {
+				lock = chiefCtrl.getLockResourceInfos().getLockResource();
+			}
+		}
+		
 		return lock != null && !reSec.isOwner() && !reSec.isEntryAdmin()
 				&& lock.getResourceableId().equals(resource.getResourceableId())
 				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
+	}
+	
+	private final LockRequest getAssessmentLockRequest(UserRequest ureq) {
+		LockRequest lockRequest = ureq.getUserSession().getLockMode();
+		if(getWindow() != null) {
+			ChiefController chiefCtrl = getWindow().getWindowBackOffice().getChiefController();
+			if(chiefCtrl != null && chiefCtrl.getLockResourceInfos() != null) {
+				lockRequest = chiefCtrl.getLockResourceInfos().getLockMode();
+			}
+		}
+		return lockRequest;
 	}
 	
 	protected boolean isLtiLaunched(UserRequest ureq) {
