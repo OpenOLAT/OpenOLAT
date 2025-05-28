@@ -241,7 +241,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 				FormLink deleteLink = uifactory.addFormLink("delete." + (++count), "delete", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 				deleteLink.setElementCssClass("o_sel_certificate_delete");
 				deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-				deleteLink.setTooltip(translate("delete"));
+				deleteLink.setTitle(translate("delete"));
 				deleteLink.setUserObject(row);
 				row.setDeleteLink(deleteLink);
 			}
@@ -249,8 +249,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 			FormLink downloadLink = uifactory.addFormLink("download." + (++count), "download", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			downloadLink.setElementCssClass("o_sel_certificate_download");
 			downloadLink.setIconLeftCSS("o_icon o_icon-lg o_icon_download");
-			downloadLink.setTooltip(translate("download.certificate"));
-			downloadLink.setNewWindow(true, false, false);
+			downloadLink.setTitle(translate("download.certificate"));
 			downloadLink.setUserObject(row);
 			row.setDownloadLink(downloadLink);
 		}
@@ -324,7 +323,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 	private void doDownload(UserRequest ureq, Certificate certificate) {
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		String name = DownloadCertificateCellRenderer.getName(certificate);
-		MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf);
+		MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf, true);
 		ureq.getDispatchResult().setResultingMediaResource(certificateResource);
 	}
 
