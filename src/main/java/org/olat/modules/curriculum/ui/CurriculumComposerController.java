@@ -308,7 +308,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(nameCol);
 		
 		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(ElementCols.structure);
-		structureCol.setIconHeader("o_icon o_icon-lg o_icon_curriculum_structure");
+		structureCol.setIconHeader("o_icon o_icon-lg o_icon_structure");
 		structureCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(structureCol);
 		
@@ -606,7 +606,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		CurriculumElementType type = element.curriculumElement().getType();
 		if(type == null || !type.isSingleElement()) {
 			structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
-			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
+			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 			structureLink.setTitle(translate("action.structure"));
 		}
 		

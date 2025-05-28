@@ -203,7 +203,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 
 	private void initStructure() {
 		structureButton = LinkFactory.createCustomLink("structure", "structure", "structure.goto", Link.BUTTON, mainVC, this);
-		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
+		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_structure");
 
 		previousButton = LinkFactory.createCustomLink("structure.previous", "previous", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		previousButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_up");
@@ -450,7 +450,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(canChildren) {
 			structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), "o_sel_curriculum_composer", uureq -> {
 				CurriculumComposerConfig config = new CurriculumComposerConfig();
-				config.setTitle(translate("curriculum.structure"), TITLE_SIZE, "o_icon_curriculum_structure");
+				config.setTitle(translate("curriculum.structure"), TITLE_SIZE, "o_icon_structure");
 				config.setDefaultNumOfParticipants(true);
 				config.setRootElementsOnly(false);
 				config.setFlat(false);

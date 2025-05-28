@@ -516,6 +516,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_in_review { @include o-add-icon('highlighter');}
 .o_icon_status_done { @include o-add-icon('check');}
 .o_icon_statistics_tool { @include o-add-icon('bar-chart', false);}
+.o_icon_structure { @include o-add-icon('sitemap');}
 .o_icon_submit { @include o-add-icon('check');}
 .o_icon_success_status { @include o-add-icon('medal');}
 .o_icon_table { @include o-add-icon('table-list');}
@@ -966,7 +967,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_curriculum_element { @include o-add-icon('cube');}
 .o_icon_curriculum_implementation_avatar { @include o-add-icon('circle-play');}
 .o_icon_curriculum_implementations { @include o-add-icon('square-share-nodes');}
-.o_icon_curriculum_structure { @include o-add-icon('sitemap');}
 .o_icon_curriculum_status_preparation { @include o-add-icon('pen');}
 .o_icon_curriculum_status_provisional { @include o-add-icon('hourglass');}
 .o_icon_curriculum_status_confirmed { @include o-add-icon('check');}

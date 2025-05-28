@@ -109,6 +109,7 @@ implements FilterableFlexiTableModel  {
 		switch(TaxonomyLevelCols.values()[col]) {
 			case key: return level.getKey();
 			case displayName: return level.getDisplayName();
+			case structure: return level.getStructureLink();
 			case identifier: return level.getIdentifier();
 			case externalId: return level.getExternalId();
 			case typeIdentifier: return level.getTypeIdentifier();
@@ -126,6 +127,7 @@ implements FilterableFlexiTableModel  {
 	public enum TaxonomyLevelCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.header.taxonomy.level.displayName"),
+		structure("table.header.taxonomy.level.levels"),
 		identifier("table.header.taxonomy.level.external.ref"),
 		externalId("table.header.taxonomy.level.external.id"),
 		typeIdentifier("table.header.taxonomy.level.type.identifier"),
@@ -162,7 +164,7 @@ implements FilterableFlexiTableModel  {
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return this != tools && this != structure;
 		}
 
 		@Override

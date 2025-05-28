@@ -175,7 +175,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	
 	protected void initButtonsForm(FormItemContainer formLayout) {
 		allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
-		allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
+		allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_structure");
 		allLevelsButton.setPrimary(true);
 		thisLevelButton = uifactory.addFormLink("search.this.level", formLayout, Link.BUTTON);
 		thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");

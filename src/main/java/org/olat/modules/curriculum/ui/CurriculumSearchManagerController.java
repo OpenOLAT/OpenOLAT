@@ -158,7 +158,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.displayName, CMD_SELECT));
 		
 		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(SearchCols.structure);
-		structureCol.setIconHeader("o_icon o_icon-lg o_icon_curriculum_structure");
+		structureCol.setIconHeader("o_icon o_icon-lg o_icon_structure");
 		structureCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(structureCol);
 		
@@ -458,7 +458,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		}
 		if(showStructure) {
 			FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
-			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
+			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_structure");
 			structureLink.setTitle(translate("action.structure"));
 			structureLink.setUserObject(row);
 			row.setStructureLink(structureLink);

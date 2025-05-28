@@ -51,24 +51,27 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	private boolean hasTeaserImage;
 	
 	private int numOfChildren = 0;
-	private FormLink toolsLink;
+	private final FormLink structureLink;
+	private final FormLink toolsLink;
 	private TaxonomyLevelRow parent;
 	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description, FormLink toolsLink) {
-		this(taxonomyLevel, language, displayName, description, toolsLink, false, false);
-	}
-	
 	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description,
-							boolean isUpdated, boolean hasMultipleLangs) {
-		this(taxonomyLevel, language, displayName, description, null, isUpdated, hasMultipleLangs);
+			FormLink structureLink, FormLink toolsLink) {
+		this(taxonomyLevel, language, displayName, description, structureLink, toolsLink, false, false);
 	}
-	
-	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description, FormLink toolsLink,
-							boolean isUpdated, boolean hasMultipleLangs) {
+
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description,
+			boolean isUpdated, boolean hasMultipleLangs) {
+		this(taxonomyLevel, language, displayName, description, null, null, isUpdated, hasMultipleLangs);
+	}
+
+	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, String language, String displayName, String description,
+			FormLink structureLink, FormLink toolsLink, boolean isUpdated, boolean hasMultipleLangs) {
 		this.taxonomyLevel = taxonomyLevel;
 		this.language = language;
 		this.displayName = displayName;
 		this.description = description;
+		this.structureLink = structureLink;
 		this.toolsLink = toolsLink;
 		this.isUpdated = isUpdated;
 		this.hasMultipleLangs = hasMultipleLangs;
@@ -157,6 +160,10 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	
 	public void incrementNumberOfChildren() {
 		numOfChildren++;
+	}
+
+	public FormLink getStructureLink() {
+		return structureLink;
 	}
 
 	public FormLink getToolsLink() {
