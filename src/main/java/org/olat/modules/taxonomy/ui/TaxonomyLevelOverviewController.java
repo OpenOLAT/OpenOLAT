@@ -131,19 +131,19 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 	
 	private void initTabPane(UserRequest ureq) {
-		tabPane.addTab(ureq, translate("taxonomy.metadata"), "o_sel_taxonomy_level_edit_details", uureq -> {
-			removeAsListenerAndDispose(metadataCtrl);
-			metadataCtrl = new EditTaxonomyLevelController(uureq, getWindowControl(), secCallback, taxonomyLevel);
-			listenTo(metadataCtrl);
-			return metadataCtrl.getInitialComponent();
-		}, true);
-		
 		tabPane.addTab(ureq, translate("taxonomy.levels.tab"), "o_sel_taxonomy_level_levels", uureq -> {
 			removeAsListenerAndDispose(taxonomyLevelsCtrl);
 			taxonomyLevelsCtrl = new TaxonomyTreeTableController(uureq, getWindowControl(), secCallback, taxonomyLevel.getTaxonomy(), taxonomyLevel);
 			taxonomyLevelsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyLevelsCtrl);
 			return taxonomyLevelsCtrl.getInitialComponent();
+		}, true);
+		
+		tabPane.addTab(ureq, translate("taxonomy.metadata"), "o_sel_taxonomy_level_edit_details", uureq -> {
+			removeAsListenerAndDispose(metadataCtrl);
+			metadataCtrl = new EditTaxonomyLevelController(uureq, getWindowControl(), secCallback, taxonomyLevel);
+			listenTo(metadataCtrl);
+			return metadataCtrl.getInitialComponent();
 		}, true);
 		
 		if (secCallback.canViewManagement(taxonomyLevel)) {

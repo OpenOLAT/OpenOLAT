@@ -49,6 +49,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeN
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -95,6 +99,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
 
+	private static final String TAB_ID_RELEVANT = "MyRelevant";
+	private static final String TAB_ID_ALL = "All";
 	private static final String TOOLS_IMPORT_EXPORT = "importExportTools";
 	private static final String ACTION_SELECT = "select";
 
@@ -103,6 +109,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private FormLink mergeButton;
 	private FormLink typeButton;
 	private FormLink moveButton;
+	private FlexiFiltersTab tabRelevant;
+	private FlexiFiltersTab tabAll;
 	private FlexiTableElement tableEl;
 	private TaxonomyTreeTableModel model;
 	private BreadcrumbPanel stackPanel;
@@ -136,14 +144,20 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		this.taxonomy = taxonomy;
 		this.parentLevel = parentLevel;
 		initForm(ureq);
+		initFilterTabs(ureq);
 		loadModel(true, true);
 	}
 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		stackPanel.removeListener(this);
+		if (this.stackPanel != null) {
+			this.stackPanel.removeListener(this);
+		}
+		
 		this.stackPanel = stackPanel;
-		stackPanel.addListener(this);
+		if (this.stackPanel != null) {
+			this.stackPanel.addListener(this);
+		}
 	}
 
 	@Override
@@ -209,6 +223,29 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		return resources;
 	}
 	
+	protected void initFilterTabs(UserRequest ureq) {
+		if (!secCallback.canFilterRelevant()) {
+			return;
+		}
+		
+		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
+		
+		tabRelevant = FlexiFiltersTabFactory.tab(
+				TAB_ID_RELEVANT,
+				translate("relevant"),
+				TabSelectionBehavior.nothing);
+		tabs.add(tabRelevant);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.nothing);
+		tabs.add(tabAll);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabRelevant);
+	}
+	
 	private void loadModel(boolean resetPage, boolean resetInternal) {
 		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
 		searchParams.setParentLevel(parentLevel);
@@ -223,6 +260,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		searchParams.setQuickSearchI18nSuffix(quickSearchI18nSuffix);
 		
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy, searchParams);
+		applyFilter(taxonomyLevels);
 		List<TaxonomyLevelRow> rows = new ArrayList<>(taxonomyLevels.size());
 		Map<Long,TaxonomyLevelRow> levelToRows = new HashMap<>();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
@@ -253,6 +291,12 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		tableEl.reset(resetPage, resetInternal, true);
 	}
 	
+	private void applyFilter(List<TaxonomyLevel> taxonomyLevels) {
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabRelevant) {
+			taxonomyLevels.removeIf(level -> !secCallback.isRelevant(level));
+		}
+	}
+
 	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
@@ -316,6 +360,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 					TaxonomyLevelRow row = model.getObject(se.getIndex());
 					doSelectTaxonomyLevel(ureq, row);
 				}
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel(true, true);
 			} else if(event instanceof FlexiTableSearchEvent) {
 				loadModel(true, true);
 			}

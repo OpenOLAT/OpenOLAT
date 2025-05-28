@@ -37,6 +37,10 @@ public interface TaxonomySecurityCallback {
 	
 	boolean canImportExport();
 	
+	boolean canFilterRelevant();
+	
+	boolean isRelevant(TaxonomyLevel level);
+	
 	boolean canCreateChild(TaxonomyLevel level);
 	
 	boolean canDelete(TaxonomyLevel level);

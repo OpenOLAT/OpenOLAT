@@ -46,6 +46,16 @@ public class FullTaxonomySecurityCallback implements TaxonomySecurityCallback {
 	}
 	
 	@Override
+	public boolean canFilterRelevant() {
+		return false;
+	}
+	
+	@Override
+	public boolean isRelevant(TaxonomyLevel level) {
+		return false;
+	}
+	
+	@Override
 	public boolean canCreateChild(TaxonomyLevel level) {
 		return true;
 	}

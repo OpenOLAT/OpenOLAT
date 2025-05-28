@@ -89,14 +89,6 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	}
 	
 	private void initTabPane(UserRequest ureq) {
-		metadataTab = tabPane.addTab(ureq, translate("taxonomy.metadata"), "o_sel_taxonomy_metadata", uureq -> {
-			removeAsListenerAndDispose(metadataCtrl);
-			WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType("Metadata"), null);
-			metadataCtrl = new EditTaxonomyController(uureq, bwControl, secCallback, taxonomy);
-			listenTo(metadataCtrl);
-			return metadataCtrl.getInitialComponent();
-		}, true);
-		
 		levelsTab = tabPane.addTab(ureq, translate("taxonomy.levels.tab"), "o_sel_taxonomy_levels", uureq -> {
 			removeAsListenerAndDispose(taxonomyLevelsCtrl);
 			WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType("Levels"), null);
@@ -104,6 +96,14 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 			taxonomyLevelsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyLevelsCtrl);
 			return taxonomyLevelsCtrl.getInitialComponent();
+		}, true);
+		
+		metadataTab = tabPane.addTab(ureq, translate("taxonomy.metadata"), "o_sel_taxonomy_metadata", uureq -> {
+			removeAsListenerAndDispose(metadataCtrl);
+			WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType("Metadata"), null);
+			metadataCtrl = new EditTaxonomyController(uureq, bwControl, secCallback, taxonomy);
+			listenTo(metadataCtrl);
+			return metadataCtrl.getInitialComponent();
 		}, true);
 		
 		if (secCallback.canViewLevelTypes()) {

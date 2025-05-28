@@ -71,7 +71,17 @@ public class CatalogTaxonomySecurityCallback implements TaxonomySecurityCallback
 	public boolean canImportExport() {
 		return false;
 	}
-
+	
+	@Override
+	public boolean canFilterRelevant() {
+		return true;
+	}
+	
+	@Override
+	public boolean isRelevant(TaxonomyLevel level) {
+		return editableLevelKeys.contains(level.getKey());
+	}
+	
 	@Override
 	public boolean canCreateChild(TaxonomyLevel level) {
 		if (level == null) {
