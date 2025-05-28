@@ -111,6 +111,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
+import org.olat.course.assessment.ui.mode.ContinueEvent;
 import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
@@ -721,8 +722,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				lockStatus = LockStatus.locked;
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
+			} else if(event instanceof ContinueEvent ce) {
+				unlock(ureq, ce.getModeKey());
 			} else if("continue".equals(event.getCommand())) {
-				unlock(ureq);
+				unlock(ureq, null);
 			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
@@ -739,7 +742,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	@Override
-	public void unlock(UserRequest ureq) {
+	public void unlock(UserRequest ureq, Long requestKey) {
+		if(requestKey != null && lockMode != null && !requestKey.equals(lockMode.getRequestKey())) {
+			removeAsListenerAndDispose(assessmentGuardCtrl);
+			assessmentGuardCtrl = null;
+			checkAssessmentGuard(ureq, lockMode);
+			return;
+		}
+
 		//unlock session
 		ureq.getUserSession().unlockResource();
 		unlockResource();

@@ -240,7 +240,7 @@ public class AssessmentInspectionMainController extends BasicController implemen
 		getWindowControl().getWindowBackOffice().getWindow().getDTabs()
 			.closeDTab(ureq, ores, null);
 		getWindowControl().getWindowBackOffice().getChiefController()
-			.unlock(ureq);
+			.unlock(ureq, inspection.getKey());
 		NewControllerFactory.getInstance().launch("[MyCoursesSite:0]", ureq, getWindowControl());
 	}
 	

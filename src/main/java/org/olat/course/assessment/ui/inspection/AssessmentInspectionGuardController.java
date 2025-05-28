@@ -64,6 +64,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
 import org.olat.course.assessment.model.TransientAssessmentInspection;
+import org.olat.course.assessment.ui.mode.ContinueEvent;
 import org.olat.course.assessment.ui.mode.SafeExamBrowserConfigurationMediaResource;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -406,7 +407,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		ChiefController cc = Windows.getWindows(ureq).getChiefController(ureq);
 		cc.getScreenMode().setMode(Mode.standard, null);
 			
-		fireEvent(ureq, new Event("continue"));
+		fireEvent(ureq, new ContinueEvent(null));
 		NewControllerFactory.getInstance().launch("[MyCoursesSite:0]", ureq, getWindowControl());
 	}
 	
