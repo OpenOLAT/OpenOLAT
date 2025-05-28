@@ -78,7 +78,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String identifier = levelType == null ? "" : levelType.getIdentifier();
-		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("type.identifier", "level.type.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.identifier));
 		identifierEl.setMandatory(true);
 		if(!StringHelper.containsNonWhitespace(identifier)) {

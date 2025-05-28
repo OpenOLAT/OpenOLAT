@@ -822,7 +822,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		if(moveLevelCtrl != null) return;
 		
 		List<TaxonomyLevel> levelsToMove = getSelectedTaxonomyLevels(level -> secCallback.canMove(level), TaxonomyLevelManagedFlag.move);
-		doMove(ureq, levelsToMove);
+		if (levelsToMove.isEmpty()) {
+			showWarning("warning.atleastone.level");
+		} else {
+			doMove(ureq, levelsToMove);
+		}
 	}
 	
 	private void doMove(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
