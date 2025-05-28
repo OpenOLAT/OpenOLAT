@@ -1298,6 +1298,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
 		UserSession userSession = ureq.getUserSession();
+		if(dTab != null && lockStatus == LockStatus.popup) {
+			return;
+		}
 		if(dTab != null && (lockStatus != null || userSession.isInLockModeProcess())
 				&& (!userSession.matchLockResource(dTab.getOLATResourceable()))) {
 			return;
@@ -1664,16 +1667,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			logAudit("Async unlock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")");
 			OLATResourceable unlockedResource = lockResource;
+			if(lockMode != null && !mode.getRequestKey().equals(lockMode.getRequestKey())) {
+				return false;
+			}
+			
 			unlockResource();
 			if(lockMode != null) {
 				//check if there is a locked resource first
 				lockStatus = LockStatus.need;
 				lastUnlockedResource = new LockResourceInfos(null, unlockedResource, lockMode);
+				lockMode = null;
+				unlock = true;
 			} else {
 				lockStatus = null;
+				lockMode = null;
+				unlock = true;
 			}
-			lockMode = null;
-			unlock = true;
 		} else {
 			unlock = false;
 		}
