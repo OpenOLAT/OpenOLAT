@@ -111,7 +111,7 @@ public interface ChiefController extends Controller {
 	 * 
 	 * @param ureq the user request
 	 */
-	public void unlock(UserRequest ureq);
+	public void unlock(UserRequest ureq, Long modeKey);
 	
 	/**
 	 * @return Some informations about the currently locked resource

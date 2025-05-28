@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.ui.mode.ContinueEvent;
 
 /**
  * 
@@ -50,6 +51,7 @@ public class UnlockGuardController extends BasicController implements LockGuardC
 	private final VelocityContainer mainVC;
 	
 	private boolean pushUpdate = false;
+	private final LockResourceInfos lockResourceInfos;
 	
 	/**
 	 *
@@ -61,6 +63,8 @@ public class UnlockGuardController extends BasicController implements LockGuardC
 	public UnlockGuardController(UserRequest ureq, WindowControl wControl, boolean forcePush) {
 		super(ureq, wControl);
 		this.pushUpdate = forcePush;
+		lockResourceInfos = getWindowControl().getWindowBackOffice().getChiefController()
+				.getLastUnlockedResourceInfos();
 		
 		mainVC = createVelocityContainer("unlock");
 		
@@ -169,8 +173,12 @@ public class UnlockGuardController extends BasicController implements LockGuardC
 		//make sure to see the navigation bar
 		ChiefController cc = Windows.getWindows(ureq).getChiefController(ureq);
 		cc.getScreenMode().setMode(Mode.standard, null);
+		
+		Long requestKey = lockResourceInfos == null || lockResourceInfos.getLockMode() == null
+				? null
+				: lockResourceInfos.getLockMode().getRequestKey();
 			
-		fireEvent(ureq, new Event("continue"));
+		fireEvent(ureq, new ContinueEvent(requestKey));
 		String businessPath = "[MyCoursesSite:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}

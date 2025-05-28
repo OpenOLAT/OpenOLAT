@@ -540,8 +540,8 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			//make sure to see the navigation bar
 			ChiefController cc = Windows.getWindows(ureq).getChiefController(ureq);
 			cc.getScreenMode().setMode(Mode.standard, null);
-			
-			fireEvent(ureq, new Event("continue"));
+
+			fireEvent(ureq, new ContinueEvent(selectedGuard.getModeKey()));
 			String businessPath = "[MyCoursesSite:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} else {
