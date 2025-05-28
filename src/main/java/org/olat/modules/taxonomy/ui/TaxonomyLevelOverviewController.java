@@ -53,6 +53,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.NewTaxonomyLevelEvent;
+import org.olat.modules.taxonomy.ui.events.OpenTaxonomyLevelEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -213,7 +214,11 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(metadataCtrl == source) {
+		if (source == taxonomyLevelsCtrl) {
+			if (event instanceof OpenTaxonomyLevelEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if(metadataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				taxonomyLevel = metadataCtrl.getTaxonomyLevel();
 				updateProperties(ureq);

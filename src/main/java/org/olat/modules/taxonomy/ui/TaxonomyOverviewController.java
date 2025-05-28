@@ -41,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomySecurityCallback;
+import org.olat.modules.taxonomy.ui.events.OpenTaxonomyLevelEvent;
 
 /**
  * 
@@ -182,7 +183,11 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(metadataCtrl == source) {
+		if (source == taxonomyLevelsCtrl) {
+			if (event instanceof OpenTaxonomyLevelEvent openEvent) {
+				doOpenTaxonomyLevel(ureq, openEvent.getTaxonomyLevel());
+			}
+		} else if(metadataCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				taxonomy = metadataCtrl.getTaxonomy();
 				updateProperties();
@@ -194,29 +199,22 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	}
 	
 	private void doProcessPopEvent(UserRequest ureq, PopEvent pe) {
-		// Click on intermediate crumb
-		if (pe.getUserObject() instanceof TaxonomyLevel) {
-			final Object uobject = stackPanel.getLastUserObject();
-			final Controller uctrl = stackPanel.getLastController();
-			
-			stackPanel.popUpToController(this);
-			if(uctrl == this) {
-				// Only pop up to this
-			} else {
-				TaxonomyLevel levelToOpen = null;
-				if(uobject instanceof TaxonomyLevel taxonomyLevel) {
-					levelToOpen = taxonomyLevel;
-				}
-				
-				if(levelToOpen != null) {
-					tabPane.setSelectedPane(ureq, levelsTab);
-					if (taxonomyLevelsCtrl != null) {
-						List<ContextEntry> entries = BusinessControlFactory.getInstance()
-								.createCEListFromResourceable(levelToOpen, null);
-						taxonomyLevelsCtrl.activate(ureq, entries, null);
-					}
-				}
-			}
+		if (stackPanel.getLastController() == this) {
+			// Only pop up to this
+		} else if (pe.getUserObject() instanceof TaxonomyLevel taxonomyLevel) {
+			// Click on intermediate crumb
+			doOpenTaxonomyLevel(ureq, taxonomyLevel.getParent());
+		}
+	}
+	
+	private void doOpenTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+		stackPanel.popUpToController(this);
+		
+		tabPane.setSelectedPane(ureq, levelsTab);
+		if (taxonomyLevelsCtrl != null) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance()
+					.createCEListFromResourceable(taxonomyLevel, null);
+			taxonomyLevelsCtrl.activate(ureq, entries, null);
 		}
 	}
 

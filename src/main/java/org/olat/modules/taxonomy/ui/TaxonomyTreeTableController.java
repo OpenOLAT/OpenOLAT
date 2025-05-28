@@ -341,7 +341,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			for(TaxonomyLevelRow row:rows) {
 				if(levelKey.equals(row.getKey())) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					TaxonomyLevelOverviewController ctrl = doSelectTaxonomyLevel(ureq, row);
+					TaxonomyLevelOverviewController ctrl = doSelectTaxonomyLevel(ureq, row.getTaxonomyLevel());
 					if(ctrl != null) {
 						ctrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 					}
@@ -374,7 +374,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				String cmd = se.getCommand();
 				if(ACTION_SELECT.equals(cmd)) {
 					TaxonomyLevelRow row = model.getObject(se.getIndex());
-					doSelectTaxonomyLevel(ureq, row);
+					doOpenTaxonomyLevel(ureq, row.getTaxonomyLevel());
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent) {
 				loadModel(true, true);
@@ -421,6 +421,12 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				stackPanel.popController(source);
 				loadModel(true, true);
 				doSelectTaxonomyLevel(ureq, ((MoveTaxonomyLevelEvent)event).getTaxonomyLevel());
+			} else if (event instanceof OpenTaxonomyLevelEvent levelEvent) {
+				if (parentLevel == null) {
+					doSelectTaxonomyLevel(ureq, levelEvent.getTaxonomyLevel());
+				} else {
+					fireEvent(ureq, levelEvent);
+				}
 			} else if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				dirty = true;
 			}
@@ -682,9 +688,12 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
         }
     }
 
-	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevelRow row) {
-		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
-		return doSelectTaxonomyLevel(ureq, taxonomyLevel);
+	private void doOpenTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+		if (parentLevel == null) {
+			doSelectTaxonomyLevel(ureq, taxonomyLevel);
+		} else {
+			fireEvent(ureq, new OpenTaxonomyLevelEvent(taxonomyLevel));
+		}
 	}
 
 	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
