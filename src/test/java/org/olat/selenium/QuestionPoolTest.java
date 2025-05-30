@@ -118,8 +118,7 @@ public class QuestionPoolTest extends Deployments {
 		administration
 			.openTaxonomy()
 			.selectTaxonomy("QPOOL")
-			.assertOnMetadata()
-			.selectTaxonomyTree()
+			.assertOnTaxonomyTree()
 			.atLeastOneLevel("at-least-one", "At least one")
 			.selectTaxonomyLevel("at-least-one", "At least one")
 			.selectCompetence()
@@ -202,8 +201,7 @@ public class QuestionPoolTest extends Deployments {
 		administration
 			.openTaxonomy()
 			.selectTaxonomy("QPOOL")
-			.assertOnMetadata()
-			.selectTaxonomyTree()
+			.assertOnTaxonomyTree()
 			.atLeastOneLevel("one-fore-question-pool", "One for question pool");
 		
 		new UserToolsPage(browser).logout();

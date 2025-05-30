@@ -50,6 +50,17 @@ public class TaxonomyPage {
 	}
 	
 	/**
+	 * Assert on the tree structure page of the taxonomy.
+	 * 
+	 * @return The tree page
+	 */
+	public TaxonomyTreePage assertOnTaxonomyTree() {
+		By selectLevelsBy = By.cssSelector(".o_sel_taxonomy_levels_tree");
+		OOGraphene.waitElement(selectLevelsBy, browser);
+		return new TaxonomyTreePage(browser);
+	}
+	
+	/**
 	 * Select the tab to manage the taxonomy levels.
 	 * 
 	 * @return The taxonomy tree page
