@@ -19,14 +19,25 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.coach.model.CourseStatEntry;
-import org.olat.modules.coach.ui.LightedValue.Light;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,8 +48,10 @@ import org.olat.modules.coach.ui.LightedValue.Light;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStatEntry>
-	implements SortableFlexiTableDataModel<CourseStatEntry> {
+public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStatEntryRow>
+	implements SortableFlexiTableDataModel<CourseStatEntryRow>, FilterableFlexiTableModel {
+
+	private List<CourseStatEntryRow> backupList;
 	
 	private static final Columns[] COLS = Columns.values();
 
@@ -46,7 +59,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		super(columnsModel);
 	}
 	
-	public int getIndexOfObject(CourseStatEntry entry) {
+	public int getIndexOfObject(CourseStatEntryRow entry) {
 		return getObjects().indexOf(entry);
 	}
 
@@ -54,81 +67,236 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	public void sort(SortKey orderBy) {
 		super.setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
 	}
+	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if(StringHelper.containsNonWhitespace(searchString) || !filters.isEmpty()) {
+			final String loweredSearchString = searchString == null || !StringHelper.containsNonWhitespace(searchString)
+					? null : searchString.toLowerCase();
+
+			final String certificates = getFiltered(filters, CourseListController.FILTER_CERTIFICATES);
+			final String assessment = getFiltered(filters, CourseListController.FILTER_ASSESSMENT);
+			final String status = getFiltered(filters, CourseListController.FILTER_STATUS);
+			final LocalDateTime now = DateUtils.toLocalDateTime(new Date());
+			final String lastVisit = getFiltered(filters, CourseListController.FILTER_LAST_VISIT);
+			final Boolean marked = getFilteredOneClick(filters, CourseListController.FILTER_MARKED);
+			final Boolean notVisited = getFilteredOneClick(filters, CourseListController.FILTER_NOT_VISITED);
+			final Boolean withParticipants = getFilteredOneClick(filters, CourseListController.FILTER_WITH_PARTICIPANTS);	
+			final Boolean withoutParticipants = getFilteredOneClick(filters, CourseListController.FILTER_WITHOUT_PARTICIPANTS);	
+			final DateRange executionPeriod = getFilterRange(filters);
+			
+			List<CourseStatEntryRow> filteredRows = new ArrayList<>(backupList.size());
+			for(CourseStatEntryRow row:backupList) {
+				boolean accept = accept(loweredSearchString, row)
+						&& acceptAssessment(assessment, row)
+						&& acceptStatust(status, row)
+						&& acceptMarked(marked, row)
+						&& acceptNotVisited(notVisited, row)
+						&& acceptWithParticipants(withParticipants, row)
+						&& acceptWithoutParticipants(withoutParticipants, row)
+						&& acceptDateRange(executionPeriod, row)
+						&& acceptCertificates(certificates, row)
+						&& acceptLastVisit(lastVisit, now, row);
+				if(accept) {
+					filteredRows.add(row);
+				}
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backupList);
+		}
+	}
+	
+	private boolean accept(String searchValue, CourseStatEntryRow entry) {
+		if(searchValue == null) return true;
+		return accept(searchValue, entry.getRepoDisplayName())
+				|| accept(searchValue, entry.getRepoExternalRef())
+				|| accept(searchValue, entry.getRepoExternalId());
+	}
+	
+	private boolean accept(String searchValue, String val) {
+		return val != null && val.toLowerCase().contains(searchValue);
+	}
+
+	private boolean acceptStatust(String ref, CourseStatEntryRow entry) {
+		if(ref == null) return true;
+		return entry.getRepoStatus() != null && ref.equals(entry.getRepoStatus().name());
+	}
+	
+	private boolean acceptAssessment(String ref, CourseStatEntryRow entry) {
+		if(ref == null) return true;
+		
+		if(CourseListController.ASSESSMENT_NONE.equals(ref)) {
+			return entry.getSuccessStatus().numPassed() == 0;
+		}
+		if(CourseListController.ASSESSMENT_PARTIALLY.equals(ref)) {
+			return entry.getSuccessStatus().numPassed() > 0
+				&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+		}
+		if(CourseListController.ASSESSMENT_ALL.equals(ref)) {
+			return entry.getSuccessStatus().numPassed() > 0
+					&& entry.getSuccessStatus().numFailed() == 0
+					&& entry.getSuccessStatus().numUndefined() == 0;
+		}
+		return false;
+	}
+	
+	private boolean acceptLastVisit(String ref, LocalDateTime now, CourseStatEntryRow entry) {
+		if(ref == null) return true;
+		if(entry.getLastVisit() == null) return false;
+		
+		LocalDateTime lastVisit = DateUtils.toLocalDateTime(entry.getLastVisit());
+		if(CourseListController.VISIT_LESS_1_DAY.equals(ref)) {
+			return ChronoUnit.HOURS.between(lastVisit, now) < 24;
+		}
+		if(CourseListController.VISIT_LESS_1_WEEK.equals(ref)) {
+			return ChronoUnit.WEEKS.between(lastVisit, now) < 1;
+		}
+		if(CourseListController.VISIT_LESS_4_WEEKS.equals(ref)) {
+			return ChronoUnit.WEEKS.between(lastVisit, now) < 4;
+		}
+		if(CourseListController.VISIT_LESS_12_MONTHS.equals(ref)) {
+			return ChronoUnit.MONTHS.between(lastVisit, now) < 12;
+		}
+		if(CourseListController.VISIT_MORE_12_MONTS.equals(ref)) {
+			return ChronoUnit.MONTHS.between(lastVisit, now) >= 12;
+		}
+		return false;
+	}
+	
+	private boolean acceptCertificates(String ref, CourseStatEntryRow entry) {
+		if(ref == null) return true;
+		
+		return (CourseListController.CERTIFICATES_WITH.equals(ref) && entry.getCertificates().numOfCertificates() > 0)
+				|| (CourseListController.CERTIFICATES_WITHOUT.equals(ref) && entry.getCertificates().numOfCertificates() == 0)
+				|| (CourseListController.CERTIFICATES_INVALID.equals(ref) && entry.getCertificates().numOfCoursesWithInvalidCertificates() > 0);
+	}
+	
+	private String getFiltered(List<FlexiTableFilter> filters, String filterName) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			String filterValue = extendedFilter.getValue();
+			if (StringHelper.containsNonWhitespace(filterValue)) {
+				return filterValue;
+			}
+		}
+		return null;
+	}
+	
+	private boolean acceptMarked(Boolean marked, CourseStatEntryRow entry) {
+		if(marked == null) return true;
+		return Boolean.TRUE.equals(marked) && entry.isMarked();
+	}
+	
+	private boolean acceptNotVisited(Boolean notVisited, CourseStatEntryRow entry) {
+		if(notVisited == null) return true;
+		return Boolean.TRUE.equals(notVisited) && entry.getParticipantsNotVisited() > 0;
+	}
+	
+	private boolean acceptWithParticipants(Boolean withParticipants, CourseStatEntryRow entry) {
+		if(withParticipants == null) return true;
+		return Boolean.TRUE.equals(withParticipants) && entry.getParticipants() > 0;
+	}
+	
+	private boolean acceptWithoutParticipants(Boolean withoutParticipants, CourseStatEntryRow entry) {
+		if(withoutParticipants == null) return true;
+		return Boolean.TRUE.equals(withoutParticipants) && entry.getParticipants() == 0;
+	}
+	
+	private Boolean getFilteredOneClick(List<FlexiTableFilter> filters, String id) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, id);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			String filterValue = extendedFilter.getValue();
+			if (id.equals(filterValue)) {
+				return Boolean.TRUE;
+			}
+		}
+		return null;
+	}
+	
+	private boolean acceptDateRange(DateRange range, CourseStatEntryRow row) {
+		if(range == null) return true;
+		
+		Date begin = range.getStart();
+		Date end = range.getEnd();
+		if(begin == null && end == null) return true;
+		
+		if(begin != null && end != null) {
+			return row.getLifecycleStartDate() != null && begin.compareTo(row.getLifecycleStartDate()) <= 0
+					&& row.getLifecycleEndDate() != null && end.compareTo(row.getLifecycleEndDate()) >= 0;
+		}
+		if(begin != null) {
+			return row.getLifecycleStartDate() != null && begin.compareTo(row.getLifecycleStartDate()) <= 0;
+		}
+		if( end != null) {
+			return row.getLifecycleEndDate() != null && end.compareTo(row.getLifecycleEndDate()) >= 0;
+		}
+		return false;
+	}
+	
+	private DateRange getFilterRange(List<FlexiTableFilter> filters) {
+		FlexiTableFilter pFilter = FlexiTableFilter.getFilter(filters, CourseListController.FILTER_PERIOD);
+		if (pFilter instanceof FlexiTableDateRangeFilter dateRangeFilter) {
+			return dateRangeFilter.getDateRange();
+		}
+		return null;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CourseStatEntry c = getObject(row);
+		CourseStatEntryRow c = getObject(row);
 		return getValueAt(c, col);
 	}
 
 	@Override
-	public Object getValueAt(CourseStatEntry row, int col) {
-		switch(COLS[col]) {
-			case key: return row.getRepoKey();
-			case name: return row.getRepoDisplayName();
-			case externalId: return row.getRepoExternalId();
-			case externalRef: return row.getRepoExternalRef();
-			case access: return row.getRepoStatus();
-			case countStudents: return Integer.valueOf(row.getCountStudents());
-			case initialLaunch: {
-				int count = row.getCountStudents();
-				if(count == 0) {
-					return new LightedValue(null, Light.grey);
-				}
-
-				int launch = row.getInitialLaunch();
-				Light light = Light.yellow;
-				if(launch == count) {
-					light = Light.green;
-				} else if (launch == 0) {
-					light = Light.red;
-				}
-				return new LightedValue(launch, light);
-			}
-			case completion: return row.getAverageCompletion();
-			case countPassed: {
-				int numOfStudents = row.getCountStudents();
-				if(numOfStudents == 0) {
-					return numOfStudents;
-				}
-				
-				ProgressValue val = new ProgressValue();
-				val.setTotal(numOfStudents);
-				val.setGreen(row.getCountPassed());
-				return val;
-			}
-			case countPassedLight: {
-				int count = row.getCountStudents();
-				if(count == 0) {
-					return new LightedValue(null, Light.grey);
-				}
-				
-				int passed = row.getCountPassed();
-				Light light = Light.yellow;
-				if(passed == count) {
-					light = Light.green;
-				} else if (passed == 0) {
-					light = Light.red;
-				}
-				return new LightedValue(row.getCountPassed(), light);
-			}
-			case averageScore: return row.getAverageScore();
-			default: return "ERROR";
-		}
+	public Object getValueAt(CourseStatEntryRow row, int col) {
+		return switch(COLS[col]) {
+			case key -> row.getRepoKey();
+			case mark -> row.getMarkLink();
+			case name -> row.getRepoDisplayName();
+			case externalId -> row.getRepoExternalId();
+			case externalRef -> row.getRepoExternalRef();
+			case lifecycleStart -> row.getLifecycleStartDate();
+			case lifecycleEnd -> row.getLifecycleEndDate();
+			case access -> row.getRepoStatus();
+			case participants -> row.getParticipants();
+			case participantsVisited -> row.getParticipantsVisited();
+			case participantsNotVisited -> row.getParticipantsNotVisited();
+			case lastVisit -> row.getLastVisit();
+			case completion -> row.getAverageCompletion();
+			case successStatus -> row.getSuccessStatus();
+			case averageScore -> row.getAverageScore();
+			case certificates -> row.getCertificates().numOfCoursesWithCertificates() > 0
+					? row.getCertificates().numOfCertificates() : "";
+			case tools -> Boolean.TRUE;
+			default -> "ERROR";
+		};
+	}
+	
+	@Override
+	public void setObjects(List<CourseStatEntryRow> objects) {
+		this.backupList = objects;
+		super.setObjects(objects);
 	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
 		key("table.header.course.key"),
-		name("table.header.course.name"),
+		mark("table.header.mark"),
+		name("table.header.course.title"),
 		externalId("table.header.course.externalId"),
 		externalRef("table.header.course.externalRef"),
+		lifecycleStart("table.header.lifecycle.start"),
+		lifecycleEnd("table.header.lifecycle.end"),
 		access("table.header.course.access"),
-		countStudents("table.header.countStudents"),
-		initialLaunch("table.header.login"),
+		participants("table.header.participants"),
+		participantsVisited("table.header.participants.visited"),
+		participantsNotVisited("table.header.participants.not.visited"),
+		lastVisit("table.header.last.visit"),
 		completion("table.header.completion"),
-		countPassed("table.header.passed"),
-		countPassedLight("table.header.passed"),
-		averageScore("table.header.averageScore");
+		successStatus("table.header.success.status"),
+		averageScore("table.header.averageScore"),
+		certificates("table.header.certificates"),
+		tools("action.more");
 		
 		private final String i18nKey;
 		

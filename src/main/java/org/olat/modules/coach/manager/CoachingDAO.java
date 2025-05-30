@@ -450,236 +450,170 @@ public class CoachingDAO {
 	}
 	
 	protected List<CourseStatEntry> getCoursesStatisticsNative(Identity coach) {
-		Map<Long,CourseStatEntry> map = new HashMap<>();		
-		boolean hasCourses = getCourses(coach, map);
-		if(hasCourses) {
-			getCoursesStatisticsUserInfosForCoach(coach, map);
-			getCoursesStatisticsUserInfosForOwner(coach, map);
-			getCoursesStatisticsStatements(coach, map);
-			for(Iterator<Map.Entry<Long,CourseStatEntry>> it=map.entrySet().iterator(); it.hasNext(); ) {
-				CourseStatEntry entry = it.next().getValue();
-				if(entry.getCountStudents() == 0) {
-					it.remove();
-				} else {
-					int notAttempted = entry.getCountStudents() - entry.getCountPassed() - entry.getCountFailed();
-					entry.setCountNotAttempted(notAttempted);
-				}
-			}
-			getCourseCompletionStatements(coach, map);
+		Map<Long,CourseStatEntry> map = getCourses(coach);
+		if(!map.isEmpty()) {
+			loadCoursesStatisticsStatements(coach, map);
+			loadCoursesCompletions(coach, map);
 		}
 		return new ArrayList<>(map.values());
 	}
-
-	private boolean getCourses(IdentityRef coach, Map<Long,CourseStatEntry> map) {
-		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select v.key, v.displayname, v.externalId, v.externalRef, v.status")
+	
+	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach) {
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select v.key, lifecycle.key, v.displayname, v.externalId, v.externalRef, v.status,")
+		  .append("  lifecycle.validFrom, lifecycle.validTo,")
+		  .append("  count(distinct participantMembers.identity.key) as numOfParticipants,")
+		  .append("  count(distinct courseInfos.key) as numOfVisited,")
+		  .append("  max(courseInfos.recentLaunch) as lastvisit,")
+		  .append("  sum(case when certificateConfig.automaticCertificationEnabled=true or certificateConfig.manualCertificationEnabled=true then 1 else 0 end) as numOfCoursesWithCertificate,")
+		  .append("  count(certificate.key) as numOfCertificates, ")
+		  .append("  sum(case when certificate.nextRecertificationDate<:now then 1 else 0 end) as numOfInvalidCertificates")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as coach on coach.role ")
-		  		.in(GroupRoles.coach, GroupRoles.owner)
-		  .append(" where coach.identity.key=:coachKey and res.resName='CourseModule'")
-		  .append(" and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
-
+		  .append(" inner join relGroup.group as participantGroup")
+		  .append(" left join participantGroup.members as participantMembers on (participantMembers.role='participant')")
+		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key and courseInfos.resource.key=res.key)")
+		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key)")
+		  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)")
+		  .append(" left join v.lifecycle as lifecycle")
+		  .where()
+		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		  
+		sb
+		  .and()
+		  .append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
+		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+		  .append(") or ")
+		  .append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+		  .append("  where owner.identity.key=:coachKey")
+		  .append("))");
+		
+		sb.append("group by v.key, lifecycle.key");
+		
+		Map<Long,CourseStatEntry> map = new HashMap<>();
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("now", new Date(), TemporalType.TIMESTAMP)
 				.getResultList();
 
 		for(Object[] rawStat:rawList) {
 			CourseStatEntry entry = new CourseStatEntry();
 			entry.setRepoKey(((Number)rawStat[0]).longValue());
-			entry.setRepoDisplayName((String)rawStat[1]);
-			entry.setRepoExternalId((String)rawStat[2]);
-			entry.setRepoExternalRef((String)rawStat[3]);
-			entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[4]));
+			entry.setRepoDisplayName((String)rawStat[2]);
+			entry.setRepoExternalId((String)rawStat[3]);
+			entry.setRepoExternalRef((String)rawStat[4]);
+			entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[5]));
+			entry.setLifecycleStartDate((Date)rawStat[6]);
+			entry.setLifecycleEndDate((Date)rawStat[7]);
+
+			entry.setParticipants(PersistenceHelper.extractPrimitiveInt(rawStat, 8));
+			entry.setParticipantsVisited(PersistenceHelper.extractPrimitiveInt(rawStat, 9));
+			entry.setParticipantsNotVisited(entry.getParticipants() - entry.getParticipantsVisited());
+			entry.setLastVisit((Date)rawStat[10]);
+			
+			long withCertificate = PersistenceHelper.extractPrimitiveLong(rawStat, 11);
+			if(withCertificate > 0l) {
+				long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 12);
+				long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 13);
+				entry.setCertificates(new Certificates(numOfCertificates, withCertificate, numOfInvalidCertificates));
+			}
 			map.put(entry.getRepoKey(), entry);
 		}
-		return !rawList.isEmpty();
+		return map;
 	}
 	
-	private boolean getCoursesStatisticsUserInfosForCoach(Identity coach, Map<Long,CourseStatEntry> map) {
-		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+	private void loadCoursesStatisticsStatements(Identity coach, Map<Long,CourseStatEntry> map) {
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
-		  .append("  sg_re.repositoryentry_id as re_id,")
-		  .append("  count(distinct sg_participant.fk_identity_id) as student_id,")
-		  .append("  count(distinct pg_initial_launch.id) as pg_id")
-		  .append(" from o_repositoryentry sg_re ")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role='").append(GroupRoles.coach).append("')")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='").append(GroupRoles.participant).append("')")
-		  .append(" left join o_as_user_course_infos pg_initial_launch")
-		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
-		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .append(" group by sg_re.repositoryentry_id");
-
-		List<?> rawList = dbInstance.getCurrentEntityManager()
-				.createNativeQuery(sb.toString())
+		  .append("  ae.repositoryEntry.key,")
+		  .append("  sum(case when ae.passed=true then 1 else 0 end) as numPassed,")
+		  .append("  sum(case when ae.passed=false then 1 else 0 end) as numFailed,")
+		  .append("  count(ae.key) as total,")
+		  .append("  avg(ae.score) as averageScore")
+		  .append(" from assessmententry as ae")
+		  .append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
+		  .append("  inner join re.groups as reToParticipantGroup")
+		  .append("  inner join reToParticipantGroup.group as participantGroup")
+		  .append("  inner join participantGroup.members as participant on (participant.role='participant')")
+		  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key)")
+		  .append("  inner join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae2.subIdent)")
+		  .where()
+		  .append("  ae2.entryRoot=true and rootElement.passedMode<>'none' and re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and();
+		
+		sb.append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
+		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+		  .append(" ) or re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+		  .append("  where owner.identity.key=:coachKey")
+		  .append(" ))");
+		
+		sb.append(" )")
+		  .append(" group by ae.repositoryEntry.key");
+		
+		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
 				.getResultList();
-		
-		for(Object rawObject:rawList) {
-			Object[] rawStats = (Object[])rawObject;
-			Long repoKey = ((Number)rawStats[0]).longValue();
-			CourseStatEntry entry = map.get(repoKey);
-			if(entry != null) {
-				entry.setCountStudents(((Number)rawStats[1]).intValue());
-				entry.setInitialLaunch(((Number)rawStats[2]).intValue());
+		for(Object[] rawObjects:rawList) {
+			Long entryKey = ((Number)rawObjects[0]).longValue();
+			CourseStatEntry stats = map.get(entryKey);
+			if(stats != null) {
+				long numPassed = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
+				long numFailed = PersistenceHelper.extractPrimitiveLong(rawObjects, 2);
+				long total = PersistenceHelper.extractPrimitiveLong(rawObjects, 3);
+				long numUndefined = total - numFailed - numPassed;
+				stats.setSuccessStatus(new SuccessStatus(numPassed, numFailed, numUndefined, total));
+
+				Double averageScore = PersistenceHelper.extractDouble(rawObjects, 4);
+				stats.setAverageScore(averageScore);
 			}
 		}
-		return !rawList.isEmpty();
 	}
 	
-	private boolean getCoursesStatisticsUserInfosForOwner(Identity coach, Map<Long,CourseStatEntry> map) {
-		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		if(dbInstance.isMySQL()) {
-			sb.append("select")
-			  .append("  sg_re.repositoryentry_id as re_id,")
-			  .append("  count(distinct sg_participant.fk_identity_id) as student_id,")
-			  .append("  count(distinct pg_initial_launch.id) as pg_id")
-			  .append(" from o_repositoryentry sg_re ")
-			  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(")")
-			  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=owngroup.fk_group_id and sg_coach.g_role ")
-			  		.in(GroupRoles.owner).append(")")
-			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-			  .append(" left join o_as_user_course_infos pg_initial_launch")
-			  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
-			  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-			  .append(" group by sg_re.repositoryentry_id");
-		} else {
-			sb.append("select")
-			  .append("  sg_re.repositoryentry_id as re_id,")
-			  .append("  count(distinct sg_participant.fk_identity_id) as student_id,")
-			  .append("  count(distinct pg_initial_launch.id) as pg_id")
-			  .append(" from o_repositoryentry sg_re ")
-			  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-			  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-			  .append(" left join o_as_user_course_infos pg_initial_launch")
-			  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
-			  .append(" where sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(" and sg_re.fk_olatresource in (")
-			  .append("  select sg_res.resource_id from o_olatresource sg_res where sg_res.resname = 'CourseModule'")
-			  .append(" ) and exists (")
-			  .append("  select owngroup.id from o_re_to_group owngroup inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id)")
-			  .append("  where owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(" and sg_owner.fk_identity_id=:coachKey")
-			  .append("  and sg_owner.g_role ").in(GroupRoles.owner)
-			  .append(" )")
-			  .append(" group by sg_re.repositoryentry_id");
-		}
+	private void loadCoursesCompletions(Identity coach, Map<Long,CourseStatEntry> map) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select")
+		  .append("  ae.repositoryEntry.key,")
+		  .append("  avg(ae.completion) as completion")
+		  .append(" from assessmententry as ae")
+		  .append(" where ae.key in (select distinct ae2.key from repositoryentry as re")
+		  .append("  inner join re.groups as reToParticipantGroup")
+		  .append("  inner join reToParticipantGroup.group as participantGroup")
+		  .append("  inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=participantGroup.key)")
+		  .append("  inner join assessmententry as ae2 on (ae2.repositoryEntry.key=re.key and participant.identity.key=ae2.identity.key and ae2.entryRoot=true)")
+		  .where()
+		  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and();
 
-		List<?> rawList = dbInstance.getCurrentEntityManager()
-				.createNativeQuery(sb.toString())
+		sb.append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
+		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+		  .append(" ) or re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+		  .append("  where owner.identity.key=:coachKey")
+		  .append(" ))");
+		
+		sb.append(" )")
+		  .append(" group by ae.repositoryEntry.key");
+		
+		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
 				.getResultList();
-		
-		for(Object rawObject:rawList) {
-			Object[] rawStats = (Object[])rawObject;
-			Long repoKey = ((Number)rawStats[0]).longValue();
-			CourseStatEntry entry = map.get(repoKey);
-			if(entry != null) {
-				entry.setCountStudents(((Number)rawStats[1]).intValue());
-				entry.setInitialLaunch(((Number)rawStats[2]).intValue());
+		for(Object[] rawObjects:rawList) {
+			Long entryKey = ((Number)rawObjects[0]).longValue();
+			CourseStatEntry stats = map.get(entryKey);
+			if(stats != null) {
+				Double completion = PersistenceHelper.extractDouble(rawObjects, 1);
+				stats.setAverageCompletion(completion);
 			}
 		}
-		return !rawList.isEmpty();
 	}
+
 	
-	private boolean getCoursesStatisticsStatements(Identity coach, Map<Long,CourseStatEntry> map) {
-		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select ")
-		  .append(" fin_statement.course_repo_key, ")
-		  .append(" count(fin_statement.id), ")
-		  .append(" sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed, ")
-		  .append(" sum(case when fin_statement.passed=").appendFalse().append(" then 1 else 0 end) as num_of_failed, ")
-		  .append(" avg(fin_statement.score) ")
-		  .append("from o_as_eff_statement fin_statement ")
-		  .append("where fin_statement.id in (select sg_statement.id ")
-		  .append(" from o_repositoryentry sg_re")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role in ('owner','coach')) ")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource")
-		  .append("  and sg_statement.last_statement=").appendTrue().append(")")
-		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .append(" union select sg_statement.id ")
-		  .append(" from o_repositoryentry sg_re ")
-		  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(") ")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=owngroup.fk_group_id and sg_coach.g_role")
-		  		.in(GroupRoles.owner).append(")")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource")
-		  .append("  and sg_statement.last_statement=").appendTrue().append(")")
-		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .append(")")
-		  .append(" group by fin_statement.course_repo_key ");
-
-		List<?> rawList = dbInstance.getCurrentEntityManager()
-				.createNativeQuery(sb.toString())
-				.setParameter("coachKey", coach.getKey())
-				.getResultList();
-		
-		for(Object rawObject:rawList) {
-			Object[] rawStats = (Object[])rawObject;
-			Long repoKey = ((Number)rawStats[0]).longValue();
-			CourseStatEntry entry = map.get(repoKey);
-			if(entry != null) {
-				int passed = ((Number)rawStats[2]).intValue();
-				int failed = ((Number)rawStats[3]).intValue();
-				entry.setCountFailed(failed);
-				entry.setCountPassed(passed);
-				if(rawStats[4] != null) {
-					entry.setAverageScore(((Number)rawStats[4]).floatValue());
-				}
-			}
-		}
-		return !rawList.isEmpty();
-	}
-	
-	private boolean getCourseCompletionStatements(Identity coach, Map<Long, CourseStatEntry> map) {
-		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select ")
-		  .append(" ae.fk_entry, ")
-		  .append("  avg(ae.a_completion)")
-		  .append(" from o_as_entry ae ")
-		  .append("     inner join o_repositoryentry re on re.repositoryentry_id = ae.fk_entry and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .append("where ae.a_entry_root=").appendTrue()
-		  .append("  and ae.a_entry_root = true and ae.id in (select sg_ae.id ")
-		  .append(" from o_repositoryentry sg_re")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role in ('owner','coach')) ")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" inner join o_as_entry sg_ae on (sg_ae.fk_identity = sg_participant.fk_identity_id and sg_ae.fk_entry = sg_re.repositoryentry_id) ")
-		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_ae.a_entry_root=").appendTrue()
-		  .append(" union ")
-		  .append(" select sg_ae.id ")
-		  .append(" from o_repositoryentry sg_re ")
-		  .append(" inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(") ")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=owngroup.fk_group_id and sg_coach.g_role = 'owner')")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
-		  .append(" inner join o_as_entry sg_ae on (sg_ae.fk_identity = sg_participant.fk_identity_id and sg_ae.fk_entry = sg_re.repositoryentry_id) ")
-		  .append(" where sg_coach.fk_identity_id=:coachKey  and sg_ae.a_entry_root=").appendTrue()
-		  .append(") ")
-		  .append("group by ae.fk_entry ");
-
-		List<?> rawList = dbInstance.getCurrentEntityManager()
-				.createNativeQuery(sb.toString())
-				.setParameter("coachKey", coach.getKey())
-				.getResultList();
-		
-		for(Object rawObject:rawList) {
-			Object[] rawStat = (Object[])rawObject;
-			Long repoKey = ((Number)rawStat[0]).longValue();
-			CourseStatEntry entry = map.get(repoKey);
-			if(entry != null) {
-				Double completion = rawStat[1] != null? ((Number)rawStat[1]).doubleValue(): null;
-				entry.setAverageCompletion(completion);
-			}
-		}
-		return !rawList.isEmpty();
-	}
 	
 	protected void loadOrganisationsMembers(List<Group> organisationsGroups,
 			final List<ParticipantStatisticsEntry> statsEntries, final Map<Long,ParticipantStatisticsEntry> statisticsEntries,

@@ -386,10 +386,10 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(1, nativeStats.size());
 		CourseStatEntry nativeStat = nativeStats.get(0);
-		Assert.assertEquals(2, nativeStat.getCountStudents());
-		Assert.assertEquals(1, nativeStat.getCountPassed());
-		Assert.assertEquals(1, nativeStat.getCountFailed());
-		Assert.assertEquals(1, nativeStat.getInitialLaunch());
+		Assert.assertEquals(2, nativeStat.getParticipants());
+		Assert.assertEquals(1, nativeStat.getParticipantsVisited());
+		Assert.assertEquals(1, nativeStat.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, nativeStat.getSuccessStatus().numFailed());
 		Assert.assertEquals(4.0f, nativeStat.getAverageScore(), 0.0001);
 
 		// Participants statistics as coach
@@ -446,7 +446,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatisticsNotAttempted() {
+	public void getCourseStatistics() {
 		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
@@ -474,12 +474,14 @@ public class CoachingDAOTest extends OlatTestCase {
 		//members of 2 groups
 		BusinessGroup group= businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, null);
-		businessGroupRelationDao.addRelationToResource(group, re1);
-		businessGroupRelationDao.addRelationToResource(group, re2);
-		businessGroupRelationDao.addRelationToResource(group, re3);
 		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
+		businessGroupService.addResourceTo(group, re1);
+		businessGroupService.addResourceTo(group, re2);
+		businessGroupService.addResourceTo(group, re3);
+		dbInstance.commitAndCloseSession();
+		waitMessageAreConsumed();
 		
 		//make statements participant 1
 		setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant1, re1);
@@ -489,6 +491,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		//make statements participant 2
 	    setScoreInformations(new Date(), 6.0f, null, "g1", "gs1", "pc1", true, participant2, re1);
 	    setScoreInformations(new Date(), null, null, "g2", "gs1", "pc2", null, participant2, re2);
+	    setScoreInformations(new Date(), null, null, "g3", "gs1", "pc3", null, participant2, re3);
 		dbInstance.commitAndCloseSession();
 		
 		//make user infos
@@ -504,27 +507,27 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(3, nativeStats.size());
 		CourseStatEntry entryRe1 = getCourseStatEntry(re1, nativeStats);
-		Assert.assertEquals(2, entryRe1.getCountStudents());
-		Assert.assertEquals(2, entryRe1.getCountPassed());
-		Assert.assertEquals(0, entryRe1.getCountFailed());
-		//TODO coaching Assert.assertEquals(2, entryRe1.getCountNotAttempted());
-		Assert.assertEquals(2, entryRe1.getInitialLaunch());
+		Assert.assertEquals(2, entryRe1.getParticipants());
+		Assert.assertEquals(2, entryRe1.getParticipantsVisited());
+		Assert.assertEquals(2, entryRe1.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryRe1.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryRe1.getSuccessStatus().numUndefined());
 		Assert.assertEquals(6.0f, entryRe1.getAverageScore(), 0.0001);
 		
 		CourseStatEntry entryRe2 = getCourseStatEntry(re2, nativeStats);
-		Assert.assertEquals(2, entryRe2.getCountStudents());
-		Assert.assertEquals(0, entryRe2.getCountPassed());
-		Assert.assertEquals(0, entryRe2.getCountFailed());
-		Assert.assertEquals(2, entryRe2.getCountNotAttempted());
-		Assert.assertEquals(2, entryRe2.getInitialLaunch());
+		Assert.assertEquals(2, entryRe2.getParticipants());
+		Assert.assertEquals(0, entryRe2.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryRe2.getSuccessStatus().numFailed());
+		Assert.assertEquals(2, entryRe2.getSuccessStatus().numUndefined());
+		Assert.assertEquals(2, entryRe2.getParticipantsVisited());
 		Assert.assertEquals(4.0f, entryRe2.getAverageScore(), 0.0001);
 		
 		CourseStatEntry entryRe3 = getCourseStatEntry(re3, nativeStats);
-		Assert.assertEquals(2, entryRe3.getCountStudents());
-		Assert.assertEquals(0, entryRe3.getCountPassed());
-		Assert.assertEquals(1, entryRe3.getCountFailed());
-		Assert.assertEquals(1, entryRe3.getCountNotAttempted());
-		Assert.assertEquals(1, entryRe3.getInitialLaunch());
+		Assert.assertEquals(2, entryRe3.getParticipants());
+		Assert.assertEquals(1, entryRe3.getParticipantsVisited());
+		Assert.assertEquals(0, entryRe3.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryRe3.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryRe3.getSuccessStatus().numUndefined());
 		Assert.assertEquals(2.0f, entryRe3.getAverageScore(), 0.0001);
 		
 		// Coach statistics
@@ -683,25 +686,26 @@ public class CoachingDAOTest extends OlatTestCase {
 		//re 3 is removed because coach has no visible participants within
 		List<CourseStatEntry> nativeCourseStats = coachingDAO.getCoursesStatisticsNative(coach);
 		Assert.assertNotNull(nativeCourseStats);
-		Assert.assertEquals(2, nativeCourseStats.size());
+		Assert.assertEquals(3, nativeCourseStats.size());
 		//re 1
 		CourseStatEntry entryCourse1 = getCourseStatEntry(re1, nativeCourseStats);
 		Assert.assertNotNull(entryCourse1);
-		Assert.assertEquals(2, entryCourse1.getCountStudents());
-		Assert.assertEquals(2, entryCourse1.getInitialLaunch());
-		Assert.assertEquals(1, entryCourse1.getCountPassed());
-		Assert.assertEquals(1, entryCourse1.getCountFailed());
-		Assert.assertEquals(0, entryCourse1.getCountNotAttempted());
+		Assert.assertEquals(2, entryCourse1.getParticipants());
+		Assert.assertEquals(2, entryCourse1.getParticipantsVisited());
+		Assert.assertEquals(1, entryCourse1.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryCourse1.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryCourse1.getSuccessStatus().numUndefined());
 		Assert.assertEquals(5.0f, entryCourse1.getAverageScore(), 0.0001f);
 		//re 2
 		CourseStatEntry entryCourse2 = getCourseStatEntry(re2, nativeCourseStats);
 		Assert.assertNotNull(entryCourse2);
-		Assert.assertEquals(2, entryCourse2.getCountStudents());
-		Assert.assertEquals(2, entryCourse2.getInitialLaunch());
-		Assert.assertEquals(1, entryCourse2.getCountPassed());
-		Assert.assertEquals(0, entryCourse2.getCountFailed());
-		Assert.assertEquals(1, entryCourse2.getCountNotAttempted());
+		Assert.assertEquals(2, entryCourse2.getParticipants());
+		Assert.assertEquals(2, entryCourse2.getParticipantsVisited());
+		Assert.assertEquals(1, entryCourse2.getSuccessStatus().numPassed());
+		Assert.assertEquals(0, entryCourse2.getSuccessStatus().numFailed());
+		Assert.assertEquals(1, entryCourse2.getSuccessStatus().numUndefined());
 		Assert.assertEquals(5.5f, entryCourse2.getAverageScore(), 0.0001f);
+		
 		
 		//user native
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
@@ -877,11 +881,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, courseCoachCourseStats.size());
 		CourseStatEntry entryCourse3 = getCourseStatEntry(re3, courseCoachCourseStats);
 		Assert.assertNotNull(entryCourse3);
-		Assert.assertEquals(2, entryCourse3.getCountStudents());
-		Assert.assertEquals(2, entryCourse3.getInitialLaunch());
-		Assert.assertEquals(1, entryCourse3.getCountPassed());
-		Assert.assertEquals(1, entryCourse3.getCountFailed());
-		Assert.assertEquals(0, entryCourse3.getCountNotAttempted());
+		Assert.assertEquals(2, entryCourse3.getParticipants());
+		Assert.assertEquals(2, entryCourse3.getParticipantsVisited());
+		Assert.assertEquals(1, entryCourse3.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryCourse3.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryCourse3.getSuccessStatus().numUndefined());
 		Assert.assertEquals(3.5f, entryCourse3.getAverageScore(), 0.0001f);
 		
 		// Group coach can see course 3 via group 3
@@ -889,11 +893,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(groupCoachCourseStats);
 		Assert.assertEquals(1, groupCoachCourseStats.size());
 		CourseStatEntry entryCourse3g = getCourseStatEntry(re3, groupCoachCourseStats);
-		Assert.assertEquals(2, entryCourse3g.getCountStudents());
-		Assert.assertEquals(2, entryCourse3g.getInitialLaunch());
-		Assert.assertEquals(1, entryCourse3g.getCountPassed());
-		Assert.assertEquals(1, entryCourse3g.getCountFailed());
-		Assert.assertEquals(0, entryCourse3g.getCountNotAttempted());
+		Assert.assertEquals(2, entryCourse3g.getParticipants());
+		Assert.assertEquals(2, entryCourse3g.getParticipantsVisited());
+		Assert.assertEquals(1, entryCourse3g.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryCourse3g.getSuccessStatus().numFailed());
+		Assert.assertEquals(0, entryCourse3g.getSuccessStatus().numUndefined());
 		Assert.assertEquals(3.25f, entryCourse3g.getAverageScore(), 0.0001f);
 	
 		
@@ -955,7 +959,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_emptyStatements_emptyCourseInfos() {
+	public void getCoursesStatisticsEmptyStatementsEmptyCourseInfos() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
@@ -973,6 +977,10 @@ public class CoachingDAOTest extends OlatTestCase {
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
+
+		// initialize assessment entries
+		setScoreInformations(new Date(), null, null, null, null, null, null, participant1, re1);
+		setScoreInformations(new Date(), null, null, null, null, null, null, participant2, re1);
 		
 		//groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
@@ -983,6 +991,10 @@ public class CoachingDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(participant4, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRelationToResource(group1, re1);
 		dbInstance.commitAndCloseSession();
+		
+		// initialize assessment entries
+		setScoreInformations(new Date(), null, null, null, null, null, false, participant3, re1);
+		setScoreInformations(new Date(), null, null, null, null, null, null, participant4, re1);
 		
 		//check groups statistics
 		List<GroupStatEntry> nativeGroupStats = coachingDAO.getGroupsStatisticsNative(coach);
@@ -1000,15 +1012,15 @@ public class CoachingDAOTest extends OlatTestCase {
 		//courses
 		List<CourseStatEntry> nativeCourseStats = coachingDAO.getCoursesStatisticsNative(coach);
 		Assert.assertNotNull(nativeCourseStats);
-		Assert.assertEquals(1, nativeCourseStats.size());
+		Assert.assertEquals(2, nativeCourseStats.size());
 		//re 1
 		CourseStatEntry entryCourse1 = getCourseStatEntry(re1, nativeCourseStats);
 		Assert.assertNotNull(entryCourse1);
-		Assert.assertEquals(4, entryCourse1.getCountStudents());
-		Assert.assertEquals(0, entryCourse1.getInitialLaunch());
-		Assert.assertEquals(0, entryCourse1.getCountPassed());
-		Assert.assertEquals(0, entryCourse1.getCountFailed());
-		Assert.assertEquals(4, entryCourse1.getCountNotAttempted());
+		Assert.assertEquals(4, entryCourse1.getParticipants());
+		Assert.assertEquals(0, entryCourse1.getParticipantsVisited());
+		Assert.assertEquals(0, entryCourse1.getSuccessStatus().numPassed());
+		Assert.assertEquals(1, entryCourse1.getSuccessStatus().numFailed());
+		Assert.assertEquals(3, entryCourse1.getSuccessStatus().numUndefined());
 		Assert.assertNull(entryCourse1.getAverageScore());
 
 		// Coach is owner of the first entry -> look at participants
@@ -1038,7 +1050,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_empty() {
+	public void getStatisticsEmpty() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
@@ -1065,7 +1077,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		//courses (method doesn't return courses without participant)
 		List<CourseStatEntry> nativeCourseStats = coachingDAO.getCoursesStatisticsNative(coach);
 		Assert.assertNotNull(nativeCourseStats);
-		Assert.assertEquals(0, nativeCourseStats.size());
+		Assert.assertEquals(2, nativeCourseStats.size());
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//Participants
