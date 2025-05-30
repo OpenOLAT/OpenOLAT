@@ -206,16 +206,18 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 		}
 	    
 		ICourse course = CourseFactory.loadCourse(ores);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 	    final String courseTitle = course.getCourseTitle();
 	    final String targetDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseTitle).getPath();
 	    
 	    final Long resId = ores.getResourceableId();
 	    final Locale theLocale = getLocale();
 	    final String email = getIdentity().getUser().getProperty(UserConstants.EMAIL, getLocale());
+	    final String filter = "[RepositoryEntry:" + entry.getKey() + "]";
 
 	    try {
 			asyncExportManager.asyncArchiveCourseLogFiles(getIdentity(),
-					resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, theLocale, email);
+					resId, targetDir, begin, end, logAdminChecked, logUserChecked, logStatisticChecked, filter, theLocale, email);
 		} catch (TaskRejectedException e) {
 			logError("", e);
 			showError("error.queue.course.log");

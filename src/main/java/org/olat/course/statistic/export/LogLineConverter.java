@@ -26,8 +26,10 @@ package org.olat.course.statistic.export;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -49,6 +51,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("logLineConverter")
 public class LogLineConverter {
+	
+	private static final Logger log = Tracing.createLoggerFor(LogLineConverter.class);
 	
 	public static final String USAGE_IDENTIFIER = LogLineConverter.class.getCanonicalName();
 	
@@ -93,7 +97,12 @@ public class LogLineConverter {
 	 * @return the CSV line representing the given LoggingObject
 	 */
 	public void setRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet, LoggingObject loggingObject, Identity identity, User user,
-			boolean anonymize, Long resourceableId, boolean isAdministrativeUser) {
+			boolean anonymize, Long resourceableId, boolean isAdministrativeUser, String businessPathFilter) {
+		if(businessPathFilter != null && (loggingObject.getBusinessPath() == null || !loggingObject.getBusinessPath().startsWith(businessPathFilter))) {
+			log.debug("Refused {} {}: {}", loggingObject.getActionVerb(), loggingObject.getActionObject(), loggingObject.getBusinessPath());
+			return;
+		}
+
 		Row row = sheet.newRow();
 		
 		int col = 0;

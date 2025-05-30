@@ -66,7 +66,8 @@ public class AsyncExportManager {
 	private final Set<Identity> identitiesOfJobsCurrentlyRunning = ConcurrentHashMap.newKeySet();
 	
 	public void asyncArchiveCourseLogFiles(Identity identity, Long oresID, String exportDir,
-			Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog, Locale locale, String email){
+			Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog, String businessPathFilter,
+			Locale locale, String email){
 		// argument checks
 		if (identity==null) {
 			throw new IllegalArgumentException("identity must not be null");
@@ -79,7 +80,7 @@ public class AsyncExportManager {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		
 		CourseLogRunnable run = new CourseLogRunnable(identity, oresID, exportDir, begin, end,
-				adminLog, userLog, statisticLog, locale, email, isAdministrativeUser);
+				adminLog, userLog, statisticLog, locale, email, isAdministrativeUser, businessPathFilter);
 		taskExecutorManager.execute(run);
 	}
 	

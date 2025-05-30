@@ -78,9 +78,9 @@ public class SimpleLogExporter implements ICourseLogExporter {
 	
 	@Override
 	public void exportCourseLog(File outFile, Long resourceableId, Date begin, Date end, boolean resourceAdminAction,
-			boolean anonymize, boolean isAdministrativeUser) {
+			boolean anonymize, boolean isAdministrativeUser, String businessPathFilter) {
 		try(OutputStream out = Files.newOutputStream(outFile.toPath(), StandardOpenOption.CREATE_NEW)) {
-			exportCourseLog(out, resourceableId, begin, end, resourceAdminAction, anonymize, isAdministrativeUser);
+			exportCourseLog(out, resourceableId, begin, end, resourceAdminAction, anonymize, isAdministrativeUser, businessPathFilter);
 		} catch(Exception e) {
 			log.error("", e);
 		} finally {
@@ -89,7 +89,7 @@ public class SimpleLogExporter implements ICourseLogExporter {
 	}
 	
 	public void exportCourseLog(OutputStream out, Long resourceableId, Date begin, Date end, boolean resourceAdminAction,
-			boolean anonymize, boolean isAdministrativeUser) {
+			boolean anonymize, boolean isAdministrativeUser, String businessPathFilter) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v, ident, identUser from loggingobject as v")
 		  .append(" left join fetch ").append(IdentityImpl.class.getCanonicalName()).append(" as ident on (ident.key=v.userId)")
@@ -132,8 +132,8 @@ public class SimpleLogExporter implements ICourseLogExporter {
 					LoggingObject loggingObject = (LoggingObject)objects[0];
 					Identity identity = (Identity)objects[1];
 					User user = (User)objects[2];
-
-					logLineConverter.setRow(workbook, sheet, loggingObject, identity, user, anonymize, resourceableId, isAdministrativeUser);
+					
+					logLineConverter.setRow(workbook, sheet, loggingObject, identity, user, anonymize, resourceableId, isAdministrativeUser, businessPathFilter);
 
 					em.detach(loggingObject);
 					if(identity != null) {
