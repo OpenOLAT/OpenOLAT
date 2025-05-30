@@ -867,8 +867,9 @@ public class CourseFactory {
 			// rework when backgroundjob infrastructure exists
 			DBFactory.getInstance().intermediateCommit();
 			try {
+				String filter = "[RepositoryEntry:" + course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey() + "]";
 				CoreSpringFactory.getImpl(AsyncExportManager.class).asyncArchiveCourseLogFiles(archiveOnBehalfOf,
-						course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, null, null);
+						course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, filter, null, null);
 			} catch (TaskRejectedException e) {
 				log.error("The course log cannot be archived.", e);
 			}

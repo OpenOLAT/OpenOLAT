@@ -246,8 +246,10 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 		try(OutputStream shieldOut = new ShieldOutputStream(zout)) {
 			zout.putNextEntry(new ZipEntry(name));
 			
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			String filter = "[RepositoryEntry:" + entry.getKey() + "]";
 			exporter.exportCourseLog(shieldOut, course.getResourceableId(), options.getLogFilesStartDate(), options.getLogFilesEndDate(),
-					resourceAdminAction, anonymize, options.getLogSettings() == LogSettings.PERSONALISED);	
+					resourceAdminAction, anonymize, options.getLogSettings() == LogSettings.PERSONALISED, filter);	
 
 			shieldOut.flush();
 			zout.closeEntry();
