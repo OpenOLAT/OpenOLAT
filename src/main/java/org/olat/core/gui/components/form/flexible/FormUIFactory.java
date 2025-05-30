@@ -1863,10 +1863,7 @@ public class FormUIFactory {
 
 	public OrgStructureElement addOrgStructureElement(String name, String i18nLabel, FormItemContainer formLayout,
 													  WindowControl wControl, List<Organisation> activeOrgs) {
-		OrgStructureElementImpl orgStructureElement = new OrgStructureElementImpl(
-				wControl, name, activeOrgs,
-				formLayout.getTranslator().getLocale()
-		);
+		OrgStructureElementImpl orgStructureElement = new OrgStructureElementImpl(wControl, name, activeOrgs);
 		setLabelIfNotNull(i18nLabel, orgStructureElement);
 		formLayout.add(orgStructureElement);
 		return orgStructureElement;

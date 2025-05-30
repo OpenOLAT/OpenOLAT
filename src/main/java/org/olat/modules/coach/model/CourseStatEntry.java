@@ -19,6 +19,10 @@
  */
 package org.olat.modules.coach.model;
 
+import java.util.Date;
+
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
+import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
@@ -28,22 +32,31 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CourseStatEntry {
+	
+	private static final Certificates NO_CERTIFICATES = new Certificates(0l, 0l, 0l);
+	private static final SuccessStatus NO_SUCCESS = new SuccessStatus(0l, 0l, 0l, 0l);
+	
 	// s.repoKey, 
 	private Long repoKey;
 	private String repoDisplayName;
 	private String repoExternalId;
 	private String repoExternalRef;
 	private RepositoryEntryStatusEnum status;
-	private int countStudents;
-	private int countPassed;
-	private int countFailed;
-	private int countNotAttempted;
-	private Float averageScore;
-	private int initialLaunch;
-	private Double averageCompletion;
+	private Date lifecycleStartDate;
+	private Date lifecycleEndDate;
 	
+	private int participants;
+	private int participantsVisited;
+	private int participantsNotVisited;
+	private Date lastVisit;
+	
+	private Certificates certificates = NO_CERTIFICATES;
+
 	private double totalScore;
+	private Double averageScore;
 	private int totalScoredStudents;
+	private Double averageCompletion;
+	private SuccessStatus successStatus = NO_SUCCESS;
 	
 	public CourseStatEntry() {
 		//
@@ -105,52 +118,68 @@ public class CourseStatEntry {
 		this.status = status;
 	}
 
-	public int getCountStudents() {
-		return countStudents;
-	}
-	
-	public void setCountStudents(int countStudents) {
-		this.countStudents = countStudents;
+	public Date getLifecycleStartDate() {
+		return lifecycleStartDate;
 	}
 
-	public int getCountPassed() {
-		return countPassed;
+	public void setLifecycleStartDate(Date lifecycleStartDate) {
+		this.lifecycleStartDate = lifecycleStartDate;
+	}
+
+	public Date getLifecycleEndDate() {
+		return lifecycleEndDate;
+	}
+
+	public void setLifecycleEndDate(Date lifecycleEndDate) {
+		this.lifecycleEndDate = lifecycleEndDate;
+	}
+
+	public int getParticipants() {
+		return participants;
+	}
+
+	public void setParticipants(int participants) {
+		this.participants = participants;
+	}
+
+	public int getParticipantsVisited() {
+		return participantsVisited;
+	}
+
+	public void setParticipantsVisited(int participantsVisited) {
+		this.participantsVisited = participantsVisited;
+	}
+
+	public int getParticipantsNotVisited() {
+		return participantsNotVisited;
+	}
+
+	public void setParticipantsNotVisited(int participantsNotVisited) {
+		this.participantsNotVisited = participantsNotVisited;
+	}
+
+	public Date getLastVisit() {
+		return lastVisit;
+	}
+
+	public void setLastVisit(Date lastVisit) {
+		this.lastVisit = lastVisit;
+	}
+
+	public SuccessStatus getSuccessStatus() {
+		return successStatus;
 	}
 	
-	public void setCountPassed(int countPassed) {
-		this.countPassed = countPassed;
+	public void setSuccessStatus(SuccessStatus successStatus) {
+		this.successStatus = successStatus;
 	}
-	
-	public int getCountFailed() {
-		return countFailed;
-	}
-	
-	public void setCountFailed(int countFailed) {
-		this.countFailed = countFailed;
-	}
-	
-	public int getCountNotAttempted() {
-		return countNotAttempted;
-	}
-	
-	public void setCountNotAttempted(int countNotAttempted) {
-		this.countNotAttempted = countNotAttempted;
-	}
-	
-	public Float getAverageScore() {
+
+	public Double getAverageScore() {
 		return averageScore;
 	}
 	
-	public void setAverageScore(Float averageScore) {
+	public void setAverageScore(Double averageScore) {
 		this.averageScore = averageScore;
-	}
-
-	public int getInitialLaunch() {
-		return initialLaunch;
-	}
-
-	public void setInitialLaunch(int initialLaunch) {
-		this.initialLaunch = initialLaunch;
 	}
 
 	public Double getAverageCompletion() {
@@ -159,5 +188,17 @@ public class CourseStatEntry {
 
 	public void setAverageCompletion(Double averageCompletion) {
 		this.averageCompletion = averageCompletion;
+	}
+
+	public Certificates getCertificates() {
+		return certificates;
+	}
+
+	public void setCertificates(Certificates certificates) {
+		if(certificates == null) {
+			this.certificates = NO_CERTIFICATES;
+		} else {
+			this.certificates = certificates;
+		}
 	}
 }

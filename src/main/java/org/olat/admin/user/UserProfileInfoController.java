@@ -22,6 +22,7 @@ package org.olat.admin.user;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
@@ -36,7 +37,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
@@ -103,7 +103,7 @@ public class UserProfileInfoController extends UserInfoController {
 		addUserId(itemsCont);
 
 		// 2. Organisations (with user role only)
-		addUserOrganisations(itemsCont, editedRoles);
+		addUserOrganisations(itemsCont);
 
 		// 3. Roles (excluding 'user')
 		addRoles(itemsCont, editedRoles);
@@ -122,30 +122,17 @@ public class UserProfileInfoController extends UserInfoController {
 		uifactory.addStaticTextElement("userid", "user.identity", String.valueOf(identity.getKey()), itemsCont);
 	}
 
-	private void addUserOrganisations(FormLayoutContainer itemsCont, Roles fullRoles) {
-		List<OrganisationRef> userOrgs = fullRoles.getOrganisationsWithRole(OrganisationRoles.user);
-		if (userOrgs.isEmpty()) {
+	private void addUserOrganisations(FormLayoutContainer itemsCont) {
+		List<String> userOrgNames = organisationService.getUsersOrganisationsNames(List.of(identity)).getOrDefault(identity.getKey(), null);
+		if (userOrgNames.isEmpty()) {
 			uifactory.addStaticTextElement("organisations", "user.organisations.label", translate("user.no.data"), itemsCont);
 			return;
 		}
 		
-		FormLayoutContainer orgLinkCont = FormLayoutContainer.createButtonLayout("organisations.links", getTranslator());
-		orgLinkCont.setLabel("user.organisations.label", null);
-		itemsCont.add(orgLinkCont);
-
-		for (int i = 0; i < userOrgs.size(); i++) {
-			Organisation org = organisationService.getOrganisation(userOrgs.get(i));
-			if (org == null) continue;
-
-			String orgName = StringHelper.escapeHtml(org.getDisplayName());
-			if (i < userOrgs.size() - 1) {
-				orgName += ";";
-			}
-
-			FormLink link = uifactory.addFormLink("org_link_" + org.getKey(), "org_roles",
-					orgName, null, orgLinkCont, Link.NONTRANSLATED);
-			link.setUserObject("org-click");
-		}
+		String orgName = userOrgNames.stream()
+				.map(StringHelper::escapeHtml)
+				.collect(Collectors.joining("; "));
+		uifactory.addFormLink("organisations", "org-click", orgName, "user.organisations.label", itemsCont, Link.LINK + Link.NONTRANSLATED);
 	}
 
 	private void addRoles(FormLayoutContainer itemsCont, Roles fullRoles) {
@@ -166,11 +153,7 @@ public class UserProfileInfoController extends UserInfoController {
 			return;
 		}
 		
-		FormLayoutContainer roleLinkCont = FormLayoutContainer.createButtonLayout("roles.links", getTranslator());
-		roleLinkCont.setLabel("user.roles.label", null);
-		itemsCont.add(roleLinkCont);
-
-		int i = 0;
+		String roles = "";
 		for (OrganisationRoles role : DISPLAY_ROLE_ORDER) {
 			if (!addedRoles.contains(role.name())) {
 				continue;
@@ -181,11 +164,11 @@ public class UserProfileInfoController extends UserInfoController {
 			if (multiOrg) {
 				label += " (" + fullRoles.getOrganisationsWithRole(role).size() + ")";
 			}
-
-			String badge = "<span class=\"o_labeled_light\">" + StringHelper.escapeHtml(label) + "</span>";
-			FormLink link = uifactory.addFormLink("role_link_" + i++, "role_click", badge, null, roleLinkCont, Link.NONTRANSLATED);
-			link.setUserObject("role-click");
+			
+			roles += "<span class=\"o_labeled_light\">" + StringHelper.escapeHtml(label) + "</span> ";
 		}
+		
+		 uifactory.addFormLink("roles", "role-click", roles, "user.roles.label", itemsCont, Link.LINK + Link.NONTRANSLATED);
 	}
 
 	private void addUserMail(FormLayoutContainer itemsCont) {
@@ -228,9 +211,9 @@ public class UserProfileInfoController extends UserInfoController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormLink link) {
-			Object tag = link.getUserObject();
-			if ("org-click".equals(tag) || "role-click".equals(tag)) {
-				fireEvent(ureq, new Event(String.valueOf(tag)));
+			String cmd = link.getCmd();
+			if ("org-click".equals(cmd) || "role-click".equals(cmd)) {
+				fireEvent(ureq, new Event(String.valueOf(cmd)));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

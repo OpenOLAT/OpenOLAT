@@ -755,41 +755,46 @@ dialog.popover {
 	}
 }
 
-.o_additional_roles_dropdowns {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-
-	.o_add_additional_roles_btn {
-		display: flex;
-		flex-direction: row-reverse;
-	}
-}
-
 .o_roles_dropdown_row {
+	margin-top: 5px;
 	display: grid;
 	grid-template-columns: 1fr auto;
-	column-gap: 0;
-	margin-top: 10px;
-
+	>div {
+		min-width: 0;
+	}
+	
 	.o_roles_dropdown_button {
-		justify-self: stretch;
-
-		a {
+		a, button {
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
+		}
+		button {
+			>span {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 5px;
+				
+				white-space: wrap;
+			}
 		}
 	}
 
 	.o_roles_structure_button {
-		justify-self: stretch;
-
-		a {
-			border-top-left-radius: 0;
-			border-bottom-left-radius: 0;
-			border-left-width: 0;
-			border-left-style: solid;
-			width: 100%;
+		div {
+			height: 100%;
+			a {
+				border-top-left-radius: 0;
+				border-bottom-left-radius: 0;
+				border-left-width: 0;
+				border-left-style: solid;
+				
+				height: 100%;
+				width: 100%;
+				display: flex;
+				i {
+					margin: auto
+				}
+			}
 		}
 	}
 }
@@ -808,10 +813,6 @@ dialog.popover {
 }
 
 .o_callout_tree .o_icon_caret {
-	vertical-align: middle;
-}
-
-.o_callout_tree .o_icon_selected_dot {
 	vertical-align: middle;
 }
 

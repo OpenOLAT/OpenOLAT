@@ -70,7 +70,6 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.coach.CoachingService;
-import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
@@ -107,7 +106,7 @@ public class CourseController extends FormBasicController implements Activateabl
 	private int numOfCourses;
 	
 	private final RepositoryEntry course;
-	private final CourseStatEntry courseStat;
+	private final CourseStatEntryRow courseStatisticsEntry;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
@@ -125,14 +124,14 @@ public class CourseController extends FormBasicController implements Activateabl
 	private AssessmentService assessmentService;
 	
 	public CourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
+			RepositoryEntry course, CourseStatEntryRow courseStat, int index, int numOfCourses) {
 		super(ureq, wControl, "course");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 		
 		this.course = course;
-		this.courseStat = courseStat;
+		this.courseStatisticsEntry = courseStat;
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.index = index;
@@ -233,8 +232,8 @@ public class CourseController extends FormBasicController implements Activateabl
 		model.putCertificate(certificate);
 	}
 	
-	public CourseStatEntry getEntry() {
-		return courseStat;
+	public CourseStatEntryRow getEntry() {
+		return courseStatisticsEntry;
 	}
 	
 	public List<EfficiencyStatementEntry> loadModel() {
@@ -384,7 +383,7 @@ public class CourseController extends FormBasicController implements Activateabl
 	}
 	
 	private void doOpenCourse(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", courseStat.getRepoKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", courseStatisticsEntry.getRepoKey());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), ores);
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
