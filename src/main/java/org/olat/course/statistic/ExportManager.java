@@ -106,7 +106,7 @@ public class ExportManager {
 	 * @param email
 	 */
 	public void archiveCourseLogFiles(Long oresID, String exportDir, Date begin, Date end, boolean adminLog, boolean userLog, boolean statisticLog,
-			Locale locale, String email, boolean isAdministrativeUser){
+			Locale locale, String email, boolean isAdministrativeUser, String businessPathFilter){
 		
 		String zipName = ExportUtil.createFileNameWithTimeStamp(ExportManager.COURSE_LOG_FILES, "zip");
 		Date date = new Date();
@@ -118,13 +118,13 @@ public class ExportManager {
 		
 		List<File> logFiles = new ArrayList<>();
 		if (adminLog) {
-			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_ADMIN_LOG, true, false, isAdministrativeUser));
+			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_ADMIN_LOG, true, false, isAdministrativeUser, businessPathFilter));
 		}
 		if (userLog) {
-			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_USER_LOG, false, false, isAdministrativeUser));
+			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_USER_LOG, false, false, isAdministrativeUser, businessPathFilter));
 		}
 		if (statisticLog) {
-			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_STATISTIC_LOG, false, true, isAdministrativeUser));
+			logFiles.add(createLogFile(oresID, begin, end, tmpDir, FILENAME_STATISTIC_LOG, false, true, isAdministrativeUser, businessPathFilter));
 		}
 		
 		saveFile(exportDir, zipName, tmpDir, logFiles, email, "email.archive", locale);
@@ -151,12 +151,12 @@ public class ExportManager {
 	 * @return
 	 */
 	private File createLogFile(Long oresID, Date begin, Date end, File dir, String filename,
-			boolean resourceAdminAction, boolean anonymize, boolean isAdministrativeUser) {
+			boolean resourceAdminAction, boolean anonymize, boolean isAdministrativeUser, String businessPathFilter) {
 		
 		File outFile = new File(dir, filename);
 		// trigger the course log exporter - it will store the file to outFile
 		log.info("createLogFile: start exporting course log file {}", outFile);
-		courseLogExporter.exportCourseLog(outFile, oresID, begin, end, resourceAdminAction, anonymize, isAdministrativeUser);
+		courseLogExporter.exportCourseLog(outFile, oresID, begin, end, resourceAdminAction, anonymize, isAdministrativeUser, businessPathFilter);
 		log.info("createLogFile: finished exporting course log file {}", outFile);
 		return outFile;
 	}

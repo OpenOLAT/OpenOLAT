@@ -53,9 +53,11 @@ public class CourseLogRunnable implements TaskRunnable {
 	private final Locale locale;
 	private final String email;
 	private final boolean isAdministrativeUser;
+	private final String businessPathFilter;
 	
 	public CourseLogRunnable(Identity identity, Long oresID, String exportDir, Date begin, Date end,
-			boolean adminLog, boolean userLog, boolean statisticLog, Locale locale, String email, boolean isAdministrativeUser) {
+			boolean adminLog, boolean userLog, boolean statisticLog, Locale locale, String email, boolean isAdministrativeUser,
+			String businessPathFilter) {
 		this.identity = identity;
 		this.oresID = oresID;
 		this.exportDir = exportDir;
@@ -67,6 +69,7 @@ public class CourseLogRunnable implements TaskRunnable {
 		this.locale = locale;
 		this.email = email;
 		this.isAdministrativeUser = isAdministrativeUser;
+		this.businessPathFilter = businessPathFilter;
 	}
 	
 	@Override
@@ -82,7 +85,7 @@ public class CourseLogRunnable implements TaskRunnable {
 			asyncExportManager.register(identity);
 			log.info("asyncArchiveCourseLogFiles: user {} starts archiving...", identity.getKey());
 			long start = System.nanoTime();
-			exportManager.archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, locale, email, isAdministrativeUser);
+			exportManager.archiveCourseLogFiles(oresID, exportDir, begin, end, adminLog, userLog, statisticLog, locale, email, isAdministrativeUser, businessPathFilter);
 			log.info("asyncArchiveCourseLogFiles: user {} finished archiving in {} (s)", identity.getKey(), CodeHelper.nanoToSecond(start));
 		} finally {
 			asyncExportManager.deregister(identity);
