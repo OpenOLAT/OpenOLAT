@@ -1,14 +1,16 @@
 <fieldset class="o_form form-horizontal o_additional_roles">
-    <legend>$r.translate("form.affiliation")</legend>
-
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div class="o_roles_dropdown_row">
-            <div class="o_roles_dropdown_button">
-                $r.render("affiliation.orgs.label", "3_9")
-            </div>
-            <div class="o_roles_structure_button">
-                $r.render("orgTreeAff")
-            </div>
-        </div>
-    </div>
+	<legend>$r.translate("form.affiliation")</legend>
+	<div class="form-group o_form_row o_form_roles_row">
+		<label class="control-label col-sm-3">
+			$r.render("affiliation.orgs.label", "label")
+		</label>
+		<div class="col-sm-9 o_form_cell o_roles_dropdown_row">
+			<div class="o_roles_dropdown_button">
+				$r.render("affiliation.orgs.label")
+			</div>
+			<div class="o_roles_structure_button">
+				$r.render("orgTreeAff")
+			</div>
+		</div>
+	</div>
 </fieldset>

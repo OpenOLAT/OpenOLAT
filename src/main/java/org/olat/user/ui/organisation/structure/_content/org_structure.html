@@ -26,7 +26,7 @@
     <li #if(!$node.expanded)class="collapsed"#end>
         #treeIcon($node)
 
-        $!{node.organisation.displayName}
+		$r.escapeHtml($!{node.organisation.displayName})
 
         #if($node.children && $node.children.size() > 0)
             <ul #if(!$node.expanded)style="display:none;"#end>

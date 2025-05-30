@@ -1,36 +1,41 @@
 <fieldset class="o_form form-horizontal o_additional_roles">
-    <legend>$r.translate("form.additional.roles")</legend>
+	<legend>$r.translate("form.additional.roles")</legend>
 
-    #if($subOrgGlobalRoleNames && $subOrgGlobalRoleNames.size() > 0)
-        <div class="o_info">
-            <i class="o_icon o_icon_info"></i>
-            $r.translate("sub.org.global.role")
-            <ul class="o_list_bulleted">
-                #foreach($roleName in $subOrgGlobalRoleNames)
-                    <li>$r.escapeHtml($roleName)</li>
-                #end
-            </ul>
-        </div>
-    #end
+	#if($subOrgGlobalRoleNames && $subOrgGlobalRoleNames.size() > 0)
+		<div class="o_info">
+			<i class="o_icon o_icon_info"></i>
+			$r.translate("sub.org.global.role")
+			<ul class="o_list_bulleted">
+				#foreach($roleName in $subOrgGlobalRoleNames)
+					<li>$r.escapeHtml($roleName)</li>
+				#end
+			</ul>
+		</div>
+	#end
 
-    <div class="o_additional_roles_dropdowns">
-        #if($r.available("rightsForm.add.to.organisation"))
-            <div class="o_add_additional_roles_btn">
-                $r.render("rightsForm.add.to.organisation")
-            </div>
-        #end
+	#if($r.available("rightsForm.add.to.organisation") && $r.visible("rightsForm.add.to.organisation"))
+		<div class="o_button_group o_button_group_right o_button_group_top">
+			$r.render("rightsForm.add.to.organisation")
+		</div>
+	#end
 
-        #set($idx = 0)
-        #foreach($rolesEl in $rolesEls)
-            <div class="o_roles_dropdown_row">
-                <div class="o_roles_dropdown_button">
-                    $r.render($rolesEl, "3_9")
-                </div>
-                <div class="o_roles_structure_button">
-                    $r.render("orgTree_$idx")
-                </div>
-            </div>
-        #set($idx = $idx + 1)
-        #end
-    </div>
+	#set($idx = 0)
+	<div class="form-horizontal o_form o_form_roles">
+		#foreach($rolesEl in $rolesEls)
+		<div class="form-group o_form_row o_form_roles_row">
+			<label class="control-label col-sm-3">
+				$r.render($rolesEl, "label")
+			</label>
+			<div class="col-sm-9 o_form_cell o_roles_dropdown_row">
+				<div class="o_roles_dropdown_button">
+					$r.render($rolesEl)
+				</div>
+				<div class="o_roles_structure_button">
+					$r.render("orgTree_$idx")
+				</div>
+			</div>
+		</div>
+		#set($idx = $idx + 1)
+		#end
+	</div>
 </fieldset>

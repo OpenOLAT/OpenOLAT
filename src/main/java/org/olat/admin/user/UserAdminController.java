@@ -148,7 +148,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 	private final Roles managerRoles;
 	private Identity editedIdentity;
-	private final Roles editedRoles;
+	private Roles editedRoles;
 	private final boolean allowedToManage;
 	private int rolesTab;
 	private int accountTab;
@@ -240,7 +240,7 @@ public class UserAdminController extends BasicController implements Activateable
 			setShowTitle(showTitle);
 			initTabbedPane(editedIdentity, ureq);
 			// Exposer portrait and short description
-			exposeUserDataToVC(ureq, editedIdentity, editedRoles);
+			exposeUserDataToVC(ureq);
 			putInitialPanel(myContent);
 		} else {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
@@ -344,6 +344,11 @@ public class UserAdminController extends BasicController implements Activateable
 				//reload profile data on top
 				reloadEditedIdentity(ureq);
 			}
+		} else if (rolesCtr == source) {
+			if (event == Event.CHANGED_EVENT) {
+				editedRoles = securityManager.getRoles(editedIdentity);
+				exposeUserDataToVC(ureq);
+			}
 		} else if(accountCtrl == source) {
 			if(event instanceof ReloadIdentityEvent) {
 				fireEvent(ureq, event);
@@ -379,7 +384,7 @@ public class UserAdminController extends BasicController implements Activateable
 	
 	private void reloadEditedIdentity(UserRequest ureq) {
 		editedIdentity = securityManager.loadIdentityByKey(editedIdentity.getKey());
-		exposeUserDataToVC(ureq, editedIdentity, editedRoles);
+		exposeUserDataToVC(ureq);
 		if(userProfileCtr != null) {
 			userProfileCtr.resetForm(ureq, editedIdentity);
 		}
@@ -721,19 +726,16 @@ public class UserAdminController extends BasicController implements Activateable
 		return false;
 	}
 
-	/**
-	 * Add some user data to velocity container including the users portrait
-	 * @param ureq
-	 * @param identity
-	 */
-	private void exposeUserDataToVC(UserRequest ureq, Identity identity, Roles roles) {
+	private void exposeUserDataToVC(UserRequest ureq) {
+		removeAsListenerAndDispose(userProfileInfoCtrl);
+		
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setShowIdentityStatus(true);
 		profileConfig.setChatEnabled(false);
 		profileConfig.setUserManagementLinkEnabled(false);
 
-		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), identity);
-		userProfileInfoCtrl = new UserProfileInfoController(ureq, getWindowControl(), profileConfig, portraitUser, identity, roles);
+		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), editedIdentity);
+		userProfileInfoCtrl = new UserProfileInfoController(ureq, getWindowControl(), profileConfig, portraitUser, editedIdentity, editedRoles);
 		listenTo(userProfileInfoCtrl);
 		myContent.put("userInfo", userProfileInfoCtrl.getInitialComponent());
 	}

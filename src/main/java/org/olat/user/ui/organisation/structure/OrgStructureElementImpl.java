@@ -22,7 +22,6 @@ package org.olat.user.ui.organisation.structure;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
@@ -61,7 +60,7 @@ public class OrgStructureElementImpl extends FormItemImpl
 	private CloseableCalloutWindowController popupCtrl;
 
 
-	public OrgStructureElementImpl(WindowControl wControl, String name, List<Organisation> activeOrgs, Locale locale) {
+	public OrgStructureElementImpl(WindowControl wControl, String name, List<Organisation> activeOrgs) {
 		super(name);
 		this.wControl = wControl;
 		this.activeOrganisations = new ArrayList<>(activeOrgs);
@@ -81,6 +80,7 @@ public class OrgStructureElementImpl extends FormItemImpl
 	@Override
 	public void setActiveOrganisations(List<Organisation> organisations) {
 		this.activeOrganisations = new ArrayList<>(organisations);
+		component.setDirty(true);
 	}
 
 	@Override

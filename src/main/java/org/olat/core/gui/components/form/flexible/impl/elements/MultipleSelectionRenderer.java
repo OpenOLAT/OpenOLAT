@@ -171,7 +171,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 			sb.append("</label></li>");
 			if(stC.isEnabled()){
-				FormJSHelper.appendFlexiFormDirtyForClick(sb, stF.getRootForm(), formDispatchId);
+				FormJSHelper.appendFlexiFormDirtyForClick(sb, stF.getRootForm(), aId);
 			}
 			
 			// Set button text on ready

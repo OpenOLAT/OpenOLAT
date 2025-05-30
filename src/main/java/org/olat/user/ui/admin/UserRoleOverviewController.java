@@ -60,6 +60,7 @@ public class UserRoleOverviewController extends BasicController {
 		if(rolesCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				roleHistoryCtrl.reloadModel();
+				fireEvent(ureq, event);
 			}
 		}
 	}
