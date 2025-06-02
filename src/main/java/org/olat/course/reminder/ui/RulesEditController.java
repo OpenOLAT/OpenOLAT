@@ -21,7 +21,7 @@ package org.olat.course.reminder.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,17 +36,20 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.reminder.CourseNodeFragment;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.modules.reminder.Reminder;
+import org.olat.modules.reminder.ReminderInterval;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
@@ -65,6 +68,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RulesEditController extends StepFormBasicController {
 	
+	private FormLayoutContainer intervalInfoCont;
+	private FormLink infoLink;
 	private TextElement descriptionEl;
 	private SingleSelection addEl;
 	private FormLayoutContainer rulesCont;
@@ -74,6 +79,8 @@ public class RulesEditController extends StepFormBasicController {
 	private String[] additionalTypeValues;
 	private RuleElement mainRuleEl;
 	private final List<RuleElement> additionalRuleEls = new ArrayList<>();
+	
+	private CloseableCalloutWindowController intervalInfoCalloutCtrl;
 	
 	private final Reminder reminder;
 	private final CourseNodeReminderProvider reminderProvider;
@@ -161,11 +168,22 @@ public class RulesEditController extends StepFormBasicController {
 		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
 		generalCont.setFormContextHelp("manual_user/learningresources/Course_Reminders/");
-		generalCont.setFormInfo(getSendTimeDescription());
 		if (StringHelper.containsNonWhitespace(warningI18nKey)) {
 			generalCont.setFormWarning(translate(warningI18nKey));
 		}
 		formLayout.add(generalCont);
+		
+		String invervalInfoPage = velocity_root + "/interval_info.html";
+		intervalInfoCont = uifactory.addCustomFormLayout("dispatch.time", null, invervalInfoPage, generalCont);
+		
+		String interval = reminderModule.getInterval();
+		String internalName = translate("interval." + interval);
+		intervalInfoCont.contextPut("internalName", internalName);
+		
+		infoLink = uifactory.addFormLink("interval.info", "interval.info", "", null, intervalInfoCont, Link.LINK + Link.NONTRANSLATED);
+		infoLink.setIconRightCSS("o_icon o_icon_info");
+		infoLink.setAriaLabel(translate("interval.info"));
+		infoLink.setAriaRole("button");
 		
 		String desc = reminder.getDescription();
 		descriptionEl = uifactory.addTextElement("reminder.description", "reminder.description", 128, desc, generalCont);
@@ -207,30 +225,6 @@ public class RulesEditController extends StepFormBasicController {
 		addEl = uifactory.addDropdownSingleselect("add.rule.type", rulesCont, additionalTypeKeys, additionalTypeValues);
 		addEl.enableNoneSelection(translate("add.rule.select"));
 		addEl.addActionListener(FormEvent.ONCHANGE);
-	}
-	
-	protected String getSendTimeDescription() {
-		String interval = reminderModule.getInterval();
-		String desc = translate("interval." + interval);
-		String time;
-		
-		SendTime parsedTime = SendTime.parse(reminderModule.getDefaultSendTime());
-		if(parsedTime.isValid()) {
-			int hour = parsedTime.getHour();
-			int minute = parsedTime.getMinute();
-			
-			Calendar cal = Calendar.getInstance();
-			cal.set(Calendar.HOUR_OF_DAY, hour);
-			cal.set(Calendar.MINUTE, minute);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			
-			time = Formatter.getInstance(getLocale()).formatTimeShort(cal.getTime());
-		} else {
-			time = "ERROR";
-		}
-		String descText = translate("send.time.description", new String[] { desc, time} );
-		return "<i class='o_icon o_icon-lg o_icon_time'></i> <b>" + descText + "</b> - " + translate("send.time.info");
 	}
 	
 	protected RuleElement initRuleForm(UserRequest ureq, RuleSPI ruleSpi, ReminderRule rule, boolean mainRule) {
@@ -288,10 +282,25 @@ public class RulesEditController extends StepFormBasicController {
 		doSelectCourseNode(mainRuleEl.getEditor());
 		rulesCont.contextPut("mainRule", mainRuleEl);
 	}
+
+	@Override
+	protected void event(UserRequest  ureq, Controller source, Event event) {
+		if (source == intervalInfoCalloutCtrl) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(intervalInfoCalloutCtrl);
+		intervalInfoCalloutCtrl = null;
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == addEl) {
+		if (source == infoLink) {
+			doShowIntervalInfo(ureq);
+		} else if (source == addEl) {
 			doAddRule(ureq);
 		} else if(source instanceof SingleSelection) {
 			RuleElement panelToUpdate = null;
@@ -365,6 +374,41 @@ public class RulesEditController extends StepFormBasicController {
 		reminder.setConfiguration(configuration);
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+	
+	private void doShowIntervalInfo(UserRequest ureq) {
+		VelocityContainer intervalInfoCont = createVelocityContainer("interval_times");
+		
+		ReminderInterval interval = ReminderInterval.byKey(reminderModule.getInterval());
+		String dispatchMessage = translate(interval.getI18nKeyAt());
+		
+		SendTime parsedTime = SendTime.parse(reminderModule.getDefaultSendTime());
+		if (parsedTime.isValid()) {
+			int hour = parsedTime.getHour();
+			int minute = parsedTime.getMinute();
+			
+			List<String> dispatchTimes = ReminderInterval.getDaylySendHours(interval, hour)
+					.stream()
+					.map(sendHour -> String.format("%02d", sendHour) + ":" + String.format("%02d", minute))
+					.collect(Collectors.toList());
+			String referenceTime = String.format("%02d", hour) + ":" + String.format("%02d", minute);
+			dispatchTimes.add(referenceTime);
+			Collections.sort(dispatchTimes);
+			
+			dispatchMessage += "<ul>";
+			for (String dispatchTime : dispatchTimes) {
+				dispatchMessage += "<li>" + dispatchTime + "</li>";
+			}
+			dispatchMessage += "</ul>";
+		} else {
+			dispatchMessage = "ERROR";
+		}
+		
+		intervalInfoCont.contextPut("dispatchTimes", dispatchMessage);
+
+		intervalInfoCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),intervalInfoCont, infoLink.getFormDispatchId(), "", true, "");
+		listenTo(intervalInfoCalloutCtrl);
+		intervalInfoCalloutCtrl.activate();
 	}
 	
 	private void doUpdateRuleForm(UserRequest ureq, RuleElement panelToUpdate, RuleSPI ruleSpi, boolean mainRule) {

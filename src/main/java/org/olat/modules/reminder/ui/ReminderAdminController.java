@@ -19,13 +19,16 @@
  */
 package org.olat.modules.reminder.ui;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -47,8 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReminderAdminController extends FormBasicController {
 	
-	private static final String[] enableKeys = new String[]{ "on" };
-	
 	private static final String[] intervalKeys = new String[]{
 		ReminderInterval.every24.key(),
 		ReminderInterval.every12.key(),
@@ -59,19 +60,20 @@ public class ReminderAdminController extends FormBasicController {
 		ReminderInterval.every1.key()
 	};
 	
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableEl;
 	private TextElement hoursEl, minutesEl;
 	private SingleSelection timezoneEl;
 	private SingleSelection intervalEl;
 	private FormLayoutContainer timeLayout;
+	private FormLayoutContainer dispatchTimesLayout;
 	
 	private String[] intervalValues;
 	
 	@Autowired
 	private ReminderModule reminderModule;
-	
+
 	public ReminderAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		intervalValues = new String[]{
 				translate(ReminderInterval.every24.i18nKey()),
@@ -89,15 +91,19 @@ public class ReminderAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("reminder.admin.title");
+		setFormInfo("reminder.admin.info");
 		
-		String[] enableValues = new String[]{ translate("on") };
+		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("setting", getTranslator());
+		settingsCont.setRootForm(mainForm);
+		formLayout.add(settingsCont);
 		
-		enableEl = uifactory.addCheckboxesHorizontal("enable.reminders", formLayout, enableKeys, enableValues);
+		enableEl = uifactory.addToggleButton("enable.reminders", "enable.reminders", translate("on"), translate("off"), settingsCont);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		enableEl.select(enableKeys[0], reminderModule.isEnabled());
+		enableEl.toggle(reminderModule.isEnabled());
 		
 		String interval = reminderModule.getInterval();
-		intervalEl = uifactory.addDropdownSingleselect("interval", formLayout, intervalKeys, intervalValues, null);
+		intervalEl = uifactory.addDropdownSingleselect("interval", settingsCont, intervalKeys, intervalValues, null);
+		intervalEl.setVisible(reminderModule.isEnabled());
 		boolean found = false;
 		if(StringHelper.containsNonWhitespace(interval)) {
 			for(String intervalKey:intervalKeys) {
@@ -121,7 +127,7 @@ public class ReminderAdminController extends FormBasicController {
 		}
 		
 		String timePage = velocity_root + "/time.html";
-		timeLayout = uifactory.addCustomFormLayout("send.time", "default.send.time", timePage, formLayout);
+		timeLayout = uifactory.addCustomFormLayout("send.time", "reference.sending.time", timePage, settingsCont);
 
 		String hourStr = (hour < 10 ? "0" : "") + hour;
 		hoursEl = uifactory.addTextElement("hours", null, 2, hourStr, timeLayout);
@@ -150,7 +156,7 @@ public class ReminderAdminController extends FormBasicController {
 		timeLayout.setVisible(reminderModule.isEnabled());
 		
 		/*
-		enableSmsEl = uifactory.addCheckboxesHorizontal("enable.sms.reminders", formLayout, enableKeys, enableValues);
+		enableSmsEl = uifactory.addCheckboxesHorizontal("enable.sms.reminders", settingsCont, enableKeys, enableValues);
 		enableSmsEl.addActionListener(FormEvent.ONCHANGE);
 		enableSmsEl.select(enableKeys[0], reminderModule.isSmsEnabled());
 		enableSmsEl.setVisible(reminderModule.isEnabled());
@@ -158,16 +164,47 @@ public class ReminderAdminController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
+		settingsCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		
+		String daspatchTimesPage = velocity_root + "/dispatch_times.html";
+		dispatchTimesLayout = uifactory.addCustomFormLayout("dispatch.time", null, daspatchTimesPage, formLayout);
+		updateDispatchTimes();
+	}
+
+	private void updateDispatchTimes() {
+		ReminderInterval interval = ReminderInterval.byKey(intervalEl.getSelectedKey());
+		String dispatchMessage = translate(interval.getI18nKeyAt());
+		
+		String hoursStr = hoursEl.getValue();
+		String minutesStr = minutesEl.getValue();
+		int hour = Integer.parseInt(hoursStr);
+		int minute = Integer.parseInt(minutesStr);
+
+		List<String> dispatchTimes = ReminderInterval.getDaylySendHours(interval, hour)
+				.stream()
+				.map(sendHour -> String.format("%02d", sendHour) + ":" + String.format("%02d", minute))
+				.collect(Collectors.toList());
+		String referenceTime = String.format("%02d", hour) + ":" + String.format("%02d", minute) + " (" + translate("reference.time") + ")";
+		dispatchTimes.add(referenceTime);
+		Collections.sort(dispatchTimes);
+		
+		dispatchMessage += "<ul>";
+		for (String dispatchTime : dispatchTimes) {
+			dispatchMessage += "<li>" + dispatchTime + "</li>";
+		}
+		dispatchMessage += "</ul>";
+		
+		dispatchTimesLayout.contextPut("dispatchTimes", dispatchMessage);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
-			boolean enabled = enableEl.isAtLeastSelected(1);
+			boolean enabled = enableEl.isOn();
 			timeLayout.setVisible(enabled);
 			intervalEl.setVisible(enabled);
+			dispatchTimesLayout.setVisible(enabled);
 			//enableSmsEl.setVisible(enabled);
 		}
 		
@@ -180,7 +217,7 @@ public class ReminderAdminController extends FormBasicController {
 		
 		hoursEl.clearError();
 		minutesEl.clearError();
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		if(enabled) {
 			allOk &= validate(hoursEl, 23);
 			allOk &= validate(minutesEl, 59);
@@ -215,7 +252,7 @@ public class ReminderAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		reminderModule.setEnabled(enabled);
 		
 		if(enabled) {
@@ -231,6 +268,8 @@ public class ReminderAdminController extends FormBasicController {
 				TimeZone timeZone = TimeZone.getTimeZone(timeZoneID);
 				reminderModule.setDefaultSendTimeZone(timeZone);
 			}
+			
+			updateDispatchTimes();
 		}
 		
 		/*
