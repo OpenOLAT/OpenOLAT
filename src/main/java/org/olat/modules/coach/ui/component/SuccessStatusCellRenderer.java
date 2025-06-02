@@ -84,7 +84,7 @@ public class SuccessStatusCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private void renderNumber(StringOutput target, SuccessStatus status) {
-		target.append("<div>")
+		target.append("<div class='o_coaching_numbers'>")
 		      .append(status.numPassed()).append("\u202F&vert;\u202F")
 		      .append(status.numFailed()).append("\u202F&vert;\u202F")
 		      .append(status.numUndefined())

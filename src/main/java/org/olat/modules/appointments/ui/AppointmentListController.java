@@ -491,7 +491,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 				.collect(Collectors.toList());
 		row.setParticipants(participants);
 		
-		String numOfParticipations = "<span class=\"o_nowrap\">" + translate("appointment.participations", String.valueOf(participants.size())) + "</span>";
+		String numOfParticipations = "<span class=\"o_nowrap\">" + translate("appointment.participations", String.valueOf(participations.size())) + "</span>";
 		if (isParticipationVisible() && !participants.isEmpty()) {
 			FormLink participationsEl = uifactory.addFormLink("participations_" + row.getKey(), CMD_SHOW_PARTICIPANTS,
 					numOfParticipations, null, null, Link.NONTRANSLATED);

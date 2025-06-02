@@ -449,9 +449,10 @@ public class CoachingDAO {
 		return !rawList.isEmpty();
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatisticsNative(Identity coach) {
+	protected List<CourseStatEntry> getCoursesStatistics(Identity coach) {
 		Map<Long,CourseStatEntry> map = getCourses(coach);
 		if(!map.isEmpty()) {
+			loadCoursesStatistics(coach, map);
 			loadCoursesStatisticsStatements(coach, map);
 			loadCoursesCompletions(coach, map);
 		}
@@ -461,7 +462,50 @@ public class CoachingDAO {
 	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.externalId, v.externalRef, v.status,")
-		  .append("  lifecycle.validFrom, lifecycle.validTo,")
+		  .append("  lifecycle.validFrom, lifecycle.validTo")
+		  .append(" from repositoryentry v")
+		  .append(" inner join v.olatResource as res")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as participantGroup")
+		  .append(" left join v.lifecycle as lifecycle")
+		  .where()
+		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		  
+		sb
+		  .and()
+		  .append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
+		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+		  .append(") or ")
+		  .append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+		  .append("  where owner.identity.key=:coachKey")
+		  .append("))");
+
+		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("coachKey", coach.getKey())
+				.getResultList();
+		Map<Long,CourseStatEntry> map = new HashMap<>();
+		for(Object[] rawStat:rawList) {
+			Long repoKey = ((Number)rawStat[0]).longValue();
+			map.computeIfAbsent(repoKey, key -> {
+				CourseStatEntry entry = new CourseStatEntry();
+				entry.setRepoKey(key);
+				entry.setRepoDisplayName((String)rawStat[2]);
+				entry.setRepoExternalId((String)rawStat[3]);
+				entry.setRepoExternalRef((String)rawStat[4]);
+				entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[5]));
+				entry.setLifecycleStartDate((Date)rawStat[6]);
+				entry.setLifecycleEndDate((Date)rawStat[7]);
+				return entry;
+			});
+		}
+		return map;
+	}
+	
+	private void loadCoursesStatistics(IdentityRef coach, Map<Long,CourseStatEntry> map) {
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select v.key,")
 		  .append("  count(distinct participantMembers.identity.key) as numOfParticipants,")
 		  .append("  count(distinct courseInfos.key) as numOfVisited,")
 		  .append("  max(courseInfos.recentLaunch) as lastvisit,")
@@ -472,11 +516,10 @@ public class CoachingDAO {
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as participantGroup")
-		  .append(" left join participantGroup.members as participantMembers on (participantMembers.role='participant')")
+		  .append(" inner join participantGroup.members as participantMembers on (participantMembers.role='participant')")
 		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key and courseInfos.resource.key=res.key)")
 		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key)")
 		  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)")
-		  .append(" left join v.lifecycle as lifecycle")
 		  .where()
 		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		  
@@ -492,7 +535,6 @@ public class CoachingDAO {
 		
 		sb.append("group by v.key, lifecycle.key");
 		
-		Map<Long,CourseStatEntry> map = new HashMap<>();
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
@@ -500,29 +542,23 @@ public class CoachingDAO {
 				.getResultList();
 
 		for(Object[] rawStat:rawList) {
-			CourseStatEntry entry = new CourseStatEntry();
-			entry.setRepoKey(((Number)rawStat[0]).longValue());
-			entry.setRepoDisplayName((String)rawStat[2]);
-			entry.setRepoExternalId((String)rawStat[3]);
-			entry.setRepoExternalRef((String)rawStat[4]);
-			entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[5]));
-			entry.setLifecycleStartDate((Date)rawStat[6]);
-			entry.setLifecycleEndDate((Date)rawStat[7]);
-
-			entry.setParticipants(PersistenceHelper.extractPrimitiveInt(rawStat, 8));
-			entry.setParticipantsVisited(PersistenceHelper.extractPrimitiveInt(rawStat, 9));
-			entry.setParticipantsNotVisited(entry.getParticipants() - entry.getParticipantsVisited());
-			entry.setLastVisit((Date)rawStat[10]);
+			Long repoKey = ((Number)rawStat[0]).longValue();
 			
-			long withCertificate = PersistenceHelper.extractPrimitiveLong(rawStat, 11);
-			if(withCertificate > 0l) {
-				long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 12);
-				long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 13);
-				entry.setCertificates(new Certificates(numOfCertificates, withCertificate, numOfInvalidCertificates));
+			CourseStatEntry entry = map.get(repoKey);
+			if(entry != null) {
+				entry.setParticipants(PersistenceHelper.extractPrimitiveInt(rawStat, 1));
+				entry.setParticipantsVisited(PersistenceHelper.extractPrimitiveInt(rawStat, 2));
+				entry.setParticipantsNotVisited(entry.getParticipants() - entry.getParticipantsVisited());
+				entry.setLastVisit((Date)rawStat[3]);
+				
+				long withCertificate = PersistenceHelper.extractPrimitiveLong(rawStat, 4);
+				if(withCertificate > 0l) {
+					long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 5);
+					long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, 6);
+					entry.setCertificates(new Certificates(numOfCertificates, withCertificate, numOfInvalidCertificates));
+				}
 			}
-			map.put(entry.getRepoKey(), entry);
 		}
-		return map;
 	}
 	
 	private void loadCoursesStatisticsStatements(Identity coach, Map<Long,CourseStatEntry> map) {

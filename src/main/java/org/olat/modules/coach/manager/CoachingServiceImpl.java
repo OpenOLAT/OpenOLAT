@@ -182,7 +182,7 @@ public class CoachingServiceImpl implements CoachingService {
 
 	@Override
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach) {
-		return coachingDao.getCoursesStatisticsNative(coach);
+		return coachingDao.getCoursesStatistics(coach);
 	}
 
 	@Override
