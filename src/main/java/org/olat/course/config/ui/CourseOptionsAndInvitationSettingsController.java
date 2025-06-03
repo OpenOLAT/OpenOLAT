@@ -25,10 +25,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.run.RunMainController;
 import org.olat.ims.lti13.DeploymentConfigurationPermission;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
@@ -61,7 +63,7 @@ public class CourseOptionsAndInvitationSettingsController extends BasicControlle
 	
 	public CourseOptionsAndInvitationSettingsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, ICourse course, RepositoryEntrySecurity reSecurity, boolean canEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(RunMainController.class, ureq.getLocale()));
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
