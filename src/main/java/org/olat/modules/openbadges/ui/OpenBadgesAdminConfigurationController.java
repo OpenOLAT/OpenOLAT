@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
@@ -49,6 +50,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeOrganization;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 
 	private final SelectionValues enabledKV;
 	private MultipleSelectionElement enabledEl;
+	private SingleSelection verificationEl;
 	private FormLink addLinkedInOrganizationButton;
 	private LinkedInOrganizationTableModel tableModel;
 	private FlexiTableElement tableEl;
@@ -100,6 +103,14 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		enabledEl.select(enabledKV.keys()[0], openBadgesModule.isEnabled());
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 
+		SelectionValues verificationKV = new SelectionValues();
+		verificationKV.add(SelectionValues.entry(BadgeVerification.hosted.name(), translate("verification.hosted")));
+		verificationKV.add(SelectionValues.entry(BadgeVerification.signed.name(), translate("verification.signed")));
+		verificationEl = uifactory.addRadiosHorizontal("verification", formLayout, verificationKV.keys(), 
+				verificationKV.values());
+		verificationEl.select(openBadgesModule.getVerification().name(), true);
+		verificationEl.addActionListener(FormEvent.ONCHANGE);
+		
 		initTable(formLayout);
 
 		addLinkedInOrganizationButton = uifactory.addFormLink("add.linkedin.organization", formLayout,
@@ -152,6 +163,8 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof LinkedInOrganizationRow row) {
 				doOpenTools(ureq, link, row);
 			}
+		} else if (verificationEl == source) {
+			doVerification();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -216,8 +229,17 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 			}
 		}
 
+		verificationEl.setVisible(openBadgesModule.isEnabled());
 		tableEl.setVisible(openBadgesManager.isEnabled());
 		addLinkedInOrganizationButton.setVisible(openBadgesManager.isEnabled());
+	}
+	
+	private void doVerification() {
+		BadgeVerification badgeVerification = BadgeVerification.valueOf(verificationEl.getSelectedKey());
+		openBadgesModule.setVerification(badgeVerification);
+		if (BadgeVerification.signed == badgeVerification) {
+			openBadgesManager.createSigningKeys(getIdentity());
+		}
 	}
 
 	private void doEdit(UserRequest ureq, LinkedInOrganizationRow row) {
