@@ -41,7 +41,6 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.modules.coach.reports.AbstractReportConfiguration;
 import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
@@ -325,7 +324,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgName());
 		
 		if(withProgressAndStatus) {
-			pos = generateStatementDataRow(workbook, row, pos, bookingOrder);
+			pos = generateStatementDataRow(workbook, row, pos, bookingOrder, curriculumTranslator);
 		}
 		if(withAbsences) {
 			generateAbsencesDataRow(row, pos, bookingOrder);
@@ -346,57 +345,81 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		return pos;
 	}
 	
-	private int generateStatementDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet.Row row, int pos, BookingOrder bookingOrder) {
+	private int generateStatementDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet.Row row, int pos, BookingOrder bookingOrder,
+			Translator translator) {
 		List<UserEfficiencyStatementLight> statements = bookingOrder.getEfficiencyStatements();
-		if(statements == null || statements.size() != 1) {
+		if(statements == null || statements.isEmpty()) {
 			pos += 3;
 		} else if(statements.size() == 1) {
 			UserEfficiencyStatementLight statement = statements.get(0);
-			row.addCell(pos++, statement.getScore(), null);
-			row.addCell(pos++, statement.getPassed() ? "x" : "-");
-			row.addCell(pos++, statement.getCompletion(), null);
+			row.addCell(pos++, statement.getScore(), workbook.getStyles().getDoubleStyle());
+
+			if(statement.getPassed() == null) {
+				row.addCell(pos++, translator.translate("report.passed.no"));
+			} else if(statement.getPassed().booleanValue()) {
+				row.addCell(pos++, translator.translate("report.passed"));
+			} else {
+				row.addCell(pos++, translator.translate("report.not.passed"));
+			}
+			
+			if(statement.getCompletion() == null) {
+				pos++;
+			} else {
+				row.addCell(pos++, statement.getCompletion(), workbook.getStyles().getPercent0DecimalsStyle());
+			}
 		} else {
-			List<Float> score = new ArrayList<>();
-			List<Boolean> passed = new ArrayList<>();
-			List<Double> completion = new ArrayList<>();
+			Float score = null;
+			Boolean passed = null;
+			Boolean notPassed = null;
+			
+			int numOfCompletion = 0;
+			Double totalCompletion = null;
 			for(UserEfficiencyStatementLight statement:statements) {
 				if(statement.getScore() != null) {
-					score.add(statement.getScore());
+					if(score == null) {
+						score = statement.getScore();
+					} else {
+						score = score.floatValue() + statement.getScore().floatValue();
+					}
 				}
 				if(statement.getPassed() != null) {
-					passed.add(statement.getPassed());
+					if(statement.getPassed().booleanValue()) {
+						passed = Boolean.TRUE;
+					} else {
+						notPassed = Boolean.TRUE;
+					}
 				}
 				if(statement.getCompletion() != null) {
-					completion.add(statement.getCompletion());
+					numOfCompletion++;
+					if(totalCompletion == null) {
+						totalCompletion = statement.getCompletion();
+					} else {
+						totalCompletion = totalCompletion.doubleValue() + statement.getCompletion().doubleValue();
+					}
 				}
 			}
 			
-			if(score.size() == 1) {
-				row.addCell(pos++, score.get(0), null);
-			} else if(score.size() > 1) {
-				StringBuilder sb = new StringBuilder();
-				for(Float s:score) {
-					if(sb.length() > 0) sb.append(",");
-					sb.append(AssessmentHelper.getRoundedScore(s));
-				}
+			if(score == null) {
+				pos++;
+			} else {
+				row.addCell(pos++, score, null);
 			}
 			
-			if(!passed.isEmpty()) {
-				StringBuilder sb = new StringBuilder();
-				for(Boolean p:passed) {
-					if(sb.length() > 0) sb.append(",");
-					sb.append(p.booleanValue() ? "x" : "-");
-				}
+			if(passed == null && notPassed == null) {
+				row.addCell(pos++, translator.translate("report.passed.no"));
+			} else if(passed != null && notPassed == null) {
+				row.addCell(pos++, translator.translate("report.passed"));
+			} else if(passed == null && notPassed != null) {
+				row.addCell(pos++, translator.translate("report.not.passed"));
+			} else {
+				row.addCell(pos++, translator.translate("report.passed.mixed"));
 			}
 			
-			if(completion.size() == 1) {
-				row.addCell(pos++, completion.get(0), null);
-			} else if(completion.size() > 1) {
-				StringBuilder sb = new StringBuilder();
-				for(Double c:completion) {
-					if(sb.length() > 0) sb.append(",");
-					sb.append(c);
-				}
+			if(totalCompletion == null || numOfCompletion == 0) {
+				pos++;
+			} else {
+				double averageCompletion = totalCompletion.doubleValue() / numOfCompletion;
+				row.addCell(pos++, Double.valueOf(averageCompletion), workbook.getStyles().getPercent0DecimalsStyle());
 			}
 		}
 		

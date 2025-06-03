@@ -528,23 +528,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		lateSubmissionDeadlineEl.clearError();
-		if(lateSubmissionDeadlineEl.isVisible()) {
-			if(!lateSubmissionDeadlineEl.validate()) {
-				allOk &= false;
-			} else if(lateSubmissionDeadlineEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG) {
-				lateSubmissionDeadlineEl.setErrorKey("error.late.submission.mandatory");
-				allOk &= false;
-			} else {
-				DueDateConfig submissionConfig = submissionDeadlineEl.getDueDateConfig();
-				DueDateConfig lateSubmissionConfig = lateSubmissionDeadlineEl.getDueDateConfig();
-				if(submissionConfig.getAbsoluteDate() != null && lateSubmissionConfig.getAbsoluteDate() != null &&
-						submissionConfig.getAbsoluteDate().after(lateSubmissionConfig.getAbsoluteDate())) {
-					lateSubmissionDeadlineEl.setErrorKey("error.late.submission.after.submission");
-					allOk &= false;
-				}
-			}
-		}
+		allOk &= validateLateDeadline(lateSubmissionDeadlineEl, submissionDeadlineEl);
 		
 		solutionVisibleAfterEl.clearError();
 		if (!solutionVisibleAfterEl.validate()) {
@@ -583,6 +567,45 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 
+		return allOk;
+	}
+	
+	private boolean validateLateDeadline(DueDateConfigFormItem lateDeadlineEl, DueDateConfigFormItem deadlineEl) {
+		boolean allOk = true;
+		
+		lateDeadlineEl.clearError();
+		if(lateDeadlineEl.isVisible()) {
+			if(!lateDeadlineEl.validate()) {
+				allOk &= false;
+			} else if(lateDeadlineEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG) {
+				lateDeadlineEl.setErrorKey("form.mandatory.hover");
+				allOk &= false;
+			} else if(deadlineEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG ) {
+				lateDeadlineEl.setErrorKey("error.late.submission.mandatory");
+				allOk &= false;
+			} else {
+				DueDateConfig submissionConfig = deadlineEl.getDueDateConfig();
+				DueDateConfig lateSubmissionConfig = lateDeadlineEl.getDueDateConfig();
+				if(submissionConfig.getAbsoluteDate() != null && lateSubmissionConfig.getAbsoluteDate() != null &&
+						submissionConfig.getAbsoluteDate().after(lateSubmissionConfig.getAbsoluteDate())) {
+					lateDeadlineEl.setErrorKey("error.late.submission.after.submission");
+					allOk &= false;
+				} else if(submissionConfig.getRelativeToType() != null && lateSubmissionConfig.getRelativeToType() != null) {
+					if(lateSubmissionConfig.getNumOfDays() < 0) {
+						lateDeadlineEl.setErrorKey("form.mandatory.hover");
+						allOk &= false;
+					} else if(submissionConfig.getNumOfDays() < 0) {
+						lateDeadlineEl.setErrorKey("error.late.submission.mandatory");
+						allOk &= false;
+					}else if(submissionConfig.getRelativeToType().equals(lateSubmissionConfig.getRelativeToType())
+							&& submissionConfig.getNumOfDays() > lateSubmissionConfig.getNumOfDays()) {
+						lateDeadlineEl.setErrorKey("error.late.submission.after.submission");
+						allOk &= false;
+					}
+				}
+			}
+		}
+		
 		return allOk;
 	}
 

@@ -31,6 +31,7 @@ import jakarta.persistence.TypedQuery;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
@@ -352,7 +353,7 @@ public class CurriculumAccountingDAO {
 		}
 		
 		QueryBuilder sb = new QueryBuilder(256);
-		sb.append("select curEl.key, curEl.curriculum.key, participant.key,")
+		sb.append("select curEl.key, curEl.curriculum.key, curEl.materializedPathKeys, participant.key,")
 		  .append(" statement,")
 		  .append(" certificate.creationDate, certificate.nextRecertificationDate,")
 		  .append(" courseInfos.initialLaunch, courseInfos.recentLaunch")
@@ -370,7 +371,7 @@ public class CurriculumAccountingDAO {
 			sb.and().append(" curEl.curriculum.key in (:curriculumKeys)");
 		}
 		if(searchParams.getCurriculumElement() != null) {
-			sb.and().append(" curEl.key=:curriculumElementKey");
+			sb.and().append(" curEl.materializedPathKeys like :curriculumElementPathKeys");
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -384,50 +385,73 @@ public class CurriculumAccountingDAO {
 			query.setParameter("curriculumKeys", curriculumKeys);
 		}
 		if(searchParams.getCurriculumElement() != null ) {
-			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
+			String pathKeys = searchParams.getCurriculumElement().getMaterializedPathKeys();
+			query.setParameter("curriculumElementPathKeys", pathKeys + "%");
 		}  
 		
 		List<Object[]> rawObjects = query.getResultList();
 		for(Object[] objects:rawObjects) {
-			Long curriculumElementKey = (Long)objects[0];
-			Long identityKey = (Long)objects[2];
-			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)objects[3];
-			Date certificateDate = (Date)objects[4];
-			Date nextRecertificationDate = (Date)objects[5];
-			Date initialLaunch = (Date)objects[6];
-			Date recentLaunch = (Date)objects[7];
+			List<Long> curriculumElementPathKeys = getMaterializedPathKeysList((String)objects[2]);
 
-			BookingKey key = new BookingKey(curriculumElementKey, identityKey);
-			List<BookingOrder> orders = ordersMap.get(key);
-			if(orders != null) {
-				for(BookingOrder order:orders) {
-					if(certificateDate != null
-							&& (order.getCertificateDate() == null || certificateDate.after(order.getCertificateDate()))) {
-						order.setCertificateDate(certificateDate);
-					}
-					if(nextRecertificationDate != null
-							&& (order.getNextCertificationDate() == null || nextRecertificationDate.before(order.getNextCertificationDate()))) {
-						order.setNextCertificationDate(nextRecertificationDate);
-					}
-					
-					if(statement != null) {
-						if(order.getEfficiencyStatements() == null) {
-							order.setEfficiencyStatements(new ArrayList<>(2));
-						}
-						order.getEfficiencyStatements().add(statement);
-					}
-					
-					if(initialLaunch != null
-							&& (order.getFirstVisit() == null || initialLaunch.before(order.getFirstVisit()))) {
-						order.setFirstVisit(initialLaunch);
-					}
-					
-					if(recentLaunch != null
-							&& (order.getLastVisit() == null || recentLaunch.after(order.getLastVisit()))) {
-						order.setLastVisit(recentLaunch);
-					}
+			Long identityKey = (Long)objects[3];
+			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)objects[4];
+			Date certificateDate = (Date)objects[5];
+			Date nextRecertificationDate = (Date)objects[6];
+			Date initialLaunch = (Date)objects[7];
+			Date recentLaunch = (Date)objects[8];
+
+			for(Long curriculumElementPathKey:curriculumElementPathKeys) {
+				BookingKey pkey = new BookingKey(curriculumElementPathKey, identityKey);
+				loadAssessmentsInfos(ordersMap.get(pkey), statement, certificateDate, nextRecertificationDate, initialLaunch, recentLaunch);
+			}
+		}
+	}
+	
+	private void loadAssessmentsInfos(List<BookingOrder> orders, UserEfficiencyStatementLight statement,
+			Date certificateDate, Date nextRecertificationDate, Date initialLaunch, Date recentLaunch) {
+		if(orders == null || orders.isEmpty()) return;
+		
+		for(BookingOrder order:orders) {
+			if(certificateDate != null
+					&& (order.getCertificateDate() == null || certificateDate.after(order.getCertificateDate()))) {
+				order.setCertificateDate(certificateDate);
+			}
+			if(nextRecertificationDate != null
+					&& (order.getNextCertificationDate() == null || nextRecertificationDate.before(order.getNextCertificationDate()))) {
+				order.setNextCertificationDate(nextRecertificationDate);
+			}
+			
+			if(statement != null) {
+				if(order.getEfficiencyStatements() == null) {
+					order.setEfficiencyStatements(new ArrayList<>(2));
+				}
+				if(!order.getEfficiencyStatements().contains(statement)) {
+					order.getEfficiencyStatements().add(statement);
+				}
+			}
+			
+			if(initialLaunch != null
+					&& (order.getFirstVisit() == null || initialLaunch.before(order.getFirstVisit()))) {
+				order.setFirstVisit(initialLaunch);
+			}
+			
+			if(recentLaunch != null
+					&& (order.getLastVisit() == null || recentLaunch.after(order.getLastVisit()))) {
+				order.setLastVisit(recentLaunch);
+			}
+		}
+	}
+	
+	private List<Long> getMaterializedPathKeysList(String materializedPathKeys) {
+		List<Long> keys = new ArrayList<>();
+		if(materializedPathKeys != null) {
+			String[] segments = materializedPathKeys.split("/");
+			for(int i=0; i<segments.length; i++) {
+				if(StringHelper.isLong(segments[i])) {
+					keys.add(Long.valueOf(segments[i]));
 				}
 			}
 		}
+		return keys;
 	}
 }
