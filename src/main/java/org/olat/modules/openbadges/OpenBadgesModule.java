@@ -36,9 +36,13 @@ import org.springframework.stereotype.Service;
 public class OpenBadgesModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String OPEN_BADGES_ENABLED = "openBadges.enabled";
+	private static final String VERIFICATION = "openBadges.verification";
 
 	@Value("${openBadges.enabled:false}")
 	private boolean enabled;
+
+	@Value("${openBadges.verification:hosted}")
+	private BadgeVerification verification;
 
 	public OpenBadgesModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -49,6 +53,11 @@ public class OpenBadgesModule extends AbstractSpringModule implements ConfigOnOf
 		String enabledObj = getStringPropertyValue(OPEN_BADGES_ENABLED, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
+		}
+		
+		String verificationObj = getStringPropertyValue(VERIFICATION, true);
+		if (StringHelper.containsNonWhitespace(verificationObj)) {
+			verification = BadgeVerification.valueOf(verificationObj);
 		}
 	}
 
@@ -65,5 +74,14 @@ public class OpenBadgesModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(OPEN_BADGES_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public BadgeVerification getVerification() {
+		return verification;
+	}
+
+	public void setVerification(BadgeVerification verification) {
+		this.verification = verification;
+		setStringProperty(VERIFICATION, verification.name(), true);
 	}
 }
