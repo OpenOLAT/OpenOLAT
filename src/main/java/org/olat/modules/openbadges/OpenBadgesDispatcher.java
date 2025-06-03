@@ -44,10 +44,15 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
+import org.olat.modules.openbadges.model.BadgeCryptoKey;
+import org.olat.modules.openbadges.model.BadgeSigningOrganization;
 import org.olat.modules.openbadges.ui.BadgeAssertionPublicController;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
+import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Criteria;
+import org.olat.modules.openbadges.v2.CryptographicKey;
+import org.olat.modules.openbadges.v2.Profile;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -98,6 +103,10 @@ public class OpenBadgesDispatcher implements Dispatcher {
 			handleImage(response, commandUri.substring(OpenBadgesFactory.IMAGE_PATH.length()));
 		} else if (commandUri.startsWith(OpenBadgesFactory.CRITERIA_PATH)) {
 			handleCriteria(response, commandUri.substring(OpenBadgesFactory.CRITERIA_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.KEY_PATH)) {
+			handleKey(response, commandUri.substring(OpenBadgesFactory.KEY_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.ORGANIZATION_PATH)) {
+			handleOrganization(response, commandUri.substring(OpenBadgesFactory.ORGANIZATION_PATH.length()));
 		}
 	}
 
@@ -371,6 +380,44 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		} catch (IOException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			log.warn("Could not deliver badge criteria", e);
+		}
+	}
+	
+	private void handleKey(HttpServletResponse response, String file) {
+		if (!OpenBadgesFactory.PUBLIC_KEY_JSON.equals(file)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find public key file");
+			return;
+		}
+		
+		try {
+			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey();
+			CryptographicKey cryptographicKey = new CryptographicKey(badgeCryptoKey);
+			JSONObject jsonObject = cryptographicKey.asJsonObject();
+			jsonObject.write(response.getWriter());
+			response.setContentType("application/json; charset=utf-8");
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			log.warn("Could not find public key file", e);
+		}
+	}
+	
+	private void handleOrganization(HttpServletResponse response, String file) {
+		if (!OpenBadgesFactory.ORGANIZATION_JSON.equals(file)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find organization file");
+			return;
+		}
+		
+		try {
+			BadgeSigningOrganization badgeSigningOrganization = openBadgesManager.getSigningOrganization();
+			Profile profile = new Profile(badgeSigningOrganization);
+			JSONObject jsonObject = profile.asJsonObject(Constants.TYPE_VALUE_ISSUER);
+			jsonObject.write(response.getWriter());
+			response.setContentType("application/json; charset=utf-8");
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			log.warn("Could not find organization file", e);
 		}
 	}
 
