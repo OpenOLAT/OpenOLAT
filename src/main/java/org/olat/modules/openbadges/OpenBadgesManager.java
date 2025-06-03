@@ -38,6 +38,8 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.model.BadgeCryptoKey;
+import org.olat.modules.openbadges.model.BadgeSigningOrganization;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -259,6 +261,15 @@ public interface OpenBadgesManager {
 
 	void deleteBadgeOrganization(BadgeOrganization badgeOrganization);
 
+	//
+ 	// Signing
+ 	//
+	void createSigningKeys(Identity identity);
+
+	BadgeCryptoKey getCryptoKey();
+
+	BadgeSigningOrganization getSigningOrganization();
+	
 	//
 	// Types
 	//

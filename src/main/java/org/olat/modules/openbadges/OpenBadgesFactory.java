@@ -37,6 +37,12 @@ public class OpenBadgesFactory {
 	public static final String CRITERIA_PATH = "criteria/";
 	public static final String ISSUER_PATH = "issuer/";
 	public static final String IMAGE_PATH = "image/";
+	public static final String KEY_PATH = "key/";
+	public static final String ORGANIZATION_PATH = "organization/";
+	public static final String REVOCATION_LIST_PATH = "revocation/";
+	public static final String PUBLIC_KEY_JSON = "publicKey.json";
+	public static final String ORGANIZATION_JSON = "organization.json";
+	public static final String REVOCATION_LIST_JSON = "revocationList.json";
 	public static final String WEB_SUFFIX = "/web";
 
 	public static boolean isSvgFileName(String fileName) {
@@ -75,6 +81,18 @@ public class OpenBadgesFactory {
 
 	public static String createIssuerUrl(String identifier) {
 		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ISSUER_PATH + identifier;
+	}
+	
+	public static String createPublicKeyUrl() {
+		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + KEY_PATH + PUBLIC_KEY_JSON;
+	}
+	
+	public static String createOrganizationUrl() {
+		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ORGANIZATION_PATH + ORGANIZATION_JSON;
+	}
+	
+	public static String createRevocationListUrl() {
+		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + REVOCATION_LIST_PATH + REVOCATION_LIST_JSON;
 	}
 
 	public static String createSalt(BadgeClass badgeClass) {

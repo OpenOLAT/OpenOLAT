@@ -31,9 +31,11 @@ import org.json.JSONObject;
 public class Verification {
 	private static final String TYPE_KEY = "type";
 	private static final String URL_KEY = "url";
+	private static final String CREATOR = "creator";
 
 	private String type;
 	private String url;
+	private String creator;
 
 	public Verification(String serializedJson) {
 		this(new JSONObject(serializedJson));
@@ -53,6 +55,12 @@ public class Verification {
 				} else {
 					throw new IllegalArgumentException("Invalid verification URL.");
 				}
+			} else if (CREATOR.equals(key)) {
+				if (jsonObject.get(CREATOR) instanceof String creatorString) {
+					setCreator(creatorString);
+				} else {
+					throw new IllegalArgumentException("Invalid verification creator URL.");
+				}
 			}
 		}
 	}
@@ -63,6 +71,9 @@ public class Verification {
 		jsonObject.put(Constants.TYPE_KEY, type);
 		if (StringHelper.containsNonWhitespace(url)) {
 			jsonObject.put(Constants.URL_KEY, url);
+		}
+		if (StringHelper.containsNonWhitespace(creator)) {
+			jsonObject.put(CREATOR, creator);
 		}
 
 		return jsonObject;
@@ -82,5 +93,13 @@ public class Verification {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
 	}
 }

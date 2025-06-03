@@ -28,7 +28,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +59,10 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
@@ -82,6 +89,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -120,6 +128,8 @@ import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.model.BadgeCryptoKey;
+import org.olat.modules.openbadges.model.BadgeSigningOrganization;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Constants;
@@ -151,6 +161,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final String OPEN_BADGES_ASSERTION_XML_NAMESPACE = "xmlns:openbadges=\"http://openbadges.org\"";
 	private static final int MAX_BADGE_CLASS_IMAGE_WIDTH = 512;
 	private static final int MAX_BADGE_CLASS_IMAGE_HEIGHT = 512;
+
+	private static final String KEYS_VFS_FOLDER = "keys";
+	private static final String PUBLIC_KEY_FILE = "public.key";
+	private static final String PRIVATE_KEY_FILE = "private.key";
+	private static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n";
+	private static final String END_PUBLIC_KEY = "\n-----END PUBLIC KEY-----";
+	private static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\n";
+	private static final String END_PRIVATE_KEY = "\n-----END PRIVATE KEY-----";
 
 	@Autowired
 	private FolderModule folderModule;
@@ -2205,5 +2223,101 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		return true;
+	}
+
+	@Override
+	public BadgeSigningOrganization getSigningOrganization() {
+		String organizationUrl = OpenBadgesFactory.createOrganizationUrl();
+		String publicKeyUrl = OpenBadgesFactory.createPublicKeyUrl();
+		String revocationListUrl = OpenBadgesFactory.createRevocationListUrl();
+		return new BadgeSigningOrganization(organizationUrl, publicKeyUrl, revocationListUrl);
+	}
+
+	@Override
+	public BadgeCryptoKey getCryptoKey() {
+		String publicKeyUrl = OpenBadgesFactory.createPublicKeyUrl();
+		String organizationUrl = OpenBadgesFactory.createOrganizationUrl();
+		String publicKeyPem = getPublicKeyPem();
+		return new BadgeCryptoKey(publicKeyUrl, organizationUrl, publicKeyPem);
+	}
+	
+	private VFSContainer getKeysRootContainer() {
+		return VFSManager.olatRootContainer(File.separator + BADGES_VFS_FOLDER + File.separator + KEYS_VFS_FOLDER, null);
+	}
+
+	public PrivateKey getPrivateKey(Identity identity) {
+		createSigningKeys(identity);
+		String privateKeyPem = getPrivateKeyPem();
+		return CryptoUtil.string2PrivateKey(privateKeyPem);
+	}
+	
+	private String getPrivateKeyPem() {
+		VFSContainer container = getKeysRootContainer();
+		if (container.resolve(PRIVATE_KEY_FILE) instanceof VFSLeaf leaf) {
+			return FileUtils.load(leaf.getInputStream(), StandardCharsets.UTF_8.name());
+		}
+		return "";
+	}
+	
+	public PublicKey getPublicKey(Identity identity) {
+		createSigningKeys(identity);
+		String publicKeyPem = getPublicKeyPem();
+		return CryptoUtil.string2PublicKey(publicKeyPem);
+	}
+	
+	private String getPublicKeyPem() {
+		VFSContainer container = getKeysRootContainer();
+		if (container.resolve(PUBLIC_KEY_FILE) instanceof VFSLeaf leaf) {
+			return FileUtils.load(leaf.getInputStream(), StandardCharsets.UTF_8.name());
+		}
+		return "";
+	}
+	
+	@Override
+	public void createSigningKeys(Identity identity) {
+		VFSContainer container = getKeysRootContainer();
+		if (container.resolve(PUBLIC_KEY_FILE) != null && container.resolve(PRIVATE_KEY_FILE) != null) {
+			return;
+		}
+
+		boolean publicKeySuccess = false, privateKeySuccess = false;
+		String publicKeyPem, privateKeyPem;
+
+		try {
+			RSAKey rsaKey = new RSAKeyGenerator(2048).algorithm(JWSAlgorithm.RS256).generate();
+			byte[] data = rsaKey.toPublicKey().getEncoded();
+			String base64 = new String(Base64.getEncoder().encode(data));
+			publicKeyPem = BEGIN_PUBLIC_KEY + base64 + END_PUBLIC_KEY;
+			
+			data = rsaKey.toPrivateKey().getEncoded();
+			base64 = new String(Base64.getEncoder().encode(data));
+			privateKeyPem = BEGIN_PRIVATE_KEY + base64 + END_PRIVATE_KEY;
+			
+		} catch (JOSEException e) {
+			log.error(e);
+			return;
+		}
+		
+		VFSLeaf publicLeaf = container.createChildLeaf("public.key");
+		try (InputStream publicKeyInputStream = new ByteArrayInputStream(publicKeyPem.getBytes(StandardCharsets.UTF_8))) {
+			if (VFSManager.copyContent(publicKeyInputStream, publicLeaf, identity)) {
+				publicKeySuccess = true;
+			}
+		} catch (Exception e) {
+			log.error(e);
+		}
+
+		VFSLeaf privateLeaf = container.createChildLeaf("private.key");
+		try (InputStream privateKeyInputStream = new ByteArrayInputStream(privateKeyPem.getBytes(StandardCharsets.UTF_8))) {
+			if (VFSManager.copyContent(privateKeyInputStream, privateLeaf, identity)) {
+				privateKeySuccess = true;
+			}
+		} catch (Exception e) {
+			log.error(e);
+		}
+		
+		if (!publicKeySuccess && !privateKeySuccess) {
+			publicLeaf.deleteSilently();
+		}
 	}
 }
