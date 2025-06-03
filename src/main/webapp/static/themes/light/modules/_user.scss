@@ -100,6 +100,11 @@
 		border: solid 1px white;
 		background-color: white;
 	}
+	@media print {
+		.o_user_portrait_im {
+			display: none;
+		}
+	}
 }
 
 .o_user_initials {
@@ -269,7 +274,12 @@
 			background-color: $o-user-info-profile-inside-bg-color;
 			border: $o-user-info-profile-inside-border;
 		}
-
+		@media print {
+			&:is(.o_user_info_wrapper *) {
+				border: none;
+			}
+		}
+	
 		display: inline-flex;
 		column-gap: $o-user-info-profile-column-gap;
 		row-gap: $o-user-info-profile-row-gap;
