@@ -182,6 +182,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		}
 		
 		addMembersButton = uifactory.addFormLink("add.members", formLayout, Link.BUTTON);
+		addMembersButton.setElementCssClass("o_sel_assessment_inspection_add_member");
 		addMembersButton.setIconLeftCSS("o_icon o_icon_add");
 		
 		boolean courseOverview = (courseNode == null);

@@ -35,12 +35,14 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
@@ -411,6 +413,16 @@ public class OOGraphene {
 			waitingALittleBit();
 			browser.findElement(by).clear();
 			browser.findElement(by).sendKeys(text);
+		}
+	}
+	
+	public static void tab(WebDriver browser) {
+		try {
+			new Actions(browser)
+				.sendKeys(Keys.TAB)
+				.perform();
+		} catch (Exception e) {
+			log.warn("", e);
 		}
 	}
 	

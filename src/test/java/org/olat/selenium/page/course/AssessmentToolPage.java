@@ -352,4 +352,24 @@ public class AssessmentToolPage {
 		}
 		return new CoursePageFragment(browser);
 	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public AssessmentToolPage assertOnInspectionsMenuItem() {
+		By menuItemBy = By.cssSelector("ul.o_tree_l0 li a>i.o_icon_inspection");
+		OOGraphene.waitElement(menuItemBy, browser);
+		return this;
+	}
+	
+	public AssessmentInspectionConfigurationPage selectAssessmentInspections() {
+		By menuItemBy = By.xpath("//ul[contains(@class,'o_tree_l0')]/li//a[i[contains(@class,'o_icon_inspection')]]");
+		OOGraphene.waitElement(menuItemBy, browser);
+		browser.findElement(menuItemBy).click();
+
+		By overviewBy = By.cssSelector("fieldset.o_sel_assessment_inspection_overview");
+		OOGraphene.waitElement(overviewBy, browser);
+		return new AssessmentInspectionConfigurationPage(browser);
+	}
 }

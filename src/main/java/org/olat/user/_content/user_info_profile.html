@@ -13,7 +13,7 @@
 			<div class="o_user_info_profile_name">
 				$name
 			</div>
-			<div class="o_user_info_profile_cmds">
+			<div class="o_user_info_profile_cmds o_noprint">
 				#if($r.available("user.info.visiting.card") && $r.visible("user.info.visiting.card"))
 					$r.render("user.info.visiting.card")
 				#end

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -39,6 +40,8 @@ import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
+import org.olat.selenium.page.course.AssessmentInspectionConfigurationPage;
+import org.olat.selenium.page.course.AssessmentInspectionPage;
 import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
@@ -210,6 +213,150 @@ public class AssessmentTest extends Deployments {
 			.assertPassed(ryomou);
 	}
 	
+	
+
+	/**
+	 * An author create a course with a test. It prepares a template
+	 * configuration for an assessment inspection.<br>
+	 * A participant makes the test. The author prepare the inspection
+	 * with a the right time period.<br>
+	 * The participant log in again and see the results, and close the
+	 * inspection.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void assessmentInspection()
+	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+			
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Janis");
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Rim");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Inspection 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/e4_test_qti21.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course inspection " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Test-QTI-2.1";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the test start page
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.tree()
+			//check that the title of the start page of test is correct
+			.assertWithTitleSelected(testNodeTitle);
+		
+		// Add the participant
+		MembersPage members = courseRuntime.members();
+		members.quickAdd(participant);
+		
+		// Prepare an assessment inspection template
+		String inspectionName = "View " + UUID.randomUUID();
+		courseRuntime
+			.assessmentInspectionConfiguration()
+			.createAssessmentInspection(inspectionName)
+			.assertOnAssessmentInspectionInList(inspectionName);
+		
+		// Participant log in 
+		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		// Go to the test
+		CoursePageFragment participantTestCourse = new CoursePageFragment(participantBrowser);
+		participantTestCourse
+			.tree()
+			.assertWithTitleSelected(testNodeTitle);
+		// Pass the test
+		QTI21Page.getQTI21Page(participantBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		// Log out
+		new UserToolsPage(participantBrowser)
+			.logout();
+		
+		// Author prepare an assessment inspection window
+		AssessmentInspectionConfigurationPage configurationPage = courseRuntime
+			.assessmentTool()
+			.assertOnInspectionsMenuItem()
+			.selectAssessmentInspections();
+		
+		LocalDateTime now = LocalDateTime.now().minusMinutes(2);
+		int hour = now.getHour();
+		int minute = now.getMinute();
+		
+		// Authorize an inspection for the participant
+		configurationPage
+			.addMember()
+			.selectCourseElement(testNodeTitle)
+			.selectUser(participant)
+			.configuration(hour, minute)
+			.contact();
+		configurationPage
+			.assertActiveOnParticipantInList(participant);
+		
+		// Participant log in 
+		participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		AssessmentInspectionPage inspectionPage = new AssessmentInspectionPage(participantBrowser);
+		inspectionPage
+			.assertOnStartInspection(testNodeTitle)
+			.startInspection();
+		
+		// Results
+		new QTI21Page(participantBrowser)
+			.assertOnAssessmentResults();
+		
+		inspectionPage
+			.closeInspection()
+			.confirmCloseInspection();
+		
+		// Land on "My courses"
+		By myEntriesBy = By.cssSelector("#o_main.o_sel_my_repository_entries");
+		OOGraphene.waitElement(myEntriesBy, participantBrowser);
+	}
+	
+	
 	/**
 	 * An author upload a test, create a course with a test course
 	 * element, publish the course, add 2 students (Ryomou and Kanu)
@@ -227,7 +374,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void assessmentMode_manual()
+	public void assessmentModeManual()
 	throws IOException, URISyntaxException {
 		WebDriver ryomouBrowser = getWebDriver(1);
 		WebDriver kanuBrowser = getWebDriver(2);

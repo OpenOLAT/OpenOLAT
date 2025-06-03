@@ -106,6 +106,7 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		addConfigurationButton = uifactory.addFormLink("add.configuration", formLayout, Link.BUTTON);
+		addConfigurationButton.setElementCssClass("o_sel_assessment_inspection_add");
 		addConfigurationButton.setIconLeftCSS("o_icon o_icon_add");
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

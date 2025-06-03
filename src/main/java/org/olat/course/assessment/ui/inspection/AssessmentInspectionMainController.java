@@ -119,6 +119,7 @@ public class AssessmentInspectionMainController extends BasicController implemen
 			initTestResults(ureq, courseEntry, testNode, options);
 		}
 		closeInspectionButton = LinkFactory.createButton("close.inspection", mainVC, this);
+		closeInspectionButton.setElementCssClass("o_sel_assessment_inspection_close");
 		closeInspectionButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		mainVC.put("close.inspection", closeInspectionButton);
 		putInitialPanel(mainVC);
