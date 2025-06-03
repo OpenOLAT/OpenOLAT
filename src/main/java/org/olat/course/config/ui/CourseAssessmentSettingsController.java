@@ -78,7 +78,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 
 	protected CourseAssessmentSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(RunMainController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		
