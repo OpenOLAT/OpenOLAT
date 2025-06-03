@@ -771,7 +771,7 @@ public class BusinessGroupQueries {
 		
 		//resources
 		QueryBuilder sr = new QueryBuilder();
-		sr.append("select entry.key, entry.displayname, bgi.key, entry.externalRef from repoentrytobusinessgroup as v")
+		sr.append("select distinct entry.key, entry.displayname, bgi.key, entry.externalRef from repoentrytobusinessgroup as v")
 		  .append(" inner join v.entry entry")
 		  .append(" inner join v.businessGroup relationToGroup")
 		  .append(" inner join relationToGroup.businessGroups bgi");

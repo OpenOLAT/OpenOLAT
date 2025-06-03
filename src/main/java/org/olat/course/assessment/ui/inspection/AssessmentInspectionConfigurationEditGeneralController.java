@@ -72,14 +72,16 @@ public class AssessmentInspectionConfigurationEditGeneralController extends Form
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_assessment_inspection_general_form");
 		
 		String name = configuration == null ? null : configuration.getName();
 		nameEl = uifactory.addTextElement("configuration.name", 255, name, formLayout);
+		nameEl.setElementCssClass("o_sel_assessment_inspection_name");
 		nameEl.setMandatory(true);
 		
 		String duration = configuration == null ? null : Integer.toString(configuration.getDuration() / 60);
 		durationEl = uifactory.addTextElement("max.duration", 10, duration, formLayout);
-		durationEl.setElementCssClass("form-inline");
+		durationEl.setElementCssClass("form-inline o_sel_assessment_inspection_duration");
 		durationEl.setTextAddOn("max.duration.unit");
 		durationEl.setMandatory(true);
 		
@@ -90,6 +92,7 @@ public class AssessmentInspectionConfigurationEditGeneralController extends Form
 		resultsKV.add(SelectionValues.entry(QTI21AssessmentResultsOptions.USER_SOLUTIONS, translate("qti.form.summary.responses")));
 		resultsKV.add(SelectionValues.entry(QTI21AssessmentResultsOptions.CORRECT_SOLUTIONS, translate("qti.form.summary.solutions")));
 		resultsEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsKV.keys(), resultsKV.values(), 1);
+		resultsEl.setElementCssClass("o_sel_assessment_inspection_results");
 		resultsEl.setHelpText(translate("qti.form.summary.help"));
 		resultsEl.setMandatory(true);
 		if(StringHelper.containsNonWhitespace(configuration.getOverviewOptions())) {
