@@ -53,6 +53,7 @@ import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.model.NoDueDateConfig;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.CourseEditorEnv;
@@ -322,6 +323,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 				gtaNode.getDueDateConfig(GTACourseNode.GTASK_LATE_SUBMIT_DEADLINE));
 		lateSubmissionDeadlineEl.setLabel("late.submit.deadline", null);
 		lateSubmissionDeadlineEl.setVisible(lateSubmit);
+		lateSubmissionDeadlineEl.setMandatory(true);
 		stepsCont.add(lateSubmissionDeadlineEl);
 		
 		uifactory.addSpacerElement("s3", stepsCont, false);
@@ -524,6 +526,24 @@ public class GTAWorkflowEditController extends FormBasicController {
 		submissionDeadlineEl.clearError();
 		if (!submissionDeadlineEl.validate()) {
 			allOk &= false;
+		}
+		
+		lateSubmissionDeadlineEl.clearError();
+		if(lateSubmissionDeadlineEl.isVisible()) {
+			if(!lateSubmissionDeadlineEl.validate()) {
+				allOk &= false;
+			} else if(lateSubmissionDeadlineEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG) {
+				lateSubmissionDeadlineEl.setErrorKey("error.late.submission.mandatory");
+				allOk &= false;
+			} else {
+				DueDateConfig submissionConfig = submissionDeadlineEl.getDueDateConfig();
+				DueDateConfig lateSubmissionConfig = lateSubmissionDeadlineEl.getDueDateConfig();
+				if(submissionConfig.getAbsoluteDate() != null && lateSubmissionConfig.getAbsoluteDate() != null &&
+						submissionConfig.getAbsoluteDate().after(lateSubmissionConfig.getAbsoluteDate())) {
+					lateSubmissionDeadlineEl.setErrorKey("error.late.submission.after.submission");
+					allOk &= false;
+				}
+			}
 		}
 		
 		solutionVisibleAfterEl.clearError();
