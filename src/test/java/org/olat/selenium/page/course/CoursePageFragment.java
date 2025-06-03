@@ -349,6 +349,18 @@ public class CoursePageFragment {
 		return new AssessmentModePage(browser);
 	}
 	
+	public AssessmentInspectionConfigurationPage assessmentInspectionConfiguration() {
+		openToolsMenu();
+		
+		browser.findElement(assessmentModeBy).click();
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_assessment_mode_list"), browser);
+		
+		By inspectionBy = By.xpath("//div[contains(@class,'o_segments')]/a[contains(@class,'btn')][contains(@onclick,'assessment.inspection')]");
+		browser.findElement(inspectionBy).click();
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_assessment_inspection_list"), browser);
+		return new AssessmentInspectionConfigurationPage(browser);
+	}
+	
 	public BadgeClassesPage badgesAdministration() {
 		openToolsMenu();
 		

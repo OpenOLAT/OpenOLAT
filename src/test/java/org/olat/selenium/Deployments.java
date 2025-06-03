@@ -33,6 +33,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 import org.olat.core.logging.Tracing;
 import org.olat.test.ArquillianDeployments;
 import org.openqa.selenium.Dimension;
@@ -205,4 +208,18 @@ public class Deployments {
 		}
 	}
 	*/
+	
+	public static class SeleniumListener extends RunListener {
+		
+		private RunNotifier runNotifier;
+
+		@Override
+		public void testFailure(Failure failure) throws Exception {
+			super.testFailure(failure);
+			runNotifier.pleaseStop();
+		}
+		
+		
+		
+	}
 }

@@ -84,6 +84,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_assessment_inspection_configuration");
 		
 		SelectionValues configurationKV = new SelectionValues();
 		for(AssessmentInspectionConfiguration configuration:configurations) {
@@ -109,6 +110,7 @@ public class InspectionConfigurationController extends StepFormBasicController {
 		durationEl = uifactory.addStaticTextElement("configuration.duration", "configuration.duration", "", formLayout);
 		
 		inspectionPeriodEl = uifactory.addDateChooser("configuration.inspection.period", "configuration.inspection.period", null, formLayout);
+		inspectionPeriodEl.setElementCssClass("o_sel_assessment_inspection_period");
 		inspectionPeriodEl.setSecondDate(true);
 		inspectionPeriodEl.setDateChooserTimeEnabled(true);
 		inspectionPeriodEl.setSeparator("configuration.inspection.period.separator");
