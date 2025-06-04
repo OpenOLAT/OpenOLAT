@@ -19,23 +19,23 @@
 		</div>
 	#end
 
-	#set($idx = 0)
 	<div class="form-horizontal o_form o_form_roles">
 		#foreach($rolesEl in $rolesEls)
 		<div class="form-group o_form_row o_form_roles_row">
 			<label class="control-label col-sm-3">
-				$r.render($rolesEl, "label")
+				$r.render($rolesEl.getRolesDropdownName(), "label")
 			</label>
 			<div class="col-sm-9 o_form_cell o_roles_dropdown_row">
 				<div class="o_roles_dropdown_button">
-					$r.render($rolesEl)
+					$r.render($rolesEl.getRolesDropdownName())
 				</div>
-				<div class="o_roles_structure_button">
-					$r.render("orgTree_$idx")
-				</div>
+				#if ($r.isNotNull($rolesEl.getOrgStructureElementName()))
+					<div class="o_roles_structure_button">
+						$r.render($rolesEl.getOrgStructureElementName())
+					</div>
+				#end
 			</div>
 		</div>
-		#set($idx = $idx + 1)
 		#end
 	</div>
 </fieldset>
