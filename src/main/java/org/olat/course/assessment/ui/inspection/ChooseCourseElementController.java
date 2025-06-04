@@ -80,7 +80,8 @@ public class ChooseCourseElementController extends StepFormBasicController {
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer, "open");
-		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(ElementsCols.node, "open", nodeRenderer);
+		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(ElementsCols.node, "open");
+		nodeModel.setCellRenderer(nodeRenderer);
 		nodeModel.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(nodeModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementsCols.type));
