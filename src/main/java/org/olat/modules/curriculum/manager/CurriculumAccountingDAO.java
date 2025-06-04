@@ -355,7 +355,7 @@ public class CurriculumAccountingDAO {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select curEl.key, curEl.curriculum.key, curEl.materializedPathKeys, participant.key,")
 		  .append(" statement,")
-		  .append(" certificate.creationDate, certificate.nextRecertificationDate,")
+		  .append(" certificate.key, certificate.nextRecertificationDate,")
 		  .append(" courseInfos.initialLaunch, courseInfos.recentLaunch")
 		  .append(" from repositoryentry as re")
 		  .append(" inner join re.groups as reToParticipantGroup")
@@ -395,26 +395,25 @@ public class CurriculumAccountingDAO {
 
 			Long identityKey = (Long)objects[3];
 			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)objects[4];
-			Date certificateDate = (Date)objects[5];
+			Long certificateKey = (Long)objects[5];
 			Date nextRecertificationDate = (Date)objects[6];
 			Date initialLaunch = (Date)objects[7];
 			Date recentLaunch = (Date)objects[8];
 
 			for(Long curriculumElementPathKey:curriculumElementPathKeys) {
 				BookingKey pkey = new BookingKey(curriculumElementPathKey, identityKey);
-				loadAssessmentsInfos(ordersMap.get(pkey), statement, certificateDate, nextRecertificationDate, initialLaunch, recentLaunch);
+				loadAssessmentsInfos(ordersMap.get(pkey), statement, certificateKey, nextRecertificationDate, initialLaunch, recentLaunch);
 			}
 		}
 	}
 	
 	private void loadAssessmentsInfos(List<BookingOrder> orders, UserEfficiencyStatementLight statement,
-			Date certificateDate, Date nextRecertificationDate, Date initialLaunch, Date recentLaunch) {
+			Long certificateKey, Date nextRecertificationDate, Date initialLaunch, Date recentLaunch) {
 		if(orders == null || orders.isEmpty()) return;
 		
 		for(BookingOrder order:orders) {
-			if(certificateDate != null
-					&& (order.getCertificateDate() == null || certificateDate.after(order.getCertificateDate()))) {
-				order.setCertificateDate(certificateDate);
+			if(certificateKey != null) {
+				order.addCertificateKey(certificateKey);
 			}
 			if(nextRecertificationDate != null
 					&& (order.getNextCertificationDate() == null || nextRecertificationDate.before(order.getNextCertificationDate()))) {
