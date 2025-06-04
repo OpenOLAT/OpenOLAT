@@ -587,7 +587,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 				DueDateConfig submissionConfig = deadlineEl.getDueDateConfig();
 				DueDateConfig lateSubmissionConfig = lateDeadlineEl.getDueDateConfig();
 				if(submissionConfig.getAbsoluteDate() != null && lateSubmissionConfig.getAbsoluteDate() != null &&
-						submissionConfig.getAbsoluteDate().after(lateSubmissionConfig.getAbsoluteDate())) {
+						submissionConfig.getAbsoluteDate().compareTo(lateSubmissionConfig.getAbsoluteDate()) >= 0) {
 					lateDeadlineEl.setErrorKey("error.late.submission.after.submission");
 					allOk &= false;
 				} else if(submissionConfig.getRelativeToType() != null && lateSubmissionConfig.getRelativeToType() != null) {
@@ -598,7 +598,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 						lateDeadlineEl.setErrorKey("error.late.submission.mandatory");
 						allOk &= false;
 					}else if(submissionConfig.getRelativeToType().equals(lateSubmissionConfig.getRelativeToType())
-							&& submissionConfig.getNumOfDays() > lateSubmissionConfig.getNumOfDays()) {
+							&& submissionConfig.getNumOfDays() >= lateSubmissionConfig.getNumOfDays()) {
 						lateDeadlineEl.setErrorKey("error.late.submission.after.submission");
 						allOk &= false;
 					}
