@@ -39,6 +39,7 @@ public class AppointmentRow {
 	
 	private final Appointment appointment;
 	private Participation participation;
+	private List<Participation> participations;
 	private List<String> participants;
 	private Component showMoreLink;
 	private String date;
@@ -80,6 +81,14 @@ public class AppointmentRow {
 
 	public void setParticipation(Participation participation) {
 		this.participation = participation;
+	}
+
+	public List<Participation> getParticipations() {
+		return participations;
+	}
+
+	public void setParticipations(List<Participation> participations) {
+		this.participations = participations;
 	}
 
 	public List<String> getParticipants() {

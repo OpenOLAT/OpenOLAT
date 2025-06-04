@@ -145,7 +145,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private AppointmentCreateController addAppointmentsCtrl;
 	private UserSearchController userSearchCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
-	private AppointmentParticipationsController participationsCtrl;
 	private ParticipationRemoveController removeCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
 
@@ -483,6 +482,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	protected void forgeParticipants(AppointmentRow row, List<Participation> participations) {
+		row.setParticipations(participations);
+		
 		long limit = showAllParticipations.contains(row.getAppointment())? Long.MAX_VALUE: PARTICIPANTS_RENDER_LIMIT;
 		List<String> participants = participations.stream()
 				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
@@ -698,11 +699,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (participationsCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				calloutCtrl.deactivate();
-				cleanUp();
-			}
 		} else if (userSearchCtrl == source) {
 			Appointment appointment = (Appointment)userSearchCtrl.getUserObject();
 			if (event instanceof SingleIdentityChosenEvent) {
@@ -737,7 +733,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
 		removeAsListenerAndDispose(addAppointmentsCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
-		removeAsListenerAndDispose(participationsCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(removeCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
@@ -746,7 +741,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 		appointmentDeleteCtrl = null;
 		addAppointmentsCtrl = null;
 		appointmentEditCtrl = null;
-		participationsCtrl = null;
 		userSearchCtrl = null;
 		removeCtrl = null;
 		calloutCtrl = null;
@@ -955,14 +949,19 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 	
 	private void doOpenParticipations(UserRequest ureq, AppointmentRow row, FormLink link) {
-		removeAsListenerAndDispose(participationsCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		
-		participationsCtrl = new AppointmentParticipationsController(ureq, getWindowControl(), row.getParticipants());
-		listenTo(participationsCtrl);
-
+		List<String> participants = row.getParticipations().stream()
+				.map(p -> userManager.getUserDisplayName(p.getIdentity().getKey()))
+				.sorted(String.CASE_INSENSITIVE_ORDER)
+				.collect(Collectors.toList());
+		
+		VelocityContainer participationsCont = createVelocityContainer("appointment_participations");
+		participationsCont.contextPut("participants", participants);
+		
+		String title = translate("appointment.participations", String.valueOf(participants.size()));
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				participationsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				participationsCont, link.getFormDispatchId(), title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
