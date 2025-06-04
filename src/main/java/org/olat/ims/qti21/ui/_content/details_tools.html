@@ -7,7 +7,8 @@
 	
 	#if($r.available("view.results"))
 	<li>$r.render("view.results")</li>
-	#elseif($r.available("pull"))
+	#end
+	#if($r.available("pull"))
 	<li>$r.render("pull")</li>
 	#end
 

@@ -135,7 +135,7 @@ public class AssessmentInspectionMainController extends BasicController implemen
 		
 		AssessmentTestSession session = null;
 		for(AssessmentTestSession sess:sessions) {
-			if(sess.getFinishTime() != null || sess.getTerminationTime() != null ) {
+			if(sess.getTerminationTime() != null) {
 				session = sess;
 				break;// last finished session
 			}

@@ -77,6 +77,7 @@ public class AssessmentInspectionServiceTest extends OlatTestCase {
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedId, null, entry, subIdent, null, entry);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, assessedId, null, 300, true);
 		testSession.setFinishTime(new Date());
+		testSession.setTerminationTime(new Date());
 		testSessionDao.update(testSession);
 		// Inspection
 		AssessmentInspectionConfiguration config = inspectionService.createInspectionConfiguration(entry);

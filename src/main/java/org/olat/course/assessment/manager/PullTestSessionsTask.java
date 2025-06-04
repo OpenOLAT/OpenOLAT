@@ -91,8 +91,7 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		InstantMessagingService imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		AssessmentTestSession session = qtiService.getAssessmentTestSession(testSessionKey);
-		if(session == null || session.isCancelled() || session.isExploded()
-				|| session.getFinishTime() != null || session.getTerminationTime() != null) {
+		if(session == null || session.isCancelled() || session.isExploded() || session.getTerminationTime() != null) {
 			return;
 		}
 		

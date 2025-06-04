@@ -32,10 +32,10 @@ import java.util.Iterator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.LogFileParser;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -86,6 +86,8 @@ public class ErrorFeedbackMailer implements Dispatcher {
 			if(StringHelper.isLong(identityKey)) {
 				Identity ident = securityManager.loadIdentityByKey(Long.valueOf(identityKey));
 				Collection<String> logFileEntries = LogFileParser.getErrorToday(errorNr, false);
+				// LMSUZH-4629: Filter entries that don't contain error number 
+				logFileEntries = logFileEntries.stream().filter(entry -> entry.contains(errorNr)).toList();
 				StringBuilder out = new StringBuilder(2048);
 				out.append(feedback)
 				   .append("\n------------------------------------------\n\n --- from user: ").append(identityKey).append(" ---");

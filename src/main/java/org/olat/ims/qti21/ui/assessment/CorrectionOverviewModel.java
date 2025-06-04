@@ -237,14 +237,14 @@ public class CorrectionOverviewModel {
 				continue;
 			}
 			
-			Date fDate = session.getFinishTime();
+			Date fDate = session.getTerminationTime();
 			if(fDate == null) {
 				//not terminated
 			} else {
 				if(identityToSessions.containsKey(assessedIdentity)) {
 					AssessmentTestSession currentSession = identityToSessions.get(assessedIdentity);
 
-					Date currentFDate = currentSession.getFinishTime();
+					Date currentFDate = currentSession.getTerminationTime();
 					if(fDate.after(currentFDate)) {
 						identityToSessions.put(assessedIdentity, session);
 					}

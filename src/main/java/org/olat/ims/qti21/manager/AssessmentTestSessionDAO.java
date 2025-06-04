@@ -542,7 +542,7 @@ public class AssessmentTestSessionDAO {
 		  .append(" left join fetch session.testEntry testEntry")
 		  .append(" left join fetch testEntry.olatResource testResource")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey")
-		  .append(" and session.testEntry.key=:testEntryKey and (session.finishTime is not null or session.terminationTime is not null)")
+		  .append(" and session.testEntry.key=:testEntryKey and session.terminationTime is not null")
 		  .append(" and session.exploded=false and session.cancelled=false");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
@@ -572,7 +572,7 @@ public class AssessmentTestSessionDAO {
 		sb.append("select assessedIdentity from qtiassessmenttestsession session")
 		  .append(" inner join session.identity assessedIdentity")
 		  .append(" inner join assessedIdentity.user assessedUser")
-		  .where().append("session.repositoryEntry.key=:repositoryEntryKey and session.finishTime is null and session.terminationTime is null");
+		  .where().append("session.repositoryEntry.key=:repositoryEntryKey and session.terminationTime is null");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.and().append("session.subIdent=:subIdent");
 		} else {
@@ -617,7 +617,7 @@ public class AssessmentTestSessionDAO {
 		sb.append("select assessedIdentity.key from qtiassessmenttestsession session")
 		  .append(" inner join session.identity assessedIdentity")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
-		  .append(" and session.finishTime is null and session.terminationTime is null");
+		  .append(" and session.terminationTime is null");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {
@@ -642,7 +642,7 @@ public class AssessmentTestSessionDAO {
 		  .append(" inner join fetch session.identity assessedIdentity")
 		  .append(" inner join fetch assessedIdentity.user assessedUser")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
-		  .append(" and session.finishTime is null and session.terminationTime is null");
+		  .append(" and session.terminationTime is null");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {
@@ -682,7 +682,7 @@ public class AssessmentTestSessionDAO {
 		sb.append("select session from qtiassessmenttestsession session")
 		  .append(" inner join fetch session.identity assessedIdentity")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey")
-		  .append(" and session.finishTime is null and session.terminationTime is null")
+		  .append(" and session.terminationTime is null")
 		  .append(" and session.exploded=false and session.cancelled=false")
 		  .append(" and assessedIdentity.key in (:identityKeys)");
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
@@ -713,8 +713,7 @@ public class AssessmentTestSessionDAO {
 		  .append(" left join session.testEntry testEntry")
 		  .append(" left join testEntry.olatResource testResource")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
-		  .append(" and session.finishTime is null and session.terminationTime is null")
-		  .append(" and session.exploded=false and session.cancelled=false");
+		  .append(" and session.terminationTime is null and session.exploded=false and session.cancelled=false");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {
@@ -758,8 +757,7 @@ public class AssessmentTestSessionDAO {
 		  .append(" left join session.testEntry testEntry")
 		  .append(" left join testEntry.olatResource testResource")
 		  .append(" where session.repositoryEntry.key=:repositoryEntryKey")
-		  .append(" and session.finishTime is null and session.terminationTime is null")
-		  .append(" and session.exploded=false and session.cancelled=false")
+		  .append(" and session.terminationTime is null and session.exploded=false and session.cancelled=false")
 		  .append(" and session.identity.key in (:identityKeys)");
 		if(courseSubIdents != null && !courseSubIdents.isEmpty()) {
 			sb.append(" and session.subIdent in (:subIdents)");

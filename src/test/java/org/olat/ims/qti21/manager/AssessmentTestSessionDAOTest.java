@@ -261,7 +261,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//to have a time difference
-		sleep(1500);
+		sleep(1100);
 		
 		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
 		Assert.assertNotNull(testSession2);
@@ -534,6 +534,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry2, assessedIdentity2, null, null, false);
 		AssessmentTestSession testSession2_1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry2, assessedIdentity2, null, null, false);
 		testSession2.setFinishTime(new Date());
+		testSession2.setTerminationTime(new Date());
 		testSession2 = testSessionDao.update(testSession2);
 		dbInstance.commit();
 		
@@ -545,6 +546,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		
 		// End a second session
 		testSession2_1.setFinishTime(new Date());
+		testSession2_1.setTerminationTime(new Date());
 		testSession2_1 = testSessionDao.update(testSession2_1);
 		dbInstance.commit();
 		

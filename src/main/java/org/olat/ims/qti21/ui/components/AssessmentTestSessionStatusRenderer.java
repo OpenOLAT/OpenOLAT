@@ -50,7 +50,8 @@ public class AssessmentTestSessionStatusRenderer implements FlexiCellRenderer {
 				case CANCELLED -> renderStatus(renderer, target, "assessment.test.session.status.cancelled", "o_icon_ban", "o_assessment_test_session_status_cancelled");
 				case SUSPENDED -> renderStatus(renderer, target, "assessment.test.session.status.suspended", "o_icon_qti_suspend", "o_assessment_test_session_status_suspended");
 				case RUNNING -> renderStatus(renderer, target, "assessment.test.session.status.running", "o_icon_timelimit_half", "o_assessment_test_session_status_running");
-				case FINISHED -> renderStatus(renderer, target, "assessment.test.session.status.finished", "o_icon_finished", "o_assessment_test_session_status_finished");
+				case REVIEWING -> renderStatus(renderer, target, "assessment.test.session.status.reviewing", "o_icon_timelimit_end", "o_assessment_test_session_status_reviewing");
+				case TERMINATED -> renderStatus(renderer, target, "assessment.test.session.status.finished", "o_icon_finished", "o_assessment_test_session_status_finished");
 			}
 		}
 	}
