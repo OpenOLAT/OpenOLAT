@@ -75,7 +75,7 @@
 		<apache.poi>5.4.1</apache.poi>
 		<apache.log4j>2.24.3</apache.log4j>
 		<org.slf4j>2.0.17</org.slf4j>
-		<org.bouncycastle>1.80</org.bouncycastle>
+		<org.bouncycastle>1.81</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
 		<io.undertow>2.3.18.Final</io.undertow>
 		<jackson.version>2.19.0</jackson.version>
@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.39.0</version>
+			<version>6.40.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
