@@ -68,8 +68,8 @@ public class BookingOrder {
 	private String implementationLocation;
 	private GroupMembershipStatus ordererMembershipStatus;
 	
-	private Date certificateDate;
 	private Date nextCertificationDate;
+	private List<Long> certificateKeys;
 	private List<UserEfficiencyStatementLight> efficiencyStatements;
 	
 	private Date firstVisit;
@@ -330,12 +330,15 @@ public class BookingOrder {
 		return ordererMembershipStatus;
 	}
 
-	public Date getCertificateDate() {
-		return certificateDate;
+	public List<Long> getCertificateKeys() {
+		return certificateKeys;
 	}
 
-	public void setCertificateDate(Date certificateDate) {
-		this.certificateDate = certificateDate;
+	public void addCertificateKey(Long certificateKey) {
+		if(certificateKeys == null) {
+			certificateKeys = new ArrayList<>(3);
+		}
+		certificateKeys.add(certificateKey);
 	}
 
 	public Date getNextCertificationDate() {

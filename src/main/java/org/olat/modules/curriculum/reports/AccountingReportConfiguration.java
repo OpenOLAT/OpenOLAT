@@ -423,7 +423,14 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			}
 		}
 		
-		row.addCell(pos++, bookingOrder.getCertificateDate(), workbook.getStyles().getDateStyle());
+		if(bookingOrder.getCertificateKeys() == null || bookingOrder.getCertificateKeys().isEmpty()) {
+			pos++;
+		} else if(bookingOrder.getCertificateKeys().size() == 1) {
+			row.addCell(pos++, "1");
+		} else {
+			row.addCell(pos++, translator.translate("report.several"));
+		}
+		
 		row.addCell(pos++, bookingOrder.getNextCertificationDate(), workbook.getStyles().getDateStyle());
 		
 		row.addCell(pos++, bookingOrder.getFirstVisit(), workbook.getStyles().getDateTimeStyle());
