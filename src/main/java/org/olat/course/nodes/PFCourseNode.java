@@ -234,7 +234,6 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 		return config.getBooleanEntry(CONFIG_KEY_DATEEND) != null ? 
 				config.getDateValue(CONFIG_KEY_DATEEND) : null;
 	}
-	
 
 	@Override
 	public StatusDescription isConfigValid() {
@@ -334,11 +333,19 @@ public class PFCourseNode extends AbstractAccessableCourseNode
 		// delete filesystem
 		
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		File root = Paths.get(courseEnv.getCourseBaseContainer().getRelPath(), 
+		VFSContainer courseBaseContainer = courseEnv.getCourseBaseContainer();
+		File root = Paths.get(courseBaseContainer.getRelPath(), 
 				PFManager.FILENAME_PARTICIPANTFOLDER, getIdent()).toFile();
-		if (root.exists()){
-			FileUtils.deleteDirsAndFiles(root, true, true);		
-		} 
+		if (root.exists()) {
+			FileUtils.deleteDirsAndFiles(root, true, true);	
+		}
+		
+		QuotaManager quotaManager = CoreSpringFactory.getImpl(QuotaManager.class);
+		String quotaPath = courseBaseContainer.getRelPath() + "/" + PFManager.FILENAME_PARTICIPANTFOLDER + "/" + getIdent();
+		Quota customQuota = quotaManager.getCustomQuota(quotaPath);
+		if(customQuota != null) {
+			quotaManager.deleteCustomQuota(customQuota);
+		}
 	}
 	
 	@Override

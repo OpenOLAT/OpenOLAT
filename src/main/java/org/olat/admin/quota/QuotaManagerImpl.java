@@ -56,11 +56,14 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,7 +78,7 @@ import org.springframework.stereotype.Service;
  * @author Florian Gnaegi, frentix GmbH, https://www.frentix.com
  */
 @Service("org.olat.core.util.vfs.QuotaManager")
-public class QuotaManagerImpl implements QuotaManager, InitializingBean {
+public class QuotaManagerImpl implements QuotaManager, UserDataDeletable, RepositoryEntryDataDeletable, InitializingBean {
 	private static final Logger log = Tracing.createLoggerFor(QuotaManagerImpl.class);
 
 	private static final String QUOTA_CATEGORY = "quot";
@@ -262,6 +265,54 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		Property p = pm.findProperty(null, null, quotaResource, QUOTA_CATEGORY, quota.getPath());
 		if (p != null) pm.deleteProperty(p);
 		return true;
+	}
+	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		Quota homeQuota = getCustomQuota(HOMES_PATH + identity.getName());
+		if(homeQuota != null) {
+			deleteCustomQuota(homeQuota);
+		}
+		
+		List<Property> homeSites = findQuotaWithLike(HOME_SITE_PATH + identity.getKey() + "/");
+		for(Property homeSite:homeSites) {
+			propertyManager.deleteProperty(homeSite);
+		}
+	}
+	
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		OLATResource resource = re.getOlatResource();
+		List<Property> courseQuotas = findQuotaWithLike("/course/" + resource.getResourceableId() + "/");
+		for(Property quota:courseQuotas) {
+			propertyManager.deleteProperty(quota);
+		}
+		
+		Quota repositoryQuota = getCustomQuota("/repository/" + resource.getResourceableId());
+		if(repositoryQuota != null) {
+			deleteCustomQuota(repositoryQuota);
+		}
+		
+		List<Property> repositoryQuotas = findQuotaWithLike("/repository/" + resource.getResourceableId() + "/");
+		for(Property quota:repositoryQuotas) {
+			propertyManager.deleteProperty(quota);
+		}
+		
+		return true;
+	}
+
+	private List<Property> findQuotaWithLike(String name) {
+		String query = """
+			select v from property as v
+			where v.resourceTypeName =:resName
+			and v.category =:cat and v.name like :name""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Property.class)
+				.setParameter("resName", quotaResource.getResourceableTypeName())
+				.setParameter("cat", QUOTA_CATEGORY)
+				.setParameter("name", name + "%")
+				.getResultList();
 	}
 
 	/**

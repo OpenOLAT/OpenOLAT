@@ -401,9 +401,16 @@ public class BCCourseNode extends AbstractAccessableCourseNode
 		SubscriptionContext folderSubContext = CourseModule.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);
 		CoreSpringFactory.getImpl(NotificationsManager.class).delete(folderSubContext);
 		// delete filesystem
-		File fFolderRoot = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
+		String path = getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this);
+		File fFolderRoot = new File(FolderConfig.getCanonicalRoot() + path);
 		if (fFolderRoot.exists()) {
 			FileUtils.deleteDirsAndFiles(fFolderRoot, true, true);
+			
+			QuotaManager quotaManager = CoreSpringFactory.getImpl(QuotaManager.class);
+			Quota quota = quotaManager.getCustomQuota(path);
+			if(quota != null) {
+				quotaManager.deleteCustomQuota(quota);
+			}
 		}
 	}
 	

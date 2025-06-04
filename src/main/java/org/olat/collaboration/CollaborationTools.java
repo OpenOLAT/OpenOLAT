@@ -682,11 +682,17 @@ public class CollaborationTools implements Serializable {
 			CoreSpringFactory.getImpl(ForumManager.class).deleteForum(forumKey);
 		}
 		/*
-		 * delete the folder, if existing
+		 * delete the folder, if existing and its quota
 		 */
-		VFSContainer vfsContainer = VFSManager.olatRootContainer(getFolderRelPath(), null);
+		String folderPath = getFolderRelPath();
+		VFSContainer vfsContainer = VFSManager.olatRootContainer(folderPath, null);
 		if (vfsContainer.exists()) {
 			vfsContainer.deleteSilently();
+		}
+		QuotaManager quotaManager = CoreSpringFactory.getImpl(QuotaManager.class);
+		Quota folderQuota = quotaManager.getCustomQuota(folderPath);
+		if(folderQuota != null) {
+			quotaManager.deleteCustomQuota(folderQuota);
 		}
 		
 		/*

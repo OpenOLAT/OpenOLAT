@@ -876,6 +876,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			// 1) Delete all group properties
 			CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 			ct.deleteTools(group);// deletes everything concerning properties&collabTools
+			
 			// 2) Delete the group areas
 			areaManager.deleteBGtoAreaRelations(group);
 			// 3) Delete the relations
