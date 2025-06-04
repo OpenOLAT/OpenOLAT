@@ -331,6 +331,7 @@ public class DialogElementListController extends FormBasicController implements 
 		// set individual toolsLink for each row
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setTitle(translate("action.more"));
+		toolsLink.setUserObject(element);
 		row.setToolsLink(toolsLink);
 
 		return row;
@@ -416,8 +417,8 @@ public class DialogElementListController extends FormBasicController implements 
 				// upload file button top right
 				loadModel();
 				doUploadFile(ureq);
-			} else if ("tools".equals(cmd)) {
-				doOpenTools(ureq, link);
+			} else if ("tools".equals(cmd) && link.getUserObject() instanceof DialogElement element) {
+				doOpenTools(ureq, link, element);
 			} else if (CMD_SELECT.equals(cmd)) {
 				// card view selection by filename
 				String fileKey = link.getName().replaceAll(".+?_", "");
@@ -449,8 +450,8 @@ public class DialogElementListController extends FormBasicController implements 
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doOpenTools(UserRequest ureq, FormLink link) {
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), link.getName().replaceAll(".+?_", ""));
+	private void doOpenTools(UserRequest ureq, FormLink link, DialogElement element) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), element);
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -486,8 +487,8 @@ public class DialogElementListController extends FormBasicController implements 
 	 * @param ureq
 	 * @param command
 	 */
-	private void doFileDelivery(UserRequest ureq) {
-		VFSContainer forumContainer = dialogElementsManager.getDialogContainer(element);
+	private void doFileDelivery(UserRequest ureq, DialogElement dialogElement) {
+		VFSContainer forumContainer = dialogElementsManager.getDialogContainer(dialogElement);
 		List<VFSItem> items = forumContainer.getItems(new VFSLeafFilter());
 		if (!items.isEmpty() && items.get(0) instanceof VFSLeaf vl) {
 			VFSMediaResource mediaResource = new VFSMediaResource(vl);
@@ -542,18 +543,19 @@ public class DialogElementListController extends FormBasicController implements 
 
 	private class ToolsController extends BasicController {
 
-		private final VelocityContainer mainVC;
 		private final Link deleteLink;
 		private final Link downloadLink;
+		private final VelocityContainer mainVC;
+		
+		private final DialogElement dialogElement;
 
-		public ToolsController(UserRequest ureq, WindowControl wControl, String rowToDeleteKey) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, DialogElement element) {
 			super(ureq, wControl);
-			element = dialogElementsManager.getDialogElementByKey(Long.valueOf(rowToDeleteKey));
-
+			dialogElement = element;
+			
 			mainVC = createVelocityContainer("tools");
 
 			List<String> links = new ArrayList<>(2);
-
 			deleteLink = addLink("delete", "o_icon_delete_item", links);
 			downloadLink = addLink("download", "o_icon_download", links);
 			mainVC.contextPut("links", links);
@@ -573,10 +575,10 @@ public class DialogElementListController extends FormBasicController implements 
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if (deleteLink == source) {
 				close();
-				doConfirmDelete(ureq, element);
+				doConfirmDelete(ureq, dialogElement);
 			} else if (source == downloadLink) {
 				close();
-				doFileDelivery(ureq);
+				doFileDelivery(ureq, dialogElement);
 			}
 		}
 
