@@ -526,7 +526,8 @@ span.o_qti_gaptext_score_alternative {
 }
 
 .o_labeled_light {
-	&.o_assessment_test_session_status_running {
+	&.o_assessment_test_session_status_running,
+	&.o_assessment_test_session_status_reviewing  {
 		font-weight: normal;
 		@extend %o_labeled_light_orange
 	}

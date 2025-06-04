@@ -59,7 +59,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		return switch(COLS[col]) {
 			case run -> session.getRun();
 			case id -> session.getTestSession().getKey();
-			case terminationTime -> getTerminationTime(session);
+			case terminationTime -> session.getTestSession().getTerminationTime();
 			case lastModified -> session.getTestSession().getLastModified();
 			case duration -> getDuration(session);
 			case status -> session.getSessionStatus();
@@ -73,9 +73,9 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 					? session.getTestSession().getManualScore() : null;
 			case finalScore -> session.getTestSession().getFinishTime() != null
 					?  session.getTestSession().getFinalScore() : null;
-			case results -> Boolean.valueOf(!isTestSessionOpen(session));
+			case results -> Boolean.valueOf(!isTestSessionRunning(session));
 			case correct -> isCorrectionAllowed(session);
-			case invalidate -> !isTestSessionOpen(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
+			case invalidate -> isTestSessionTerminated(session) && !session.getTestSession().isCancelled() && !session.getTestSession().isExploded();
 			case tools -> session.getToolsLink();
 			default -> "ERROR";
 		};
@@ -104,22 +104,19 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 	protected Boolean isCorrectionAllowed(QTI21AssessmentTestSessionDetails session) {
 		AssessmentTestSession testSession = session.getTestSession();
 		if(lastSession != null && lastSession.equals(testSession)) {
-			return Boolean.valueOf(testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
+			return Boolean.valueOf(testSession.getTerminationTime() != null);
 		}
 		return null;
 	}
 	
-	private boolean isTestSessionOpen(QTI21AssessmentTestSessionDetails session) {
+	private boolean isTestSessionRunning(QTI21AssessmentTestSessionDetails session) {
 		Date finished = session.getTestSession().getFinishTime();
 		return finished == null;
 	}
 	
-	private Date getTerminationTime(QTI21AssessmentTestSessionDetails session) {
-		Date endTime = session.getTestSession().getTerminationTime();
-		if(endTime == null) {
-			endTime = session.getTestSession().getFinishTime();
-		}
-		return endTime;
+	private boolean isTestSessionTerminated(QTI21AssessmentTestSessionDetails session) {
+		Date terminated = session.getTestSession().getTerminationTime();
+		return terminated != null;
 	}
 
 	@Override

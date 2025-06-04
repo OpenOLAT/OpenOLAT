@@ -395,13 +395,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				Date start = null;
 				Double completion = null;
 				Integer extraTimeInSeconds = session.getExtraTime();
-				if(session.getFinishTime() == null && session.getTerminationTime() == null) {
+				if(session.getTerminationTime() == null) {
 					start = session.getCreationDate();
 					if(session.getNumOfQuestions() != null && session.getNumOfQuestions().intValue() > 0 && session.getNumOfAnsweredQuestions() != null) {
 						completion = session.getNumOfAnsweredQuestions().doubleValue() / session.getNumOfQuestions().doubleValue();
 					}
 				} else {
-					end = session.getFinishTime() == null ? session.getTerminationTime() : session.getFinishTime();
+					end = session.getTerminationTime();
 				}
 				
 				ExtraInfos infos = new ExtraInfos(extraTimeInSeconds, start, end, completion, session.getMaxScore());
