@@ -174,6 +174,13 @@ public class InspectionConfigurationController extends StepFormBasicController {
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(inspectionPeriodEl != fiSrc) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(configurationEl == source) {
 			updateUI();

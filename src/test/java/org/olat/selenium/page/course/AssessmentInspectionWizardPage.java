@@ -66,6 +66,7 @@ public class AssessmentInspectionWizardPage {
 		OOGraphene.clearAndSendKeys(startMinuteBy, Integer.toString(startMinute), browser);
 
 		OOGraphene.tab(browser);
+		OOGraphene.waitingALittleBit();
 		
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.className("o_sel_contact_form"), browser);
