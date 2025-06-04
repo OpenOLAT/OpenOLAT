@@ -101,7 +101,7 @@ public class AssessmentInspectionDAO {
 		  .and().append("inspection.inspectionStatus").in(AssessmentInspectionStatusEnum.scheduled, AssessmentInspectionStatusEnum.inProgress)
 		  .and().append("inspection.fromDate<=:date and inspection.toDate>=:date")
 		  // make sure the test session is finished and valid
-		  .and().append("(testSession.terminationTime is not null or testSession.finishTime is not null) and testSession.exploded=false and testSession.cancelled=false");
+		  .and().append("testSession.terminationTime is not null and testSession.exploded=false and testSession.cancelled=false");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentInspection.class)
@@ -121,7 +121,7 @@ public class AssessmentInspectionDAO {
 		  .and().append("inspection.inspectionStatus").in(AssessmentInspectionStatusEnum.scheduled, AssessmentInspectionStatusEnum.inProgress)
 		  .and().append("inspection.fromDate<=:date and inspection.toDate>=:date")
 		  // make sure the test session is finished and valid
-		  .and().append("(testSession.terminationTime is not null or testSession.finishTime is not null) and testSession.exploded=false and testSession.cancelled=false");
+		  .and().append("testSession.terminationTime is not null and testSession.exploded=false and testSession.cancelled=false");
 		
 		List<AssessmentInspection> inspectionList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentInspection.class)
@@ -136,8 +136,8 @@ public class AssessmentInspectionDAO {
 		String query = """
 			select testSession.key from qtiassessmenttestsession as testSession
 			where testSession.identity.key=:identityKey and testSession.repositoryEntry.key=:repositoryEntryKey and testSession.subIdent=:subIdent
-			and (testSession.terminationTime is not null or testSession.finishTime is not null)
-			and testSession.exploded=false and testSession.cancelled=false and testSession.authorMode=false""";
+			and testSession.terminationTime is not null and testSession.exploded=false
+			and testSession.cancelled=false and testSession.authorMode=false""";
 		
 		List<Long> inspectionList = dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)
@@ -199,7 +199,7 @@ public class AssessmentInspectionDAO {
 				inner join fetch inspection.identity as ident
 				inner join qtiassessmenttestsession testSession on (testSession.identity.key=inspection.identity.key and configuration.repositoryEntry.key=testSession.repositoryEntry.key and testSession.subIdent=inspection.subIdent)
 				where inspection.fromDate<=:date and inspection.toDate>:date and inspection.inspectionStatus=:status
-				and (testSession.terminationTime is not null or testSession.finishTime is not null) and testSession.exploded=false and testSession.cancelled=false
+				and testSession.terminationTime is not null and testSession.exploded=false and testSession.cancelled=false
 				""";
 		
 		return dbInstance.getCurrentEntityManager()

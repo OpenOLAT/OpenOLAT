@@ -205,7 +205,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		super.initDetails();
 		
 		//correction 
-		if(manualCorrections && !isCourseReadonly() && lastSession != null) {
+		if(manualCorrections && !isCourseReadonly() && lastSession != null && lastSession.getTerminationTime() != null) {
 			correctionLink = addLink("tool.correction", "tool.correction", "o_icon o_icon-fw o_icon_correction");
 		}
 	}
@@ -215,9 +215,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		super.initStatus();
 
 		boolean hasTimeLimit = testCourseNode.hasQTI21TimeLimit(testEntry, courseEntry, getIdentity());
-		boolean lastSessionActive = (lastSession != null && lastSession.getFinishTime() == null);
+		boolean lastSessionFinished = (lastSession != null && lastSession.getFinishTime() != null);
+		boolean lastSessionActive = (lastSession != null && lastSession.getTerminationTime() == null);
 		
-		if(lastSession != null && !lastSessionActive && pdfModule.isEnabled()) {
+		if(lastSession != null && lastSessionFinished && pdfModule.isEnabled()) {
 			exportPdfResultsLink = addLink("tool.export.pdf.results", "tool.export.pdf.results", "o_icon o_icon-fw o_icon_export");
 		}
 		if (!coachCourseEnv.isCourseReadOnly()) {

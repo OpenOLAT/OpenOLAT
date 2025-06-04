@@ -228,8 +228,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		
 		long runs = 0l;
 		for(AssessmentTestSession session:sessions) {
-			if(!session.isCancelled() && !session.isExploded() && !session.isAuthorMode()
-					&& session.getTerminationTime() == null && session.getFinishTime() == null) {
+			if(!session.isCancelled() && !session.isExploded() && !session.isAuthorMode() && session.getTerminationTime() == null) {
 				runs++;
 			}
 		}

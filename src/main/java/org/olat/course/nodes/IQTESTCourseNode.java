@@ -835,7 +835,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
 		if (gradeEnabled && assessmentConfig.hasGrade()) {
-			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, this.getIdent());
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, getIdent());
 			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
 		}
 		
@@ -844,7 +844,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
 		Map<Long, List<AssessmentTestSession>> identityKeyToSessions = CoreSpringFactory.getImpl(QTI21Service.class)
-				.getAssessmentTestSessions(courseEntry, this.getIdent(), testEntry).stream()
+				.getAssessmentTestSessions(courseEntry, getIdent(), testEntry).stream()
 				.filter(this::isSessionWithPassed)
 				.collect(Collectors.groupingBy(session -> session.getIdentity().getKey()));
 		
@@ -912,7 +912,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				&& !testSession.isAuthorMode()
 				&& !testSession.isCancelled()
 				&& !testSession.isExploded()
-				&& (testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
+				&& testSession.getTerminationTime() != null;
 	}
 
 	@Override

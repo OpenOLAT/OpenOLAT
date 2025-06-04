@@ -403,8 +403,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		if(session.isCancelled()) {
 			return SessionStatus.CANCELLED;
 		}
-		if(session.getFinishTime() != null || session.getTerminationTime() != null) {
-			return SessionStatus.FINISHED;
+		if(session.getFinishTime() != null && session.getTerminationTime() == null) {
+			return SessionStatus.REVIEWING;
+		}
+		if(session.getFinishTime() != null && session.getTerminationTime() != null) {
+			return SessionStatus.TERMINATED;
 		}
 		if(suspended) {
 			return SessionStatus.SUSPENDED;
@@ -952,7 +955,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(row.getTestSession().getFinishTime() != null || row.getTestSession().getTerminationTime() != null) {
 				viewResultsLink = LinkFactory.createLink("view.results", mainVC, this);
 				viewResultsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_magnifying_glass");
-			} else if(!readOnly) {
+			}
+			if(!readOnly && row.getTestSession().getTerminationTime() == null) {
 				pullLink = LinkFactory.createLink("pull", mainVC, this);
 				pullLink.setIconLeftCSS("o_icon o_icon-fw o_icon_pull");
 			}

@@ -229,7 +229,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 			identifierToItemSessions.put(itemSession.getAssessmentItemIdentifier(), itemSession);
 		}
 		
-		if(readOnly && candidateSession.getTerminationTime() == null && candidateSession.getFinishTime() == null) {
+		if(readOnly && candidateSession.getTerminationTime() == null) {
 			setFormWarning("warning.preview.running");
 		} else {
 			setFormWarning(null);
@@ -411,7 +411,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 						itemRef, itemNode);
 				itemCorrection.setItemSession(reloadItemSession);
 				
-				boolean running = candidateSession.getTerminationTime() == null && candidateSession.getFinishTime() == null;
+				boolean running = candidateSession.getTerminationTime() == null;
 				ResolvedAssessmentItem resolvedAssessmentItem = model.getResolvedAssessmentTest().getResolvedAssessmentItem(itemRef);
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),

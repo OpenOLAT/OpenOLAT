@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Date;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -31,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
+import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 import org.olat.course.assessment.model.AssessmentEntryInspection;
 import org.olat.course.assessment.ui.inspection.SearchAssessmentInspectionParameters;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -114,10 +116,12 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry);
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry1, id1, null, 300, true);
 		testSession1.setFinishTime(new Date());
+		testSession1.setTerminationTime(new Date());
 		testSessionDao.update(testSession1);
 		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(id2, null, entry, subIdent, null, entry);
 		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry2, id2, null, 300, true);
 		testSession2.setFinishTime(new Date());
+		testSession2.setTerminationTime(new Date());
 		testSessionDao.update(testSession2);
 		// Configuration
 		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
@@ -151,6 +155,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id, null, 300, true);
 		testSession.setFinishTime(new Date());
+		testSession.setTerminationTime(new Date());
 		testSessionDao.update(testSession);
 		// Inspection
 		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
@@ -179,6 +184,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id1, null, 300, false);
 		testSession.setFinishTime(new Date());
+		testSession.setTerminationTime(new Date());
 		testSessionDao.update(testSession);
 		dbInstance.commitAndCloseSession();
 
@@ -188,6 +194,29 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 
 		boolean hasNoTestSession = inspectionDao.hasAssessmentTestSession(id2, entry, subIdent);
 		Assert.assertFalse(hasNoTestSession);
+	}
+	
+	@Test
+	public void hasInspection() {
+		String subIdent = "123266H";
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-30-");
+		// A configuration
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		
+		// Test
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id, null, 300, false);
+		testSession.setFinishTime(new Date());
+		testSession.setTerminationTime(new Date());
+		testSessionDao.update(testSession);
+		inspectionDao.createInspection(id, new Date(), new Date(), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+
+		// Configuration has one inspection
+		int hasTestSession = inspectionDao.hasInspection(config);
+		Assert.assertEquals(1, hasTestSession);
 	}
 	
 	@Test
@@ -263,6 +292,109 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 			.hasSize(2)
 			.map(AssessmentEntryInspection::inspection)
 			.containsExactlyInAnyOrder(inspection1, inspection3);
+	}
+	
+	@Test
+	public void searchNoShowInspections() {
+		Date now = new Date();
+		String subIdent = "123799A";
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-31-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		AssessmentInspection inspection = inspectionDao
+				.createInspection(id, DateUtils.addHours(now, -3), DateUtils.addHours(now, -1), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentInspection> noShowInspections = inspectionDao.searchNoShowInspections(new Date());
+		Assertions.assertThat(noShowInspections)
+			.contains(inspection);
+	}
+	
+	@Test
+	public void searchInspectionsToStart() {
+		Date now = new Date();
+		String subIdent = "123799B";
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-32-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		
+		// Test for id1
+		AssessmentEntry assessmentEntryId = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentTestSession testSessionId = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntryId, id, null, 300, false);
+		testSessionId.setFinishTime(new Date());
+		testSessionId.setTerminationTime(new Date());
+		testSessionDao.update(testSessionId);
+		dbInstance.commitAndCloseSession();
+
+		AssessmentInspection inspectionToStart = inspectionDao
+				.createInspection(id, DateUtils.addHours(now, -1), DateUtils.addHours(now, 1), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentInspection> currentInspections = inspectionDao.searchInspectionsToStart(new Date());
+		Assertions.assertThat(currentInspections)
+			.contains(inspectionToStart);
+	}
+	
+	@Test
+	public void searchInspectionsToStartNegativeTest() {
+		Date now = new Date();
+		String subIdent = "123799C";
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-33-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		
+		// Test for id1
+		AssessmentEntry assessmentEntryId = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentTestSession testSessionId = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntryId, id, null, 300, false);
+		testSessionId.setFinishTime(new Date());
+		testSessionId.setTerminationTime(new Date());
+		testSessionDao.update(testSessionId);
+		dbInstance.commitAndCloseSession();
+
+		// Inspection in the past
+		AssessmentInspection inspectionDone = inspectionDao
+				.createInspection(id, DateUtils.addHours(now, -3), DateUtils.addHours(now, -2), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentInspection> currentInspections = inspectionDao.searchInspectionsToStart(new Date());
+		Assertions.assertThat(currentInspections)
+			.doesNotContain(inspectionDone);
+	}
+	
+	@Test
+	public void searchInProgressInspectionsToClose() {
+		Date now = new Date();
+		String subIdent = "123799C";
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-34-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-35-");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+
+		// Inspection still in progress with time left
+		AssessmentInspection inspectionInProgress = inspectionDao
+				.createInspection(id1, DateUtils.addHours(now, -2), DateUtils.addHours(now, 2), null, null, subIdent, config);
+		inspectionInProgress.setInspectionStatus(AssessmentInspectionStatusEnum.inProgress);
+		inspectionInProgress = inspectionDao.updateInspection(inspectionInProgress);
+		
+		// Inspection in progress but dates are in the past
+		AssessmentInspection inspectionToClose = inspectionDao
+				.createInspection(id2, DateUtils.addHours(now, -2), DateUtils.addHours(now, -1), null, null, subIdent, config);
+		inspectionToClose.setInspectionStatus(AssessmentInspectionStatusEnum.inProgress);
+		inspectionToClose = inspectionDao.updateInspection(inspectionToClose);
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentInspection> currentInspections = inspectionDao.searchInProgressInspectionsToClose(new Date());
+		Assertions.assertThat(currentInspections)
+			.contains(inspectionToClose)
+			.doesNotContain(inspectionInProgress);
 	}
 	
 	@Test

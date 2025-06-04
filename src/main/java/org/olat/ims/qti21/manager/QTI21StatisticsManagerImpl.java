@@ -120,7 +120,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		sb.append(" and asession.authorMode=false");
 
 		if(finished) {
-			sb.append(" and asession.finishTime is not null");
+			sb.append(" and asession.terminationTime is not null");
 		}
 		
 		sb.append(" and ((asession.identity.key is not null and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")

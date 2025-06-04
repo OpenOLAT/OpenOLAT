@@ -111,8 +111,9 @@ public class QTI21AssessmentTestSessionDetails {
 	
 	public enum SessionStatus {
 		RUNNING,
+		REVIEWING,
 		SUSPENDED,
-		FINISHED,
+		TERMINATED,
 		CANCELLED,
 		ERROR
 	}
