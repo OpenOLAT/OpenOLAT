@@ -80,6 +80,11 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 	}
 	
 	@Override
+	public boolean isEditable() {
+		return true;
+	}
+	
+	@Override
 	public boolean isImplicitWorkflow() {
 		return true;
 	}

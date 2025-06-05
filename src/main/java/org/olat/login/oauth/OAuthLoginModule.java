@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.oauth.model.OAuthAttributeMapping;
@@ -155,6 +156,45 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	@Value("${oauth.keycloak.realm}")
 	private String keycloakRealm;
 	
+	// only one generic can be configured via olat.local.properties
+	@Value("${oauth.generic.enabled:false}")
+	private boolean genericEnabled;
+	@Value("${oauth.generic.root:false}")
+	private boolean genericRootEnabled;
+	@Value("${oauth.generic.name}")
+	private String genericProviderName;
+	@Value("${oauth.generic.displayName}")
+	private String genericDisplayName;
+	@Value("${oauth.generic.clientId}")
+	private String genericApiKey;
+	@Value("${oauth.generic.clientSecret}")
+	private String genericApiSecret;
+	@Value("${oauth.generic.responseType}")
+	private String genericResponseType;
+	@Value("${oauth.generic.scope}")
+	private String genericScope;
+	@Value("${oauth.generic.issuer}")
+	private String genericIssuer;
+	@Value("${oauth.generic.authorizationEndPoint}")
+	private String genericAuthorizationEndPoint;
+	@Value("${oauth.generic.tokenEndPoint}")
+	private String genericTokenEndpoint;
+	@Value("${oauth.generic.userInfoEndPoint}")
+	private String genericUserInfoEndPoint;
+
+	@Value("${oauth.generic.attributename.useridentifyer}")
+	private String genericAttributeUserIdentifyer;	
+	@Value("${oauth.generic.attributename.nickName}")
+	private String genericAttributeNickName;	
+	@Value("${oauth.generic.attributename.firstName}")
+	private String genericAttributeFirstName;	
+	@Value("${oauth.generic.attributename.lastName}")
+	private String genericAttributeLastName;	
+	@Value("${oauth.generic.attributename.email}")
+	private String genericAttributeEmail;	
+	@Value("${oauth.generic.attributename.lang}")
+	private String genericAttributeLang;	
+	
 	
 	@Autowired
 	private List<OAuthSPI> oauthSPIs;
@@ -263,7 +303,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		keycloakRealm = getStringPropertyValue(KEYCLOAK_REALM, keycloakRealm);
 		keycloakClientId = getStringPropertyValue(KEYCLOAK_CLIENT_ID, keycloakClientId);
 		keycloakClientSecret = getStringPropertyValue(KEYCLOAK_CLIENT_SECRET, keycloakClientSecret);
-		
+
+		// OIDC Implicit Flow
 		String openIdConnectIFEnabledObj = getStringPropertyValue("openIdConnectIFEnabled", true);
 		openIdConnectIFEnabled = "true".equals(openIdConnectIFEnabledObj);
 		String openIdConnectIFRootEnabledObj = getStringPropertyValue("openIdConnectIFRootEnabled", true);
@@ -273,8 +314,12 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		openIdConnectIFIssuer = getStringPropertyValue("openIdConnectIFIssuer", false);
 		openIdConnectIFAuthorizationEndPoint = getStringPropertyValue("openIdConnectIFAuthorizationEndPoint", false);
 
+		
+		// Generic oAuth
+		// One generic oAuth can be configured via the olat.local.propertis file. If you need more, use the admin UI
+		List<OAuthSPI> otherOAuthSPies = new ArrayList<>();		
+		// Load all generic providers created in the admin UI from config
 		Set<Object> allPropertyKeys = getPropertyKeys();
-		List<OAuthSPI> otherOAuthSPies = new ArrayList<>();
 		for(Object propertyKey:allPropertyKeys) {
 			if(propertyKey instanceof String key) {
 				if(key.startsWith(OPEN_ID_IF_START_MARKER) && key.endsWith(OPEN_ID_IF_END_MARKER)) {
@@ -285,6 +330,29 @@ public class OAuthLoginModule extends AbstractSpringModule {
 					otherOAuthSPies.add(spi);
 				}
 			}
+		}
+		// Init one generic oauth provider from local properties if available
+		if (genericEnabled && StringHelper.containsNonWhitespace(genericProviderName)) {
+			List<OAuthAttributeMapping> attributes = new ArrayList<>();
+			if (StringHelper.containsNonWhitespace(genericAttributeUserIdentifyer)) attributes.add(new OAuthAttributeMapping(genericAttributeUserIdentifyer.trim(), "id"));
+			if (StringHelper.containsNonWhitespace(genericAttributeNickName)) attributes.add(new OAuthAttributeMapping(genericAttributeNickName.trim(), UserConstants.NICKNAME));
+			if (StringHelper.containsNonWhitespace(genericAttributeLang)) attributes.add(new OAuthAttributeMapping(genericAttributeLang.trim(), "lang"));
+			if (StringHelper.containsNonWhitespace(genericAttributeEmail)) attributes.add(new OAuthAttributeMapping(genericAttributeEmail.trim(), UserConstants.EMAIL));
+			if (StringHelper.containsNonWhitespace(genericAttributeFirstName)) attributes.add(new OAuthAttributeMapping(genericAttributeFirstName.trim(), UserConstants.FIRSTNAME));
+			if (StringHelper.containsNonWhitespace(genericAttributeLastName)) attributes.add(new OAuthAttributeMapping(genericAttributeLastName.trim(), UserConstants.LASTNAME));
+			
+			OAuthAttributesMapping genericMapping = new OAuthAttributesMapping(attributes);
+			GenericOAuth2Provider genericProvider = new GenericOAuth2Provider(genericProviderName, genericDisplayName, genericProviderName,
+					genericApiKey, genericApiSecret, genericResponseType, genericScope, genericIssuer,
+					genericAuthorizationEndPoint, genericTokenEndpoint, genericUserInfoEndPoint,
+					genericMapping, genericRootEnabled, this);
+			// prevent the config form from beeing edited in the UI, this provider can only be configured via olat.local.properties
+			genericProvider.setEditable(false);
+			// only add the olat.local.properties configuration if it has not been modified in the UI. The UI config always wins
+			if (!otherOAuthSPies.stream().anyMatch(spi -> spi.getName().equals(genericProviderName))) {				
+				otherOAuthSPies.add(genericProvider);
+			}
+			
 		}
 		configurableOauthSPIs = otherOAuthSPies;
 	}
@@ -910,6 +978,12 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setGenericOAuth(String providerName, String displayName, boolean rootEnabled,
 			String issuer, String authorizationEndPoint, String tokenEndPoint, String userInfoEndPoint,
 			String responseType, String scope, String apiKey, String apiSecret) {
+		if (genericEnabled && StringHelper.containsNonWhitespace(genericProviderName) && genericProviderName.equals(providerName)) {
+			// Special case: this generic provider was initialized from the
+			// olat.local.properties. We do not allow overwrite the values here, they are
+			// always loaded during initialization of the system.
+			return;
+		}
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".Enabled", "true", true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".RootEnabled", rootEnabled ? "true" : "false", true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ApiKey", apiKey, true);

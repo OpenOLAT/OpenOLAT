@@ -84,6 +84,7 @@ public class OAuthMappingEditController extends FormBasicController {
 		userProperties = new SelectionValues();
 
 		userProperties.add(SelectionValues.entry("id", translate("mapping.id")));
+		userProperties.add(SelectionValues.entry("nickName", translate("mapping.nickName")));
 		userProperties.add(SelectionValues.entry("lang", translate("mapping.lang")));
 		
 		List<UserPropertyHandler> handlers = userManager.getUserPropertyHandlersFor(OAuthRegistrationController.USERPROPERTIES_FORM_IDENTIFIER, true);

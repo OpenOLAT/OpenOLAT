@@ -43,6 +43,12 @@ public interface OAuthSPI extends ConfigOnOff {
 	public boolean isRootEnabled();
 	
 	/**
+	 * @return true: iditable in the UI; false: not editable in the UI, only via
+	 *         olat.local.properties
+	 */
+	public boolean isEditable();
+	
+	/**
 	 * Limit of 8 characters
 	 * @return
 	 */

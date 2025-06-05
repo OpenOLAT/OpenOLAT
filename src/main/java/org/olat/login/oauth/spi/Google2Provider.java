@@ -70,6 +70,11 @@ public class Google2Provider implements OAuthSPI {
 	}
 	
 	@Override
+	public boolean isEditable() {
+		return true;
+	}
+	
+	@Override
 	public boolean isImplicitWorkflow() {
 		return false;
 	}

@@ -72,6 +72,7 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 	private final OAuthAttributesMapping attributesMapping;
 	
 	private final boolean rootEnabled;
+	private boolean isEditable = true;
 	
 	private final OAuthLoginModule oauthModule;
 	
@@ -103,6 +104,15 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 	@Override
 	public boolean isRootEnabled() {
 		return rootEnabled;
+	}
+	
+	
+	@Override
+	public boolean isEditable() {
+		return this.isEditable;
+	}
+	public void setEditable(boolean isEditable) {
+		this.isEditable = isEditable;
 	}
 	
 	@Override
@@ -258,6 +268,8 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 					String openolatAttr = attribute.getOpenolatAttribute();
 					if("id".equals(openolatAttr)) {
 						user.setId(val);
+					} else if("nickName".equals(openolatAttr)) {
+						user.setNickName(val);
 					} else if("lang".equals(openolatAttr)) {
 						user.setLang(val);
 					} else {

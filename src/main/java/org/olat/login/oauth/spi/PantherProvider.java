@@ -87,6 +87,11 @@ public class PantherProvider implements OAuthUserCreator {
 	public boolean isRootEnabled() {
 		return rootEnabled;
 	}
+	
+	@Override
+	public boolean isEditable() {
+		return true;
+	}
 
 	@Override
 	public boolean isImplicitWorkflow() {

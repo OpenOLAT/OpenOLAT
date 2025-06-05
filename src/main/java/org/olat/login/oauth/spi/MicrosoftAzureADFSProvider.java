@@ -104,6 +104,11 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	public boolean isRootEnabled() {
 		return oauthModule.isAzureAdfsRootEnabled();
 	}
+	
+	@Override
+	public boolean isEditable() {
+		return true;
+	}
 
 	@Override
 	public boolean isImplicitWorkflow() {

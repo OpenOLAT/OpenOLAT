@@ -81,6 +81,11 @@ public class TequilaProvider implements OAuthSPI {
 	public boolean isRootEnabled() {
 		return false;
 	}
+	
+	@Override
+	public boolean isEditable() {
+		return true;
+	}
 
 	@Override
 	public String getProviderName() {

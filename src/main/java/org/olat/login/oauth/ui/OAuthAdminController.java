@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
@@ -1053,6 +1054,10 @@ public class OAuthAdminController extends FormBasicController {
 			apiKeyEl.setMandatory(true);
 			
 			String apiSecret = spi.getAppSecret();
+			if (!spi.isEditable()) {
+				// if not editable, do not show the secret for security reason
+				apiSecret = StringUtils.left(apiSecret, 2) + "************";
+			}
 			apiSecretEl = uifactory.addTextElement("gen.oauth.secret." + counter, "openidconnectif.api.secret", 256, apiSecret, layoutCont);
 			apiSecretEl.setMandatory(true);
 			
@@ -1096,6 +1101,12 @@ public class OAuthAdminController extends FormBasicController {
 			attributeButton.setUserObject(getProvider());
 			
 			setProviderContainer(layoutCont);
+
+			// Do not allow editing of providers that have been configured in olat.local.properties
+			if (!spi.isEditable()) {
+				layoutCont.setEnabled(false);
+			}
+
 		}
 
 		protected boolean validateFormLogic() {
@@ -1114,21 +1125,24 @@ public class OAuthAdminController extends FormBasicController {
 		}
 		
 		protected void commit() {
-			boolean rootEnabled = rootEnabledEl.isAtLeastSelected(1);
-
-			String displayName = displayNameEl.getValue();
-			String apiKey = apiKeyEl.getValue();
-			String apiSecret = apiSecretEl.getValue();
-			String issuer = issuerEl.getValue();
-			String responseType = responseTypeEl.getSelectedKey();
-			String scopes = scopesEl.getValue();
-			String authorizationEndPoint = authorizationEndPointEl.getValue();
-			String tokenEndPoint = tokenEndPointEl.getValue();
-			String userInfoEndPoint = userInfoEndPointEl.getValue();
-			
-			String name = getProvider().getName();
-			oauthModule.setGenericOAuth(name, displayName, rootEnabled, issuer, authorizationEndPoint, tokenEndPoint, userInfoEndPoint,
-					responseType, scopes, apiKey, apiSecret);
+			// only overwrite module properties if editable. 
+			if (getProvider().isEditable()) {
+				boolean rootEnabled = rootEnabledEl.isAtLeastSelected(1);
+	
+				String displayName = displayNameEl.getValue();
+				String apiKey = apiKeyEl.getValue();
+				String apiSecret = apiSecretEl.getValue();
+				String issuer = issuerEl.getValue();
+				String responseType = responseTypeEl.getSelectedKey();
+				String scopes = scopesEl.getValue();
+				String authorizationEndPoint = authorizationEndPointEl.getValue();
+				String tokenEndPoint = tokenEndPointEl.getValue();
+				String userInfoEndPoint = userInfoEndPointEl.getValue();
+				
+				String name = getProvider().getName();				
+				oauthModule.setGenericOAuth(name, displayName, rootEnabled, issuer, authorizationEndPoint, tokenEndPoint, userInfoEndPoint,
+						responseType, scopes, apiKey, apiSecret);
+			}
 		}
 	}
 	

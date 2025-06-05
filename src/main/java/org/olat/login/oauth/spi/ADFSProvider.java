@@ -76,6 +76,11 @@ public class ADFSProvider implements OAuthSPI {
 	public boolean isRootEnabled() {
 		return oauthModule.isAdfsRootEnabled();
 	}
+	
+	@Override
+	public boolean isEditable() {
+		return true;
+	}
 
 	@Override
 	public boolean isImplicitWorkflow() {
