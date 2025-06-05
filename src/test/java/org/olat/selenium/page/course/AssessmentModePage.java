@@ -118,6 +118,40 @@ public class AssessmentModePage {
 		browser.findElement(minuteBy).sendKeys(Integer.toString(minute));
 	}
 	
+	public AssessmentModePage editRestrictions(String nodeTitle) {
+		OOGraphene.scrollTop(browser);
+		
+		By tabBy = By.cssSelector("ul > li.o_sel_assessment_mode_edit_restrictions > a");
+		OOGraphene.waitElement(tabBy, browser).click();
+		By formBy = By.cssSelector("fieldset.o_sel_assessment_mode_edit_restrictions_form");
+		OOGraphene.waitElement(formBy, browser);
+		
+		By elementRestrictionsBy = By.cssSelector(".o_sel_assessment_mode_restriction_elements input[type='checkbox']");
+		browser.findElement(elementRestrictionsBy).click();
+		
+		By selectBy = By.cssSelector(".o_sel_assessment_mode_edit_restrictions_form a.o_sel_assessment_mode_select_elements");
+		OOGraphene.waitElement(selectBy, browser).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By nodeBy = By.xpath("//dialog//div[contains(@class,'o_tree')]//span[a/span[text()[contains(.,'" +  nodeTitle + "')]]]/input[@type='checkbox']");
+		OOGraphene.waitElement(nodeBy, browser).click();
+		
+		By saveBy = By.xpath("//dialog//div[contains(@class,'o_button_group')]/button[contains(@class,'btn-primary')][contains(@class,'o_button_dirty')]");
+		OOGraphene.waitElement(saveBy, browser).click();
+		
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		return this;
+	}
+	
+	public AssessmentModePage saveRestrictions(String assessmentModeTitle) {
+		By saveButtonBy = By.cssSelector(".o_sel_assessment_mode_edit_restrictions_form button.btn-primary");
+		browser.findElement(saveButtonBy).click();
+		By startBy = By.xpath("//fieldset/legend[text()[contains(.,'" + assessmentModeTitle + "')]]");
+		OOGraphene.waitElement(startBy, browser);
+		return this;
+	}
+	
 	public AssessmentModePage audienceCourse() {
 		By audienceBy = By.xpath("//div[contains(@class,'o_sel_assessment_mode_audience')]//input[@value='course']");
 		OOGraphene.waitElement(audienceBy, browser).click();
@@ -129,7 +163,7 @@ public class AssessmentModePage {
 	 * 
 	 * @return
 	 */
-	public AssessmentModePage save(String assessmentModeTitle) {
+	public AssessmentModePage saveGeneral(String assessmentModeTitle) {
 		By saveButtonBy = By.cssSelector(".o_sel_assessment_mode_edit_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
 		By startBy = By.xpath("//fieldset/legend[text()[contains(.,'" + assessmentModeTitle + "')]]");
