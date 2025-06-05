@@ -228,11 +228,16 @@ public class AssessmentModePage {
 	}
 	
 	/**
-	 * After an assessment, go back to OpenOLAT.
+	 * After an assessment, go back to OpenOlat and wait until the modal disappears.
 	 */
-	public void backToOpenOLAT() {
+	public AssessmentModePage backToOpenOlat() {
 		By continueBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group a.o_sel_assessment_continue");
 		OOGraphene.waitElement(continueBy, browser).click();
+		return this;
+	}
+	
+	public AssessmentModePage assertGuardDisappears() {
 		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
 	}
 }

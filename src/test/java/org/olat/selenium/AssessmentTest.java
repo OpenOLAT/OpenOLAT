@@ -494,8 +494,10 @@ public class AssessmentTest extends Deployments {
 		
 		kanuAssessment.waitBackToOpenOlat();
 		ryomouAssessment.waitBackToOpenOlat();
-		kanuAssessment.backToOpenOLAT();
-		ryomouAssessment.backToOpenOLAT();
+		kanuAssessment.backToOpenOlat();
+		ryomouAssessment.backToOpenOlat();
+		kanuAssessment.assertGuardDisappears();
+		ryomouAssessment.assertGuardDisappears();
 		
 		//Author check if they pass the test
 		navBar
@@ -628,7 +630,8 @@ public class AssessmentTest extends Deployments {
 		
 		participantAssessment
 			.waitBackToOpenOlat(180)
-			.backToOpenOLAT();
+			.backToOpenOlat()
+			.assertGuardDisappears();
 		
 		// Author check if they pass the test
 		navBar
@@ -784,7 +787,7 @@ public class AssessmentTest extends Deployments {
 		
 		// Go out of the first assessment mode
 		participantAssessment
-			.backToOpenOLAT();
+			.backToOpenOlat();
 		// Start the second assessment mode
 		participantAssessment
 			.assertOnStartAssessment()
@@ -798,7 +801,8 @@ public class AssessmentTest extends Deployments {
 		// Participant waits
 		participantAssessment
 			.waitBackToOpenOlat()
-			.backToOpenOLAT();
+			.backToOpenOlat()
+			.assertGuardDisappears();
 	}
 	
 	
