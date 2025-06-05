@@ -183,6 +183,43 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		SPCourseNode cNode = (SPCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
+		
+		VFSContainer courseFolderCont = course.getCourseEnvironment()
+				.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+		String filePath = getModuleConfiguration().getStringValue(SPEditController.CONFIG_KEY_FILE);
+		VFSItem sourceItem = courseFolderCont.resolve(filePath);
+		if(filePath != null && !(filePath.contains("/_sharedfolder")
+				&& course.getCourseEnvironment().getCourseConfig().isSharedFolderReadOnlyMount())
+				&& sourceItem instanceof VFSLeaf sourceLeaf) {
+			VFSContainer container = sourceItem.getParentContainer();
+			if(container != null) {
+				String copyName = nameOfFileCopy(sourceLeaf, container);
+				VFSLeaf copyLeaf = container.createChildLeaf(copyName);
+				if(copyLeaf != null && VFSManager.copyContent(sourceLeaf, copyLeaf, true, author)) {
+					String copyPath = VFSManager.getRelativeItemPath(copyLeaf, courseFolderCont, "");
+					if(!copyPath.startsWith("/")) {
+						copyPath = "/" + copyPath;
+					}
+					cNode.getModuleConfiguration().setStringValue(SPEditController.CONFIG_KEY_FILE, copyPath);
+				}
+			}
+		}
+		return cNode;
+	}
+	
+	private String nameOfFileCopy(VFSLeaf sourceLeaf, VFSContainer container) {
+		String name = sourceLeaf.getName();
+		int extension = name.lastIndexOf('.');
+		String filename = name;
+		if(extension > 0) {
+			filename = name.substring(0, extension) + "_copy_" + name.substring(extension);
+		}
+		return VFSManager.rename(container, filename);
+	}
+	
+	@Override
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
 		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
 		
