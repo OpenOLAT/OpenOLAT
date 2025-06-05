@@ -80,7 +80,7 @@ public interface AssessmentModeCoordinationService {
 	
 	public Status evaluateStatus(Date begin, int leadtime, Date end, int followup);
 	
-	public AssessmentMode startAssessment(AssessmentMode assessmentMode);
+	public AssessmentMode startAssessment(AssessmentMode assessmentMode, Identity doer);
 	
 	public AssessmentMode stopAssessment(AssessmentMode assessmentMode, boolean pullTestSessions, boolean withDisadvantaged, Identity doer);
 	

@@ -20,6 +20,7 @@
 package org.olat.course.assessment.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
@@ -190,6 +192,7 @@ public class CourseAssessmentModeWebService {
 		if(!isAdministrator(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		Identity doer = getIdentity(request);
 		
 		AssessmentMode assessmentMode;
 		if(assessmentModeVo.getKey() == null) {
@@ -204,7 +207,7 @@ public class CourseAssessmentModeWebService {
 			}
 		}
 		return AssessmentModeWebService.saveAssessmentMode(assessmentModeVo, assessmentMode,
-				assessmentModeManager, curriculumService, businessGroupService);
+				assessmentModeManager, curriculumService, businessGroupService, doer);
 	}
 	
 	private boolean isAdministrator(HttpServletRequest request) {

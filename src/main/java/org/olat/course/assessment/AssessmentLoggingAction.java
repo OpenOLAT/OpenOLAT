@@ -96,6 +96,41 @@ public class AssessmentLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction ASSESSMENT_BULK = 
 			new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.bulkassessment).setTypeList(
 					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node));
+	
+	
+	public static final ILoggingAction ASSESSMENT_MODE_LOCK = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.lock, ActionObject.assessmentmode).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(OlatResourceableType.assessmentMode));
+	public static final ILoggingAction ASSESSMENT_MODE_UNLOCK = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.unlock, ActionObject.assessmentmode).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(OlatResourceableType.assessmentMode));
+	public static final ILoggingAction ASSESSMENT_MODE_START = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.start, ActionObject.assessmentmode).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentMode));
+	public static final ILoggingAction ASSESSMENT_MODE_END = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.end, ActionObject.assessmentmode).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentMode));
+	public static final ILoggingAction ASSESSMENT_MODE_GUARD = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.guard, ActionObject.assessmentmode).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentMode));
+
+	
+	public static final ILoggingAction ASSESSMENT_INSPECTION_LOCK = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.lock, ActionObject.assessmentinspection).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(OlatResourceableType.assessmentInspection));
+	public static final ILoggingAction ASSESSMENT_INSPECTION_UNLOCK = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.unlock, ActionObject.assessmentinspection).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(OlatResourceableType.assessmentInspection));
+	public static final ILoggingAction ASSESSMENT_INSPECTION_START = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.start, ActionObject.assessmentinspection).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentInspection));
+	public static final ILoggingAction ASSESSMENT_INSPECTION_END = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.end, ActionObject.assessmentinspection).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentInspection));
+	public static final ILoggingAction ASSESSMENT_INSPECTION_GUARD = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.guard, ActionObject.assessmentinspection).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentInspection));
+
 
 	
 	/**

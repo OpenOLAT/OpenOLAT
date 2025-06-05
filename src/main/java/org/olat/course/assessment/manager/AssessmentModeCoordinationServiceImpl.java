@@ -37,7 +37,15 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ActionVerb;
+import org.olat.core.logging.activity.ActivityLogService;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -45,6 +53,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.CourseFactory;
+import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -68,6 +77,7 @@ import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,6 +106,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	@Autowired
 	private UserSessionManager userSessionManager;
 	@Autowired
+	private ActivityLogService activityLogService;
+	@Autowired
 	private AssessmentModeManagerImpl assessmentModeManager;
 	@Autowired
 	private AssessmentTestSessionDAO assessmentTestSessionDao;
@@ -112,7 +124,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
 			for(AssessmentMode currentMode:currentModes) {
 				try {
-					sendEvent(currentMode, now, false);
+					sendEvent(currentMode, now, false, null);
 					currentModeKeys.add(currentMode.getKey());
 				} catch (Exception e) {
 					log.error("", e);
@@ -145,12 +157,12 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return cal.getTime();
 	}
 	
-	protected AssessmentMode syncManuallySetStatus(AssessmentMode mode, boolean forceStatus) {
-		return sendEvent(mode, now(), forceStatus);
+	protected AssessmentMode syncManuallySetStatus(AssessmentMode mode, boolean forceStatus, Identity doer) {
+		return sendEvent(mode, now(), forceStatus, doer);
 	}
 	
-	protected AssessmentMode syncAutomicallySetStatus(AssessmentMode mode) {
-		return sendEvent(mode, now(), true);
+	protected AssessmentMode syncAutomicallySetStatus(AssessmentMode mode, Identity doer) {
+		return sendEvent(mode, now(), true, doer);
 	}
 	
 	private void manageListenersOfCoordinatedMode(AssessmentMode mode) {
@@ -228,7 +240,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			Date now = now();
 			List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(entry, now);
 			for(AssessmentMode mode:modes) {
-				sendEvent(mode, now, false);
+				sendEvent(mode, now, false, null);
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -245,7 +257,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				List<AssessmentMode> modes = assessmentModeManager.getAssessmentModeFor(entry);
 				for(AssessmentMode mode:modes) {
 					if(mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup) {
-						endAssessment(mode);
+						endAssessment(mode, null);
 						log.info(Tracing.M_AUDIT, "End assessment mode after repository entry status changes: {} ({}) entry: {} ({})",
 								mode.getName(), mode.getKey(), entry.getDisplayname(), entry.getKey());
 					}
@@ -302,19 +314,19 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return status;
 	}
 
-	private AssessmentMode sendEvent(AssessmentMode mode, Date now, boolean forceStatus) {
+	private AssessmentMode sendEvent(AssessmentMode mode, Date now, boolean forceStatus, Identity doer) {
 		if(mode.getBeginWithLeadTime().compareTo(now) > 0) {
 			// Before begin time
 			//none
 			Status status = mode.getStatus();
 			if(status != Status.leadtime && status != Status.assessment && status != Status.followup && status != Status.end) {
-				mode = ensureStatusOfMode(mode, Status.none);
+				mode = ensureStatusOfMode(mode, Status.none, doer);
 				sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			} else if(mode.getStatus() == Status.followup && mode.isManualBeginEnd() && !forceStatus) {
 				// close manual assessment mode in the follow-up time but started before the begin date
 				if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
-					mode = ensureStatusOfMode(mode, Status.end);
+					mode = ensureStatusOfMode(mode, Status.end, doer);
 					sendEvent(AssessmentModeNotificationEvent.END, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				}
@@ -324,21 +336,23 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			// Leading time
 			Status status = mode.getStatus();
 			if(status != Status.assessment && status != Status.followup && status != Status.end) {
-				mode = ensureStatusOfMode(mode, Status.leadtime);
+				mode = ensureStatusOfMode(mode, Status.leadtime, doer);
 				sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
 		} else if(mode.isManualBeginEnd() && !forceStatus) {
-			sendEventForManualMode(mode, now);
+			sendEventForManualMode(mode, now, doer);
 		} else if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {
 			// In assessment (between begin and end)
 			
 			if(mode.getStatus() != Status.assessment) {
 				log.info(Tracing.M_AUDIT, "Send start event: {} ({})", mode.getName(), mode.getKey());
 			}
-			mode = ensureStatusOfMode(mode, Status.assessment);
+			mode = ensureStatusOfMode(mode, Status.assessment, doer);
 			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
+			
+			
 			
 			//message 5 minutes before end
 			Calendar cal = Calendar.getInstance();
@@ -351,23 +365,23 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			}
 		} else if(mode.getFollowupTime() > 0 && mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) > 0) {
 			// Follow-up time
-			sendEventForFollowUp(mode, now);
+			sendEventForFollowUp(mode, now, doer);
 		} else if(mode.getEndWithFollowupTime().compareTo(now) <= 0) {
 			// End
-			sendEventForEnd(mode, now);
+			sendEventForEnd(mode, now, doer);
 		}
 
 		manageListenersOfCoordinatedMode(mode);
 		return mode;
 	}
 	
-	private AssessmentMode sendEventForFollowUp(AssessmentMode mode, Date now) {
+	private AssessmentMode sendEventForFollowUp(AssessmentMode mode, Date now, Identity doer) {
 		Set<Long> assessedIdentities = assessmentModeManager.getAssessedIdentityKeys(mode);
 		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
 		assessedIdentities.removeAll(extraTimes.keySet());
 	
 		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutDisadvantage;
-		mode = ensureBothStatusOfMode(mode, Status.followup, status);
+		mode = ensureBothStatusOfMode(mode, Status.followup, status, doer);
 		sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode, assessedIdentities);
 		return mode;
 	}
@@ -378,13 +392,13 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	 * @param mode The assessment mode
 	 * @return The updated assessment mode
 	 */
-	private AssessmentMode sendEventForEnd(AssessmentMode mode, Date now) {
+	private AssessmentMode sendEventForEnd(AssessmentMode mode, Date now, Identity doer) {
 		Set<Long> assessedIdentities = assessmentModeManager.getAssessedIdentityKeys(mode);
 		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
 		assessedIdentities.removeAll(extraTimes.keySet());
 	
 		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutDisadvantage;
-		mode = ensureBothStatusOfMode(mode, Status.end, status);
+		mode = ensureBothStatusOfMode(mode, Status.end, status, doer);
 		sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentities);
 		return mode;
 	}
@@ -457,7 +471,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return extraTimeInMilliSeconds;
 	}
 	
-	private void sendEventForManualMode(AssessmentMode mode, Date now) {
+	private void sendEventForManualMode(AssessmentMode mode, Date now, Identity doer) {
 		//what to do in manual mode
 		if(mode.getStatus() == Status.assessment) {
 			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
@@ -476,11 +490,11 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
 				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
 				if(keys.isEmpty() || mode.getEndStatus() == EndStatus.all) {
-					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
+					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all, doer);
 					sendEvent(AssessmentModeNotificationEvent.END, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 				} else {
-					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.withoutDisadvantage);
+					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.withoutDisadvantage, doer);
 					Set<Long> identitiesToNotify = assessmentModeManager.getAssessedIdentityKeys(mode);
 					identitiesToNotify.removeAll(keys);
 					sendEvent(AssessmentModeNotificationEvent.END, mode, identitiesToNotify);
@@ -492,7 +506,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		}
 	}
 	
-	private AssessmentMode ensureStatusOfMode(AssessmentMode mode, Status status) {
+	private AssessmentMode ensureStatusOfMode(AssessmentMode mode, Status status, Identity doer) {
 		Status currentStatus = mode.getStatus();
 		if(currentStatus == null || currentStatus != status) {
 			mode.setStatus(status);
@@ -504,11 +518,17 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				warmUpAssessment(mode);
 			}
 			dbInstance.commit();
+			
+			if(status == Status.leadtime || status == Status.assessment) {
+				logLockActivity(mode, ActionVerb.start, doer, true);
+			} else if(status == Status.followup || status == Status.end) {
+				logLockActivity(mode, ActionVerb.end, doer, true);
+			}
 		}
 		return mode;
 	}
 	
-	private AssessmentMode ensureBothStatusOfMode(AssessmentMode mode, Status status, EndStatus endStatus) {
+	private AssessmentMode ensureBothStatusOfMode(AssessmentMode mode, Status status, EndStatus endStatus, Identity doer) {
 		Status currentStatus = mode.getStatus();
 		EndStatus currentEndStatus = mode.getEndStatus();
 		if(currentStatus == null || currentStatus != status || currentEndStatus != endStatus) {
@@ -522,6 +542,12 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				warmUpAssessment(mode);
 			}
 			dbInstance.commit();
+			
+			if(status == Status.leadtime || status == Status.assessment) {
+				logLockActivity(mode, ActionVerb.start, doer, true);
+			} else if(status == Status.followup || status == Status.end) {
+				logLockActivity(mode, ActionVerb.end, doer, true);
+			}
 		}
 		return mode;
 	}
@@ -643,9 +669,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	@Override
-	public AssessmentMode startAssessment(AssessmentMode mode) {
+	public AssessmentMode startAssessment(AssessmentMode mode, Identity doer) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
-		mode = ensureStatusOfMode(mode, Status.assessment);
+		mode = ensureStatusOfMode(mode, Status.assessment, doer);
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
 		sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode, assessedIdentityKeys);
 		return mode;
@@ -681,7 +707,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			pullSessions(mode, assessedIdentityKeys, doer);
 		}
 		
-		return stopAssessment(mode, assessedIdentityKeys, endStatus);
+		return stopAssessment(mode, assessedIdentityKeys, endStatus, doer);
 	}
 	
 	private void pullSessions(AssessmentMode mode, Set<Long> assessedIdentityKeys, Identity doer) {
@@ -701,7 +727,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		}
 	}
 	
-	private AssessmentMode stopAssessment(AssessmentMode mode, Set<Long> assessedIdentityKeys, EndStatus endStatus) {
+	private AssessmentMode stopAssessment(AssessmentMode mode, Set<Long> assessedIdentityKeys, EndStatus endStatus, Identity doer) {
 		String cmd;
 		if(mode.getFollowupTime() > 0) {
 			if(mode.getStatus() != Status.followup || mode.getStatus() != Status.end) {
@@ -715,7 +741,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			mode = dbInstance.getCurrentEntityManager().merge(mode);
 			cmd = AssessmentModeNotificationEvent.STOP_ASSESSMENT;
 		} else {
-			mode = ensureBothStatusOfMode(mode, Status.end, endStatus);
+			mode = ensureBothStatusOfMode(mode, Status.end, endStatus, doer);
 			cmd = AssessmentModeNotificationEvent.END;
 		}
 		dbInstance.commit();
@@ -729,10 +755,10 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	 * @param mode The assessment to end
 	 * @return The merged assessment mode
 	 */
-	private AssessmentMode endAssessment(AssessmentMode mode) {
+	private AssessmentMode endAssessment(AssessmentMode mode, Identity doer) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-		mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all);
+		mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all, doer);
 		Date now = new Date();
 		((AssessmentModeImpl)mode).setEnd(now);
 		((AssessmentModeImpl)mode).setEndWithFollowupTime(now);
@@ -800,5 +826,31 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public void start(IdentityRef identity, TransientAssessmentMode assessmentMode) {
 		AssessmentModeStatistics coordinatedAssessmentMode = getStatistics(assessmentMode.getModeKey(), null);
 		coordinatedAssessmentMode.addStartedAssessedIdentity(identity);
+	}
+
+	private void logLockActivity(AssessmentMode mode, ActionVerb verb, Identity doer, boolean backgroundRequest) {
+		RepositoryEntry repositoryEntry = mode.getRepositoryEntry();
+		OLATResource resource = repositoryEntry.getOlatResource();
+		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+		String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+		
+		ILoggingAction action;
+		if(verb == ActionVerb.start) {
+			action = AssessmentLoggingAction.ASSESSMENT_MODE_START;
+		} else if(verb == ActionVerb.end) {
+			action = AssessmentLoggingAction.ASSESSMENT_MODE_END;
+		} else {
+			return;
+		}
+		
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(resource, OlatResourceableType.course, repositoryEntry.getDisplayname()));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(OresHelper
+				.createOLATResourceableInstance(AssessmentMode.class, mode.getKey()), OlatResourceableType.assessmentMode, mode.getName()));
+		
+		Long identityKey = doer == null ? 0l : doer.getKey();
+		
+		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, AssessmentModeCoordinationService.class, backgroundRequest,
+				businessPath, bcContextEntries, loggingResourceableList);
 	}
 }

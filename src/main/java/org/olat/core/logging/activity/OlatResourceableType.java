@@ -106,5 +106,8 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	lectureBlock,
 
 	/** represents an Edubase course node */
-	edubase
+	edubase,
+	
+	assessmentMode,
+	assessmentInspection,
 }

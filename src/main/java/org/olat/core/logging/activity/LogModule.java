@@ -36,18 +36,19 @@ import org.olat.core.logging.Tracing;
  */
 public class LogModule {
 	
-	static final Logger log = Tracing.createLoggerFor(LogModule.class);
+	private static final Logger log = Tracing.createLoggerFor(LogModule.class);
+	
 	/**
 	 * Anonymous logging is disabled by default.
 	 */
-	private static boolean logAnonymous;
+	private boolean logAnonymous;
 	/**
 	 * List of operator keys like lt, le, ...
 	 */
-	private static List<String> operators;
+	private List<String> operators;
 	
 	private LogModule(boolean logAnonymous, List<String> logOperators) {
-		LogModule.logAnonymous = logAnonymous;
+		this.logAnonymous = logAnonymous;
 		log.info("Log Module set logAnonymous to: {}", logAnonymous);
 		operators = logOperators;
 	}
@@ -56,11 +57,11 @@ public class LogModule {
 	 * is anonymous logging configured
 	 * @return boolean
 	 */
-	public static boolean isLogAnonymous() {
+	public boolean isLogAnonymous() {
 		return logAnonymous;
 	}
 
-	public static List<String> getOperatorKeys() {
+	public List<String> getOperatorKeys() {
 		return operators;
 	}
 

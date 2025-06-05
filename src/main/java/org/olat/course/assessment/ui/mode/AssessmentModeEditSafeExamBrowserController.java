@@ -214,7 +214,7 @@ public class AssessmentModeEditSafeExamBrowserController extends AbstractEditSaf
 			assessmentMode = assessmentModeMgr.persist(assessmentMode);
 		}
 
-		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
+		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus, getIdentity());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		
 		// Always update config key

@@ -317,7 +317,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 			assessmentMode = assessmentModeMgr.persist(assessmentMode);
 		}
 
-		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
+		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus, getIdentity());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		
 		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode, entry);

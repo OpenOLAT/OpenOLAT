@@ -40,6 +40,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.modules.lecture.LectureBlock;
@@ -131,11 +132,12 @@ public class LectureBlocksWebService {
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putLectureBlocks(LectureBlockVO block) {
+	public Response putLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
 		if(!administrator) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		LectureBlock updatedBlock = saveLectureBlock(block);
+		Identity doer = getIdentity(httpRequest);
+		LectureBlock updatedBlock = saveLectureBlock(block, doer);
 		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
 	}
 	
@@ -161,15 +163,16 @@ public class LectureBlocksWebService {
 	@ApiResponse(responseCode = "404", description = "The course not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postLectureBlocks(LectureBlockVO block) {
+	public Response postLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
 		if(!administrator) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		LectureBlock updatedBlock = saveLectureBlock(block);
+		Identity doer = getIdentity(httpRequest);
+		LectureBlock updatedBlock = saveLectureBlock(block, doer);
 		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
 	}
 	
-	private LectureBlock saveLectureBlock(LectureBlockVO blockVo) {
+	private LectureBlock saveLectureBlock(LectureBlockVO blockVo, Identity doer) {
 		LectureBlock block;
 		int currentPlannedLectures;
 		boolean autoclose = false;
@@ -244,7 +247,7 @@ public class LectureBlocksWebService {
 		AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(savedLectureBlock);
 		if(assessmentMode != null) {
 			assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
-			assessmentModeMgr.merge(assessmentMode, false);
+			assessmentModeMgr.merge(assessmentMode, false, doer);
 		}
 		return savedLectureBlock;
 	}

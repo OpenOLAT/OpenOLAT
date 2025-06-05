@@ -48,7 +48,6 @@ public enum ActionVerb {
 	exit,
 	hide,
 	launch,
-	lock,
 	move,
 	open,
 	reopen,
@@ -67,6 +66,12 @@ public enum ActionVerb {
 	publish,
 	
 	embedded,
-	standalone
+	standalone,
+	
+	start,
+	guard,
+	lock,
+	unlock,
+	end;
 
 }

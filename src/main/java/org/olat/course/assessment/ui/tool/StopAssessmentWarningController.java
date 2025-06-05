@@ -407,7 +407,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		if (mode == null) {
 			showWarning("warning.assessment.mode.already.deleted");
 		} else {
-			assessmentModeCoordinationService.startAssessment(mode);
+			assessmentModeCoordinationService.startAssessment(mode, getIdentity());
 			getLogger().info(Tracing.M_AUDIT, "Start assessment mode : {} ({}) in course: {} ({})",
 					mode.getName(), mode.getKey(), courseEntry.getDisplayname(), courseEntry.getKey());
 		}

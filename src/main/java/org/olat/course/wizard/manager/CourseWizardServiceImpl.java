@@ -298,7 +298,7 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 			assessmentMode.setFollowupTime(defaults.getFollowUpTime());
 			assessmentMode.setManualBeginEnd(defaults.isManualBeginEnd());
 			assessmentMode.setTargetAudience(AssessmentMode.Target.course);
-			assessmentModeManager.merge(assessmentMode, false);
+			assessmentModeManager.merge(assessmentMode, false, null);
 		}
 	}
 

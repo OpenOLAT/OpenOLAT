@@ -28,6 +28,11 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.activity.ActionVerb;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -37,6 +42,8 @@ import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentInspectionStatusEnum;
+import org.olat.course.assessment.AssessmentLoggingAction;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.ui.inspection.AssessmentInspectionGuardController;
@@ -271,5 +278,30 @@ public class TransientAssessmentInspection implements Serializable, LockRequest 
 		
 		return Util.createPackageTranslator(AssessmentInspectionGuardController.class, locale)
 				.translate("close.inspection.infos");
+	}
+
+	@Override
+	public ILoggingAction getLoggingAction(ActionVerb verb) {
+		if(verb == ActionVerb.lock) {
+			return AssessmentLoggingAction.ASSESSMENT_INSPECTION_LOCK;
+		} else if(verb == ActionVerb.unlock) {
+			return AssessmentLoggingAction.ASSESSMENT_INSPECTION_UNLOCK;
+		} else if(verb == ActionVerb.start) {
+			return AssessmentLoggingAction.ASSESSMENT_INSPECTION_START;
+		} else if(verb == ActionVerb.end) {
+			return AssessmentLoggingAction.ASSESSMENT_INSPECTION_END;
+		} else if(verb == ActionVerb.guard) {
+			return AssessmentLoggingAction.ASSESSMENT_INSPECTION_GUARD;
+		}
+		return null;
+	}
+	
+	@Override
+	public List<ILoggingResourceable> getLoggingResources() {
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(getResource(), OlatResourceableType.course, courseDisplayName));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(OresHelper
+				.createOLATResourceableInstance(AssessmentMode.class, getRequestKey()), OlatResourceableType.assessmentInspection, ""));
+		return loggingResourceableList;
 	}
 }

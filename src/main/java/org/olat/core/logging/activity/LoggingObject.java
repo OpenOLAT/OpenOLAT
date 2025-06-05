@@ -155,11 +155,11 @@ public class LoggingObject implements CreateInfo, Persistable {
 	 * @param actionCrudType the crudAction type
 	 * @param action - the actual log message
 	 */
-	public LoggingObject(String sessionId, Long identityKey, String actionCrudType, String actionVerb, String actionObject) {
+	public LoggingObject(String sessionId, Long identityKey, String actionCrudType, String actionVerb, String actionObject, boolean logAnonymous) {
 		if (sessionId==null) {
 			throw new IllegalArgumentException("sessionId must not be null");
 		}
-		if (identityKey==null || LogModule.isLogAnonymous()) {
+		if (identityKey==null || logAnonymous) {
 			throw new IllegalArgumentException("identity key or name must not be null");
 		}
 		if (actionCrudType==null || actionCrudType.length()==0) {

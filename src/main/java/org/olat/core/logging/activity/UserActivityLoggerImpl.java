@@ -33,16 +33,12 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StackedBusinessControl;
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
+import org.olat.core.logging.activity.manager.ActivityLogServiceImpl;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -81,17 +77,11 @@ import org.olat.core.util.session.UserSessionManager;
  */
 public class UserActivityLoggerImpl implements IUserActivityLogger {
 
-	/** the logging object used in this class **/
-	private static final Logger log_ = Tracing.createLoggerFor(UserActivityLoggerImpl.class);
-	
 	/** the key with which the last LoggingObject is stored in the session - used for simpleDuration calculation only **/
 	public static final String USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG = "USER_ACTIVITY_LOGGING_LAST_LOG";
 
 	/** the session -  which this UserActivityLoggerImpl should later log into the database **/
 	private UserSession session_;
-	
-	/** if isLogAnonymous equal to true and if resourceAdminAction equal to false then anonymize log entries **/
-	private boolean isLogAnonymous_ = LogModule.isLogAnonymous();
 	
 	/** if not null this stickyActionType_ overwrites whatever comes as the ActionType in the ILoggingAction in log() **/
 	private ActionType stickyActionType_ = null;
@@ -426,9 +416,9 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		if (businessPath==businessPath_ || businessPath==null || businessPath.length()==0 || (businessPath_!=null && businessPath.length()<businessPath_.length())) {
 			return;
 		}
-		if (businessPath!=null) {
-			this.businessPath_ = businessPath;
-		}
+		
+		this.businessPath_ = businessPath;
+
 		if (runtimeParent_!=null) {
 			runtimeParent_.frameworkSetBusinessPath(businessPath);
 		}
@@ -443,9 +433,9 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		if (bcContextEntries_==bcEntries || bcEntries==null || bcEntries.isEmpty() || (bcContextEntries_!=null && bcEntries.size()<bcContextEntries_.size())) {
 			return;
 		}
-		if (bcEntries!=null) {
-			this.bcContextEntries_ = bcEntries;
-		}
+		
+		this.bcContextEntries_ = bcEntries;
+
 		if (runtimeParent_!=null) {
 			runtimeParent_.frameworkSetBCContextEntries(bcEntries);
 		}
@@ -471,117 +461,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		}
 	}
 	
-	/**
-	 * Returns the combined and orderd list of LoggingResourceables which are set on this
-	 * UserActivityLoggerImpl and are matching the contextEntries.
-	 * <p>
-	 * Note that this method fails if there is a contextEntry which doesn't have a corresponding
-	 * LoggingResourceable: This would be a situation where the businessPath/contextEntry has a
-	 * resource defined which is unknown to this UserActivityLoggerImpl - i.e. which has not been
-	 * set by the Controller or not been passed via the log() call.
-	 * <p>
-	 * The safety check with the LoggingAction's ResourceableTypeList is not done in this method.
-	 * @param lriOrNull an 
-	 * @return the combined and ordered list of LoggingResourceables which should go right to the database
-	 * in the corresponding fields
-	 */
-	private List<ILoggingResourceable> getCombinedOrderedLoggingResourceables(ILoggingResourceable... additionalLoggingResourceables) {
-		List<ILoggingResourceable> result = new LinkedList<>();
-		List<ILoggingResourceable> inputCopy = new LinkedList<>(getLoggingResourceableList());
-		if (additionalLoggingResourceables!=null) {
-			for (int i = 0; i < additionalLoggingResourceables.length; i++) {
-				ILoggingResourceable additionalLoggingResourceable = additionalLoggingResourceables[i];
-
-				int existingPos = inputCopy.indexOf(additionalLoggingResourceable);
-				if (existingPos!=-1) {
-					ILoggingResourceable existingRI = getLoggingResourceableList().get(existingPos);
-					if (existingRI.getName()!=null && additionalLoggingResourceable.getName()!=null &&
-							existingRI.getName().equals(additionalLoggingResourceable.getName())) {
-						// ignore - already set
-						continue;
-					} else if (existingRI.getName()==null && additionalLoggingResourceable.getName()==null) {
-						// both names are null and we otherwiese assume that they are equal
-						// so ignore them
-						continue;
-					}
-					// otherwise we have a matching resourceInfo already registered (same type,id) but with a different name
-					// let's update it
-					inputCopy.remove(existingPos);
-				}
-				
-				inputCopy.add(additionalLoggingResourceable);
-			}
-		}
-		if (bcContextEntries_!=null) {
-			LinkedList<ContextEntry> bcContextEntriesCopy = new LinkedList<>();
-			for (Iterator<ContextEntry> it = bcContextEntries_.iterator(); it.hasNext();) {
-				ContextEntry ce = it.next();
-				if (!bcContextEntriesCopy.contains(ce)) {
-					bcContextEntriesCopy.add(ce);
-				}
-			}
-			for (Iterator<ContextEntry> it = bcContextEntriesCopy.iterator(); it.hasNext();) {
-				ContextEntry ce = it.next();
-				// SR: see below boolean foundIt = false;
-				for (Iterator<ILoggingResourceable> it2 = inputCopy.iterator(); it2.hasNext();) {
-					ILoggingResourceable resourceInfo = it2.next();
-					if (resourceInfo.correspondsTo(ce)) {
-						// perfecto
-						result.add(resourceInfo);
-						it2.remove();
-						// SR: see below foundIt = true;
-						break;
-					}
-				}
-				/*
-				if (!foundIt) {
-					String oresourceableOres = "n/a (null)";
-					// SR: why generate exception for unuseable information???
-					if (log_.isDebug() && ce !=null && ce.getOLATResourceable() !=null) {
-							try {
-								java.lang.reflect.Method getOlatResource = ce.getOLATResourceable().getClass().getDeclaredMethod("getOlatResource");
-								if (getOlatResource!=null) {
-									oresourceableOres = String.valueOf(getOlatResource.invoke(ce.getOLATResourceable()));
-								}
-							} catch (SecurityException e) {
-								log_.error("SecurityException while retrieving getOlatResource() Method from "+ce.getOLATResourceable().getClass());
-							} catch (NoSuchMethodException e) {
-								log_.info("(OK) ContextEntry's OLATResourceable had no further getOlatResource() method: "+ce.getOLATResourceable().getClass());
-							} catch (IllegalArgumentException e) {
-								log_.error("IllegalArgumentException while calling getOlatResource() Method from "+ce.getOLATResourceable().getClass(), e);
-							} catch (IllegalAccessException e) {
-								log_.error("IllegalAccessException while calling getOlatResource() Method from "+ce.getOLATResourceable().getClass(), e);
-							} catch (InvocationTargetException e) {
-								log_.error("IllegalAccessException while calling getOlatResource() Method from "+ce.getOLATResourceable().getClass(), e);
-							}
-					}
-					log_.info("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString()+", ce.getOLATResourceable()="+ce.getOLATResourceable()+", ce.getOLATResourceable().getOlatResource()="+oresourceableOres+", dump of resource infos:");
-					for (Iterator<ILoggingResourceable> it2 = inputCopy.iterator(); it2.hasNext();) {
-						ILoggingResourceable resourceInfo = it2.next();
-						log_.info("id: "+resourceInfo.getId()+", name="+resourceInfo.getName()+", type="+resourceInfo.getType()+", toString: "+resourceInfo.toString());
-					}
-					if(log_.isDebug()) {//only generate the stacktrace in debug mode
-						log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), 
-								new Exception("UserActivityLoggerImpl.getCombinedOrderedLoggingResourceables()"));
-					} else {
-						log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), null);
-					}
-				}
-				*/
-			}
-		}
-		
-		if (inputCopy.size()!=0) {
-			// otherwise we have an inconsistency 
-			
-			// just add all the remaining from inputCopy to result
-			// no idea about the ordering - but the inputCopy has some sort of useful ordering as well, presumably
-			result.addAll(inputCopy);
-		}
-		
-		return result;
-	}
-	
 	@Override
 	public void setStickyActionType(ActionType actionType) {
 		stickyActionType_ = actionType;
@@ -594,25 +473,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 
 	@Override
 	public void log(ILoggingAction loggingAction, Class<?> callingClass, ILoggingResourceable... lriOrNull) {
-		Long logStart = null;
-		if (log_.isDebugEnabled()) {
-			logStart = System.currentTimeMillis();
-		}
+
 		final ActionType actionType = stickyActionType_!=null ? stickyActionType_ : loggingAction.getResourceActionType();
-
-		// don't log entries with loggingAction type 'tracking'
-		if(isLogAnonymous_ && actionType.equals(ActionType.tracking)) {
-			return;
-		}
-		
-		// fetch some of the loggingAction fields - used for error logging below
-		final CrudAction crudAction = loggingAction.getCrudAction();
-		final ActionVerb actionVerb = loggingAction.getActionVerb();
-		final String actionObject = loggingAction.getActionObject();
-
-		// calculate the combined and ordered list of LoggingResourceables which should go 
-		// to the database below right away
-		List<ILoggingResourceable> resourceInfos = getCombinedOrderedLoggingResourceables(lriOrNull);
 		
 		// Move up here to remove targetIdentity before checking the LoggingResourcables, because of often obsolete delivery of targetIdentity. 
 		// TargetIdentity is often missing in XYLoggingAction.
@@ -628,136 +490,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		Long identityKey = null;
 		if(session_ != null && session_.getIdentity() != null) {
 			identityKey = session_.getIdentity().getKey();
-		} else {
-			for (ILoggingResourceable lr:resourceInfos) {
-				if (lr.getResourceableType() == StringResourceableType.targetIdentity && StringHelper.isLong(lr.getId())) {
-					identityKey = Long.valueOf(lr.getId());
-				}
-			}
 		}
-		if(identityKey == null && backgroundJob) {
-			identityKey = 0l;// add a fake identity key for background jobs
-		}
-		
-		if (identityKey == null) {
-			// no identity available - odd
-			log_.error("No identity available to UserActivityLogger. Cannot write log entry: {}:{}, {}, {}",
-					crudAction, actionVerb, actionObject, convertLoggingResourceableListToString(resourceInfos),
-					new Exception());
-			return;
-		}		
-		
-				
-		if (actionType!=ActionType.admin) {
-			final String identityKeyStr = String.valueOf(identityKey);
-			for (Iterator<ILoggingResourceable> it = resourceInfos.iterator(); it.hasNext();) {
-				ILoggingResourceable lr = it.next();
-				// we want this info as too much actionTypes are non-admin and log-entry will then be without value not containing targetIdent!, see FXOLAT-104
-				if (lr.getResourceableType()==StringResourceableType.targetIdentity && lr.getId().equals(identityKeyStr)) {
-					if (log_.isDebugEnabled()) {
-						// complain
-						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action={}, fieldId={}",
-								loggingAction, loggingAction.getJavaFieldIdForDebug(), new Exception("OLAT-4955 debug stacktrac"));
-					}
-					// remove targetIdentity (fxdiff: only if same as executing identity!)
-					it.remove();
-				}
-			}
-		}
-		// end of moved code
-		if(resourceInfos != null) {
-			//remove all ignorable resources
-			for(Iterator<ILoggingResourceable> riIterator=resourceInfos.iterator(); riIterator.hasNext(); ) {
-				if(riIterator.next().isIgnorable()) {
-					riIterator.remove();
-				}
-			}
-		}
-		
-		if (loggingAction.getTypeListDefinition()==null) {
-			// this is a foul!
-			log_.warn("LoggingAction has no ResourceableTypeList defined: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug());
-		} else if(log_.isDebugEnabled()) {
-			// good boy
-			String errorMsg = loggingAction.getTypeListDefinition().executeCheckAndGetErrorMessage(resourceInfos);
-			if (errorMsg!=null) {
-				// we found an inconsistency
-				// lets make this a warn
-				log_.warn("LoggingAction reported an inconsistency (" + errorMsg + ") while logging: "+loggingAction.getActionVerb()+" "+loggingAction.getActionObject()+", action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug()+
-						", expected: "+loggingAction.getTypeListDefinition().toString()+
-						", actual: "+convertLoggingResourceableListToString(resourceInfos), new Exception("OLAT-4653"));
-			}
-		}
-		
-		// start creating the LoggingObject 
-		final LoggingObject logObj = new LoggingObject(sessionId, identityKey, crudAction.name().substring(0,1), actionVerb.name(), actionObject);
-
-		if (resourceInfos != null && !resourceInfos.isEmpty()) {
-			// this should be the normal case - we do have LoggingResourceables which we can log
-			// alongside the log message
-
-			if (resourceInfos.size()>4) {
-				log_.warn("More than 4 resource infos set on a user activity log. Can only have 4. Having: "+resourceInfos.size());
-				int diff = resourceInfos.size()-4;
-				for(int i=0; i<diff; i++) {
-					resourceInfos.remove(3);
-				}
-			}
-			
-			// get the target resourceable
-			ILoggingResourceable ri = resourceInfos.get(resourceInfos.size()-1);
-			logObj.setTargetResourceInfo(ri);
-			
-			// now set parent - if applicable
-			if (resourceInfos.size()>1) {
-				ri = resourceInfos.get(resourceInfos.size()-2);
-				logObj.setParentResourceInfo(ri);
-			}
-			
-			// and set the grand parent - if applicable
-			if (resourceInfos.size()>2) {
-				ri = resourceInfos.get(resourceInfos.size()-3);
-				logObj.setGrandParentResourceInfo(ri);
-			}
-			
-			// and set the great grand parent - if applicable
-			if (resourceInfos.size()>3) {
-				ri = resourceInfos.get(resourceInfos.size()-4);
-				logObj.setGreatGrandParentResourceInfo(ri);
-			}
-		}
-		
-		// fill the remaining fields
-		logObj.setBusinessPath(businessPath_);
-		logObj.setSourceClass(callingClass.getCanonicalName());
-		logObj.setResourceAdminAction(actionType.equals(ActionType.admin)?true:false);
-		
-		// and store it
-		DB db = DBFactory.getInstance();
-		if (db!=null && db.isError()) {
-			// then we would run into an ERROR when we'd do more with this DB
-			// hence we just issue a log.info here with the details
-			//@TODO: lower to log_.info once we checked that it doesn't occur very often (best for 6.4)
-			log_.warn("log: DB is in Error state therefore the UserActivityLoggerImpl cannot store the following logging action into the loggingtable: "+logObj);
-		} else {
-			DBFactory.getInstance().saveObject(logObj);
-		}
-		if (log_.isDebugEnabled()) {
-			Long logEnd = System.currentTimeMillis();
-			log_.debug("log duration = " + (logEnd - logStart));
-		}
-	}
-
-	/** toString for debug **/
-	private String convertLoggingResourceableListToString(List<ILoggingResourceable> resourceInfos) {
-		StringBuilder loggingResourceableListToString = new StringBuilder("[LoggingResourceables: ");
-		loggingResourceableListToString.append(resourceInfos.size());
-		for (Iterator<ILoggingResourceable> iterator = resourceInfos.iterator(); iterator.hasNext();) {
-			ILoggingResourceable loggingResourceable = iterator.next();
-			loggingResourceableListToString.append(", ");
-			loggingResourceableListToString.append(loggingResourceable);
-		}
-		loggingResourceableListToString.append("]");
-		return loggingResourceableListToString.toString();
+		CoreSpringFactory.getImpl(ActivityLogServiceImpl.class).log(loggingAction, actionType, sessionId, identityKey,
+				callingClass, backgroundJob, businessPath_, bcContextEntries_, getLoggingResourceableList(), lriOrNull);
 	}
 }

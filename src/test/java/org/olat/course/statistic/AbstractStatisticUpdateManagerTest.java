@@ -118,7 +118,7 @@ abstract class AbstractStatisticUpdateManagerTest extends OlatTestCase {
 	
 	protected Calendar addLog(Long repositoryEntryKey, String courseNodeIdent, Calendar start, int dayInPast, int hour, int minute, int second) {
 		String sessionId = "session-" + CodeHelper.getGlobalForeverUniqueID();
-		LoggingObject logObj = new LoggingObject(sessionId, 123l, "u", "launch", "node");
+		LoggingObject logObj = new LoggingObject(sessionId, 123l, "u", "launch", "node", false);
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.YEAR, start.get(Calendar.YEAR));

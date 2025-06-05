@@ -508,7 +508,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		
 		saveRelations(target);
 
-		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
+		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus, getIdentity());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		
 		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode, entry);

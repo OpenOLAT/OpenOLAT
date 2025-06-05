@@ -27,9 +27,15 @@ import java.util.Locale;
 
 import org.olat.core.commons.fullWebApp.LockRequest;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.activity.ActionVerb;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -262,5 +268,30 @@ public class TransientAssessmentMode implements Serializable, LockRequest {
 	public String getUnlockModalTitle(Locale locale) {
 		return Util.createPackageTranslator(AssessmentModeGuardController.class, locale)
 				.translate("current.mode");
+	}
+	
+	@Override
+	public ILoggingAction getLoggingAction(ActionVerb verb) {
+		if(verb == ActionVerb.lock) {
+			return AssessmentLoggingAction.ASSESSMENT_MODE_LOCK;
+		} else if(verb == ActionVerb.unlock) {
+			return AssessmentLoggingAction.ASSESSMENT_MODE_UNLOCK;
+		} else if(verb == ActionVerb.start) {
+			return AssessmentLoggingAction.ASSESSMENT_MODE_START;
+		} else if(verb == ActionVerb.end) {
+			return AssessmentLoggingAction.ASSESSMENT_MODE_END;
+		} else if(verb == ActionVerb.guard) {
+			return AssessmentLoggingAction.ASSESSMENT_MODE_GUARD;
+		}
+		return null;
+	}
+
+	@Override
+	public List<ILoggingResourceable> getLoggingResources() {
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(getResource(), OlatResourceableType.course, displayName));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(OresHelper
+				.createOLATResourceableInstance(AssessmentMode.class, getRequestKey()), OlatResourceableType.assessmentMode, name));
+		return loggingResourceableList;
 	}
 }

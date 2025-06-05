@@ -20,6 +20,7 @@
 package org.olat.course.assessment.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -236,6 +238,7 @@ public class AssessmentModeWebService {
 		if(!isAdministrator(request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		Identity doer = getIdentity(request);
 		
 		AssessmentMode assessmentMode;
 		if(assessmentModeVo.getKey() == null) {
@@ -249,11 +252,12 @@ public class AssessmentModeWebService {
 			assessmentMode = assessmentModeManager.getAssessmentModeById(assessmentModeVo.getKey());
 		}
 		return saveAssessmentMode(assessmentModeVo, assessmentMode,
-				assessmentModeManager, curriculumService, businessGroupService);
+				assessmentModeManager, curriculumService, businessGroupService, doer);
 	}
 	
 	protected static Response saveAssessmentMode(AssessmentModeVO assessmentModeVo, AssessmentMode assessmentMode,
-			AssessmentModeManager assessmentModeMgr, CurriculumService curriculumService, BusinessGroupService businessGroupService) {
+			AssessmentModeManager assessmentModeMgr, CurriculumService curriculumService, BusinessGroupService businessGroupService,
+			Identity doer) {
 		if(assessmentMode == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -369,7 +373,7 @@ public class AssessmentModeWebService {
 					assessmentMode.getTargetAudience(), assessmentModeMgr, businessGroupService);
 		}
 		
-		assessmentMode = assessmentModeMgr.merge(assessmentMode, false);
+		assessmentMode = assessmentModeMgr.merge(assessmentMode, false, doer);
 		
 		AssessmentModeVO vo = AssessmentModeVO.valueOf(assessmentMode);
 		return Response.ok(vo).build();

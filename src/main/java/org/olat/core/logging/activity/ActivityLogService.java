@@ -17,50 +17,23 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
+package org.olat.core.logging.activity;
 
 import java.util.List;
-import java.util.Locale;
 
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.activity.ActionVerb;
-import org.olat.core.logging.activity.ILoggingAction;
-import org.olat.core.logging.activity.ILoggingResourceable;
-import org.olat.course.assessment.AssessmentMode.EndStatus;
-import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.core.id.context.ContextEntry;
 
 /**
  * 
- * Initial date: 22 déc. 2023<br>
+ * Initial date: 5 juin 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LockRequest {
-	
-	Long getRequestKey();
-	
-	OLATResourceable getResource();
-	
-	Long getRepositoryEntryKey();
-	
-	Status getStatus();
-	
-	EndStatus getEndStatus();
-	
-	boolean hasLinkToQuitSEB();
-	
-	String getLinkToQuitSEB();
-	
-	List<String> getElementList();
+public interface ActivityLogService {
 	
 	
-	String getUnlockModalTitle(Locale locale);
-	
-	String getUnlockInfos(Locale locale);
-	
-	
-	ILoggingAction getLoggingAction(ActionVerb verb);
-	
-	List<ILoggingResourceable> getLoggingResources();
+	public LoggingObject log(ILoggingAction loggingAction, ActionType actionType, String sessionId, Long identityKey, Class<?> callingClass,
+			final boolean backgroundJob, final String businessPath, final List<ContextEntry> bcContextEntries,
+			final List<ILoggingResourceable> loggingResourceableList, ILoggingResourceable... lriOrNull);
 
 }

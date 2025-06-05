@@ -768,8 +768,7 @@ public class CopyServiceImpl implements CopyService {
 			copy.setBegin(begin);
 			copy.setEnd(end);
 			
-			assessmentModeManager.merge(copy, false);
-			
+			assessmentModeManager.merge(copy, false, context.getExecutingIdentity());
 		}
 	}
 	

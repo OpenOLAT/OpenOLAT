@@ -33,6 +33,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
@@ -213,7 +214,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus) {
+	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus, Identity doer) {
 		assessmentMode.setLastModified(new Date());
 		
 		//update begin with lead time
@@ -237,9 +238,9 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		log.info(Tracing.M_AUDIT, "Update assessment mode: {} ({}) from {} to {} manual: {}",
 				reloadedMode.getName(), reloadedMode.getKey(), begin, end, reloadedMode.isManualBeginEnd());
 		if(reloadedMode.isManualBeginEnd()) {
-			reloadedMode = assessmentModeCoordinationService.syncManuallySetStatus(reloadedMode, forceStatus);
+			reloadedMode = assessmentModeCoordinationService.syncManuallySetStatus(reloadedMode, forceStatus, doer);
 		} else {
-			reloadedMode = assessmentModeCoordinationService.syncAutomicallySetStatus(reloadedMode);
+			reloadedMode = assessmentModeCoordinationService.syncAutomicallySetStatus(reloadedMode, doer);
 		}
 		return reloadedMode;
 	}

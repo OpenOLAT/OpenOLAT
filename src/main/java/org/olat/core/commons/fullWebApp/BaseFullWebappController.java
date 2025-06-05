@@ -97,6 +97,10 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.activity.ActionVerb;
+import org.olat.core.logging.activity.ActivityLogService;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -209,6 +213,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private AnalyticsModule analyticsModule;
 	@Autowired
 	private EdusharingModule edusharingModule;
+	@Autowired
+	private ActivityLogService activityLogService;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -265,6 +271,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     		removeRedirects(usess);
     		//lock the gui
     		lockGUI();
+    		logLockActivity(usess.getLockRequests(), ActionVerb.guard, false);
     	} else {
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
@@ -1499,32 +1506,32 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			case AssessmentModeNotificationEvent.STOP_WARNING ->
 					lockResourceWarningMessage(event.getAssessementMode(), event.getExtraTimeInSeconds(getIdentity()));
 			case AssessmentModeNotificationEvent.BEFORE -> {
-				if (asyncUnlockResource(event.getAssessementMode())) {
+				if (asyncUnlockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 			}
 			case AssessmentModeNotificationEvent.LEADTIME -> {
 				if (!usess.isCancelledLockRequest(event.getAssessementMode())
-						&& asyncLockResource(event.getAssessementMode())) {
+						&& asyncLockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 			}
 			case AssessmentModeNotificationEvent.START_ASSESSMENT -> {
 				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& !usess.isCancelledLockRequest(event.getAssessementMode())) {
-					asyncLockResource(event.getAssessementMode());
+					asyncLockResource(event.getAssessementMode(), true);
 				}
 			}
 			case AssessmentModeNotificationEvent.STOP_ASSESSMENT -> {
 				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
 						&& !usess.isCancelledLockRequest(event.getAssessementMode())
-						&& asyncLockResource(event.getAssessementMode())) {
+						&& asyncLockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 			}
 			case AssessmentModeNotificationEvent.END -> {
 				if (event.getAssessedIdentityKeys().contains(getIdentity().getKey())
-						&& asyncUnlockResource(event.getAssessementMode())) {
+						&& asyncUnlockResource(event.getAssessementMode(), true)) {
 					stickyMessageCmp.setDelegateComponent(null);
 				}
 			}
@@ -1625,11 +1632,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	@Override
 	public void unlockResource(UserRequest ureq, LockRequest request) {
-		asyncLockResource(request);
+		asyncLockResource(request, false);
 		checkAssessmentGuard(ureq, request);
 	}
 
-	private boolean asyncLockResource(LockRequest mode) {
+	private boolean asyncLockResource(LockRequest mode, boolean backgroundRequest) {
 		boolean lock;
 		if(isAdmin) {
 			lock = false;
@@ -1640,6 +1647,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			lockMode = mode;
 			lastUnlockedResource = null;
 			lockStatus = LockStatus.need;
+			logLockActivity(mode, ActionVerb.lock, backgroundRequest);
 		} else if(lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			if(mode.getStatus() == Status.leadtime || (mode.getStatus() == Status.followup
 					&& (mode.getEndStatus() == EndStatus.all
@@ -1657,20 +1665,37 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return lock;
 	}
 	
+	private void logLockActivity(List<LockRequest> modes, ActionVerb verb, boolean backgroundRequest) {
+		for(LockRequest mode:modes) {
+			logLockActivity(mode, verb, backgroundRequest);
+		}
+	}
+	
+	private void logLockActivity(LockRequest mode, ActionVerb verb, boolean backgroundRequest) {
+		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromString(  mode.getResource());
+		String businessPath = mode.getRepositoryEntryKey() == null ? null : "[RepositoryEntry:" + mode.getRepositoryEntryKey() + "]";
+		
+		Long identityKey = getIdentity().getKey();
+		ILoggingAction action = mode.getLoggingAction(verb);
+		List<ILoggingResourceable> loggingResourceableList = mode.getLoggingResources();
+		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, getClass(), backgroundRequest,
+				businessPath, bcContextEntries, loggingResourceableList);
+	}
+	
 	private boolean hasDisadvantageCompensation(LockRequest mode) {
 		return CoreSpringFactory.getImpl(DisadvantageCompensationService.class)
 			.isActiveDisadvantageCompensation(getIdentity(), new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList());
 	}
 	
-	private boolean asyncUnlockResource(LockRequest mode) {
+	private boolean asyncUnlockResource(LockRequest mode, boolean backgroundEvent) {
 		boolean unlock;
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
-			logAudit("Async unlock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")");
 			OLATResourceable unlockedResource = lockResource;
 			if(lockMode != null && !mode.getRequestKey().equals(lockMode.getRequestKey())) {
 				return false;
 			}
 			
+			logAudit("Async unlock resource for identity: " + getIdentity().getKey() + " (" + mode.getResource() + ")");
 			unlockResource();
 			if(lockMode != null) {
 				//check if there is a locked resource first
@@ -1683,6 +1708,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				lockMode = null;
 				unlock = true;
 			}
+			logLockActivity(mode, ActionVerb.unlock, backgroundEvent);
 		} else {
 			unlock = false;
 		}

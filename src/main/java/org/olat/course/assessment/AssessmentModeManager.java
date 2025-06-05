@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
@@ -97,7 +98,7 @@ public interface AssessmentModeManager {
 	 * @param forceStatus
 	 * @return
 	 */
-	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus);
+	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus, Identity doer);
 	
 	/**
 	 * The method only sync the instance of the assessment mode. The assessment mode

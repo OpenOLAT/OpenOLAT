@@ -504,7 +504,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	}
 
 	private void doStart(UserRequest ureq, AssessmentMode mode) {
-		assessmentModeCoordinationService.startAssessment(mode);
+		assessmentModeCoordinationService.startAssessment(mode, getIdentity());
 		getLogger().info(Tracing.M_AUDIT, "Start assessment mode : {} ({}) in course: {} ({})",
 				mode.getName(), mode.getKey(), entry.getDisplayname(), entry.getKey());
 		loadModel();

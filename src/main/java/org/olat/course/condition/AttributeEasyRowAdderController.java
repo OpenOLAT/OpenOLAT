@@ -98,6 +98,8 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	private boolean isinit = false;
 
 	@Autowired
+	private LogModule logModule;
+	@Autowired
 	private ShibbolethModule shibbolethModule;
 
 	/**
@@ -133,7 +135,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		preselectedAttribute = UserConstants.INSTITUTIONALNAME;
 		preselectedAttributeValue = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, getLocale());
 		attributeTranslator = null;
-		operatorKeys = OperatorManager.getRegisteredOperatorKeys(LogModule.getOperatorKeys());
+		operatorKeys = OperatorManager.getRegisteredOperatorKeys(logModule.getOperatorKeys());
 		this.init();
 	}
 

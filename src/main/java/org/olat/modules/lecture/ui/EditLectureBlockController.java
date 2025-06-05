@@ -725,7 +725,7 @@ public class EditLectureBlockController extends FormBasicController {
 			AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(lectureBlock);
 			if(assessmentMode != null) {
 				assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
-				assessmentModeMgr.merge(assessmentMode, false);
+				assessmentModeMgr.merge(assessmentMode, false, getIdentity());
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
 	
