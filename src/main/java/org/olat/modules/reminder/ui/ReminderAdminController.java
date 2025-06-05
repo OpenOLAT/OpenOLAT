@@ -92,6 +92,7 @@ public class ReminderAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("reminder.admin.title");
 		setFormInfo("reminder.admin.info");
+		setFormInfoHelp("manual_admin/administration/Modules_Course_Reminders/");
 		
 		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("setting", getTranslator());
 		settingsCont.setRootForm(mainForm);
