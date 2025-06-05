@@ -987,6 +987,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private boolean hasRollCall(LectureBlockRow row) {
+		if(row.getEntry() == null || row.getEntry().key() == null) {
+			// Roll call needs a course
+			return false;
+		}
+		
 		Date end = row.getLectureBlock().getEndDate();
 		Date start = row.getLectureBlock().getStartDate();
 		Date now = new Date();

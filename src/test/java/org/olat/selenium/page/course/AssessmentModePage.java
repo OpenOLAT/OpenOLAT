@@ -69,15 +69,21 @@ public class AssessmentModePage {
 	 * @param manual
 	 * @return
 	 */
-	public AssessmentModePage editAssessment(String name, Date begin, Date end, boolean manual) {
+	public AssessmentModePage editAssessment(String name, Date begin, Date end, int followUp, boolean manual) {
 		By nameBy = By.cssSelector("div.o_sel_assessment_mode_name input[type='text']");
-		OOGraphene.waitElement(nameBy, browser);
-		browser.findElement(nameBy).sendKeys(name);
-		//begin
+		OOGraphene.waitElement(nameBy, browser).sendKeys(name);
+		// Begin
 		setDateTime(begin, "o_sel_assessment_mode_begin");
-		//end
+		// End
 		setDateTime(end, "o_sel_assessment_mode_end");
-		//start mode
+		// Follow-up
+		if(followUp > 0) {
+			By followUpBy = By.cssSelector("div.o_sel_assessment_mode_followuptime input[type='text']");
+			WebElement followUpEl = OOGraphene.waitElement(followUpBy, browser);
+			followUpEl.clear();
+			followUpEl.sendKeys(Integer.toString(followUp));
+		}
+		// Start mode
 		By startBy = By.cssSelector("div.o_sel_assessment_mode_start_mode select");
 		WebElement startEl = browser.findElement(startBy);
 		new Select(startEl).selectByValue(manual ? "manual" : "automatic");
@@ -212,17 +218,26 @@ public class AssessmentModePage {
 	}
 	
 	public AssessmentModePage waitBackToOpenOlat() {
+		return waitBackToOpenOlat(20);
+	}
+	
+	public AssessmentModePage waitBackToOpenOlat(int seconds) {
 		By continueBy = By.xpath("//dialog[contains(@class,'dialog')]//div[@class='modal-content']//a[contains(@class,'o_sel_assessment_continue')]");
-		OOGraphene.waitElementSlowly(continueBy, 20, browser);
+		OOGraphene.waitElementSlowly(continueBy, seconds, browser);
 		return this;
 	}
 	
 	/**
-	 * After an assessment, go back to OpenOLAT.
+	 * After an assessment, go back to OpenOlat and wait until the modal disappears.
 	 */
-	public void backToOpenOLAT() {
+	public AssessmentModePage backToOpenOlat() {
 		By continueBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group a.o_sel_assessment_continue");
 		OOGraphene.waitElement(continueBy, browser).click();
+		return this;
+	}
+	
+	public AssessmentModePage assertGuardDisappears() {
 		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
 	}
 }

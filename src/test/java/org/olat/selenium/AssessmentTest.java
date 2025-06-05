@@ -75,7 +75,7 @@ import org.openqa.selenium.WebElement;
 /**
  * 
  * Initial date: 11.02.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @RunWith(Arquillian.class)
@@ -447,7 +447,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.assessmentConfiguration()
 			.createAssessmentMode()
-			.editAssessment(assessmentName, begin, end, true)
+			.editAssessment(assessmentName, begin, end, 0, true)
 			.save(assessmentName)
 			.clickToolbarBack()
 			.assertAssessmentModeList()
@@ -494,8 +494,10 @@ public class AssessmentTest extends Deployments {
 		
 		kanuAssessment.waitBackToOpenOlat();
 		ryomouAssessment.waitBackToOpenOlat();
-		kanuAssessment.backToOpenOLAT();
-		ryomouAssessment.backToOpenOLAT();
+		kanuAssessment.backToOpenOlat();
+		ryomouAssessment.backToOpenOlat();
+		kanuAssessment.assertGuardDisappears();
+		ryomouAssessment.assertGuardDisappears();
 		
 		//Author check if they pass the test
 		navBar
@@ -512,6 +514,297 @@ public class AssessmentTest extends Deployments {
 			.selectUser(ryomou)
 			.assertPassed(ryomou);
 	}
+	
+	
+	/**
+	 * An author upload a test, create a course with a test course element,
+	 * publish the course, add a participant to the course, configure an
+	 * assessment with one minute follow-up.<br />
+	 * The participant logs in before the assessment started. It pass the test.
+	 * The author ends the assessment. The participant waits the end of the
+	 * assessment and go back to normal activities. The author checks that it
+	 * pass the test in the assessment tool.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void assessmentModeManualWithFollowUp()
+	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+			
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "QTI Test 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/e4_test_qti21.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course With Follow-Up " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Test-QTI-2.1";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the test start page
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.tree()
+			//check that the title of the start page of test is correct
+			.assertWithTitleSelected(testNodeTitle);
+		
+		// Add the participant
+		MembersPage members = courseRuntime.members();
+		members.quickAdd(participant);
+		
+		// Participant log in 
+		LoginPage participantLogin = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLogin
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		// prepare and start an assessment
+		Calendar cal = Calendar.getInstance();
+		Date begin = cal.getTime();
+		cal.add(Calendar.MINUTE, 5);
+		Date end = cal.getTime();
+		String assessmentName = "Assessment-" + UUID.randomUUID();
+		courseRuntime
+			.assessmentConfiguration()
+			.createAssessmentMode()
+			.editAssessment(assessmentName, begin, end, 1, true)
+			.save(assessmentName)
+			.clickToolbarBack()
+			.assertAssessmentModeList()
+			.start(assessmentName)
+			.confirmStart();
+	
+		// Participant makes the test
+		AssessmentModePage participantAssessment = new AssessmentModePage(participantBrowser)
+			.assertOnStartAssessment()
+			.startAssessment();
+		// Go to the test
+		CoursePageFragment participantTestCourse = new CoursePageFragment(participantBrowser);
+		participantTestCourse
+			.tree()
+			.assertWithTitleSelected(testNodeTitle);
+		// Pass the test
+		QTI21Page.getQTI21Page(participantBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		
+		// Author ends the test
+		courseRuntime
+			.assessmentConfiguration()
+			.stop(assessmentName)
+			.confirmStop();
+		
+		participantAssessment
+			.waitBackToOpenOlat(180)
+			.backToOpenOlat()
+			.assertGuardDisappears();
+		
+		// Author check if they pass the test
+		navBar
+			.openMyCourses()
+			.select(courseTitle);	
+		// Open the assessment tool
+		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
+			.assessmentTool();		
+		assessmentTool
+			.users()
+		// Check that the participant has passed the test
+			.assertOnUsers(participant)
+			.selectUser(participant)
+			.assertPassed(participant);
+	}
+	
+	
+	/**
+	 * An author upload a test, create a course with a test course element,
+	 * publish the course, add a participant to the course, configure a first
+	 * assessment.<br />
+	 * The participant logs in before the assessment started. It pass the test.
+	 * The author ends the assessment. The participant waits the end of the
+	 * assessment. The author configures a second assessment and starts it.
+	 * The participant want to go back to OpenOlat but it is catched in the
+	 * second assessment mode. It waits patiently the author ends the second
+	 * mode and goes back to a normal activity.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void assessmentModesConsecutives()
+	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+			
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "QTI Test 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/e4_test_qti21.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course With Follow-Up " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Test-QTI-2.1";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the test start page
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.tree()
+			//check that the title of the start page of test is correct
+			.assertWithTitleSelected(testNodeTitle);
+		
+		// Add the participant
+		MembersPage members = courseRuntime.members();
+		members.quickAdd(participant);
+		
+		// Participant log in 
+		LoginPage participantLogin = LoginPage.load(participantBrowser, deploymentUrl);
+		participantLogin
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		// prepare and start an assessment
+		Calendar cal = Calendar.getInstance();
+		Date begin = cal.getTime();
+		cal.add(Calendar.MINUTE, 5);
+		Date end = cal.getTime();
+		String assessmentOneName = "First one " + UUID.randomUUID();
+		courseRuntime
+			.assessmentConfiguration()
+			.createAssessmentMode()
+			.editAssessment(assessmentOneName, begin, end, 0, true)
+			.save(assessmentOneName)
+			.clickToolbarBack()
+			.assertAssessmentModeList()
+			.start(assessmentOneName)
+			.confirmStart();
+	
+		// Participant makes the test
+		AssessmentModePage participantAssessment = new AssessmentModePage(participantBrowser)
+			.assertOnStartAssessment()
+			.startAssessment();
+		// Go to the test
+		CoursePageFragment participantTestCourse = new CoursePageFragment(participantBrowser);
+		participantTestCourse
+			.tree()
+			.assertWithTitleSelected(testNodeTitle);
+		// Pass the test
+		QTI21Page.getQTI21Page(participantBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		
+		// Author ends the test
+		AssessmentModePage assessmentModes = courseRuntime
+			.assessmentConfiguration()
+			.stop(assessmentOneName)
+			.confirmStop();
+		
+		// Participant waits
+		participantAssessment
+			.waitBackToOpenOlat();
+		
+		// Author prepare and start a second assessment
+		cal = Calendar.getInstance();
+		Date beginAgain = cal.getTime();
+		cal.add(Calendar.MINUTE, 5);
+		Date endAgain = cal.getTime();
+		String assessmentSecondName = "Second mode " + UUID.randomUUID();
+		courseRuntime
+			.assessmentConfiguration()
+			.createAssessmentMode()
+			.editAssessment(assessmentSecondName, beginAgain, endAgain, 0, true)
+			.save(assessmentSecondName)
+			.clickToolbarBack()
+			.assertAssessmentModeList()
+			.start(assessmentSecondName)
+			.confirmStart();
+		
+		OOGraphene.waitingLong();
+		
+		// Go out of the first assessment mode
+		participantAssessment
+			.backToOpenOlat();
+		// Start the second assessment mode
+		participantAssessment
+			.assertOnStartAssessment()
+			.startAssessment();
+		
+		// Author stops the second assessment mode
+		assessmentModes
+			.stop(assessmentSecondName)
+			.confirmStop();
+		
+		// Participant waits
+		participantAssessment
+			.waitBackToOpenOlat()
+			.backToOpenOlat()
+			.assertGuardDisappears();
+	}
+	
 	
 	/**
 	 * An author create a course, publish it and add a participant.
