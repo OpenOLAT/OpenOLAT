@@ -81,8 +81,6 @@ public interface OrgSelectorElement extends FormItem {
 	 * @return A set of org keys.
 	 */
 	Set<Long> getSelection();
-
-	Set<Long> getSelectedKeys();
 	
 	/**
 	 * The org selector is in single or in multiple selection mode.

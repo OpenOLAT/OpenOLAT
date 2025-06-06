@@ -19,13 +19,19 @@
  */
 package org.olat.user.ui.organisation.structure;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.*;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,23 +58,18 @@ public class OrganisationStructureCalloutController extends BasicController {
 	}
 
 	private void buildAndShowTree(List<Organisation> activeOrgs) {
-		List<Organisation> all = organisationService.getOrganisations();
-
-		Map<Long,OrgNode> map = new LinkedHashMap<>();
-		for (Organisation o : all) {
-			map.put(o.getKey(), new OrgNode(o));
-		}
-
 		List<OrgNode> roots = new ArrayList<>();
-		for (OrgNode node : map.values()) {
-			Organisation o = node.getOrganisation();
-			if (o.getParent() != null
-					&& map.containsKey(o.getParent().getKey())) {
-				OrgNode parentNode = map.get(o.getParent().getKey());
-				parentNode.getChildren().add(node);
-				node.setParent(parentNode);
+		
+		Map<Long,OrgNode> map = new LinkedHashMap<>();
+		for (OrganisationWithParents orgWithParents : organisationService.getOrderedTreeOrganisationsWithParents()) {
+			OrgNode orgNode = new OrgNode(orgWithParents.getOrganisation());
+			map.put(orgWithParents.getKey(), orgNode);
+			if (orgWithParents.getParents() == null || orgWithParents.getParents().isEmpty()) {
+				roots.add(orgNode);
 			} else {
-				roots.add(node);
+				OrgNode parentNode = map.get(orgWithParents.getOrganisation().getParent().getKey());
+				orgNode.setParent(parentNode);
+				parentNode.getChildren().add(orgNode);
 			}
 		}
 

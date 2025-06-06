@@ -36,17 +36,20 @@ import org.olat.core.id.Identity;
  */
 public class UserRoleOverviewController extends BasicController {
 	
-	private final UserRolesController rolesCtrl;
+	private UserRolesController rolesCtrl;
 	private final UserRoleHistoryController roleHistoryCtrl;
+	
+	private final VelocityContainer mainVC;
+	
+	private final Identity editedIdentity;
 	
 	public UserRoleOverviewController(UserRequest ureq, WindowControl wControl, Identity editedIdentity) {
 		super(ureq, wControl);
+		this.editedIdentity = editedIdentity;
 		
-		VelocityContainer mainVC = createVelocityContainer("user_role_overview");
+		mainVC = createVelocityContainer("user_role_overview");
 		
-		rolesCtrl = new UserRolesController(ureq, wControl, editedIdentity);
-		listenTo(rolesCtrl);
-		mainVC.put("roles", rolesCtrl.getInitialComponent());
+		updateRoles(ureq);
 		
 		roleHistoryCtrl = new UserRoleHistoryController(ureq, wControl, editedIdentity);
 		listenTo(roleHistoryCtrl);
@@ -54,11 +57,21 @@ public class UserRoleOverviewController extends BasicController {
 		
 		putInitialPanel(mainVC);
 	}
+
+	private void updateRoles(UserRequest ureq) {
+		removeAsListenerAndDispose(rolesCtrl);
+		
+		rolesCtrl = new UserRolesController(ureq, getWindowControl(), editedIdentity);
+		listenTo(rolesCtrl);
+		mainVC.put("roles", rolesCtrl.getInitialComponent());
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(rolesCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
+			if (event == Event.CANCELLED_EVENT) {
+				updateRoles(ureq);
+			} else if(event == Event.CHANGED_EVENT) {
 				roleHistoryCtrl.reloadModel();
 				fireEvent(ureq, event);
 			}

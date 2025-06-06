@@ -28,7 +28,6 @@ package org.olat.user.ui.admin;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -252,7 +251,7 @@ public class UserRolesController extends FormBasicController {
 						}
 						return false;
 					})
-					.toList();
+					.collect(Collectors.toList());
 
 			affiliationSelectorEl.setSelection(affOrganisations.stream().map(Organisation::getKey).toList());
 			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
@@ -408,36 +407,10 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private List<Organisation> sortOrganisationsHierarchically(Collection<Organisation> flatList) {
-		List<Organisation> sorted = new ArrayList<>();
-		Map<Long, Organisation> byKey = flatList.stream()
-				.collect(Collectors.toMap(Organisation::getKey, o -> o));
-		Map<Long, List<Organisation>> childrenMap = new HashMap<>();
-
-		for (Organisation org : flatList) {
-			Long parentKey = org.getParent() != null ? org.getParent().getKey() : null;
-			if (parentKey != null && byKey.containsKey(parentKey)) {
-				childrenMap.computeIfAbsent(parentKey, k -> new ArrayList<>()).add(org);
-			}
-		}
-
-		for (Organisation org : flatList) {
-			if (org.getParent() == null || !byKey.containsKey(org.getParent().getKey())) {
-				addOrgWithChildren(org, childrenMap, sorted);
-			}
-		}
-
-		return sorted;
-	}
-
-	private void addOrgWithChildren(Organisation parent, Map<Long, List<Organisation>> childrenMap, List<Organisation> result) {
-		result.add(parent);
-		List<Organisation> children = childrenMap.get(parent.getKey());
-		if (children != null) {
-			children.sort(Comparator.comparing(Organisation::getDisplayName)); // optional, alphabetically
-			for (Organisation child : children) {
-				addOrgWithChildren(child, childrenMap, result);
-			}
-		}
+		return organisationService.getOrderedTreeOrganisationsWithParents().stream()
+				.map(OrganisationWithParents::getOrganisation)
+				.filter(organisation -> flatList.contains(organisation))
+				.toList();
 	}
 
 	private void fillOrderedRoles(List<String> roleKeys, List<String> roleValues) {
@@ -686,8 +659,14 @@ public class UserRolesController extends FormBasicController {
 				
 				if (shouldHaveUserRole && !hasUserRole) {
 					organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user, getIdentity());
+					if (!affOrganisations.contains(organisation)) {
+						affOrganisations.add(organisation);
+					}
 				} else if (!shouldHaveUserRole && hasUserRole) {
 					organisationService.removeMember(organisation, editedIdentity, getIdentity());
+					if (affOrganisations.contains(organisation)) {
+						affOrganisations.remove(organisation);
+					}
 				}
 			}
 		}
@@ -700,7 +679,7 @@ public class UserRolesController extends FormBasicController {
 		for (RolesElement wrapper : rolesEls) {
 			MultipleSelectionElement rolesDropdown = wrapper.getRolesDropdown();
 			if (!rolesDropdown.isAtLeastSelected(1)
-					&& !affiliationSelectorEl.getSelectedKeys().contains(wrapper.getOrganisation().getKey())
+					&& !affiliationSelectorEl.getSelection().contains(wrapper.getOrganisation().getKey())
 					&& !hasAnyExplicitRole(rolesDropdown)) {
 				organisations.remove(wrapper.getOrganisation());
 				wrappersToRemove.add(wrapper);
@@ -711,6 +690,24 @@ public class UserRolesController extends FormBasicController {
 			rolesEls.removeAll(wrappersToRemove);
 			updateUI();
 		}
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		affiliationSelectorEl.clearError();
+		if (affiliationSelectorEl.getSelection().isEmpty()) {
+			affiliationSelectorEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override
