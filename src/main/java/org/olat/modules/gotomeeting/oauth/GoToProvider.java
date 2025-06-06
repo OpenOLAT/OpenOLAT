@@ -48,6 +48,11 @@ public class GoToProvider implements OAuthSPI {
 	}
 
 	@Override
+	public boolean isEditable() {
+		return true;
+	}
+
+	@Override
 	public OAuthService getScribeProvider() {
 		return new ServiceBuilder(goToMeetingModule.getTrainingConsumerKey())
                 .apiSecret(goToMeetingModule.getTrainingConsumerSecret())
