@@ -41,25 +41,29 @@ public class UserRoleHistoryRow {
 	private String actorDisplayName;
 	private String activity;
 	private final Group group;
+	private final boolean inherited;
 	private final Long organisationKey;
 	private final OrganisationRoles role;
 	private final String organisationName;
+	private final String organisationPath;
 	private final GroupMembershipHistory point;
 	private GroupMembershipStatus previousStatus;
 	
 	private FormLink noteLink;
 	
 	public UserRoleHistoryRow(Identity identity, String userDisplayName,
-			String organisationName, Long organisationKey, GroupMembershipHistory point) {
+			String organisationName, Long organisationKey, String organisationPath, GroupMembershipHistory point) {
 		this.point = point;
 		this.group = point.getGroup();
 		this.identity = identity;
 		this.userDisplayName = userDisplayName;
 		this.organisationKey = organisationKey;
 		this.organisationName = organisationName;
+		this.organisationPath = organisationPath;
 		role = OrganisationRoles.isValue(point.getRole())
 				? OrganisationRoles.valueOf(point.getRole())
 				: null;
+		inherited = point.isInherited();
 	}
 	
 	public Long getHistoryKey() {
@@ -78,8 +82,16 @@ public class UserRoleHistoryRow {
 		return organisationName;
 	}
 	
+	public String getOrganisationPath() {
+		return organisationPath;
+	}
+	
 	public OrganisationRoles getRole() {
 		return role;
+	}
+	
+	public boolean isInherited() {
+		return inherited;
 	}
 	
 	public GroupMembershipStatus getStatus() {

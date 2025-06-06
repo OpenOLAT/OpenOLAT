@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -174,7 +175,9 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 				case creationDate -> historyRow.getDate();
 				case member -> historyRow.getUserDisplayName();
 				case organisation -> historyRow.getOrganisationName();
+				case organisationPath -> historyRow.getOrganisationPath();
 				case role -> historyRow.getRole();
+				case roleInheritance -> historyRow.isInherited() ? GroupMembershipInheritance.inherited : GroupMembershipInheritance.root;
 				case activity -> historyRow.getActivity();
 				case previousStatus -> historyRow.getPreviousStatus();
 				case status -> historyRow.getStatus();
@@ -198,7 +201,9 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 		creationDate("table.header.date"),
 		member("table.header.member"),
 		role("table.header.role"),
+		roleInheritance("table.header.inheritance"),
 		organisation("table.header.organisation"),
+		organisationPath("table.header.organisation.path"),
 		activity("table.header.activity"),
 		previousStatus("table.header.original.value"),
 		status("table.header.new.value"),
