@@ -35,6 +35,7 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.context.Context;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
@@ -43,7 +44,6 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 
-import org.apache.velocity.context.Context;
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
 import uk.ac.ed.ph.jqtiplus.exception.QtiAttributeException;
@@ -832,9 +832,15 @@ public class AssessmentRenderFunctions {
 	private static void putSolutions(Context ctx, ResponseDeclarationGroup responseDeclarationGroup) {
 		Map<String, String> solutions = new HashMap<>();
 		for (ResponseDeclaration responseDeclaration : responseDeclarationGroup.getResponseDeclarations()) {
-			String key = responseDeclaration.getAttributes().getIdentifierAttribute(ResponseDeclaration.ATTR_IDENTIFIER_NAME).getValue().toString();
-			String value = responseDeclaration.getCorrectResponse().getFieldValues().get(0).getSingleValue().toQtiString();
-			solutions.put("oo" + key, value);
+			Identifier key = responseDeclaration.getAttributes().getIdentifierAttribute(ResponseDeclaration.ATTR_IDENTIFIER_NAME).getValue();
+			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+			if(correctResponse != null) {
+				List<FieldValue> values = correctResponse.getFieldValues();
+				if(values != null && !values.isEmpty()) {
+					String value = values.get(0).getSingleValue().toQtiString();
+					solutions.put("oo" + key, value);
+				}
+			}
 		}
 		ctx.put("solutions", solutions);
 	}
