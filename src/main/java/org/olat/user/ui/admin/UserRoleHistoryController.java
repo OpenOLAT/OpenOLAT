@@ -75,6 +75,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.ui.admin.UserRoleHistoryTableModel.UserRoleHistoryCols;
+import org.olat.user.ui.organisation.OrganisationAdminController;
+import org.olat.user.ui.organisation.component.InheritanceModeFlexiCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,7 +117,8 @@ public class UserRoleHistoryController extends FormBasicController {
 	
 	protected UserRoleHistoryController(UserRequest ureq, WindowControl wControl, Identity editedIdentity) {
 		super(ureq, wControl, "user_role_history", Util
-				.createPackageTranslator(UserAdminController.class, ureq.getLocale()));
+				.createPackageTranslator(UserAdminController.class, ureq.getLocale(),
+						Util.createPackageTranslator(OrganisationAdminController.class, ureq.getLocale())));
 		this.editedIdentity = editedIdentity;
 		
 		initForm(ureq);
@@ -142,8 +145,11 @@ public class UserRoleHistoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.role,
 				new OrganisationRoleCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.roleInheritance,
+				new InheritanceModeFlexiCellRenderer(getTranslator())));
 		if(organisationModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.organisation));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserRoleHistoryCols.organisationPath));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.activity));
 		
@@ -166,7 +172,7 @@ public class UserRoleHistoryController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(UserRoleHistoryCols.creationDate.name(), false));
 		tableEl.setSortSettings(sortOptions);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "user-roles-v1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "user-roles-v1.2");
 	}
 	
 	protected void initFilters() {
@@ -245,12 +251,13 @@ public class UserRoleHistoryController extends FormBasicController {
 	private void loadModel(boolean reset) {
 		List<Organisation> organisations = organisationService.getOrganisations();
 		Map<Group,Organisation> groupToOrganisations = getGroupsToOrganisationsMap(organisations);
+		Map<Group,String> groupToOrganisationsPath = getGroupsToOrganisationsPathMap(organisations);
 		
 		List<GroupMembershipHistory> membershipsHistory = organisationService.getMembershipHistory(editedIdentity);
 		
 		List<UserRoleHistoryRow> rows = new ArrayList<>();
 		for(GroupMembershipHistory point:membershipsHistory) {
-			rows.add(forgeRow(point, groupToOrganisations));
+			rows.add(forgeRow(point, groupToOrganisations, groupToOrganisationsPath));
 		}
 		
 		Collections.sort(rows, new UserRoleHistoryRowComparator());
@@ -288,14 +295,16 @@ public class UserRoleHistoryController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 	
-	private UserRoleHistoryRow forgeRow(GroupMembershipHistory point, Map<Group,Organisation> groupToOrganisations) {
+	private UserRoleHistoryRow forgeRow(GroupMembershipHistory point,
+			Map<Group,Organisation> groupToOrganisations, Map<Group,String> groupToOrganisationsPath) {
 		Identity user = point.getIdentity();
 		String userDisplayName = userManager.getUserDisplayName(user);
 		Organisation organisation = groupToOrganisations.get(point.getGroup());
 		String organisationName = organisation == null ? null : organisation.getDisplayName();
+		String organisationPath = groupToOrganisationsPath.get(point.getGroup());
 		Long organisationKey = organisation == null ? null : organisation.getKey();
 		UserRoleHistoryRow row = new UserRoleHistoryRow(user, userDisplayName,
-				organisationName, organisationKey, point);
+				organisationName, organisationKey, organisationPath, point);
 		row.setActivity(toActivityString(row));
 		
 		Identity actor = point.getCreator();
@@ -314,6 +323,28 @@ public class UserRoleHistoryController extends FormBasicController {
 		}
 		
 		return row;
+	}
+	
+	private Map<Group,String> getGroupsToOrganisationsPathMap(List<Organisation> organisations) {
+		Map<Group,String> map = new HashMap<>();
+		for(Organisation organisation:organisations) {
+			String path = getOrganisationPath(organisation);
+			map.put(organisation.getGroup(), path);
+		}
+		return map;
+	}
+
+	private String getOrganisationPath(Organisation organisation) {
+		List<Organisation> parentLine = new ArrayList<>();
+		for(Organisation org=organisation; org != null; org=org.getParent()) {
+			parentLine.add(org);
+		}
+		
+		StringBuilder sb = new StringBuilder(64);
+		for(int i=parentLine.size(); i-->1; ) {
+			sb.append("/\u202F").append(StringHelper.escapeHtml(parentLine.get(i).getDisplayName())).append("\u202F");
+		}
+		return sb.toString();
 	}
 	
 	private String toActivityString(UserRoleHistoryRow row) {

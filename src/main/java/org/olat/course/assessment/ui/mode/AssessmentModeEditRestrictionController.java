@@ -115,10 +115,9 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
+		formLayout.setElementCssClass("o_sel_assessment_mode_edit_restrictions_form");
 		setFormContextHelp("manual_user/learningresources/Assessment_mode/");
 
-		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		if(StringHelper.containsNonWhitespace(assessmentMode.getStartElement())) {
 			CourseNode startElement = course.getRunStructure().getNode(assessmentMode.getStartElement());
@@ -141,6 +140,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 
 		//course elements
 		courseElementsRestrictionEl = uifactory.addCheckboxesHorizontal("cer", "mode.course.element.restriction", formLayout, onKeys, onValues);
+		courseElementsRestrictionEl.setElementCssClass("o_sel_assessment_mode_restriction_elements");
 		courseElementsRestrictionEl.addActionListener(FormEvent.ONCHANGE);
 		courseElementsRestrictionEl.select(onKeys[0], assessmentMode.isRestrictAccessElements());
 		courseElementsRestrictionEl.setEnabled(status != Status.end
@@ -169,6 +169,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);
 		
 		chooseElementsButton = uifactory.addFormLink("choose.elements", chooseElementsCont, Link.BUTTON);
+		chooseElementsButton.setElementCssClass("o_sel_assessment_mode_select_elements");
 		chooseElementsButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.elements));
 		

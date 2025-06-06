@@ -123,7 +123,7 @@ public class UserProfileInfoController extends UserInfoController {
 	}
 
 	private void addUserOrganisations(FormLayoutContainer itemsCont) {
-		List<String> userOrgNames = organisationService.getUsersOrganisationsNames(List.of(identity)).getOrDefault(identity.getKey(), null);
+		List<String> userOrgNames = organisationService.getUsersOrganisationsNames(List.of(identity)).getOrDefault(identity.getKey(), List.of());
 		if (userOrgNames.isEmpty()) {
 			uifactory.addStaticTextElement("organisations", "user.organisations.label", translate("user.no.data"), itemsCont);
 			return;

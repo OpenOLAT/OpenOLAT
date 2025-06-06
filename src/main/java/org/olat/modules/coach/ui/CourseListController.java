@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -47,12 +46,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
@@ -111,9 +112,12 @@ public class CourseListController extends FormBasicController implements Activat
 	protected static final String FILTER_WITH_PARTICIPANTS = "WithParticipants";
 	protected static final String FILTER_WITHOUT_PARTICIPANTS = "WithoutParticipants";
 	
-	protected static final String ASSESSMENT_NONE = "assessment-none";
-	protected static final String ASSESSMENT_PARTIALLY = "assessment-partially";
-	protected static final String ASSESSMENT_ALL = "assessment-all";
+	protected static final String ASSESSMENT_PASSED_NONE = "assessment-passed-none";
+	protected static final String ASSESSMENT_PASSED_PARTIALLY = "assessment-passed-partially";
+	protected static final String ASSESSMENT_PASSED_ALL = "assessment-passed-all";
+	protected static final String ASSESSMENT_NOT_PASSED_NONE = "assessment-not-passed-none";
+	protected static final String ASSESSMENT_NOT_PASSED_PARTIALLY = "assessment-not-passed-partially";
+	protected static final String ASSESSMENT_NOT_PASSED_ALL = "assessment-not-passed-all";
 	protected static final String CERTIFICATES_WITHOUT = "without-certificates";
 	protected static final String CERTIFICATES_WITH = "with-certificates";
 	protected static final String CERTIFICATES_INVALID = "invalid-certificates";
@@ -231,17 +235,20 @@ public class CourseListController extends FormBasicController implements Activat
 				FILTER_LAST_VISIT, lastVisitPK, true));
 
 		SelectionValues assessmentPK = new SelectionValues();
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NONE, translate("filter.assessment.none")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PARTIALLY, translate("filter.assessment.partially")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_ALL, translate("filter.assessment.all")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.assessment"),
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_NONE, translate("filter.assessment.passed.none")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_PARTIALLY, translate("filter.assessment.passed.partially")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_ALL, translate("filter.assessment.passed.all")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_NONE, translate("filter.assessment.not.passed.none")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_PARTIALLY, translate("filter.assessment.not.passed.partially")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_ALL, translate("filter.assessment.not.passed.all")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assessment"),
 				FILTER_ASSESSMENT, assessmentPK, true));
 		
 		SelectionValues statusPK = new SelectionValues();
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("status.closed")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"),
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusPK, false));
 		
 		SelectionValues withoutParticipantsPK = new SelectionValues();
@@ -272,19 +279,19 @@ public class CourseListController extends FormBasicController implements Activat
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 						RepositoryEntryStatusEnum.published.name()), FlexiTableFilterValue.valueOf(FILTER_WITH_PARTICIPANTS, FILTER_WITH_PARTICIPANTS)));
 		relevantTab.setFiltersExpanded(true);
 		tabs.add(relevantTab);
 		
-		FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
+		FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 						RepositoryEntryStatusEnum.coachpublished.name())));
 		accessForCoachTab.setFiltersExpanded(true);
 		tabs.add(accessForCoachTab);
 		
-		FlexiFiltersTab finishedTab = FlexiFiltersTabFactory.tabWithFilters(FINISHED_TAB_ID, translate("filter.finished"),
+		FlexiFiltersTab finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB_ID, translate("filter.finished"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 						RepositoryEntryStatusEnum.closed.name())));
 		finishedTab.setFiltersExpanded(true);
@@ -500,37 +507,27 @@ public class CourseListController extends FormBasicController implements Activat
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
-
-	private void doOpenCourse(UserRequest ureq, CourseStatEntryRow entry) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getRepoKey());
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), ores);
-		NewControllerFactory.getInstance().launch(ureq, bwControl);
-	}
 	
 	private class ToolsController extends BasicController {
 		
-		private final Link openCourseLink;
-		
-		private final CourseStatEntryRow entry;
-		
 		public ToolsController(UserRequest ureq, WindowControl wControl, CourseStatEntryRow entry) {
 			super(ureq, wControl);
-			this.entry = entry;
 			
 			VelocityContainer mainVC = createVelocityContainer("tool_courses");
 			
-			openCourseLink = LinkFactory.createLink("open.course", "open.course", getTranslator(), mainVC, this, Link.LINK);
-			openCourseLink.setIconLeftCSS("o_icon o_icon-fw o_CourseModule_icon");
-
+			String url = BusinessControlFactory.getInstance()
+					.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getRepoKey() + "]");
+			ExternalLink openCourseLink = LinkFactory.createExternalLink("open.course", translate("open.course"), url);
+			openCourseLink.setIconLeftCSS("o_icon o_icon_content_popup");
+			openCourseLink.setName(translate("open.course"));
+			mainVC.put("open.course", openCourseLink);
+			
 			putInitialPanel(mainVC);
 		}
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			fireEvent(ureq, Event.DONE_EVENT);
-			if(openCourseLink == source) {
-				doOpenCourse(ureq, entry);
-			}
+			//
 		}
 	}
 }

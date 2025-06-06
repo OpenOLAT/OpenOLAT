@@ -76,13 +76,13 @@ public class AssessmentModeEditController extends BasicController {
 			return generalCtrl;
 		}, true);
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.restriction"), null, uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.restriction"), "o_sel_assessment_mode_edit_restrictions", uureq -> {
 			restrictionCtrl = new AssessmentModeEditRestrictionController(uureq, getWindowControl(), entry, this.assessmentMode);
 			listenTo(restrictionCtrl);
 			return restrictionCtrl;
 		}, true);
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.access"), null, uureq -> {
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.edit.access"), "o_sel_assessment_mode_edit_access", uureq -> {
 			accessCtrl = new AssessmentModeEditAccessController(uureq, getWindowControl(), entry, this.assessmentMode);
 			if(assessmentModeAreas != null) {
 				accessCtrl.selectAreas(assessmentModeAreas);

@@ -75,8 +75,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 					? null : searchString.toLowerCase();
 
 			final String certificates = getFiltered(filters, CourseListController.FILTER_CERTIFICATES);
-			final String assessment = getFiltered(filters, CourseListController.FILTER_ASSESSMENT);
-			final String status = getFiltered(filters, CourseListController.FILTER_STATUS);
+			final List<String> assessment = getFilteredList(filters, CourseListController.FILTER_ASSESSMENT);
+			final List<String> status = getFilteredList(filters, CourseListController.FILTER_STATUS);
 			final LocalDateTime now = DateUtils.toLocalDateTime(new Date());
 			final String lastVisit = getFiltered(filters, CourseListController.FILTER_LAST_VISIT);
 			final Boolean marked = getFilteredOneClick(filters, CourseListController.FILTER_MARKED);
@@ -89,7 +89,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			for(CourseStatEntryRow row:backupList) {
 				boolean accept = accept(loweredSearchString, row)
 						&& acceptAssessment(assessment, row)
-						&& acceptStatust(status, row)
+						&& acceptStatus(status, row)
 						&& acceptMarked(marked, row)
 						&& acceptNotVisited(notVisited, row)
 						&& acceptWithParticipants(withParticipants, row)
@@ -118,27 +118,39 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		return val != null && val.toLowerCase().contains(searchValue);
 	}
 
-	private boolean acceptStatust(String ref, CourseStatEntryRow entry) {
-		if(ref == null) return true;
-		return entry.getRepoStatus() != null && ref.equals(entry.getRepoStatus().name());
+	private boolean acceptStatus(List<String> refs, CourseStatEntryRow entry) {
+		if(refs == null || refs.isEmpty()) return true;
+		return refs.stream()
+				.anyMatch(ref -> entry.getRepoStatus() != null && ref.equals(entry.getRepoStatus().name()));
 	}
 	
-	private boolean acceptAssessment(String ref, CourseStatEntryRow entry) {
-		if(ref == null) return true;
+	private boolean acceptAssessment(List<String> refs, CourseStatEntryRow entry) {
+		if(refs == null || refs.isEmpty()) return true;
 		
-		if(CourseListController.ASSESSMENT_NONE.equals(ref)) {
-			return entry.getSuccessStatus().numPassed() == 0;
-		}
-		if(CourseListController.ASSESSMENT_PARTIALLY.equals(ref)) {
-			return entry.getSuccessStatus().numPassed() > 0
-				&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
-		}
-		if(CourseListController.ASSESSMENT_ALL.equals(ref)) {
-			return entry.getSuccessStatus().numPassed() > 0
-					&& entry.getSuccessStatus().numFailed() == 0
-					&& entry.getSuccessStatus().numUndefined() == 0;
-		}
-		return false;
+		return refs.stream().anyMatch(ref -> {
+			return switch(ref) {
+				// Passed
+				case CourseListController.ASSESSMENT_PASSED_NONE
+					-> entry.getSuccessStatus().numPassed() == 0;
+				case CourseListController.ASSESSMENT_PASSED_PARTIALLY
+					-> entry.getSuccessStatus().numPassed() > 0
+						&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+				case CourseListController.ASSESSMENT_PASSED_ALL
+					-> entry.getSuccessStatus().numPassed() > 0
+						&& entry.getSuccessStatus().numFailed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
+				
+				// Not passed
+				case CourseListController.ASSESSMENT_NOT_PASSED_NONE
+					-> entry.getSuccessStatus().numFailed() == 0;
+				case CourseListController.ASSESSMENT_NOT_PASSED_PARTIALLY
+					-> entry.getSuccessStatus().numFailed() > 0
+						&& (entry.getSuccessStatus().numPassed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+				case CourseListController.ASSESSMENT_NOT_PASSED_ALL
+					-> entry.getSuccessStatus().numFailed() > 0
+						&& entry.getSuccessStatus().numPassed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
+				default -> false;
+			};
+		});
 	}
 	
 	private boolean acceptLastVisit(String ref, LocalDateTime now, CourseStatEntryRow entry) {
@@ -179,6 +191,15 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			if (StringHelper.containsNonWhitespace(filterValue)) {
 				return filterValue;
 			}
+		}
+		return null;
+	}
+	
+	private List<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			return filterValues != null && !filterValues.isEmpty() ? filterValues : null;
 		}
 		return null;
 	}

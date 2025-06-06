@@ -295,11 +295,6 @@ public class OrgSelectorElementImpl extends FormItemImpl implements OrgSelectorE
 		return selectedKeys;
 	}
 
-	@Override
-	public Set<Long> getSelectedKeys() {
-		return getSelection();
-	}
-
 	public FormLink getButton() {
 		return button;
 	}

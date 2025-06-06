@@ -88,6 +88,14 @@ public class EasyConditionConfigPage {
 		return this;
 	}
 	
+	public EasyConditionConfigPage setAssessmentMode() {
+		By assessmentModeBy = By.cssSelector("input[name='assessmentMode'][type='checkbox']");
+		browser.findElement(assessmentModeBy).click();
+		By resultsVisibleBy = By.cssSelector("input[name='assessmentModeResultVisible'][type='checkbox']");
+		OOGraphene.waitElement(resultsVisibleBy, browser);
+		return this;
+	}
+	
 	public EasyConditionConfigPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_course_visibility_condition_form button.btn-primary");
 		browser.findElement(saveBy).click();

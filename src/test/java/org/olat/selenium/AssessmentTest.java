@@ -448,7 +448,7 @@ public class AssessmentTest extends Deployments {
 			.assessmentConfiguration()
 			.createAssessmentMode()
 			.editAssessment(assessmentName, begin, end, 0, true)
-			.save(assessmentName)
+			.saveGeneral(assessmentName)
 			.clickToolbarBack()
 			.assertAssessmentModeList()
 			.start(assessmentName)
@@ -602,7 +602,7 @@ public class AssessmentTest extends Deployments {
 			.assessmentConfiguration()
 			.createAssessmentMode()
 			.editAssessment(assessmentName, begin, end, 1, true)
-			.save(assessmentName)
+			.saveGeneral(assessmentName)
 			.clickToolbarBack()
 			.assertAssessmentModeList()
 			.start(assessmentName)
@@ -693,14 +693,29 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 
 		//create a course element of type test with the QTI 2.1 test that we upload above
-		String testNodeTitle = "Test-QTI-2.1";
+		String testNodeOneTitle = "Test one QTI";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle);
+			.nodeTitle(testNodeOneTitle)
+			.selectTabVisibility()
+			.setAssessmentMode()
+			.save();
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle);
+		
+		String testNodeTwoTitle = "Test two QTI";
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTwoTitle)
+			.selectTabVisibility()
+			.setAssessmentMode()
+			.save();
+		
 		configPage
 			.selectLearnContent()
 			.chooseTest(qtiTestTitle);
@@ -716,7 +731,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime
 			.tree()
 			//check that the title of the start page of test is correct
-			.assertWithTitleSelected(testNodeTitle);
+			.assertWithTitleSelected(testNodeOneTitle);
 		
 		// Add the participant
 		MembersPage members = courseRuntime.members();
@@ -737,7 +752,9 @@ public class AssessmentTest extends Deployments {
 			.assessmentConfiguration()
 			.createAssessmentMode()
 			.editAssessment(assessmentOneName, begin, end, 0, true)
-			.save(assessmentOneName)
+			.saveGeneral(assessmentOneName)
+			.editRestrictions(testNodeOneTitle)
+			.saveRestrictions(assessmentOneName)
 			.clickToolbarBack()
 			.assertAssessmentModeList()
 			.start(assessmentOneName)
@@ -751,7 +768,8 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment participantTestCourse = new CoursePageFragment(participantBrowser);
 		participantTestCourse
 			.tree()
-			.assertWithTitleSelected(testNodeTitle);
+			.assertWithTitleSelected(testNodeOneTitle)
+			.assertTitleNotExists(testNodeTwoTitle);
 		// Pass the test
 		QTI21Page.getQTI21Page(participantBrowser)
 			.passE4()
@@ -777,7 +795,9 @@ public class AssessmentTest extends Deployments {
 			.assessmentConfiguration()
 			.createAssessmentMode()
 			.editAssessment(assessmentSecondName, beginAgain, endAgain, 0, true)
-			.save(assessmentSecondName)
+			.saveGeneral(assessmentSecondName)
+			.editRestrictions(testNodeTwoTitle)
+			.saveRestrictions(assessmentSecondName)
 			.clickToolbarBack()
 			.assertAssessmentModeList()
 			.start(assessmentSecondName)
@@ -792,6 +812,15 @@ public class AssessmentTest extends Deployments {
 		participantAssessment
 			.assertOnStartAssessment()
 			.startAssessment();
+		
+		participantTestCourse
+			.tree()
+			.assertWithTitleSelected(testNodeTwoTitle)
+			.assertTitleNotExists(testNodeOneTitle);
+		// Pass the test
+		QTI21Page.getQTI21Page(participantBrowser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
 		
 		// Author stops the second assessment mode
 		assessmentModes
