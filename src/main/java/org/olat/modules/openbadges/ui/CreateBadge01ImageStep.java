@@ -213,9 +213,11 @@ public class CreateBadge01ImageStep extends BasicStep {
 		}
 
 		private void doSelectTemplate(UserRequest ureq, long templateKey) {
+			createContext.setTemplateVariables(Set.of());
+			createContext.setSelectedTemplateImage(null);
+
 			if (templateKey == CreateBadgeClassWizardContext.OWN_BADGE_KEY) {
 				createContext.setSelectedTemplateKey(CreateBadgeClassWizardContext.OWN_BADGE_KEY);
-				createContext.setTemplateVariables(Set.of());
 				flc.contextPut("selectedTemplateKey", CreateBadgeClassWizardContext.OWN_BADGE_KEY);
 				flc.contextPut("showOwnBadgeSection", true);
 				updateSteps(ureq);
@@ -224,7 +226,6 @@ public class CreateBadge01ImageStep extends BasicStep {
 			
 			if (templateKey == CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY) {
 				createContext.setSelectedTemplateKey(CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY);
-				createContext.setTemplateVariables(Set.of());
 				flc.contextPut("selectedTemplateKey", CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY);
 				flc.contextPut("showOwnBadgeSection", false);
 				updateSteps(ureq);
