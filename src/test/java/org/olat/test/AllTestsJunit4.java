@@ -587,6 +587,7 @@ import org.junit.runners.Suite;
 	org.olat.course.noderight.manager.NodeRightServiceImplTest.class,
 	org.olat.shibboleth.handler.SpringShibbolethAttributeHandlerFactoryTest.class,
 	org.olat.core.CoreSpringFactoryTest.class,
+	org.olat.core.logging.activity.ActivityLogServiceTest.class,
 	org.olat.modules.openmeetings.OpenMeetingsTest.class,
 	org.olat.modules.openmeetings.manager.OpenMeetingsDAOTest.class,
 	org.olat.commons.info.InfoManagerTest.class,

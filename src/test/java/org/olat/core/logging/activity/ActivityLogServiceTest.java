@@ -24,8 +24,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
+import org.olat.core.commons.persistence.DB;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -42,8 +41,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ActivityLogServiceTest extends OlatTestCase {
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private ActivityLogService activityLogService;
-	
 	
 	@Test
 	public void log() {
@@ -51,17 +51,25 @@ public class ActivityLogServiceTest extends OlatTestCase {
 		
 		ILoggingAction loggingAction = QTI21LoggingAction.QTI_START_IN_COURSE;
 		ActionType actionType = loggingAction.getResourceActionType();
-		String sessionId = "test-1";
+
 		Long identityKey = 1l;
 		Class<?> callingClass = ActivityLogServiceTest.class;
-		String businessPath = "[RepositoryEntry:0]";
-		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromResourceType("CourseModule");
+		String businessPath = "[RepositoryEntry:" + test.getKey() + "]";
 		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
 		loggingResourceableList.add(LoggingResourceable.wrapTest(test));
 		
+		String sessionId = activityLogService.getSessionId(null);
 		LoggingObject logObj = activityLogService.log(loggingAction, actionType, sessionId, identityKey, callingClass,
-				false, businessPath,  bcContextEntries, loggingResourceableList);
+				false, businessPath,  List.of(), loggingResourceableList);
+		dbInstance.commit();
 		
 		Assert.assertNotNull(logObj);
+		Assert.assertNotNull(logObj.getSessionId());
+		Assert.assertEquals(businessPath, logObj.getBusinessPath());
+		Assert.assertEquals(ActionObject.test.name(), logObj.getActionObject());
+		Assert.assertEquals(ActionVerb.launch.name(), logObj.getActionVerb());
+		Assert.assertEquals(test.getOlatResource().getResourceableId().toString(), logObj.getTargetResId());
+		Assert.assertEquals(test.getOlatResource().getResourceableTypeName(), logObj.getTargetResName());
+		Assert.assertEquals(test.getOlatResource().getResourceableTypeName(), logObj.getTargetResType());
 	}
 }

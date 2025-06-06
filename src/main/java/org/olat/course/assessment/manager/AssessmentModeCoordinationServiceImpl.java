@@ -40,7 +40,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ActionVerb;
 import org.olat.core.logging.activity.ActivityLogService;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
@@ -520,9 +519,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			dbInstance.commit();
 			
 			if(status == Status.leadtime || status == Status.assessment) {
-				logLockActivity(mode, ActionVerb.start, doer, true);
+				logLockActivity(mode, AssessmentLoggingAction.ASSESSMENT_MODE_START, doer, true);
 			} else if(status == Status.followup || status == Status.end) {
-				logLockActivity(mode, ActionVerb.end, doer, true);
+				logLockActivity(mode, AssessmentLoggingAction.ASSESSMENT_MODE_END, doer, true);
 			}
 		}
 		return mode;
@@ -544,9 +543,12 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			dbInstance.commit();
 			
 			if(status == Status.leadtime || status == Status.assessment) {
-				logLockActivity(mode, ActionVerb.start, doer, true);
+				logLockActivity(mode, AssessmentLoggingAction.ASSESSMENT_MODE_START, doer, true);
 			} else if(status == Status.followup || status == Status.end) {
-				logLockActivity(mode, ActionVerb.end, doer, true);
+				logLockActivity(mode, AssessmentLoggingAction.ASSESSMENT_MODE_END, doer, true);
+				if(endStatus == EndStatus.withoutDisadvantage) {
+					logLockActivity(mode, AssessmentLoggingAction.ASSESSMENT_MODE_PROLONGE_COMPENSATION, doer, true);
+				}
 			}
 		}
 		return mode;
@@ -828,20 +830,11 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		coordinatedAssessmentMode.addStartedAssessedIdentity(identity);
 	}
 
-	private void logLockActivity(AssessmentMode mode, ActionVerb verb, Identity doer, boolean backgroundRequest) {
+	private void logLockActivity(AssessmentMode mode, ILoggingAction action, Identity doer, boolean backgroundRequest) {
 		RepositoryEntry repositoryEntry = mode.getRepositoryEntry();
 		OLATResource resource = repositoryEntry.getOlatResource();
 		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromString(resource);
 		String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
-		
-		ILoggingAction action;
-		if(verb == ActionVerb.start) {
-			action = AssessmentLoggingAction.ASSESSMENT_MODE_START;
-		} else if(verb == ActionVerb.end) {
-			action = AssessmentLoggingAction.ASSESSMENT_MODE_END;
-		} else {
-			return;
-		}
 		
 		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
 		loggingResourceableList.add(CoreLoggingResourceable.wrap(resource, OlatResourceableType.course, repositoryEntry.getDisplayname()));

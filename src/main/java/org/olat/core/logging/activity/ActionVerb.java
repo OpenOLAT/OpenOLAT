@@ -72,6 +72,7 @@ public enum ActionVerb {
 	guard,
 	lock,
 	unlock,
-	end;
+	end,
+	prolonge;
 
 }

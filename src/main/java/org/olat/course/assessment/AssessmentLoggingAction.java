@@ -110,6 +110,9 @@ public class AssessmentLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction ASSESSMENT_MODE_END = 
 			new AssessmentLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.end, ActionObject.assessmentmode).setTypeList(
 					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentMode));
+	public static final ILoggingAction ASSESSMENT_MODE_PROLONGE_COMPENSATION = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.prolonge, ActionObject.disadvantagecompensation).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentMode));
 	public static final ILoggingAction ASSESSMENT_MODE_GUARD = 
 			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.guard, ActionObject.assessmentmode).setTypeList(
 					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentMode));

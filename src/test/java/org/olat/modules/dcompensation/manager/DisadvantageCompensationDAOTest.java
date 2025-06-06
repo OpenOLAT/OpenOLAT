@@ -77,6 +77,32 @@ public class DisadvantageCompensationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadDisadvantageCompensation() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-3");
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-4");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Date approval = DateUtils.addDays(new Date(), -21);
+		
+		DisadvantageCompensation compensation = disadvantageCompensationDao
+				.createDisadvantageCompensation(identity, 15, "The chef", approval, creator, entry, subIdent, "Long test");
+		dbInstance.commitAndCloseSession();
+		
+		DisadvantageCompensation reloadCompensation = disadvantageCompensationDao
+				.loadDisadvantageCompensation(compensation.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(reloadCompensation);
+		// Make sure all fetched data are loaded
+		Assert.assertNotNull(reloadCompensation.getEntry().getDisplayname());
+		Assert.assertNotNull(reloadCompensation.getEntry().getOlatResource().getResourceableId());
+		Assert.assertNotNull(reloadCompensation.getIdentity().getName());
+		Assert.assertNotNull(reloadCompensation);
+		
+		Assert.assertEquals(compensation, reloadCompensation);
+	}
+	
+	@Test
 	public void getDisadvantageCompensationsByIdentity() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-3");
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("dcompensation-4");

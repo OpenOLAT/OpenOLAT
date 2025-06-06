@@ -97,11 +97,13 @@ public class DisadvantageCompensationDAO {
 				.getResultList();
 	}
 	
-	public DisadvantageCompensation loadDisadvantageCompensations(Long key) {
+	public DisadvantageCompensation loadDisadvantageCompensation(Long key) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select compensation from dcompensation as compensation")
 		  .append(" inner join fetch compensation.creator as creator")
 		  .append(" inner join fetch creator.user as userCreator")
+		  .append(" inner join fetch compensation.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
 		  .append(" inner join fetch compensation.entry as v")
 		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")

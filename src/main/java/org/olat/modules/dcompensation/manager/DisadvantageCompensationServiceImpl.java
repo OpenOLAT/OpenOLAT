@@ -102,7 +102,7 @@ public class DisadvantageCompensationServiceImpl implements DisadvantageCompensa
 		if(compensation == null || compensation.getKey() == null) {
 			return null;
 		}
-		return disadvantageCompensationDao.loadDisadvantageCompensations(compensation.getKey());
+		return disadvantageCompensationDao.loadDisadvantageCompensation(compensation.getKey());
 	}
 
 	@Override
