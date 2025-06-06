@@ -22,6 +22,7 @@ package org.olat.core.logging.activity;
 import java.util.List;
 
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.UserSession;
 
 /**
  * 
@@ -31,6 +32,7 @@ import org.olat.core.id.context.ContextEntry;
  */
 public interface ActivityLogService {
 	
+	public String getSessionId(UserSession session);
 	
 	public LoggingObject log(ILoggingAction loggingAction, ActionType actionType, String sessionId, Long identityKey, Class<?> callingClass,
 			final boolean backgroundJob, final String businessPath, final List<ContextEntry> bcContextEntries,

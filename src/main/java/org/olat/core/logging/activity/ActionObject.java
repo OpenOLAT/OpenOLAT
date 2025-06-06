@@ -113,6 +113,7 @@ public enum ActionObject {
 	bigbluebutton,
 	zoom,
 	assessmentmode,
-	assessmentinspection
+	assessmentinspection,
+	disadvantagecompensation
 	;
 }

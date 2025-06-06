@@ -38,6 +38,7 @@ import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,19 @@ public class ActivityLogServiceImpl implements ActivityLogService {
 	private DB dbInstance;
 	@Autowired
 	private LogModule logModule;
+	
+	@Override
+	public String getSessionId(UserSession session) {
+		final String sessionId;
+		if(session == null || session.getSessionInfo() == null
+				|| (session.getSessionInfo() != null && session.getSessionInfo().getSession() == null)) {
+			//background task
+			sessionId = Thread.currentThread().getName();
+		} else {
+			sessionId = Long.toString(session.getSessionInfo().getCreationTime());
+		}
+		return sessionId;
+	}
 	
 	@Override
 	public LoggingObject log(ILoggingAction loggingAction, ActionType actionType, String sessionId, Long identityKey, Class<?> callingClass,

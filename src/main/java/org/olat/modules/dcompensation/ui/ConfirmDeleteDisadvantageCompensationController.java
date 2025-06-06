@@ -19,6 +19,7 @@
  */
 package org.olat.modules.dcompensation.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,6 +30,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.activity.ActivityLogService;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
@@ -36,6 +47,8 @@ import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
+import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,6 +64,8 @@ public class ConfirmDeleteDisadvantageCompensationController extends FormBasicCo
 
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private ActivityLogService activityLogService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
@@ -79,14 +94,18 @@ public class ConfirmDeleteDisadvantageCompensationController extends FormBasicCo
 			}
 			layoutCont.contextPut("msg", message);
 		}
-		
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+
 		uifactory.addFormSubmitButton("delete", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		for(DisadvantageCompensation compensation:compensationToDelete) {
+			compensation = disadvantageCompensationService.loadDisadvantageCompensation(compensation);
+			if(compensation == null) {
+				continue;
+			}
 			if(lastSession != null) {
 				qtiService.compensationExtraTimeAssessmentTestSession(lastSession, 0, getIdentity());
 			} else {
@@ -100,8 +119,27 @@ public class ConfirmDeleteDisadvantageCompensationController extends FormBasicCo
 			}
 			compensation.setStatusEnum(DisadvantageCompensationStatusEnum.deleted);
 			disadvantageCompensationService.updateDisadvantageCompensation(compensation);
+			logLockActivity(compensation, ureq, AssessmentLoggingAction.DISADVANTAGE_COMPENSATION_DELETE);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void logLockActivity(DisadvantageCompensation compensation, UserRequest ureq, ILoggingAction action) {
+		RepositoryEntry entry = compensation.getEntry();
+		Identity assessedIdentity = compensation.getIdentity();
+		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromString(entry.getOlatResource());
+	
+		Long identityKey = getIdentity().getKey();
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(entry.getOlatResource(), OlatResourceableType.course, entry.getDisplayname()));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(OresHelper
+			.createOLATResourceableInstance("CourseNode", Long.valueOf(compensation.getSubIdent())), OlatResourceableType.node, compensation.getSubIdentName()));
+		loggingResourceableList.add(LoggingResourceable.wrap(assessedIdentity));
+		
+		String sessionId = activityLogService.getSessionId(ureq.getUserSession());
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][CourseNode:" + compensation.getSubIdent() + "]";
+		activityLogService.log(action, action.getResourceActionType(), sessionId, identityKey, getClass(), false,
+				businessPath, bcContextEntries, loggingResourceableList);
 	}
 
 	@Override

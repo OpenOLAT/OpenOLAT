@@ -48,6 +48,8 @@ public interface DisadvantageCompensationService {
 	
 	public List<DisadvantageCompensation> getDisadvantageCompensations(IdentityRef identity, RepositoryEntryRef entry, String subIdent);
 	
+	public DisadvantageCompensation loadDisadvantageCompensation(DisadvantageCompensation compensation);
+	
 	/**
 	 * 
 	 * @param identity The disadvantaged user

@@ -232,7 +232,8 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 	private void doEditCompensation(UserRequest ureq, UserDisadvantageCompensationRow row) {
 		if(guardModalController(editCtrl)) return;
 
-		editCtrl = new UserDisadvantageCompensationEditController(ureq, getWindowControl(), row.getCompensation());
+		editCtrl = new UserDisadvantageCompensationEditController(ureq, getWindowControl(),
+				row.getCompensation(), disadvantegdIdentity);
 		listenTo(editCtrl);
 		
 		String title = translate("add.compensation");

@@ -97,6 +97,24 @@ public class DisadvantageCompensationDAO {
 				.getResultList();
 	}
 	
+	public DisadvantageCompensation loadDisadvantageCompensations(Long key) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select compensation from dcompensation as compensation")
+		  .append(" inner join fetch compensation.creator as creator")
+		  .append(" inner join fetch creator.user as userCreator")
+		  .append(" inner join fetch compensation.entry as v")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where compensation.key=:key");
+
+		List<DisadvantageCompensation> compensations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DisadvantageCompensation.class)
+				.setParameter("key", key)
+				.getResultList();
+		return compensations == null || compensations.isEmpty() ? null : compensations.get(0);
+	}
+	
 	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(RepositoryEntryRef entry, String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select compensation from dcompensation as compensation")

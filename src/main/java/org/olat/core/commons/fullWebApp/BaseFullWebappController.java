@@ -1677,8 +1677,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		Long identityKey = getIdentity().getKey();
 		ILoggingAction action = mode.getLoggingAction(verb);
+		String sessionId = activityLogService.getSessionId(usess);
 		List<ILoggingResourceable> loggingResourceableList = mode.getLoggingResources();
-		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, getClass(), backgroundRequest,
+		activityLogService.log(action, action.getResourceActionType(), sessionId, identityKey, getClass(), backgroundRequest,
 				businessPath, bcContextEntries, loggingResourceableList);
 	}
 	
