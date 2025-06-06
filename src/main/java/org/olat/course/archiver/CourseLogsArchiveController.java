@@ -123,8 +123,8 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 		Roles roles = ureq.getUserSession().getRoles();
 		
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
-		boolean isAdministrator = roles.isAdministrator();
-//				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.administrator.name());
+		boolean isAdministrator = roles.isAdministrator()
+				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.administrator.name());
 		boolean isOresOwner = repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
 		boolean isOresInstitutionalManager = roles.isLearnResourceManager()
 				&& repositoryService.hasRoleExpanded(getIdentity(), re, OrganisationRoles.learnresourcemanager.name());
