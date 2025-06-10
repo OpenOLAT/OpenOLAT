@@ -12,7 +12,7 @@
 	<div class="o_template_cards">
 		#foreach($card in $cards)
 			#if($card.isVisible())
-		  	<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end"
+		  	<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end ${card.cssClass}"
 				 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
 				#if($card.key() != -1)
 				<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">

@@ -330,16 +330,16 @@ public class CreateBadge01ImageStep extends BasicStep {
 			BadgeTemplate.Scope scope = createContext.getCourseResourcableId() != null ? BadgeTemplate.Scope.course : BadgeTemplate.Scope.global;
 
 			Card ownBadgeCard = new Card(CreateBadgeClassWizardContext.OWN_BADGE_KEY, translate("badge.own"), 
-					"", 120, 66, OWN_BADGE_IDENTIFIER, List.of(), this);
+					"", 120, 66, OWN_BADGE_IDENTIFIER, List.of(), this, "");
 
 			Card currentBadgeImageCard = null;
 			if (createBadgeClassContext.isEditWithVersion()) {
 				OpenBadgesManager.BadgeClassWithSize badgeClassWithSize = openBadgesManager.getBadgeClassWithSize(createBadgeClassContext.getBadgeClass().getKey());
 				Size targetSize = badgeClassWithSize.fitIn(120, 66);
 				currentBadgeImageCard = new Card(CreateBadgeClassWizardContext.CURRENT_BADGE_IMAGE_KEY, 
-						createBadgeClassContext.getBadgeClass().getNameWithScan(), 
+						translate("no.changes"), 
 						badgeClassMediaUrl + "/" + createBadgeClassContext.getBadgeClass().getImage(), 
-						targetSize.getWidth(), targetSize.getHeight(), CURRENT_IMAGE_IDENTIFIER, List.of(), this);
+						targetSize.getWidth(), targetSize.getHeight(), CURRENT_IMAGE_IDENTIFIER, List.of(), this, "o_current");
 			}
 			
 			cards = openBadgesManager.getTemplatesWithSizes(scope).stream()
@@ -361,20 +361,20 @@ public class CreateBadge01ImageStep extends BasicStep {
 								targetSize.getWidth(), targetSize.getHeight(),
 								template.template().getIdentifier(),
 								tags,
-								this);
+								this, "");
 					})
 					.toList();
 			List<Card> combinedCards = new ArrayList<>();
-			combinedCards.add(ownBadgeCard);
 			if (currentBadgeImageCard != null) {
 				combinedCards.add(currentBadgeImageCard);
 			}
+			combinedCards.add(ownBadgeCard);
 			combinedCards.addAll(cards);
 			flc.contextPut("cards", combinedCards);
 		}
 
 		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier, List<Tag> tags,
-						   CreateBadgeImageForm form) {
+						   CreateBadgeImageForm form, String cssClass) {
 			public boolean isVisible() {
 				if (OWN_BADGE_IDENTIFIER.equals(identifier)) {
 					return true;
