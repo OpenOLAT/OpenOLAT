@@ -252,7 +252,7 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 
 	@Override
 	public String getNameWithScan() {
-		return StringHelper.xssScan(getName());
+		return StringHelper.escapeHtml(getName());
 	}
 
 	@Override
