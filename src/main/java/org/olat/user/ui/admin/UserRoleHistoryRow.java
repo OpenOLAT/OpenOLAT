@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipHistory;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -41,18 +42,19 @@ public class UserRoleHistoryRow {
 	private String actorDisplayName;
 	private String activity;
 	private final Group group;
-	private final boolean inherited;
 	private final Long organisationKey;
 	private final OrganisationRoles role;
 	private final String organisationName;
 	private final String organisationPath;
 	private final GroupMembershipHistory point;
 	private GroupMembershipStatus previousStatus;
+	private final GroupMembershipInheritance inheritance;
 	
 	private FormLink noteLink;
 	
 	public UserRoleHistoryRow(Identity identity, String userDisplayName,
-			String organisationName, Long organisationKey, String organisationPath, GroupMembershipHistory point) {
+			String organisationName, Long organisationKey, String organisationPath,
+			GroupMembershipInheritance inheritance, GroupMembershipHistory point) {
 		this.point = point;
 		this.group = point.getGroup();
 		this.identity = identity;
@@ -63,7 +65,7 @@ public class UserRoleHistoryRow {
 		role = OrganisationRoles.isValue(point.getRole())
 				? OrganisationRoles.valueOf(point.getRole())
 				: null;
-		inherited = point.isInherited();
+		this.inheritance = inheritance;
 	}
 	
 	public Long getHistoryKey() {
@@ -90,8 +92,8 @@ public class UserRoleHistoryRow {
 		return role;
 	}
 	
-	public boolean isInherited() {
-		return inherited;
+	public GroupMembershipInheritance getInheritance() {
+		return inheritance;
 	}
 	
 	public GroupMembershipStatus getStatus() {

@@ -30,6 +30,7 @@ import java.util.Map;
 import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipHistory;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -53,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -92,6 +94,7 @@ public class UserRoleHistoryController extends FormBasicController {
 	protected static final String FILTER_DATE = "date";
 	protected static final String FILTER_ROLE = "role";
 	protected static final String FILTER_ORGANISATION = "organisation";
+	protected static final String FILTER_NOT_INHERITED = "NotInherited";
 	
 	private static final String ALL_TAB_ID = "all";
 	private static final String LAST_7_DAYS_TAB_ID = "7days";
@@ -185,6 +188,12 @@ public class UserRoleHistoryController extends FormBasicController {
 			rolesValues.add(SelectionValues.entry(role.name(), translate("role." + role.name())));
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.role"), FILTER_ROLE, rolesValues, true));
+		
+		SelectionValues notInheritedPK = new SelectionValues();
+		notInheritedPK.add(SelectionValues.entry(FILTER_NOT_INHERITED, translate("filter.not.inherited")));
+		FlexiTableOneClickSelectionFilter notInheritedFilter = new FlexiTableOneClickSelectionFilter(translate("filter.not.inherited"),
+				FILTER_NOT_INHERITED, notInheritedPK, true);
+		filters.add(notInheritedFilter);
 		
 		if(organisationModule.isEnabled()) {
 			List<Organisation> organisations = organisationService.getOrganisations();
@@ -303,8 +312,9 @@ public class UserRoleHistoryController extends FormBasicController {
 		String organisationName = organisation == null ? null : organisation.getDisplayName();
 		String organisationPath = groupToOrganisationsPath.get(point.getGroup());
 		Long organisationKey = organisation == null ? null : organisation.getKey();
+		GroupMembershipInheritance inheritance = evaluateInheritance(point);
 		UserRoleHistoryRow row = new UserRoleHistoryRow(user, userDisplayName,
-				organisationName, organisationKey, organisationPath, point);
+				organisationName, organisationKey, organisationPath, inheritance, point);
 		row.setActivity(toActivityString(row));
 		
 		Identity actor = point.getCreator();
@@ -323,6 +333,19 @@ public class UserRoleHistoryController extends FormBasicController {
 		}
 		
 		return row;
+	}
+	
+	private GroupMembershipInheritance evaluateInheritance(GroupMembershipHistory point) {
+		if(point.isInherited()) {
+			return GroupMembershipInheritance.inherited;
+		}
+		if(OrganisationRoles.isValue(point.getRole())) {
+			OrganisationRoles roles = OrganisationRoles.valueOf(point.getRole());
+			if(OrganisationRoles.isInheritedByDefault(roles)) {
+				return GroupMembershipInheritance.root;
+			}
+		}
+		return GroupMembershipInheritance.none;
 	}
 	
 	private Map<Group,String> getGroupsToOrganisationsPathMap(List<Organisation> organisations) {

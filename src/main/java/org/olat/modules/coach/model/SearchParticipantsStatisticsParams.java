@@ -22,6 +22,7 @@ package org.olat.modules.coach.model;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -43,6 +44,7 @@ public class SearchParticipantsStatisticsParams {
 	private boolean withReservations;
 	private boolean withCourseCompletion;
 	private boolean withCourseStatus;
+	private List<OrganisationRoles> excludedRoles;
 	
 	private SearchParticipantsStatisticsParams(Identity identity, GroupRoles role,
 			List<Organisation> organisations, RelationRole relationRole) {
@@ -116,7 +118,13 @@ public class SearchParticipantsStatisticsParams {
 		return this;
 	}
 	
+	public List<OrganisationRoles> excludedRoles() {
+		return excludedRoles;
+	}
 	
-	
+	public SearchParticipantsStatisticsParams excludedRoles(List<OrganisationRoles> roles) {
+		this.excludedRoles = roles;
+		return this;
+	}
 	
 }

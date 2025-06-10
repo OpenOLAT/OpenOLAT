@@ -70,8 +70,9 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty() && filters.get(0) != null)) {
 			DateRange range = getFrom(filters);
-			List<OrganisationRoles> roles = getRoles(filters);
-			List<Long> organisations = getOrganisations(filters);
+			List<OrganisationRoles> roles = getFilterRoles(filters);
+			List<Long> organisations = getFilterOrganisations(filters);
+			Boolean notInherited = getFilterNotInherited(filters);
 			searchString = searchString.toLowerCase();
 			
 			List<UserRoleHistoryRow> filteredRows = new ArrayList<>(backups.size());
@@ -79,7 +80,8 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 				boolean accept = accept(row, searchString)
 						&& acceptDateRange(row, range)
 						&& acceptRoles(row, roles)
-						&& acceptOrganisations(row, organisations);
+						&& acceptOrganisations(row, organisations)
+						&& acceptNotInherited(row, notInherited);
 				if(accept) {
 					filteredRows.add(row);
 				}
@@ -125,7 +127,7 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 		return role != null && roles.contains(role);
 	}
 	
-	private List<OrganisationRoles> getRoles(List<FlexiTableFilter> filters) {
+	private List<OrganisationRoles> getFilterRoles(List<FlexiTableFilter> filters) {
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, UserRoleHistoryController.FILTER_ROLE);
 		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
 			List<String> values = extendedFilter.getValues();
@@ -147,7 +149,7 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 		return key != null && organisations.contains(key);
 	}
 	
-	private List<Long> getOrganisations(List<FlexiTableFilter> filters) {
+	private List<Long> getFilterOrganisations(List<FlexiTableFilter> filters) {
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, UserRoleHistoryController.FILTER_ORGANISATION);
 		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
 			List<String> values = extendedFilter.getValues();
@@ -159,6 +161,27 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 			}
 		}
 		return List.of();
+	}
+	
+	private boolean acceptNotInherited(UserRoleHistoryRow row, Boolean notInherited) {
+		if(notInherited == null) {
+			return true;
+		}
+		
+		GroupMembershipInheritance inheritance = row.getInheritance();
+		return (notInherited.booleanValue() && (inheritance == GroupMembershipInheritance.root || inheritance == GroupMembershipInheritance.none))
+				|| (!notInherited.booleanValue() && (inheritance == GroupMembershipInheritance.inherited));
+	}
+	
+	private Boolean getFilterNotInherited(List<FlexiTableFilter> filters) {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, UserRoleHistoryController.FILTER_NOT_INHERITED);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			String value = extendedFilter.getValue();
+			if(UserRoleHistoryController.FILTER_NOT_INHERITED.equals(value)) {
+				return Boolean.TRUE;
+			}
+		}
+		return null;
 	}
 	
 	@Override
@@ -177,7 +200,7 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 				case organisation -> historyRow.getOrganisationName();
 				case organisationPath -> historyRow.getOrganisationPath();
 				case role -> historyRow.getRole();
-				case roleInheritance -> historyRow.isInherited() ? GroupMembershipInheritance.inherited : GroupMembershipInheritance.root;
+				case roleInheritance -> historyRow.getInheritance();
 				case activity -> historyRow.getActivity();
 				case previousStatus -> historyRow.getPreviousStatus();
 				case status -> historyRow.getStatus();

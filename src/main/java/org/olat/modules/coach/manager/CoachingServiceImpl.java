@@ -139,12 +139,13 @@ public class CoachingServiceImpl implements CoachingService {
 				: organisations.stream().map(Organisation::getGroup).toList();
 		
 		List<ParticipantStatisticsEntry> statsEntries = coachingDao.loadParticipantsCoursesStatistics(identity, role,
-				organisationsGroups, userRelation, userPropertyHandlers, locale);
+				organisationsGroups, userRelation, params.excludedRoles(), userPropertyHandlers, locale);
 		Map<Long,ParticipantStatisticsEntry> statisticsEntries = statsEntries.stream()
 				.collect(Collectors.toMap(ParticipantStatisticsEntry::getIdentityKey, stats -> stats, (u, v) -> u));
 		
 		if(!organisationsGroups.isEmpty()) {
-			coachingDao.loadOrganisationsMembers(organisationsGroups, statsEntries, statisticsEntries, userPropertyHandlers, locale);
+			coachingDao.loadOrganisationsMembers(organisationsGroups, params.excludedRoles(),
+					statsEntries, statisticsEntries, userPropertyHandlers, locale);
 		}
 		if(userRelation != null) {
 			coachingDao.loadRelationUsers(identity, userRelation, statsEntries, statisticsEntries, userPropertyHandlers, locale);
