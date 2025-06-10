@@ -132,6 +132,7 @@ public class IssueCourseBadgeController extends FormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.reset();
 		tableEl.reloadData();
+		tableEl.setEmptyTableMessageKey("empty.recipient.table");
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);

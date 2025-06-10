@@ -197,6 +197,7 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 		private List<BadgeEarnerRow> initCourseBadgeEarnerRows() {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			RepositoryEntry courseEntry = createContext.getBadgeClass().getEntry();
+			Set<Long> badgeAssertionIdentityKeys = openBadgesManager.getBadgeAssertionIdentityKeys(createContext.getBadgeClass().getRootId());
 
 			RepositoryEntrySecurity reSecurity = createContext.getReSecurity();
 			AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(
@@ -219,6 +220,9 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 
 				List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 				for (Identity assessedIdentity : assessedIdentities) {
+					if (badgeAssertionIdentityKeys.contains(assessedIdentity.getKey())) {
+						continue;
+					}
 					BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 					rows.add(row);
 				}
@@ -229,6 +233,9 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 				boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
 				openBadgesManager.getParticipantsWithAssessmentEntries(courseEntry, getIdentity(), secCallback,
 						(participant, assessmentEntries) -> {
+							if (badgeAssertionIdentityKeys.contains(participant.getKey())) {
+								return;
+							}
 							IdentityEnvironment ienv = new IdentityEnvironment(participant, Roles.userRoles());
 							UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 							if (badgeCriteria.allConditionsMet(courseEntry, uce, participant, learningPath, 
