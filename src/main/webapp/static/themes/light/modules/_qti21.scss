@@ -531,10 +531,7 @@ span.o_qti_gaptext_score_alternative {
 		@extend %o_labeled_light_orange
 	}
 	&.o_assessment_test_session_status_reviewing  {
-		font-weight: normal;
-		background-color: #FFFFFF;
-		border-color: #FCCA46;
-		color: #574000;
+		@extend %o_labeled_light_yellow
 	}
 	&.o_assessment_test_session_status_suspended {
 		font-weight: normal;
