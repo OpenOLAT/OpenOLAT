@@ -258,6 +258,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.run));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TSCols.startTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.terminationTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration,
@@ -309,7 +310,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 		}
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-v2-" + entry.getKey() + "-" + subIdent);
+		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-v2.1-" + entry.getKey() + "-" + subIdent);
 	}
 	
 	protected void updateModel() {
