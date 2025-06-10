@@ -22,6 +22,8 @@ package org.olat.modules.openbadges.manager;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -196,6 +198,17 @@ public class BadgeAssertionDAO {
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("badgeClassRootIds", badgeClassRootIds)
 				.getResultList();
+	}
+	
+	public Set<Long> getBadgeAssertionIdentityKeys(String rootId) {
+		QueryBuilder sb = new QueryBuilder();
+		
+		sb.append("select distinct ident.key from badgeassertion ba ");
+		sb.append("inner join ba.recipient ident ");
+		sb.where().append("ba.badgeClass.rootId = :rootKey ");
+		
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("rootKey", rootId).getResultStream().collect(Collectors.toSet());
 	}
 
 	public Long getNumberOfBadgeAssertions(Long badgeClassKey) {

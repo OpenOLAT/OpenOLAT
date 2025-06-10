@@ -80,6 +80,8 @@ public class IssueCourseBadgeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		Set<Long> badgeAssertionIdentityKeys = openBadgesManager.getBadgeAssertionIdentityKeys(badgeClass.getRootId());
+
 		boolean isAdministrator = baseSecurityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(BadgeEarnersTableModel.usageIdentifier, isAdministrator);
 
@@ -111,6 +113,10 @@ public class IssueCourseBadgeController extends FormBasicController {
 		for (Identity assessedIdentity : assessedIdentities) {
 			AssessmentEntry assessmentEntry = identityKeyToAssessmentEntry.get(assessedIdentity.getKey());
 			if (assessmentEntry == null) {
+				continue;
+			}
+
+			if (badgeAssertionIdentityKeys.contains(assessmentEntry.getIdentity().getKey())) {
 				continue;
 			}
 

@@ -1841,6 +1841,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public List<Identity> getBadgeAssertionIdentities(Collection<String> badgeClassRootIds) {
 		return badgeAssertionDAO.getBadgeAssertionIdentities(badgeClassRootIds);
 	}
+	
+	@Override
+	public Set<Long> getBadgeAssertionIdentityKeys(String rootId) {
+		return badgeAssertionDAO.getBadgeAssertionIdentityKeys(rootId);
+	} 
 
 	@Override
 	public boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid) {

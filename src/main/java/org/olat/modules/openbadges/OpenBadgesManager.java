@@ -197,6 +197,8 @@ public interface OpenBadgesManager {
 
 	List<Identity> getBadgeAssertionIdentities(Collection<String> badgeClassRootIds);
 
+	Set<Long> getBadgeAssertionIdentityKeys(String rootId);
+
 	boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid);
 
 	boolean hasBadgeAssertion(Identity recipient, Long badgeClassKey);
