@@ -112,7 +112,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case max -> getMaxScore(row);
 				case cut -> cutValue;
 				case status -> "";
-				case passedOverriden -> row.getPassedOverriden();
+				case passedOverridden -> row.getPassedOverriden();
 				case passed -> row.getPassed();
 				case numOfAssessmentDocs -> {
 					if (row.getNumOfAssessmentDocs() <= 0) {
@@ -169,7 +169,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		max("table.header.max"),
 		grade("table.header.grade"),
 		status("table.header.status"),
-		passedOverriden("table.header.passed.overriden"),
+		passedOverridden("table.header.passed.overriden"),
 		passed("table.header.passed"),
 		assessmentStatus("table.header.assessmentStatus"),
 		certificate("table.header.certificate"),

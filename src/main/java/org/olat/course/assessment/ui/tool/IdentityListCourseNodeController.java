@@ -239,6 +239,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink bulkVisibleButton;
 	private FormLink bulkHiddenButton;
 	private FormLink bulkAwardBadgeButton;
+	private FormLink resetPassedOverridenButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -682,7 +683,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				}
 			}
 			if(assessmentConfig.isPassedOverridable()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.passedOverriden, new PassedOverridenCellRenderer()));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.passedOverridden, new PassedOverridenCellRenderer()));
 			}
 			if(Mode.none != assessmentConfig.getPassedMode()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer(getLocale())));
@@ -820,6 +821,15 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
 			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_badge");
 			tableEl.addBatchButton(bulkAwardBadgeButton);
+		}
+	}
+	
+	protected void initResetPassedOverriddenButton(FormLayoutContainer formLayout) {
+		if(assessmentConfig.isPassedOverridable()) {
+			resetPassedOverridenButton = uifactory.addFormLink("tool.reset.passed.overridden", formLayout, Link.BUTTON);
+			resetPassedOverridenButton.setIconLeftCSS("o_icon o_icon_overridden");
+			resetPassedOverridenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			tableEl.addBatchButton(resetPassedOverridenButton);
 		}
 	}
 	
@@ -1387,6 +1397,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doEmail(ureq);
 		} else if(bulkAwardBadgeButton == source) {
 			doAwardBadges(ureq);
+		} else if(resetPassedOverridenButton == source) {
+			doResetPassedOverridden(ureq);
 		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
@@ -1397,7 +1409,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	private void doOpenTools(UserRequest ureq, AssessedIdentityElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -1809,6 +1821,25 @@ public class IdentityListCourseNodeController extends FormBasicController
 		// User which the coach does not see have a score
 		// Total assessment entries with score is higher than visible assessment entries.
 		return scoreCount.intValue() > statistics.getCountScore();
+	}
+	
+	private void doResetPassedOverridden(UserRequest ureq) {
+		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		
+		tableEl.getMultiSelectedIndex().stream()
+				.map(i -> usersTableModel.getObject(i.intValue()))
+				.filter(row -> row != null && row.getPassedOverriden() != null)
+				.forEach(row -> {
+					Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+					Roles roles = securityManager.getRoles(assessedIdentity);
+					IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+					UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv,
+							course.getCourseEnvironment(), coachCourseEnv.getCourseReadOnlyDetails());
+					courseAssessmentService.resetRootPassed(getIdentity(), assessedUserCourseEnv);
+				});
+		
+		reload(ureq);
 	}
 	
 }

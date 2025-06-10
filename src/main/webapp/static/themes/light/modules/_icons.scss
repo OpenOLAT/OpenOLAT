@@ -305,7 +305,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_num_participants { @include o-add-icon('user-group');}
 .o_icon_objectives { @include o-add-icon('bullseye');}
 .o_icon_order { @include o-add-icon('arrows-v');}
-.o_icon_overriden { @include o-add-icon('pencil');}
+.o_icon_overridden { @include o-add-icon('pencil');}
 .o_icon_manager { @include o-add-icon('user-tie');}
 .o_icon_modified { @include o-add-icon('angle-double-down');}
 .o_icon_move_down { @include o-add-icon('angle-double-down');}
