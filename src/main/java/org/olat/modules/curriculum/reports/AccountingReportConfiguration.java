@@ -241,19 +241,20 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
 			List<RepositoryEntry> entries = curriculumService
 						.getRepositoryEntriesWithLectures(curriculumElement, null, true);
-			
-			LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
-			params.setEntries(entries);
-			List<LectureBlockIdentityStatistics> rawStatistics = lectureService
-					.getLecturesStatistics(params, List.of(), null);
-			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
-			Map<Long,LectureBlockIdentityStatistics> aggregatedStatisticsMap = aggregatedStatistics.stream()
-					.collect(Collectors.toMap(LectureBlockIdentityStatistics::getIdentityKey, u -> u, (u, v) -> u));
-			
-			for(BookingOrder order:bookingOrders) {
-				if(element.getKey().equals(order.getImplementationKey())) {
-					LectureBlockIdentityStatistics statistics = aggregatedStatisticsMap.get(order.getIdentityKey());
-					order.setLectureBlockStatistics(statistics);
+			if(!entries.isEmpty()) {
+				LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+				params.setEntries(entries);
+				List<LectureBlockIdentityStatistics> rawStatistics = lectureService
+						.getLecturesStatistics(params, List.of(), null);
+				List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
+				Map<Long,LectureBlockIdentityStatistics> aggregatedStatisticsMap = aggregatedStatistics.stream()
+						.collect(Collectors.toMap(LectureBlockIdentityStatistics::getIdentityKey, u -> u, (u, v) -> u));
+				
+				for(BookingOrder order:bookingOrders) {
+					if(element.getKey().equals(order.getImplementationKey())) {
+						LectureBlockIdentityStatistics statistics = aggregatedStatisticsMap.get(order.getIdentityKey());
+						order.setLectureBlockStatistics(statistics);
+					}
 				}
 			}
 		}
@@ -334,7 +335,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	private int generateAbsencesDataRow(OpenXMLWorksheet.Row row, int pos, BookingOrder bookingOrder) {
 		LectureBlockIdentityStatistics statistics = bookingOrder.getLectureBlockStatistics();
 		if(statistics == null) {
-			pos += 4;
+			for(int i=5; i-->0; ) {
+				row.addCell(pos++, 0l, null);
+			}
 		} else {
 			row.addCell(pos++, statistics.getTotalPersonalPlannedLectures(), null);
 			row.addCell(pos++, statistics.getTotalAttendedLectures(), null);
