@@ -55,6 +55,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -67,7 +68,7 @@ import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.user.ui.organisation.element.OrgSelectorElement;
-import org.olat.user.ui.organisation.structure.OrgStructureElement;
+import org.olat.user.ui.organisation.structure.OrgStructureComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -116,7 +117,7 @@ public class UserRolesController extends FormBasicController {
 	private FormLayoutContainer rolesCont;
 	private FormLink addToOrganisationButton;
 	private OrgSelectorElement affiliationSelectorEl;
-	private OrgStructureElement affiliationTreeEl;
+	private OrgStructureComponent affiliationTreeComp;
 	private List<RolesElement> rolesEls = new ArrayList<>(1);
 
 	private CloseableModalController cmc;
@@ -266,14 +267,11 @@ public class UserRolesController extends FormBasicController {
 
 				affiliationSelectorEl.setExampleKey("affiliation.orgs.information", new String[]{notManageableOrgNames});
 			}
-
-			affiliationTreeEl = uifactory.addOrgStructureElement(
-					"orgTreeAff",
-					formLayout,
-					getWindowControl(),
-					affOrganisations
-			);
-			affiliationTreeEl.setCollapseUnrelatedBranches(true);
+			
+			affiliationTreeComp = new OrgStructureComponent("orgTreeAff", getWindowControl(), getLocale());
+			affiliationTreeComp.setActiveOrganisations(affOrganisations);
+			affiliationTreeComp.setCollapseUnrelated(true);
+			formLayout.add(new ComponentWrapperElement(affiliationTreeComp));
 		}
 	}
 
@@ -369,11 +367,10 @@ public class UserRolesController extends FormBasicController {
 			rolesEl.setExampleKey("rightsForm.child.orgs", new String[] { String.valueOf(descendantCount) });
 		}
 
-		OrgStructureElement orgStructureElement = uifactory.addOrgStructureElement(
-				"orgTree_" + currentIndex, formLayout,
-				getWindowControl(), Collections.singletonList(organisation)
-		);
-		orgStructureElement.setCollapseUnrelatedBranches(true);
+		OrgStructureComponent orgStructureElement = new OrgStructureComponent("orgTree_" + currentIndex, getWindowControl(), getLocale());
+		orgStructureElement.setActiveOrganisations(Collections.singletonList(organisation));
+		orgStructureElement.setCollapseUnrelated(true);
+		formLayout.add(new ComponentWrapperElement(orgStructureElement));
 		
 		RolesElement wrapper = new RolesElement(roleKeys, organisation, rolesEl, orgStructureElement);
 		rolesEl.setUserObject(wrapper);
@@ -525,13 +522,22 @@ public class UserRolesController extends FormBasicController {
 	private void updateRoles() {
 		editedRoles = securityManager.getRoles(editedIdentity, false);
 		
-		if (!organisationModule.isEnabled() && simpleRolesCont != null) {
-			for (RolesElement wrapper : rolesEls) {
-				simpleRolesCont.remove(wrapper.getRolesDropdown());
+		if (organisationModule.isEnabled()) {
+			if (rolesCont != null) {
+				rolesCont.removeAll();
+				rolesEls.clear();
+				initAdditionalRoles();
 			}
-			rolesEls.clear();
-			initFormSimpleRoles(simpleRolesCont);
-		}
+		} else {
+			if (simpleRolesCont != null) {
+				for (RolesElement wrapper : rolesEls) {
+					simpleRolesCont.remove(wrapper.getRolesDropdown());
+				}
+				rolesEls.clear();
+				initFormSimpleRoles(simpleRolesCont);
+				
+			}
+		} 
 	}
 
 	@Override
@@ -574,7 +580,7 @@ public class UserRolesController extends FormBasicController {
 					.filter(o -> selKeys.contains(o.getKey()))
 					.toList();
 			// push into the tree
-			affiliationTreeEl.setActiveOrganisations(active);
+			affiliationTreeComp.setActiveOrganisations(active);
 			
 			for (Organisation organisation : active) {
 				if (!organisations.contains(organisation)) {
@@ -675,6 +681,10 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void removeEmptyRolesEls() {
+		if (affiliationSelectorEl == null) {
+			return;
+		}
+		
 		List<RolesElement> wrappersToRemove = new ArrayList<>(1);
 		for (RolesElement wrapper : rolesEls) {
 			MultipleSelectionElement rolesDropdown = wrapper.getRolesDropdown();
@@ -695,11 +705,13 @@ public class UserRolesController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		affiliationSelectorEl.clearError();
-		if (affiliationSelectorEl.getSelection().isEmpty()) {
-			affiliationSelectorEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
+	
+		if (affiliationSelectorEl != null) {
+			affiliationSelectorEl.clearError();
+			if (affiliationSelectorEl.getSelection().isEmpty()) {
+				affiliationSelectorEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
@@ -801,10 +813,10 @@ public class UserRolesController extends FormBasicController {
 		private final List<String> roleKeys;
 		private final Organisation organisation;
 		private final MultipleSelectionElement rolesDropdown;
-		private final OrgStructureElement orgStructureElement;
+		private final OrgStructureComponent orgStructureElement;
 		
 		RolesElement(List<String> roleKeys, Organisation organisation, MultipleSelectionElement rolesDropdown,
-				OrgStructureElement orgStructureElement) {
+				OrgStructureComponent orgStructureElement) {
 			this.roleKeys = roleKeys;
 			this.organisation = organisation;
 			this.rolesDropdown = rolesDropdown;
@@ -828,10 +840,10 @@ public class UserRolesController extends FormBasicController {
 		}
 		
 		public String getOrgStructureElementName() {
-			return orgStructureElement != null? orgStructureElement.getComponent().getComponentName(): null;
+			return orgStructureElement != null? orgStructureElement.getComponentName(): null;
 		}
 		
-		public OrgStructureElement getOrgStructureElement() {
+		public OrgStructureComponent getOrgStructureElement() {
 			return orgStructureElement;
 		}
 		
