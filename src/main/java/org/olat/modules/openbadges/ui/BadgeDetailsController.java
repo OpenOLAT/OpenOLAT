@@ -49,6 +49,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Initial date: 2023-07-13<br>
@@ -56,6 +58,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BadgeDetailsController extends BasicController {
+
+	private static final Logger log = LoggerFactory.getLogger(BadgeDetailsController.class);
 
 	private Long badgeClassKey;
 	private final RepositoryEntrySecurity reSecurity;
@@ -131,6 +135,10 @@ public class BadgeDetailsController extends BasicController {
 	
 	private void loadData() {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
+		if (badgeClass == null) {
+			log.error("Badge class not found for key: {}", badgeClassKey);
+			return;
+		}
 
 		switch (badgeClass.getStatus()) {
 			case preparation -> {
@@ -162,7 +170,7 @@ public class BadgeDetailsController extends BasicController {
 		}
 		
 		if (overviewCtrl != null) {
-			overviewCtrl.loadData();
+			overviewCtrl.loadData(true);
 		}
 		if (recipientsCtrl != null) {
 			recipientsCtrl.loadData(null);
@@ -253,7 +261,7 @@ public class BadgeDetailsController extends BasicController {
 		} else if (source == stepsController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				if (event == Event.CANCELLED_EVENT) {
-					createBadgeClassContext.cancel();
+					doCancel();
 				}
 				getWindowControl().pop();
 				removeAsListenerAndDispose(stepsController);
@@ -302,6 +310,17 @@ public class BadgeDetailsController extends BasicController {
 			listenTo(cmc);
 			cmc.activate();
 		}
+	}
+
+	private void doCancel() {
+		createBadgeClassContext.cancel();
+
+		BadgeClass reloadedBadgeClass = openBadgesManager.getCurrentBadgeClass(createBadgeClassContext.getBadgeClass().getRootId());
+		if (reloadedBadgeClass == null) {
+			return;
+		}
+
+		badgeClassKey = reloadedBadgeClass.getKey();
 	}
 
 	public String getName() {
