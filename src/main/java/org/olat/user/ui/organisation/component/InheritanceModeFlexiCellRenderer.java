@@ -45,15 +45,19 @@ public class InheritanceModeFlexiCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator t) {
 		if(cellValue == GroupMembershipInheritance.root) {
-			render(target, "o_icon_inheritance_root", translator.translate("table.tooltip.inheritance.root"));
+			render(renderer, target, "o_icon_inheritance_root", translator.translate("table.tooltip.inheritance.root"));
 		} else if(cellValue == GroupMembershipInheritance.inherited) {
-			render(target, "o_icon_inheritance_inherited", translator.translate("table.tooltip.inheritance.inherited"));
+			render(renderer, target, "o_icon_inheritance_inherited", translator.translate("table.tooltip.inheritance.inherited"));
 		} else if(cellValue == GroupMembershipInheritance.none) {
-			render(target, "o_icon_inheritance_none", translator.translate("table.tooltip.inheritance.none"));
+			render(renderer, target, "o_icon_inheritance_none", translator.translate("table.tooltip.inheritance.none"));
 		}
 	}
 	
-	private void render(StringOutput target, String icon, String tooltip) {
-		target.append("<i title='").append(tooltip).append("' class='o_icon ").append(icon).append("'> </i>");
+	private void render(Renderer renderer, StringOutput target, String icon, String tooltip) {
+		if(renderer == null) {
+			target.append(tooltip);
+		} else {
+			target.append("<i title='").append(tooltip).append("' class='o_icon ").append(icon).append("'> </i>");
+		}
 	}
 }

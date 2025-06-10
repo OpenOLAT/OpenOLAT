@@ -48,9 +48,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.XlsFlexiTableExporter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -67,6 +71,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
@@ -87,7 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class UserRoleHistoryController extends FormBasicController {
+public class UserRoleHistoryController extends FormBasicController implements ExportableFlexiTableDataModel {
 
 	private FlexiFiltersTab allTab;
 	
@@ -143,8 +148,24 @@ public class UserRoleHistoryController extends FormBasicController {
 	}
 	
 	private void initTable(FormItemContainer formLayout, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = initColumnsModel(false);
+		tableModel = new UserRoleHistoryTableModel(columnsModel, this, getLocale()); 
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
+		tableEl.setSearchEnabled(true);
+		
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setDefaultOrderBy(new SortKey(UserRoleHistoryCols.creationDate.name(), false));
+		tableEl.setSortSettings(sortOptions);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "user-roles-v1.2");
+	}
+	
+	private FlexiTableColumnModel initColumnsModel(boolean export) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserRoleHistoryCols.key));
+		if(!export) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserRoleHistoryCols.key));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.role,
 				new OrganisationRoleCellRenderer(getLocale())));
@@ -161,21 +182,30 @@ public class UserRoleHistoryController extends FormBasicController {
 				memberStatusRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.status,
 				memberStatusRenderer));
-		DefaultFlexiColumnModel noteCol = new DefaultFlexiColumnModel(UserRoleHistoryCols.note);
-		noteCol.setIconHeader("o_icon o_icon_notes");
+		
+		DefaultFlexiColumnModel noteCol;
+		if(export) {
+			noteCol = new DefaultFlexiColumnModel(UserRoleHistoryCols.note);
+		} else {
+			noteCol = new DefaultFlexiColumnModel(UserRoleHistoryCols.noteCallout);
+			noteCol.setIconHeader("o_icon o_icon_notes");
+		}
 		columnsModel.addFlexiColumnModel(noteCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserRoleHistoryCols.actor));
+		return columnsModel;
+	}
+	
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		FlexiTableColumnModel columnsModel = initColumnsModel( true);
+		List<FlexiColumnModel> columns = new ArrayList<>();
+		for(int i=0; i<columnsModel.getColumnCount(); i++) {
+			columns.add(columnsModel.getColumnModel(i));
+		}
 		
-		tableModel = new UserRoleHistoryTableModel(columnsModel, getLocale()); 
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setExportEnabled(true);
-		tableEl.setSearchEnabled(true);
-		
-		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(UserRoleHistoryCols.creationDate.name(), false));
-		tableEl.setSortSettings(sortOptions);
-		
-		tableEl.setAndLoadPersistedPreferences(ureq, "user-roles-v1.2");
+		String filename = "Roles_history_";
+		filename += editedIdentity.getUser().getFirstName() + "_" + editedIdentity.getUser().getLastName();
+		return new XlsFlexiTableExporter(filename).export(ftC, columns, getTranslator());
 	}
 	
 	protected void initFilters() {
@@ -308,9 +338,9 @@ public class UserRoleHistoryController extends FormBasicController {
 			Map<Group,Organisation> groupToOrganisations, Map<Group,String> groupToOrganisationsPath) {
 		Identity user = point.getIdentity();
 		String userDisplayName = userManager.getUserDisplayName(user);
-		Organisation organisation = groupToOrganisations.get(point.getGroup());
+		Organisation organisation = point.getGroup() == null ? null : groupToOrganisations.get(point.getGroup());
+		String organisationPath = point.getGroup() == null ? null : groupToOrganisationsPath.get(point.getGroup());
 		String organisationName = organisation == null ? null : organisation.getDisplayName();
-		String organisationPath = groupToOrganisationsPath.get(point.getGroup());
 		Long organisationKey = organisation == null ? null : organisation.getKey();
 		GroupMembershipInheritance inheritance = evaluateInheritance(point);
 		UserRoleHistoryRow row = new UserRoleHistoryRow(user, userDisplayName,
