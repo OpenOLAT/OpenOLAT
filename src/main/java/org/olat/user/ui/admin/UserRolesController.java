@@ -522,13 +522,22 @@ public class UserRolesController extends FormBasicController {
 	private void updateRoles() {
 		editedRoles = securityManager.getRoles(editedIdentity, false);
 		
-		if (!organisationModule.isEnabled() && simpleRolesCont != null) {
-			for (RolesElement wrapper : rolesEls) {
-				simpleRolesCont.remove(wrapper.getRolesDropdown());
+		if (organisationModule.isEnabled()) {
+			if (rolesCont != null) {
+				rolesCont.removeAll();
+				rolesEls.clear();
+				initAdditionalRoles();
 			}
-			rolesEls.clear();
-			initFormSimpleRoles(simpleRolesCont);
-		}
+		} else {
+			if (simpleRolesCont != null) {
+				for (RolesElement wrapper : rolesEls) {
+					simpleRolesCont.remove(wrapper.getRolesDropdown());
+				}
+				rolesEls.clear();
+				initFormSimpleRoles(simpleRolesCont);
+				
+			}
+		} 
 	}
 
 	@Override
