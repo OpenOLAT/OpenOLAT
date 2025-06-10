@@ -32,6 +32,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeVerification;
+import org.olat.modules.openbadges.v2.Verification;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,6 +48,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import org.json.JSONObject;
 
 /**
  * Initial date: 2023-06-01<br>
@@ -181,7 +185,24 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	public void setVerificationObject(String verificationObject) {
 		this.verificationObject = verificationObject;
 	}
+	
+	@Transient
+	public BadgeVerification getVerification() {
+		Verification verification = new Verification(getVerificationObject());
+		return BadgeVerification.valueOf(verification.getType());
+	}
 
+	public static String asVerificationObject(BadgeVerification value) {
+		Verification verification = new Verification(new JSONObject());
+		verification.setType(value.name());
+		return verification.asJsonObject().toString();
+	}
+	
+	@Transient
+	public void setVerification(BadgeVerification value) {
+		verificationObject = asVerificationObject(value);
+	}
+	
 	@Override
 	public Date getIssuedOn() {
 		return issuedOn;

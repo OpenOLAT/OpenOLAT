@@ -56,6 +56,10 @@ public interface BadgeAssertion {
 
 	void setVerificationObject(String verification);
 
+	BadgeVerification getVerification();
+	
+	void setVerification(BadgeVerification verification);
+	
 	Date getIssuedOn();
 
 	void setIssuedOn(Date issuedOn);
