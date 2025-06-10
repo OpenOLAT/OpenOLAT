@@ -30,13 +30,16 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -46,16 +49,19 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class UserRoleHistoryTableModel extends DefaultFlexiTableDataModel<UserRoleHistoryRow>
-implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTableModel, ExportableFlexiTableDataModel {
 	
 	private static final UserRoleHistoryCols[] COLS = UserRoleHistoryCols.values();
 
 	private final Locale locale;
 	private List<UserRoleHistoryRow> backups;
+	private final ExportableFlexiTableDataModel exportDelegate;
 	
-	public UserRoleHistoryTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public UserRoleHistoryTableModel(FlexiTableColumnModel columnModel, ExportableFlexiTableDataModel exportDelegate,
+			Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.exportDelegate = exportDelegate;
 	}
 	
 	@Override
@@ -204,8 +210,9 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 				case activity -> historyRow.getActivity();
 				case previousStatus -> historyRow.getPreviousStatus();
 				case status -> historyRow.getStatus();
-				case note -> historyRow.getNoteLink();
 				case actor -> historyRow.getActorDisplayName();
+				case note -> historyRow.getAdminNote();
+				case noteCallout -> historyRow.getNoteLink();
 				default -> "ERROR";
 			};
 		}
@@ -218,7 +225,12 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 		backups = new ArrayList<>(objects);
 		super.setObjects(objects);
 	}
-	
+		
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		return this.exportDelegate.export(ftC);
+	}
+
 	public enum UserRoleHistoryCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		creationDate("table.header.date"),
@@ -230,8 +242,9 @@ implements SortableFlexiTableDataModel<UserRoleHistoryRow>, FilterableFlexiTable
 		activity("table.header.activity"),
 		previousStatus("table.header.original.value"),
 		status("table.header.new.value"),
+		actor("table.header.actor"),
 		note("table.header.note"),
-		actor("table.header.actor");
+		noteCallout("table.header.note");
 		
 		private final String i18nKey;
 		
