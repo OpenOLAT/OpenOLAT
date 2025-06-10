@@ -84,6 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BadgeClassesController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
 	private static final String CMD_SELECT = "select";
+	private static final String CMD_AWARDED_COUNT = "awardedCount";
 	private static final String CMD_EDIT_BADGE = "editBadge";
 	private static final String CMD_CREATE_NEW_VERSION = "createNewVersion";
 	private static final String CMD_AWARD_MANUALLY = "awardManually";
@@ -156,7 +157,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.status, new BadgeClassStatusRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.type));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.version));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.awardedCount, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.awardedCount, CMD_AWARDED_COUNT));
 
 		boolean owner = reSecurity == null || reSecurity.isOwner();
 		if (owner) {
@@ -273,7 +274,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				String command = selectionEvent.getCommand();
 				BadgeClassRow row = tableModel.getObject(selectionEvent.getIndex());
 				if (CMD_SELECT.equals(command)) {
-					doSelect(ureq, row);
+					doSelect(ureq, row, false);
+				} else if (CMD_AWARDED_COUNT.equals(command)) {
+					doSelect(ureq, row, true);
 				}
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doCreate(ureq);
@@ -534,19 +537,22 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		confirmDeleteUsedClassCtrl.setUserObject(badgeClass);
 	}
 
-	private void doSelect(UserRequest ureq, BadgeClassRow row) {
+	private void doSelect(UserRequest ureq, BadgeClassRow row, boolean showRecipientsTab) {
 		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
 		Long key = badgeClass.getKey();
 		String name = badgeClass.getNameWithScan();
-		doSelect(ureq, key, name);
+		doSelect(ureq, key, name, showRecipientsTab);
 	}
 
-	private void doSelect(UserRequest ureq, Long key, String name) {
+	private void doSelect(UserRequest ureq, Long key, String name, boolean showRecipientsTab) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Badge", key);
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		badgeDetailsController = new BadgeDetailsController(ureq, swControl, key, reSecurity);
 		listenTo(badgeDetailsController);
 		breadcrumbPanel.pushController(name, badgeDetailsController);
+		if (showRecipientsTab) {
+			badgeDetailsController.showRecipientsTab(ureq);
+		}
 	}
 
 	@Override
@@ -660,10 +666,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				return;
 			}
 			if (entry != null && badgeClass.getEntry().getKey().equals(entry.getKey())) {
-				doSelect(ureq, key, badgeClass.getNameWithScan());
+				doSelect(ureq, key, badgeClass.getNameWithScan(), false);
 			}
 			if (entry == null && badgeClass.getEntry() == null) {
-				doSelect(ureq, key, badgeClass.getNameWithScan());
+				doSelect(ureq, key, badgeClass.getNameWithScan(), false);
 			}
 		}
 	}

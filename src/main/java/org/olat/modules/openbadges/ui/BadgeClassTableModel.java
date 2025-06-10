@@ -84,7 +84,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		if (OpenBadgesUIFactory.showTotalBadgeAssertionCount && currentCount != totalUseCount) {
 			return translator.translate("class.awarded.to.all.version", Long.toString(currentCount), Long.toString(totalUseCount));
 		} else {
-			return Long.toString(currentCount);
+			return Long.toString(totalUseCount);
 		}
 	}
 

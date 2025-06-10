@@ -327,6 +327,10 @@ public class BadgeDetailsController extends BasicController {
 		return overviewCtrl != null ? overviewCtrl.getName() : "";
 	}
 
+	public void showRecipientsTab(UserRequest ureq) {
+		tabPane.setSelectedPane(ureq, recipientsTab);
+	}
+
 	private class BadgeClassMediaFileMapper implements Mapper {
 
 		@Override
