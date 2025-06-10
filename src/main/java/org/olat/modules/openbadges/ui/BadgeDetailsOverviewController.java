@@ -118,17 +118,27 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		issuedManuallyEl = uifactory.addStaticTextElement("badge.issued.manually", null,
 				translate("badge.issued.manually"), formLayout);
 
-		loadData();
+		loadData(false);
 	}
 
 	private String versionString(BadgeClass badgeClass) {
 		return OpenBadgesUIFactory.versionString(getTranslator(), badgeClass, true, true);
 	}
 
-	void loadData() {
+	void loadData(boolean updateVersionDropdown) {
 		BadgeClass badgeClass;
 		if (versionSelectionEl != null && versionSelectionEl.isVisible() && versionSelectionEl.getSelectedKey() != null) {
-			badgeClass = openBadgesManager.getBadgeClassByUuid(versionSelectionEl.getSelectedKey());
+			if (updateVersionDropdown) {
+				String selectedVersion = versionSelectionEl.getSelectedKey();
+				badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
+				SelectionValues sv = new SelectionValues();
+				openBadgesManager.getBadgeClassVersions(badgeClass.getRootId())
+						.forEach(bc -> sv.add(SelectionValues.entry(bc.getUuid(), versionString(bc))));
+				versionSelectionEl.setKeysAndValues(sv.keys(), sv.values(), sv.cssClasses());
+				versionSelectionEl.select(selectedVersion, true);
+			} else {
+				badgeClass = openBadgesManager.getBadgeClassByUuid(versionSelectionEl.getSelectedKey());
+			}
 		} else {
 			badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 		}
@@ -206,7 +216,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		if (source == courseEl) {
 			fireEvent(ureq, FormEvent.BACK_EVENT);
 		} else if (source == versionSelectionEl) {
-			loadData();
+			loadData(false);
 		} else if (source == recipientsEl) {
 			fireEvent(ureq, SHOW_RECIPIENTS_EVENT);
 		}
