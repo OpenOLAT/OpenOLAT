@@ -1032,6 +1032,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			updateParentLastModified(currentMetadata);
 		}
 		
+		deleteThumbnailsOfMetadata(metadata);
+		
 		String prevUri = metadata.getUri();
 		String prevRelativePath = metadata.getRelativePath();
 		Path newFile = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), newName);
