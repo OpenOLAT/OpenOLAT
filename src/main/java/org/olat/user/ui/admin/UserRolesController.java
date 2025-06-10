@@ -672,6 +672,10 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void removeEmptyRolesEls() {
+		if (affiliationSelectorEl == null) {
+			return;
+		}
+		
 		List<RolesElement> wrappersToRemove = new ArrayList<>(1);
 		for (RolesElement wrapper : rolesEls) {
 			MultipleSelectionElement rolesDropdown = wrapper.getRolesDropdown();
@@ -692,11 +696,13 @@ public class UserRolesController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		affiliationSelectorEl.clearError();
-		if (affiliationSelectorEl.getSelection().isEmpty()) {
-			affiliationSelectorEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
+	
+		if (affiliationSelectorEl != null) {
+			affiliationSelectorEl.clearError();
+			if (affiliationSelectorEl.getSelection().isEmpty()) {
+				affiliationSelectorEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
