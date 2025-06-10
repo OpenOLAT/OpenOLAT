@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +60,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -154,11 +156,19 @@ public class ResetCourseDataHelper {
 			.visitAll();
 		return courseNodes;
 	}
-
+	
 	public MediaResource resetCourseNodes(List<Identity> identities, List<CourseNode> courseNodes, boolean resetCourse, Identity doer, Role by) {
+		return resetCourseNodes(identities, courseNodes, resetCourse, List.of(), List.of(), List.of(), doer, by);
+	}
+
+	public MediaResource resetCourseNodes(List<Identity> identities, List<CourseNode> courseNodes, boolean resetCourse,
+			Collection<Identity> resetPassedOverridenIdentities, Collection<Identity> resetPassedIdentities,
+			Collection<Identity> archiveCertificateIdentities, Identity doer, Role by) {
 		List<VFSLeaf> archiveNames = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
-			VFSLeaf archiveName = resetCourseNodes(identity, courseNodes, resetCourse, identities, doer, by);
+			VFSLeaf archiveName = resetCourseNodes(identity, courseNodes, resetCourse,
+					resetPassedOverridenIdentities.contains(identity), resetPassedIdentities.contains(identity),
+					archiveCertificateIdentities.contains(identity), identities, doer, by);
 			if(archiveName != null) {
 				archiveNames.add(archiveName);
 			}
@@ -187,8 +197,9 @@ public class ResetCourseDataHelper {
 		return new ResetCourseDataMediaResource(archiveNames, courseEnv);
 	}
 
-	private VFSLeaf resetCourseNodes(Identity assessedIdentity, List<CourseNode> courseNodes,
-			boolean resetCourse, List<Identity> identitiesToReset, Identity doer, Role by) {	
+	private VFSLeaf resetCourseNodes(Identity assessedIdentity, List<CourseNode> courseNodes, boolean resetCourse,
+			boolean resetPassedOverridden, boolean resetPassed, boolean archiveCertificate,
+			List<Identity> identitiesToReset, Identity doer, Role by) {
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(assessedIdentity, roles, courseEntry);
@@ -255,11 +266,40 @@ public class ResetCourseDataHelper {
 			log.error("", e);
 		}
 		
+		if (!resetCourse) {
+			CourseAssessmentService assessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			
+			if (resetPassedOverridden) {
+				assessmentService.resetRootPassed(doer, userCourseEnv);
+			}
+			
+			if (resetPassed) {
+				AssessmentEvaluation scoreEval = userCourseEnv.getScoreAccounting().getScoreEvaluation(
+						userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
+				ScoreEvaluation updatedEval = new ScoreEvaluation(scoreEval.getScore(),
+					scoreEval.getWeightedScore(), scoreEval.getScoreScale(), scoreEval.getGrade(),
+					scoreEval.getGradeSystemIdent(), scoreEval.getPerformanceClassIdent(), null,
+					scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				assessmentService.updateScoreEvaluation(
+						userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
+						updatedEval, userCourseEnv, doer, false, by);
+			}
+			
+			if (archiveCertificate && lastCertificate != null) {
+				Boolean passed = userCourseEnv.getScoreAccounting().getScoreEvaluation(
+						userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()).getPassed();
+				if (passed == null || !passed.booleanValue()) {
+					certificatesManager.archiveCertificate(lastCertificate);
+				}
+			}
+		}
+		
 		log.info("Reset data archive for user: {}, course: {} at : {}", assessedIdentity, courseEntry, archiveZip);
 		dbInstance.commit();
 		
 		// 4) Evaluate all
-		userCourseEnv.getScoreAccounting().evaluateAll();
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		dbInstance.commitAndCloseSession();
 		
 		if(resetCourse) {

@@ -577,8 +577,22 @@ ul.o_certificates li {
 		text-overflow: ellipsis;
 	}
 	
-	.o_certificate_expiration {
+	.o_certificate_label {
 		margin: 0 0 3px 0;
+		
+		.o_certificate_expiration {
+			border-color: $alert-warning-text;
+			color: $alert-warning-text;
+			background-color: $alert-warning-bg;
+		}
+		.o_certificate_archived {
+			@extend %o_labeled_light_grey;
+		}
+		.o_labeled, o_labeled_light {
+			text-transform: none;
+			font-weight: bold;
+			display: inline-block;
+		}
 	}
 	
 	.o_achievement_meta > span {
@@ -597,15 +611,6 @@ ul.o_certificates li {
 		>a:first-child {
 			margin-right: 1em;
 		}
-	}
-	
-	.o_certificate_expiration.o_labeled {
-		border-color: $alert-warning-text;
-		color: $alert-warning-text;
-		background-color: $alert-warning-bg;
-		text-transform: none;
-		font-weight: bold;
-		display: inline-block;
 	}
 	
 	.o_certificate_download_expired {

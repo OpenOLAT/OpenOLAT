@@ -26,8 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 
 /**
  * 
@@ -37,30 +36,25 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
  */
 public class ResetData2CourseElementsStep extends BasicStep {
 
-	private final ResetDataContext dataContext;
+	private final ResetWizardContext wizardContext;
 
-	public ResetData2CourseElementsStep(UserRequest ureq, ResetDataContext dataContext,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolSecurityCallback secCallback,
-			boolean withParticipantsSelection) {
+	public ResetData2CourseElementsStep(UserRequest ureq, ResetWizardContext wizardContext) {
 		super(ureq);
-		this.dataContext = dataContext;
+		this.wizardContext = wizardContext;
 		
-		if(withParticipantsSelection) {
-			setNextStep(new ResetData3ParticipantsStep(ureq, dataContext, coachCourseEnv, secCallback));
-		} else {
-			setNextStep(new ResetData4ConfirmationStep(ureq, dataContext, secCallback));
-		}
 		setI18nTitleAndDescr("wizard.select.course.elements", "wizard.select.course.elements");
+		setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.courseElements));
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		wizardContext.setCurrent(ResetDataStep.courseElements);
 		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext context, Form form) {
-		return new ResetDataCourseElementsSelectionController(ureq, wControl, form, context, dataContext);
+		return new ResetDataCourseElementsSelectionController(ureq, wControl, form, context, wizardContext.getDataContext());
 	}
 }

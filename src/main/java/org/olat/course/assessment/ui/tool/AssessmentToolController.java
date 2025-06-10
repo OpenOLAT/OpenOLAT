@@ -53,6 +53,7 @@ import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
@@ -211,7 +212,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			}
 		} else if (source == assessmentResetCtrl) {
 			if (event instanceof AssessmentResetEvent are) {
-				doRecalculate(are);
+				doRecalculate(ureq, are);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -220,7 +221,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				getWindowControl().pop();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					if (courseTreeCtrl != null) {
-						courseTreeCtrl.reload();
+						courseTreeCtrl.reload(ureq);
 					}
 				}
 				cleanUp();
@@ -271,7 +272,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		cmc.activate();
 	}
 
-	private void doRecalculate(AssessmentResetEvent are) {
+	private void doRecalculate(UserRequest ureq, AssessmentResetEvent are) {
 		if (are.isResetOverriden()) {
 			assessmentService.resetAllOverridenRootPassed(courseEntry);
 		}
@@ -283,7 +284,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			courseAssessmentService.evaluateAll(course, true);
 		}
 		if (courseTreeCtrl != null) {
-			courseTreeCtrl.reload();
+			courseTreeCtrl.reload(ureq);
 		}
 	}
 	
@@ -291,7 +292,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		ResetDataContext dataContext = new ResetDataContext(courseEntry);
 		dataContext.setResetCourse(ResetCourse.all);
 		dataContext.setResetParticipants(ResetParticipants.all);
-		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, dataContext, coachUserEnv, assessmentCallback, true, true);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachUserEnv, assessmentCallback, true, true, true);
+		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, wizardContext);
 		
 		String title = translate("wizard.reset.data.title");
 		ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, assessmentCallback);

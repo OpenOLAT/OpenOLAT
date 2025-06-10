@@ -35,8 +35,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 
 /**
  * 
@@ -46,34 +45,23 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
  */
 public class ResetData1OptionsStep extends BasicStep {
 	
-	private final ResetDataContext dataContext;
-	private final UserCourseEnvironment coachCourseEnv;
-	private final AssessmentToolSecurityCallback secCallback;
-	private final boolean withCourseNodeSelection;
-	private final boolean withParticipantsSelection;
+	private ResetWizardContext wizardContext;
 	
-	public ResetData1OptionsStep(UserRequest ureq, ResetDataContext dataContext,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolSecurityCallback secCallback,
-			 boolean withCourseNodeSelection, boolean withParticipantsSelection) {
+	public ResetData1OptionsStep(UserRequest ureq, ResetWizardContext wizardContext) {
 		super(ureq);
-		this.dataContext = dataContext;
-		this.secCallback = secCallback;
-		this.coachCourseEnv = coachCourseEnv;
-		this.withCourseNodeSelection = withCourseNodeSelection;
-		this.withParticipantsSelection = withParticipantsSelection;
-		if(withCourseNodeSelection) {
-			setNextStep(new ResetData2CourseElementsStep(ureq, dataContext, coachCourseEnv, secCallback, withParticipantsSelection));
-		} else if(withParticipantsSelection) {
-			setNextStep(new ResetData3ParticipantsStep(ureq, dataContext, coachCourseEnv, secCallback));
-		} else {
-			setNextStep(new ResetData4ConfirmationStep(ureq, dataContext, secCallback));
-		}
+		this.wizardContext = wizardContext;
 		
 		setI18nTitleAndDescr("wizard.general.options", "wizard.general.options");
+		updateNextStep(ureq);
+	}
+	
+	void updateNextStep(UserRequest ureq) {
+		setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.options));
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		wizardContext.setCurrent(ResetDataStep.options);
 		return new PrevNextFinishConfig(false, true, false);
 	}
 
@@ -100,11 +88,11 @@ public class ResetData1OptionsStep extends BasicStep {
 			setFormInfo("wizard.general.options.description");
 			setFormInfoHelp("manual_user/learningresources/Assessment_tool_overview/#course_reset");
 			
-			String displayname = dataContext.getRepositoryEntry().getDisplayname();
+			String displayname = wizardContext.getDataContext().getRepositoryEntry().getDisplayname();
 			uifactory.addStaticTextElement("course.title", StringHelper.escapeHtml(displayname), formLayout);
 			
-			if(StringHelper.containsNonWhitespace(dataContext.getRepositoryEntry().getExternalRef())) {
-				uifactory.addStaticTextElement("course.external.ref", StringHelper.escapeHtml(dataContext.getRepositoryEntry().getExternalRef()), formLayout);
+			if(StringHelper.containsNonWhitespace(wizardContext.getDataContext().getRepositoryEntry().getExternalRef())) {
+				uifactory.addStaticTextElement("course.external.ref", StringHelper.escapeHtml(wizardContext.getDataContext().getRepositoryEntry().getExternalRef()), formLayout);
 			}
 			
 			SelectionValues courseElementsKV = new SelectionValues();
@@ -114,7 +102,7 @@ public class ResetData1OptionsStep extends BasicStep {
 					translate("option.course.element.elements.desc"), null, null, true));
 			courseElementsEl = uifactory.addCardSingleSelectHorizontal("option.course.element", "option.course.element", formLayout, courseElementsKV);
 			courseElementsEl.select(ResetCourse.all.name(), true);
-			courseElementsEl.setVisible(withCourseNodeSelection);
+			courseElementsEl.setVisible(wizardContext.isWithCourseNodeSelection());
 			
 			SelectionValues participantsKV = new SelectionValues();
 			participantsKV.add(SelectionValues.entry(ResetParticipants.all.name(), translate("option.participants.all"),
@@ -123,37 +111,28 @@ public class ResetData1OptionsStep extends BasicStep {
 					translate("option.participants.selection.desc"), null, null, true));
 			participantsEl = uifactory.addCardSingleSelectHorizontal("option.participants", "option.participants", formLayout, participantsKV);
 			participantsEl.select(ResetParticipants.all.name(), true);
-			participantsEl.setVisible(withParticipantsSelection);
+			participantsEl.setVisible(wizardContext.isWithParticipantsSelection());
 		}
 
 		@Override
 		protected void formNext(UserRequest ureq) {
 			if(courseElementsEl.isVisible() && courseElementsEl.isOneSelected()) {
 				ResetCourse resetCourseOption = ResetCourse.valueOf(courseElementsEl.getSelectedKey());
-				dataContext.setResetCourse(resetCourseOption);
+				wizardContext.getDataContext().setResetCourse(resetCourseOption);
 			}
 			
 			if(participantsEl.isVisible() && participantsEl.isOneSelected()) {
 				ResetParticipants resetParticipantsOption = ResetParticipants.valueOf(participantsEl.getSelectedKey());
-				dataContext.setResetParticipants(resetParticipantsOption);
+				wizardContext.getDataContext().setResetParticipants(resetParticipantsOption);
 			}
 			
-			if((dataContext.getResetCourse() == ResetCourse.all && dataContext.getResetParticipants() == ResetParticipants.all)
-					|| (!withParticipantsSelection && !withCourseNodeSelection)) {
-				setNextStep(new ResetData4ConfirmationStep(ureq, dataContext, secCallback));
-			} else if(dataContext.getResetCourse() == ResetCourse.all) {
-				if(withParticipantsSelection) {
-					setNextStep(new ResetData3ParticipantsStep(ureq, dataContext, coachCourseEnv, secCallback));
-				} else {
-					setNextStep(new ResetData4ConfirmationStep(ureq, dataContext, secCallback));
-				}
-			} else {
-				setNextStep(new ResetData2CourseElementsStep(ureq, dataContext, coachCourseEnv, secCallback,
-						withParticipantsSelection && dataContext.getResetParticipants() == ResetParticipants.selected));
+			if (wizardContext.isRecalculationStep(ResetDataStep.options)) {
+				wizardContext.recalculateAvailableSteps();
+				updateNextStep(ureq);
+				
+				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 			}
-			
-			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
-			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
 		@Override

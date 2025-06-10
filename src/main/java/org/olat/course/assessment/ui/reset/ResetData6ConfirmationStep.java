@@ -31,7 +31,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 
 /**
  * 
@@ -39,16 +39,13 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ResetData4ConfirmationStep extends BasicStep {
+public class ResetData6ConfirmationStep extends BasicStep {
 
-	private final ResetDataContext dataContext;
-	private final AssessmentToolSecurityCallback secCallback;
+	private final ResetWizardContext wizardContext;
 	
-	public ResetData4ConfirmationStep(UserRequest ureq, ResetDataContext dataContext,
-			AssessmentToolSecurityCallback secCallback) {
+	public ResetData6ConfirmationStep(UserRequest ureq, ResetWizardContext wizardContext) {
 		super(ureq);
-		this.dataContext = dataContext;
-		this.secCallback = secCallback;
+		this.wizardContext = wizardContext;
 		
 		setNextStep(Step.NOSTEP);
 		setI18nTitleAndDescr("wizard.confirmation", "wizard.confirmation");
@@ -56,6 +53,7 @@ public class ResetData4ConfirmationStep extends BasicStep {
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		wizardContext.setCurrent(ResetDataStep.overview);
 		return new PrevNextFinishConfig(true, false, true);
 	}
 
@@ -72,7 +70,7 @@ public class ResetData4ConfirmationStep extends BasicStep {
 		public ResetDataConfirmationController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 			
-			confirmationCtrl = new ConfirmResetDataController(ureq, wControl, rootForm, dataContext, secCallback);
+			confirmationCtrl = new ConfirmResetDataController(ureq, wControl, rootForm, wizardContext.getDataContext(), wizardContext.getSecCallback());
 			listenTo(confirmationCtrl);
 			
 			initForm(ureq);

@@ -58,6 +58,12 @@ implements SortableFlexiTableDataModel<ResetDataIdentityRow> {
 			switch(COLS[col]) {
 				case score: return row;
 				case passed: return row.getPassed();
+				case passedAt: return row.getPassedAt();
+				case passedOriginal: return row.getPassedOriginal();
+				case passedOverriden: return row.getPassed();
+				case passedOverridenAt: return row.getPassedOverridenAt();
+				case certificate: return row.getCertificate();
+				case certificateReset: return row.getCertificateResetItem();
 				case assessmentStatus: return row.getAssessmentStatus();
 				case initialLaunchDate: return row.getInitialCourseLaunchDate();
 				case lastModified: return row.getLastModified();
@@ -77,8 +83,13 @@ implements SortableFlexiTableDataModel<ResetDataIdentityRow> {
 	public enum IdentityCols implements FlexiSortableColumnDef {
 		score("table.header.score"),
 		assessmentStatus("table.header.assessmentStatus"),
-		passedOverriden("table.header.passed.overriden"),
 		passed("table.header.passed"),
+		passedAt("table.header.passed.at"),
+		passedOriginal("table.header.passed.original"),
+		passedOverriden("table.header.passed.overriden"),
+		passedOverridenAt("table.header.passed.overriden.at"),
+		certificate("table.header.certificate"),
+		certificateReset("table.header.certificate.reset"),
 		initialLaunchDate("table.header.initialLaunchDate"),
 		lastModified("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),

@@ -24,8 +24,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.id.Identity;
+import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -42,12 +45,18 @@ public class ResetDataIdentityRow extends UserPropertiesRow {
 	
 	private BigDecimal score;
 	private Boolean passed;
+	private Date passedAt;
+	private Boolean passedOriginal;
+	private Date passedOverridenAt;
 	private AssessmentEntryStatus status;
 	
 	private Date lastModified;
 	private Date lastUserModified;
 	private Date lastCoachModified;
 	private Date initialCourseLaunchDate;
+	
+	private CertificateLight certificate;
+	private SingleSelection certificateResetItem;
 	
 	public ResetDataIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -57,7 +66,11 @@ public class ResetDataIdentityRow extends UserPropertiesRow {
 	public void setAssessmentEntry(AssessmentEntry entry) {
 		status = entry.getAssessmentStatus();
 		score = entry.getScore();
-		passed = entry.getPassed();
+		Overridable<Boolean> passedOverridable = entry.getPassedOverridable();
+		passed = passedOverridable.getCurrent();
+		passedAt = passedOverridable.getDate();
+		passedOriginal = passedOverridable.getOriginal();
+		passedOverridenAt = passedOverridable.getModDate();
 		lastModified = entry.getLastModified();
 		lastUserModified = entry.getLastUserModified();
 		lastCoachModified = entry.getLastCoachModified();
@@ -73,6 +86,22 @@ public class ResetDataIdentityRow extends UserPropertiesRow {
 
 	public Boolean getPassed() {
 		return passed;
+	}
+
+	public void setPassed(Boolean passed) {
+		this.passed = passed;
+	}
+
+	public Date getPassedAt() {
+		return passedAt;
+	}
+
+	public Boolean getPassedOriginal() {
+		return passedOriginal;
+	}
+
+	public Date getPassedOverridenAt() {
+		return passedOverridenAt;
 	}
 
 	public AssessmentEntryStatus getAssessmentStatus() {
@@ -97,5 +126,21 @@ public class ResetDataIdentityRow extends UserPropertiesRow {
 	
 	public void setInitialCourseLaunchDate(Date initialCourseLaunchDate) {
 		this.initialCourseLaunchDate = initialCourseLaunchDate;
+	}
+
+	public CertificateLight getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificate(CertificateLight certificate) {
+		this.certificate = certificate;
+	}
+
+	public SingleSelection getCertificateResetItem() {
+		return certificateResetItem;
+	}
+
+	public void setCertificateResetItem(SingleSelection certificateResetItem) {
+		this.certificateResetItem = certificateResetItem;
 	}
 }

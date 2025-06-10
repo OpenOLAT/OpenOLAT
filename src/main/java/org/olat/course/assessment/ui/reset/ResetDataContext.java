@@ -39,6 +39,9 @@ public class ResetDataContext {
 
 	private List<CourseNode> courseNodes;
 	private List<Identity> selectParticipants;
+	private List<Identity> participantsResetPasedOverridden;
+	private List<Identity> participantsResetPassed;
+	private List<Identity> participantsArchiveCertificate;
 	
 	public ResetDataContext(RepositoryEntry repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
@@ -56,6 +59,30 @@ public class ResetDataContext {
 		this.selectParticipants = participants;
 	}
 	
+	public List<Identity> getParticipantsResetPasedOverridden() {
+		return participantsResetPasedOverridden;
+	}
+
+	public void setParticipantsResetPasedOverridden(List<Identity> participantsResetPasedOverridden) {
+		this.participantsResetPasedOverridden = participantsResetPasedOverridden;
+	}
+
+	public List<Identity> getParticipantsResetPassed() {
+		return participantsResetPassed;
+	}
+
+	public void setParticipantsResetPassed(List<Identity> participantsResetPassed) {
+		this.participantsResetPassed = participantsResetPassed;
+	}
+
+	public List<Identity> getParticipantsArchiveCertificate() {
+		return participantsArchiveCertificate;
+	}
+
+	public void setParticipantsArchiveCertificate(List<Identity> participantsArchiveCertificate) {
+		this.participantsArchiveCertificate = participantsArchiveCertificate;
+	}
+
 	public ResetCourse getResetCourse() {
 		return resetCourse;
 	}
@@ -88,6 +115,6 @@ public class ResetDataContext {
 	public enum ResetParticipants {
 		all,
 		selected
-		
 	}
+	
 }

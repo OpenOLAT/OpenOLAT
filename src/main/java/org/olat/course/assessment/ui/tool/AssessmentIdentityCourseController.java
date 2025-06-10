@@ -62,6 +62,7 @@ import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
@@ -501,7 +502,8 @@ public class AssessmentIdentityCourseController extends BasicController
 		dataContext.setResetCourse(ResetCourse.all);
 		dataContext.setResetParticipants(ResetParticipants.selected);
 		dataContext.setSelectedParticipants(List.of(assessedIdentity));
-		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, dataContext, coachCourseEnv, secCallback, true, false);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, true, true, false);
+		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, wizardContext);
 		
 		String title = translate("wizard.reset.data.title");
 		ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, secCallback);

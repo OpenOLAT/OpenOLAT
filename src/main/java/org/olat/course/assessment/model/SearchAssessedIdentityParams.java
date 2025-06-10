@@ -62,6 +62,7 @@ public class SearchAssessedIdentityParams {
 	private Boolean gradeNull;
 	private List<AssessmentEntryStatus> assessmentStatus;
 	private List<Passed> passed;
+	private Boolean passedOverridden;
 	private Boolean userVisibility;
 	private Collection<ParticipantType> participantTypes;
 	private Collection<AssessmentObligation> assessmentObligations;
@@ -69,6 +70,7 @@ public class SearchAssessedIdentityParams {
 	private String searchString;
 	private List<Long> businessGroupKeys;
 	private List<Long> curriculumElementKeys;
+	private Set<Long> identityKeys;
 	private Set<Long> fakeParticipantIdentityKeys;
 	
 	private Map<String,String> userProperties;
@@ -166,6 +168,14 @@ public class SearchAssessedIdentityParams {
 		this.passed = passed;
 	}
 	
+	public Boolean getPassedOverridden() {
+		return passedOverridden;
+	}
+
+	public void setPassedOverridden(Boolean passedOverridden) {
+		this.passedOverridden = passedOverridden;
+	}
+
 	public Boolean getUserVisibility() {
 		return userVisibility;
 	}
@@ -212,6 +222,18 @@ public class SearchAssessedIdentityParams {
 
 	public void setCurriculumElementKeys(List<Long> curriculumElementKeys) {
 		this.curriculumElementKeys = curriculumElementKeys;
+	}
+	
+	public boolean hasIdentityKeys() {
+		return identityKeys != null && !identityKeys.isEmpty();
+	}
+
+	public Set<Long> getIdentityKeys() {
+		return identityKeys;
+	}
+
+	public void setIdentityKeys(Set<Long> identityKeys) {
+		this.identityKeys = identityKeys;
 	}
 
 	public Set<Long> getFakeParticipantIdentityKeys() {

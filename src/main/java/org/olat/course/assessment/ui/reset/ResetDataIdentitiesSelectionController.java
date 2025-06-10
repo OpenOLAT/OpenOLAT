@@ -60,6 +60,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataIdentitiesTableModel.IdentityCols;
+import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.nodes.CourseNode;
@@ -91,6 +92,7 @@ public class ResetDataIdentitiesSelectionController extends StepFormBasicControl
 	private FlexiTableElement tableEl;
 	private ResetDataIdentitiesTableModel tableModel;
 	
+	private final ResetData3ParticipantsStep step;
 	private final CourseNode courseNode;
 	private final ResetDataContext dataContext;
 	private final AssessmentConfig assessmentConfig;
@@ -110,10 +112,10 @@ public class ResetDataIdentitiesSelectionController extends StepFormBasicControl
 	private CourseAssessmentService courseAssessmentService;
 	
 	public ResetDataIdentitiesSelectionController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			StepsRunContext runContext, ResetDataContext dataContext, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolSecurityCallback assessmentCallback) {
+			StepsRunContext runContext, ResetData3ParticipantsStep step, ResetDataContext dataContext,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "identities_list");
-
+		this.step = step;
 		this.dataContext = dataContext;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessmentCallback = assessmentCallback;
@@ -336,7 +338,14 @@ public class ResetDataIdentitiesSelectionController extends StepFormBasicControl
 			}
 		}
 		dataContext.setSelectedParticipants(selectedIdentities);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		
+		if (step.getWizardContext().isRecalculationStep(ResetDataStep.participants)) {
+			step.getWizardContext().recalculateAvailableSteps();
+			step.updateNextStep(ureq);
+			
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
 	}
 	
 	@Override

@@ -427,6 +427,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sb.append(")");
 			
+			if (params.hasIdentityKeys()) {
+				sb.append(" and ").append(identKey).append(" in :identityKeys");
+				queryParams.addIdentityKeys();
+			}
 			if(params.isExcludeAdminsAndCoaches()) {
 				sb.append(" and ").append(identKey).append(" not in (");
 				sb.append("select distinct participant.identity.key from repoentrytogroup as rel, bgroupmember as participant");
@@ -448,6 +452,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				sb.append(")");
 				queryParams.addRepoEntryKey();
 				queryParams.addCoachKey();
+				filtered = true;
+			}
+			if (params.hasIdentityKeys()) {
+				if (filtered) sb.append(" or ");
+				sb.append(identKey).append(" in :identityKeys");
+				queryParams.addIdentityKeys();
 				filtered = true;
 			}
 			if (params.hasFakeParticipants() && params.isParticipantFakeParticipants()) {
@@ -530,6 +540,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(queryParams.isCurriculumElementKeys()) {
 			query.setParameter("curriculumElementKeys", params.getCurriculumElementKeys());
+		}
+		if(queryParams.isIdentityKeys()) {
+			query.setParameter("identityKeys", params.getIdentityKeys());
 		}
 		if(queryParams.isFakeParticipantKeys()) {
 			query.setParameter("fakeParticipantKeys", params.getFakeParticipantIdentityKeys());
@@ -963,6 +976,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			}
 			sb.append(")");
 		}
+		if(params.getPassedOverridden() != null) {
+			sb.append(" and aentry.passedModificationDate is ").append("not ", params.getPassedOverridden()).append("null");
+		}
 		if(params.getUserVisibility() != null) {
 			sb.append(" and (");
 			if (params.getUserVisibility().booleanValue()) {
@@ -1365,6 +1381,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		private boolean subIdents;
 		private boolean businessGroupKeys;
 		private boolean curriculumElementKeys;
+		private boolean identityKeys;
 		private boolean fakeParticipantKeys;
 		
 		public boolean isRepoEntryKey() {
@@ -1413,6 +1430,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		public void addCurriculumElementKeys() {
 			this.curriculumElementKeys = true;
+		}
+
+		public boolean isIdentityKeys() {
+			return identityKeys;
+		}
+
+		public void addIdentityKeys() {
+			this.identityKeys = true;
 		}
 
 		public boolean isFakeParticipantKeys() {

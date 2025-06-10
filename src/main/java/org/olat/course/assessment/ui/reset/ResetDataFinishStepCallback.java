@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.reset;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -82,12 +83,20 @@ public class ResetDataFinishStepCallback implements StepRunnerCallback {
 		if(dataContext.getResetCourse() == ResetCourse.all) {
 			archiveResource = resetHelper.resetCourse(participants, ureq.getIdentity(), Role.coach);
 		} else if(!dataContext.getCourseNodes().isEmpty()) {
-			archiveResource = resetHelper.resetCourseNodes(participants, dataContext.getCourseNodes(), false, ureq.getIdentity(), Role.coach);
+			archiveResource = resetHelper.resetCourseNodes(participants, dataContext.getCourseNodes(), false, 
+					emptyIfNull(dataContext.getParticipantsResetPasedOverridden()),
+					emptyIfNull(dataContext.getParticipantsResetPassed()),
+					emptyIfNull(dataContext.getParticipantsArchiveCertificate()),
+					ureq.getIdentity(), Role.coach);
 		}
 		if(archiveResource != null) {
 			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
 			wControl.getWindowBackOffice().sendCommandTo(downloadCmd);
 		}
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private Collection<Identity> emptyIfNull(Collection<Identity> identities) {
+		return identities == null? List.of(): identities;
 	}
 }

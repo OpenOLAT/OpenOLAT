@@ -17,8 +17,7 @@
 		#end
 	</div>
 	<div class="o_achievement_meta">
-		#if($r.isNotNull($expiredInDays))
-			<div class="o_certificate_expiration">
+		<div class="o_certificate_label">
 			#if($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
 				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
 			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 1)
@@ -26,8 +25,10 @@
 			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays > 1)
 				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
 			#end
-			</div>
-		#end
+			#if($row.status == "archived")
+				<span class="o_certificate_archived o_labeled_light">$r.translate("row.archived")</span>
+			#end
+		</div>
 		<a class="o_achievement_download #if($expired) o_certificate_download_expired #end" href="$row.url" target="_blank">$row.filename</a>
 		<span>$r.translate("row.created", $creationDate) #if($r.isNotEmpty($nextRecertificationDate)) | $r.translate("row.valid.until", $nextRecertificationDate)#end</span>
 	</div>

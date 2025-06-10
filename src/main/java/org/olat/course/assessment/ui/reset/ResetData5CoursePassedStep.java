@@ -30,40 +30,32 @@ import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 
 /**
  * 
- * Initial date: 8 mars 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 2 Jun 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ResetData3ParticipantsStep extends BasicStep {
-
-	private final ResetWizardContext wizardContext;
+public class ResetData5CoursePassedStep extends BasicStep {
 	
-	public ResetData3ParticipantsStep(UserRequest ureq, ResetWizardContext wizardContext) {
+	private final ResetWizardContext wizardContext;
+
+	public ResetData5CoursePassedStep(UserRequest ureq, ResetWizardContext wizardContext) {
 		super(ureq);
 		this.wizardContext = wizardContext;
-		
-		setI18nTitleAndDescr("wizard.select.participants", "wizard.select.participants");
-		updateNextStep(ureq);
-	}
-	
-	void updateNextStep(UserRequest ureq) {
-		setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.participants));
-	}
-	
-	ResetWizardContext getWizardContext() {
-		return wizardContext;
-	}
 
+		setI18nTitleAndDescr("wizard.course.passed.reset", "wizard.course.passed.reset");
+		setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.coursePassed));
+	}
+	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		wizardContext.setCurrent(ResetDataStep.participants);
+		wizardContext.setCurrent(ResetDataStep.coursePassed);
 		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		return new ResetDataIdentitiesSelectionController(ureq, wControl, form, context, this,
-				wizardContext.getDataContext(), wizardContext.getCoachCourseEnv(), wizardContext.getSecCallback());
+		return new ResetCoursePassedController(ureq, wControl, form, context, wizardContext.getDataContext(),
+				wizardContext.getCoachCourseEnv(), wizardContext.getSecCallback());
 	}
 
 }

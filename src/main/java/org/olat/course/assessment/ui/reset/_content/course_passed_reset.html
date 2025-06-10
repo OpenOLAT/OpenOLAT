@@ -1,0 +1,4 @@
+#if($r.isNotNull($numRows) && $numRows > 0)
+	<div class="o_info_with_icon o_block">$r.translate("course.passed.reset.desc", $numRows)</div>
+#end
+$r.render("table")

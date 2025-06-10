@@ -525,12 +525,15 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		return inspectionOverviewCtrl;
 	}
 
-	public void reload() {
+	public void reload(UserRequest ureq) {
 		if (overviewCtrl != null) {
 			overviewCtrl.reload();
 		}
 		if (courseNodeOverviewCtrl != null) {
 			courseNodeOverviewCtrl.reload();
+		}
+		if (identityListCtrl != null) {
+			identityListCtrl.reload(ureq);
 		}
 	}
 	

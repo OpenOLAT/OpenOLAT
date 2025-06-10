@@ -30,39 +30,39 @@ import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 
 /**
  * 
- * Initial date: 8 mars 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 2 Jun 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class ResetData3ParticipantsStep extends BasicStep {
+public class ResetData4CoursePassedOverridenStep extends BasicStep {
 
 	private final ResetWizardContext wizardContext;
 	
-	public ResetData3ParticipantsStep(UserRequest ureq, ResetWizardContext wizardContext) {
+	public ResetData4CoursePassedOverridenStep(UserRequest ureq, ResetWizardContext wizardContext) {
 		super(ureq);
 		this.wizardContext = wizardContext;
 		
-		setI18nTitleAndDescr("wizard.select.participants", "wizard.select.participants");
+		setI18nTitleAndDescr("wizard.course.passed.overriden.reset", "wizard.course.passed.overriden.reset");
 		updateNextStep(ureq);
 	}
 	
 	void updateNextStep(UserRequest ureq) {
-		setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.participants));
+		setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.coursePassedOverridden));
 	}
 	
 	ResetWizardContext getWizardContext() {
 		return wizardContext;
 	}
-
+	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		wizardContext.setCurrent(ResetDataStep.participants);
+		wizardContext.setCurrent(ResetDataStep.coursePassedOverridden);
 		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		return new ResetDataIdentitiesSelectionController(ureq, wControl, form, context, this,
+		return new ResetCoursePassedOverriddenController(ureq, wControl, form, context, this,
 				wizardContext.getDataContext(), wizardContext.getCoachCourseEnv(), wizardContext.getSecCallback());
 	}
 
