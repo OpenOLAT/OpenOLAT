@@ -19,36 +19,118 @@
  */
 package org.olat.user.ui.organisation.structure;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Disposable;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Organisation;
+import org.olat.core.util.Util;
 
 /**
  * Initial date: Mai 07, 2025
  *
- * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
+ * @author skapoor, sumit.kapoor@frentix.com,
+ *         <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class OrgStructureComponent extends FormBaseComponentImpl {
+public class OrgStructureComponent extends AbstractComponent implements ControllerEventListener, Disposable {
+
 	private static final ComponentRenderer RENDERER = new OrgStructureRenderer();
-	private final OrgStructureElementImpl item;
 
-	public OrgStructureComponent(String name, OrgStructureElementImpl item) {
+	private final WindowControl wControl;
+	private OrganisationStructureCalloutController treeCtrl;
+	private CloseableCalloutWindowController popupCtrl;
+
+	private final Translator compTranslator;
+	private List<Organisation> activeOrganisations;
+	private boolean collapseUnrelated = false;
+
+	public OrgStructureComponent(String name, WindowControl wControl, Locale locale) {
 		super(name);
-		this.item = item;
+		this.wControl = wControl;
+		this.compTranslator = Util.createPackageTranslator(OrgStructureComponent.class, locale);
 	}
 
-	@Override
-	public OrgStructureElementImpl getFormItem() {
-		return item;
+	Translator getCompTranslator() {
+		return compTranslator;
 	}
 
-	@Override
-	protected void doDispatchRequest(UserRequest ureq) {
-		// handled in the FormItemImpl
+	public List<Organisation> getActiveOrganisations() {
+		return activeOrganisations;
+	}
+
+	public void setActiveOrganisations(List<Organisation> activeOrganisations) {
+		this.activeOrganisations = activeOrganisations;
+		setDirty(true);
+	}
+
+	public boolean isCollapseUnrelated() {
+		return collapseUnrelated;
+	}
+
+	public void setCollapseUnrelated(boolean collapseUnrelated) {
+		this.collapseUnrelated = collapseUnrelated;
 	}
 
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
+
+	@Override
+	protected void doDispatchRequest(UserRequest ureq) {
+		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
+
+		if ("show-tree".equals(cmd)) {
+			doOpenTree(ureq);
+		}
+	}
+
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		// when the user clicks outside then dispose
+		if (popupCtrl == source) {
+			cleanUp();
+		}
+	}
+
+	@Override
+	public void dispose() {
+		cleanUp();
+	}
+
+	private void cleanUp() {
+		treeCtrl = cleanUp(treeCtrl);
+		popupCtrl = cleanUp(popupCtrl);
+	}
+
+	private <T extends Controller> T cleanUp(T ctrl) {
+		if (ctrl != null) {
+			ctrl.removeControllerListener(this);
+			ctrl = null;
+		}
+		return null;
+	}
+
+	private void doOpenTree(UserRequest ureq) {
+		treeCtrl = new OrganisationStructureCalloutController(ureq, wControl, activeOrganisations, collapseUnrelated);
+		treeCtrl.addControllerListener(this);
+
+		CalloutSettings settings = new CalloutSettings(true, CalloutSettings.CalloutOrientation.bottom, true, null);
+		popupCtrl = new CloseableCalloutWindowController(ureq, wControl, treeCtrl.getInitialComponent(),
+				getDispatchID(), null, true, null, settings);
+		popupCtrl.addControllerListener(this);
+		popupCtrl.activate();
+	}
+
 }

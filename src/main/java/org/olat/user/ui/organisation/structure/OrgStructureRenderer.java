@@ -21,6 +21,8 @@ package org.olat.user.ui.organisation.structure;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -39,7 +41,25 @@ public class OrgStructureRenderer extends DefaultComponentRenderer {
 								URLBuilder ubu, Translator translator,
 								RenderResult renderResult, String[] args) {
 		OrgStructureComponent comp = (OrgStructureComponent)source;
-		// render the single FormLink button
-		renderer.render(comp.getFormItem().getButton().getComponent(), sb, null);
+		
+		String elementId = comp.getDispatchID();
+		
+		sb.append("<button");
+		sb.append(" id=\"").append(elementId).append("\"");
+		sb.append(" type=\"button\"");
+		sb.append(" class=\"btn btn-default o_organisation_tree_button o_can_have_focus o_button_printed ");
+		sb.append("\""); // class
+		sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(elementId).append("';\" ");
+		if(comp.isEnabled()) {
+			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
+				ubu.buildXHREvent(sb, "", false, true, new NameValuePair(VelocityContainer.COMMAND_ID, "show-tree"));
+				sb.append("\" ");
+		} else {
+			sb.append("disabled=\"true\"");
+		}
+		sb.append(">"); // button
+		sb.append("<i class=\"o_icon o_icon-fw o_icon_levels\"></i> ");
+		sb.append("<span class=\"sr-only\">").append(comp.getCompTranslator().translate("show.organisation.tree")).append("</span>");
+		sb.append("</button>");
 	}
 }
