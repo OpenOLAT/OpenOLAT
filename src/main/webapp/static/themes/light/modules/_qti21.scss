@@ -526,12 +526,17 @@ span.o_qti_gaptext_score_alternative {
 }
 
 .o_labeled_light {
-	&.o_assessment_test_session_status_running,
-	&.o_assessment_test_session_status_reviewing  {
+	&.o_assessment_test_session_status_running  {
 		font-weight: normal;
 		background-color: #FFFFFF;
 		border-color: #ff8c00;
 		color: #522D00;
+	}
+	&.o_assessment_test_session_status_reviewing  {
+		font-weight: normal;
+		background-color: #FFFFFF;
+		border-color: #FCCA46;
+		color: #574000;
 	}
 	&.o_assessment_test_session_status_suspended {
 		font-weight: normal;

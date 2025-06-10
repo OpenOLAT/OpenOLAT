@@ -59,6 +59,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		return switch(COLS[col]) {
 			case run -> session.getRun();
 			case id -> session.getTestSession().getKey();
+			case startTime -> session.getTestSession().getCreationDate();
 			case terminationTime -> session.getTestSession().getTerminationTime();
 			case lastModified -> session.getTestSession().getLastModified();
 			case duration -> getDuration(session);
@@ -136,6 +137,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 	}
 
 	public enum TSCols implements FlexiSortableColumnDef {
+		startTime("table.header.start"),
 		terminationTime("table.header.terminationTime"),
 		lastModified("table.header.lastModified"),
 		duration("table.header.duration"),
