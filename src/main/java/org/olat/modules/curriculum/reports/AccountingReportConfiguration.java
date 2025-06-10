@@ -164,7 +164,10 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		List<String> selectedRights = curriculumModule.getUserOverviewRightList();
 		if(selectedRights.contains(CourseProgressAndStatusRightProvider.RELATION_RIGHT)) {
 			header.addCell(pos++, translator.translate("report.header.statement.score"));
+			header.addCell(pos++, translator.translate("report.header.statement.status"));
 			header.addCell(pos++, translator.translate("report.header.statement.passed"));
+			header.addCell(pos++, translator.translate("report.header.statement.not.passed"));
+			header.addCell(pos++, translator.translate("report.header.statement.undefined"));
 			header.addCell(pos++, translator.translate("report.header.statement.progress"));
 			header.addCell(pos++, translator.translate("report.header.statement.certificate"));
 			header.addCell(pos++, translator.translate("report.header.statement.certificate.validity"));
@@ -352,17 +355,17 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			Translator translator) {
 		List<UserEfficiencyStatementLight> statements = bookingOrder.getEfficiencyStatements();
 		if(statements == null || statements.isEmpty()) {
-			pos += 3;
+			pos += 6;
 		} else if(statements.size() == 1) {
 			UserEfficiencyStatementLight statement = statements.get(0);
 			row.addCell(pos++, statement.getScore(), workbook.getStyles().getDoubleStyle());
 
 			if(statement.getPassed() == null) {
-				row.addCell(pos++, translator.translate("report.passed.no"));
+				pos = successStatus(row, pos, translator.translate("report.undefined"), 0l, 0l, 1l);
 			} else if(statement.getPassed().booleanValue()) {
-				row.addCell(pos++, translator.translate("report.passed"));
+				pos = successStatus(row, pos, translator.translate("report.passed"), 1l, 0l, 0l);
 			} else {
-				row.addCell(pos++, translator.translate("report.not.passed"));
+				pos = successStatus(row, pos, translator.translate("report.not.passed"), 0l, 1l, 0l);
 			}
 			
 			if(statement.getCompletion() == null) {
@@ -372,8 +375,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			}
 		} else {
 			Float score = null;
-			Boolean passed = null;
-			Boolean notPassed = null;
+			long passed = 0l;
+			long notPassed = 0l;
+			long undefined = 0l;
 			
 			int numOfCompletion = 0;
 			Double totalCompletion = null;
@@ -385,12 +389,12 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 						score = score.floatValue() + statement.getScore().floatValue();
 					}
 				}
-				if(statement.getPassed() != null) {
-					if(statement.getPassed().booleanValue()) {
-						passed = Boolean.TRUE;
-					} else {
-						notPassed = Boolean.TRUE;
-					}
+				if(statement.getPassed() != null && statement.getPassed().booleanValue()) {
+					passed++;
+				} else if(statement.getPassed() != null && !statement.getPassed().booleanValue()) {
+					notPassed++;
+				} else {
+					undefined++;
 				}
 				if(statement.getCompletion() != null) {
 					numOfCompletion++;
@@ -408,14 +412,16 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 				row.addCell(pos++, score, null);
 			}
 			
-			if(passed == null && notPassed == null) {
-				row.addCell(pos++, translator.translate("report.passed.no"));
-			} else if(passed != null && notPassed == null) {
-				row.addCell(pos++, translator.translate("report.passed"));
-			} else if(passed == null && notPassed != null) {
-				row.addCell(pos++, translator.translate("report.not.passed"));
+			if(passed > 0l && notPassed == 0l && undefined == 0l) {
+				pos = successStatus(row, pos, translator.translate("report.passed"), passed, notPassed, undefined);
+			} else if(notPassed > 0l) {
+				pos = successStatus(row, pos, translator.translate("report.not.passed"), passed, notPassed, undefined);
+			} else if(passed > 0l && notPassed == 0l && undefined > 0l) {
+				pos = successStatus(row, pos, translator.translate("report.passed.mixed"), passed, notPassed, undefined);
+			} else if(passed == 0l && notPassed == 0l && undefined > 0l) {
+				pos = successStatus(row, pos, translator.translate("report.undefined"), passed, notPassed, undefined);
 			} else {
-				row.addCell(pos++, translator.translate("report.passed.mixed"));
+				pos = successStatus(row, pos, null, passed, notPassed, undefined);
 			}
 			
 			if(totalCompletion == null || numOfCompletion == 0) {
@@ -439,6 +445,14 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getFirstVisit(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, bookingOrder.getLastVisit(), workbook.getStyles().getDateTimeStyle());
 
+		return pos;
+	}
+	
+	private int successStatus(OpenXMLWorksheet.Row row, int pos, String status, long passed, long notPassed, long undefined) {
+		row.addCell(pos++, status);
+		row.addCell(pos++, passed, null);
+		row.addCell(pos++, notPassed, null);
+		row.addCell(pos++, undefined, null);
 		return pos;
 	}
 	
