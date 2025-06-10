@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationRoles;
@@ -100,7 +101,8 @@ public class OrganisationListController extends AbstractParticipantsListControll
     		.withOrganisations(true)
     		.withReservations(canViewReservations)
 			.withCourseCompletion(canViewCourseProgressAndStatus)
-			.withCourseStatus(canViewCourseProgressAndStatus);
+			.withCourseStatus(canViewCourseProgressAndStatus)
+			.excludedRoles(excludedRoles());
     	return coachingService.getParticipantsStatistics(searchParams, userPropertyHandlers, getLocale());
     }
 
@@ -117,6 +119,27 @@ public class OrganisationListController extends AbstractParticipantsListControll
         
         int index = tableModel.getObjects().indexOf(statisticsEntry);
         return new UserOverviewController(ureq, bwControl, stackPanel, statisticsEntry, identity, index, tableModel.getRowCount(), null, securityCallback);
+    }
+    
+	private List<OrganisationRoles> excludedRoles() {
+		List<OrganisationRoles> roles = new ArrayList<>();
+		roles.add(OrganisationRoles.sysadmin);
+		roles.add(OrganisationRoles.administrator);
+		roles.add(OrganisationRoles.usermanager);
+		roles.add(OrganisationRoles.rolesmanager);
+		roles.add(OrganisationRoles.learnresourcemanager);
+		roles.add(OrganisationRoles.lecturemanager);
+		roles.add(OrganisationRoles.groupmanager);
+		roles.add(OrganisationRoles.poolmanager);
+		roles.add(OrganisationRoles.curriculummanager);
+		roles.add(OrganisationRoles.qualitymanager);
+		roles.add(OrganisationRoles.projectmanager);
+		roles.add(OrganisationRoles.linemanager);
+		roles.add(OrganisationRoles.educationmanager);
+		roles.add(OrganisationRoles.principal);
+		roles.add(OrganisationRoles.invitee);
+		roles.add(OrganisationRoles.guest);
+    	return roles;
     }
 
 	private boolean allowedToManageUser(Identity user) {

@@ -142,7 +142,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		List<ParticipantStatisticsEntry> participantsStats = coachingDAO.loadParticipantsCoursesStatistics(coach, GroupRoles.coach, null, null, userPropertyHandlers, Locale.ENGLISH);
+		List<ParticipantStatisticsEntry> participantsStats = coachingDAO
+				.loadParticipantsCoursesStatistics(coach, GroupRoles.coach, null, null, null, userPropertyHandlers, Locale.ENGLISH);
 
 		Assert.assertNotNull(participantsStats);
 		Assert.assertEquals(2, participantsStats.size());
@@ -193,7 +194,8 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Coach statistics
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		List<ParticipantStatisticsEntry> participantsStats = coachingDAO.loadParticipantsCoursesStatistics(owner, GroupRoles.owner, null, null, userPropertyHandlers, Locale.ENGLISH);
+		List<ParticipantStatisticsEntry> participantsStats = coachingDAO
+				.loadParticipantsCoursesStatistics(owner, GroupRoles.owner, null, null, null, userPropertyHandlers, Locale.ENGLISH);
 
 		Assert.assertNotNull(participantsStats);
 		Assert.assertEquals(2, participantsStats.size());

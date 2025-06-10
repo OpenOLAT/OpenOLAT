@@ -651,7 +651,7 @@ public class CoachingDAO {
 
 	
 	
-	protected void loadOrganisationsMembers(List<Group> organisationsGroups,
+	protected void loadOrganisationsMembers(List<Group> organisationsGroups, List<OrganisationRoles> excludedRoles,
 			final List<ParticipantStatisticsEntry> statsEntries, final Map<Long,ParticipantStatisticsEntry> statisticsEntries,
 			final List<UserPropertyHandler> userPropertyHandlers, final Locale locale) {
 		QueryBuilder sb = new QueryBuilder();
@@ -666,15 +666,27 @@ public class CoachingDAO {
 		  .append(" inner join members.identity as member on (members.role='user')")
 		  .append(" inner join member.user as memberUser")
 		  .where()
-		  .append(" memberGroup.key in (:organisationGroupKeys)")
-		  .append(" group by member.key, memberUser.key");
+		  .append(" memberGroup.key in (:organisationGroupKeys)");
+		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+			sb.and().append("member.key not in (select managerMember.identity.key from bgroupmember as managerMember")
+			  .append("  where managerMember.role in (:excludedRoles)")
+			  .append(")");
+		}
+		sb.append(" group by member.key, memberUser.key");
 		
 		List<Long> groupKeys = organisationsGroups.stream()
 				.map(Group::getKey)
 				.toList();
-		final List<Object[]> rawList = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
-				.setParameter("organisationGroupKeys", groupKeys)
-				.getResultList();
+		final TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("organisationGroupKeys", groupKeys);
+		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+			List<String> rolesStrings = excludedRoles.stream()
+					.map(OrganisationRoles::name)
+					.toList();
+			query.setParameter("excludedRoles", rolesStrings);
+		}
+		
+		final List<Object[]> rawList = query.getResultList();
 		final int numOfProperties = userPropertyHandlers.size();
 		
 		for(Object rawObject:rawList) {
@@ -732,7 +744,7 @@ public class CoachingDAO {
 	}
 	
 	protected List<ParticipantStatisticsEntry> loadParticipantsCoursesStatistics(Identity coach, GroupRoles role,
-			List<Group> organisationsGroups, RelationRole userRelation,
+			List<Group> organisationsGroups, RelationRole userRelation, List<OrganisationRoles> excludedRoles,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
@@ -766,11 +778,17 @@ public class CoachingDAO {
 			  .append(")");
 		} else if(organisationsGroups != null && !organisationsGroups.isEmpty()) {
 			sb.append("participant.key in (select organisationMember.identity.key from bgroupmember as organisationMember")
-			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'")
-			  .append(")");
+			  .append("  where organisationMember.group.key in (:organisationGroupKeys) and organisationMember.role='user'");
+			sb.append(")");
 		} else if(userRelation != null) {
 			sb.append("participant.key in (select relation.target.key from identitytoidentity as relation")
 			  .append("  where relation.source.key=:coachKey and relation.role.key=:roleKey")
+			  .append(")");
+		}
+		
+		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+			sb.and().append("participant.key not in (select managerMember.identity.key from bgroupmember as managerMember")
+			  .append("  where managerMember.role in (:excludedRoles)")
 			  .append(")");
 		}
 		
@@ -778,6 +796,12 @@ public class CoachingDAO {
 		
 		final TypedQuery<Object[]> query = buildTypedQuery(sb, coach, role,
 				organisationsGroups, userRelation);
+		if(excludedRoles != null && !excludedRoles.isEmpty()) {
+			List<String> rolesStrings = excludedRoles.stream()
+					.map(OrganisationRoles::name)
+					.toList();
+			query.setParameter("excludedRoles", rolesStrings);
+		}
 		query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
 		final List<Object[]> rawList = query.getResultList();
 		final List<ParticipantStatisticsEntry> list = new ArrayList<>(rawList.size());
