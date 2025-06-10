@@ -140,7 +140,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					String name = bc.badgeClass().getNameWithScan();
 					int width = targetSize.getWidth();
 					int height = targetSize.getHeight();
-					sb.append("<div style='width: ").append(width).append("px; height: ").append(height).append("px;'>");
+					sb.append("<div style='width: ").append(width).append("px; height: ").append(height).append("px; line-height: ").append(height - 12).append("px'>");
 					sb.append("<div class='o_image'>");
 					if (val instanceof String image) {
 						sb.append("<img src=\"");
@@ -195,8 +195,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		List<Component> components = new ArrayList<>();
-		return components;
+		return new ArrayList<>();
 	}
 
 	private void loadModel(UserRequest ureq) {
