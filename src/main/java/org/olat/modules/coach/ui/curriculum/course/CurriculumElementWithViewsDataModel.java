@@ -21,7 +21,9 @@ package org.olat.modules.coach.ui.curriculum.course;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -29,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 
 /**
@@ -37,33 +40,28 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CourseCurriculumTreeWithViewsRow> implements FlexiBusinessPathModel {
+public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CourseCurriculumTreeWithViewsRow>
+implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CourseCurriculumTreeWithViewsRow> {
+	
+	private static final ElementViewCols[] COLS = ElementViewCols.values();
+	
+	private final Locale locale;
 
-	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
+	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			CurriculumElementStatus status = null;
-			FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, CurriculumElementListController.FILTER_STATUS);
-			if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
-				List<String> filterValues = extendedFilter.getValues();
-				if(filterValues != null && filterValues.size() == 1) {
-					status = CurriculumElementStatus.valueOf(filterValues.get(0));
-				}
-			}
-			
-			if(status == null) {
+			List<CurriculumElementStatus> status = getFilteredStatus(filters);
+			if(status == null || status.isEmpty()) {
 				setUnfilteredObjects();
 			} else {
 				List<CourseCurriculumTreeWithViewsRow> filteredRows = new ArrayList<>(backupRows.size());
-				// curriculum element inactive -> all repo are inactives
-				// parent inactive, child is active -> parent is forced active
 				for(CourseCurriculumTreeWithViewsRow row:backupRows) {
-					boolean accept = (status == CurriculumElementStatus.active && active(row));
-					if(accept) {
+					if(acceptStatus(status, row)) {
 						filteredRows.add(row);
 					}
 				}
@@ -74,19 +72,34 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		}
 	}
 	
-	private boolean active(CourseCurriculumTreeWithViewsRow row) {
-		boolean active = true;
-		if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
-			active = row.getCurriculumElementStatus() == CurriculumElementStatus.active;
-		}
-		if(active) {
-			for(CourseCurriculumTreeWithViewsRow parent = row.getParent(); parent != null; parent=parent.getParent()) {
-				if(parent.isCurriculumElementOnly() || parent.isCurriculumElementWithEntry()) {
-					active &= row.getCurriculumElementStatus() == CurriculumElementStatus.active;
-				}
+	private boolean acceptStatus(List<CurriculumElementStatus> status, CourseCurriculumTreeWithViewsRow row) {
+		if(status == null || status.isEmpty()) return true;
+		
+		CurriculumElementStatus elementStatus = row.getCurriculumElementStatus();
+		return status.contains(elementStatus);
+	}
+	
+	private List<CurriculumElementStatus> getFilteredStatus(List<FlexiTableFilter> filters) {
+		List<CurriculumElementStatus> status = null;
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, CurriculumElementListController.FILTER_STATUS);
+		if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				status = filterValues.stream()
+						.map(CurriculumElementStatus::valueOf)
+						.toList();
 			}
 		}
-		return active;
+		return status;
+	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		if (orderBy != null) {
+			List<CourseCurriculumTreeWithViewsRow> views= new CurriculumElementWithViewsSortDelegate(orderBy, this, locale)
+					.sort();
+			super.setObjects(views);
+		}
 	}
 	
 	public CourseCurriculumTreeWithViewsRow getObjectByKey(Long key) {
@@ -105,30 +118,23 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	@Override
 	public Object getValueAt(int row, int col) {
 		CourseCurriculumTreeWithViewsRow curriculum = getObject(row);
-		switch(ElementViewCols.values()[col]) {
-			case key: return curriculum.getKey();
-			case displayName: {
-				String displayName;
-				if(curriculum.isRepositoryEntryOnly()) {
-					displayName = curriculum.getRepositoryEntryDisplayName();
-				} else {
-					displayName = curriculum.getCurriculumElementDisplayName();
-				}
-				return displayName;
-			}
-			case identifier: {
-				String identifier;
-				if(curriculum.isRepositoryEntryOnly()) {
-					identifier = curriculum.getRepositoryEntryExternalRef();
-				} else {
-					identifier = curriculum.getCurriculumElementIdentifier();
-				}
-				return identifier;
-			}
-			case calendars: return curriculum.getCalendarsLink();
-			case completion: return curriculum.getCompletionItem();
-			default: return "ERROR";
-		}
+		return getValueAt(curriculum, col);
+	}
+
+	@Override
+	public Object getValueAt(CourseCurriculumTreeWithViewsRow curriculum, int col) {
+		return switch(COLS[col]) {
+			case key -> curriculum.getKey();
+			case displayName -> curriculum.isRepositoryEntryOnly()
+				?  curriculum.getRepositoryEntryDisplayName()
+				: curriculum.getCurriculumElementDisplayName();
+			case identifier -> curriculum.isRepositoryEntryOnly()
+				? curriculum.getRepositoryEntryExternalRef()
+				: curriculum.getCurriculumElementIdentifier();
+			case calendars -> curriculum.getCalendarsLink();
+			case completion -> curriculum.getCompletionItem();
+			default -> "ERROR";
+		};
 	}
 	
 	@Override
@@ -160,7 +166,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return true;
 		}
 
 		@Override
