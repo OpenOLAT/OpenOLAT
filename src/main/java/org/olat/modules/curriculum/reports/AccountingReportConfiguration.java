@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.reports;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.coach.reports.AbstractReportConfiguration;
 import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
 import org.olat.modules.coach.reports.TimeBoundReportConfiguration;
@@ -353,55 +354,55 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	
 	private int generateStatementDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet.Row row, int pos, BookingOrder bookingOrder,
 			Translator translator) {
-		List<UserEfficiencyStatementLight> statements = bookingOrder.getEfficiencyStatements();
-		if(statements == null || statements.isEmpty()) {
+		List<AssessmentEntry> assessmentEntries = bookingOrder.getAssessmentEntries();
+		if(assessmentEntries == null || assessmentEntries.isEmpty()) {
 			pos += 6;
-		} else if(statements.size() == 1) {
-			UserEfficiencyStatementLight statement = statements.get(0);
-			row.addCell(pos++, statement.getScore(), workbook.getStyles().getDoubleStyle());
+		} else if(assessmentEntries.size() == 1) {
+			AssessmentEntry assessmentEntry = assessmentEntries.get(0);
+			row.addCell(pos++, assessmentEntry.getScore(), workbook.getStyles().getDoubleStyle());
 
-			if(statement.getPassed() == null) {
+			if(assessmentEntry.getPassed() == null) {
 				pos = successStatus(row, pos, translator.translate("report.undefined"), 0l, 0l, 1l);
-			} else if(statement.getPassed().booleanValue()) {
+			} else if(assessmentEntry.getPassed().booleanValue()) {
 				pos = successStatus(row, pos, translator.translate("report.passed"), 1l, 0l, 0l);
 			} else {
 				pos = successStatus(row, pos, translator.translate("report.not.passed"), 0l, 1l, 0l);
 			}
 			
-			if(statement.getCompletion() == null) {
+			if(assessmentEntry.getCompletion() == null) {
 				pos++;
 			} else {
-				row.addCell(pos++, statement.getCompletion(), workbook.getStyles().getPercent0DecimalsStyle());
+				row.addCell(pos++, assessmentEntry.getCompletion(), workbook.getStyles().getPercent0DecimalsStyle());
 			}
 		} else {
-			Float score = null;
+			BigDecimal score = null;
 			long passed = 0l;
 			long notPassed = 0l;
 			long undefined = 0l;
 			
 			int numOfCompletion = 0;
 			Double totalCompletion = null;
-			for(UserEfficiencyStatementLight statement:statements) {
-				if(statement.getScore() != null) {
+			for(AssessmentEntry assessmentEntry:assessmentEntries) {
+				if(assessmentEntry.getScore() != null) {
 					if(score == null) {
-						score = statement.getScore();
-					} else {
-						score = score.floatValue() + statement.getScore().floatValue();
+						score = assessmentEntry.getScore();
+					} else if(assessmentEntry.getScore() != null) {
+						score = score.add(assessmentEntry.getScore());
 					}
 				}
-				if(statement.getPassed() != null && statement.getPassed().booleanValue()) {
+				if(assessmentEntry.getPassed() != null && assessmentEntry.getPassed().booleanValue()) {
 					passed++;
-				} else if(statement.getPassed() != null && !statement.getPassed().booleanValue()) {
+				} else if(assessmentEntry.getPassed() != null && !assessmentEntry.getPassed().booleanValue()) {
 					notPassed++;
 				} else {
 					undefined++;
 				}
-				if(statement.getCompletion() != null) {
+				if(assessmentEntry.getCompletion() != null) {
 					numOfCompletion++;
 					if(totalCompletion == null) {
-						totalCompletion = statement.getCompletion();
+						totalCompletion = assessmentEntry.getCompletion();
 					} else {
-						totalCompletion = totalCompletion.doubleValue() + statement.getCompletion().doubleValue();
+						totalCompletion = totalCompletion.doubleValue() + assessmentEntry.getCompletion().doubleValue();
 					}
 				}
 			}
