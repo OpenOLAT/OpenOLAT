@@ -24,12 +24,25 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.imageio.IIOImage;
 import javax.imageio.metadata.IIOMetadata;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -37,14 +50,17 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -53,6 +69,7 @@ import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
 import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
+import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -60,12 +77,32 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import com.nimbusds.jwt.SignedJWT;
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * <a href="http://www.openolat.org">
@@ -87,6 +124,9 @@ import org.w3c.dom.NamedNodeMap;
  * <p>
  */
 public class OpenBadgesManagerImplTest extends OlatTestCase {
+
+	@Autowired
+	OpenBadgesModule openBadgesModule;
 
 	@Autowired
 	OpenBadgesManager openBadgesManager;
@@ -169,18 +209,64 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("PNG badge", "image.png", null);
 		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser("badgeRecipient");
 		String recipientObject = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeClassImpl.getSalt());
-		String verification = "{\"type\":\"hosted\"}";
+		String creator = BadgeVerification.signed.equals(openBadgesModule.getVerification()) ? OpenBadgesFactory.createPublicKeyUrl() : null;
+		String verification = BadgeAssertionImpl.asVerificationObject(openBadgesModule.getVerification(), creator);
 		Date issuedOn = new Date();
 
-		BadgeAssertion badgeAssertion = badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClassImpl,
+		return badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClassImpl,
 				verification, issuedOn, recipient, null);
-
-		return badgeAssertion;
 	}
 
 	@Test
-	public void testInsertingJsonIntoSvg() {
-		String svg = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
+	public void testInsertingJsonIntoSvgHosted() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
+		BadgeVerification badgeVerification = openBadgesModule.getVerification();
+		openBadgesModule.setVerification(BadgeVerification.hosted);
+
+		String svg = createTestSvg();
+		String verifyValue = "https://test.openolat.org/badge/assertion/123";
+		String assertionUuid = OpenBadgesFactory.createIdentifier();
+		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid);
+		Assertion assertion = new Assertion(badgeAssertion);
+		String assertionJson = assertion.asJsonObject().toString();
+
+		OpenBadgesManagerImpl managerImpl = (OpenBadgesManagerImpl) openBadgesManager;
+		String mergedSvg = managerImpl.mergeSvg(svg, verifyValue, assertionJson);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		String xPathString = "//svg";
+		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(mergedSvg)));
+		NodeList nodeList = (NodeList) xPath.compile(xPathString).evaluate(document, XPathConstants.NODESET);
+		
+		Assert.assertEquals(1, nodeList.getLength());
+		
+		Node openBadgesNode = findFirstNonTextNode(nodeList.item(0));
+		Assert.assertNotNull(openBadgesNode);
+		Assert.assertEquals("openbadges:assertion", openBadgesNode.getNodeName());
+		
+		// We expect the <openbadges:assertion> element to have a single attribute "verify" and to have one child: the assertion data
+		Node cdataNode = findFirstNonTextNode(openBadgesNode);
+		Assert.assertNotNull(cdataNode);
+		Assert.assertTrue(cdataNode instanceof CDATASection);
+		Assert.assertTrue(((CDATASection) cdataNode).getData().contains(assertionUuid));
+		String verify = ((Element) openBadgesNode).getAttribute("verify");
+		Assert.assertNotNull(verify);
+		Assert.assertEquals(verifyValue, verify);
+
+		openBadgesModule.setVerification(badgeVerification);
+	}
+	
+	private Node findFirstNonTextNode(Node node) {
+		NodeList childNodes = node.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node childNode = childNodes.item(i);
+			if (childNode.getNodeType() != Node.TEXT_NODE) {
+				return childNode;
+			}
+		}
+		return null;
+	}
+	
+	private String createTestSvg() {
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
 				"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n" +
 				"<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 200 201\" version=\"1.1\"\n" +
 				"     xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\"\n" +
@@ -189,17 +275,58 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 				"    <g transform=\"matrix(1,0,0,1,-651,-428)\">\n" +
 				"    </g>\n" +
 				"</svg>";
+	}
 
-		String json = "{\n" +
-				" \"@context\": \"https://w3id.org/openbadges/v2\",\n" +
-				" \"id\": \"https://example.org/assertions/123\",\n" +
-				" \"type\": \"Assertion\"\n" +
-				"}";
+	@Test
+	public void testInsertingJsonIntoSvgSigned() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, JOSEException {
+		
+		// arrange
+		BadgeVerification badgeVerification = openBadgesModule.getVerification();
+		openBadgesModule.setVerification(BadgeVerification.signed);
 
-		if (openBadgesManager instanceof OpenBadgesManagerImpl managerImpl) {
-			String mergedSvg = managerImpl.mergeAssertionJson(svg, json, "https://test.openolat.org/badge/assertion/123");
-			System.err.println(mergedSvg);
-		}
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-doer");
+		OpenBadgesManagerImpl managerImpl = (OpenBadgesManagerImpl) openBadgesManager;;
+		
+		String svg = createTestSvg();
+		
+		String assertionUuid = OpenBadgesFactory.createIdentifier(); 
+		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid);
+		String verifyValue = managerImpl.getSignedVerifyValue(badgeAssertion, doer);
+		
+		// act
+		
+		String mergedSvg = managerImpl.mergeSvg(svg, verifyValue, null);
+		
+		// assert
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		String xPathString = "//svg";
+		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(mergedSvg)));
+		NodeList nodeList = (NodeList) xPath.compile(xPathString).evaluate(document, XPathConstants.NODESET);
+
+		Assert.assertEquals(1, nodeList.getLength());
+		
+		Node firstNonTextNode = findFirstNonTextNode(nodeList.item(0));
+		Assert.assertNotNull(firstNonTextNode);
+		Assert.assertEquals("openbadges:assertion", firstNonTextNode.getNodeName());
+		
+		// We expect the <openbadges:assertion> element to be an element with one single attribute and no children 
+		Assert.assertEquals(0, firstNonTextNode.getChildNodes().getLength());
+
+		Element openBadgeAssertionElement = (Element) firstNonTextNode;
+		String verify = openBadgeAssertionElement.getAttribute("verify");
+		Assert.assertNotNull(verify);
+		String[] parts = verify.split("\\.");
+		Assert.assertEquals(3, parts.length);
+		JSONObject header = new JSONObject(new String(Base64.getDecoder().decode(parts[0]), StandardCharsets.UTF_8));
+		Assert.assertEquals("RS256", header.getString("alg"));
+		JSONObject payload = new JSONObject(new String(Base64.getDecoder().decode(parts[1]), StandardCharsets.UTF_8));
+		String id = payload.getString("id");
+		Assert.assertTrue(id.endsWith(assertionUuid));
+		JSONObject verification = payload.getJSONObject("verification");
+		Assert.assertEquals("signed", verification.getString("type"));
+		
+		openBadgesModule.setVerification(badgeVerification);
 	}
 
 	@Test
@@ -508,4 +635,90 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertNull(badgeA1.getPreviousVersion());
 		Assert.assertEquals(badgeA2,  badgeA1.getNextVersion());
 	}
+	
+	private static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n";
+	private static final String END_PUBLIC_KEY = "\n-----END PUBLIC KEY-----";
+	
+	@Test
+	public void signBadgePrep() throws Exception {
+		// arrange
+
+		// create a private / public key
+		RSAKey rsaKey = new RSAKeyGenerator(2048)
+				.algorithm(JWSAlgorithm.RS256)
+				.generate();
+		
+		// create a PEM encoded string with the public key
+		byte[] data = rsaKey.toPublicKey().getEncoded();
+		String base64encodedPublicKey = new String(Base64.getEncoder().encode(data));
+		String publicKeyPem = BEGIN_PUBLIC_KEY + base64encodedPublicKey + END_PUBLIC_KEY;
+
+		// create a signer 
+		JWSSigner jwsSigner = new RSASSASigner(rsaKey);
+		
+		// create a public key set and write it to a file for debugging:
+		JWKSet publicJwsSet = new JWKSet(List.of(rsaKey.toPublicJWK()));
+		String publicJwsSetString = publicJwsSet.toString();
+		String rid = UUID.randomUUID().toString();
+		File tmpSet = File.createTempFile(rid, "jwks-1", new File(WebappHelper.getTmpDir()));
+		FileUtils.writeStringToFile(tmpSet, publicJwsSetString, StandardCharsets.UTF_8);
+
+		// create a JWS object with a simple data similar to a badge assertion.
+		JWSObject jwsObject = new JWSObject(
+				new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build(),
+				new Payload(Map.of(
+						"id", "https://billy.frentix.com/badge/assertion/1234", 
+						"type", "Assertion")
+				)
+		);
+		
+		// now sign it
+		jwsObject.sign(jwsSigner);
+		String s = jwsObject.serialize();
+
+		// now parse it again
+		SignedJWT signedJWT = SignedJWT.parse(s);
+
+		// create a RSA key from the PEM
+		PublicKey publicKey = CryptoUtil.string2PublicKey(publicKeyPem);
+		if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+			RSASSAVerifier verifier = new RSASSAVerifier(rsaPublicKey);
+			boolean success = signedJWT.verify(verifier);
+		}
+	}
+
+	@Test
+	public void signBadge() throws Exception {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-admin-1");
+		OpenBadgesManagerImpl openBadgesManagerImpl = (OpenBadgesManagerImpl)openBadgesManager;
+
+		PrivateKey privateKey = openBadgesManagerImpl.getPrivateKey(author);
+		JWSSigner jwsSigner = new RSASSASigner(privateKey);
+
+		String uuid = OpenBadgesFactory.createIdentifier();
+		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
+		Assertion assertion = new Assertion(badgeAssertion);
+		JSONObject assertionJsonObject = assertion.asJsonObject();
+		
+		JWSObject jwsObject = new JWSObject(
+				new JWSHeader.Builder(JWSAlgorithm.RS256).build(),
+				new Payload(assertionJsonObject.toString())
+		);
+
+		jwsObject.sign(jwsSigner);
+		String s = jwsObject.serialize();
+
+		SignedJWT signedJWT = SignedJWT.parse(s);
+
+		boolean success = false;
+
+		PublicKey publicKey = openBadgesManagerImpl.getPublicKey(author);
+		if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+			RSASSAVerifier verifier = new RSASSAVerifier(rsaPublicKey);
+			success = signedJWT.verify(verifier);
+		}
+
+		Assert.assertTrue(success);
+	}
+
 }

@@ -33,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeVerification;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.v2.Verification;
 
 import jakarta.persistence.Column;
@@ -192,15 +193,20 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 		return BadgeVerification.valueOf(verification.getType());
 	}
 
-	public static String asVerificationObject(BadgeVerification value) {
+	public static String asVerificationObject(BadgeVerification value, String creator) {
 		Verification verification = new Verification(new JSONObject());
 		verification.setType(value.name());
+		verification.setCreator(creator);
 		return verification.asJsonObject().toString();
 	}
 	
 	@Transient
 	public void setVerification(BadgeVerification value) {
-		verificationObject = asVerificationObject(value);
+		String creator = null;
+		if (BadgeVerification.signed.equals(value)) {
+			creator = OpenBadgesFactory.createPublicKeyUrl();
+		}
+		verificationObject = asVerificationObject(value, creator);
 	}
 	
 	@Override

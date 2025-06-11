@@ -61,6 +61,11 @@ import javax.imageio.stream.ImageOutputStream;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -1588,22 +1593,56 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
 		if (badgeClassImage instanceof LocalFileImpl localFile) {
 			try {
-				String svg = Files.readString(localFile.getBasefile().toPath());
-				String jsonString = createBakedJsonString(badgeAssertion);
-				String verifyUrl = OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
-				String bakedSvg = mergeAssertionJson(svg, jsonString, verifyUrl);
-				InputStream inputStream = new ByteArrayInputStream(bakedSvg.getBytes(StandardCharsets.UTF_8));
-				VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
-				String bakedImage = badgeAssertion.getUuid() + ".svg";
-				VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImage);
-				VFSManager.copyContent(inputStream, targetLeaf, savedBy);
-				return bakedImage;
-			} catch (IOException e) {
+				return createBakedSvgBadgeImage(badgeAssertion, savedBy, localFile);
+			} catch (Exception e) {
 				log.error("Error creating baked SVG badge image", e);
 				return null;
 			}
 		}
 		return null;
+	}
+
+	private String createBakedSvgBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy, LocalFileImpl localFile)
+			throws IOException, JOSEException {
+		String svg = Files.readString(localFile.getBasefile().toPath());
+		String verifyValue = getVerifyValue(badgeAssertion, savedBy);
+		String assertionJson = getAssertionJson(badgeAssertion, savedBy);
+		String bakedSvg = mergeSvg(svg, verifyValue, assertionJson);
+		InputStream inputStream = new ByteArrayInputStream(bakedSvg.getBytes(StandardCharsets.UTF_8));
+		VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
+		String bakedImage = badgeAssertion.getUuid() + ".svg";
+		VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImage);
+		VFSManager.copyContent(inputStream, targetLeaf, savedBy);
+		return bakedImage;
+	}
+	
+	private String getVerifyValue(BadgeAssertion badgeAssertion, Identity identity) throws JOSEException {
+		return switch (openBadgesModule.getVerification()) {
+			case hosted -> OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
+			case signed -> getSignedVerifyValue(badgeAssertion, identity);
+		};
+	}
+
+	public String getSignedVerifyValue(BadgeAssertion badgeAssertion, Identity identity)
+			throws JOSEException {
+		Assertion assertion = new Assertion(badgeAssertion);
+		JSONObject assertionJsonObject = assertion.asJsonObject();
+		PrivateKey privateKey = getPrivateKey(identity);
+		JWSSigner jwsSigner = new RSASSASigner(privateKey);
+
+		JWSObject jwsObject = new JWSObject(
+				new JWSHeader.Builder(JWSAlgorithm.RS256).build(),
+				new Payload(assertionJsonObject.toString())
+		);
+		jwsObject.sign(jwsSigner);
+		return jwsObject.serialize();
+	}
+
+	private String getAssertionJson(BadgeAssertion badgeAssertion, Identity identity) throws JOSEException {
+		return switch (openBadgesModule.getVerification()) {
+			case hosted -> createBakedJsonString(badgeAssertion);
+			case signed -> null;
+		};
 	}
 
 	static String createBakedJsonString(BadgeAssertion badgeAssertion) {
@@ -1612,22 +1651,30 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return jsonObject.toString(2);
 	}
 
-	public String mergeAssertionJson(String svg, String jsonString, String verifyUrl) {
+	public String mergeSvg(String svg, String verifyValue, String assertionJson) {
 		Matcher matcher = svgOpeningTagPattern.matcher(svg);
-		if (matcher.find()) {
-			String upToSvgOpeningTag = svg.substring(0, matcher.start());
-			String svgTagKeyword = svg.substring(matcher.start(), matcher.start() + 4);
-			String restOfSvgOpeningTag = svg.substring(matcher.start() + 4, matcher.end());
-			String contentAndSvgClosingTag = svg.substring(matcher.end());
-			return upToSvgOpeningTag + svgTagKeyword + " " + OPEN_BADGES_ASSERTION_XML_NAMESPACE + restOfSvgOpeningTag + "\n" +
-					"<openbadges:assertion verify=\"" + verifyUrl + "\">\n" +
-					"<![CDATA[\n" +
-					jsonString +
-					"]]>\n" +
-					"</openbadges:assertion>" +
-					contentAndSvgClosingTag;
+		if (!matcher.find()) {
+			return "";
 		}
-		return "";
+		String upToSvgOpeningTag = svg.substring(0, matcher.start());
+		String svgTagKeyword = svg.substring(matcher.start(), matcher.start() + 4);
+		String restOfSvgOpeningTag = svg.substring(matcher.start() + 4, matcher.end());
+		String contentAndSvgClosingTag = svg.substring(matcher.end());
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(upToSvgOpeningTag).append(svgTagKeyword).append(" ");
+		sb.append(OPEN_BADGES_ASSERTION_XML_NAMESPACE).append(restOfSvgOpeningTag).append("\n");
+		sb.append("<openbadges:assertion verify=\"").append(verifyValue).append("\"");
+		if (StringHelper.containsNonWhitespace(assertionJson)) {
+			sb.append(">\n");
+			sb.append("<![CDATA[\n").append(assertionJson).append("]]>\n");
+			sb.append("</openbadges:assertion>");
+		} else {
+			sb.append("/>");		
+		}
+
+		sb.append(contentAndSvgClosingTag);
+		return sb.toString();
 	}
 
 	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion) {
