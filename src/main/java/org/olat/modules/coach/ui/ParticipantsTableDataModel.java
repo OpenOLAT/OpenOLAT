@@ -109,7 +109,7 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 			final String certificates = getFiltered(filters, AbstractParticipantsListController.FILTER_CERTIFICATES);
 			final Boolean withCourses = getFilteredWithCourses(filters);
 			final Boolean withoutCourses = getFilteredWithoutCourses(filters);
-			final String assessment = getFiltered(filters, AbstractParticipantsListController.FILTER_ASSESSMENT);
+			final List<String> assessment = getFilteredList(filters, AbstractParticipantsListController.FILTER_ASSESSMENT);
 			LocalDateTime now = DateUtils.toLocalDateTime(new Date());
 			final String lastVisit = getFiltered(filters, AbstractParticipantsListController.FILTER_LAST_VISIT);
 			
@@ -168,22 +168,42 @@ public class ParticipantsTableDataModel extends DefaultFlexiTableDataModel<Parti
 		return null;
 	}
 	
-	private boolean acceptAssessment(String ref, ParticipantStatisticsEntry entry) {
-		if(ref == null) return true;
+	private List<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
+    	FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterName);
+		if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			return filterValues != null && !filterValues.isEmpty() ? filterValues : null;
+		}
+		return null;
+	}
+	
+	private boolean acceptAssessment(List<String> refs, ParticipantStatisticsEntry entry) {
+		if(refs == null || refs.isEmpty()) return true;
 		
-		if(AbstractParticipantsListController.ASSESSMENT_NONE.equals(ref)) {
-			return entry.getSuccessStatus().numPassed() == 0;
-		}
-		if(AbstractParticipantsListController.ASSESSMENT_PARTIALLY.equals(ref)) {
-			return entry.getSuccessStatus().numPassed() > 0
-				&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
-		}
-		if(AbstractParticipantsListController.ASSESSMENT_ALL.equals(ref)) {
-			return entry.getSuccessStatus().numPassed() > 0
-					&& entry.getSuccessStatus().numFailed() == 0
-					&& entry.getSuccessStatus().numUndefined() == 0;
-		}
-		return false;
+		return refs.stream().anyMatch(ref -> {
+			return switch(ref) {
+				// Passed
+				case AbstractParticipantsListController.ASSESSMENT_PASSED_NONE
+					-> entry.getSuccessStatus().numPassed() == 0;
+				case AbstractParticipantsListController.ASSESSMENT_PASSED_PARTIALLY
+					-> entry.getSuccessStatus().numPassed() > 0
+						&& (entry.getSuccessStatus().numFailed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+				case AbstractParticipantsListController.ASSESSMENT_PASSED_ALL
+					-> entry.getSuccessStatus().numPassed() > 0
+						&& entry.getSuccessStatus().numFailed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
+				
+				// Not passed
+				case AbstractParticipantsListController.ASSESSMENT_NOT_PASSED_NONE
+					-> entry.getSuccessStatus().numFailed() == 0;
+				case AbstractParticipantsListController.ASSESSMENT_NOT_PASSED_PARTIALLY
+					-> entry.getSuccessStatus().numFailed() > 0
+						&& (entry.getSuccessStatus().numPassed() > 0 || entry.getSuccessStatus().numUndefined() > 0);
+				case AbstractParticipantsListController.ASSESSMENT_NOT_PASSED_ALL
+					-> entry.getSuccessStatus().numFailed() > 0
+						&& entry.getSuccessStatus().numPassed() == 0 && entry.getSuccessStatus().numUndefined() == 0;
+				default -> false;
+			};
+		});
 	}
 	
 	private Boolean getFilteredWithCourses(List<FlexiTableFilter> filters) {

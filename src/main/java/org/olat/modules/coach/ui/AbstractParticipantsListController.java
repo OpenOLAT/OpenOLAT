@@ -118,9 +118,12 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 	protected static final String FILTER_WITHOUT_COURSES = "without-courses";
 	protected static final String FILTER_ASSESSMENT = "assessment";
 
-	protected static final String ASSESSMENT_NONE = "assessment-none";
-	protected static final String ASSESSMENT_PARTIALLY = "assessment-partially";
-	protected static final String ASSESSMENT_ALL = "assessment-all";
+	protected static final String ASSESSMENT_PASSED_NONE = "assessment-passed-none";
+	protected static final String ASSESSMENT_PASSED_PARTIALLY = "assessment-passed-partially";
+	protected static final String ASSESSMENT_PASSED_ALL = "assessment-passed-all";
+	protected static final String ASSESSMENT_NOT_PASSED_NONE = "assessment-not-passed-none";
+	protected static final String ASSESSMENT_NOT_PASSED_PARTIALLY = "assessment-not-passed-partially";
+	protected static final String ASSESSMENT_NOT_PASSED_ALL = "assessment-not-passed-all";
 	protected static final String CERTIFICATES_WITHOUT = "without-certificates";
 	protected static final String CERTIFICATES_WITH = "with-certificates";
 	protected static final String CERTIFICATES_INVALID = "invalid-certificates";
@@ -304,9 +307,12 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 				FILTER_LAST_VISIT, lastVisitPK, true));
 		
 		SelectionValues assessmentPK = new SelectionValues();
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NONE, translate("filter.assessment.none")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PARTIALLY, translate("filter.assessment.partially")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_ALL, translate("filter.assessment.all")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_NONE, translate("filter.assessment.passed.none")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_PARTIALLY, translate("filter.assessment.passed.partially")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_ALL, translate("filter.assessment.passed.all")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_NONE, translate("filter.assessment.not.passed.none")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_PARTIALLY, translate("filter.assessment.not.passed.partially")));
+		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_ALL, translate("filter.assessment.not.passed.all")));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.assessment"),
 				FILTER_ASSESSMENT, assessmentPK, true));
 
