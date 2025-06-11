@@ -49,7 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -109,14 +109,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CurriculumElementListController extends FormBasicController implements FlexiTableCssDelegate, Activateable2 {
+	
+	public static CurriculumElementStatus[] VISIBLE_STATUS = {
+		CurriculumElementStatus.preparation, CurriculumElementStatus.provisional,
+		CurriculumElementStatus.confirmed, CurriculumElementStatus.active,
+		CurriculumElementStatus.cancelled, CurriculumElementStatus.finished 
+	};
 
 	private static final String ALL_TAB = "All";
-	private static final String ACTIVE_TAB = "Active";
+	private static final String RELEVANT_TAB = "Relevant";
+	private static final String FINISHED_TAB = "Finished";
 	
 	static final String FILTER_STATUS = "Status";
 	
 	private FlexiFiltersTab allTab;
-	private FlexiFiltersTab activeTab;
+	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab finishedTab;
 	
     private FlexiTableElement tableEl;
     private CurriculumElementWithViewsDataModel tableModel;
@@ -180,7 +188,9 @@ public class CurriculumElementListController extends FormBasicController impleme
         if(implementationsOnly) {
         	columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, "select"));
         } else {
-        	columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, new TreeNodeFlexiCellRenderer("select")));
+        	TreeNodeFlexiCellRenderer displayNameRenderer = new TreeNodeFlexiCellRenderer("select");
+        	displayNameRenderer.setFlatBySort(true);
+        	columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, displayNameRenderer));
         }
 
         DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
@@ -194,14 +204,13 @@ public class CurriculumElementListController extends FormBasicController impleme
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
         }
 
-        tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
+        tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale());
         tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
         tableEl.setElementCssClass("o_curriculumtable");
         tableEl.setCustomizeColumns(true);
         tableEl.setEmptyTableMessageKey("table.curriculum.empty");
         tableEl.setCssDelegate(this);
-        tableEl.setAndLoadPersistedPreferences(ureq, "coach-mentor-curriculum-"
-                + (assessedIdentity.equals(getIdentity()) ? "-" : "look-") + "v1");
+        // Don't persist preferences, persisted sort kill the tree representation
         
         initFilters();
         initFilterPresets();
@@ -211,9 +220,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
-		FlexiTableSingleSelectionFilter statusFilter = new FlexiTableSingleSelectionFilter(translate("filter.status"),
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
+		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
 		filters.add(statusFilter);
 		
@@ -227,10 +240,16 @@ public class CurriculumElementListController extends FormBasicController impleme
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
 		
-		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB, translate("filter.active"),
+		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB, translate("filter.relevant"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						CurriculumElementStatus.active.name())));
-		tabs.add(activeTab);
+						List.of(CurriculumElementStatus.preparation.name(), CurriculumElementStatus.provisional.name(),
+								CurriculumElementStatus.confirmed.name(), CurriculumElementStatus.active.name()))));
+		tabs.add(relevantTab);
+		
+		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB, translate("filter.finished"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+						List.of(CurriculumElementStatus.finished.name()))));
+		tabs.add(finishedTab);
 
 		tableEl.setFilterTabs(true, tabs);
 	}
@@ -288,7 +307,7 @@ public class CurriculumElementListController extends FormBasicController impleme
     private void loadModel() {
     	Roles roles = securityManager.getRoles(assessedIdentity);
         List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService
-        		.getCurriculumElements(assessedIdentity, roles, curriculumRefList, CurriculumElementStatus.visibleUser());
+        		.getCurriculumElements(assessedIdentity, roles, curriculumRefList, VISIBLE_STATUS);
         Map<Long, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream()
         		.collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum().getKey(), Collectors.toList()));
 
@@ -350,6 +369,8 @@ public class CurriculumElementListController extends FormBasicController impleme
             forgeCurriculumCompletions(rows);
             if(implementationsOnly) {
             	removeNotImplementations(rows);
+            } else if(implementation != null) {
+            	removeNotInImplementationParentLine(rows, implementation);
             }
             allRows.addAll(rows);
         }
@@ -360,11 +381,37 @@ public class CurriculumElementListController extends FormBasicController impleme
         tableEl.reset(true, true, true);
     }
     
-	private void removeNotImplementations(List<CourseCurriculumTreeWithViewsRow> rows) {
+	private void removeNotInImplementationParentLine(List<CourseCurriculumTreeWithViewsRow> rows, CurriculumElement element) {
 		for (Iterator<CourseCurriculumTreeWithViewsRow> it = rows.iterator(); it.hasNext(); ) {
-			if (it.next().getCurriculumElementParentKey() != null) {
+			if (!hasParentLine(it.next(), element)) {
 				it.remove();
 			}
+		}
+	}
+	
+	private boolean hasParentLine(CourseCurriculumTreeWithViewsRow row, CurriculumElement element) {
+		for(CourseCurriculumTreeWithViewsRow el=row; el != null; el=el.getParent()) {
+			if(el.getCurriculumElementKey() != null && element.getKey().equals(el.getCurriculumElementKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+    
+	/**
+	 * Filter to keep only implementations. Remove sub-elements, courses only and
+	 * single course implementation.
+	 * 
+	 * @param rows
+	 */
+	private void removeNotImplementations(List<CourseCurriculumTreeWithViewsRow> rows) {
+		for (Iterator<CourseCurriculumTreeWithViewsRow> it = rows.iterator(); it.hasNext(); ) {
+			CourseCurriculumTreeWithViewsRow row = it.next();
+			if (row.getCurriculumElementParentKey() != null
+					|| row.isRepositoryEntryOnly()
+					|| row.isSingleCourseImplementation()) {
+				it.remove();
+			} 
 		}
 	}
 
@@ -412,18 +459,19 @@ public class CurriculumElementListController extends FormBasicController impleme
         }
     }
 
-    private void forgeCompletion(CourseCurriculumTreeWithViewsRow row, Double completion) {
-        if (completion != null) {
-            ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
-                    completion.floatValue(), Float.valueOf(1), null);
-            completionItem.setWidthInPercent(true);
-            completionItem.setLabelAlignment(LabelAlignment.none);
-            completionItem.setRenderStyle(RenderStyle.radial);
-            completionItem.setRenderSize(RenderSize.inline);
-            completionItem.setBarColor(BarColor.primary);
-            row.setCompletionItem(completionItem);
-        }
-    }
+	private void forgeCompletion(CourseCurriculumTreeWithViewsRow row, Double completion) {
+		if (completion != null) {
+			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
+					completion.floatValue(), Float.valueOf(1), null);
+			completionItem.setWidthInPercent(true);
+			completionItem.setLabelAlignment(LabelAlignment.none);
+			completionItem.setRenderStyle(RenderStyle.radial);
+			completionItem.setRenderSize(RenderSize.inline);
+			completionItem.setBarColor(BarColor.primary);
+			row.setCompletionItem(completionItem);
+			row.setCompletion(completion);
+		}
+	}
 
     private Map<Long, Double> loadCurriculumElementCompletions(List<CourseCurriculumTreeWithViewsRow> rows) {
         List<Long> curEleLearningProgressKeys = rows.stream()

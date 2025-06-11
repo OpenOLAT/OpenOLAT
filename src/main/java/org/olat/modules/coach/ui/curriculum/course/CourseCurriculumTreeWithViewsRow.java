@@ -50,28 +50,27 @@ import org.olat.resource.OLATResource;
  *
  */
 public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithView, FlexiTreeTableNode {
-	
+
+	private Long parentKey;
 	private boolean hasChildren;
 	private CourseCurriculumTreeWithViewsRow parent;
 
-	private Long parentKey;
-
-	private final CurriculumElement element;
-	private final CurriculumElementType elementType;
-	private final CurriculumElementMembership curriculumMembership;
-	private boolean curriculumMember;
 	private int level;
-
+	private Double completion;
+	private boolean curriculumMember;
+	private final CurriculumElementMembership curriculumMembership;
+	
 	private boolean singleEntry;
 	private int elementEntryCount;
 	private OLATResource olatResource;
 	private RepositoryEntryMyView repositoryEntry;
+	private final CurriculumElement element;
+	private final CurriculumElementType elementType;
 	
 	private String shortenedDescription;
 	private String representationalName;
 	
 	private RepositoryEntryStatusEnum status;
-
 
 	private boolean member;
 
@@ -134,7 +133,7 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	public CourseCurriculumTreeWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership,
 				RepositoryEntryMyView repositoryEntryView, boolean alone) {
 		this.element = element;
-		elementType = element == null ? null : element.getType();
+		this.elementType = element.getType();
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
 		singleEntry = alone;
@@ -228,21 +227,13 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	public Date getCurriculumElementBeginDate() {
 		return element == null ? null : element.getBeginDate();
 	}
-	
-	public Date getCurriculumElementEndDate() {
-		return element == null ? null : element.getEndDate();
-	}
-	
-	public Integer getCurriculumElementPos() {
-		return element == null ? null : element.getPos();
-	}
-	
+
 	public String getCurriculumElementTypeCssClass() {
 		return elementType == null ? null : element.getType().getCssClass();
 	}
 
-	public String getCurriculumElementTypeName() {
-		return elementType == null ? null : element.getType().getDisplayName();
+	public boolean isSingleCourseImplementation() {
+		return element != null && element.isSingleCourseImplementation();
 	}
 	
 	public Long getCurriculumElementParentKey() {
@@ -490,6 +481,14 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 		return calendarsLink == null ? null : calendarsLink.getComponent().getComponentName();
 	}
 	
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
+
 	public ProgressBarItem getCompletionItem() {
 		return completionItem;
 	}
