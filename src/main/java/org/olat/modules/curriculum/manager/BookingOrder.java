@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.id.User;
-import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
@@ -70,7 +70,7 @@ public class BookingOrder {
 	
 	private Date nextCertificationDate;
 	private List<Long> certificateKeys;
-	private List<UserEfficiencyStatementLight> efficiencyStatements;
+	private List<AssessmentEntry> assessmentEntries;
 	
 	private Date firstVisit;
 	private Date lastVisit;
@@ -365,12 +365,12 @@ public class BookingOrder {
 		this.lastVisit = lastVisit;
 	}
 
-	public List<UserEfficiencyStatementLight> getEfficiencyStatements() {
-		return efficiencyStatements;
+	public List<AssessmentEntry> getAssessmentEntries() {
+		return assessmentEntries;
 	}
 
-	public void setEfficiencyStatements(List<UserEfficiencyStatementLight> efficiencyStatements) {
-		this.efficiencyStatements = efficiencyStatements;
+	public void setAssessmentEntries(List<AssessmentEntry> assessmentEntries) {
+		this.assessmentEntries = assessmentEntries;
 	}
 
 	public LectureBlockIdentityStatistics getLectureBlockStatistics() {

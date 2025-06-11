@@ -32,7 +32,8 @@ import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.resource.accesscontrol.BillingAddress;
@@ -344,6 +345,7 @@ public class CurriculumAccountingDAO {
 		return bookingOrder;
 	}
 	
+
 	public void loadAssessmentsInfos(List<BookingOrder> bookingOrders, CurriculumAccountingSearchParams searchParams) {
 		Map<BookingKey,List<BookingOrder>> ordersMap = new HashMap<>();
 		for(BookingOrder order:bookingOrders) {
@@ -354,19 +356,23 @@ public class CurriculumAccountingDAO {
 		
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select curEl.key, curEl.curriculum.key, curEl.materializedPathKeys, participant.key,")
-		  .append(" statement,")
 		  .append(" certificate.key, certificate.nextRecertificationDate,")
-		  .append(" courseInfos.initialLaunch, courseInfos.recentLaunch")
+		  .append(" courseInfos.initialLaunch, courseInfos.recentLaunch,")
+		  .append(" rootElement.key, rootElement.passedMode,")
+		  .append(" ae2")
 		  .append(" from repositoryentry as re")
 		  .append(" inner join re.groups as reToParticipantGroup")
 		  .append(" inner join reToParticipantGroup.group as participantGroup")
 		  .append(" inner join participantGroup.members as participantMembers on (participantMembers.role='participant')")
 		  .append(" inner join participantMembers.identity as participant")
 		  .append(" inner join curriculumelement as curEl on (participantGroup.key=curEl.group.key)")
-		  .append(" left join effstatementlight as statement on (statement.identity.key=participant.key and statement.courseRepoKey=re.key and statement.lastStatement=true)")
 		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participant.key and courseInfos.resource.key=re.olatResource.key)")
 		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=re.key)")
-		  .append(" left join certificate as certificate on (certificate.identity.key=participant.key and certificate.olatResource.key=re.olatResource.key and certificate.last=true)");
+		  .append(" left join certificate as certificate on (certificate.identity.key=participant.key and certificate.olatResource.key=re.olatResource.key and certificate.last=true)")
+		  .append(" left join assessmententry as ae2 on (participant.key=ae2.identity.key and ae2.repositoryEntry.key=re.key and ae2.entryRoot=true)")
+		  .append(" left join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae2.subIdent)");
+		  
+		  ;
 		if(searchParams.getCurriculum() != null || (searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty())) {
 			sb.and().append(" curEl.curriculum.key in (:curriculumKeys)");
 		}
@@ -394,20 +400,24 @@ public class CurriculumAccountingDAO {
 			List<Long> curriculumElementPathKeys = getMaterializedPathKeysList((String)objects[2]);
 
 			Long identityKey = (Long)objects[3];
-			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)objects[4];
-			Long certificateKey = (Long)objects[5];
-			Date nextRecertificationDate = (Date)objects[6];
-			Date initialLaunch = (Date)objects[7];
-			Date recentLaunch = (Date)objects[8];
-
+			Long certificateKey = (Long)objects[4];
+			Date nextRecertificationDate = (Date)objects[5];
+			Date initialLaunch = (Date)objects[6];
+			Date recentLaunch = (Date)objects[7];
+			Mode passedMode = (Mode)objects[9];
+			AssessmentEntry ae = null;
+			if(passedMode != Mode.none) {
+				ae = (AssessmentEntry)objects[10];
+			}
+		
 			for(Long curriculumElementPathKey:curriculumElementPathKeys) {
 				BookingKey pkey = new BookingKey(curriculumElementPathKey, identityKey);
-				loadAssessmentsInfos(ordersMap.get(pkey), statement, certificateKey, nextRecertificationDate, initialLaunch, recentLaunch);
+				loadAssessmentsInfos(ordersMap.get(pkey), ae, certificateKey, nextRecertificationDate, initialLaunch, recentLaunch);
 			}
 		}
 	}
 	
-	private void loadAssessmentsInfos(List<BookingOrder> orders, UserEfficiencyStatementLight statement,
+	private void loadAssessmentsInfos(List<BookingOrder> orders, AssessmentEntry assessmentEntry,
 			Long certificateKey, Date nextRecertificationDate, Date initialLaunch, Date recentLaunch) {
 		if(orders == null || orders.isEmpty()) return;
 		
@@ -420,12 +430,12 @@ public class CurriculumAccountingDAO {
 				order.setNextCertificationDate(nextRecertificationDate);
 			}
 			
-			if(statement != null) {
-				if(order.getEfficiencyStatements() == null) {
-					order.setEfficiencyStatements(new ArrayList<>(2));
+			if(assessmentEntry != null) {
+				if(order.getAssessmentEntries() == null) {
+					order.setAssessmentEntries(new ArrayList<>(2));
 				}
-				if(!order.getEfficiencyStatements().contains(statement)) {
-					order.getEfficiencyStatements().add(statement);
+				if(!order.getAssessmentEntries().contains(assessmentEntry)) {
+					order.getAssessmentEntries().add(assessmentEntry);
 				}
 			}
 			
