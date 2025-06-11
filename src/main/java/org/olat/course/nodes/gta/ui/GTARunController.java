@@ -59,6 +59,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
+import org.olat.modules.reminder.ReminderModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,6 +104,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private ReminderModule reminderModule;
+	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
 	public GTARunController(UserRequest ureq, WindowControl wControl,
@@ -142,7 +145,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, gtaNode, userCourseEnv, false, true, false);
 			listenTo(overviewCtrl);
 			
-			if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
+			if (reminderModule.isEnabled() && userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 				swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Reminders"), null);
 				remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, entry, gtaNode.getReminderProvider(entry, false));
 				listenTo(remindersCtrl);

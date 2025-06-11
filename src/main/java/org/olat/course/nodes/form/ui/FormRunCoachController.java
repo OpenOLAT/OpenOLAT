@@ -45,6 +45,7 @@ import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.CourseNodeBadgesController;
+import org.olat.modules.reminder.ReminderModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,6 +74,8 @@ public class FormRunCoachController extends BasicController implements Activatea
 	private CourseNodeReminderRunController remindersCtrl;
 	private CourseNodeBadgesController badgesCtrl;
 
+	@Autowired
+	private ReminderModule reminderModule;
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
@@ -105,7 +108,7 @@ public class FormRunCoachController extends BasicController implements Activatea
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		// Reminders
-		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
+		if (reminderModule.isEnabled() && userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
 			swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_REMINDERS), null);
 			remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, courseEntry, formCourseNode.getReminderProvider(courseEntry, false));
 			listenTo(remindersCtrl);
