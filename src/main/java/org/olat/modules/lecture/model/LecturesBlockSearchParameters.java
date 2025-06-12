@@ -59,7 +59,7 @@ public class LecturesBlockSearchParameters {
 	private List<LectureBlockStatus> lectureBlockStatus;
 	private List<LectureBlockVirtualStatus> virtualStatus;
 	private List<LectureBlockRef> lectureBlocks;
-	private boolean inSomeCurriculum;
+	private boolean inSomeCurriculum = false;
 	
 	private boolean configuredEntry = true;
 	

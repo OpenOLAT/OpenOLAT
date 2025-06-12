@@ -500,7 +500,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 						.withDetailsRepositoryEntry(true)
 						.withDetailsExam(false)
 						.withDetailsUnits(true)
-						.withDetailsExternalRef(true);
+						.withDetailsExternalRef(true)
+						.withinCurriculums(true);
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculumElement, config, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
 				

@@ -254,7 +254,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 				.withDetailsRepositoryEntry(true)
 				.withDetailsExam(false)
 				.withDetailsUnits(true)
-				.withDetailsExternalRef(true);
+				.withDetailsExternalRef(true)
+				.withinCurriculums(true);
 		
 		lecturesCtrl = new LectureListRepositoryController(ureq, bwControl, toolbarPanel, config, lecturesSecCallback);
 		listenTo(lecturesCtrl);
