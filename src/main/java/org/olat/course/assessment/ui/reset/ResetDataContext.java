@@ -37,6 +37,7 @@ public class ResetDataContext {
 	private ResetParticipants resetParticipants;
 	private final RepositoryEntry repositoryEntry;
 
+	private boolean resetEmptyNodes;
 	private List<CourseNode> courseNodes;
 	private List<Identity> selectParticipants;
 	private List<Identity> participantsResetPasedOverridden;
@@ -97,6 +98,14 @@ public class ResetDataContext {
 
 	public void setResetParticipants(ResetParticipants resetParticipants) {
 		this.resetParticipants = resetParticipants;
+	}
+
+	public boolean isResetEmptyNodes() {
+		return resetEmptyNodes;
+	}
+
+	public void setResetEmptyNodes(boolean resetEmptyNodes) {
+		this.resetEmptyNodes = resetEmptyNodes;
 	}
 
 	public List<CourseNode> getCourseNodes() {

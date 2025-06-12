@@ -82,7 +82,7 @@ public class ResetDataFinishStepCallback implements StepRunnerCallback {
 		MediaResource archiveResource = null;
 		if(dataContext.getResetCourse() == ResetCourse.all) {
 			archiveResource = resetHelper.resetCourse(participants, ureq.getIdentity(), Role.coach);
-		} else if(!dataContext.getCourseNodes().isEmpty()) {
+		} else if(!dataContext.getCourseNodes().isEmpty() || dataContext.isResetEmptyNodes()) {
 			archiveResource = resetHelper.resetCourseNodes(participants, dataContext.getCourseNodes(), false, 
 					emptyIfNull(dataContext.getParticipantsResetPasedOverridden()),
 					emptyIfNull(dataContext.getParticipantsResetPassed()),

@@ -19,6 +19,8 @@
  */
 package org.olat.course.config.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +40,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -51,17 +56,24 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
+import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext;
+import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 import org.olat.course.editor.overview.OverviewListController.OverviewListOptions;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.RunMainController;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,10 +112,9 @@ public class CourseScoreController extends FormBasicController {
 	private FormLayoutContainer passedNumberCutOverviewCont;
 	private FormLayoutContainer passedPointsCutOverviewCont;
 	
-	private CloseableModalController cmc;
 	private CloseableModalController overviewCmc;
 	private CourseOverviewController overviewCtrl;
-	private AssessmentResetController assessmentResetCtrl;
+	private StepsMainRunController resetDataWizardCtrl;
 	
 	private final RepositoryEntry courseEntry;
 	private final boolean editable;
@@ -111,8 +122,6 @@ public class CourseScoreController extends FormBasicController {
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private AssessmentService assessmentService;
 	@Autowired
 	private LearningPathService learningPathService;
 
@@ -409,37 +418,30 @@ public class CourseScoreController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == assessmentResetCtrl) {
-			if (event instanceof AssessmentResetEvent are) {
-				doSettingsConfirmed(ureq, are);
-			} else if (event == AssessmentResetController.RESET_SETTING_EVENT) {
-				initForm(ureq);
-			} else {
-				markDirty();
+		if(resetDataWizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(source == overviewCtrl) {
 			overviewCmc.deactivate();
 			cleanUp();
 		} else if(source == overviewCmc) {
 			cleanUp();
-		} else if(source == cmc) {
-			cleanUp();
-			markDirty();
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(assessmentResetCtrl);
+		removeAsListenerAndDispose(resetDataWizardCtrl);
 		removeControllerListener(overviewCtrl);
 		removeAsListenerAndDispose(overviewCmc);
-		removeAsListenerAndDispose(cmc);
-		assessmentResetCtrl = null;
+		resetDataWizardCtrl = null;
 		overviewCmc = null;
 		overviewCtrl = null;
-		cmc = null;
 	}
 
 	@Override
@@ -479,15 +481,55 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void doConfirmSetting(UserRequest ureq) {
-		String rootNodeIdent = CourseFactory.loadCourse(courseEntry).getRunStructure().getRootNode().getIdent();
-		boolean warningOptionalOnly = !mandatoryNodesAvailable && passedByProgressEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS);
-		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), courseEntry, rootNodeIdent, true,
-				true, warningOptionalOnly);
-		listenTo(assessmentResetCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				assessmentResetCtrl.getInitialComponent(), true, translate("assessment.reset.title"), true);
-		listenTo(cmc);
-		cmc.activate();
+		AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(getIdentity(), ureq.getUserSession().getRoles());
+		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+		UserCourseEnvironmentImpl coachCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnvironment);
+		
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetParticipants(ResetParticipants.all);
+		dataContext.setResetCourse(ResetCourse.elements);
+		dataContext.setResetEmptyNodes(true);
+		dataContext.setCourseNodes(List.of());
+		
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, false, true, false);
+		wizardContext.setCurrent(ResetDataStep.courseElements);
+		
+		resetDataWizardCtrl = new StepsMainRunController(ureq, getWindowControl(),
+				new ResetDataCancelStep(ureq, wizardContext),
+				getResetCallback(dataContext, secCallback),
+				getCancelCallback(),
+				translate("assessment.reset.title"),
+				"");
+		listenTo(resetDataWizardCtrl);
+		getWindowControl().pushAsModalDialog(resetDataWizardCtrl.getInitialComponent());
+	}
+	
+	private StepRunnerCallback getResetCallback(ResetDataContext dataContext, AssessmentToolSecurityCallback secCallback) {
+		return (uureq, wControl, runContext) -> {
+			Object applyValue = runContext.get(ResetDataCancelStep.KEY_APPLY);
+			if (applyValue instanceof Boolean apply && apply) {
+				boolean saved = doSave();
+				if (saved) {
+					ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, secCallback);
+					finishCallback.execute(uureq, wControl, runContext);
+					return StepsMainRunController.DONE_MODIFIED;
+				}
+			} else {
+				// Discard changes
+				initForm(uureq);
+			}
+			
+			return StepsMainRunController.DONE_UNCHANGED;
+		};
+	}
+	
+	private StepRunnerCallback getCancelCallback() {
+		return (uureq, wControl, runContext) -> {
+				// Mark dirty so that unsaved changes are not lost.
+				markDirty();
+				return StepsMainRunController.DONE_UNCHANGED;
+			};
 	}
 
 	@Override
@@ -504,25 +546,6 @@ public class CourseScoreController extends FormBasicController {
 				overviewCtrl.getInitialComponent(), true, translate("overview.cours.elements"), true);
 		listenTo(overviewCmc);
 		overviewCmc.activate();
-	}
-	
-	private void doSettingsConfirmed(UserRequest ureq, AssessmentResetEvent are) {
-		boolean saved = doSave();
-		
-		if (saved) {
-			if (are.isResetOverriden()) {
-				assessmentService.resetAllOverridenRootPassed(courseEntry);
-			}
-			if (are.isResetPassed()) {
-				assessmentService.resetAllRootPassed(courseEntry);
-			}
-			if (are.isRecalculateAll()) {
-				ICourse course = CourseFactory.loadCourse(courseEntry);
-				courseAssessmentService.evaluateAll(course, true);
-			}
-			
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		}
 	}
 
 	private boolean doSave() {

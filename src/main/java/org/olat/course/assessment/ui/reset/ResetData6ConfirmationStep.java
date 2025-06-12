@@ -31,7 +31,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 
 /**
  * 
@@ -53,7 +52,6 @@ public class ResetData6ConfirmationStep extends BasicStep {
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		wizardContext.setCurrent(ResetDataStep.overview);
 		return new PrevNextFinishConfig(true, false, true);
 	}
 
