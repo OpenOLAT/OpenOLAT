@@ -43,10 +43,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.ui.reset.ResetData1OptionsStep;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
@@ -57,16 +54,11 @@ import org.olat.course.assessment.ui.reset.ResetWizardContext;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
-import org.olat.course.config.ui.AssessmentResetController;
-import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
-import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -82,7 +74,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final AssessmentToolSecurityCallback assessmentCallback;
 
 	private Link bulkAssessmentLink;
-	private Link recalculateLink;
 	private Link resetDataLink;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
@@ -91,15 +82,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private AssessmentCourseTreeController courseTreeCtrl;
 	private AssessmentEventToState assessmentEventToState;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
-	private AssessmentResetController assessmentResetCtrl;
 	private StepsMainRunController resetDataCtrl;
-
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private NodeAccessService nodeAccessService;
-	@Autowired
-	private AssessmentService assessmentService;
 
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv,
@@ -126,10 +109,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		}
 		
 		if(!assessmentCallback.isOnlyPrincipal()) {
-			recalculateLink = LinkFactory.createToolLink("recalculate", translate("menu.recalculate"), this,
-					"o_icon_recalculate");
-			stackPanel.addTool(recalculateLink, Align.right);
-			
 			bulkAssessmentLink = LinkFactory.createToolLink("bulkAssessment", translate("menu.bulkfocus"), this,
 					"o_icon_group");
 			bulkAssessmentLink.setElementCssClass("o_sel_assessment_tool_bulk");
@@ -161,10 +140,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (recalculateLink == source) {
-			cleanUp();
-			doOpenRecalculate(ureq);
-		} else if (bulkAssessmentLink == source) {
+		if (bulkAssessmentLink == source) {
 			cleanUp();
 			doBulkAssessmentView(ureq);
 		} else if(resetDataLink == source) {
@@ -210,12 +186,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			} else if (event instanceof AssessmentModeStatusEvent) {
 				fireEvent(ureq, event);
 			}
-		} else if (source == assessmentResetCtrl) {
-			if (event instanceof AssessmentResetEvent are) {
-				doRecalculate(ureq, are);
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(resetDataCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
@@ -235,11 +205,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
-		removeAsListenerAndDispose(assessmentResetCtrl);
 		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
 		bulkAssessmentOverviewCtrl = null;
-		assessmentResetCtrl = null;
 		resetDataCtrl = null;
 		cmc = null;
 	}
@@ -257,35 +225,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				canChangeUserVisibility);
 		listenTo(bulkAssessmentOverviewCtrl);
 		stackPanel.pushController(translate("menu.bulkfocus"), bulkAssessmentOverviewCtrl);
-	}
-
-	private void doOpenRecalculate(UserRequest ureq) {
-		boolean showResetOverriden = !nodeAccessService
-				.isScoreCalculatorSupported(coachUserEnv.getCourseEnvironment().getCourseConfig().getNodeAccessType());
-		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), courseEntry,
-				coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode().getIdent(), showResetOverriden,
-				false, false);
-		listenTo(assessmentResetCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				assessmentResetCtrl.getInitialComponent(), true, translate("assessment.reset.title"), true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doRecalculate(UserRequest ureq, AssessmentResetEvent are) {
-		if (are.isResetOverriden()) {
-			assessmentService.resetAllOverridenRootPassed(courseEntry);
-		}
-		if (are.isResetPassed()) {
-			assessmentService.resetAllRootPassed(courseEntry);
-		}
-		if (are.isRecalculateAll()) {
-			ICourse course = CourseFactory.loadCourse(courseEntry);
-			courseAssessmentService.evaluateAll(course, true);
-		}
-		if (courseTreeCtrl != null) {
-			courseTreeCtrl.reload(ureq);
-		}
 	}
 	
 	private void doResetData(UserRequest ureq) {

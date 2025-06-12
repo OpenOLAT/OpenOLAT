@@ -429,7 +429,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_read { @include o-add-icon('circle', false);}
 .o_icon_readonly { @include o-add-icon('edit'); color:red;}
 .o_icon_readwrite { @include o-add-icon('edit');}
-.o_icon_recalculate { @include o-add-icon('calculator');}
 .o_icon_recycle { @include o-add-icon('recycle');}
 .o_icon_rectangle { @include o-add-icon('square', false);}
 .o_icon_redo { @include o-add-icon('repeat');}
