@@ -57,6 +57,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private Controller scoreCtrl;
+	private CoachRightsController coachRightsCtrl;
 	private Controller efficiencyStatementCtrl;
 	private CourseReminderListController remindersCtrl;
 	private CertificatesOptionsController certificatesCtrl;
@@ -104,6 +105,10 @@ public class CourseAssessmentSettingsController extends BasicController {
 			scoreCtrl = new CourseScoreController(ureq, wControl, entry, editableAndLocked);
 			listenTo(scoreCtrl);
 			mainVC.put("score", scoreCtrl.getInitialComponent());
+			
+			coachRightsCtrl = new CoachRightsController(ureq, wControl, entry, editableAndLocked);
+			listenTo(coachRightsCtrl);
+			mainVC.put("coach", coachRightsCtrl.getInitialComponent());
 		}
 		
 		efficiencyStatementCtrl = new EfficiencyStatementController(ureq, wControl, entry, courseConfig, editableAndLocked);
@@ -156,8 +161,14 @@ public class CourseAssessmentSettingsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == scoreCtrl || source == efficiencyStatementCtrl
-				|| source == certificatesCtrl || source == recertificationCtrl || source == badgesCtrl) {
+		if (source == scoreCtrl) {
+			fireEvent(ureq, event);
+			updateUI(ureq);
+			if (coachRightsCtrl != null) {
+				coachRightsCtrl.update();
+			}
+		} else if (source == coachRightsCtrl || source == efficiencyStatementCtrl || source == certificatesCtrl
+				|| source == recertificationCtrl || source == badgesCtrl) {
 			fireEvent(ureq, event);
 			updateUI(ureq);
 		}

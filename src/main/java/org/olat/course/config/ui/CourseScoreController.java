@@ -84,7 +84,6 @@ public class CourseScoreController extends FormBasicController {
 	private SingleSelection scoreEl;
 	private FormToggle scoreEnableEl;
 	private FormToggle passedEnableEl;
-	private MultipleSelectionElement coachesCanEl;
 	private MultipleSelectionElement passedByProgressEl;
 	private MultipleSelectionElement passedByPassedEnableEl;
 	private SingleSelection passedByPassedEl;
@@ -320,22 +319,6 @@ public class CourseScoreController extends FormBasicController {
 		String maxScore = AssessmentHelper.getRoundedScore(infos.getMaxScore());
 		passedPointsCutOverviewCont.contextPut("msg", translate("options.passed.points.cut.explain", maxScore));
 		
-		uifactory.addSpacerElement("spacer-coach-can", settingsCont, false);
-		
-		// Coach rights
-		SelectionValues coachesCanSV = new SelectionValues();
-		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_MANUALLY, translate("options.passed.manually")));
-		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_RESET_DATA, translate("options.reset.data")));
-		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_GRADE_APPLY, translate("options.grade.apply")));
-		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, translate("options.user.visibility")));
-		coachesCanEl = uifactory.addCheckboxesVertical("options.coaches.can", settingsCont, coachesCanSV.keys(), coachesCanSV.values(), 1);
-		coachesCanEl.addActionListener(FormEvent.ONCHANGE);
-		coachesCanEl.setEnabled(editable);
-		coachesCanEl.select(STCourseNode.CONFIG_COACH_GRADE_APPLY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY));
-		coachesCanEl.select(STCourseNode.CONFIG_COACH_USER_VISIBILITY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY));
-		coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY));
-		coachesCanEl.select(STCourseNode.CONFIG_COACH_RESET_DATA, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_RESET_DATA));
-
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonCont.setRootForm(mainForm);
@@ -373,22 +356,7 @@ public class CourseScoreController extends FormBasicController {
 		String cutI18n = weighted ? "options.passed.points.cut.weighted" : "options.passed.points.cut";
 		passedPointsCutEl.setLabel(cutI18n, null);
 		
-		boolean userVisibility = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		if (userVisibility) {
-			coachesCanEl.setEnabled(STCourseNode.CONFIG_PASSED_MANUALLY, true);
-		} else {
-			coachesCanEl.setEnabled(STCourseNode.CONFIG_PASSED_MANUALLY, false);
-			coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, false);
-		}
-		
 		boolean passedEnabled = passedEnableEl.isOn();
-		if (passedEnabled) {
-			coachesCanEl.setVisible(STCourseNode.CONFIG_PASSED_MANUALLY, true);
-		} else {
-			coachesCanEl.setVisible(STCourseNode.CONFIG_PASSED_MANUALLY, false);
-			coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, false);
-		}
-		
 		passedByProgressElCont.setVisible(passedEnabled);
 		passedEnableInfosEl.setVisible(passedEnabled);
 		passedLabelEl.setVisible(passedEnabled);
@@ -418,7 +386,7 @@ public class CourseScoreController extends FormBasicController {
 		if(source == passedEnableEl) {
 			updatePassedUI();
 			updateUI();
-		} else if (source == scoreEnableEl || source == scoreEl || source == coachesCanEl
+		} else if (source == scoreEnableEl || source == scoreEl
 				|| source == passedByProgressEl || source == passedByPassedEnableEl
 				|| source == passedByPassedEl || source == passedByScoreEl) {
 			updateUI();
@@ -581,32 +549,6 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.remove(STCourseNode.CONFIG_SCORE_KEY);
 		}
 		
-		boolean gradeApply = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_GRADE_APPLY);
-		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, gradeApply);
-		editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, gradeApply);
-		
-		boolean userVisibility = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);
-		editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);
-		
-		boolean passedManually = coachesCanEl.isKeySelected(STCourseNode.CONFIG_PASSED_MANUALLY);
-		if (passedManually) {
-			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
-			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
-		} else {
-			runConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
-			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
-		}
-
-		boolean resetData = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_RESET_DATA);
-		if (resetData) {
-			runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_RESET_DATA, true);
-			editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_RESET_DATA, true);
-		} else {
-			runConfig.remove(STCourseNode.CONFIG_COACH_RESET_DATA);
-			editorConfig.remove(STCourseNode.CONFIG_COACH_RESET_DATA);
-		}
-		
 		boolean passedProgress = passedEnableEl.isOn() && passedByProgressEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS);
 		if (passedProgress) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
@@ -653,6 +595,15 @@ public class CourseScoreController extends FormBasicController {
 			runConfig.remove(STCourseNode.CONFIG_PASSED_POINTS_CUT);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_POINTS);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_POINTS_CUT);
+		}
+		
+		boolean passedEnabled = runConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS)
+				|| runConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)
+				|| runConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)
+				|| runConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS);
+		if (!passedEnabled) {
+			runConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
+			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
 		}
 		
 		CourseFactory.saveCourse(courseEntry.getOlatResource().getResourceableId());
