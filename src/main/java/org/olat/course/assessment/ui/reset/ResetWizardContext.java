@@ -54,7 +54,7 @@ public class ResetWizardContext {
 	
 	private static final ResetDataStep[] STEPS = ResetDataStep.values();
 	
-	enum ResetDataStep {
+	public enum ResetDataStep {
 		options,
 		courseElements,
 		participants,
@@ -147,7 +147,7 @@ public class ResetWizardContext {
 		};
 	}
 
-	private ResetDataStep getNext(ResetDataStep current) {
+	public ResetDataStep getNext(ResetDataStep current) {
 		for (int i = current.ordinal() + 1; i < STEPS.length; i++) {
 			ResetDataStep resetDataStep = STEPS[i];
 			if (availableSteps.contains(resetDataStep)) {

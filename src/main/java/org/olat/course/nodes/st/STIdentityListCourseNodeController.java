@@ -40,21 +40,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
-import org.olat.course.assessment.ui.reset.ResetDataContext;
-import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
-import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.tool.AssessmentIdentiesPrintController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
@@ -63,11 +53,8 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.ims.qti21.resultexport.IdentitiesList;
-import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -88,10 +75,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class STIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
 	private FormLink pdfButton;
-	private FormLink resetDataAllButton;
-	private FormLink resetDataBulkButton;
-	
-	private ConfirmResetDataController resetDataCtrl;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -176,17 +159,10 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			tableEl.addBatchButton(pdfButton);
 		}
 		
-		initResetPassedOverriddenButton(formLayout);
-		
 		if(courseNode.getParent() == null && getAssessmentCallback().canResetData()) {
-			resetDataAllButton = uifactory.addFormLink("reset.data.button", formLayout, Link.BUTTON);
-			resetDataAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
-			
-			resetDataBulkButton = uifactory.addFormLink("reset.data.bulk", "reset.data.button", null, formLayout, Link.BUTTON);
-			resetDataBulkButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
-			tableEl.addBatchButton(resetDataBulkButton);
+			initResetPassedOverriddenButton(formLayout);
+			initResetDataTool(formLayout);
 		}
-		
 		
 		tableEl.setMultiSelect(tableEl.isBatchButtonAvailable());
 	}
@@ -214,92 +190,13 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 		usersTableModel.setCertificateMap(toolContainer.getCertificateMap());
 	}
-	
-	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if(resetDataCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doResetData(ureq, resetDataCtrl.getDataContext()); 
-			}
-			cmc.deactivate();
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	@Override
-	protected void cleanUp() {
-		removeAsListenerAndDispose(resetDataCtrl);
-		resetDataCtrl = null;
-		super.cleanUp();
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(pdfButton == source) {
 			doExportPdf(ureq);
-		} else if(resetDataAllButton == source) {
-			doConfirmResetDataAll(ureq);
-		} else if(resetDataBulkButton == source) {
-			doConfirmResetDataSelectedIdentities(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
-		}
-	}
-	
-	private void doConfirmResetDataSelectedIdentities(UserRequest ureq) {
-		List<Identity> selectedIdentities = getSelectedIdentities(row -> true);
-		if(selectedIdentities.isEmpty()) {
-			showWarning("");
-		} else {
-			doConfirmResetData(ureq, selectedIdentities, ResetParticipants.selected);
-		}
-	}
-	
-	private void doConfirmResetDataAll(UserRequest ureq) {
-		IdentitiesList identities = getIdentities(true);
-		doConfirmResetData(ureq, identities.getIdentities(), ResetParticipants.all);
-	}
-	
-	private void doConfirmResetData(UserRequest ureq, List<Identity> identities, ResetParticipants resetParticipants) {
-		ResetDataContext dataContext = new ResetDataContext(getCourseRepositoryEntry());
-		if(courseNode.getParent() == null) {
-			dataContext.setResetCourse(ResetCourse.all);
-		} else {
-			dataContext.setResetCourse(ResetCourse.elements);
-			dataContext.setCourseNodes(List.of(courseNode));
-		}
-		dataContext.setResetParticipants(resetParticipants);
-		dataContext.setSelectedParticipants(identities);
-		resetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, getAssessmentCallback());
-		listenTo(resetDataCtrl);
-		
-		String title = translate("reset.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doResetData(UserRequest ureq, ResetDataContext dataContext) {
-		List<Identity> identities;
-		if(dataContext.getResetParticipants() == ResetParticipants.all) {
-			identities = getIdentities(true).getIdentities();
-		} else {
-			identities = dataContext.getSelectedParticipants();
-		}
-		
-		ResetCourseDataHelper resetCourseNodeHelper = new ResetCourseDataHelper(getCourseEnvironment());
-		MediaResource archiveResource = null;
-		if(dataContext.getResetCourse() == ResetCourse.all) {
-			archiveResource = resetCourseNodeHelper.resetCourse(identities, getIdentity(), Role.coach);
-		} else if(!dataContext.getCourseNodes().isEmpty()) {
-			archiveResource = resetCourseNodeHelper.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
-		}
-		reload(ureq);
-		
-		if(archiveResource != null) {
-			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
-			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 		}
 	}
 

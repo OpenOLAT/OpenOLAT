@@ -33,10 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.EvaluationFormSessionStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
@@ -61,11 +58,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MSIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
-	private FormLink resetButton;
 	private FormLink statsButton;
 	
-	private CloseableModalController cmc;
-	private MSResetDataController resetDataCtrl;
 	private MSStatisticController statsCtrl;
 
 	private Boolean hasEvaluationForm;
@@ -99,11 +93,6 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					coachCourseEnv.getCourseEnvironment(), courseNode, canEditUserVisibility);
 			listenTo(bulkAssessmentToolCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
-			
-			if (getAssessmentCallback().canResetData()) {
-				resetButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
-				resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
-			}
 		}
 		super.initMultiSelectionTools(ureq, formLayout);
 	}
@@ -151,47 +140,13 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(resetButton == source) {
-			doConfirmResetData(ureq);
-		} else if(statsButton == source) {
+		if(statsButton == source) {
 			doLaunchStatistics(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
 	}
 
-	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if(source == resetDataCtrl) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				reload(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else {
-			super.event(ureq, source, event);
-		}
-	}
-
-	@Override
-	protected void cleanUp() {
-		removeAsListenerAndDispose(resetDataCtrl);
-		removeAsListenerAndDispose(cmc);
-		resetDataCtrl = null;
-		cmc = null;
-		super.cleanUp();
-	}
-	
-	private void doConfirmResetData(UserRequest ureq) {
-		resetDataCtrl = new MSResetDataController(ureq, getWindowControl(), getCourseEnvironment(), getOptions(),
-				(MSCourseNode) courseNode);
-		listenTo(resetDataCtrl);
-		
-		String title = translate("tool.reset.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
 	
 	private void doLaunchStatistics(UserRequest ureq) {
 		statsCtrl = new MSStatisticController(ureq, getWindowControl(), getCourseEnvironment(), getOptions(),

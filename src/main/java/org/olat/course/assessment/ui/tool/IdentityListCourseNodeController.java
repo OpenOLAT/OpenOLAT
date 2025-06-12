@@ -81,6 +81,9 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -111,6 +114,15 @@ import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
+import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
+import org.olat.course.assessment.ui.reset.ResetData4CoursePassedOverridenStep;
+import org.olat.course.assessment.ui.reset.ResetData5CoursePassedStep;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
+import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
+import org.olat.course.assessment.ui.reset.ResetWizardContext;
+import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
@@ -121,6 +133,7 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -240,6 +253,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink bulkHiddenButton;
 	private FormLink bulkAwardBadgeButton;
 	private FormLink resetPassedOverridenButton;
+	private FormLink resetDataBulkButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -254,6 +268,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private GradeScaleEditController gradeScaleViewCtrl;
 	private GradeApplyConfirmationController gradeApplyConfirmationCtrl;
 	private AwardBadgesController awardBadgesCtrl;
+	private ConfirmResetDataController resetDataCtrl;
+	private StepsMainRunController resetDataWizardCtrl;
 	
 	@Autowired
 	protected DB dbInstance;
@@ -745,6 +761,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		initBulkStatusTools(ureq, formLayout);
 		initBulkEmailTool(ureq, formLayout);
+		initResetDataTool(formLayout);
 	}
 
 	protected void initBulkStatusTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
@@ -830,6 +847,15 @@ public class IdentityListCourseNodeController extends FormBasicController
 			resetPassedOverridenButton.setIconLeftCSS("o_icon o_icon_overridden");
 			resetPassedOverridenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(resetPassedOverridenButton);
+		}
+	}
+	
+	protected void initResetDataTool(FormLayoutContainer formLayout) {
+		if(getAssessmentCallback().canResetData()) {
+			resetDataBulkButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON);
+			resetDataBulkButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
+			tableEl.addBatchButton(resetDataBulkButton);
+			resetDataBulkButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}
 	
@@ -1322,6 +1348,20 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(resetDataCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doResetData(ureq, resetDataCtrl.getDataContext()); 
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(resetDataWizardCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					reload(ureq);
+				}
+				cleanUp();
+			}
 		} else if(bulkToolsList != null && bulkToolsList.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
 				reload(ureq);
@@ -1358,6 +1398,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(awardBadgesCtrl);
+		removeAsListenerAndDispose(resetDataCtrl);
+		removeAsListenerAndDispose(resetDataWizardCtrl);
 		removeAsListenerAndDispose(cmc);
 		gradeScaleViewCtrl = null;
 		gradeScaleEditCtrl = null;
@@ -1366,6 +1408,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		toolsCtrl = null;
 		contactCtrl = null;
 		awardBadgesCtrl = null;
+		resetDataCtrl = null;
+		resetDataWizardCtrl = null;
 		cmc = null;
 	}
 
@@ -1399,6 +1443,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doAwardBadges(ureq);
 		} else if(resetPassedOverridenButton == source) {
 			doResetPassedOverridden(ureq);
+		} else if(resetDataBulkButton == source) {
+			doConfirmResetDataSelectedIdentities(ureq);
 		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
@@ -1840,6 +1886,79 @@ public class IdentityListCourseNodeController extends FormBasicController
 				});
 		
 		reload(ureq);
+	}
+	
+	private void doConfirmResetDataSelectedIdentities(UserRequest ureq) {
+		List<Identity> selectedIdentities = getSelectedIdentities(row -> true);
+		if(selectedIdentities.isEmpty()) {
+			showWarning("");
+		} else {
+			doConfirmResetData(ureq, selectedIdentities);
+		}
+	}
+	
+	private void doConfirmResetData(UserRequest ureq, List<Identity> identities) {
+		ResetDataContext dataContext = new ResetDataContext(getCourseRepositoryEntry());
+		if(courseNode.getParent() == null) {
+			dataContext.setResetCourse(ResetCourse.all);
+		} else {
+			dataContext.setResetCourse(ResetCourse.elements);
+			dataContext.setCourseNodes(List.of(courseNode));
+		}
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(identities);
+		
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, getAssessmentCallback(), false, true, false);
+		wizardContext.setCurrent(ResetDataStep.participants);
+		ResetDataStep next = wizardContext.getNext(ResetDataStep.participants);
+		if (ResetDataStep.overview == next) {
+			resetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, getAssessmentCallback());
+			listenTo(resetDataCtrl);
+			
+			String title = translate("reset.data.title");
+			cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		} else if (ResetDataStep.coursePassedOverridden == next) {
+			ResetData4CoursePassedOverridenStep step = new ResetData4CoursePassedOverridenStep(ureq, wizardContext);
+			
+			String title = translate("reset.data.title");
+			ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, getAssessmentCallback());
+			resetDataWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+			listenTo(resetDataWizardCtrl);
+			getWindowControl().pushAsModalDialog(resetDataWizardCtrl.getInitialComponent());
+		} else if (ResetDataStep.coursePassed == next) {
+			ResetData5CoursePassedStep step = new ResetData5CoursePassedStep(ureq, wizardContext);
+			
+			String title = translate("reset.data.title");
+			ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, getAssessmentCallback());
+			resetDataWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+			listenTo(resetDataWizardCtrl);
+			getWindowControl().pushAsModalDialog(resetDataWizardCtrl.getInitialComponent());
+		}
+	}
+	
+	private void doResetData(UserRequest ureq, ResetDataContext dataContext) {
+		List<Identity> identities;
+		if(dataContext.getResetParticipants() == ResetParticipants.all) {
+			identities = getIdentities(true).getIdentities();
+		} else {
+			identities = dataContext.getSelectedParticipants();
+		}
+		
+		ResetCourseDataHelper resetCourseNodeHelper = new ResetCourseDataHelper(getCourseEnvironment());
+		MediaResource archiveResource = null;
+		if(dataContext.getResetCourse() == ResetCourse.all) {
+			archiveResource = resetCourseNodeHelper.resetCourse(identities, getIdentity(), Role.coach);
+		} else if(!dataContext.getCourseNodes().isEmpty()) {
+			archiveResource = resetCourseNodeHelper.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
+		}
+		reload(ureq);
+		
+		if(archiveResource != null) {
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 	
 }

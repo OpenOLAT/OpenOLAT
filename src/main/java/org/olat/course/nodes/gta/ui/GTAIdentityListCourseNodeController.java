@@ -171,6 +171,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		}
 
 		super.initBulkEmailTool(ureq, formLayout);
+		super.initResetDataTool(formLayout);
 	}
 	
 	private void initBulkDownloadController(FormLayoutContainer formLayout) {
