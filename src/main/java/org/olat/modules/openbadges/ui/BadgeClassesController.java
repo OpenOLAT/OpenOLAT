@@ -20,7 +20,6 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,7 +52,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.ButtonClickedEvent;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
@@ -98,8 +96,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private FlexiTableElement tableEl;
 	private FormLink createLink;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
-	private DialogBoxController confirmDeleteUnusedClassCtrl;
-	private DialogBoxController confirmDeleteUsedClassCtrl;
+	private ConfirmDeleteBadgeClassController confirmDeleteCtrl;
 	private DialogBoxController confirmRevokeAllBadgesCtrl;
 	private StepsMainRunController stepsController;
 	private BadgeDetailsController badgeDetailsController;
@@ -492,11 +489,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private void doConfirmDelete(UserRequest ureq, BadgeClassRow row) {
 		BadgeClass badgeClass = row.badgeClassWithSizeAndCount().badgeClass();
-		if (row.badgeClassWithSizeAndCount().totalUseCount() == 0) {
-			doConfirmDeleteUnusedClass(ureq, badgeClass);
-		} else {
-			doConfirmDeleteUsedClass(ureq, badgeClass);
-		}
+		long totalUseCount = row.badgeClassWithSizeAndCount().totalUseCount();
+		doConfirmDelete(ureq, badgeClass, totalUseCount);
 	}
 
 	private void doConfirmRevoke(UserRequest ureq, BadgeClassRow row) {
@@ -507,33 +501,17 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		confirmRevokeAllBadgesCtrl.setUserObject(row.badgeClassWithSizeAndCount().badgeClass());
 	}
 
-	private void doConfirmDeleteUnusedClass(UserRequest ureq, BadgeClass badgeClass) {
+	private void doConfirmDelete(UserRequest ureq, BadgeClass badgeClass, long totalUseCount) {
 		String name = badgeClass.getNameWithScan();
-		String title = translate("confirm.delete.unused.class.title", name);
-		String text = translate("confirm.delete.unused.class.text", name);
-		confirmDeleteUnusedClassCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteUnusedClassCtrl);
-		confirmDeleteUnusedClassCtrl.setUserObject(badgeClass);
-	}
+		String title = translate("confirm.delete.title", name);
 
-	private void doConfirmDeleteUsedClass(UserRequest ureq, BadgeClass badgeClass) {
-		String name = badgeClass.getNameWithScan();
-		StringBuilder sb = new StringBuilder();
-		sb.append(translate("confirm.delete.used.class.text", name));
-		sb.append("<br/><br/>");
-		sb.append("<b>").append(translate("confirm.delete.used.class.option1.title")).append("</b><br/>");
-		sb.append(translate("confirm.delete.used.class.option1.text")).append("<br/><br/>");
-		sb.append("<b>").append(translate("confirm.delete.used.class.option2.title")).append("</b><br/>");
-		sb.append(translate("confirm.delete.used.class.option2.text"));
-		String title = translate("confirm.delete.used.class.title", name);
-		List<String> buttonLabels = Arrays.asList(
-				translate("confirm.delete.used.class.option1.title"),
-				translate("confirm.delete.used.class.option2.title"),
-				translate("cancel")
-		);
-		confirmDeleteUsedClassCtrl = activateGenericDialog(ureq, title, sb.toString(), buttonLabels, confirmDeleteUsedClassCtrl);
-		confirmDeleteUsedClassCtrl.setPrimary(0);
-		confirmDeleteUsedClassCtrl.setDanger(1);
-		confirmDeleteUsedClassCtrl.setUserObject(badgeClass);
+		confirmDeleteCtrl = new ConfirmDeleteBadgeClassController(ureq, getWindowControl(), badgeClass, totalUseCount);
+		listenTo(confirmDeleteCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				confirmDeleteCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doSelect(UserRequest ureq, BadgeClassRow row, boolean showRecipientsTab) {
@@ -583,23 +561,26 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				getWindowControl().pop();
 				removeAsListenerAndDispose(stepsController);
 			}
-		} else if (source == confirmDeleteUnusedClassCtrl) {
-			if (DialogBoxUIFactory.isOkEvent(event)) {
-				BadgeClass badgeClass = (BadgeClass) confirmDeleteUnusedClassCtrl.getUserObject();
-				doDelete(ureq, badgeClass);
-				showInfo("confirm.delete.unused.class.info");
+		} else if (source == confirmDeleteCtrl) {
+			if (event == Event.DONE_EVENT) {
+				BadgeClass badgeClass = confirmDeleteCtrl.getBadgeClass();
+				switch (confirmDeleteCtrl.getMode()) {
+					case unused:
+						doDelete(ureq, badgeClass);
+						showInfo("confirm.delete.unused.class.info");
+						break;
+					case revoke:
+						doMarkDeletedAndRevokeIssuedBadges(ureq, badgeClass);
+						showInfo("confirm.delete.used.class.option1.info");
+						break;
+					case remove:
+						doDelete(ureq, badgeClass);
+						showInfo("confirm.delete.used.class.option2.info");
+						break;
+				}
 				loadModel(ureq);
 			}
-		} else if (source == confirmDeleteUsedClassCtrl && event instanceof ButtonClickedEvent buttonClickedEvent) {
-			BadgeClass badgeClass = (BadgeClass) confirmDeleteUsedClassCtrl.getUserObject();
-			if (buttonClickedEvent.getPosition() == 0) {
-				doMarkDeletedAndRevokeIssuedBadges(ureq, badgeClass);
-				showInfo("confirm.delete.used.class.option1.info");
-			} else if (buttonClickedEvent.getPosition() == 1) {
-				doDelete(ureq, badgeClass);
-				showInfo("confirm.delete.used.class.option2.info");
-			}
-			loadModel(ureq);
+			cleanUp();
 		} else if (source == confirmRevokeAllBadgesCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				BadgeClass badgeClass = (BadgeClass) confirmRevokeAllBadgesCtrl.getUserObject();
@@ -626,11 +607,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
 		removeAsListenerAndDispose(issueCourseBadgeCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		calloutCtrl = null;
 		toolsCtrl = null;
 		issueGlobalBadgeCtrl = null;
 		issueCourseBadgeCtrl = null;
 		cmc = null;
+		confirmDeleteCtrl = null;
 	}
 
 	private void doMarkDeletedAndRevokeIssuedBadges(UserRequest ureq, BadgeClass badgeClass) {
