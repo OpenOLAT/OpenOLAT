@@ -204,7 +204,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						.withDetailsRepositoryEntry(true)
 						.withDetailsExam(false)
 						.withDetailsUnits(true)
-						.withDetailsExternalRef(true);
+						.withDetailsExternalRef(true)
+						.withinCurriculums(true);
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, toolbarPanel, curriculum, config, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
 

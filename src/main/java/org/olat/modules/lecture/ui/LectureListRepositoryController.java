@@ -1052,8 +1052,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setRepositoryEntry(entry);
 			searchParams.setLectureConfiguredRepositoryEntry(true);
 		} else {
-			searchParams.setInSomeCurriculum(true);
-			searchParams.setLectureConfiguredRepositoryEntry(false);
+			boolean withinCurriculums = config.withinCurriculums();
+			searchParams.setInSomeCurriculum(withinCurriculums);
+			searchParams.setLectureConfiguredRepositoryEntry(!withinCurriculums);
 		}
 		return searchParams;
 	}

@@ -234,7 +234,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 					.withDetailsRepositoryEntry(true)
 					.withDetailsExam(false)
 					.withDetailsUnits(true)
-					.withDetailsExternalRef(true);
+					.withDetailsExternalRef(true)
+					.withinCurriculums(false);
 			
 			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, stackPanel, config, secCallback);
 			listenTo(lecturesCtrl);

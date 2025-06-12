@@ -56,6 +56,8 @@ public class LectureListRepositoryConfig {
 	private boolean withDetailsUnits = true;
 	private boolean withDetailsExternalRef = true;
 	
+	private boolean withinCurriculums = false;
+	
 	private final String prefsId;
 	
 	private LectureListRepositoryConfig(String prefsId, int titleSize, boolean withScopes, boolean withFilterPresetRelevant,
@@ -293,6 +295,17 @@ public class LectureListRepositoryConfig {
 		this.withDetailsExternalRef = withDetailsExternalRef;
 		return this;
 	}
+	
+	public boolean withinCurriculums() {
+		return withinCurriculums;
+	}
+
+	public LectureListRepositoryConfig withinCurriculums(boolean withinCurriculums) {
+		this.withinCurriculums = withinCurriculums;
+		return this;
+	}
+
+
 
 	public enum Visibility {
 		NO,
