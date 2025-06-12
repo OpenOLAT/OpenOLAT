@@ -246,10 +246,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FlexiFiltersTab withoutTeachersTab;
 	private Map<String,FlexiFiltersTab> tabsMap = Map.of();
 	
-	private FlexiTableMultiSelectionFilter teachersFilter;
-	private FlexiTableMultiSelectionFilter curriculumFilter;
-	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
-	private FlexiTableMultiSelectionFilter virtualStatusFilter;
 	private final SelectionValues teachersValues = new SelectionValues();
 	
 	private ToolsController toolsCtrl;
@@ -630,10 +626,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			for(Curriculum cur:curriculums) {
 				curriculumValues.add(SelectionValues.entry(cur.getKey().toString(), cur.getDisplayName()));
 			}
-			
-			curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
+			FlexiTableMultiSelectionFilter curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
 					FILTER_CURRICULUM, curriculumValues, true);
-			filters.add(curriculumFilter);
+			if(!curriculumValues.isEmpty()) {
+				filters.add(curriculumFilter);
+			}
 		}
 		
 		SelectionValues virtualStatusValues = new SelectionValues();
@@ -641,11 +638,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.RUNNING.name(), translate("running")));
 		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.DONE.name(), translate("done")));
 		virtualStatusValues.add(SelectionValues.entry(LectureBlockVirtualStatus.CANCELLED.name(), translate("cancelled")));
-		virtualStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
+		FlexiTableMultiSelectionFilter virtualStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_VIRTUAL_STATUS, virtualStatusValues, true);
 		filters.add(virtualStatusFilter);
 		
-		teachersFilter = new FlexiTableMultiSelectionFilter(translate("filter.teachers"),
+		FlexiTableMultiSelectionFilter teachersFilter = new FlexiTableMultiSelectionFilter(translate("filter.teachers"),
 				FILTER_TEACHERS, teachersValues, true);
 		filters.add(teachersFilter);
 	
@@ -655,7 +652,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.closed.name(), translate("search.form.status.closed")));
 			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.autoclosed.name(), translate("search.form.status.autoclosed")));
 			rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.reopen.name(), translate("search.form.status.reopen")));
-			rollCallStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.rollcall.status"),
+			FlexiTableMultiSelectionFilter rollCallStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.rollcall.status"),
 					FILTER_ROLL_CALL_STATUS, rollCallStatusValues, true);
 			filters.add(rollCallStatusFilter);
 		}
@@ -1090,8 +1087,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		}
 		
-		if(FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_TEACHERS) != null) {
-			List<String> filterValues = teachersFilter.getValues();
+		FlexiTableFilter tFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_TEACHERS);
+		if(tFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
 			if(filterValues != null && !filterValues.isEmpty()) {
 				List<IdentityRefImpl> teachersKeys = filterValues.stream()
 						.filter(StringHelper::isLong)
@@ -1103,6 +1101,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				}
 			}
 		}
+		
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		Date now = ureq.getRequestTimestamp();
 		if(selectedTab == relevantTab) {
