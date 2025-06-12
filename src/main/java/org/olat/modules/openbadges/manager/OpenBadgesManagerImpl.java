@@ -126,12 +126,14 @@ import org.olat.modules.openbadges.BadgeClasses;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeOrganization;
 import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.LinkedInUrl;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.model.BadgeCryptoKey;
 import org.olat.modules.openbadges.model.BadgeSigningOrganization;
@@ -1134,7 +1136,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return null;
 		}
 
-		String verification = "{\"type\":\"hosted\"}";
+		String verification = createVerificationObject();
 		String recipientObject = createRecipientObject(recipient, badgeClass.getSalt());
 		if (recipientObject == null) {
 			return null;
@@ -1177,6 +1179,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		return badgeAssertion;
+	}
+
+	public String createVerificationObject() {
+		String creator = BadgeVerification.signed.equals(openBadgesModule.getVerification()) ? 
+				OpenBadgesFactory.createPublicKeyUrl() : null;
+		return BadgeAssertionImpl.asVerificationObject(openBadgesModule.getVerification(), creator);
 	}
 
 	private void recreateBadgeAssertionIfNeeded(Identity recipient, BadgeClass badgeClass, Date issuedOn, Identity awardedBy) {
@@ -1584,7 +1592,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (OpenBadgesFactory.isSvgFileName(badgeClassImage)) {
 			return createBakedSvgBadgeImage(badgeAssertion, savedBy);
 		} else if (OpenBadgesFactory.isPngFileName(badgeClassImage)) {
-			return createBakedPngBadgeImage(badgeAssertion);
+			return createBakedPngBadgeImage(badgeAssertion, savedBy);
 		}
 		return null;
 	}
@@ -1606,7 +1614,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			throws IOException, JOSEException {
 		String svg = Files.readString(localFile.getBasefile().toPath());
 		String verifyValue = getVerifyValue(badgeAssertion, savedBy);
-		String assertionJson = getAssertionJson(badgeAssertion, savedBy);
+		String assertionJson = getAssertionJson(badgeAssertion);
 		String bakedSvg = mergeSvg(svg, verifyValue, assertionJson);
 		InputStream inputStream = new ByteArrayInputStream(bakedSvg.getBytes(StandardCharsets.UTF_8));
 		VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
@@ -1616,18 +1624,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return bakedImage;
 	}
 	
-	private String getVerifyValue(BadgeAssertion badgeAssertion, Identity identity) throws JOSEException {
+	private String getVerifyValue(BadgeAssertion badgeAssertion, Identity doer) throws JOSEException {
 		return switch (openBadgesModule.getVerification()) {
 			case hosted -> OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
-			case signed -> getSignedVerifyValue(badgeAssertion, identity);
+			case signed -> createBadgeSignature(badgeAssertion, doer);
 		};
 	}
 
-	public String getSignedVerifyValue(BadgeAssertion badgeAssertion, Identity identity)
+	public String createBadgeSignature(BadgeAssertion badgeAssertion, Identity doer)
 			throws JOSEException {
 		Assertion assertion = new Assertion(badgeAssertion);
 		JSONObject assertionJsonObject = assertion.asJsonObject();
-		PrivateKey privateKey = getPrivateKey(identity);
+		PrivateKey privateKey = getPrivateKey(doer);
 		JWSSigner jwsSigner = new RSASSASigner(privateKey);
 
 		JWSObject jwsObject = new JWSObject(
@@ -1638,7 +1646,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return jwsObject.serialize();
 	}
 
-	private String getAssertionJson(BadgeAssertion badgeAssertion, Identity identity) throws JOSEException {
+	private String getAssertionJson(BadgeAssertion badgeAssertion) {
 		return switch (openBadgesModule.getVerification()) {
 			case hosted -> createBakedJsonString(badgeAssertion);
 			case signed -> null;
@@ -1677,7 +1685,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return sb.toString();
 	}
 
-	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion) {
+	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy) {
 		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
 		if (badgeClassImage == null) {
 			log.error("No image found for badge class {}", badgeAssertion.getBadgeClass().getUuid());
@@ -1689,27 +1697,27 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return null;
 		}
 
-		String jsonString = createBakedJsonString(badgeAssertion);
-
-		IIOMetadata metadata = iioImage.getMetadata();
 		try {
-			addNativePngTextEntry(metadata, "openbadges", jsonString);
-		} catch (IIOInvalidTreeException e) {
-			log.error("", e);
-			return null;
-		}
-
-		IIOImage bakedImage = new IIOImage(iioImage.getRenderedImage(), null, metadata);
-		try {
+			String textValue = createPngText(badgeAssertion, savedBy);
+			IIOMetadata metadata = iioImage.getMetadata();
+			addNativePngTextEntry(metadata, "openbadges", textValue);
+			IIOImage bakedImage = new IIOImage(iioImage.getRenderedImage(), null, metadata);
 			String bakedImageName = badgeAssertion.getUuid() + ".png";
 			VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
 			VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImageName);
 			writeImageIOImage(bakedImage, targetLeaf.getOutputStream(false));
 			return bakedImageName;
-		} catch (IOException e) {
+		} catch (IOException | JOSEException e) {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	public String createPngText(BadgeAssertion badgeAssertion, Identity savedBy) throws JOSEException {
+		return switch (openBadgesModule.getVerification()) {
+			case hosted -> createBakedJsonString(badgeAssertion);
+			case signed -> createBadgeSignature(badgeAssertion, savedBy);
+		};
 	}
 
 	static IIOImage readIIOImage(InputStream inputStream) {
@@ -1730,10 +1738,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	// https://stackoverflow.com/questions/41265608/png-metadata-read-and-write
-	static void addNativePngTextEntry(IIOMetadata metadata, String keyword, String value) throws IIOInvalidTreeException {
+	static void addNativePngTextEntry(IIOMetadata metadata, String keyword, String textValue) throws IIOInvalidTreeException {
 		IIOMetadataNode textEntry = new IIOMetadataNode("iTXtEntry");
 		textEntry.setAttribute("keyword", keyword);
-		textEntry.setAttribute("text", value);
+		textEntry.setAttribute("text", textValue);
 		textEntry.setAttribute("compressionFlag", "FALSE");
 		textEntry.setAttribute("compressionMethod", "0");
 		textEntry.setAttribute("languageTag", "");
@@ -2026,19 +2034,19 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return VFSManager.olatRootContainer(File.separator + BADGES_VFS_FOLDER + File.separator + ASSERTIONS_VFS_FOLDER, null);
 	}
 
-	static NamedNodeMap extractAssertionJsonStringFromPng(InputStream inputStream) {
+	static NamedNodeMap findOpenBadgesTextChunk(InputStream inputStream) {
 		IIOImage iioImage = readIIOImage(inputStream);
 		if (iioImage == null) {
 			return null;
 		}
-		return extractTextAttributes(iioImage);
+		return findOpenBadgesTextChunk(iioImage);
 	}
 
-	private static NamedNodeMap extractTextAttributes(IIOImage iioImage) {
+	private static NamedNodeMap findOpenBadgesTextChunk(IIOImage iioImage) {
 		IIOMetadata iioMetadata = iioImage.getMetadata();
 		for (String formatName : iioMetadata.getMetadataFormatNames()) {
 			Node node = iioMetadata.getAsTree(formatName);
-			NamedNodeMap attributes = findTextAttributes(node, "");
+			NamedNodeMap attributes = findOpenBadgesTextChunk(node, "");
 			if (attributes != null) {
 				return attributes;
 			}
@@ -2046,7 +2054,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return null;
 	}
 
-	private static NamedNodeMap findTextAttributes(Node node, String space) {
+	private static NamedNodeMap findOpenBadgesTextChunk(Node node, String space) {
 		System.err.println(space + node.getNodeName() + "(" + node.getNodeType() + ")");
 		if (node.getNodeName().equals("iTXtEntry")) {
 			Node keyword = node.getAttributes().getNamedItem("keyword");
@@ -2066,7 +2074,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
 			Node child = node.getChildNodes().item(i);
-			NamedNodeMap namedNodeMap = findTextAttributes(child, space + "  ");
+			NamedNodeMap namedNodeMap = findOpenBadgesTextChunk(child, space + "  ");
 			if (namedNodeMap != null) {
 				return namedNodeMap;
 			}

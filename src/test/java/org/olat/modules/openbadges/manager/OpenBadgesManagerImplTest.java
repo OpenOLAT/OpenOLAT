@@ -69,7 +69,6 @@ import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CoursesPassedCondition;
 import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
-import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -166,14 +165,18 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testBakePng() throws IOException {
+	public void bakePngHosted() throws IOException, JOSEException {
+		BadgeVerification badgeVerification = openBadgesModule.getVerification();
+		openBadgesModule.setVerification(BadgeVerification.hosted);
 
 		// Arrange
+
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-doer");
 
 		String uuid = OpenBadgesFactory.createIdentifier();
 		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
-		String jsonString = OpenBadgesManagerImpl.createBakedJsonString(badgeAssertion);
+		String textValue = ((OpenBadgesManagerImpl) openBadgesManager).createPngText(badgeAssertion, doer);
 		String tmpFileName = uuid + ".png";
 
 		InputStream inputStream = OpenBadgesManagerImplTest.class.getResourceAsStream("test_badge.png");
@@ -182,7 +185,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 		// Act
 
-		OpenBadgesManagerImpl.addNativePngTextEntry(metadata, "openbadges", jsonString);
+		OpenBadgesManagerImpl.addNativePngTextEntry(metadata, "openbadges", textValue);
 		IIOImage bakedImage = new IIOImage(iioImage.getRenderedImage(), null, metadata);
 		File tmpFile = new File(WebappHelper.getTmpDir(), tmpFileName);
 		FileOutputStream fileOutputStream = new FileOutputStream(tmpFile, false);
@@ -191,11 +194,11 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		// Assert
 
 		InputStream bakedInputStream = new FileInputStream(tmpFile);
-		NamedNodeMap attributes = OpenBadgesManagerImpl.extractAssertionJsonStringFromPng(bakedInputStream);
+		NamedNodeMap attributes = OpenBadgesManagerImpl.findOpenBadgesTextChunk(bakedInputStream);
 
 		Assert.assertNotNull(attributes);
 
-		OpenBadgesBakeContext bakeContext = new OpenBadgesBakeContext(attributes);
+		OpenBadgesBakeContext bakeContext = new OpenBadgesBakeContext(attributes, BadgeVerification.hosted);
 		Assertion assertion = bakeContext.getTextAsAssertion();
 		Badge badge = assertion.getBadge();
 
@@ -203,14 +206,64 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertTrue(assertion.getId().endsWith(uuid));
 		Assert.assertEquals(badgeClass.getSalt(), assertion.getRecipient().getSalt());
 		Assert.assertTrue(badge.getImage().endsWith(badgeClass.getUuid()));
+
+		openBadgesModule.setVerification(badgeVerification);
+	}
+
+	@Test
+	public void bakePngSigned() throws IOException, JOSEException {
+		BadgeVerification badgeVerification = openBadgesModule.getVerification();
+		openBadgesModule.setVerification(BadgeVerification.signed);
+
+		// Arrange
+
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-doer");
+
+		String uuid = OpenBadgesFactory.createIdentifier();
+		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
+		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
+		String textValue = ((OpenBadgesManagerImpl) openBadgesManager).createPngText(badgeAssertion, doer);
+		String tmpFileName = uuid + ".png";
+
+		InputStream inputStream = OpenBadgesManagerImplTest.class.getResourceAsStream("test_badge.png");
+		IIOImage iioImage = OpenBadgesManagerImpl.readIIOImage(inputStream);
+		IIOMetadata metadata = iioImage.getMetadata();
+
+		// Act
+
+		OpenBadgesManagerImpl.addNativePngTextEntry(metadata, "openbadges", textValue);
+		IIOImage bakedImage = new IIOImage(iioImage.getRenderedImage(), null, metadata);
+		File tmpFile = new File(WebappHelper.getTmpDir(), tmpFileName);
+		FileOutputStream fileOutputStream = new FileOutputStream(tmpFile, false);
+		OpenBadgesManagerImpl.writeImageIOImage(bakedImage, fileOutputStream);
+
+		// Assert
+
+		InputStream bakedInputStream = new FileInputStream(tmpFile);
+		NamedNodeMap attributes = OpenBadgesManagerImpl.findOpenBadgesTextChunk(bakedInputStream);
+
+		Assert.assertNotNull(attributes);
+
+		OpenBadgesBakeContext bakeContext = new OpenBadgesBakeContext(attributes, BadgeVerification.signed);
+		String text = bakeContext.getText();
+		Assert.assertNotNull(text);
+		String[] parts = text.split("\\.");
+		Assert.assertEquals(3, parts.length);
+		JSONObject header = new JSONObject(new String(Base64.getDecoder().decode(parts[0]), StandardCharsets.UTF_8));
+		Assert.assertEquals("RS256", header.getString("alg"));
+		JSONObject payload = new JSONObject(new String(Base64.getDecoder().decode(parts[1]), StandardCharsets.UTF_8));
+		Assert.assertTrue(payload.getString("id").endsWith(uuid));
+		JSONObject verification = payload.getJSONObject("verification");
+		Assert.assertEquals("signed", verification.getString("type"));
+		
+		openBadgesModule.setVerification(badgeVerification);
 	}
 
 	private BadgeAssertion createBadgeAssertion(String uuid) {
 		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("PNG badge", "image.png", null);
 		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser("badgeRecipient");
 		String recipientObject = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeClassImpl.getSalt());
-		String creator = BadgeVerification.signed.equals(openBadgesModule.getVerification()) ? OpenBadgesFactory.createPublicKeyUrl() : null;
-		String verification = BadgeAssertionImpl.asVerificationObject(openBadgesModule.getVerification(), creator);
+		String verification = ((OpenBadgesManagerImpl) openBadgesManager).createVerificationObject();
 		Date issuedOn = new Date();
 
 		return badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClassImpl,
@@ -218,7 +271,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testInsertingJsonIntoSvgHosted() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
+	public void bakeSvgHosted() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
 		BadgeVerification badgeVerification = openBadgesModule.getVerification();
 		openBadgesModule.setVerification(BadgeVerification.hosted);
 
@@ -278,7 +331,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testInsertingJsonIntoSvgSigned() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, JOSEException {
+	public void bakeSvgSigned() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, JOSEException {
 		
 		// arrange
 		BadgeVerification badgeVerification = openBadgesModule.getVerification();
@@ -291,7 +344,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		
 		String assertionUuid = OpenBadgesFactory.createIdentifier(); 
 		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid);
-		String verifyValue = managerImpl.getSignedVerifyValue(badgeAssertion, doer);
+		String verifyValue = managerImpl.createBadgeSignature(badgeAssertion, doer);
 		
 		// act
 		

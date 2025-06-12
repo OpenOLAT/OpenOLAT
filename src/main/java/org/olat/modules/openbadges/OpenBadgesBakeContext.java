@@ -39,6 +39,7 @@ public class OpenBadgesBakeContext {
 	private static final String COMPRESSION_METHOD_KEY = "compressionMethod";
 	private static final String COMPRESSION_METHOD_VALUE = "0";
 	private static final String TEXT_KEY = "text";
+	private BadgeVerification verification;
 
 	private String keyword;
 	private String compression;
@@ -53,8 +54,9 @@ public class OpenBadgesBakeContext {
 		setText("");
 	}
 
-	public OpenBadgesBakeContext(NamedNodeMap attributes) throws IllegalArgumentException {
+	public OpenBadgesBakeContext(NamedNodeMap attributes, BadgeVerification verification) throws IllegalArgumentException {
 		this();
+		this.verification = verification;
 		for (int i = 0; i < attributes.getLength(); i++) {
 			Node attribute = attributes.item(i);
 			if (KEYWORD_KEY.equals(attribute.getNodeName())) {
@@ -101,7 +103,7 @@ public class OpenBadgesBakeContext {
 
 	private void setText(String text) {
 		this.text = text;
-		if (StringHelper.containsNonWhitespace(text)) {
+		if (BadgeVerification.hosted.equals(verification) && StringHelper.containsNonWhitespace(text)) {
 			JSONObject jsonObject = new JSONObject(text);
 			textAsAssertion = new Assertion(jsonObject);
 		}
