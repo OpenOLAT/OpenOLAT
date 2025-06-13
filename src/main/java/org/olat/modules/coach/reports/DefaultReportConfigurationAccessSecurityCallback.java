@@ -20,9 +20,13 @@
 package org.olat.modules.coach.reports;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
@@ -47,8 +51,10 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 
 	private final boolean courseCoach;
 
+	private boolean showAbsencesReports;
+	
 	public DefaultReportConfigurationAccessSecurityCallback(Identity identity, Roles roles, boolean coachingContext,
-															boolean curriculumContext) {
+															boolean curriculumContext, OrganisationService organisationService) {
 		this.roles = roles;
 		this.coachingContext = coachingContext;
 		this.curriculumContext = curriculumContext;
@@ -63,6 +69,31 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 		
 		RepositoryEntryRelationDAO repositoryEntryRelationDao = CoreSpringFactory.getImpl(RepositoryEntryRelationDAO.class);
 		courseCoach = repositoryEntryRelationDao.hasRoleExpanded(identity, GroupRoles.coach.name());
+		
+		setShowAbsencesReport(identity, organisationService);
+	}
+
+	private void setShowAbsencesReport(Identity identity, OrganisationService organisationService) {
+		showAbsencesReports = false;
+		if (roles.isLineManager()) {
+			if (canViewLecturesAndAbsences(identity, organisationService, OrganisationRoles.linemanager)) {
+				showAbsencesReports = true;
+				return;
+			}
+		}
+		if (roles.isEducationManager()) {
+			if (canViewLecturesAndAbsences(identity, organisationService, OrganisationRoles.educationmanager)) {
+				showAbsencesReports = true;
+			}
+		}
+	}
+	
+	private boolean canViewLecturesAndAbsences(Identity identity, OrganisationService organisationService, OrganisationRoles role) {
+		RoleSecurityCallback secCallback = RoleSecurityCallbackFactory.create(
+				organisationService.getGrantedOrganisationsRights(
+						organisationService.getOrganisations(identity, role),
+						role), role);
+		return secCallback.canViewLecturesAndAbsences();
 	}
 
 	@Override
@@ -98,5 +129,10 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	@Override
 	public boolean isCourseCoach() {
 		return courseCoach;
+	}
+
+	@Override
+	public boolean isShowAbsencesReports() {
+		return showAbsencesReports;
 	}
 }

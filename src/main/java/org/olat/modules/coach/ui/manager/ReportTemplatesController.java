@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -66,11 +67,14 @@ public class ReportTemplatesController extends FormBasicController {
 	@Autowired
 	private List<ReportConfiguration> reportConfigurations;
 
+	@Autowired
+	private OrganisationService organisationService;
+	
 	public ReportTemplatesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "report_templates");
 		
 		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(), 
-				ureq.getUserSession().getRoles(), true, false);
+				ureq.getUserSession().getRoles(), true, false, organisationService);
 
 		initForm(ureq);
 		loadModel();
@@ -82,7 +86,7 @@ public class ReportTemplatesController extends FormBasicController {
 		super(ureq, wControl, "report_templates", translator);
 
 		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(),
-				ureq.getUserSession().getRoles(), false, true);
+				ureq.getUserSession().getRoles(), false, true, organisationService);
 
 		initForm(ureq);
 		loadModel();
