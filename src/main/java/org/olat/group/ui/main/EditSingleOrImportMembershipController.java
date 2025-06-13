@@ -485,8 +485,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 			formLayout.add(buttonLayout);
 			buttonLayout.setRootForm(mainForm);
-			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("ok", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
 	}
 	
