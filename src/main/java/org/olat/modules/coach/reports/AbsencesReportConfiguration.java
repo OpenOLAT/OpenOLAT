@@ -44,7 +44,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 	@Override
 	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
-		return secCallback.isCoachingContext();
+		return secCallback.isCoachingContext() && secCallback.isShowAbsencesReports();
 	}
 
 	@Override
