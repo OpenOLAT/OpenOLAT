@@ -48,6 +48,7 @@ import org.olat.modules.lecture.model.LectureRepositoryEntrySearchParameters;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
+import org.olat.modules.lecture.model.ParticipantLecturesStatisticsSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -779,7 +780,8 @@ public interface LectureService {
 	 * @param identity The user which request the data
 	 * @return A list of statistics
 	 */
-	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef participantIdentity, Identity identity);
+	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef participantIdentity,
+			ParticipantLecturesStatisticsSearchParameters searchParams);
 	
 	/**
 	 * Return all the statistics for a course / repository entry.

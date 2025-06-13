@@ -1450,7 +1450,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		RevisionNrs versionNrs = getNextRevisionNr(lastRevision, metadata.getRevisionTempNr() != null);
 		
 		boolean sameFile = isSameFile(currentLeaf, metadata, revisions);
-		String uuid = sameFile && lastRevision != null ? lastRevision.getFilename()
+		String uuid = sameFile && lastRevision != null 
+				? lastRevision.getFilename()
 				: generateFilenameForRevision(currentFile, versionNrs.getRevisionNr(), versionNrs.getRevisionTempNr());
 
 		Date lastModifiedDate = metadata.getFileLastModified();
@@ -1464,11 +1465,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		// Don't make a revision if it is the first stable version after some temporary versions
 		// It would be a stable revision of a temporary version. We do not want that.
+		boolean noRevisionNeeded = true;
 		if (tempVersion || metadata.getRevisionTempNr() == null) {
 			VFSRevision newRevision = revisionDao.createRevision(metadata.getFileInitializedBy(),
 					metadata.getFileLastModifiedBy(), uuid, versionNrs.getRevisionNr(), versionNrs.getRevisionTempNr(),
 					fileSize, lastModifiedDate, metadata.getRevisionComment(), metadata);
 			revisions.add(newRevision);
+			noRevisionNeeded = false;
 		}
 
 		if(!sameFile) {
@@ -1476,7 +1479,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 
 		File revFile = new File(currentFile.getParentFile(), uuid);
-		if (sameFile || copyContent(currentFile, revFile)) {
+		if (sameFile || noRevisionNeeded || copyContent(currentFile, revFile)) {
 			if(pruneRevision && !tempVersion && maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
 				int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
 				if(numOfVersionsToDelete > 0) {
@@ -1493,6 +1496,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				((VFSMetadataImpl)metadata).setFileInitializedBy(identity);
 			}
 			updateMetadata(metadata);
+			
+			if (!tempVersion) {
+				// Delete the temporary versions if a new stable version is set (just in case...)
+				revisions = revisionDao.getRevisions(metadata);
+				List<VFSRevision> tempVersions = revisions.stream()
+						.filter(rev -> rev.getRevisionTempNr() != null)
+						.collect(Collectors.toList());
+				deleteRevisions(metadata, revisions, tempVersions);
+			}
+			
 			return true;
 		} else {
 			log.error("Cannot create a version of this file: {}", currentLeaf);

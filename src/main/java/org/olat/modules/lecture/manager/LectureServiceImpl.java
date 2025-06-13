@@ -42,6 +42,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -125,6 +126,7 @@ import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
+import org.olat.modules.lecture.model.ParticipantLecturesStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -1756,16 +1758,19 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef participantIdentity, Identity identity) {
+	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef participantIdentity,
+			ParticipantLecturesStatisticsSearchParameters searchParams) {
 		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		boolean countDispensationAsAttendant = lectureModule.isCountDispensationAsAttendant() && lectureModule.isAbsenceNoticeEnabled();
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
+		Identity identity = searchParams == null ? null : searchParams.getIdentity();
+		OrganisationRoles limitToRole = searchParams == null ? null : searchParams.getLimitToRole();
 		return lectureBlockRollCallDao.getStatistics(participantIdentity, RepositoryEntryStatusEnum.publishedAndClosed(),
 				authorizedAbsenceEnabled, absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant, countDispensationAsAttendant,
-				calculateAttendanceRate, defaultRequiredAttendanceRate, identity);
+				calculateAttendanceRate, defaultRequiredAttendanceRate, identity, limitToRole);
 	}
 
 	@Override
