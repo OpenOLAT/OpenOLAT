@@ -613,6 +613,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public Set<Long> getUserOrganisationKeys(IdentityRef identity) {
+		return organisationDao.getUserOrganisationKeys(identity);
+	}
+
+	@Override
 	public List<Organisation> getOrganisations(IdentityRef member, Roles roles, OrganisationRoles... organisationRoles) {
 		if(organisationRoles == null || organisationRoles.length == 0 || organisationRoles[0] == null) {
 			return Collections.emptyList();

@@ -576,6 +576,19 @@ public class OrganisationDAO {
 		return organisationsMap;
 	}
 	
+	public Set<Long> getUserOrganisationKeys(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select org.key from organisation org");
+		sb.append(" inner join org.group baseGroup");
+		sb.append(" inner join baseGroup.members membership");
+		sb.where().append("membership.identity.key=:identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultStream().collect(Collectors.toSet());
+	}
+
 	public List<Organisation> getOrganisations(Collection<OrganisationRef> rootOrganisations) {
 		if(rootOrganisations == null || rootOrganisations.isEmpty()) return new ArrayList<>();
 		

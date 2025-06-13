@@ -21,6 +21,8 @@ package org.olat.modules.coach.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -118,8 +120,17 @@ public class OrganisationListController extends AbstractParticipantsListControll
         WindowControl bwControl = addToHistory(ureq, ores, null);
         
         int index = tableModel.getObjects().indexOf(statisticsEntry);
-        return new UserOverviewController(ureq, bwControl, stackPanel, statisticsEntry, identity, index, tableModel.getRowCount(), null, securityCallback);
+		RoleSecurityCallback userSecurityCallback = getUserSecurityCallback(identity);
+        return new UserOverviewController(ureq, bwControl, stackPanel, statisticsEntry, identity, index, 
+				tableModel.getRowCount(), null, userSecurityCallback);
     }
+	
+	private RoleSecurityCallback getUserSecurityCallback(Identity identity) {
+		Set<Long> userOrgKeys = organisationService.getUserOrganisationKeys(identity);
+		List<Organisation> filteredOrgs = organisations.stream()
+				.filter(org -> userOrgKeys.contains(org.getKey())).collect(Collectors.toList());
+		return RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(filteredOrgs, organisationRole));
+	}
     
 	private List<OrganisationRoles> excludedRoles() {
 		List<OrganisationRoles> roles = new ArrayList<>();
