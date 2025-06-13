@@ -1447,7 +1447,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		
 		VFSRevisionImpl lastRevision = (VFSRevisionImpl)getLastRevision(revisions);
-		RevisionNrs versionNrs = getNextRevisionNr(lastRevision, metadata.getRevisionTempNr() != null);
+		RevisionNrs versionNrs = getNextRevisionNr(lastRevision, tempVersion);
 		
 		boolean sameFile = isSameFile(currentLeaf, metadata, revisions);
 		String uuid = sameFile && lastRevision != null ? lastRevision.getFilename()
@@ -1493,6 +1493,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				((VFSMetadataImpl)metadata).setFileInitializedBy(identity);
 			}
 			updateMetadata(metadata);
+			
+			if (!tempVersion) {
+				// Delete the temporary versions if a new stable version is set (just in case...)
+				revisions = revisionDao.getRevisions(metadata);
+				List<VFSRevision> tempVersions = revisions.stream()
+						.filter(rev -> rev.getRevisionTempNr() != null)
+						.collect(Collectors.toList());
+				deleteRevisions(metadata, revisions, tempVersions);
+			}
+			
 			return true;
 		} else {
 			log.error("Cannot create a version of this file: {}", currentLeaf);
