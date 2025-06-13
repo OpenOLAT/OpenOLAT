@@ -19,6 +19,8 @@
  */
 package org.olat.modules.coach;
 
+import org.olat.basesecurity.OrganisationRoles;
+
 /* 
  * Initial date: 17 Jun 2020<br>
  * @author aboeckle, alexander.boeckle@frentix.com
@@ -129,5 +131,7 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canUploadExternalCertificate();
+	
+	public OrganisationRoles limitToRole();
 	
 }

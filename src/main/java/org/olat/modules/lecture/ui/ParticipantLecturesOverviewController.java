@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -77,6 +78,7 @@ import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.model.ParticipantLecturesStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
 import org.olat.modules.lecture.ui.component.PercentCellRenderer;
@@ -114,6 +116,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final boolean absenceNoticeEnabled;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean withCurriculumAggregation;
+	private final OrganisationRoles limitToRole;
 	private final List<RepositoryEntryRef> filterByEntries;
 	private final List<AggregatedElement> aggregatedElements;
 	private FlexiTableColumnModel aggregatedElementColumnsModel;
@@ -136,20 +139,18 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl, boolean withTitle, boolean withCurriculumAggregation) {
-		this(ureq, wControl, ureq.getIdentity(), null, true, true, false, withTitle, withCurriculumAggregation, false, false);
-	}
-	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, List<RepositoryEntryRef> filterByEntries,
 			boolean withPrint, boolean withSelect, boolean withLog, boolean withTitle,
-			boolean withCurriculumAggregation, boolean openAll, boolean printCommand) {
+			boolean withCurriculumAggregation, boolean openAll, boolean printCommand,
+			OrganisationRoles limitToRole) {
 		super(ureq, wControl, "participant_overview");
 		this.openAll = openAll;
 		this.withLog = withLog;
 		this.withPrint = withPrint;
 		this.withTitle = withTitle;
 		this.withSelect = withSelect;
+		this.limitToRole = limitToRole;
 		this.printCommand = printCommand;
 		this.assessedIdentity = assessedIdentity;
 		this.filterByEntries = filterByEntries;
@@ -340,7 +341,10 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	}
 	
 	public void loadModel() {
-		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity, getIdentity());
+		ParticipantLecturesStatisticsSearchParameters searchParams = new ParticipantLecturesStatisticsSearchParameters(getIdentity());
+		searchParams.setLimitToRole(limitToRole);
+		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity, searchParams);
+		
 		if(filterByEntries != null && !filterByEntries.isEmpty()) {
 			Set<Long> acceptedEntries = filterByEntries.stream()
 					.map(RepositoryEntryRef::getKey).collect(Collectors.toSet());
@@ -381,13 +385,14 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	}
 	
 	private void loadLectureStatisticsFor(Set<Long> entryKeys) {
-		if(lectureModule.isEnabled()) {
+		if(lectureModule.isEnabled() && !entryKeys.isEmpty()) {
 			List<RepositoryEntryRef> entriesRef = entryKeys.stream()
 					.map(RepositoryEntryRefImpl::new)
 					.collect(Collectors.toList());
 			LectureStatisticsSearchParameters searchParams = new LectureStatisticsSearchParameters();
 			searchParams.setParticipants(List.of(assessedIdentity));
 			searchParams.setEntries(entriesRef);
+			searchParams.setLimitToRole(limitToRole);
 			List<LectureBlockIdentityStatistics> rawStatistics = lectureService.getLecturesStatistics(searchParams, List.of(), getIdentity());
 			List<LectureBlockIdentityStatistics> statistics = lectureService.groupByIdentity(rawStatistics);
 			if(statistics.isEmpty()) {
@@ -490,7 +495,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
 			Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, filterByEntries,
-					false, false, false, true, withCurriculumAggregation, true, true);
+					false, false, false, true, withCurriculumAggregation, true, true, limitToRole);
 			listenTo(printCtrl);
 			return printCtrl;				
 		};

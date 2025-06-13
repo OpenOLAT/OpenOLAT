@@ -624,7 +624,7 @@ public class LectureBlockRollCallDAO {
 			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized,
 			boolean countAuthorizedAbsenceAsAttendant, boolean countDispensationAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault,
-			Identity identity) {
+			Identity identity, OrganisationRoles limitToRole) {
 		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select call.key as callKey, ")
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
@@ -667,7 +667,11 @@ public class LectureBlockRollCallDAO {
 		
 		// check access permission
 		if(identity != null && !identity.equals(participantIdentity)) {
-			appendCheckAccess(sb);
+			if(limitToRole == null) {
+				appendCheckAccess(sb);
+			} else {
+				appendCheckAccess(sb, limitToRole);
+			}
 		}
 		
 		Date now = new Date();
@@ -804,7 +808,11 @@ public class LectureBlockRollCallDAO {
 	
 		// check access permission
 		if(!params.isParticipant(identity)) {
-			appendCheckAccess(sb);
+			if(params.getLimitToRole() == null) {
+				appendCheckAccess(sb);
+			} else {
+				appendCheckAccess(sb, params.getLimitToRole());
+			}
 		}
 
 		if(params.getLifecycle() != null) {
@@ -1009,7 +1017,7 @@ public class LectureBlockRollCallDAO {
 	private void appendCheckAccess(QueryBuilder sb) {
 		sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
 		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
-		  .append("     and membership.role").in(OrganisationRoles.administrator,OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name())
+		  .append("     and membership.role").in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager.name(), GroupRoles.owner.name())
 		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" ) or exists (select membership.key from bgroupmember as membership ")
 		  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
@@ -1018,6 +1026,14 @@ public class LectureBlockRollCallDAO {
 		  .append("     where masterCoachMembership.group.key=bGroup.key and masterCoachMembership.identity.key=:identityKey")
 		  .append("     and masterCoachMembership.role").in(CurriculumRoles.mastercoach)
 		  .append(" ))");
+	}
+	
+	private void appendCheckAccess(QueryBuilder sb, OrganisationRoles role) {
+		sb.append(" and exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
+		  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
+		  .append("     and membership.role").in(role)
+		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+		  .append(" )");
 	}
 	
 	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams,

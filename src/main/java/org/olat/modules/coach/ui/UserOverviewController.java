@@ -287,7 +287,8 @@ public class UserOverviewController extends BasicController implements Activatea
 		if (lectureModule.isEnabled() && roleSecurityCallback.canViewLecturesAndAbsences()) {
 			lecturesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("lectures"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_LECTURES), null);
-				lecturesController = new ParticipantLecturesOverviewController(uureq, bwControl, mentee, null, true, true, true, true, false, true, false);
+				lecturesController = new ParticipantLecturesOverviewController(uureq, bwControl, mentee, null, true, true, true, true, false, true, false,
+						roleSecurityCallback.limitToRole());
 				lecturesController.setBreadcrumbPanel(stackPanel);
 				listenTo(lecturesController);
 				return lecturesController;

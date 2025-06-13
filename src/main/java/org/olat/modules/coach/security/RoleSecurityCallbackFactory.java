@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRoleToRight;
 import org.olat.basesecurity.RightProvider;
 import org.olat.course.certificate.CertificateEmailRightProvider;
@@ -49,7 +50,7 @@ public class RoleSecurityCallbackFactory {
 		for (RelationRoleToRight right : relationRights) {
 			roleRights.add(right.getRelationRight().getRight());
 		}
-		return new RoleSecurityCallbackImpl(roleRights);
+		return new RoleSecurityCallbackImpl(roleRights, null);
 	}
 
 	/**
@@ -58,12 +59,12 @@ public class RoleSecurityCallbackFactory {
 	 * @param rightProviders Right providers
 	 * @return Securitycallback for given right providers
 	 */
-	public static RoleSecurityCallback create(List<RightProvider> rightProviders) {
+	public static RoleSecurityCallback create(List<RightProvider> rightProviders, OrganisationRoles limitToRole) {
 		List<String> roleRights = new ArrayList<>(rightProviders.size());
 		for (RightProvider rightProvider : rightProviders) {
 			roleRights.add(rightProvider.getRight());
 		}
-		return new RoleSecurityCallbackImpl(roleRights);
+		return new RoleSecurityCallbackImpl(roleRights, limitToRole);
 	}
 	
 	/**
@@ -73,15 +74,17 @@ public class RoleSecurityCallbackFactory {
 	 * @return A security callback
 	 */
 	public static RoleSecurityCallback createFromStringsList(List<String> rightProviders) {
-		return new RoleSecurityCallbackImpl(rightProviders);
+		return new RoleSecurityCallbackImpl(rightProviders, null);
 	}
 
 	private static class RoleSecurityCallbackImpl implements RoleSecurityCallback {
 
 		private final List<String> roleRights;
+		private final OrganisationRoles limitToRole;
 		
-		public RoleSecurityCallbackImpl(List<String> roleRights) {
+		public RoleSecurityCallbackImpl(List<String> roleRights, OrganisationRoles limitToRole) {
 			this.roleRights = roleRights;
+			this.limitToRole = limitToRole;
 		}
 
 		@Override
@@ -156,6 +159,11 @@ public class RoleSecurityCallbackFactory {
 		@Override
 		public boolean canUploadExternalCertificate() {
 			return roleRights.contains(CertificateUploadExternalRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public OrganisationRoles limitToRole() {
+			return limitToRole;
 		}
 	}
 }

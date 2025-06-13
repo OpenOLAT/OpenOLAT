@@ -56,7 +56,7 @@ public class OrganisationListController extends AbstactCoachListController {
 
         this.organisation = organisation;
         this.organisationRole = role;
-        this.securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationRights(organisation, organisationRole));
+        this.securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationRights(organisation, organisationRole), organisationRole);
 
         super.initForm(ureq);
         loadModel();
