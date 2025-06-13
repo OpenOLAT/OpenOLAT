@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -49,6 +50,7 @@ public class LectureStatisticsSearchParameters {
 	private List<IdentityRef> participants;
 	
 	private String curriculumSearchString;
+	private OrganisationRoles limitToRole;
 	
 	public String getLogin() {
 		return login;
@@ -155,5 +157,13 @@ public class LectureStatisticsSearchParameters {
 		
 		return participants != null && participants.size() == 1
 				&& participants.get(0).getKey().equals(identity.getKey());
+	}
+
+	public OrganisationRoles getLimitToRole() {
+		return limitToRole;
+	}
+
+	public void setLimitToRole(OrganisationRoles limitToRole) {
+		this.limitToRole = limitToRole;
 	}
 }

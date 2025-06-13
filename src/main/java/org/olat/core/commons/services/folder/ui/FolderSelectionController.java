@@ -508,6 +508,9 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	
 	public void updateCurrentContainer(UserRequest ureq, VFSContainer container) {
 		String relativePath = VFSManager.getRelativeItemPath(container, rootContainer, "/");
+		if ("_sharedfolder_".equalsIgnoreCase(relativePath)) {
+			relativePath = container.getName();
+		}
 		updateCurrentContainer(ureq, relativePath);
 	}
 	

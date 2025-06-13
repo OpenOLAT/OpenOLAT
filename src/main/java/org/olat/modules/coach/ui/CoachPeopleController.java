@@ -182,7 +182,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 		Organisation org = orgs.get(0);
 		RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
-				organisationService.getGrantedOrganisationRights(org, orgRole));
+				organisationService.getGrantedOrganisationRights(org, orgRole), orgRole);
 		if (!roleSecurityCallback.canActivatePendingAccounts()) {
 			return;
 		}
@@ -223,7 +223,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 		Organisation org = orgs.get(0);
 		RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
-				organisationService.getGrantedOrganisationRights(org, orgRole));
+				organisationService.getGrantedOrganisationRights(org, orgRole), orgRole);
 		if (!roleSecurityCallback.canCreateAccounts()) {
 			return;
 		}

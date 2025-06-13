@@ -73,7 +73,8 @@ public class OrganisationListController extends AbstractParticipantsListControll
 
         organisations = organisationService.getOrganisations(getIdentity(), role);
         
-		securityCallback = RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(List.copyOf(organisations), organisationRole));
+		securityCallback = RoleSecurityCallbackFactory.create(organisationService
+				.getGrantedOrganisationsRights(List.copyOf(organisations), organisationRole), organisationRole);
         canViewReservations = securityCallback.canViewPendingCourseBookings();
         canViewCoursesAndCurriculum = securityCallback.canViewCoursesAndCurriculum();
         canViewCourseProgressAndStatus = securityCallback.canViewCourseProgressAndStatus();
@@ -129,7 +130,7 @@ public class OrganisationListController extends AbstractParticipantsListControll
 		Set<Long> userOrgKeys = organisationService.getUserOrganisationKeys(identity);
 		List<Organisation> filteredOrgs = organisations.stream()
 				.filter(org -> userOrgKeys.contains(org.getKey())).collect(Collectors.toList());
-		return RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(filteredOrgs, organisationRole));
+		return RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(filteredOrgs, organisationRole), organisationRole);
 	}
     
 	private List<OrganisationRoles> excludedRoles() {
