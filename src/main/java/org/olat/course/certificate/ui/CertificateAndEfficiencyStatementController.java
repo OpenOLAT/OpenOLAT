@@ -237,7 +237,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 	
 		certificatesCtrl = new IdentityCertificatesController(ureq, getWindowControl(),
-				courseRepoEntry, certificateConfig, statementOwner, true);
+				courseRepoEntry, certificateConfig, statementOwner, false, true);
 		listenTo(certificatesCtrl);
 		mainVC.put("certificates", certificatesCtrl.getInitialComponent());
 		if(courseRepoEntry == null && certificate != null) {
