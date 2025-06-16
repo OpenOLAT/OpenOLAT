@@ -22,6 +22,7 @@ package org.olat.modules.coach.reports;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.LocalFileImpl;
 
 /**
  * Initial date: 2025-01-27<br>
@@ -78,10 +79,13 @@ public interface ReportConfiguration {
 
 	/**
 	 * Generate the report. Implementations are free to decide where and in what format the reports should be.
-
+     *
 	 * @param coach Coach who triggered the report generation.
 	 * @param locale The locale to use for localized/translated text.
+	 * @param output The target file to store the output to.                 
 	 */
+	void generateReport(Identity identity, Locale locale, LocalFileImpl output);
+
 	void generateReport(Identity coach, Locale locale);
 
 	/**

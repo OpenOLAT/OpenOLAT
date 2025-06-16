@@ -21,6 +21,8 @@ package org.olat.modules.coach.ui.manager;
 
 import java.util.List;
 
+import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.commons.services.export.ui.ExportsListSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -38,16 +40,16 @@ import org.olat.core.id.context.StateEntry;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class ManagerReportsController extends BasicController implements Activateable2 {
+public class CoachReportsController extends BasicController implements Activateable2 {
 
 	private final TooledStackedPanel stackedPanel;
 	
 	private final VelocityContainer mainVC;
 	
-	private ReportTemplatesController reportTemplatesCtrl;
-	private GeneratedReportsController generatedReportsCtrl;
+	private final ReportTemplatesController reportTemplatesCtrl;
+	private CoachReportsListController generatedReportsCtrl;
 
-	public ManagerReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
+	public CoachReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl);
 		this.stackedPanel = stackedPanel;
 
@@ -57,7 +59,8 @@ public class ManagerReportsController extends BasicController implements Activat
 		listenTo(reportTemplatesCtrl);
 		mainVC.put("report.templates", reportTemplatesCtrl.getInitialComponent());
 
-		generatedReportsCtrl = new GeneratedReportsController(ureq, wControl);
+		ExportsListSettings settings = new ExportsListSettings(true);
+		generatedReportsCtrl = new CoachReportsListController(ureq, wControl, ArchiveType.COACHING, settings);
 		listenTo(generatedReportsCtrl);
 		mainVC.put("generated.reports", generatedReportsCtrl.getInitialComponent());
 		
@@ -77,13 +80,13 @@ public class ManagerReportsController extends BasicController implements Activat
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (reportTemplatesCtrl == source) {
-			generatedReportsCtrl.reload();
+			generatedReportsCtrl.loadModel();
 		}
 		super.event(ureq, source, event);
 	}
 
 	public void reload() {
 		reportTemplatesCtrl.reload();
-		generatedReportsCtrl.reload();
+		generatedReportsCtrl.loadModel();
 	}
 }

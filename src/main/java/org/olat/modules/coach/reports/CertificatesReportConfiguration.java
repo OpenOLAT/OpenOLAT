@@ -19,7 +19,6 @@
  */
 package org.olat.modules.coach.reports;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,14 +36,12 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateIdentityConfig;
-import org.olat.modules.coach.CoachingService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -85,7 +82,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	}
 
 	@Override
-	public void generateReport(Identity identity, Locale locale) {
+	public void generateReport(Identity identity, Locale locale, LocalFileImpl output) {
 		Translator translator = getTranslator(locale);
 		Formatter formatter = Formatter.getInstance(locale);
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
@@ -97,16 +94,8 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 			worksheetNames.add(translator.translate("export.worksheet.curricula"));
 		}
 		
-		CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
-
-		LocalFolderImpl folder = coachingService.getGeneratedReportsFolder(identity);
-		String name = getName(locale);
-		String fileName = StringHelper.transformDisplayNameToFileSystemName(name) + "_" +
-				Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
-
-		File excelFile = new File(folder.getBasefile(), fileName);
-		try (OutputStream out = new FileOutputStream(excelFile);
+		try (OutputStream out = new FileOutputStream(output.getBasefile());
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, numberOfWorksheets, worksheetNames)) {
 			OpenXMLWorksheet coursesWorksheet = workbook.nextWorksheet();
 			generateCoursesHeader(coursesWorksheet, userPropertyHandlers, translator);
@@ -118,13 +107,9 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 				generateCurriculaHeader(curriculaWorksheet, userPropertyHandlers, translator);
 				generateCurriculaData(curriculaWorksheet, certificates, userPropertyHandlers, formatter);
 			}
-			
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
-			return;
 		}
-
-		coachingService.setGeneratedReport(identity, name, fileName);
 	}
 
 	private void generateCoursesHeader(OpenXMLWorksheet coursesWorksheet,
