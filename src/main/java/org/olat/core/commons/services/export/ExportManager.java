@@ -93,6 +93,10 @@ public interface ExportManager {
 			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
 			OLATResource resource, String resSubPath, Identity creator);
 	
+	ExportMetadata startExport(ExportTask task, String title, String description,
+			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
+			String resSubPath, Identity creator);
+	
 	void cancelExport(ExportInfos export, RepositoryEntry entry, String resSubPath);
 	
 	void deleteExport(ExportInfos export);

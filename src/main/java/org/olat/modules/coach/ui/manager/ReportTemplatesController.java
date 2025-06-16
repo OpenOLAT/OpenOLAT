@@ -21,9 +21,12 @@ package org.olat.modules.coach.ui.manager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationService;
+import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +47,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.reports.DefaultReportConfigurationAccessSecurityCallback;
 import org.olat.modules.coach.reports.ReportConfiguration;
@@ -58,6 +63,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ReportTemplatesController extends FormBasicController {
 	private static final String PLAY_CMD = "play";
 	private static final String FILTER_CATEGORY = "filter.category";
+	private static final String COACHING_REPORT_IDENT = "coaching";
+
 	private final DefaultReportConfigurationAccessSecurityCallback secContext;
 
 	private FlexiTableElement tableEl;
@@ -69,6 +76,9 @@ public class ReportTemplatesController extends FormBasicController {
 
 	@Autowired
 	private OrganisationService organisationService;
+	
+	@Autowired
+	private ExportManager exportManager;
 	
 	public ReportTemplatesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "report_templates");
@@ -179,7 +189,16 @@ public class ReportTemplatesController extends FormBasicController {
 	}
 
 	protected void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
-		row.getReportConfiguration().generateReport(getIdentity(), ureq.getLocale());
+		ReportConfiguration config = row.getReportConfiguration();
+		
+		String title = config.getName(getLocale());
+		String fileName = StringHelper.transformDisplayNameToFileSystemName(title) + "_" +
+				Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
+		Date expirationDate = DateUtils.addDays(new Date(), 10);
+		CoachingReportTask task = new CoachingReportTask(title, getIdentity(), getLocale(), config);
+		exportManager.startExport(task, title, config.getDescription(getLocale()), fileName, ArchiveType.COACHING, 
+				expirationDate, false, COACHING_REPORT_IDENT, getIdentity());
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

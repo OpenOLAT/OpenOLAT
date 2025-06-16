@@ -186,6 +186,13 @@ public class ExportManagerImpl implements ExportManager {
 	}
 
 	@Override
+	public ExportMetadata startExport(ExportTask task, String title, String description, String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators, String resSubPath, Identity creator) {
+		return taskExecutorManager.execute(task, creator, null, resSubPath, null,
+				(id, persistentTask) -> exportMetadataDao.createMetadata(title, description, filename, type,
+						expirationDate, onlyAdministrators, null, null, resSubPath, id, persistentTask));
+	}
+
+	@Override
 	public void deleteExport(ExportInfos export) {
 		VFSLeaf exportFile = export.getZipLeaf();
 		if(exportFile != null) {

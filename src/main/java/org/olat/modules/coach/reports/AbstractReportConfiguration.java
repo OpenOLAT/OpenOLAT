@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.modules.coach.CoachingService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -114,15 +115,20 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	@Override
 	public void generateReport(Identity coach, Locale locale) {
 		CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
-
 		LocalFolderImpl folder = coachingService.getGeneratedReportsFolder(coach);
 		String name = getName(locale);
 		String fileName = StringHelper.transformDisplayNameToFileSystemName(name) + "_" +
 				Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
-
 		File excelFile = new File(folder.getBasefile(), fileName);
-		try (OutputStream out = new FileOutputStream(excelFile);
+		LocalFileImpl output = new LocalFileImpl(excelFile);
+		generateReport(coach, locale, output);
+		coachingService.setGeneratedReport(coach, name, fileName);
+	}
+
+	@Override
+	public void generateReport(Identity coach, Locale locale, LocalFileImpl output) {
+		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
+		try (OutputStream out = new FileOutputStream(output.getBasefile());
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
@@ -130,10 +136,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 			generateData(workbook, coach, sheet, userPropertyHandlers, locale);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
-			return;
 		}
-
-		coachingService.setGeneratedReport(coach, name, fileName);
 	}
 
 	protected void generateHeader(OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {

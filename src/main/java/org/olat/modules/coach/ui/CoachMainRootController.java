@@ -43,7 +43,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.ui.component.SearchEvent;
 import org.olat.modules.coach.ui.component.SearchStateEntry;
-import org.olat.modules.coach.ui.manager.ManagerReportsController;
+import org.olat.modules.coach.ui.manager.CoachReportsController;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingSecurityCallbackFactory;
@@ -80,7 +80,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	private LecturesMainController lecturesCtrl;
 	private UserSearchController userSearchCtrl;
 	private CourseListController courseListCtrl;
-	private ManagerReportsController reportsCtrl;
+	private CoachReportsController reportsCtrl;
 	private CoachPeopleController peopleListCtrl;
 	private OrdersAdminController ordersAdminCtrl;
 	private OrdersOverviewController ordersOverviewCtrl;
@@ -331,7 +331,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reports", 0L);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		reportsCtrl = new ManagerReportsController(ureq, bwControl, content);
+		reportsCtrl = new CoachReportsController(ureq, bwControl, content);
 		listenTo(reportsCtrl);
 		content.pushController(translate("reports.menu.title"), reportsCtrl);
 	}

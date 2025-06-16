@@ -34,6 +34,7 @@ public enum ArchiveType {
 	COURSEPLANNER,
 	CURRICULUM,
 	CURRICULUMELEMENT,
+	COACHING,
 	NONE
 
 }
