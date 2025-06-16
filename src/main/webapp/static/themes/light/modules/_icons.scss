@@ -1149,6 +1149,8 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 	&:after { position: absolute; top: 28%; left: 52%; margin-left: -0.5em; font-size: 50%; }
 }
 .o_icon_qual_part_execute { @include o-add-icon('play');}
+.o_icon_qual_part_not_available { @include o-add-icon('hands-clapping');}
+.o_icon_qual_part_participated { @include o-add-icon('hourglass');}
 
 /* Licenses */
 .o_icon_lic_add { @include o-add-icon('plus-circle');}

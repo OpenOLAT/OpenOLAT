@@ -22,12 +22,14 @@ package org.olat.modules.forms.ui;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -72,17 +74,17 @@ public class StandaloneExecutionController extends BasicController {
 		
 		// PUBLIC_PARTICIPATION_PATH is used as special marker for not available public participations
 		if (identifier != null && EvaluationFormDispatcher.PUBLIC_PARTICIPATION_PATH.equalsIgnoreCase(identifier.getType())) {
-			doShowNotExecuteable(ureq);
+			doShowNotExecuteable();
 			log.debug("Public participation not executeable: {}", identifier);
 			return;
 		}
 		
 		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByIdentifier(identifier);
 		if (participation == null) {
-			doShowNotFound(ureq);
+			doShowNotFound();
 			log.debug("No participation found for {}", identifier);
 		} else if (EvaluationFormParticipationStatus.done.equals(participation.getStatus())) {
-			doShowAlreadyDone(ureq);
+			doShowAlreadyDone();
 			log.debug("Participation already done: {}", identifier);
 		} else {
 			OLATResourceable surveyOres = participation.getSurvey().getIdentifier().getOLATResourceable();
@@ -91,7 +93,7 @@ public class StandaloneExecutionController extends BasicController {
 				doShowExecution(ureq, participation);
 				log.debug("Execute evaluation form with {}", identifier);
 			} else {
-				doShowNotExecuteable(ureq);
+				doShowNotExecuteable();
 				log.debug("Participation not executeable ({}): {}", standaloneProvider, identifier);
 			}
 		}
@@ -106,7 +108,7 @@ public class StandaloneExecutionController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl) {
 			if (event == Event.DONE_EVENT) {
-				doShowDoneNow(ureq);
+				doShowDoneNow();
 			}
 		}
 		super.event(ureq, source, event);
@@ -154,27 +156,33 @@ public class StandaloneExecutionController extends BasicController {
 		return session;
 	}
 
-	private void doShowNotFound(UserRequest ureq) {
-		doShowMessage(ureq, "standalone.not.found");
+	private void doShowNotFound() {
+		doShowMessage(null, null, "message.not.found", null);
 	}
 
-	private void doShowAlreadyDone(UserRequest ureq) {
-		doShowMessage(ureq, "standalone.already.done");
+	private void doShowAlreadyDone() {
+		doShowMessage("o_icon_qual_part_participated", "o_no_icon", "message.participated.earlier", "message.participated.earlier.hint");
 	}
 
-	private void doShowDoneNow(UserRequest ureq) {
-		doShowMessage(ureq, "standalone.done.now");
-	}
-	private void doShowNotExecuteable(UserRequest ureq) {
-		doShowMessage(ureq, "standalone.not.executable");
+	private void doShowDoneNow() {
+		doShowMessage("o_icon_qual_part_participated", "o_no_icon", "message.participated.now", "message.participated.now.hint");
 	}
 	
-	private void doShowMessage(UserRequest ureq, String i18nKey) {
+	private void doShowNotExecuteable() {
+		doShowMessage(null, "o_no_icon", "message.not.executable", "message.not.executable.hint");
+	}
+	
+	private void doShowMessage(String iconCss, String indicatorIconCss, String messageI18nKey, String hintI18nKey) {
 		mainVC.clear();
-		removeAsListenerAndDispose(messageCtrl);
-		messageCtrl = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, translate(i18nKey));
-		listenTo(messageCtrl);
-		mainVC.put("message", messageCtrl.getInitialComponent());
+		
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withIconCss(iconCss)
+				.withIndicatorIconCss(indicatorIconCss)
+				.withMessageI18nKey(messageI18nKey)
+				.withHintI18nKey(hintI18nKey)
+				.build();
+		EmptyState doneState = EmptyStateFactory.create("doneState", mainVC, this, emptyState);
+		doneState.setTranslator(getTranslator());
 	}
 
 }
