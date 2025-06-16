@@ -128,7 +128,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 	
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, RepositoryEntryCertificateConfiguration certificateConfig,
-			Identity assessedIdentity, boolean readOnly) {
+			Identity assessedIdentity, boolean admin, boolean readOnly) {
 		super(ureq, wControl, "certificate_overview");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 
@@ -137,7 +137,13 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		this.certificateConfig = certificateConfig;
 		this.titleID = "o_certificates_" + CodeHelper.getRAMUniqueID();
 		
-		canDelete = canGenerate = (certificateConfig != null && certificateConfig.isManualCertificationEnabled()) && !readOnly;
+		if(!readOnly) {
+			canGenerate = (certificateConfig != null && certificateConfig.isManualCertificationEnabled());
+			canDelete = canGenerate || admin;
+		} else {
+			canGenerate = false;
+			canDelete = false;
+		}
 		formatter = Formatter.getInstance(getLocale());
 
 		coordinatorManager.getCoordinator().getEventBus()
