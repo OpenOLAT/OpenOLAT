@@ -90,9 +90,12 @@ public class Profile {
 		}
 	}
 
-	public Profile(BadgeClass badgeClass) {
+	public Profile(BadgeClass badgeClass, boolean signedVerification) {
 		this(new JSONObject(badgeClass.getIssuer()));
 		setId(OpenBadgesFactory.createIssuerUrl(badgeClass.getUuid()));
+		if (signedVerification) {
+			setPublicKey(OpenBadgesFactory.createPublicKeyUrl());
+		}
 	}
 	
 	public Profile(BadgeSigningOrganization badgeSigningOrganization) {

@@ -241,7 +241,9 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 
 		try {
-			Badge badge = new Badge(badgeClass);
+			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey();
+			boolean signedVerification = StringHelper.containsNonWhitespace(badgeCryptoKey.publicKeyPem());
+			Badge badge = new Badge(badgeClass, signedVerification);
 			JSONObject jsonObject = badge.asJsonObject();
 			jsonObject.write(response.getWriter());
 			response.setContentType("application/json; charset=utf-8");
@@ -260,7 +262,9 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 
 		try {
-			Badge badge = new Badge(badgeClass);
+			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey();
+			boolean signedVerification = StringHelper.containsNonWhitespace(badgeCryptoKey.publicKeyPem());
+			Badge badge = new Badge(badgeClass, signedVerification);
 			JSONObject jsonObject = badge.asJsonObject();
 			JSONObject issuerObject = jsonObject.getJSONObject("issuer");
 			issuerObject.write(response.getWriter());

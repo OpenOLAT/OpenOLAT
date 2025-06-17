@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 
 import org.json.JSONObject;
@@ -59,7 +60,7 @@ public class Assertion {
 		setId(OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid()));
 		setIdentifier(badgeAssertion.getUuid());
 		setRecipient(new Identity(badgeAssertion.getRecipientObject()));
-		setBadge(new Badge(badgeAssertion.getBadgeClass()));
+		setBadge(new Badge(badgeAssertion.getBadgeClass(), BadgeVerification.signed.equals(badgeAssertion.getVerification())));
 		setVerification(new Verification(badgeAssertion.getVerificationObject()));
 		setIssuedOn(badgeAssertion.getIssuedOn());
 	}

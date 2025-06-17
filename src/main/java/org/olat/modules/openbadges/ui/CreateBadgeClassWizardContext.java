@@ -287,7 +287,7 @@ public class CreateBadgeClassWizardContext {
 		backgroundColorId = "gold";
 		title = translator.translate("var.title.default");
 		initCriteria();
-		issuer = new Profile(badgeClassImpl);
+		issuer = new Profile(badgeClassImpl, false);
 		badgeClass = badgeClassImpl;
 
 		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
@@ -310,7 +310,7 @@ public class CreateBadgeClassWizardContext {
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		automatic = badgeCriteria.isAwardAutomatically();
 		this.badgeClass = badgeClass;
-		issuer = new Profile(badgeClass);
+		issuer = new Profile(badgeClass, false);
 
 		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		locale = i18nManager.getLocaleOrDefault(badgeClass.getLanguage());
