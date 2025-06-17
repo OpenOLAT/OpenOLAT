@@ -67,7 +67,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	public static final Event SHOW_RECIPIENTS_EVENT = new Event("show-recipients");
 	
 	private final Long badgeClassKey;
-	private final String mediaUrl;
+	private String mediaUrl;
 	private String name;
 	private String version;
 	private SingleSelection versionSelectionEl;
@@ -86,9 +86,13 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 		super(ureq, wControl, "badge_details_overview");
 		this.badgeClassKey = badgeClassKey;
 
-		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+		registerMapper(ureq);
 
 		initForm(ureq);
+	}
+
+	void registerMapper(UserRequest ureq) {
+		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 	}
 
 	@Override

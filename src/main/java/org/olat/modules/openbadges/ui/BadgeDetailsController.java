@@ -78,7 +78,7 @@ public class BadgeDetailsController extends BasicController {
 	private int recipientsTab;
 	private BadgeDetailsRecipientsController recipientsCtrl;
 
-	private final String mediaUrl;
+	private String mediaUrl;
 
 	private CloseableModalController cmc;
 	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
@@ -108,13 +108,12 @@ public class BadgeDetailsController extends BasicController {
 		
 		tabPane = new TabbedPane("tabs", getLocale());
 		tabPane.addListener(this);
-		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 		initTabPane(ureq);
 		
 		mainVC.put("tabs", tabPane);
 		putInitialPanel(mainVC);
 		
-		loadData();
+		loadData(ureq, true);
 
 		tabPane.setSelectedPane(ureq, overviewTab);
 	}
@@ -133,7 +132,11 @@ public class BadgeDetailsController extends BasicController {
 		});
 	}
 	
-	private void loadData() {
+	private void loadData(UserRequest ureq, boolean registerMapper) {
+		if (registerMapper) {
+			mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+		}
+
 		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 		if (badgeClass == null) {
 			log.error("Badge class not found for key: {}", badgeClassKey);
@@ -170,6 +173,9 @@ public class BadgeDetailsController extends BasicController {
 		}
 		
 		if (overviewCtrl != null) {
+			if (registerMapper) {
+				overviewCtrl.registerMapper(ureq);
+			}
 			overviewCtrl.loadData(true);
 		}
 		if (recipientsCtrl != null) {
@@ -208,7 +214,7 @@ public class BadgeDetailsController extends BasicController {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
 			updateImage(createBadgeClassContext, updatedBadgeClass);
 			openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			loadData();
+			loadData(innerUreq, true);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 
@@ -248,14 +254,14 @@ public class BadgeDetailsController extends BasicController {
 			cmc.deactivate();
 			cleanUp();
 			if (event == Event.DONE_EVENT) {
-				loadData();
+				loadData(ureq, false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == issueCourseBadgeCtrl) {
 			cmc.deactivate();
 			cleanUp();
 			if (event == Event.DONE_EVENT) {
-				loadData();
+				loadData(ureq, false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == stepsController) {
@@ -265,7 +271,7 @@ public class BadgeDetailsController extends BasicController {
 				}
 				getWindowControl().pop();
 				removeAsListenerAndDispose(stepsController);
-				loadData();
+				loadData(ureq, false);
 			}
 			if (event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);

@@ -87,6 +87,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private static final String CMD_CREATE_NEW_VERSION = "createNewVersion";
 	private static final String CMD_AWARD_MANUALLY = "awardManually";
 
+	private String mediaUrl;
 	private final RepositoryEntry entry;
 	private final CourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
@@ -127,7 +128,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+		registerMapper(ureq);
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.image,
@@ -183,6 +184,10 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		createLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		createLink.setVisible(owner);
+	}
+
+	private void registerMapper(UserRequest ureq) {
+		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 	}
 
 	@Override
@@ -457,6 +462,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
 			updateImage(createBadgeClassContext, updatedBadgeClass);
 			openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
+			registerMapper(innerUreq);
 			loadModel(innerUreq);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -595,6 +601,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 			if (event == Event.CHANGED_EVENT) {
 				String name = badgeDetailsController.getName();
 				breadcrumbPanel.changeDisplayname(name);
+				registerMapper(ureq);
 				loadModel(ureq);
 			}
 		}
