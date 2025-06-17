@@ -26,9 +26,11 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,6 +44,7 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
+import org.olat.restapi.RestModule.ApiAccess;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +61,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://ww.frentix.com
  */
 public class RestapiAdminController extends FormBasicController {
+
+	private static final String ON_KEY = "on";
+	private static final String[] keys = { ON_KEY };
 	
 	private FormToggle enabledButton;
+	private SingleSelection accessApiEl;
 	private MultipleSelectionElement generateApiKeyEl;
+	
 	private MultipleSelectionElement managedRepoEl;
 	private MultipleSelectionElement managedGroupsEl;
 	private MultipleSelectionElement managedCalendarEl;
@@ -71,8 +79,6 @@ public class RestapiAdminController extends FormBasicController {
 	private MultipleSelectionElement managedCurriculumEl;
 	private MultipleSelectionElement managedAssessmentModeEl;
 	private FormLayoutContainer docLinkFlc;
-	
-	private static final String[] keys = {"on"};
 	
 	private DialogBoxController confirmCalendarDisableCrtl;
 	
@@ -119,8 +125,16 @@ public class RestapiAdminController extends FormBasicController {
 		
 		generateApiKeyEl = uifactory.addCheckboxesHorizontal("generate.api.key", formLayout, keys, valueOn);
 		generateApiKeyEl.addActionListener(FormEvent.ONCHANGE);
-		generateApiKeyEl.select(keys[0], restModule.isUserAllowedGenerateApiKey());
+		generateApiKeyEl.select(ON_KEY, restModule.isUserAllowedGenerateApiKey());
 		generateApiKeyEl.setVisible(restEnabled);
+		
+		SelectionValues accessApiPK = new SelectionValues();
+		accessApiPK.add(SelectionValues.entry(ApiAccess.all.name(), translate("api.access.all")));
+		accessApiPK.add(SelectionValues.entry(ApiAccess.apikey.name(), translate("api.access.apikey")));
+		accessApiEl = uifactory.addDropdownSingleselect("api.access", formLayout, accessApiPK.keys(), accessApiPK.values());
+		accessApiEl.addActionListener(FormEvent.ONCHANGE);
+		accessApiEl.setVisible(restEnabled);
+		accessApiEl.select(restModule.getApiAccess().name(), true);
 		
 		docLinkFlc = uifactory.addCustomFormLayout("doc_link", "rest.doc.openapi.title", velocity_root + "/docLink.html", formLayout);
 		docLinkFlc.setVisible(restEnabled);
@@ -189,10 +203,15 @@ public class RestapiAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == enabledButton) {
 			updateEnable();
-			getWindowControl().setInfo("saved");
+			getWindowControl().setInfo(translate("saved"));
 		} else if(source == generateApiKeyEl) {
 			boolean enabled = generateApiKeyEl.isAtLeastSelected(1);
 			restModule.setUserAllowedGenerateApiKey(enabled);
+		} else if(source == accessApiEl) {
+			if(accessApiEl.isVisible() && accessApiEl.isOneSelected()
+					&& ApiAccess.isValue(accessApiEl.getSelectedKey())) {
+				restModule.setApiAccess(ApiAccess.valueOf(accessApiEl.getSelectedKey()));
+			}
 		} else if(source == managedGroupsEl) {
 			boolean enable = managedGroupsEl.isAtLeastSelected(1);
 			groupModule.setManagedBusinessGroups(enable);
@@ -232,11 +251,13 @@ public class RestapiAdminController extends FormBasicController {
 		restModule.setEnabled(on);
 		docLinkFlc.setVisible(on);
 		generateApiKeyEl.setVisible(on);
-		if(on) {
-			generateApiKeyEl.select(keys[0], restModule.isUserAllowedGenerateApiKey());
-		} else {
-			restModule.setUserAllowedGenerateApiKey(false);
-		}
+		accessApiEl.setVisible(on);
+		
+		// Set default values by on and off
+		accessApiEl.select(ApiAccess.apikey.name(), true);
+		generateApiKeyEl.uncheckAll();
+		restModule.setUserAllowedGenerateApiKey(false);
+		restModule.setApiAccess(ApiAccess.apikey);
 	}
 	
 	private void doConfirmCalendarDisabled(UserRequest ureq) {

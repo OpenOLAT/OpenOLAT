@@ -46,6 +46,7 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	public static final String RESTAPI_AUTH = "API-Key";
 	
 	private static final String ENABLED = "enabled";
+	private static final String API_ACCESS = "restapi.api.access";
 	private static final String USER_ALLOWED_GENERATE_APIKEY = "restapi.user.generate.apikey";
 
 	@Value("${restapi.enable:false}")
@@ -54,6 +55,9 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	private String ipsByPass;
 	@Value("${restapi.user.generate.apikey:false}")
 	private boolean userAllowedGenerateApiKey;
+	@Value("${restapi.api.access:all}")
+	private String apiAccess;
+	
 	
 
 	@Autowired
@@ -69,9 +73,12 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 			enabled = "enabled".equals(enabledObj);
 		}
 		
-		String enabledGenerateApiKeyObj = getStringPropertyValue(USER_ALLOWED_GENERATE_APIKEY, true);
-		if(StringHelper.containsNonWhitespace(enabledGenerateApiKeyObj)) {
-			userAllowedGenerateApiKey = "enabled".equals(enabledGenerateApiKeyObj);
+		String enabledGenerateApiKeyObj = getStringPropertyValue(USER_ALLOWED_GENERATE_APIKEY, userAllowedGenerateApiKey ? "enabled" : "disabled");
+		userAllowedGenerateApiKey = "enabled".equals(enabledGenerateApiKeyObj);
+		
+		apiAccess = getStringPropertyValue(API_ACCESS, apiAccess);
+		if(!ApiAccess.isValue(apiAccess)) {
+			apiAccess = ApiAccess.all.name();
 		}
 	}
 
@@ -97,8 +104,17 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public void setUserAllowedGenerateApiKey(boolean enable) {
 		userAllowedGenerateApiKey = enable;
-		String enabledStr = enabled ? "enabled" : "disabled";
+		String enabledStr = enable ? "enabled" : "disabled";
 		setStringProperty(USER_ALLOWED_GENERATE_APIKEY, enabledStr, true);
+	}
+
+	public ApiAccess getApiAccess() {
+		return StringHelper.containsNonWhitespace(apiAccess) ? ApiAccess.valueOf(apiAccess) : ApiAccess.all;
+	}
+
+	public void setApiAccess(ApiAccess access) {
+		this.apiAccess = access == null ? ApiAccess.all.name() : access.name();
+		setStringProperty(API_ACCESS, this.apiAccess, true);
 	}
 
 	public String getIpsByPass() {
@@ -118,5 +134,20 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public void setIpsByPass(String ipsByPass) {
 		this.ipsByPass = ipsByPass;
+	}
+	
+	public enum ApiAccess {
+		all,
+		apikey;
+		
+		public static boolean isValue(String val) {
+			for(ApiAccess a:values()) {
+				if(a.name().equals(val)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
 	}
 }

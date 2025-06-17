@@ -66,6 +66,7 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.RestModule;
+import org.olat.restapi.RestModule.ApiAccess;
 
 /**
  *
@@ -213,6 +214,7 @@ public class RestApiLoginFilter implements Filter {
 	}
 	
 	private int doAuthentication(HttpServletRequest request, HttpServletResponse response, String requestURI, String username, String pwd) {
+		final RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		final RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 		final AuthenticationDAO authentication = CoreSpringFactory.getImpl(AuthenticationDAO.class);
@@ -221,9 +223,13 @@ public class RestApiLoginFilter implements Filter {
 		Identity identity = null;
 		Authentication clientAuthentication = authentication.getAuthentication(username, RestModule.RESTAPI_AUTH, BaseSecurity.DEFAULT_ISSUER);
 		if(clientAuthentication == null) {
-			OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-			identity = olatAuthenticationSpi.authenticate(null, username, pwd, new AuthenticationStatus());
-			loginStatus = doHeadlessLogin(request, response, requestURI, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			if(restModule.getApiAccess() == ApiAccess.all) {
+				OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
+				identity = olatAuthenticationSpi.authenticate(null, username, pwd, new AuthenticationStatus());
+				loginStatus = doHeadlessLogin(request, response, requestURI, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			} else {
+				loginStatus = AuthHelper.LOGIN_DENIED;
+			}
 		} else if(securityManager.checkCredentials(clientAuthentication, pwd)) {
 			identity = clientAuthentication.getIdentity();
 			loginStatus = doHeadlessLogin(request, response, requestURI, identity, RestModule.RESTAPI_AUTH);
