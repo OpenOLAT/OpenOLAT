@@ -106,8 +106,8 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.version));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.verification));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer()));
-
 		columnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 
 		tableModel = new TableModel(columnModel, userManager, getTranslator());
@@ -313,6 +313,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		issuedOn("form.issued.on", true),
 		version("form.version", true),
 		status("form.status", true),
+		verification("verification", true),
 		tools("action.more", false);
 
 		Cols(String i18n, boolean sortable) {
@@ -372,6 +373,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 			return switch (Cols.values()[col]) {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion.getStatus();
+				case verification -> translator.translate("verification." + badgeAssertion.getVerification().name());
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 				case version -> OpenBadgesUIFactory.versionString(translator, badgeAssertion.getBadgeClass(), true, false);
 				case tools -> row.toolLink();
