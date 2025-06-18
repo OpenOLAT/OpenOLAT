@@ -49,6 +49,14 @@ public interface TBTopic extends TBTopicRef, ModifiedInfo, CreateInfo {
 
 	void setDescription(String description);
 
+	public Date getBeginDate();
+	
+	public void setBeginDate(Date beginDate);
+	
+	public Date getEndDate();
+	
+	public void setEndDate(Date endDate);
+	
 	Integer getMinParticipants();
 	
 	void setMinParticipants(Integer minParticipants);

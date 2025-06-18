@@ -42,6 +42,8 @@ public class TBTransientTopic implements TBTopic {
 	private String description;
 	private Integer minParticipants;
 	private Integer maxParticipants;
+	private Date beginDate;
+	private Date endDate;
 	private Set<Long> groupRestrictionKeys;
 	private int sortOrder;
 	private Date deletedDate;
@@ -105,6 +107,26 @@ public class TBTransientTopic implements TBTopic {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public Date getBeginDate() {
+		return beginDate;
+	}
+
+	@Override
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
+	}
+
+	@Override
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	@Override
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 	@Override

@@ -31,6 +31,8 @@ public final class TBImportTopic {
 	private String identifier;
 	private String title;
 	private String description;
+	private String beginDate;
+	private String endDate;
 	private String minParticipants;
 	private String maxParticipants;
 	private String groupRestrictions;
@@ -62,6 +64,22 @@ public final class TBImportTopic {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getBeginDate() {
+		return beginDate;
+	}
+
+	public void setBeginDate(String beginDate) {
+		this.beginDate = beginDate;
+	}
+
+	public String getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
 	}
 
 	public String getMinParticipants() {

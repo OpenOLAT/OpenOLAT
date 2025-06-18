@@ -122,6 +122,8 @@ public class TopicBrokerExcelExport {
 		row.addCell(col++, translator.translate("topic.description"));
 		row.addCell(col++, translator.translate("topic.participants.min"));
 		row.addCell(col++, translator.translate("topic.participants.max"));
+		row.addCell(col++, translator.translate("topic.begin.date"));
+		row.addCell(col++, translator.translate("topic.end.date"));
 		row.addCell(col++, translator.translate("topic.group.restriction"));
 		
 		for (String customFieldName : customFieldNames) {
@@ -145,6 +147,8 @@ public class TopicBrokerExcelExport {
 		row.addCell(col++, topic.getDescription(), workbook.getStyles().getBottomAlignStyle());
 		row.addCell(col++, topic.getMinParticipants(), workbook.getStyles().getIntegerStyle());
 		row.addCell(col++, topic.getMaxParticipants(), workbook.getStyles().getIntegerStyle());
+		row.addCell(col++, topic.getBeginDate(), workbook.getStyles().getDateStyle());
+		row.addCell(col++, topic.getEndDate(), workbook.getStyles().getDateStyle());
 		String groupRestrictions = null;
 		if (topic.getGroupRestrictionKeys() != null) {
 			groupRestrictions = topic.getGroupRestrictionKeys().stream().map(String::valueOf).collect(Collectors.joining(","));

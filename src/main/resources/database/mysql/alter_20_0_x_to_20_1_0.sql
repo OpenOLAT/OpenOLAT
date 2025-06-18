@@ -16,3 +16,7 @@ create index o_badge_class_root_id_idx on o_badge_class (b_root_id);
 
 alter table o_badge_class add constraint badge_class_to_previous_version_idx foreign key (fk_previous_version) references o_badge_class (id);
 alter table o_badge_class add constraint badge_class_to_next_version_idx foreign key (fk_next_version) references o_badge_class (id);
+
+-- Topic broker
+alter table o_tb_topic add column t_begin_date datetime;
+alter table o_tb_topic add column t_end_date datetime;

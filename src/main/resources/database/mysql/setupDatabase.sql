@@ -4730,6 +4730,8 @@ create table o_tb_topic (
    t_identifier varchar(64),
    t_title varchar(1024),
    t_description longtext,
+   t_begin_date datetime,
+   t_end_date datetime,
    t_min_participants integer,
    t_max_participants integer,
    t_group_restrictions varchar(1024),

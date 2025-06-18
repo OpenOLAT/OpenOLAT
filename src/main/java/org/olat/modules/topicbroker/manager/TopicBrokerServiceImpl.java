@@ -483,7 +483,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 
 	@Override
 	public TBTopic updateTopic(Identity doer, TBTopicRef topic, String identifier, String title, String description,
-			Integer minParticipants, Integer maxParticipants, Set<Long> groupRestricionKeys){
+			Date beginDate, Date endDate, Integer minParticipants, Integer maxParticipants,
+			Set<Long> groupRestricionKeys) {
 		TBTopic reloadedTopic = getTopic(topic);
 		if (reloadedTopic == null) {
 			return null;
@@ -502,6 +503,14 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		if (!Objects.equals(reloadedTopic.getDescription(), description)) {
 			reloadedTopic.setDescription(description);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedTopic.getBeginDate(), beginDate)) {
+			reloadedTopic.setBeginDate(beginDate);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedTopic.getEndDate(), endDate)) {
+			reloadedTopic.setEndDate(endDate);
 			contentChanged = true;
 		}
 		if (!Objects.equals(reloadedTopic.getMinParticipants(), minParticipants)) {

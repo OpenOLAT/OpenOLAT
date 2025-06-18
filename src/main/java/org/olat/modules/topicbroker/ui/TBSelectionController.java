@@ -21,6 +21,7 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,12 +44,15 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -60,6 +64,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -119,6 +124,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_ENROLLED = "Enrolled";
 	private static final String TAB_ID_NOT_ENROLLED = "NotEnrolled";
+	private static final String TAB_ID_EXECUTION_PERIOD = "ExecutionPeriod";
+	private static final String TAB_ID_SELECTED = "Selected";
+	private static final String FILTER_EXECUTION_PERIOD = "period";
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
 	private static final String CMD_SELECT = "select";
@@ -135,6 +143,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabEnrolled;
 	private FlexiFiltersTab tabNotEnrolled;
+	private FlexiFiltersTab tabTopicAll;
+	private FlexiFiltersTab tabExecutionPeriod;
+	private FlexiFiltersTab tabSelected;
 	private TBSelectionDataModel selectionDataModel;
 	private FlexiTableElement selectionTableEl;
 	private TBSelectionDataModel topicDataModel;
@@ -153,6 +164,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private final TBPeriodEvaluator periodEvaluator;
 	private TBParticipant participant;
 	private Set<Long> participantGroupKeys;
+	private final boolean executionPeriodAvailable;
 	private final List<TBCustomFieldDefinition> customFieldDefinitions;
 	private final List<TBCustomFieldDefinition> customFieldDefinitionsInTable;
 	private int selectionsSize;
@@ -174,6 +186,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		periodEvaluator = new TBPeriodEvaluator(broker);
 		participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, getIdentity());
 		statusRenderer = new TBSelectionStatusRenderer();
+		executionPeriodAvailable = isExecutionPeriodAvailable(broker);
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
@@ -190,6 +203,23 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		initForm(ureq);
 		loadModel(false);
 		doInitMaxEnrollments(ureq);
+	}
+
+	private boolean isExecutionPeriodAvailable(TBBroker broker) {
+		TBTopicSearchParams searchParams = new TBTopicSearchParams();
+		searchParams.setBroker(broker);
+		List<TBTopic> topics = topicBrokerService.getTopics(searchParams);
+		
+		loadParticipantGroupKeys(topics);
+		for (TBTopic topic : topics) {
+			if (topic.getBeginDate() != null || topic.getEndDate() != null) {
+				if (topic.getGroupRestrictionKeys() == null || topic.getGroupRestrictionKeys().stream().anyMatch(key -> participantGroupKeys.contains(key))) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
@@ -232,6 +262,12 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		maxParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
+		if (executionPeriodAvailable) {
+			DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.beginDate, dateRenderer));
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.endDate, dateRenderer));
+		}
+		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
@@ -252,10 +288,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		selectionDataModel = new TBSelectionDataModel(selectionColumnsModel);
 		selectionTableEl = uifactory.addTableElement(getWindowControl(), "selectionTable", selectionDataModel, 20, false, getTranslator(), formLayout);
 		
-		initFilterTabs(ureq);
+		initSelectionFilterTabs(ureq);
 	}
 	
-	private void initFilterTabs(UserRequest ureq) {
+	private void initSelectionFilterTabs(UserRequest ureq) {
 		// init filters only if enrollment done
 		if (broker.getEnrollmentDoneDate() == null) {
 			return;
@@ -304,6 +340,12 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		maxParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		selectionColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
+		if (executionPeriodAvailable) {
+			DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.beginDate, dateRenderer));
+			selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.endDate, dateRenderer));
+		}
+		
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
@@ -340,6 +382,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		topicTableEl.setRowRenderer(rowVC, this);
 		
 		loadTopicRenderStyle(ureq);
+		
+		initTopicsFilterTabs(ureq);
+		initTopicFilters();
 	}
 	
 	private void loadTopicRenderStyle(UserRequest ureq) {
@@ -354,6 +399,48 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		String renderType = topicTableEl.getRendererType().name();
 		prefs.putAndSave(TBSelectionController.class, "tb-available-topics-renderer-" + broker.getKey(), renderType);
+	}
+	
+	private void initTopicsFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabTopicAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabTopicAll);
+		
+		if (executionPeriodAvailable) {
+			tabExecutionPeriod = FlexiFiltersTabFactory.tab(
+					TAB_ID_EXECUTION_PERIOD,
+					translate("tab.execution.period"),
+					TabSelectionBehavior.reloadData);
+			tabs.add(tabExecutionPeriod);
+		}
+		
+		tabSelected = FlexiFiltersTabFactory.tab(
+				TAB_ID_SELECTED,
+				translate("tab.selected"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabSelected);
+		
+		topicTableEl.setFilterTabs(true, tabs);
+		topicTableEl.setSelectedFilterTab(ureq, tabTopicAll);
+	}
+	
+	private void initTopicFilters() {
+		if (!executionPeriodAvailable) {
+			return;
+		}
+		
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
+		
+		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("topic.execution.period"),
+				FILTER_EXECUTION_PERIOD, true, false, translate("topic.execution.period"), translate("to.separator"),
+				getLocale());
+		filters.add(periodFilter);
+		
+		topicTableEl.setFilters(true, filters, false, false);
 	}
 	
 	private void loadModel(boolean refreshPeriodEvaluator) {
@@ -422,13 +509,15 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			topicRows.add(row);
 		}
 		
-		applyFilers(selectionRows);
+		applySelectionFilters(selectionRows);
 		selectionRows.sort((r1, r2) -> Integer.compare(r1.getSelectionSortOrder(), r2.getSelectionSortOrder()));
 		fillEmptySelectionRows(selectionRows);
 		selectionDataModel.setObjects(selectionRows);
 		selectionTableEl.reset(false, false, true);
 		
 		if (!periodEvaluator.isBeforeSelectionPeriod()) {
+			applyTopicFilters(topicRows);
+			applyTopicFilters(topicRows);
 			applySearch(topicRows);
 			applyGroupRestricions(topicRows);
 			topicRows.sort((r1, r2) -> Integer.compare(r1.getTopicSortOrder(), r2.getTopicSortOrder()));
@@ -439,7 +528,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		updateSelectionMessage();
 	}
 
-	private void applyFilers(List<TBSelectionRow> rows) {
+	private void applySelectionFilters(List<TBSelectionRow> rows) {
 		if (selectionTableEl.getSelectedFilterTab() == null) {
 			return;
 		}
@@ -448,6 +537,39 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			rows.removeIf(row -> !row.isEnrolled());
 		} else if (selectionTableEl.getSelectedFilterTab() == tabNotEnrolled) {
 			rows.removeIf(TBSelectionRow::isEnrolled);
+		}
+	}
+
+	private void applyTopicFilters(List<TBSelectionRow> rows) {
+		if (topicTableEl.getSelectedFilterTab() == null) {
+			return;
+		}
+		
+		if (topicTableEl.getSelectedFilterTab() == tabExecutionPeriod) {
+			rows.removeIf(row -> row.getBeginDate() == null && row.getEndDate() == null);
+		} else if (topicTableEl.getSelectedFilterTab() == tabSelected) {
+			rows.removeIf(row -> row.getSelectionRef() == null);
+		}
+		
+		List<FlexiTableFilter> filters = topicTableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (FILTER_EXECUTION_PERIOD.equals(filter.getFilter())) {
+				if (filter instanceof FlexiTableDateRangeFilter dateRangeFilter) {
+					FlexiTableDateRangeFilter.DateRange dateRange = dateRangeFilter.getDateRange();
+					
+					Date filterFrom = dateRange != null? dateRange.getStart(): null;
+					if (filterFrom != null) {
+						rows.removeIf(row -> row.getBeginDate() == null || row.getBeginDate().before(filterFrom));
+					}
+					
+					Date filterTo = dateRange != null? dateRange.getEnd(): null;
+					if (filterTo != null) {
+						rows.removeIf(row -> row.getEndDate()== null || row.getEndDate().after(filterTo));
+					}
+				}
+			}
 		}
 	}
 
@@ -867,6 +989,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				if (CMD_DETAILS.equals(cmd)) {
 					doOpenDetails(ureq, row.getTopic(), row.getCustomFields());
 				}
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel(false);
 			} else if (event instanceof FlexiTableSearchEvent ftse) {
 				loadModel(true);
 			} else if (event instanceof FlexiTableRenderEvent gtre) {

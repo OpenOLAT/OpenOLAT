@@ -19,3 +19,7 @@ create index idx_badge_class_to_previous_version_idx on o_badge_class(fk_previou
 
 alter table o_badge_class add constraint badge_class_to_next_version_idx foreign key (fk_next_version) references o_badge_class (id);
 create index idx_badge_class_to_next_version_idx on o_badge_class(fk_next_version);
+
+-- Topic broker
+alter table o_tb_topic add column t_begin_date timestamp;
+alter table o_tb_topic add column t_end_date timestamp;

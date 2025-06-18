@@ -100,6 +100,10 @@ public class TBTopicDAOTest extends OlatTestCase {
 		topic.setTitle(title);
 		String description = random();
 		topic.setDescription(description);
+		Date beginDate = new Date();
+		topic.setBeginDate(beginDate);
+		Date endDate = new Date();
+		topic.setEndDate(endDate);
 		Integer minParticipants = 3;
 		topic.setMinParticipants(minParticipants);
 		Integer maxParticipants = 22;
@@ -109,7 +113,8 @@ public class TBTopicDAOTest extends OlatTestCase {
 		int sortOrder = 5;
 		((TBTopicImpl)topic).setSortOrder(sortOrder);
 		((TBTopicImpl)topic).setDeletedBy(topic.getCreator());
-		((TBTopicImpl)topic).setDeletedDate(new Date());
+		Date deletedDate = new Date();
+		((TBTopicImpl)topic).setDeletedDate(deletedDate);
 		sut.updateTopic(topic);
 		dbInstance.commitAndCloseSession();
 		
@@ -120,12 +125,14 @@ public class TBTopicDAOTest extends OlatTestCase {
 		assertThat(reloadedTopic.getIdentifier()).isEqualTo(identifier);
 		assertThat(reloadedTopic.getTitle()).isEqualTo(title);
 		assertThat(reloadedTopic.getDescription()).isEqualTo(description);
+		assertThat(reloadedTopic.getBeginDate()).isCloseTo(beginDate, 2000);
+		assertThat(reloadedTopic.getEndDate()).isCloseTo(endDate, 2000);
 		assertThat(reloadedTopic.getMinParticipants()).isEqualTo(minParticipants);
 		assertThat(reloadedTopic.getMaxParticipants()).isEqualTo(maxParticipants);
 		assertThat(reloadedTopic.getGroupRestrictionKeys()).containsExactlyInAnyOrder(66l, 23300l);
 		assertThat(reloadedTopic.getSortOrder()).isEqualTo(sortOrder);
 		assertThat(reloadedTopic.getDeletedBy()).isEqualTo(topic.getCreator());
-		assertThat(reloadedTopic.getDeletedBy()).isNotNull();
+		assertThat(reloadedTopic.getDeletedDate()).isCloseTo(deletedDate, 2000);
 	}
 	
 	@Test

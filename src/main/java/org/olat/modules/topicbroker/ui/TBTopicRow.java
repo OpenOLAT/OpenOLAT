@@ -19,6 +19,7 @@
  */
 package org.olat.modules.topicbroker.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -77,7 +78,15 @@ public class TBTopicRow implements TBTopicRef {
 	public String getTitle() {
 		return topic.getTitle();
 	}
-
+	
+	public Date getBeginDate() {
+		return topic.getBeginDate();
+	}
+	
+	public Date getEndDate() {
+		return topic.getEndDate();
+	}
+	
 	public Integer getMinParticipants() {
 		return topic.getMinParticipants();
 	}

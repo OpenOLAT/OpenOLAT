@@ -344,6 +344,8 @@ public class TBUIFactory {
 		columns += "<li>" + translator.translate("topic.description") + "</li>";
 		columns += "<li><strong>" + translator.translate("topic.participants.min") + " *</strong></li>";
 		columns += "<li><strong>" + translator.translate("topic.participants.max") + " *</strong></li>";
+		columns += "<li>" + translator.translate("topic.begin.date") + "</li>";
+		columns += "<li>" + translator.translate("topic.end.date") + "</li>";
 		columns += "<li>" + translator.translate("topic.group.restriction") + "</li>";
 		
 		if (definitions != null && !definitions.isEmpty()) {

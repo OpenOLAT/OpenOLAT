@@ -214,7 +214,7 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 
 	private TBTopic createRandomTopic(Identity identity, TBBroker broker) {
 		TBTopic topic = sut.createTopic(identity, broker);
-		topic = sut.updateTopic(identity, topic, random(), random(), random(), 0, 6, null);
+		topic = sut.updateTopic(identity, topic, random(), random(), random(), null, null, 0, 6, null);
 		dbInstance.commitAndCloseSession();
 		
 		return topic;

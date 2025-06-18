@@ -285,7 +285,8 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 						topicExisting = topicBrokerService.createTopic(doer, broker);
 					}
 					topicBrokerService.updateTopic(doer, topicExisting, topicImported.getIdentifier(),
-							topicImported.getTitle(), topicImported.getDescription(), topicImported.getMinParticipants(),
+							topicImported.getTitle(), topicImported.getDescription(), topicImported.getBeginDate(),
+							topicImported.getEndDate(), topicImported.getMinParticipants(),
 							topicImported.getMaxParticipants(), topicImported.getGroupRestrictionKeys());
 					orderedIdentificators.add(topicImported.getIdentifier());
 					

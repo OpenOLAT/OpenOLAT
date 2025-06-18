@@ -35,8 +35,13 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +110,7 @@ public class ImportOverviewController extends StepFormBasicController {
 	
 	private final ImportContext importContext;
 	private final List<TBCustomFieldDefinition> definitions;
+	private final List<DateFormat> dateFormatters = new ArrayList<>();
 
 	@Autowired
 	private TopicBrokerService topicBrokerService;
@@ -122,6 +128,19 @@ public class ImportOverviewController extends StepFormBasicController {
 				.filter(definition -> importContext.getTempFilesDir() != null? true: TBCustomFieldType.text == definition.getType())
 				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
 				.toList();
+		
+		//some default patterns
+		dateFormatters.add(new SimpleDateFormat("dd.MM.yyyy"));
+		dateFormatters.add(new SimpleDateFormat("dd.MM.yyyy"));
+		dateFormatters.add(new SimpleDateFormat("dd.MM.yy"));
+		dateFormatters.add(new SimpleDateFormat("dd.MM.yy"));
+
+		dateFormatters.add(new SimpleDateFormat("MM/dd/yyyy"));
+		dateFormatters.add(new SimpleDateFormat("MM/dd/yy"));
+		dateFormatters.add(new SimpleDateFormat("MM/dd/yyyy"));
+		dateFormatters.add(new SimpleDateFormat("MM/dd/yy"));
+		
+		dateFormatters.add(DateFormat.getDateInstance(DateFormat.SHORT, getLocale()));
 		
 		initForm(ureq);
 	}
@@ -145,6 +164,9 @@ public class ImportOverviewController extends StepFormBasicController {
 		maxParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		maxParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(maxParticipantsColumn);
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.beginDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.endDate));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicImportCols.groupRestrictions));
 		
@@ -236,7 +258,7 @@ public class ImportOverviewController extends StepFormBasicController {
 			}
 			
 			
-			String groupRestrictionInput = line.length > 5? line[5]: "";
+			String groupRestrictionInput = line.length > 7? line[7]: "";
 			if (StringHelper.containsNonWhitespace(groupRestrictionInput)) {
 				Set<Long> groupRestrictionKeys = Arrays.stream(groupRestrictionInput.split(","))
 						.filter(StringHelper::isLong)
@@ -244,6 +266,32 @@ public class ImportOverviewController extends StepFormBasicController {
 						.collect(Collectors.toSet());
 				groupRestrictionKeys.retainAll(importContext.getGroupRestrictionCandidates().getBusinessGroupKeys());
 				topic.setGroupRestrictionKeys(groupRestrictionKeys);
+			}
+			
+			if (line.length > 6) {
+				String endDateInput = line[6];
+				if (StringHelper.containsNonWhitespace(endDateInput)) {
+					importTopic.setEndDate(endDateInput);
+					Date endDate = parseDate(endDateInput);
+					if (endDate != null) {
+						topic.setEndDate(endDate);
+					} else {
+						importTopic.setMessage(translate("import.error.date.end"));
+					}
+				}
+			}
+			
+			if (line.length > 5) {
+				String beginDateInput = line[5];
+				if (StringHelper.containsNonWhitespace(beginDateInput)) {
+					importTopic.setBeginDate(beginDateInput);
+					Date beginDate = parseDate(beginDateInput);
+					if (beginDate != null) {
+						topic.setBeginDate(beginDate);
+					} else {
+						importTopic.setMessage(translate("import.error.date.begin"));
+					}
+				}
 			}
 			
 			if (line.length > 4) {
@@ -382,6 +430,24 @@ public class ImportOverviewController extends StepFormBasicController {
 		}
 		
 		return Arrays.stream(tokens).collect(Collectors.joining("\t"));
+	}
+	
+	protected Date parseDate(String date) {
+		Date parsed = null;
+		Calendar cal = Calendar.getInstance();
+		for(DateFormat format:dateFormatters) {
+			try {
+				format.setLenient(true);
+				parsed = format.parse(date);
+				cal.setTime(parsed);
+				if(cal.get(Calendar.YEAR) > 2000) {
+					break;
+				}
+			} catch (ParseException e) {
+				//try
+			}
+		}
+		return parsed;
 	}
 
 	private void appendFiles(List<TBImportTopic> topics) {
@@ -601,6 +667,8 @@ public class ImportOverviewController extends StepFormBasicController {
 			case description: return row.getDescription();
 			case minParticipants: return row.getMinParticipants();
 			case maxParticipants: return row.getMaxParticipants();
+			case beginDate: return row.getBeginDate();
+			case endDate: return row.getEndDate();
 			case groupRestrictions: return row.getGroupRestrictions();
 			case teaserImage: return row.getIdentifierToFile() != null && row.getIdentifierToFile().containsKey(EXPORT_TEASER_IMAGE)
 					? row.getIdentifierToFile().get(EXPORT_TEASER_IMAGE).getName() : null;
@@ -617,6 +685,8 @@ public class ImportOverviewController extends StepFormBasicController {
 			identifier("topic.identifier"),
 			title("topic.title"),
 			description("topic.description"),
+			beginDate("topic.begin.date"),
+			endDate("topic.end.date"),
 			minParticipants("topic.participants.min"),
 			maxParticipants("topic.participants.max"),
 			groupRestrictions("topic.group.restriction"),

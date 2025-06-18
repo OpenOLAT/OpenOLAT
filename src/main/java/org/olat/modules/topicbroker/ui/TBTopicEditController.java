@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -78,6 +79,7 @@ public class TBTopicEditController extends FormBasicController {
 	private FormLayoutContainer participantsCont;
 	private TextElement minParticipantsEl;
 	private TextElement maxParticipantsEl;
+	private DateChooser beginEndEl;
 	private MultipleSelectionElement groupRestrictionsEl;
 	private FileElement teaserImageEl;
 	private FileElement teaserVideoEl;
@@ -134,15 +136,22 @@ public class TBTopicEditController extends FormBasicController {
 				: null;
 		minParticipantsEl = uifactory.addTextElement("topic.participants.min", null, 20, minParticipants, participantsCont);
 		minParticipantsEl.setElementCssClass("o_sel_tb_min_participants");
-		minParticipantsEl.setDisplaySize(100);
+		minParticipantsEl.setDisplaySize(15);
 		
 		String maxParticipants = topic != null && topic.getMaxParticipants() != null
 				? topic.getMaxParticipants().toString()
 				: null;
 		maxParticipantsEl = uifactory.addTextElement("topic.participants.max", null, 320, maxParticipants, participantsCont);
 		maxParticipantsEl.setElementCssClass("o_sel_tb_max_participants");
-		maxParticipantsEl.setDisplaySize(100);
+		maxParticipantsEl.setDisplaySize(15);
 		
+		beginEndEl = uifactory.addDateChooser("topic.execution.period", null, standardCont);
+		beginEndEl.setSecondDate(true);
+		beginEndEl.setSeparator("to.separator");
+		if (topic != null) {
+			beginEndEl.setDate(topic.getBeginDate());
+			beginEndEl.setSecondDate(topic.getEndDate());
+		}
 		
 		Set<Long> businessGroupKeys = new HashSet<>();
 		if (groupRestrictionCandidates.getBusinessGroupKeys() != null) {
@@ -380,8 +389,9 @@ public class TBTopicEditController extends FormBasicController {
 		}
 		topic.setGroupRestrictionKeys(groupRestrictionKeys);
 		topic = topicBrokerService.updateTopic(getIdentity(), topic, identifierEl.getValue(), titleEl.getValue(),
-				descriptionEl.getValue(), Integer.parseInt(minParticipantsEl.getValue()),
-				Integer.parseInt(maxParticipantsEl.getValue()), groupRestrictionKeys);
+				descriptionEl.getValue(), beginEndEl.getDate(), beginEndEl.getSecondDate(),
+				Integer.parseInt(minParticipantsEl.getValue()), Integer.parseInt(maxParticipantsEl.getValue()),
+				groupRestrictionKeys);
 		
 		if (teaserImageEl.getUploadFile() != null) {
 			topicBrokerService.storeTopicLeaf(getIdentity(), topic, TopicBrokerService.TEASER_IMAGE_DIR, teaserImageEl.getUploadFile(), teaserImageEl.getUploadFileName());

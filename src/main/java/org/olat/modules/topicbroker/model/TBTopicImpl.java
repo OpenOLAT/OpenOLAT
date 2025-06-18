@@ -73,6 +73,12 @@ public class TBTopicImpl implements Persistable, TBTopic {
 	private String title;
 	@Column(name="t_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="t_begin_date", nullable=true, insertable=true, updatable=true)
+	private Date beginDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="t_end_date", nullable=true, insertable=true, updatable=true)
+	private Date endDate;
 	@Column(name="t_min_participants", nullable=true, insertable=true, updatable=true)
 	private Integer minParticipants;
 	@Column(name="t_max_participants", nullable=true, insertable=true, updatable=true)
@@ -154,6 +160,26 @@ public class TBTopicImpl implements Persistable, TBTopic {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public Date getBeginDate() {
+		return beginDate;
+	}
+
+	@Override
+	public void setBeginDate(Date beginDate) {
+		this.beginDate = beginDate;
+	}
+
+	@Override
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	@Override
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 	@Override

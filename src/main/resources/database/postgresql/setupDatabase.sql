@@ -4752,6 +4752,8 @@ create table o_tb_topic (
    t_identifier varchar(64),
    t_title varchar(1024),
    t_description text,
+   t_begin_date timestamp,
+   t_end_date timestamp,
    t_min_participants int8,
    t_max_participants int8,
    t_group_restrictions varchar(1024),

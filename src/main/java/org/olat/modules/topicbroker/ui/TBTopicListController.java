@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -62,6 +64,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -133,9 +136,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class TBTopicListController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_GROUP_RESTRICTION = "GroupRestriction";
+	private static final String TAB_ID_EXECUTION_PERIOD = "ExecutionPeriod";
 	private static final String TAB_ID_UNDERBOOKED = "Underbooked";
 	private static final String TAB_ID_WAITING_LIST = "WaitingList";
 	private static final String FILTER_GROUP = "group";
+	private static final String FILTER_EXECUTION_PERIOD = "period";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
@@ -147,6 +153,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	
 	private InfoPanel configPanel;
 	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabGroupRestriction;
+	private FlexiFiltersTab tabExecutionPeriod;
 	private FlexiFiltersTab tabUnderbooked;
 	private FlexiFiltersTab tabWaitingList;
 	private FormLink exportLink;
@@ -224,7 +232,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	protected abstract boolean isShowSelections();
 	
 	private void initFilterTabs(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		List<FlexiFiltersTab> tabs = new ArrayList<>(5);
 		
 		tabAll = FlexiFiltersTabFactory.tab(
 				TAB_ID_ALL,
@@ -232,17 +240,31 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				TabSelectionBehavior.reloadData);
 		tabs.add(tabAll);
 		
-		tabUnderbooked = FlexiFiltersTabFactory.tab(
-				TAB_ID_UNDERBOOKED,
-				translate("tab.underbooked"),
+		tabGroupRestriction = FlexiFiltersTabFactory.tab(
+				TAB_ID_GROUP_RESTRICTION,
+				translate("tab.group.restriction"),
 				TabSelectionBehavior.reloadData);
-		tabs.add(tabUnderbooked);
+		tabs.add(tabGroupRestriction);
 		
-		tabWaitingList = FlexiFiltersTabFactory.tab(
-				TAB_ID_WAITING_LIST,
-				translate("tab.waiting.list.with"),
+		tabExecutionPeriod = FlexiFiltersTabFactory.tab(
+				TAB_ID_EXECUTION_PERIOD,
+				translate("tab.execution.period"),
 				TabSelectionBehavior.reloadData);
-		tabs.add(tabWaitingList);
+		tabs.add(tabExecutionPeriod);
+		
+		if (isShowSelections()) {
+			tabUnderbooked = FlexiFiltersTabFactory.tab(
+					TAB_ID_UNDERBOOKED,
+					translate("tab.underbooked"),
+					TabSelectionBehavior.reloadData);
+			tabs.add(tabUnderbooked);
+			
+			tabWaitingList = FlexiFiltersTabFactory.tab(
+					TAB_ID_WAITING_LIST,
+					translate("tab.waiting.list.with"),
+					TabSelectionBehavior.reloadData);
+			tabs.add(tabWaitingList);
+		}
 		
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, tabAll);
@@ -254,7 +276,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			return;
 		}
 		
-		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		
 		SelectionValues groupValues = new SelectionValues();
 		Collections.sort(businessGroups, (g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
@@ -262,6 +284,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				group.getKey().toString(),
 				StringHelper.escapeHtml(group.getName()))));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("topic.group.restriction"), FILTER_GROUP, groupValues, true));
+		
+		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("topic.execution.period"),
+				FILTER_EXECUTION_PERIOD, true, false, translate("topic.execution.period"), translate("to.separator"),
+				getLocale());
+		filters.add(periodFilter);
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -300,6 +327,10 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(TopicCols.title, CMD_DETAILS);
 		titleColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(titleColumn);
+		
+		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.beginDate, dateRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.endDate, dateRenderer));
 		
 		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicCols.minParticipants, new TextFlexiCellRenderer(EscapeMode.none));
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -342,7 +373,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		dataModel = new TBTopicDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-" + broker.getKey());
+		tableEl.setAndLoadPersistedPreferences(ureq, "topic-broker-v2-" + broker.getKey());
 		tableEl.setSearchEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
@@ -477,7 +508,11 @@ public abstract class TBTopicListController extends FormBasicController implemen
 
 	private void applyFilters(List<TBTopicRow> rows) {
 		if (tableEl.getSelectedFilterTab() != null) {
-			if (tableEl.getSelectedFilterTab() == tabUnderbooked) {
+			if (tableEl.getSelectedFilterTab() == tabGroupRestriction) {
+				rows.removeIf(row -> row.getGroupRestrictionKeys() == null || row.getGroupRestrictionKeys().isEmpty());
+			} else if (tableEl.getSelectedFilterTab() == tabExecutionPeriod) {
+				rows.removeIf(row -> row.getBeginDate() == null && row.getEndDate() == null);
+			} else if (tableEl.getSelectedFilterTab() == tabUnderbooked) {
 				rows.removeIf(row -> row.getNumEnrollments() >= row.getMinEnrollments());
 			} else if (tableEl.getSelectedFilterTab() == tabWaitingList) {
 				rows.removeIf(row -> row.getWaitingList() == 0);
@@ -494,6 +529,21 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					Set<Long> groupKeys = groups.stream().map(Long::valueOf).collect(Collectors.toSet());
 					rows.removeIf(row -> row.getGroupRestrictionKeys() == null
 							|| row.getGroupRestrictionKeys().stream().noneMatch(key -> groupKeys.contains(key)));
+				}
+			}
+			if (FILTER_EXECUTION_PERIOD.equals(filter.getFilter())) {
+				if (filter instanceof FlexiTableDateRangeFilter dateRangeFilter) {
+					FlexiTableDateRangeFilter.DateRange dateRange = dateRangeFilter.getDateRange();
+					
+					Date filterFrom = dateRange != null? dateRange.getStart(): null;
+					if (filterFrom != null) {
+						rows.removeIf(row -> row.getBeginDate() == null || row.getBeginDate().before(filterFrom));
+					}
+					
+					Date filterTo = dateRange != null? dateRange.getEnd(): null;
+					if (filterTo != null) {
+						rows.removeIf(row -> row.getEndDate()== null || row.getEndDate().after(filterTo));
+					}
 				}
 			}
 		}

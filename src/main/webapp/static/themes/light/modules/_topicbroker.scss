@@ -152,13 +152,15 @@
 }
 
 .o_tb_participant_num_cols {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
+	display: flex;
+	column-gap: 33px;
 	.o_tb_participant_num_col {
 		display: flex;
 		gap: 5px;
 		align-items: baseline;
+		input {
+			max-width: 154px;
+		}
 	}
 	+.form-control-feedback {
 		display: none;
