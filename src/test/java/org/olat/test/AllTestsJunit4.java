@@ -479,6 +479,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.topicbroker.manager.TBSelectionDAOTest.class,
 	org.olat.modules.topicbroker.manager.TBTopicDAOTest.class,
 	org.olat.modules.topicbroker.TopicBrokerServiceTest.class,
+	org.olat.modules.topicbroker.ui.wizard.ImportTopicConverterTest.class,
 	org.olat.modules.video.VideoFormatTest.class,
 	org.olat.modules.video.manager.VideoTranscodingDAOTest.class,
 	org.olat.modules.video.manager.VideoMetadataDAOTest.class,
