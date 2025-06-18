@@ -79,6 +79,42 @@ public class LectureParticipantSummaryDAO {
 		return summary;
 	}
 	
+	public Date getEnrollmentDate(LectureBlock block, IdentityRef identity) {
+		String query = """
+				select membership.creationDate from lectureblock block
+				inner join block.groups blockGroup
+				inner join blockGroup.group bGroup
+				inner join bGroup.members membership
+				where membership.role='participant' and membership.identity.key=:identityKey
+				and block.key=:lectureBlockKey
+				order by membership.creationDate asc
+				""";
+
+		List<Date> dates = dbInstance.getCurrentEntityManager().createQuery(query, Date.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("lectureBlockKey", block.getKey())
+			.getResultList();
+		return dates == null || dates.isEmpty() ? null : dates.get(0);
+	}
+	
+	public Date getEnrollmentDate(RepositoryEntryRef entry, IdentityRef identity) {
+		String query = """
+				select membership.creationDate
+				from repoentrytogroup as relGroup
+				inner join relGroup.group as baseGroup
+				inner join baseGroup.members as membership
+				where membership.role='participant' and membership.identity.key=:identityKey
+				and relGroup.entry.key=:entryKey
+				order by membership.creationDate asc
+				""";
+
+		List<Date> dates = dbInstance.getCurrentEntityManager().createQuery(query, Date.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+		return dates == null || dates.isEmpty() ? null : dates.get(0);
+	}
+	
 	public List<ParticipantAndLectureSummary> getLectureParticipantSummaries(LectureBlock block) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select participant, summary from lectureblock block")

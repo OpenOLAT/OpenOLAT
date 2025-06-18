@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
@@ -31,6 +33,7 @@ import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.model.LectureParticipantSummaryImpl;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 31 mars 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LectureParticipantSummaryDAOTest extends OlatTestCase {
@@ -47,6 +50,8 @@ public class LectureParticipantSummaryDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
 	
@@ -80,9 +85,42 @@ public class LectureParticipantSummaryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getEnrollmentDateByRepositoryEntry() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-summary-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block = createMinimalLectureBlock(entry);
+
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		Date enrollmentDate = lectureParticipantSummaryDao.getEnrollmentDate(entry, participant);
+		Assert.assertNotNull(enrollmentDate);
+		Assert.assertNotNull(block);
+	}
+	
+	@Test
+	public void getEnrollmentDateByLectureBlock() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-summary-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+
+		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
+		Group entryGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
+		lectureBlockDao.addGroupToLectureBlock(lectureBlock, entryGroup);
+		
+		dbInstance.commitAndCloseSession();
+
+		Date enrollmentDate = lectureParticipantSummaryDao.getEnrollmentDate(lectureBlock, participant);
+		Assert.assertNotNull(enrollmentDate);
+		Assert.assertNotNull(lectureBlock);
+	}
+	
+	@Test
 	public void getLectureParticipantSummaries_lectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock block = createMinimalLectureBlock(entry);
+		
 		dbInstance.commitAndCloseSession();
 
 		List<ParticipantAndLectureSummary> summaries = lectureParticipantSummaryDao.getLectureParticipantSummaries(block);

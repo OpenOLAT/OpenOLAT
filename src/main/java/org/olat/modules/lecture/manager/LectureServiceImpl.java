@@ -1010,7 +1010,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				continue;
 			}
 			if(participantAndSummary.getSummary() == null) {
-				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), now);
+				Date enrollmentDate = evaluateFirstAdmissionDate(lectureBlock, participantAndSummary.getIdentity(), now);
+				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), enrollmentDate);
 			}
 			participants.add(participantAndSummary.getIdentity());
 		}
@@ -1029,7 +1030,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				continue;
 			}
 			if(participantAndSummary.getSummary() == null) {
-				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), now);
+				Date enrollmentDate = evaluateFirstAdmissionDate(lectureBlock, participantAndSummary.getIdentity(), now);
+				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), enrollmentDate);
 			}
 			participants.add(participantAndSummary.getIdentity());
 		}
@@ -1055,9 +1057,14 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			
 			// update or create summary
 			if(participantAndSummary.getSummary() == null) {
-				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), firstAdmission);
-			} else if(participantAndSummary.getSummary().getFirstAdmissionDate() == null || participantAndSummary.getSummary().getFirstAdmissionDate().after(firstAdmission)) {
+				Date enrollmentDate = evaluateFirstAdmissionDate(entry, participantAndSummary.getIdentity(), firstAdmission);
+				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), enrollmentDate);
+			} else if(participantAndSummary.getSummary().getFirstAdmissionDate() != null && participantAndSummary.getSummary().getFirstAdmissionDate().after(firstAdmission)) {
 				participantAndSummary.getSummary().setFirstAdmissionDate(firstAdmission);
+				lectureParticipantSummaryDao.update(participantAndSummary.getSummary());
+			} else if(participantAndSummary.getSummary().getFirstAdmissionDate() == null) {
+				Date enrollmentDate = evaluateFirstAdmissionDate(entry, participantAndSummary.getIdentity(), firstAdmission);
+				participantAndSummary.getSummary().setFirstAdmissionDate(enrollmentDate);
 				lectureParticipantSummaryDao.update(participantAndSummary.getSummary());
 			}
 
@@ -1079,6 +1086,34 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 		
 		return new ArrayList<>(participants);
+	}
+	
+	private Date evaluateFirstAdmissionDate(RepositoryEntry entry, IdentityRef identity, Date defaultDate) {
+		Date enrollmentDate = lectureParticipantSummaryDao.getEnrollmentDate(entry, identity);
+		if((enrollmentDate == null)
+				|| (defaultDate != null && defaultDate.before(enrollmentDate))) {
+			enrollmentDate = defaultDate;
+		}
+		if(enrollmentDate != null) {
+			enrollmentDate = CalendarUtils.removeTime(enrollmentDate);
+		}
+		return enrollmentDate;
+	}
+	
+	private Date evaluateFirstAdmissionDate(LectureBlock block, IdentityRef identity, Date defaultDate) {
+		Date enrollmentDate = lectureParticipantSummaryDao.getEnrollmentDate(block, identity);
+		if((enrollmentDate == null)
+				|| (defaultDate != null && defaultDate.before(enrollmentDate))) {
+			enrollmentDate = defaultDate;
+		}
+		if((enrollmentDate == null)
+				|| (block.getStartDate() != null && block.getStartDate().before(enrollmentDate))) {
+			enrollmentDate = block.getStartDate();
+		}
+		if(enrollmentDate != null) {
+			enrollmentDate = CalendarUtils.removeTime(enrollmentDate);
+		}
+		return enrollmentDate;
 	}
 
 	@Override
@@ -1313,11 +1348,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public void recalculateSummary(RepositoryEntry entry) {
 		List<LectureBlockStatistics> statistics = getParticipantsLecturesStatistics(entry);
 		int count = 0;
+		Date now = new Date();
 		for(LectureBlockStatistics statistic:statistics) {
 			if(lectureParticipantSummaryDao.updateStatistics(statistic) == 0) {
 				Identity identity = dbInstance.getCurrentEntityManager()
 						.getReference(IdentityImpl.class, statistic.getIdentityKey());
-				lectureParticipantSummaryDao.createSummary(entry, identity, new Date(), statistic);
+				Date enrollmentDate = evaluateFirstAdmissionDate(entry, identity, now);
+				lectureParticipantSummaryDao.createSummary(entry, identity, enrollmentDate, statistic);
 			}
 			if(++count % 20 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -1327,11 +1364,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public void recalculateSummary(RepositoryEntry entry, Identity identity) {
+		Date now = new Date();
 		List<LectureBlockStatistics> statistics = getParticipantsLecturesStatistics(entry);
 		for(LectureBlockStatistics statistic:statistics) {
 			if(identity.getKey().equals(statistic.getIdentityKey())) {
 				if(lectureParticipantSummaryDao.updateStatistics(statistic) == 0) {
-					lectureParticipantSummaryDao.createSummary(entry, identity, new Date(), statistic);
+					Date enrollmentDate = evaluateFirstAdmissionDate(entry, identity, now);
+					lectureParticipantSummaryDao.createSummary(entry, identity, enrollmentDate, statistic);
 				}
 			}
 		}
@@ -1647,7 +1686,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public LectureParticipantSummary getOrCreateParticipantSummary(RepositoryEntry entry, Identity identity) {
 		LectureParticipantSummary summary = lectureParticipantSummaryDao.getSummary(entry, identity);
 		if(summary == null) {
-			summary = lectureParticipantSummaryDao.createSummary(entry, identity, null);
+			Date enrollmentDate = evaluateFirstAdmissionDate(entry, identity, null);
+			summary = lectureParticipantSummaryDao.createSummary(entry, identity, enrollmentDate);
 		}
 		return summary;
 	}
