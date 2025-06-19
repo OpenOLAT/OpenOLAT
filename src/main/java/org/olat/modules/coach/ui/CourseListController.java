@@ -197,7 +197,7 @@ public class CourseListController extends FormBasicController implements Activat
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		tableModel = new CoursesTableDataModel(columnsModel);
+		tableModel = new CoursesTableDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
