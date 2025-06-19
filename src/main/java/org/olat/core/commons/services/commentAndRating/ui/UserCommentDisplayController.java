@@ -269,6 +269,7 @@ public class UserCommentDisplayController extends BasicController {
 			Link toolsLink = LinkFactory.createCustomLink("tools", "tools", "", Link.NONTRANSLATED, userCommentDisplayVC, this);
 			toolsLink.setElementCssClass("o_tools");
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setGhost(true);
 		}
 	}
