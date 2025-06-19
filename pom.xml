@@ -73,13 +73,13 @@
 		<apache.cxf>4.1.2</apache.cxf>
 		<apache.pdfbox>3.0.5</apache.pdfbox>
 		<apache.poi>5.4.1</apache.poi>
-		<apache.log4j>2.24.3</apache.log4j>
+		<apache.log4j>2.25.0</apache.log4j>
 		<org.slf4j>2.0.17</org.slf4j>
 		<org.bouncycastle>1.81</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
 		<io.undertow>2.3.18.Final</io.undertow>
 		<jackson.version>2.19.1</jackson.version>
-		<swagger.ui.version>5.24.1-1</swagger.ui.version>
+		<swagger.ui.version>5.25.2</swagger.ui.version>
 		<com.mysql.version>9.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.7</org.postgresql.version>
 		<org.infinispan.version>15.2.4.Final</org.infinispan.version>
@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.41.0</version>
+			<version>6.42.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
