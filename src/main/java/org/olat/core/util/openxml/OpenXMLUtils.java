@@ -64,6 +64,7 @@ public class OpenXMLUtils {
 	public static final double emusPerInch = 914400.0d;
 	public static final double emusPerCm = 360000.0d;
 	
+	public static final int MAX_CELL_SIZE = 32000;//In reality 32767 but keep margin
 
 	public static final int convertPixelToEMUs(int pixel, int dpi, double resizeRatio) {
 		double rezDpi = dpi * 1.0d;
@@ -205,5 +206,12 @@ public class OpenXMLUtils {
 		} catch (TransformerFactoryConfigurationError | TransformerException e) {
 			log.error("", e);
 		}
+	}
+	
+	public static String truncateForCell(String val) {
+		if(StringHelper.containsNonWhitespace(val) && val.length() > MAX_CELL_SIZE) {
+			val = val.substring(0, MAX_CELL_SIZE) + "\u2026";
+		}
+		return val;
 	}
 }
