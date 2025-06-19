@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.reports;
 
+
+import static org.olat.core.util.openxml.OpenXMLUtils.truncateForCell;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -309,7 +312,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getOfferCostCenter());
 		row.addCell(pos++, bookingOrder.getOfferAccount());
 		row.addCell(pos++, bookingOrder.getOrder().getPurchaseOrderNumber());
-		row.addCell(pos++, bookingOrder.getOrder().getComment());
+		row.addCell(pos++, truncateForCell(bookingOrder.getOrder().getComment()));
 		row.addCell(pos++, bookingOrder.getOrder().getCreationDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getTotal()));
 		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getCancellationFees()));
