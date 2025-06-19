@@ -24,6 +24,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -33,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.util.DateUtils;
@@ -51,12 +51,14 @@ import org.olat.core.util.StringHelper;
 public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStatEntryRow>
 	implements SortableFlexiTableDataModel<CourseStatEntryRow>, FilterableFlexiTableModel {
 
+	private final Locale locale;
 	private List<CourseStatEntryRow> backupList;
 	
 	private static final Columns[] COLS = Columns.values();
 
-	public CoursesTableDataModel(FlexiTableColumnModel columnsModel) {
+	public CoursesTableDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 	
 	public int getIndexOfObject(CourseStatEntryRow entry) {
@@ -65,7 +67,9 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 
 	@Override
 	public void sort(SortKey orderBy) {
-		super.setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
+		if(orderBy != null) {
+			super.setObjects(new CoursesTableSortDelegate(orderBy, this, locale).sort());
+		}
 	}
 	
 	@Override
