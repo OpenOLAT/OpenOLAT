@@ -76,6 +76,8 @@ public class TBBrokerImpl implements TBBroker, Persistable {
 	private boolean participantCanEditRequiredEnrollments;
 	@Column(name="t_auto_enrollment", nullable=true, insertable=true, updatable=true)
 	private boolean autoEnrollment;
+	@Column(name="t_operlapping_period_allowed", nullable=true, insertable=true, updatable=true)
+	private boolean overlappingPeriodAllowed;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="t_enrollment_start_date", nullable=true, insertable=true, updatable=true)
 	private Date enrollmentStartDate;
@@ -193,6 +195,16 @@ public class TBBrokerImpl implements TBBroker, Persistable {
 	@Override
 	public void setAutoEnrollment(boolean autoEnrollment) {
 		this.autoEnrollment = autoEnrollment;
+	}
+
+	@Override
+	public boolean isOverlappingPeriodAllowed() {
+		return overlappingPeriodAllowed;
+	}
+
+	@Override
+	public void setOverlappingPeriodAllowed(boolean overlappingPeriodAllowed) {
+		this.overlappingPeriodAllowed = overlappingPeriodAllowed;
 	}
 
 	@Override

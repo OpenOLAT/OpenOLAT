@@ -4727,6 +4727,7 @@ create table o_tb_broker (
    t_required_enrollments int8,
    t_p_can_edit_r_enrollments bool,
    t_auto_enrollment bool,
+   t_operlapping_period_allowed bool default true,
    t_enrollment_start_date timestamp,
    t_enrollment_done_date timestamp,
    t_p_can_withdraw bool,

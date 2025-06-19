@@ -19,11 +19,17 @@
  */
 package org.olat.modules.topicbroker.manager;
 
+import static org.olat.core.util.DateUtils.isOverlapping;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +42,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateRange;
 import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentProcess;
@@ -60,6 +67,9 @@ import org.olat.modules.topicbroker.ui.TBUIFactory;
 public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 
 	private static final Logger log = Tracing.createLoggerFor(DefaultEnrollmentProcess.class);
+	
+	private static final Date TOPIC_START_INFINITY = new GregorianCalendar(2000, Calendar.JANUARY, 1).getTime();
+	private static final Date TOPIC_END_INFINITY = new GregorianCalendar(2099, Calendar.DECEMBER, 31).getTime();
 	
 	private final TBBroker broker;
 	private final List<TBParticipant> participants;
@@ -145,14 +155,16 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 			MatchingTopic topic = topics.get(topicIndex);
 			if (!topic.isMaxReached()) {
 				TBProcessInfos infos = new TBProcessInfos();
+				infos.setPriority(Integer.valueOf(priority));
 				infos.setNumEnrollments(Integer.valueOf(topic.getNumEnrollments()));
 				infos.setNumEnrollmentsLeft(Integer.valueOf(topic.getLeftEnrollments()));
+				
 				List<MatchingParticipant> participants = topicKeyPriorityToMatchingIdentities.getOrDefault(new TopicKeyPriority(topic.getKey(), priority), List.of());
 				infos.setNumSelections(Integer.valueOf(participants.size()));
 				participants = new ArrayList<>(participants);
-				participants.removeIf(participant -> participantKeysFullyEnrolled.contains(participant.getKey()));
-				infos.setNumParticipants(Integer.valueOf( participants.size()));
-				infos.setPriority(Integer.valueOf(priority));
+				removeParticipants(participants, topic);
+				infos.setNumParticipants(Integer.valueOf(participants.size()));
+				
 				addActivity(TBAuditLog.Action.evaluationTopicStart, null, topic.getKey(), infos, null);
 				
 				if (!participants.isEmpty()) {
@@ -162,9 +174,13 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 					if (leftEnrollments > participants.size()) {
 						leftEnrollments = participants.size();
 					}
-					for (int i = 0; i<leftEnrollments; i++) {
+					for (int i = 0; i<participants.size(); i++) {
 						MatchingParticipant participant = participants.get(i);
-						enroll(participant,  topic, priority, priorityCost, TBAuditLog.Action.participantEnroll);
+						if (i < leftEnrollments) {
+							enroll(participant,  topic, priority, priorityCost, TBAuditLog.Action.participantEnroll);
+						} else {
+							addActivity(TBAuditLog.Action.participantNETopicFull, participant.getKey(), topic.getKey(), null, null);
+						}
 					}
 				}
 				
@@ -180,6 +196,30 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		TBProcessInfos infos = TBProcessInfos.ofStats(stats.numTopicsMaxNotReached, stats.numTopicsMinNotReached, stats.numParticipantsMaxNotReached);
 		infos.setPriority(Integer.valueOf(priority));
 		addActivity(TBAuditLog.Action.evaluationLevelEnd, infos);
+	}
+
+	private void removeParticipants(List<MatchingParticipant> participants, MatchingTopic topic) {
+		Iterator<MatchingParticipant> it = participants.iterator();
+		while (it.hasNext()) {
+			MatchingParticipant participant = it.next();
+			
+			if (participantKeysFullyEnrolled.contains(participant.getKey())) {
+				addActivity(TBAuditLog.Action.participantNEFullyEnrolled, participant.getKey(), topic.getKey(), null, null);
+				it.remove();
+			}
+			
+			if (isPeriodOverlapping(participant, topic.getPeriod())) {
+				addActivity(TBAuditLog.Action.participantNEOverlapping, participant.getKey(), topic.getKey(), null, null);
+				it.remove();
+			}
+		}
+	}
+	
+	private boolean isPeriodOverlapping(MatchingParticipant participant, DateRange topivPeriod) {
+		return !broker.isOverlappingPeriodAllowed()
+				&& topivPeriod != null
+				&& participant.getEnrolledPeriods().stream()
+						.anyMatch(period -> isOverlapping(period.getFrom(), period.getTo(), topivPeriod.getFrom(), topivPeriod.getTo()));
 	}
 
 	private void removeMostUnpopularTopic() {
@@ -253,6 +293,10 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		topic.setNumEnrollments(topic.getNumEnrollments()+1);
 		costs = costs.add(cost);
 		
+		if (!broker.isOverlappingPeriodAllowed() && topic.getPeriod() != null) {
+			participant.getEnrolledPeriods().add(topic.getPeriod());
+		}
+		
 		infos.setBudgetAfter(Float.valueOf(participant.getBudget().floatValue()));
 		infos.setNumEnrollments(Integer.valueOf(participant.getNumEnrollments()));
 		infos.setNumEnrollmentsRequired(Integer.valueOf(participant.getRequiredEnrollments()));
@@ -279,8 +323,11 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		for (TBParticipant participant : participants) {
 			int maxEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
 			MatchingParticipant matchingParticipant = new MatchingParticipant(participant.getKey(),
-					maxEnrollments, participant.getBoost());
+					maxEnrollments, participant.getBoost(), broker.isOverlappingPeriodAllowed());
 			matchingParticipant.setBudget(baseBudget.add(matchingParticipant.getBoost()));
+			if (!broker.isOverlappingPeriodAllowed()) {
+				matchingParticipant.getEnrolledPeriods().clear();
+			}
 			participantKeyToMatchingParticipant.put(participant.getKey(), matchingParticipant);
 		}
 		
@@ -425,11 +472,13 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		private final BigDecimal boost;
 		private int numEnrollments = 0;
 		private BigDecimal budget;
+		private List<DateRange> enrolledPeriods;
 		
-		public MatchingParticipant(Long key, int requiredEnrollments, Integer boost) {
+		public MatchingParticipant(Long key, int requiredEnrollments, Integer boost, boolean overlappingPeriodAllowed) {
 			this.key = key;
 			this.requiredEnrollments = requiredEnrollments;
 			this.boost = boost != null? BigDecimal.valueOf(boost.intValue()): BigDecimal.ZERO;
+			this.enrolledPeriods = !overlappingPeriodAllowed? new ArrayList<>(requiredEnrollments): null;
 		}
 		
 		public Long getKey() {
@@ -463,6 +512,10 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		public void setBudget(BigDecimal budget) {
 			this.budget = budget;
 		}
+
+		public List<DateRange> getEnrolledPeriods() {
+			return enrolledPeriods;
+		}
 		
 	}
 	
@@ -472,11 +525,17 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		private final int minParticipants;
 		private final int  maxParticipants;
 		private int numEnrollments;
+		private DateRange period;
 		
 		public MatchingTopic(TBTopic topic) {
 			key = topic.getKey();
 			minParticipants = topic.getMinParticipants() != null? topic.getMinParticipants().intValue(): 0;
 			maxParticipants = topic.getMaxParticipants() != null? topic.getMaxParticipants().intValue(): 0;
+			if (topic.getBeginDate() != null || topic.getEndDate() != null) {
+				Date begin = topic.getBeginDate() != null? topic.getBeginDate(): TOPIC_START_INFINITY;
+				Date end = topic.getEndDate() != null? topic.getEndDate(): TOPIC_END_INFINITY;
+				period = new DateRange(begin, end);
+			}
 		}
 		
 		public Long getKey() {
@@ -505,6 +564,10 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		
 		public boolean isMaxReached() {
 			return numEnrollments >= maxParticipants;
+		}
+		
+		public DateRange getPeriod() {
+			return period;
 		}
 		
 	}

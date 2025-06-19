@@ -21,6 +21,8 @@ package org.olat.modules.topicbroker.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.Test;
@@ -311,7 +313,46 @@ public class DefaultEnrollmentProcessTest {
 				.toList();
 		assertThat(enrolledParticipantKeys).containsExactlyInAnyOrder(participant1.getKey(), participant2.getKey(), participant3.getKey());
 	}
-
+	
+	@Test
+	public void shouldEvaluate_periodOverlappingAllowed() {
+		TBBroker broker = createBroker(3, 1);
+		
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		participant1.setRequiredEnrollments(3);
+		
+		TBTransientTopic topic1 = createTopic(1, 1, 10);
+		topic1.setBeginDate(new GregorianCalendar(2024, Calendar.JUNE, 20).getTime());
+		topic1.setEndDate(new GregorianCalendar(2024, Calendar.JUNE, 25).getTime());
+		TBTransientTopic topic2 = createTopic(2, 1, 10);
+		topic2.setBeginDate(new GregorianCalendar(2024, Calendar.JUNE, 23).getTime());
+		topic2.setEndDate(new GregorianCalendar(2024, Calendar.JUNE, 26).getTime());
+		TBTransientTopic topic3 = createTopic(3, 1, 10);
+		List<TBTopic> topics = List.of(topic1, topic2, topic3);
+		
+		TBTransientSelection selection11 = createSelection(participant1, topic1, 1, false);
+		TBTransientSelection selection12 = createSelection(participant1, topic2, 2, false);
+		TBTransientSelection selection13 = createSelection(participant1, topic3, 3, false);
+		List<TBSelection> selections = List.of(selection11, selection12, selection13);
+		
+		// Overlapping allowed
+		broker.setOverlappingPeriodAllowed(true);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		List<Long> enrolledTopicKeys = sut.getPreviewSelections().stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getTopic().getKey())
+				.toList();
+		assertThat(enrolledTopicKeys).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey(), topic3.getKey());
+		
+		// Overlapping not allowed
+		broker.setOverlappingPeriodAllowed(false);
+		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		enrolledTopicKeys = sut.getPreviewSelections().stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getTopic().getKey())
+				.toList();
+		assertThat(enrolledTopicKeys).containsExactlyInAnyOrder(topic1.getKey(), topic3.getKey());
+	}
 
 	private TBBroker createBroker(int maxSelections, int requiredEnrollments) {
 		TBTransientBroker broker = new TBTransientBroker();

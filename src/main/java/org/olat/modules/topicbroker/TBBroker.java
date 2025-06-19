@@ -58,6 +58,10 @@ public interface TBBroker extends TBBrokerRef, OLATResourceable, ModifiedInfo, C
 	
 	void setAutoEnrollment(boolean autoEnrollment);
 	
+	boolean isOverlappingPeriodAllowed();
+	
+	void setOverlappingPeriodAllowed(boolean overlappingPeriodAllowed);
+	
 	Date getEnrollmentStartDate();
 	
 	Date getEnrollmentDoneDate();

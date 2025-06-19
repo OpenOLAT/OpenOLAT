@@ -52,7 +52,8 @@ public class TBBrokerDAO {
 		broker.setMaxSelections(Integer.valueOf(3));
 		broker.setParticipantCanEditRequiredEnrollments(false);
 		broker.setRequiredEnrollments(Integer.valueOf(1));
-		broker.setAutoEnrollment(true);
+		broker.setAutoEnrollment(false);
+		broker.setOverlappingPeriodAllowed(true);
 		broker.setParticipantCanWithdraw(false);
 		
 		broker.setRepositoryEntry(repositoryEntry);

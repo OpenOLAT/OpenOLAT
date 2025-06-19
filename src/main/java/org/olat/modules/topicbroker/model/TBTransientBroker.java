@@ -41,6 +41,7 @@ public class TBTransientBroker implements TBBroker {
 	private Integer requiredEnrollments;
 	private boolean participantCanEditRequiredEnrollments;
 	private boolean autoEnrollment;
+	private boolean overlappingPeriodAllowed;
 	private Date enrollmentStartDate;
 	private Date enrollmentDoneDate;
 	private boolean participantCanWithdraw;
@@ -146,6 +147,16 @@ public class TBTransientBroker implements TBBroker {
 	@Override
 	public void setAutoEnrollment(boolean autoEnrollment) {
 		this.autoEnrollment = autoEnrollment;
+	}
+
+	@Override
+	public boolean isOverlappingPeriodAllowed() {
+		return overlappingPeriodAllowed;
+	}
+
+	@Override
+	public void setOverlappingPeriodAllowed(boolean overlappingPeriodAllowed) {
+		this.overlappingPeriodAllowed = overlappingPeriodAllowed;
 	}
 
 	@Override

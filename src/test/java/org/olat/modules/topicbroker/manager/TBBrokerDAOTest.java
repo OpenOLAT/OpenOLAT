@@ -62,6 +62,9 @@ public class TBBrokerDAOTest extends OlatTestCase {
 		assertThat(broker).isNotNull();
 		assertThat(broker.getCreationDate()).isNotNull();
 		assertThat(broker.getLastModified()).isNotNull();
+		assertThat(broker.isAutoEnrollment()).isFalse();
+		assertThat(broker.isOverlappingPeriodAllowed()).isTrue();
+		assertThat(broker.getEnrollmentStartDate()).isNull();
 		assertThat(broker.getEnrollmentDoneDate()).isNull();
 	}
 	
