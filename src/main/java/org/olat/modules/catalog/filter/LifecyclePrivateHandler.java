@@ -98,8 +98,8 @@ public class LifecyclePrivateHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
 			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
 		return new FlexiTableDateRangeFilter(translator.translate("cif.dates"), TYPE,
-				catalogFilter.isDefaultVisible(), false, translator.translate("filter.lifecycle.private.begin"),
-				translator.translate("filter.lifecycle.private.end"), translator.getLocale());
+				catalogFilter.isDefaultVisible(), false, translator.translate("cif.dates"),
+				translator.translate("to.separator"), translator.getLocale());
 	}
 
 	@Override
