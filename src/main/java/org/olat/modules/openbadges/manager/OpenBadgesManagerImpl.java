@@ -732,7 +732,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		BadgeClassImpl targetClass = new BadgeClassImpl();
 		targetClass.setEntry(targetEntry);
 		targetClass.setUuid(OpenBadgesFactory.createIdentifier());
-		targetClass.setRootId(targetClass.getRootId());
+		targetClass.setRootId(targetClass.getUuid());
 		targetClass.setVersion(OpenBadgesFactory.getDefaultVersion());
 
 		copyBadgeClassFields(sourceClass, targetClass);
