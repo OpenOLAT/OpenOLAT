@@ -694,6 +694,17 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}).toList();
 	}
 
+	@Override
+	public BadgeClass badgeClassForExport(BadgeClass sourceBadgeClass) {
+		BadgeClassImpl targetClass = new BadgeClassImpl();
+		targetClass.setUuid(sourceBadgeClass.getUuid());
+		targetClass.setRootId(targetClass.getUuid());
+
+		copyBadgeClassFields(sourceBadgeClass, targetClass);
+		
+		return targetClass;
+	}
+
 	/**
 	 * Copies fields from a 'sourceClass' to a 'targetClass'.
 	 * The 'targetClass' must have the fields 'uuid' and 'entry' set already. All other fields in

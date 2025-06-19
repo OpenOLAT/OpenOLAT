@@ -244,9 +244,14 @@ public interface OpenBadgesManager {
 
 	void copyConfigurationAndBadgeClasses(RepositoryEntry sourceEntry, RepositoryEntry targetEntry, Identity author);
 
+	//
+ 	// Import / export
+ 	//
 	void importConfiguration(RepositoryEntry targetEntry, BadgeEntryConfiguration configuration);
 
 	void importBadgeClasses(RepositoryEntry targetEntry, BadgeClasses badgeClasses, File fImportBaseDirectory, Identity author);
+
+	BadgeClass badgeClassForExport(BadgeClass sourceBadgeClass);
 
 	//
 	// Organizations

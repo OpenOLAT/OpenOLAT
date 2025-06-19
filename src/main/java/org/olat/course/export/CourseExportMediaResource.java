@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -323,7 +324,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 			log.info("badges: exported course badge configuration: {}", CourseHandler.BADGE_CONFIGURATION_XML);
 
 			// Badge images
-			BadgeClasses badgeClasses = new BadgeClasses(openBadgesManager.getBadgeClasses(entry));
+			BadgeClasses badgeClasses = new BadgeClasses(openBadgesManager.getBadgeClasses(entry).stream().map(openBadgesManager::badgeClassForExport).collect(Collectors.toList()));
 			for (BadgeClass badgeClass : badgeClasses.getItems()) {
 				VFSLeaf leaf = openBadgesManager.getBadgeClassVfsLeaf(badgeClass.getImage());
 				if (leaf != null) {
