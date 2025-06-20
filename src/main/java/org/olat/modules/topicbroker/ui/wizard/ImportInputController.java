@@ -99,6 +99,7 @@ public class ImportInputController extends StepFormBasicController {
 		FormLayoutContainer topicsLayout = FormLayoutContainer.createDefaultFormLayout("importLayout", getTranslator());
 		topicsLayout.setFormTitle(translate("import.topics.title"));
 		topicsLayout.setFormDescription(translate("import.topics.desc", TBUIFactory.getImportColumns(getTranslator(), definitions)));
+		topicsLayout.setFormContextHelp("manual_user/learningresources/Course_Element_Topic_Broker/#topic_broker_export_import_topics");
 		topicsLayout.setRootForm(formLayout.getRootForm());
 		formLayout.add(topicsLayout);
 		
