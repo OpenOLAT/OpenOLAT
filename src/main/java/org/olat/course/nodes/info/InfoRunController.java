@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
@@ -63,6 +64,9 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,6 +88,10 @@ public class InfoRunController extends BasicController {
 	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
 	@Autowired
+	private RepositoryService reopsitoryService;
+	@Autowired
+	private ACService acService;
+	@Autowired
 	private CurriculumService curriculumService;
 
 	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
@@ -103,13 +111,14 @@ public class InfoRunController extends BasicController {
 		}
 		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
 
-		boolean autoSubscribe = InfoCourseNodeEditController.getAutoSubscribe(config);
+		boolean autoSubscribe = InfoCourseNodeEditController.getAutoSubscribe(config) 
+				&& (isMember(userCourseEnv) || isOpenAccess(ureq, userCourseEnv));
 		int maxResults = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_LENGTH, 10);
 		int duration = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_DURATION, 90);
 		
 		initVC(ureq, userCourseEnv, resSubPath, secCallback, autoSubscribe, maxResults, duration);
 	}
-	
+
 	private boolean canEdit(InfoCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (userCourseEnv.isAdmin()) {
 			return true;
@@ -132,6 +141,20 @@ public class InfoRunController extends BasicController {
 		}
 		
 		return nodeRightService.isGranted(courseNode.getModuleConfiguration(), userCourseEnv, InfoCourseNode.ADMIN);
+	}
+
+	private boolean isMember(UserCourseEnvironment userCourseEnv) {
+		return reopsitoryService.isMember(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+	}
+	
+	private boolean isOpenAccess(UserRequest ureq, UserCourseEnvironment userCourseEnv) {
+		if (ureq.getUserSession().getRoles() == null) {
+			return false;
+		}
+		
+		List<OLATResource> resourcesWithAC = List.of(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getOlatResource());
+		List<? extends OrganisationRef> organisations = ureq.getUserSession().getRoles().getOrganisations();
+		return !acService.filterResourceWithOpenAccess(resourcesWithAC, organisations).isEmpty();
 	}
 	
 	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
