@@ -162,7 +162,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public TBBroker updateBroker(Identity doer, TBBrokerRef broker, Integer maxSelections, Date selectionStartDate,
 			Date selectionEndDate, Integer requiredEnrollments, boolean participantCanEditRequiredEnrollments,
-			boolean autoEnrollment, boolean participantCanWithdraw, Date withdrawEndDate) {
+			boolean autoEnrollment, boolean overlappingPeriodAllowed, boolean participantCanWithdraw,
+			Date withdrawEndDate) {
 		TBBroker reloadedBroker = getBroker(broker);
 		if (reloadedBroker == null) {
 			return null;
@@ -194,8 +195,12 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			reloadedBroker.setAutoEnrollment(autoEnrollment);
 			contentChanged = true;
 		}
-		if (reloadedBroker.isParticipantCanWithdraw() != participantCanWithdraw) {
-			reloadedBroker.setParticipantCanWithdraw(participantCanWithdraw);
+		if (reloadedBroker.isAutoEnrollment() != autoEnrollment) {
+			reloadedBroker.setAutoEnrollment(autoEnrollment);
+			contentChanged = true;
+		}
+		if (reloadedBroker.isOverlappingPeriodAllowed() != overlappingPeriodAllowed) {
+			reloadedBroker.setOverlappingPeriodAllowed(overlappingPeriodAllowed);
 			contentChanged = true;
 		}
 		if (!Objects.equals(reloadedBroker.getWithdrawEndDate(), withdrawEndDate)) {

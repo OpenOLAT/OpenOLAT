@@ -1205,6 +1205,8 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 /* Topic broker */
 .o_icon_topicbroker { @include o-add-icon('clipboard-list');}
 .o_icon_tb_method { @include o-add-icon('shuffle');}
+.o_icon_tb_method_auto { @include o-add-icon('gears');}
+.o_icon_tb_method_namually { @include o-add-icon('user');}
 .o_icon_tb_broker_not_started { @include o-add-icon('circle');}
 .o_icon_tb_broker_selection_in_progress { @include o-add-icon('circle-play');}
 .o_icon_tb_broker_enrollment_in_progress { @include o-add-icon('hand-point-up');}

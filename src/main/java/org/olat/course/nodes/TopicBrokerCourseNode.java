@@ -94,7 +94,7 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implemen
 	public static final String TYPE = "topicbroker";
 	public static final String ICON_CSS = "o_icon_topicbroker";
 	
-	private static final int CURRENT_VERSION = 1;
+	private static final int CURRENT_VERSION = 2;
 	public static final String CONFIG_KEY_ENROLLMENTS_PER_PARTICIPANT = "enrollments.per.participant";
 	public static final String CONFIG_KEY_SELECTIONS_PER_PARTICIPANT = "selections.per.participant";
 	public static final String CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS = "participant.can.reduce.enrollments";
@@ -106,6 +106,7 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implemen
 	public static final String CONFIG_KEY_SELECTION_DURATION = "selection.duration";
 	public static final String CONFIG_KEY_SELECTION_END = "selection.end";
 	public static final String CONFIG_KEY_ENROLLMENT_AUTO = "enrollment.auto";
+	public static final String CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED = "overlapping.period.allowed";
 	// End date only for participants.
 	public static final String CONFIG_KEY_WITHDRAW_END = "withdraw.end";
 	public static final String CONFIG_KEY_WITHDRAW_END_RELATIVE = "withdraw.end.relative";
@@ -216,6 +217,9 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implemen
 			config.setBooleanEntry(CONFIG_KEY_ENROLLMENT_AUTO, false);
 			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+		}
+		if (config.getConfigurationVersion() < 2) {
+			config.setBooleanEntry(CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED, true);
 		}
 		// Configs are synchronized with TBBroker. If you add new configs, you probably
 		// have to upgrade the TBBroker with an Upgrader because the publish process is

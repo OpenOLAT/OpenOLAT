@@ -101,6 +101,7 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 				: Integer.valueOf(1);
 		boolean participantCanEditRequiredEnrollments = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS);
 		boolean autoEnrollment = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO);
+		boolean overlappingPeriodAllowed = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED);
 		
 		boolean participantCanWithdraw = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW);
 		
@@ -130,7 +131,7 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 		TBBroker broker = topicBrokerService.getOrCreateBroker(doer, courseEntry, courseNode.getIdent());
 		topicBrokerService.updateBroker(doer, broker, selectionsPerParticipant, selectionStartDate, selectionEndDate,
 				enrollmentsPerParticipant, participantCanEditRequiredEnrollments, autoEnrollment,
-				participantCanWithdraw, withdrawDate);
+				overlappingPeriodAllowed, participantCanWithdraw, withdrawDate);
 	}
 	
 	private void synchTopicBrokers(Long repositoryEntryKey, Long identityKey) {

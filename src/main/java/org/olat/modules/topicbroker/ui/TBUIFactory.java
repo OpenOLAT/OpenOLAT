@@ -298,9 +298,12 @@ public class TBUIFactory {
 			String methodAuto = broker.isAutoEnrollment()
 					? translator.translate("config.overview.method.auto")
 					: translator.translate("config.overview.method.manually");
+			String overlappingPeriodAllowed = broker.isOverlappingPeriodAllowed()
+					? translator.translate("config.overview.overlapping.allowed.yes")
+					: translator.translate("config.overview.overlapping.allowed.no");
 			infos += createInfo("o_icon_tb_method",
-					translator.translate("config.overview.method",
-					translator.translate("strategy.fair"), methodAuto));
+					translator.translate("config.overview.method.3",
+					translator.translate("strategy.fair"), methodAuto, overlappingPeriodAllowed));
 			
 		}
 		infos += createInfo("o_icon_calendar", translator.translate("config.overview.selection.period", 
