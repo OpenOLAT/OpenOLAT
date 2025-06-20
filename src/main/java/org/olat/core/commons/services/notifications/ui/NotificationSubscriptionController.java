@@ -64,6 +64,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.project.ProjProject;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -250,16 +251,20 @@ public class NotificationSubscriptionController extends FormBasicController {
 				subIdent = pub.getSubidentifier().replaceAll("\\D+", "");
 				titlePostFix = " (" + resourceType.substring(resourceType.indexOf("(")+1, resourceType.indexOf(")")) + ")";
 			}
-			CourseNode courseNode = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()))
-					.getRunStructure().getNode(subIdent);
-			String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() + titlePostFix : resourceType;
-			subRes.setI18nKey(courseNodeTitle);
-			if (!Objects.equals(resourceType, courseNodeTitle)) {
-				if (courseNode.getType().equals("ita")) {
-					subRes.setTooltip(resourceType);
-				} else if (courseNode.getType().equals("gta")) {
-					subRes.setTooltip(NewControllerFactory.translateResourceableTypeName("GroupTaskAssignment", getLocale()));
+			try {
+				ICourse course = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()));
+				CourseNode courseNode = course.getRunStructure().getNode(subIdent);
+				String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() + titlePostFix : resourceType;
+				subRes.setI18nKey(courseNodeTitle);
+				if (courseNode != null && !Objects.equals(resourceType, courseNodeTitle)) {
+					if (courseNode.getType().equals("ita")) {
+						subRes.setTooltip(resourceType);
+					} else if (courseNode.getType().equals("gta")) {
+						subRes.setTooltip(NewControllerFactory.translateResourceableTypeName("GroupTaskAssignment", getLocale()));
+					}
 				}
+			} catch (Exception e) {
+				subRes.setI18nKey("ERROR (" + resourceType + ")");
 			}
 		} else {
 			subRes.setI18nKey(resourceType);
