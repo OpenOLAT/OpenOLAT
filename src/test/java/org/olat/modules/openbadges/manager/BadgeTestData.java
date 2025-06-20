@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -57,6 +58,7 @@ public class BadgeTestData {
 		String issuer = "{\"name\":\"OpenOlat\",\"type\":\"Issuer\",\"@context\":\"https://w3id.org/openbadges/v2\",\"url\":\"https://test.openolat.org\"}";
 		badgeClassImpl.setIssuer(issuer);
 		badgeClassImpl.setEntry(entry);
+		badgeClassImpl.setVerificationMethod(BadgeVerification.hosted);
 
 		CoreSpringFactory.getImpl(BadgeClassDAO.class).createBadgeClass(badgeClassImpl);
 

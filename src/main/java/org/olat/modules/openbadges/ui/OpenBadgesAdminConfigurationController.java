@@ -110,6 +110,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 				verificationKV.values());
 		verificationEl.select(openBadgesModule.getVerification().name(), true);
 		verificationEl.addActionListener(FormEvent.ONCHANGE);
+		verificationEl.setHelpTextKey("verification.help", null);
 		
 		initTable(formLayout);
 
@@ -237,9 +238,6 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 	private void doVerification() {
 		BadgeVerification badgeVerification = BadgeVerification.valueOf(verificationEl.getSelectedKey());
 		openBadgesModule.setVerification(badgeVerification);
-		if (BadgeVerification.signed == badgeVerification) {
-			openBadgesManager.createSigningKeys(getIdentity());
-		}
 	}
 
 	private void doEdit(UserRequest ureq, LinkedInOrganizationRow row) {

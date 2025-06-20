@@ -169,9 +169,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final int MAX_BADGE_CLASS_IMAGE_WIDTH = 512;
 	private static final int MAX_BADGE_CLASS_IMAGE_HEIGHT = 512;
 
-	private static final String KEYS_VFS_FOLDER = "keys";
-	private static final String PUBLIC_KEY_FILE = "public.key";
-	private static final String PRIVATE_KEY_FILE = "private.key";
 	private static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n";
 	private static final String END_PUBLIC_KEY = "\n-----END PUBLIC KEY-----";
 	private static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\n";
@@ -725,6 +722,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		targetClass.setCriteria(sourceClass.getCriteria());
 		targetClass.setIssuer(cloneIssuerString(sourceClass.getIssuer(), targetClass.getEntry()));
 		targetClass.setImage(OpenBadgesFactory.createBadgeClassFileName(targetClass.getUuid(), sourceClass.getImage()));
+		targetClass.setVerificationMethod(sourceClass.getVerificationMethod());
 	}
 
 	private BadgeClass cloneBadgeClass(BadgeClass sourceClass, RepositoryEntry targetEntry, Identity author,
@@ -1147,7 +1145,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return null;
 		}
 
-		String verification = createVerificationObject();
+		String verification = createVerificationObject(badgeClass);
 		String recipientObject = createRecipientObject(recipient, badgeClass.getSalt());
 		if (recipientObject == null) {
 			return null;
@@ -1192,10 +1190,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return badgeAssertion;
 	}
 
-	public String createVerificationObject() {
-		String creator = BadgeVerification.signed.equals(openBadgesModule.getVerification()) ? 
-				OpenBadgesFactory.createPublicKeyUrl() : null;
-		return BadgeAssertionImpl.asVerificationObject(openBadgesModule.getVerification(), creator);
+	public String createVerificationObject(BadgeClass badgeClass) {
+		BadgeVerification verification = badgeClass.getVerificationMethod() != null ? badgeClass.getVerificationMethod() : BadgeVerification.hosted;
+		String creator = BadgeVerification.signed.equals(verification) ? OpenBadgesFactory.createPublicKeyUrl(badgeClass.getUuid()) : null;
+		return BadgeAssertionImpl.asVerificationObject(verification, creator);
 	}
 
 	private void recreateBadgeAssertionIfNeeded(Identity recipient, BadgeClass badgeClass, Date issuedOn, Identity awardedBy) {
@@ -1603,7 +1601,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (OpenBadgesFactory.isSvgFileName(badgeClassImage)) {
 			return createBakedSvgBadgeImage(badgeAssertion, savedBy);
 		} else if (OpenBadgesFactory.isPngFileName(badgeClassImage)) {
-			return createBakedPngBadgeImage(badgeAssertion, savedBy);
+			return createBakedPngBadgeImage(badgeAssertion);
 		}
 		return null;
 	}
@@ -1624,7 +1622,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private String createBakedSvgBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy, LocalFileImpl localFile)
 			throws IOException, JOSEException {
 		String svg = Files.readString(localFile.getBasefile().toPath());
-		String verifyValue = getVerifyValue(badgeAssertion, savedBy);
+		String verifyValue = getVerifyValue(badgeAssertion);
 		String assertionJson = getAssertionJson(badgeAssertion);
 		String bakedSvg = mergeSvg(svg, verifyValue, assertionJson);
 		InputStream inputStream = new ByteArrayInputStream(bakedSvg.getBytes(StandardCharsets.UTF_8));
@@ -1635,18 +1633,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return bakedImage;
 	}
 	
-	private String getVerifyValue(BadgeAssertion badgeAssertion, Identity doer) throws JOSEException {
-		return switch (openBadgesModule.getVerification()) {
-			case hosted -> OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
-			case signed -> createBadgeSignature(badgeAssertion, doer);
+	private String getVerifyValue(BadgeAssertion badgeAssertion) throws JOSEException {
+		return switch (badgeAssertion.getVerification()) {
+			case hosted -> OpenBadgesFactory.createAssertionUrl(badgeAssertion.getUuid());
+			case signed -> createBadgeSignature(badgeAssertion);
 		};
 	}
 
-	public String createBadgeSignature(BadgeAssertion badgeAssertion, Identity doer)
+	public String createBadgeSignature(BadgeAssertion badgeAssertion)
 			throws JOSEException {
 		Assertion assertion = new Assertion(badgeAssertion);
 		JSONObject assertionJsonObject = assertion.asJsonObject();
-		PrivateKey privateKey = getPrivateKey(doer);
+		PrivateKey privateKey = getPrivateKey(badgeAssertion.getBadgeClass());
 		JWSSigner jwsSigner = new RSASSASigner(privateKey);
 
 		JWSObject jwsObject = new JWSObject(
@@ -1658,7 +1656,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private String getAssertionJson(BadgeAssertion badgeAssertion) {
-		return switch (openBadgesModule.getVerification()) {
+		return switch (badgeAssertion.getVerification()) {
 			case hosted -> createBakedJsonString(badgeAssertion);
 			case signed -> null;
 		};
@@ -1696,7 +1694,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return sb.toString();
 	}
 
-	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy) {
+	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion) {
 		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
 		if (badgeClassImage == null) {
 			log.error("No image found for badge class {}", badgeAssertion.getBadgeClass().getUuid());
@@ -1709,7 +1707,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		try {
-			String textValue = createPngText(badgeAssertion, savedBy);
+			String textValue = createPngText(badgeAssertion);
 			IIOMetadata metadata = iioImage.getMetadata();
 			addNativePngTextEntry(metadata, "openbadges", textValue);
 			IIOImage bakedImage = new IIOImage(iioImage.getRenderedImage(), null, metadata);
@@ -1724,10 +1722,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 	
-	public String createPngText(BadgeAssertion badgeAssertion, Identity savedBy) throws JOSEException {
-		return switch (openBadgesModule.getVerification()) {
+	public String createPngText(BadgeAssertion badgeAssertion) throws JOSEException {
+		return switch (badgeAssertion.getVerification()) {
 			case hosted -> createBakedJsonString(badgeAssertion);
-			case signed -> createBadgeSignature(badgeAssertion, savedBy);
+			case signed -> createBadgeSignature(badgeAssertion);
 		};
 	}
 
@@ -1911,7 +1909,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public Set<Long> getBadgeAssertionIdentityKeys(String rootId) {
 		return badgeAssertionDAO.getBadgeAssertionIdentityKeys(rootId);
-	} 
+	}
+
+	@Override
+	public List<String> getRevokedBadgeAssertionIds(BadgeClass badgeClass) {
+		List<String> revokedBadgeAssertionUuids = badgeAssertionDAO.getRevokedBadgeAssertionUuids(badgeClass);
+		return revokedBadgeAssertionUuids.stream().map(OpenBadgesFactory::createAssertionUrl).toList();
+	}
 
 	@Override
 	public boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid) {
@@ -2297,98 +2301,69 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public BadgeSigningOrganization getSigningOrganization() {
-		String organizationUrl = OpenBadgesFactory.createOrganizationUrl();
-		String publicKeyUrl = OpenBadgesFactory.createPublicKeyUrl();
-		String revocationListUrl = OpenBadgesFactory.createRevocationListUrl();
+	public BadgeSigningOrganization getSigningOrganization(BadgeClass badgeClass) {
+		String organizationUrl = OpenBadgesFactory.createOrganizationUrl(badgeClass.getUuid());
+		String publicKeyUrl = OpenBadgesFactory.createPublicKeyUrl(badgeClass.getUuid());
+		String revocationListUrl = OpenBadgesFactory.createRevocationListUrl(badgeClass.getUuid());
 		return new BadgeSigningOrganization(organizationUrl, publicKeyUrl, revocationListUrl);
 	}
 
 	@Override
-	public BadgeCryptoKey getCryptoKey() {
-		String publicKeyUrl = OpenBadgesFactory.createPublicKeyUrl();
-		String organizationUrl = OpenBadgesFactory.createOrganizationUrl();
-		String publicKeyPem = getPublicKeyPem();
+	public BadgeCryptoKey getCryptoKey(BadgeClass badgeClass) {
+		String publicKeyUrl = OpenBadgesFactory.createPublicKeyUrl(badgeClass.getUuid());
+		String organizationUrl = OpenBadgesFactory.createOrganizationUrl(badgeClass.getUuid());
+		String publicKeyPem = getPublicKeyPem(badgeClass);
 		return new BadgeCryptoKey(publicKeyUrl, organizationUrl, publicKeyPem);
 	}
-	
-	private VFSContainer getKeysRootContainer() {
-		return VFSManager.olatRootContainer(File.separator + BADGES_VFS_FOLDER + File.separator + KEYS_VFS_FOLDER, null);
-	}
 
-	public PrivateKey getPrivateKey(Identity identity) {
-		createSigningKeys(identity);
-		String privateKeyPem = getPrivateKeyPem();
-		return CryptoUtil.string2PrivateKey(privateKeyPem);
-	}
-	
-	private String getPrivateKeyPem() {
-		VFSContainer container = getKeysRootContainer();
-		if (container.resolve(PRIVATE_KEY_FILE) instanceof VFSLeaf leaf) {
-			return FileUtils.load(leaf.getInputStream(), StandardCharsets.UTF_8.name());
-		}
-		return "";
-	}
-	
-	public PublicKey getPublicKey(Identity identity) {
-		createSigningKeys(identity);
-		String publicKeyPem = getPublicKeyPem();
-		return CryptoUtil.string2PublicKey(publicKeyPem);
-	}
-	
-	private String getPublicKeyPem() {
-		VFSContainer container = getKeysRootContainer();
-		if (container.resolve(PUBLIC_KEY_FILE) instanceof VFSLeaf leaf) {
-			return FileUtils.load(leaf.getInputStream(), StandardCharsets.UTF_8.name());
-		}
-		return "";
-	}
-	
 	@Override
-	public void createSigningKeys(Identity identity) {
-		VFSContainer container = getKeysRootContainer();
-		if (container.resolve(PUBLIC_KEY_FILE) != null && container.resolve(PRIVATE_KEY_FILE) != null) {
-			return;
+	public PrivateKey getPrivateKey(BadgeClass badgeClass) {
+		return CryptoUtil.string2PrivateKey(getPrivateKeyPem(badgeClass));
+	}
+
+	private String getPrivateKeyPem(BadgeClass badgeClass) {
+		if (StringHelper.containsNonWhitespace(badgeClass.getPrivateKey())) {
+			return badgeClass.getPrivateKey();
+		}
+		
+		if (createSigningKeys(badgeClass)) {
+			updateBadgeClass(badgeClass);
+		}
+		
+		return badgeClass.getPrivateKey();
+	}
+
+	@Override
+	public PublicKey getPublicKey(BadgeClass badgeClass) {
+		return CryptoUtil.string2PublicKey(getPublicKeyPem(badgeClass));
+	}
+
+	private String getPublicKeyPem(BadgeClass badgeClass) {
+		if (StringHelper.containsNonWhitespace(badgeClass.getPublicKey())) {
+			return badgeClass.getPublicKey();
+		}
+		
+		if (createSigningKeys(badgeClass)) {
+			updateBadgeClass(badgeClass);
 		}
 
-		boolean publicKeySuccess = false, privateKeySuccess = false;
-		String publicKeyPem, privateKeyPem;
-
+		return badgeClass.getPublicKey();
+	}
+	
+	private boolean createSigningKeys(BadgeClass badgeClass) {
 		try {
 			RSAKey rsaKey = new RSAKeyGenerator(2048).algorithm(JWSAlgorithm.RS256).generate();
 			byte[] data = rsaKey.toPublicKey().getEncoded();
 			String base64 = new String(Base64.getEncoder().encode(data));
-			publicKeyPem = BEGIN_PUBLIC_KEY + base64 + END_PUBLIC_KEY;
-			
+			badgeClass.setPublicKey(BEGIN_PUBLIC_KEY + base64 + END_PUBLIC_KEY);
+
 			data = rsaKey.toPrivateKey().getEncoded();
 			base64 = new String(Base64.getEncoder().encode(data));
-			privateKeyPem = BEGIN_PRIVATE_KEY + base64 + END_PRIVATE_KEY;
-			
+			badgeClass.setPrivateKey(BEGIN_PRIVATE_KEY + base64 + END_PRIVATE_KEY);
+			return true;
 		} catch (JOSEException e) {
 			log.error(e);
-			return;
-		}
-		
-		VFSLeaf publicLeaf = container.createChildLeaf("public.key");
-		try (InputStream publicKeyInputStream = new ByteArrayInputStream(publicKeyPem.getBytes(StandardCharsets.UTF_8))) {
-			if (VFSManager.copyContent(publicKeyInputStream, publicLeaf, identity)) {
-				publicKeySuccess = true;
-			}
-		} catch (Exception e) {
-			log.error(e);
-		}
-
-		VFSLeaf privateLeaf = container.createChildLeaf("private.key");
-		try (InputStream privateKeyInputStream = new ByteArrayInputStream(privateKeyPem.getBytes(StandardCharsets.UTF_8))) {
-			if (VFSManager.copyContent(privateKeyInputStream, privateLeaf, identity)) {
-				privateKeySuccess = true;
-			}
-		} catch (Exception e) {
-			log.error(e);
-		}
-		
-		if (!publicKeySuccess && !privateKeySuccess) {
-			publicLeaf.deleteSilently();
+			return false;
 		}
 	}
 }

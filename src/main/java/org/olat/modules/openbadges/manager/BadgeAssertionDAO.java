@@ -257,6 +257,18 @@ public class BadgeAssertionDAO {
 		return numberOfUnrevokedBadgeAssertions > 0;
 	}
 
+	public List<String> getRevokedBadgeAssertionUuids(BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct ba.uuid from badgeassertion ba ");
+		sb.where().append("ba.badgeClass.key = :badgeClassKey");
+		sb.and().append("ba.status = :status");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("badgeClassKey", badgeClass.getKey())
+				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
+				.getResultList();
+	}
+	
 	public BadgeAssertion updateBadgeAssertion(BadgeAssertion badgeAssertion) {
 		badgeAssertion.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(badgeAssertion);

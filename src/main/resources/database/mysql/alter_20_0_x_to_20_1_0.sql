@@ -9,6 +9,9 @@ create unique index idx_eva_surv_ppident_idx on o_eva_form_survey (e_public_part
 -- Badges
 alter table o_badge_class add column b_root_id varchar(36) default null;
 alter table o_badge_class add column b_version_type varchar(32) default null;
+alter table o_badge_class add column b_verification_method varchar(32) default 'hosted'; 
+alter table o_badge_class add column b_private_key text default null;
+alter table o_badge_class add column b_public_key text default null;
 alter table o_badge_class add column fk_previous_version bigint default null;
 alter table o_badge_class add column fk_next_version bigint default null;
 

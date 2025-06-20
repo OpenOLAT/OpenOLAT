@@ -20,6 +20,8 @@
 package org.olat.modules.openbadges;
 
 import java.io.File;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -199,6 +201,8 @@ public interface OpenBadgesManager {
 
 	Set<Long> getBadgeAssertionIdentityKeys(String rootId);
 
+	List<String> getRevokedBadgeAssertionIds(BadgeClass badgeClass);
+
 	boolean hasBadgeAssertion(Identity recipient, String badgeClassUuid);
 
 	boolean hasBadgeAssertion(Identity recipient, Long badgeClassKey);
@@ -271,11 +275,13 @@ public interface OpenBadgesManager {
 	//
  	// Signing
  	//
-	void createSigningKeys(Identity identity);
+	PrivateKey getPrivateKey(BadgeClass badgeClass);
 
-	BadgeCryptoKey getCryptoKey();
+	PublicKey getPublicKey(BadgeClass badgeClass);
+	
+	BadgeCryptoKey getCryptoKey(BadgeClass badgeClass);
 
-	BadgeSigningOrganization getSigningOrganization();
+	BadgeSigningOrganization getSigningOrganization(BadgeClass badgeClass);
 	
 	//
 	// Types

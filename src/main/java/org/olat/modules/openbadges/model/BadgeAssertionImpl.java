@@ -204,7 +204,7 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	public void setVerification(BadgeVerification value) {
 		String creator = null;
 		if (BadgeVerification.signed.equals(value)) {
-			creator = OpenBadgesFactory.createPublicKeyUrl();
+			creator = OpenBadgesFactory.createPublicKeyUrl(getBadgeClass().getUuid());
 		}
 		verificationObject = asVerificationObject(value, creator);
 	}

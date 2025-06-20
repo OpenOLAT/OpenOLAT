@@ -49,6 +49,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -259,6 +260,7 @@ public class CreateBadgeClassWizardContext {
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry, CourseNode courseNode,
 										 RepositoryEntrySecurity reSecurity, Translator translator) {
+		OpenBadgesModule openBadgesModule = CoreSpringFactory.getImpl(OpenBadgesModule.class);
 		this.entry = entry;
 		this.courseNode = courseNode;
 		this.reSecurity = reSecurity;
@@ -271,6 +273,7 @@ public class CreateBadgeClassWizardContext {
 		badgeClassImpl.setVersion(OpenBadgesFactory.getDefaultVersion());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
 		badgeClassImpl.setSalt(OpenBadgesFactory.createSalt(badgeClassImpl));
+		badgeClassImpl.setVerificationMethod(openBadgesModule.getVerification());
 		Profile issuer = new Profile(new JSONObject());
 		if (course != null) {
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
@@ -287,7 +290,7 @@ public class CreateBadgeClassWizardContext {
 		backgroundColorId = "gold";
 		title = translator.translate("var.title.default");
 		initCriteria();
-		issuer = new Profile(badgeClassImpl, false);
+		issuer = new Profile(badgeClassImpl);
 		badgeClass = badgeClassImpl;
 
 		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
@@ -310,7 +313,7 @@ public class CreateBadgeClassWizardContext {
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		automatic = badgeCriteria.isAwardAutomatically();
 		this.badgeClass = badgeClass;
-		issuer = new Profile(badgeClass, false);
+		issuer = new Profile(badgeClass);
 
 		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		locale = i18nManager.getLocaleOrDefault(badgeClass.getLanguage());

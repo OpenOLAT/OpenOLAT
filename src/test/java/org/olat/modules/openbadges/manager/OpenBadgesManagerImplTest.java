@@ -60,7 +60,6 @@ import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
-import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -90,7 +89,6 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,9 +123,6 @@ import org.xml.sax.SAXException;
 public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	@Autowired
-	OpenBadgesModule openBadgesModule;
-
-	@Autowired
 	OpenBadgesManager openBadgesManager;
 
 	@Autowired
@@ -151,32 +146,15 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	@Autowired
 	RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 
-	@After
-	public void tearDown() throws Exception {
-		List<BadgeAssertion> globalBadgeAssertions = badgeAssertionDAO.getBadgeAssertions(null, null, true);
-		for (BadgeAssertion globalBadgeAssertion : globalBadgeAssertions) {
-			badgeAssertionDAO.deleteBadgeAssertion(globalBadgeAssertion);
-		}
-
-		List<BadgeClass> globalBadgeClasses = badgeClassDAO.getBadgeClasses(null, false, false, true);
-		for (BadgeClass globalBadgeClass : globalBadgeClasses) {
-			badgeClassDAO.deleteBadgeClass(globalBadgeClass);
-		}
-	}
-
 	@Test
 	public void bakePngHosted() throws IOException, JOSEException {
-		BadgeVerification badgeVerification = openBadgesModule.getVerification();
-		openBadgesModule.setVerification(BadgeVerification.hosted);
-
+		
 		// Arrange
 
-		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-doer");
-
 		String uuid = OpenBadgesFactory.createIdentifier();
-		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
+		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid, false);
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
-		String textValue = ((OpenBadgesManagerImpl) openBadgesManager).createPngText(badgeAssertion, doer);
+		String textValue = ((OpenBadgesManagerImpl) openBadgesManager).createPngText(badgeAssertion);
 		String tmpFileName = uuid + ".png";
 
 		InputStream inputStream = OpenBadgesManagerImplTest.class.getResourceAsStream("test_badge.png");
@@ -206,28 +184,22 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertTrue(assertion.getId().endsWith(uuid));
 		Assert.assertEquals(badgeClass.getSalt(), assertion.getRecipient().getSalt());
 		Assert.assertTrue(badge.getImage().endsWith(badgeClass.getUuid()));
-
-		openBadgesModule.setVerification(badgeVerification);
 	}
 
 	@Test
 	public void bakePngSigned() throws IOException, JOSEException {
-		BadgeVerification badgeVerification = openBadgesModule.getVerification();
-		openBadgesModule.setVerification(BadgeVerification.signed);
-
+		
 		// Arrange
-
-		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-doer");
-
+		
 		String uuid = OpenBadgesFactory.createIdentifier();
-		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
-		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
-		String textValue = ((OpenBadgesManagerImpl) openBadgesManager).createPngText(badgeAssertion, doer);
+		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid, true);
+		String textValue = ((OpenBadgesManagerImpl) openBadgesManager).createPngText(badgeAssertion);
 		String tmpFileName = uuid + ".png";
 
 		InputStream inputStream = OpenBadgesManagerImplTest.class.getResourceAsStream("test_badge.png");
 		IIOImage iioImage = OpenBadgesManagerImpl.readIIOImage(inputStream);
 		IIOMetadata metadata = iioImage.getMetadata();
+		dbInstance.commit();
 
 		// Act
 
@@ -255,16 +227,18 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertTrue(payload.getString("id").endsWith(uuid));
 		JSONObject verification = payload.getJSONObject("verification");
 		Assert.assertEquals("signed", verification.getString("type"));
-		
-		openBadgesModule.setVerification(badgeVerification);
 	}
 
-	private BadgeAssertion createBadgeAssertion(String uuid) {
-		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("PNG badge", "image.png", null);
+	private BadgeAssertion createBadgeAssertion(String uuid, boolean signed) {
+		BadgeClassImpl badgeClassImpl = BadgeTestData.createTestBadgeClass("PNG badge " + (signed ? "signed" : "hosted"), "image.png", null);
+		if (signed) {
+			badgeClassImpl.setVerificationMethod(BadgeVerification.signed);
+		}
 		Identity recipient = JunitTestHelper.createAndPersistIdentityAsUser("badgeRecipient");
 		String recipientObject = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeClassImpl.getSalt());
-		String verification = ((OpenBadgesManagerImpl) openBadgesManager).createVerificationObject();
+		String verification = ((OpenBadgesManagerImpl) openBadgesManager).createVerificationObject(badgeClassImpl);
 		Date issuedOn = new Date();
+		badgeClassDAO.updateBadgeClass(badgeClassImpl);
 
 		return badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClassImpl,
 				verification, issuedOn, recipient, null);
@@ -272,13 +246,10 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	@Test
 	public void bakeSvgHosted() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
-		BadgeVerification badgeVerification = openBadgesModule.getVerification();
-		openBadgesModule.setVerification(BadgeVerification.hosted);
-
 		String svg = createTestSvg();
 		String verifyValue = "https://test.openolat.org/badge/assertion/123";
 		String assertionUuid = OpenBadgesFactory.createIdentifier();
-		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid);
+		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid, false);
 		Assertion assertion = new Assertion(badgeAssertion);
 		String assertionJson = assertion.asJsonObject().toString();
 
@@ -303,8 +274,6 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		String verify = ((Element) openBadgesNode).getAttribute("verify");
 		Assert.assertNotNull(verify);
 		Assert.assertEquals(verifyValue, verify);
-
-		openBadgesModule.setVerification(badgeVerification);
 	}
 	
 	private Node findFirstNonTextNode(Node node) {
@@ -334,17 +303,14 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	public void bakeSvgSigned() throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, JOSEException {
 		
 		// arrange
-		BadgeVerification badgeVerification = openBadgesModule.getVerification();
-		openBadgesModule.setVerification(BadgeVerification.signed);
 
-		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-doer");
 		OpenBadgesManagerImpl managerImpl = (OpenBadgesManagerImpl) openBadgesManager;;
 		
 		String svg = createTestSvg();
 		
 		String assertionUuid = OpenBadgesFactory.createIdentifier(); 
-		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid);
-		String verifyValue = managerImpl.createBadgeSignature(badgeAssertion, doer);
+		BadgeAssertion badgeAssertion = createBadgeAssertion(assertionUuid, true);
+		String verifyValue = managerImpl.createBadgeSignature(badgeAssertion);
 		
 		// act
 		
@@ -378,12 +344,11 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertTrue(id.endsWith(assertionUuid));
 		JSONObject verification = payload.getJSONObject("verification");
 		Assert.assertEquals("signed", verification.getString("type"));
-		
-		openBadgesModule.setVerification(badgeVerification);
 	}
 
 	@Test
 	public void copyConfigurationAndBadgeClasses() {
+
 		// arrange
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-class-author-1");
 		RepositoryEntry sourceEntry = JunitTestHelper.createRandomRepositoryEntry(author);
@@ -694,6 +659,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 	
 	@Test
 	public void signBadgePrep() throws Exception {
+
 		// arrange
 
 		// create a private / public key
@@ -742,14 +708,14 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 	@Test
 	public void signBadge() throws Exception {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-admin-1");
 		OpenBadgesManagerImpl openBadgesManagerImpl = (OpenBadgesManagerImpl)openBadgesManager;
 
-		PrivateKey privateKey = openBadgesManagerImpl.getPrivateKey(author);
+		String uuid = OpenBadgesFactory.createIdentifier();
+		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid, true);
+
+		PrivateKey privateKey = openBadgesManagerImpl.getPrivateKey(badgeAssertion.getBadgeClass());
 		JWSSigner jwsSigner = new RSASSASigner(privateKey);
 
-		String uuid = OpenBadgesFactory.createIdentifier();
-		BadgeAssertion badgeAssertion = createBadgeAssertion(uuid);
 		Assertion assertion = new Assertion(badgeAssertion);
 		JSONObject assertionJsonObject = assertion.asJsonObject();
 		
@@ -765,7 +731,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 		boolean success = false;
 
-		PublicKey publicKey = openBadgesManagerImpl.getPublicKey(author);
+		PublicKey publicKey = openBadgesManagerImpl.getPublicKey(badgeAssertion.getBadgeClass());
 		if (publicKey instanceof RSAPublicKey rsaPublicKey) {
 			RSASSAVerifier verifier = new RSASSAVerifier(rsaPublicKey);
 			success = signedJWT.verify(verifier);
@@ -773,5 +739,4 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 
 		Assert.assertTrue(success);
 	}
-
 }

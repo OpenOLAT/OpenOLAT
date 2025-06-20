@@ -22,6 +22,7 @@ package org.olat.modules.openbadges.v2;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.model.BadgeSigningOrganization;
 
@@ -90,11 +91,12 @@ public class Profile {
 		}
 	}
 
-	public Profile(BadgeClass badgeClass, boolean signedVerification) {
+	public Profile(BadgeClass badgeClass) {
 		this(new JSONObject(badgeClass.getIssuer()));
 		setId(OpenBadgesFactory.createIssuerUrl(badgeClass.getUuid()));
-		if (signedVerification) {
-			setPublicKey(OpenBadgesFactory.createPublicKeyUrl());
+		if (BadgeVerification.signed.equals(badgeClass.getVerificationMethod())) {
+			setPublicKey(OpenBadgesFactory.createPublicKeyUrl(badgeClass.getUuid()));
+			setRevocationList(OpenBadgesFactory.createRevocationListUrl(badgeClass.getUuid()));
 		}
 	}
 	

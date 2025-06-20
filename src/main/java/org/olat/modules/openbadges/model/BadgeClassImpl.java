@@ -28,6 +28,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeOrganization;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -125,7 +126,17 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Enumerated(EnumType.STRING)
 	@Column(name="b_version_type", nullable = true, insertable = true, updatable = true)
 	private BadgeClassVersionType versionType;
-
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name="b_verification_method", nullable = true, insertable = true, updatable = true)
+	private BadgeVerification verificationMethod;
+	
+	@Column(name="b_private_key", nullable = true, insertable = true, updatable = true)
+	private String privateKey;
+	
+	@Column(name="b_public_key", nullable = true, insertable = true, updatable = true)
+	private String publicKey;
+	
 	@ManyToOne(targetEntity = RepositoryEntry.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_entry", nullable = true, insertable = true, updatable = true)
 	private RepositoryEntry entry;
@@ -223,6 +234,36 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	@Override
+	public BadgeVerification getVerificationMethod() {
+		return verificationMethod;
+	}
+
+	@Override
+	public void setVerificationMethod(BadgeVerification verificationMethod) {
+		this.verificationMethod = verificationMethod;
+	}
+
+	@Override
+	public String getPrivateKey() {
+		return privateKey;
+	}
+
+	@Override
+	public void setPrivateKey(String privateKey) {
+		this.privateKey = privateKey;
+	}
+
+	@Override
+	public String getPublicKey() {
+		return publicKey;
+	}
+
+	@Override
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
 	}
 
 	@Override

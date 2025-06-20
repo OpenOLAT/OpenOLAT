@@ -22,6 +22,7 @@ package org.olat.modules.openbadges;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
@@ -53,6 +54,7 @@ import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Criteria;
 import org.olat.modules.openbadges.v2.CryptographicKey;
 import org.olat.modules.openbadges.v2.Profile;
+import org.olat.modules.openbadges.v2.RevocationList;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -107,6 +109,8 @@ public class OpenBadgesDispatcher implements Dispatcher {
 			handleKey(response, commandUri.substring(OpenBadgesFactory.KEY_PATH.length()));
 		} else if (commandUri.startsWith(OpenBadgesFactory.ORGANIZATION_PATH)) {
 			handleOrganization(response, commandUri.substring(OpenBadgesFactory.ORGANIZATION_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.REVOCATION_LIST_PATH)) {
+			handleRevocationList(response, commandUri.substring(OpenBadgesFactory.REVOCATION_LIST_PATH.length()));
 		}
 	}
 
@@ -241,9 +245,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 
 		try {
-			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey();
-			boolean signedVerification = StringHelper.containsNonWhitespace(badgeCryptoKey.publicKeyPem());
-			Badge badge = new Badge(badgeClass, signedVerification);
+			Badge badge = new Badge(badgeClass);
 			JSONObject jsonObject = badge.asJsonObject();
 			jsonObject.write(response.getWriter());
 			response.setContentType("application/json; charset=utf-8");
@@ -262,9 +264,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 
 		try {
-			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey();
-			boolean signedVerification = StringHelper.containsNonWhitespace(badgeCryptoKey.publicKeyPem());
-			Badge badge = new Badge(badgeClass, signedVerification);
+			Badge badge = new Badge(badgeClass);
 			JSONObject jsonObject = badge.asJsonObject();
 			JSONObject issuerObject = jsonObject.getJSONObject("issuer");
 			issuerObject.write(response.getWriter());
@@ -387,15 +387,29 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void handleKey(HttpServletResponse response, String file) {
-		if (!OpenBadgesFactory.PUBLIC_KEY_JSON.equals(file)) {
+	private void handleKey(HttpServletResponse response, String relativePath) {
+		if (!relativePath.endsWith(OpenBadgesFactory.PUBLIC_KEY_JSON) || relativePath.equals(OpenBadgesFactory.PUBLIC_KEY_JSON)) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find public key file");
 			return;
 		}
-		
+
+		String uuid = relativePath.substring(0, relativePath.length() - OpenBadgesFactory.PUBLIC_KEY_JSON.length() - 1);
+		if (!StringHelper.containsNonWhitespace(uuid)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find UUID for public key file");
+			return;
+		}
+
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
+		if (badgeClass == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find public key file for badge class with UUID {}", uuid);
+			return;
+		}
+
 		try {
-			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey();
+			BadgeCryptoKey badgeCryptoKey = openBadgesManager.getCryptoKey(badgeClass);
 			CryptographicKey cryptographicKey = new CryptographicKey(badgeCryptoKey);
 			JSONObject jsonObject = cryptographicKey.asJsonObject();
 			jsonObject.write(response.getWriter());
@@ -406,15 +420,63 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 	}
 	
-	private void handleOrganization(HttpServletResponse response, String file) {
-		if (!OpenBadgesFactory.ORGANIZATION_JSON.equals(file)) {
+	private void handleRevocationList(HttpServletResponse response, String relativePath) {
+		if (!relativePath.endsWith(OpenBadgesFactory.REVOCATION_LIST_JSON) || relativePath.equals(OpenBadgesFactory.REVOCATION_LIST_JSON)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find revocation file");
+			return;
+		}
+
+		String uuid = relativePath.substring(0, relativePath.length() - OpenBadgesFactory.REVOCATION_LIST_JSON.length() - 1);
+		if (!StringHelper.containsNonWhitespace(uuid)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find UUID for revocation list file");
+			return;
+		}
+
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
+		if (badgeClass == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find revocation list file for badge class with UUID {}", uuid);
+			return;
+		}
+
+		try {
+			List<String> revocationUuids = openBadgesManager.getRevokedBadgeAssertionIds(badgeClass);
+			String issuerUrl = OpenBadgesFactory.createIssuerUrl(badgeClass.getUuid());
+			RevocationList revocationList = new RevocationList(badgeClass.getUuid(), issuerUrl, revocationUuids);
+			JSONObject jsonObject = revocationList.asJsonObject();
+			jsonObject.write(response.getWriter());
+			response.setContentType("application/json; charset=utf-8");
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			log.warn("Could not find revocation list file", e);
+		}
+	}
+	
+	private void handleOrganization(HttpServletResponse response, String relativePath) {
+		if (!relativePath.endsWith(OpenBadgesFactory.ORGANIZATION_JSON) || relativePath.equals(OpenBadgesFactory.ORGANIZATION_JSON)) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find organization file");
 			return;
 		}
-		
+
+		String uuid = relativePath.substring(0, relativePath.length() - OpenBadgesFactory.PUBLIC_KEY_JSON.length() - 1);
+		if (!StringHelper.containsNonWhitespace(uuid)) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find UUID for organization file");
+			return;
+		}
+
+		BadgeClass badgeClass = openBadgesManager.getBadgeClassByUuid(uuid);
+		if (badgeClass == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find organization file for badge class with UUID {}", uuid);
+			return;
+		}
+
 		try {
-			BadgeSigningOrganization badgeSigningOrganization = openBadgesManager.getSigningOrganization();
+			BadgeSigningOrganization badgeSigningOrganization = openBadgesManager.getSigningOrganization(badgeClass);
 			Profile profile = new Profile(badgeSigningOrganization);
 			JSONObject jsonObject = profile.asJsonObject(Constants.TYPE_VALUE_ISSUER);
 			jsonObject.write(response.getWriter());

@@ -74,6 +74,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 	private FormLink courseEl;
 	private StaticTextElement validityPeriodEl;
 	private StaticTextElement issuerEl;
+	private StaticTextElement verificationEl;
 	private StaticTextElement languageEl;
 	private StaticTextElement versionEl;
 	private FormLink recipientsEl;
@@ -114,6 +115,7 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 				Formatter.getInstance(getLocale()).formatDateAndTime(badgeClass.getCreationDate()), formLayout);
 		validityPeriodEl = uifactory.addStaticTextElement("form.valid", "", formLayout);
 		issuerEl = uifactory.addStaticTextElement("class.issuer", "", formLayout);
+		verificationEl = uifactory.addStaticTextElement("verification", "", formLayout);
 		languageEl = uifactory.addStaticTextElement("form.language", "", formLayout);
 		versionEl = uifactory.addStaticTextElement("form.version", "", formLayout);
 		versionEl.setVisible(badgeClass.getPreviousVersion() != null);
@@ -176,6 +178,8 @@ public class BadgeDetailsOverviewController extends FormBasicController {
 
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
 		issuerEl.setValue(issuer.getNameWithScan());
+		
+		verificationEl.setValue(translate("verification." + badgeClass.getVerificationMethod().name()));
 
 		if (badgeClass.getLanguage() != null) {
 			String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());

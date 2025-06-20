@@ -119,7 +119,7 @@ public class Badge {
 		}
 	}
 
-	public Badge(BadgeClass badgeClass, boolean signedVerification) {
+	public Badge(BadgeClass badgeClass) {
 		setId(OpenBadgesFactory.createBadgeClassUrl(badgeClass.getUuid()));
 		setUuid(badgeClass.getUuid());
 		setRootId(badgeClass.getRootId());
@@ -129,7 +129,7 @@ public class Badge {
 		setDescription(badgeClass.getDescriptionWithScan());
 		setImage(badgeClass.getImage());
 		setCriteria(new Criteria(badgeClass));
-		setIssuer(new Profile(badgeClass, signedVerification));
+		setIssuer(new Profile(badgeClass));
 	}
 
 	public JSONObject asJsonObject() {

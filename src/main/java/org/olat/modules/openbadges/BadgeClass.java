@@ -73,6 +73,18 @@ public interface BadgeClass {
 	
 	void setVersion(String version);
 
+	BadgeVerification getVerificationMethod();
+
+	void setVerificationMethod(BadgeVerification verificationMethod);
+
+	String getPrivateKey();
+
+	void setPrivateKey(String privateKey);
+
+	String getPublicKey();
+
+	void setPublicKey(String publicKey);
+
 	String getLanguage();
 
 	void setLanguage(String language);

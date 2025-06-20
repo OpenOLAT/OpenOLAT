@@ -59,12 +59,12 @@ public class OpenBadgesFactory {
 		return "png".equalsIgnoreCase(suffix);
 	}
 
-	public static String createAssertionVerifyUrl(String identifier) {
+	public static String createAssertionUrl(String identifier) {
 		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ASSERTION_PATH + identifier;
 	}
 
 	public static String createAssertionPublicUrl(String identifier) {
-		return createAssertionVerifyUrl(identifier) + WEB_SUFFIX;
+		return createAssertionUrl(identifier) + WEB_SUFFIX;
 	}
 
 	public static String createBadgeClassUrl(String identifier) {
@@ -83,16 +83,16 @@ public class OpenBadgesFactory {
 		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ISSUER_PATH + identifier;
 	}
 	
-	public static String createPublicKeyUrl() {
-		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + KEY_PATH + PUBLIC_KEY_JSON;
+	public static String createPublicKeyUrl(String badgeClassUuid) {
+		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + KEY_PATH + badgeClassUuid + "/" + PUBLIC_KEY_JSON;
 	}
 	
-	public static String createOrganizationUrl() {
-		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ORGANIZATION_PATH + ORGANIZATION_JSON;
+	public static String createOrganizationUrl(String badgeClassUuid) {
+		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + ORGANIZATION_PATH + badgeClassUuid + "/" + ORGANIZATION_JSON;
 	}
 	
-	public static String createRevocationListUrl() {
-		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + REVOCATION_LIST_PATH + REVOCATION_LIST_JSON;
+	public static String createRevocationListUrl(String badgeClassUuid) {
+		return Settings.getServerContextPathURI() + "/" + BADGE_PATH + REVOCATION_LIST_PATH + badgeClassUuid + "/" + REVOCATION_LIST_JSON;
 	}
 
 	public static String createSalt(BadgeClass badgeClass) {

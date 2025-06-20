@@ -105,7 +105,18 @@
 			</div>
 		</div>
 		#end
-		
+
+		#if($r.available("verification") && $r.visible("verification"))
+		<div class="o_badge_details_metadata_item">
+			<div class="o_badge_details_label_wrapper">
+				$r.render("verification", "label")
+			</div>
+			<div class="o_badge_details_value_wrapper">
+				$r.render("verification")
+			</div>
+		</div>
+		#end
+
 		#if($r.available("form.valid") && $r.visible("form.valid"))
 		<div class="o_badge_details_metadata_item">
 			<div class="o_badge_details_label_wrapper">
