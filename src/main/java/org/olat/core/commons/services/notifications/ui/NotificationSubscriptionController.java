@@ -52,7 +52,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -113,11 +112,6 @@ public class NotificationSubscriptionController extends FormBasicController {
 		super(ureq, wControl, fieldSet ? "notificationsSubscriptionsField" : "notificationsSubscriptions");
 		this.subscriberIdentity = subscriberIdentity;
 		this.adminColumns = adminColumns;
-
-		// Build the table that contains all the subscriptions
-		TableGuiConfiguration tableGuiPrefs = new TableGuiConfiguration();
-		tableGuiPrefs.setTableEmptyMessage(translate("subscriptions.no.subscriptions"), translate("subscriptions.no.subscriptions.hint"), "o_icon_notification");
-		tableGuiPrefs.setPreferencesOffered(true, "notifications-" + adminColumns);
 
 		initForm(ureq);
 	}
@@ -254,7 +248,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 			try {
 				ICourse course = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()));
 				CourseNode courseNode = course.getRunStructure().getNode(subIdent);
-				String courseNodeTitle = courseNode != null ? courseNode.getLongTitle() + titlePostFix : resourceType;
+				String courseNodeTitle = courseNode != null ? StringHelper.escapeHtml(courseNode.getLongTitle()) + titlePostFix : resourceType;
 				subRes.setI18nKey(courseNodeTitle);
 				if (courseNode != null && !Objects.equals(resourceType, courseNodeTitle)) {
 					if (courseNode.getType().equals("ita")) {
