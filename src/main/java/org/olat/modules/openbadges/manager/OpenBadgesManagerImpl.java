@@ -2049,7 +2049,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return VFSManager.olatRootContainer(File.separator + BADGES_VFS_FOLDER + File.separator + ASSERTIONS_VFS_FOLDER, null);
 	}
 
-	static NamedNodeMap findOpenBadgesTextChunk(InputStream inputStream) {
+	public static NamedNodeMap findOpenBadgesTextChunk(InputStream inputStream) {
 		IIOImage iioImage = readIIOImage(inputStream);
 		if (iioImage == null) {
 			return null;

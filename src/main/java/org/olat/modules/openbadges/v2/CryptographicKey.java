@@ -42,6 +42,34 @@ public class CryptographicKey {
 		publicKeyPem = badgeCryptoKey.publicKeyPem();
 	}
 	
+	public CryptographicKey(JSONObject jsonObject) throws IllegalArgumentException {
+		for (String key : jsonObject.keySet()) {
+			if (Constants.ID_KEY.equals(key)) {
+				if (jsonObject.get(Constants.ID_KEY) instanceof String idString) {
+					setId(idString);
+				} else {
+					throw new IllegalArgumentException("Invalid cryptographic key ID.");
+				}
+			} else if (Constants.TYPE_KEY.equals(key)) {
+				if (!TYPE_VALUE.equals(jsonObject.get(Constants.TYPE_KEY))) {
+					throw new IllegalArgumentException("Only type 'CryptographicKey' is supported.");
+				}
+			} else if (OWNER_KEY.equals(key)) {
+				if (jsonObject.get(OWNER_KEY) instanceof String ownerString) {
+					setOwner(ownerString);
+				} else {
+					throw new IllegalArgumentException("Invalid cryptographic key owner.");
+				}
+			} else if (PUBLIC_KEY_PEM_KEY.equals(key)) {
+				if (jsonObject.get(PUBLIC_KEY_PEM_KEY) instanceof String publicKeyPem) {
+					setPublicKeyPem(publicKeyPem);
+				} else {
+					throw new IllegalArgumentException("Invalid cryptographic key publicKeyPem.");
+				}
+			}
+		}
+	}
+	
 	public JSONObject asJsonObject() {
 		JSONObject jsonObject = new JSONObject();
 		

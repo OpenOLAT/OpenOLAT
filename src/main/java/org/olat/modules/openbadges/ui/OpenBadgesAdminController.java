@@ -53,6 +53,7 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 	private final static String TYPE_TEMPLATES = "Templates";
 	private final static String TYPE_GLOBAL_BADGES = "GlobalBadges";
 	private final static String TYPE_ISSUED_GLOBAL_BADGES = "IssuedGlobalBadges";
+	private final static String TYPE_VERIFICATION = "Verification";
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -60,11 +61,13 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 	private final Link templatesLink;
 	private final Link globalBadgesLink;
 	private final Link issuedGlobalBadgesLink;
+	private final Link verificationLink;
 	private OpenBadgesAdminConfigurationController configCtrl;
 	private OpenBadgesAdminTemplatesController templatesCtrl;
 	private BadgeClassesController globalBadgesCtrl;
 	private BreadcrumbedStackedPanel stackPanel;
 	private IssuedGlobalBadgesController badgeAssertionsController;
+	private OpenBadgesVerificationController verificationCtrl;
 
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
@@ -86,6 +89,9 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		issuedGlobalBadgesLink = LinkFactory.createLink("issuedGlobalBadges", mainVC, this);
 		issuedGlobalBadgesLink.setElementCssClass("o_sel_openbadges_issued");
 		segmentView.addSegment(issuedGlobalBadgesLink, false);
+		verificationLink = LinkFactory.createLink("verification", mainVC, this);
+		verificationLink.setElementCssClass("o_sel_openbadges_verification");
+		segmentView.addSegment(verificationLink, false);
 		doOpenConfiguration(ureq);
 
 		updateUI();
@@ -107,6 +113,8 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 					doOpenGlobalBadges(ureq, null, null);
 				} else if (clickedLink == issuedGlobalBadgesLink) {
 					doOpenIssuedGlobalBadges(ureq);
+				} else if (clickedLink == verificationLink) {
+    				doOpenVerification(ureq);
 				}
 			}
 		}
@@ -148,6 +156,9 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		} else if (TYPE_ISSUED_GLOBAL_BADGES.equalsIgnoreCase(type)) {
 			doOpenIssuedGlobalBadges(ureq);
 			segmentView.select(issuedGlobalBadgesLink);
+		} else if (TYPE_VERIFICATION.equalsIgnoreCase(type)) {
+    		doOpenVerification(ureq);
+    		segmentView.select(verificationLink);
 		}
 	}
 
@@ -193,5 +204,13 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		badgeAssertionsController = new IssuedGlobalBadgesController(ureq, windowControl);
 		listenTo(badgeAssertionsController);
 		mainVC.put("segmentCmp", badgeAssertionsController.getInitialComponent());
+	}
+
+	private void doOpenVerification(UserRequest ureq) {
+		removeAsListenerAndDispose(verificationCtrl);
+		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(TYPE_VERIFICATION, 0L), null);
+		verificationCtrl = new OpenBadgesVerificationController(ureq, windowControl);
+		listenTo(verificationCtrl);
+		mainVC.put("segmentCmp", verificationCtrl.getInitialComponent());
 	}
 }

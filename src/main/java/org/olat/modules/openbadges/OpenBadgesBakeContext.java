@@ -54,6 +54,19 @@ public class OpenBadgesBakeContext {
 		setText("");
 	}
 
+	public static BadgeVerification getVerification(NamedNodeMap attributes) {
+		Node node = attributes.getNamedItem(TEXT_KEY);
+		if (node == null) {
+			return null;
+		}
+		String text = node.getNodeValue();
+		String parts[] = text.split("\\.");
+		if (parts.length == 3) {
+			return BadgeVerification.signed;
+		}
+		return BadgeVerification.hosted;
+	}
+	
 	public OpenBadgesBakeContext(NamedNodeMap attributes, BadgeVerification verification) throws IllegalArgumentException {
 		this();
 		this.verification = verification;
