@@ -154,7 +154,7 @@ public class InfoRunController extends BasicController {
 		
 		List<OLATResource> resourcesWithAC = List.of(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getOlatResource());
 		List<? extends OrganisationRef> organisations = ureq.getUserSession().getRoles().getOrganisations();
-		return !acService.filterResourceWithOpenAccess(resourcesWithAC, organisations).isEmpty();
+		return !acService.filterResourceWithOpenAccess(resourcesWithAC, null, organisations).isEmpty();
 	}
 	
 	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
