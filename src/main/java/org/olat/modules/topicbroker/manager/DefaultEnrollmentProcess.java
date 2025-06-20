@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateRange;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentProcess;
@@ -532,8 +533,8 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 			minParticipants = topic.getMinParticipants() != null? topic.getMinParticipants().intValue(): 0;
 			maxParticipants = topic.getMaxParticipants() != null? topic.getMaxParticipants().intValue(): 0;
 			if (topic.getBeginDate() != null || topic.getEndDate() != null) {
-				Date begin = topic.getBeginDate() != null? topic.getBeginDate(): TOPIC_START_INFINITY;
-				Date end = topic.getEndDate() != null? topic.getEndDate(): TOPIC_END_INFINITY;
+				Date begin = topic.getBeginDate() != null? DateUtils.setTime(topic.getBeginDate(), 0, 0, 0): TOPIC_START_INFINITY;
+				Date end = topic.getEndDate() != null? DateUtils.setTime(topic.getEndDate(), 23, 59, 59): TOPIC_END_INFINITY;
 				period = new DateRange(begin, end);
 			}
 		}

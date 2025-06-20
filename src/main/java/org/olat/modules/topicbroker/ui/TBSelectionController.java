@@ -21,7 +21,10 @@ package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,6 +89,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Roles;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
@@ -121,6 +125,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TBSelectionController extends FormBasicController implements FlexiTableComponentDelegate, GenericEventListener {
 	
+	private static final Date TOPIC_START_INFINITY = new GregorianCalendar(2000, Calendar.JANUARY, 1).getTime();
+	private static final Date TOPIC_END_INFINITY = new GregorianCalendar(2099, Calendar.DECEMBER, 31).getTime();
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_ENROLLED = "Enrolled";
 	private static final String TAB_ID_NOT_ENROLLED = "NotEnrolled";
@@ -833,18 +839,71 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			flc.contextPut("selectionSuccess", selectionSuccess);
 		}
 		
-		if (!allSelected && (periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod())) {
-			int numPossibleSelections = broker.getMaxSelections() - selectionsSize;
-			String messageI18nKey = numPossibleSelections < 2
-					? "selection.msg.not.all.selected.single"
-					: "selection.msg.not.all.selected.multi";
-			String selectionWarning = translate(messageI18nKey, new String[] {
-					String.valueOf(selectionsSize), String.valueOf(broker.getMaxSelections()),
-					String.valueOf(numPossibleSelections)});
+		String selectionWarning = "";
+		if (periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod()) {
+			if (!allSelected) {
+				int numPossibleSelections = broker.getMaxSelections() - selectionsSize;
+				String messageI18nKey = numPossibleSelections < 2
+						? "selection.msg.partially.selected.single"
+						: "selection.msg.partially.selected.multi";
+				selectionWarning
+						+= "<li>"
+						+ translate(messageI18nKey, String.valueOf(selectionsSize), String.valueOf(broker.getMaxSelections()))
+						+ "</li>";
+			}
+			int numOverlappingPeriods = getOverlappingPeriods();
+			if (numOverlappingPeriods > 0) {
+				selectionWarning
+						+= "<li>"
+						+ translate("selection.msg.overlapping.periods", String.valueOf(numOverlappingPeriods))
+						+ "</li>";
+			}
+		}
+		
+		if (StringHelper.containsNonWhitespace(selectionWarning)) {
+			selectionWarning =
+					  translate("selection.msg.warning")
+					+ "<ul class=\"o_block_top\">"
+					+ selectionWarning
+					+ "</ul>";
 			flc.contextPut("selectionWarning", selectionWarning);
 		}
 	}
 	
+	private int getOverlappingPeriods() {
+		if (broker.isOverlappingPeriodAllowed()) {
+			return 0;
+		}
+		
+		List<TBTopic> topicsWithDates = selectionDataModel.getObjects().stream()
+				.map(TBSelectionRow::getTopic)
+				.filter(Objects::nonNull)
+				.filter(row -> row.getBeginDate() != null || row.getEndDate() != null)
+				.toList();
+		if (topicsWithDates.isEmpty()) {
+			return 0;
+		}
+		
+		Set<Long> overlappingTopiKeys = new HashSet<>(2);
+		
+		for (int i = 0; i<topicsWithDates.size(); i++) {
+			for (int j = i+1; j<topicsWithDates.size(); j++) {
+				TBTopic topic1 = topicsWithDates.get(i);
+				TBTopic topic2 = topicsWithDates.get(j);
+				Date start1 = topic1.getBeginDate() != null? DateUtils.setTime(topic1.getBeginDate(), 0, 0, 0): TOPIC_START_INFINITY;
+				Date end1 = topic1.getEndDate() != null? DateUtils.setTime(topic1.getEndDate(), 23, 59, 59): TOPIC_END_INFINITY;
+				Date start2 = topic2.getBeginDate() != null? DateUtils.setTime(topic2.getBeginDate(), 0, 0, 0): TOPIC_START_INFINITY;
+				Date end2 = topic2.getEndDate() != null? DateUtils.setTime(topic2.getEndDate(), 23, 59, 59): TOPIC_END_INFINITY;
+				if (DateUtils.isOverlapping(start1, end1, start2, end2)) {
+					overlappingTopiKeys.add(topic1.getKey());
+					overlappingTopiKeys.add(topic2.getKey());
+				}
+			}
+		}
+		
+		return overlappingTopiKeys.size();
+	}
+
 	private void updateBrokerStatusUI() {
 		flc.contextPut("statusLabel", TBUIFactory.getLabel(getTranslator(), broker));
 	}
