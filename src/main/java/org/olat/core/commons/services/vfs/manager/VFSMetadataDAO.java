@@ -246,12 +246,15 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
-	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean deleted) {
+	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean directory, Boolean deleted) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select sum(metadata.fileSize)");
 		sb.append("  from filemetadata metadata");
 		sb.and().append("metadata.key != :parentKey");
 		sb.and().append("metadata.relativePath like :relativePath");
+		if (directory != null) {
+			sb.and().append("metadata.directory = ").append(directory);
+		}
 		if (deleted != null) {
 			sb.and().append("metadata.deleted = ").append(deleted);
 		}

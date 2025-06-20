@@ -427,7 +427,7 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		VFSMetadata container = vfsMetadataDao.createMetadata(uuid1, "/bcroot/course", uuid1, new Date(), 0L, true, uri1, "file", null);
-		VFSMetadata container1 = vfsMetadataDao.createMetadata(uuid1, parentPath, "hello", new Date(), 0L, true, uri1, "file", container);
+		VFSMetadata container1 = vfsMetadataDao.createMetadata(uuid1, parentPath, "hello", new Date(), 2L, true, uri1, "file", container);
 		VFSMetadata container2 = vfsMetadataDao.createMetadata(uuid1, parentPath, "helloWorld", new Date(), 0L, true, uri1, "file", container);
 		vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 100L, false, uri1, "file", container1);
 		VFSMetadataImpl fileMetadata21Deleted = (VFSMetadataImpl)vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName21, new Date(), 80L, false, uri21, "file", container2);
@@ -437,13 +437,19 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName23, new Date(), 50L, false, uri23, "file", container2);
 		dbInstance.commitAndCloseSession();
 		
-		Long size = vfsMetadataDao.getDescendantsSize(container, null);
+		Long size = vfsMetadataDao.getDescendantsSize(container, null, null);
+		Assert.assertEquals(Long.valueOf(332), size);
+		
+		size = vfsMetadataDao.getDescendantsSize(container, Boolean.TRUE, null);
+		Assert.assertEquals(Long.valueOf(2), size);
+		
+		size = vfsMetadataDao.getDescendantsSize(container, Boolean.FALSE, null);
 		Assert.assertEquals(Long.valueOf(330), size);
 		
-		size = vfsMetadataDao.getDescendantsSize(container, Boolean.TRUE);
+		size = vfsMetadataDao.getDescendantsSize(container, null, Boolean.TRUE);
 		Assert.assertEquals(Long.valueOf(80), size);
 		
-		size = vfsMetadataDao.getDescendantsSize(container, Boolean.FALSE);
-		Assert.assertEquals(Long.valueOf(250), size);
+		size = vfsMetadataDao.getDescendantsSize(container, null, Boolean.FALSE);
+		Assert.assertEquals(Long.valueOf(252), size);
 	}
 }
