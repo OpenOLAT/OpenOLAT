@@ -50,18 +50,7 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 
 	@Override
 	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
-		if (!secCallback.isCoachingContext()) {
-			return false;
-		}
-
-		if (secCallback.isCourseCoach()) {
-			return true;
-		}
-
-		if (secCallback.isLineOrEducationManager()) {
-			return true;
-		}
-		return false;
+		return secCallback.isCoachingContext() && secCallback.isShowInvoicesReports();
 	}
 
 	@Override
