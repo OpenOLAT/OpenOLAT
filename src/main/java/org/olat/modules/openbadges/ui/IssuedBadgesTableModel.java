@@ -64,6 +64,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 			case status -> row.getBadgeAssertion().getStatus();
 			case issuer -> row.getBadgeAssertion().getBadgeClass().getIssuerDisplayString();
 			case version -> OpenBadgesUIFactory.versionString(translator, row.getBadgeAssertion().getBadgeClass(), false, false);
+			case verification -> row.getBadgeAssertion().getBadgeClass().getVerificationMethod();
 			case issuedOn -> row.getBadgeAssertion().getIssuedOn();
 			case recipient -> row.getRecipientName();
 			case tools -> row.getToolLink();
@@ -84,6 +85,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 		status("form.status"),
 		issuer("class.issuer"),
 		version("form.version"),
+		verification("verification"),
 		issuedOn("form.issued.on"),
 		recipient("form.recipient"),
 		tools("action.more");

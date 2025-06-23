@@ -149,13 +149,14 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 					sb.append("</div>");
 					sb.append("</div>");
 				}));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.title, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.status, new BadgeAssertionStatusRenderer()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuer));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.version, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.issuedOn));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.title, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.status, new BadgeAssertionStatusRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.issuer));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.version, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.verification, new BadgeVerificationCellRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.issuedOn));
 		if (identity == null) {
-			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.recipient));
+			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.recipient));
 		}
 		
 		columnModel.addFlexiColumnModel(new ActionsColumnModel(IssuedBadgeCols.tools));

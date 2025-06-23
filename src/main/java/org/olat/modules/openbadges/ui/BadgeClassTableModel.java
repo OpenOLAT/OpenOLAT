@@ -68,6 +68,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 			case image -> badgeClass.getImage();
 			case name -> badgeClass.getName();
 			case version -> OpenBadgesUIFactory.versionString(translator, badgeClass, false, false);
+			case verification -> badgeClass.getVerificationMethod();
 			case creationDate -> Formatter.getInstance(translator.getLocale()).formatDateAndTime(badgeClass.getCreationDate());
 			case status -> badgeClass.getStatus();
 			case type -> translator.translate(BadgeCriteriaXStream.fromXml(badgeClass.getCriteria()).isAwardAutomatically() ?
@@ -92,6 +93,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		image("form.image", false),
 		name("form.name", true),
 		version("form.version", true),
+		verification("verification", true),
 		creationDate("form.createdOn", true),
 		status("form.status", true),
 		type("form.type", true),

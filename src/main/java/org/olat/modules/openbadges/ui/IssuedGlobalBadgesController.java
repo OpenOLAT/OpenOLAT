@@ -91,6 +91,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedBy));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.verification, new BadgeVerificationCellRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.revoke));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete));
 
@@ -246,6 +247,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		awardedBy("form.awarded.by", true),
 		issuedOn("form.issued.on", true),
 		status("form.status", true),
+		verification("verification", true),
 		revoke("table.revoke", false),
 		delete("table.delete", false);
 
@@ -306,6 +308,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 				case name -> badgeAssertion.getBadgeClass().getName();
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion.getStatus();
+				case verification -> badgeAssertion.getBadgeClass().getVerificationMethod();
 				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy());
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 				case revoke -> row.revokeLink();
