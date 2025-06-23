@@ -461,7 +461,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 			return;
 		}
 
-		String uuid = relativePath.substring(0, relativePath.length() - OpenBadgesFactory.PUBLIC_KEY_JSON.length() - 1);
+		String uuid = relativePath.substring(0, relativePath.length() - OpenBadgesFactory.ORGANIZATION_JSON.length() - 1);
 		if (!StringHelper.containsNonWhitespace(uuid)) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find UUID for organization file");
