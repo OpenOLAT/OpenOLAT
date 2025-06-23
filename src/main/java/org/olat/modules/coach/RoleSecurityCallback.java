@@ -89,7 +89,14 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canViewLecturesAndAbsences();
-	
+
+	/**
+	 * Is this role allowed to view the absence report?
+	 *
+	 * @return
+	 */
+	public boolean canViewAbsenceReport();
+
 	/**
 	 * Is this role allowed to check the quality report?
 	 * 
