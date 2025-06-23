@@ -551,6 +551,17 @@ span.o_labeled_light {
 	&.o_badge_assertion_status_reset {
 		color: o-a11y-color($btn-warning-border, $o-toolbar-bg-color);
 	}
+	
+	&.o_badge_verification_verified {
+		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
+	}
+	
+	&.o_badge_verification_hosted {
+	}
+	
+	&.o_badge_verification_signed {
+		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
+	}
 }
 
 .o_labeled {
@@ -581,6 +592,17 @@ span.o_labeled_light {
 
 	&.o_badge_assertion_status_reset {
 		background-color: $btn-warning-bg;
+	}
+	
+	&.o_badge_verification_verified {
+		background-color: o-a11y-color($btn-info-bg, $o-labeled-grey-color);
+	}
+	
+	&.o_badge_verification_hosted {
+	}
+	
+	&.o_badge_verification_signed {
+		background-color: o-a11y-color($btn-info-bg, $o-labeled-grey-color);
 	}
 }
 

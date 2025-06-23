@@ -69,6 +69,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.ui.BadgeClassTableModel.BadgeClassCols;
 import org.olat.modules.openbadges.ui.CreateBadgeClassWizardContext.Mode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -131,7 +132,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		registerMapper(ureq);
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.image,
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.image,
 				(renderer, sb, val, row, source, ubu, translator) -> {
 					OpenBadgesManager.BadgeClassWithSizeAndCount bc = tableModel.getObject(row).badgeClassWithSizeAndCount();
 					Size targetSize = bc.fitIn(60, 60);
@@ -150,16 +151,17 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					sb.append("</div>");
 					sb.append("</div>");
 				}));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.name, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.creationDate));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.status, new BadgeClassStatusRenderer()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.type));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.version));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.awardedCount, CMD_AWARDED_COUNT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.name, CMD_SELECT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.creationDate));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.status, new BadgeClassStatusRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.type));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.version));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, BadgeClassCols.verification.i18nHeaderKey(), null, BadgeClassCols.verification.ordinal(), null, BadgeClassCols.verification.sortable(), BadgeClassCols.verification.sortKey(), DefaultFlexiColumnModel.ALIGNMENT_LEFT, new BadgeClassVerificationCellRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassCols.awardedCount, CMD_AWARDED_COUNT));
 
 		boolean owner = reSecurity == null || reSecurity.isOwner();
 		if (owner) {
-			columnModel.addFlexiColumnModel(new ActionsColumnModel(BadgeClassTableModel.BadgeClassCols.tools));
+			columnModel.addFlexiColumnModel(new ActionsColumnModel(BadgeClassCols.tools));
 		}
 
 		tableModel = new BadgeClassTableModel(columnModel, getTranslator());

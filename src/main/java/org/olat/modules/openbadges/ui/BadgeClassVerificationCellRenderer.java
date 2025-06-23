@@ -28,15 +28,13 @@ import org.olat.modules.openbadges.BadgeVerification;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeVerificationCellRenderer extends LabelCellRenderer {
+public class BadgeClassVerificationCellRenderer extends LabelCellRenderer {
 
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
 		if (val instanceof BadgeVerification badgeVerification) {
-			if (BadgeVerification.signed.equals(badgeVerification)) {
-				return translator.translate("verified");
-			}
+			return translator.translate("verification." + badgeVerification.name());
 		}
 		return null;
 	}
@@ -54,9 +52,7 @@ public class BadgeVerificationCellRenderer extends LabelCellRenderer {
 	@Override
 	protected String getElementCssClass(Object val) {
 		if (val instanceof BadgeVerification badgeVerification) {
-			if (BadgeVerification.signed.equals(badgeVerification)) {
-				return "o_badge_verification_verified";
-			}
+			return "o_badge_verification_" + badgeVerification.name();
 		}
 		return null;
 	}
