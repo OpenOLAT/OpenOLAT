@@ -101,6 +101,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		tableEl.setEmptyTableSettings("empty.badges.table", null,
 				"o_icon_badge", null, null,
 				false);
+		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-global");
 
 		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
 		addLink.setElementCssClass("o_sel_openbadges_issue");

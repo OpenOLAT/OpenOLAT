@@ -175,6 +175,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		tableEl.setEmptyTableSettings("empty.badges.table", null,
 				"o_icon_badge", null, null,
 				false);
+		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-course");
 	}
 
 	private void initFilters() {

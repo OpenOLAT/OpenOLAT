@@ -171,6 +171,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		detailsVC = createVelocityContainer("badge_class_details");
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "badge-classes");
+
 		if (owner) {
 			tableEl.setEmptyTableSettings("empty.badges.table.owner", null,
 					"o_icon_badge", "form.create.new.badge", "o_icon_add",

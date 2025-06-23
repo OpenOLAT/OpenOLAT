@@ -114,6 +114,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
 				getTranslator(), formLayout);
 		tableEl.setEmptyTableMessageKey("form.recipients.none");
+		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-recipients");
 	}
 
 	void loadData(List<FlexiTableFilter> filters) {
