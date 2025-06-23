@@ -44,7 +44,7 @@ public class BadgeImageRenderer extends DefaultComponentRenderer implements Comp
 		String maxSizeString = "max-width: " + size.getWidth() + "px; max-height: " + size.getHeight() + "px; ";
 
 		sb.append("<div ");
-		sb.append("style=\"margin: auto; text-align: center; ").append(sizeString).append("\" ");
+		sb.append("style=\"margin: auto; display: flex; justify-content: center; align-items: center;").append(sizeString).append("\" ");
 		sb.append(">");
 		sb.append("<img alt=\"\" ");
 		sb.append("style=\"").append(maxSizeString).append("\" ");
