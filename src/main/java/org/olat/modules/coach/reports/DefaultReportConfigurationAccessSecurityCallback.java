@@ -52,6 +52,7 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	private final boolean courseCoach;
 
 	private boolean showAbsencesReports;
+	private boolean showInvoicesReports;
 	
 	public DefaultReportConfigurationAccessSecurityCallback(Identity identity, Roles roles, boolean coachingContext,
 															boolean curriculumContext, OrganisationService organisationService) {
@@ -70,30 +71,40 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 		RepositoryEntryRelationDAO repositoryEntryRelationDao = CoreSpringFactory.getImpl(RepositoryEntryRelationDAO.class);
 		courseCoach = repositoryEntryRelationDao.hasRoleExpanded(identity, GroupRoles.coach.name());
 		
-		setShowAbsencesReport(identity, organisationService);
+		setOrgRights(identity, organisationService);
 	}
 
-	private void setShowAbsencesReport(Identity identity, OrganisationService organisationService) {
+	private void setOrgRights(Identity identity, OrganisationService organisationService) {
 		showAbsencesReports = false;
+		showInvoicesReports = false;
 		if (roles.isLineManager()) {
-			if (canViewLecturesAndAbsences(identity, organisationService, OrganisationRoles.linemanager)) {
+			RoleSecurityCallback roleSecurityCallback = getRoleSecurityCallback(identity, organisationService, OrganisationRoles.linemanager);
+			if (roleSecurityCallback.canViewLecturesAndAbsences()) {
 				showAbsencesReports = true;
-				return;
+			}
+			if (roleSecurityCallback.canViewInvoicesReport()) {
+				showInvoicesReports = true;
 			}
 		}
+		
+		if (showAbsencesReports && showInvoicesReports) {
+			return; // We got what we came here for, no need for more DB queries.
+		}
+
 		if (roles.isEducationManager()) {
-			if (canViewLecturesAndAbsences(identity, organisationService, OrganisationRoles.educationmanager)) {
+			RoleSecurityCallback roleSecurityCallback = getRoleSecurityCallback(identity, organisationService, OrganisationRoles.educationmanager);
+			if (roleSecurityCallback.canViewLecturesAndAbsences()) {
 				showAbsencesReports = true;
+			}
+			if (roleSecurityCallback.canViewInvoicesReport()) {
+				showInvoicesReports = true;
 			}
 		}
 	}
 	
-	private boolean canViewLecturesAndAbsences(Identity identity, OrganisationService organisationService, OrganisationRoles role) {
-		RoleSecurityCallback secCallback = RoleSecurityCallbackFactory.create(
-				organisationService.getGrantedOrganisationsRights(
-						organisationService.getOrganisations(identity, role),
-						role), role);
-		return secCallback.canViewLecturesAndAbsences();
+	RoleSecurityCallback getRoleSecurityCallback(Identity identity, OrganisationService organisationService, OrganisationRoles role) {
+		return RoleSecurityCallbackFactory.create(organisationService.getGrantedOrganisationsRights(
+						organisationService.getOrganisations(identity, role), role), role);
 	}
 
 	@Override
@@ -134,5 +145,10 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	@Override
 	public boolean isShowAbsencesReports() {
 		return showAbsencesReports;
+	}
+
+	@Override
+	public boolean isShowInvoicesReports() {
+		return showInvoicesReports;
 	}
 }
