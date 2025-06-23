@@ -24,6 +24,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
@@ -43,12 +44,14 @@ public class IssuedBadgeRow {
 	private FormLink toolLink;
 	private String addToLinkedInUrl;
 	private String recipientName;
+	private boolean verified;
 
 	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		BadgeClass badgeClass = badgeAssertionWithSize.badgeAssertion().getBadgeClass();
 		this.name = badgeClass.getName();
 		this.version = badgeClass.getVersion();
 		this.badgeAssertionWithSize = badgeAssertionWithSize;
+		this.verified = BadgeVerification.signed.equals(badgeClass.getVerificationMethod());
 	}
 
 	public BadgeAssertion getBadgeAssertion() {
@@ -129,5 +132,13 @@ public class IssuedBadgeRow {
 
 	public void setRecipientName(String recipientName) {
 		this.recipientName = recipientName;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
+	public void setVerified(boolean verified) {
+		this.verified = verified;
 	}
 }

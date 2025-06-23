@@ -50,6 +50,7 @@ import org.olat.course.ICourse;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeVerification;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
@@ -107,6 +108,8 @@ public class BadgeAssertionPublicController extends FormBasicController {
 			flc.contextPut("resetBadge", true);
 		} else if (openBadgesManager.isBadgeAssertionExpired(badgeAssertion)) {
 			flc.contextPut("expiredBadge", true);
+		} else if (BadgeVerification.signed.equals(badgeAssertion.getBadgeClass().getVerificationMethod())) {
+			flc.contextPut("verifiedBadge", true);
 		}
 
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();

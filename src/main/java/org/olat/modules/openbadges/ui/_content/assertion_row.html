@@ -5,6 +5,10 @@
 		<div class="o_badge_assertion_status o_labeled o_badge_assertion_status_${row.badgeAssertion.status.name()}">
 			${r.translate("assertion.status." + $row.badgeAssertion.status)}
 		</div>
+		#elseif($row.verified)
+		<div class="o_badge_assertion_status o_labeled o_badge_assertion_status_editing">
+			<i class="o_icon o_icon-fw o_icon-check-double"></i> $r.translate("verified")
+		</div>
 		#end
 	</div>
 	<div class="o_badge_meta panel-body o_min_height">
