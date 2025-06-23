@@ -54,10 +54,6 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 			return false;
 		}
 
-		if (secCallback.isCourseCoach()) {
-			return true;
-		}
-
 		if (secCallback.isLineOrEducationManager()) {
 			return true;
 		}
