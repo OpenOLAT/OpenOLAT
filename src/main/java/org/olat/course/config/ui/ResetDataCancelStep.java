@@ -103,7 +103,7 @@ public class ResetDataCancelStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormWarning("assessment.reset.desc.num", new String[] { String.valueOf(assessmentEntriesCount) });
+			setFormWarning("assessment.reset.desc", new String[] { String.valueOf(assessmentEntriesCount) });
 
 			FormLayoutContainer optionsCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 			optionsCont.setRootForm(mainForm);
@@ -124,8 +124,12 @@ public class ResetDataCancelStep extends BasicStep {
 			boolean apply = changesEl.isOneSelected() && changesEl.isKeySelected(KEY_APPLY);
 			if (apply) {
 				runContext.put(KEY_APPLY, Boolean.TRUE);
-				prevNextFinishConfig = PrevNextFinishConfig.NEXT;
 				setNextStep(wizardContext.createNextStep(ureq, ResetDataStep.courseElements));
+				if (nextStep() == Step.NOSTEP) {
+					prevNextFinishConfig = new PrevNextFinishConfig(false, false ,true);
+				} else {
+					prevNextFinishConfig = PrevNextFinishConfig.NEXT;
+				}
 			} else {
 				runContext.put(KEY_APPLY, Boolean.FALSE);
 				prevNextFinishConfig = new PrevNextFinishConfig(false, false ,true);

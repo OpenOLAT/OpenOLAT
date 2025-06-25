@@ -571,7 +571,7 @@ public class LearningPathListController extends FormBasicController implements T
 		AssessmentToolSecurityCallback secCallback = AssessmentToolSecurityCallback.nothing();
 		IdentityEnvironment identityEnv = new IdentityEnvironment(this.getIdentity(), ureq.getUserSession().getRoles());
 		UserCourseEnvironmentImpl coachCourseEnv = new UserCourseEnvironmentImpl(identityEnv, userCourseEnv.getCourseEnvironment());
-		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, true, true, false);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, true, true, false, true);
 		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, wizardContext);
 		String title = translate("wizard.reset.data.title");
 		ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, secCallback);

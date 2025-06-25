@@ -231,7 +231,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		ResetDataContext dataContext = new ResetDataContext(courseEntry);
 		dataContext.setResetCourse(ResetCourse.all);
 		dataContext.setResetParticipants(ResetParticipants.all);
-		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachUserEnv, assessmentCallback, true, true, true);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachUserEnv, assessmentCallback, true, true, true, true);
 		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, wizardContext);
 		
 		String title = translate("wizard.reset.data.title");

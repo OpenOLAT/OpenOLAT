@@ -502,7 +502,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		dataContext.setResetCourse(ResetCourse.all);
 		dataContext.setResetParticipants(ResetParticipants.selected);
 		dataContext.setSelectedParticipants(List.of(assessedIdentity));
-		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, true, true, false);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, true, true, false, true);
 		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, wizardContext);
 		
 		String title = translate("wizard.reset.data.title");

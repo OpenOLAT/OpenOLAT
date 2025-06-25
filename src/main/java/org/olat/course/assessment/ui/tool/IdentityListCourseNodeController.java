@@ -1908,7 +1908,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		dataContext.setResetParticipants(ResetParticipants.selected);
 		dataContext.setSelectedParticipants(identities);
 		
-		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, getAssessmentCallback(), false, true, false);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, getAssessmentCallback(), false, true, false, true);
 		wizardContext.setCurrent(ResetDataStep.participants);
 		ResetDataStep next = wizardContext.getNext(ResetDataStep.participants);
 		if (ResetDataStep.overview == next) {

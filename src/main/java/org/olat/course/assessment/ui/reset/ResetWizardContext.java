@@ -72,6 +72,7 @@ public class ResetWizardContext {
 	private final boolean withParticipantsSelection;
 	private final boolean withCoursePassedOverriddenReset;
 	private final boolean withCoursePassedReset;
+	private final boolean withConfirmation;
 	private List<ResetDataStep> availableSteps;
 	private ResetDataStep current;
 	
@@ -79,7 +80,7 @@ public class ResetWizardContext {
 	
 	public ResetWizardContext(Identity doer, ResetDataContext dataContext, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolSecurityCallback secCallback, boolean withOptions, boolean withCourseNodeSelection,
-			boolean withParticipantsSelection) {
+			boolean withParticipantsSelection, boolean withConfirmation) {
 		this.doer = doer;
 		this.dataContext = dataContext;
 		this.coachCourseEnv = coachCourseEnv;
@@ -87,6 +88,7 @@ public class ResetWizardContext {
 		this.withOptions = withOptions;
 		this.withCourseNodeSelection = withCourseNodeSelection;
 		this.withParticipantsSelection = withParticipantsSelection;
+		this.withConfirmation = withConfirmation;
 		this.withCoursePassedReset = isWithCoursePassedReset();
 		this.withCoursePassedOverriddenReset = withCoursePassedReset;
 		
@@ -137,13 +139,17 @@ public class ResetWizardContext {
 	
 	public Step createNextStep(UserRequest ureq, ResetDataStep current) {
 		ResetDataStep next = getNext(current);
+		if (next == null) {
+			return Step.NOSTEP;
+		}
 		
 		return switch(next) {
 		case courseElements -> new ResetData2CourseElementsStep(ureq, this);
 		case participants -> new ResetData3ParticipantsStep(ureq, this);
 		case coursePassedOverridden -> new ResetData4CoursePassedOverridenStep(ureq, this);
 		case coursePassed -> new ResetData5CoursePassedStep(ureq, this);
-		default -> new ResetData6ConfirmationStep(ureq, this);
+		case overview -> new ResetData6ConfirmationStep(ureq, this);
+		default -> Step.NOSTEP;
 		};
 	}
 
@@ -192,7 +198,9 @@ public class ResetWizardContext {
 			}
 		}
 		
-		availableSteps.add(ResetDataStep.overview);
+		if (withConfirmation) {
+			availableSteps.add(ResetDataStep.overview);
+		}
 	}
 	
 	/**

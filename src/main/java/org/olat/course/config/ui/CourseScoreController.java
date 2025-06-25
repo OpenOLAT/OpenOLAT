@@ -53,9 +53,11 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
@@ -122,6 +124,8 @@ public class CourseScoreController extends FormBasicController {
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private LearningPathService learningPathService;
 
@@ -486,13 +490,23 @@ public class CourseScoreController extends FormBasicController {
 		CourseEnvironment courseEnvironment = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 		UserCourseEnvironmentImpl coachCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnvironment);
 		
+		RepositoryEntry courseEntry =  courseEnvironment.getCourseGroupManager().getCourseEntry();
+		String rootNodeIdent = courseEnvironment.getRunStructure().getRootNode().getIdent();
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, secCallback);
+		long numAssessedIdentities = assessmentToolManager.countAssessedIdentities(getIdentity(), params);
+		
+		if (numAssessedIdentities <= 0) {
+			doSave();
+			return;
+		}
+		
 		ResetDataContext dataContext = new ResetDataContext(courseEntry);
 		dataContext.setResetParticipants(ResetParticipants.all);
 		dataContext.setResetCourse(ResetCourse.elements);
 		dataContext.setResetEmptyNodes(true);
 		dataContext.setCourseNodes(List.of());
 		
-		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, false, true, false);
+		ResetWizardContext wizardContext = new ResetWizardContext(getIdentity(), dataContext, coachCourseEnv, secCallback, false, true, false, false);
 		wizardContext.setCurrent(ResetDataStep.courseElements);
 		
 		resetDataWizardCtrl = new StepsMainRunController(ureq, getWindowControl(),
