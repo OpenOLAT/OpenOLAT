@@ -73,13 +73,50 @@ public class CatalogAdminPage {
 	 * Select a node to navigate
 	 * 
 	 * @param title
-	 * @return
+	 * @return Itself
 	 */
 	public CatalogAdminPage selectNode(String shortTitle) {
 		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div[contains(@class,'o_meta')]/h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + shortTitle + "')]]]");
 		OOGraphene.waitElement(titleBy, browser);
 		browser.findElements(titleBy).get(0).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Presence of the settings in Administration > Modules > Catalog
+	 * 
+	 * @return Itself
+	 */
+	public CatalogAdminPage assertOnAdministrationSettings() {
+		By enabledBy = By.cssSelector(".o_sel_catalog_admin_general .o_sel_catalog_admin_enable");
+		OOGraphene.waitElement(enabledBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Enable the catalog V1
+	 * 
+	 * @return Itself
+	 */
+	public CatalogAdminPage enableCatalogV1() {
+		By enabledBy = By.xpath("//fieldset[contains(@class,'o_sel_catalog_admin_general')]//fieldset[contains(@class,'o_sel_catalog_admin_enable')]//input[@type='radio'][@value='v1']");
+		OOGraphene.waitElement(enabledBy, browser).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElementDisappears(By.className("o_sel_catalog_admin_webpublish"), 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Enable the catalog V2
+	 * 
+	 * @return Itself
+	 */
+	public CatalogAdminPage enableCatalogV2() {
+		By enabledBy = By.xpath("//fieldset[contains(@class,'o_sel_catalog_admin_general')]//fieldset[contains(@class,'o_sel_catalog_admin_enable')]//input[@type='radio'][@value='v2']");
+		OOGraphene.waitElement(enabledBy, browser).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_sel_catalog_admin_webpublish"), browser);
 		return this;
 	}
 }

@@ -104,6 +104,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		// Label
 		String label = link.getOffer() != null ? link.getOffer().getLabel() : null;
 		labelEl = uifactory.addTextElement("offer.label", "offer.label", 128, label, formLayout);
+		labelEl.setElementCssClass("o_sel_accesscontrol_label");
 		labelEl.setHelpTextKey("offer.label.help", null);
 		
 		// Catalog
@@ -115,6 +116,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			}
 		}
 		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		catalogEl.setElementCssClass("o_sel_accesscontrol_publish");
 		if (catalogEl.getKeys().contains(CATALOG_OO)) {
 			catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
 		}
@@ -152,6 +154,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		if (isConfirmationByManagerSupported()) {
 			confirmationByManagerEl = uifactory.addCheckboxesHorizontal("confirmation.by", formLayout, onKeys,
 					new String[] { translate("confirmation.by.admin") });
+			confirmationByManagerEl.setElementCssClass("o_sel_accesscontrol_confirmation_manager");
 			confirmationByManagerEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired());
 		}
 		

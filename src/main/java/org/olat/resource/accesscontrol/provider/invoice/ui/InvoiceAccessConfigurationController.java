@@ -85,6 +85,8 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 
 	@Override
 	protected void initCustomFormElements(FormItemContainer formLayout) {
+		formLayout.setElementCssClass("o_sel_accesscontrol_invoice_form");
+		
 		Offer offer = link.getOffer();
 		if (acService.hasOrder(offer)) {
 			setFormWarning("error.offers.exists");
@@ -139,6 +141,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		}
 		
 		priceAmountEl = uifactory.addTextElement("price", 32, priceAmount, formLayout);
+		priceAmountEl.setElementCssClass("o_sel_accesscontrol_invoice_price");
 		priceAmountEl.setMandatory(true);
 		
 		cancellingEnabledEl = uifactory.addToggleButton("cancelling.fee.enabled", "cancelling.fee.enabled",

@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.curriculum;
 
+import java.util.List;
+
 import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
@@ -86,10 +88,49 @@ public class CurriculumElementMembersWizardPage {
 		OOGraphene.nextStep(browser);
 		return this;
 	}
+	
+	public CurriculumElementMembersWizardPage membershipCommentOnly() {
+		By commentBy = By.cssSelector("fieldset.o_sel_curriculum_element_member_rights textarea");
+		OOGraphene.waitElement(commentBy, browser);
+		
+		OOGraphene.nextStep(browser);
+		return this;
+	}
 
 	public CurriculumElementMembersWizardPage confirmation(UserVO user) {
 		By overviewBy = By.xpath("//div[contains(@class,'o_sel_curriculum_element_member_overview')]//table//td/a[text()[contains(.,'" + user.getFirstName() + "')]]");
 		OOGraphene.waitElement(overviewBy, browser);
+		
+		OOGraphene.nextStep(browser);
+		return this;
+	}
+	
+	public CurriculumElementMembersWizardPage selectInvoiceOffer(String price, String addressId) {
+		By invoiceBy = By.xpath("//dialog//fieldset[@id='o_cobooking_order']//label[span/span/span[text()[contains(.,'" + price + "')]]]/input[@type='radio']");
+		WebElement invoiceEl = OOGraphene.waitElement(invoiceBy, browser);
+		OOGraphene.check(invoiceEl, Boolean.TRUE);
+		OOGraphene.waitBusy(browser);
+		
+		By selectAddress = By.cssSelector("dialog a.o_sel_billing_address_select");
+		OOGraphene.waitElement(selectAddress, browser);
+		
+		// Check auto-select
+		By addressSelectedBy = By.xpath("//div[contains(@class,'o_ac_billing_address_identifier')][text()[contains(.,'" + addressId + "')]]");
+		List<WebElement> addressSelectedEls = browser.findElements(addressSelectedBy);
+		if(addressSelectedEls.isEmpty()) {
+			// select address
+			OOGraphene.waitElement(selectAddress, browser).click();
+			OOGraphene.waitModalDialog(browser, ".o_ac_billing_address_selection");
+			
+			By addressBy = By.xpath("//dialog//div[contains(@class,'o_ac_billing_address_selection')]//label[span/span/span[text()[contains(.,'" + addressId + "')]]]/input[@type='radio']");
+			browser.findElement(addressBy).click();
+			OOGraphene.waitBusy(browser);
+			
+			By selectBy = By.cssSelector("dialog div.o_ac_billing_address_selection button.btn.o_button_dirty");
+			OOGraphene.waitElement(selectBy, browser).click();
+			
+			OOGraphene.waitModalDialogWithDivDisappears(browser, "o_ac_billing_address_selection");
+		}
 		
 		OOGraphene.nextStep(browser);
 		return this;

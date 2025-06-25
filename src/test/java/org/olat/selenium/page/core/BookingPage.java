@@ -98,6 +98,18 @@ public class BookingPage {
 	}
 	
 	/**
+	 * In the dropdown to add an access control method, choose
+	 * the method by invoice.
+	 * 
+	 * @return This page
+	 */
+	public BookingPage addInvoiceMethod() {
+		addMethodByIcon("o_ac_invoice_icon");
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
 	 * Select the free booking option
 	 * 
 	 * @return Itself
@@ -200,16 +212,68 @@ public class BookingPage {
 	}
 	
 	/**
+	 * Configure the invoice, save it and check that it appears in the list.
+	 * 
+	 * @param description the description
+	 * @return Itself
+	 */
+	public BookingPage configureInvoiceMethod(String label, String description, String price, boolean adminConfirmation) {
+		// 
+		By labelBy = By.cssSelector(".o_sel_accesscontrol_label input[type='text']");
+		browser.findElement(labelBy).sendKeys(label);
+		
+		By priceBy = By.cssSelector(".o_sel_accesscontrol_invoice_price input[type='text']");
+		browser.findElement(priceBy).sendKeys(price);
+		
+		By confirmationByManagerBy = By.cssSelector(".o_sel_accesscontrol_confirmation_manager input[type='checkbox']");
+		WebElement confirmationByManagerEl = browser.findElement(confirmationByManagerBy);
+		OOGraphene.check(confirmationByManagerEl, Boolean.valueOf(adminConfirmation));
+		
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_invoice_form .o_sel_accesscontrol_description textarea");
+		browser.findElement(descriptionBy).sendKeys(description);
+
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_invoice_form button.btn-primary");
+		OOGraphene.click(submitBy, browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		By invoiceRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_sel_ac_offer>div.o_icon_panel_icon_col>h4>i.o_ac_invoice_icon");
+		OOGraphene.waitElement(invoiceRowBy, browser);
+		return this;
+	}
+	
+	/**
 	 * Save the free booking.
 	 * 
 	 * @param description The description of the booking.
 	 * @return Itself
 	 */
-	public BookingPage configureFreeBooking(String description) {
+	public BookingPage configureFreeBooking(String description, boolean externalCatalog) {
+		if(externalCatalog) {
+			By catalogBy = By.cssSelector(".o_sel_accesscontrol_catalog input[name='offer.publish.in'][value='web']");
+			WebElement catalogEl = OOGraphene.waitElement(catalogBy, browser);
+			OOGraphene.check(catalogEl, Boolean.TRUE);
+		}
+		
 		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_free_form .o_sel_accesscontrol_description textarea");
 		browser.findElement(descriptionBy).sendKeys(description);
 		
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_free_form button.btn-primary");
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public BookingPage configureGuestBooking(String description, boolean externalCatalog) {
+		if(externalCatalog) {
+			By catalogBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_catalog input[name='offer.publish.in'][value='web']");
+			WebElement catalogEl = OOGraphene.waitElement(catalogBy, browser);
+			OOGraphene.check(catalogEl, Boolean.TRUE);
+		}
+		
+		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_guest_form .o_sel_accesscontrol_description textarea");
+		browser.findElement(descriptionBy).sendKeys(description);
+		
+		By submitBy = By.cssSelector(".o_sel_accesscontrol_guest_form button.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;

@@ -58,6 +58,13 @@ public class CurriculumElementPage {
 		return new CurriculumElementMembersPage(browser).assertOnMembersList();
 	}
 	
+	public CurriculumElementOffersPage openOffersTab() {
+		By composerBy = By.xpath("//div[div[contains(@class,'o_curriculum_title')]]//ul/li[@class='o_sel_curriculum_offers']/a");
+		OOGraphene.waitElement(composerBy, browser).click();
+		
+		return new CurriculumElementOffersPage(browser).assertOnAccessConfiguration();
+	}
+	
 	public CurriculumElementPage changeStatus(CurriculumElementStatus status) {
 		By statusBy = By.xpath("//div[contains(@class,'o_curriculum_dashboard_title')]//a[contains(@class,'o_curriculum_status_')][contains(@class,'o_labeled')]");
 		OOGraphene.waitElement(statusBy, browser).click();

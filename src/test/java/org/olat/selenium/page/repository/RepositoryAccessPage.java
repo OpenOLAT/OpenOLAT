@@ -129,6 +129,17 @@ public class RepositoryAccessPage {
 		return this;
 	}
 	
+	public RepositoryAccessPage editAccessForGuest(String message, boolean externalCatalog) {
+		By editBy = By.xpath("//div[contains(@class,'o_sel_ac_offer')]//a[contains(@class,'btn-default')][i[contains(@class,'o_icon_edit')]]");
+		OOGraphene.waitElement(editBy, browser).click();
+
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_guest_form");
+		
+		new BookingPage(browser)
+				.configureGuestBooking(message, externalCatalog);
+		return this;
+	}
+	
 	public RepositoryAccessPage save() {
 		By saveSwitch = By.cssSelector("fieldset.o_sel_repo_access_configuration button.btn.btn-primary");
 		OOGraphene.click(saveSwitch, browser);
@@ -173,7 +184,7 @@ public class RepositoryAccessPage {
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_free_form");
 		// configure method
 		new BookingPage(browser)
-			.configureFreeBooking(message);
+			.configureFreeBooking(message, false);
 
 		return this;
 	}

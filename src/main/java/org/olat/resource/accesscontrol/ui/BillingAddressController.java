@@ -72,6 +72,7 @@ public class BillingAddressController extends FormBasicController implements Con
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonsWrapper", getTranslator());
 		formLayout.add("buttonsWrapper", buttonsWrapperCont);
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonLayout.setElementCssClass("o_sel_billing_address_buttons");
 		buttonsWrapperCont.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());

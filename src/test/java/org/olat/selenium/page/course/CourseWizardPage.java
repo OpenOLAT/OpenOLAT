@@ -54,17 +54,6 @@ public class CourseWizardPage {
 	 */
 	public CourseWizardPage nextNodes() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_catalog_chooser_tree"), browser);
-		return this;
-	}
-	
-	/**
-	 * Click next the step which selects a catalog entry.
-	 * 
-	 * @return Itself
-	 */
-	public CourseWizardPage nextCatalog() {
-		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), browser);
 		return this;
 	}

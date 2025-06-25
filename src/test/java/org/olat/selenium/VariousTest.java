@@ -391,8 +391,6 @@ public class VariousTest extends Deployments {
 			.nextSelectNodes()
 			.selectAccess(UserAccess.booking)
 			.nextAccess()
-			.selectCatalog(false)
-			.nextCatalog() // -> no problem found
 			.finish();
 		
 		//back to the course
