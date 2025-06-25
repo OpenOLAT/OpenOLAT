@@ -132,6 +132,10 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 		topicBrokerService.updateBroker(doer, broker, selectionsPerParticipant, selectionStartDate, selectionEndDate,
 				enrollmentsPerParticipant, participantCanEditRequiredEnrollments, autoEnrollment,
 				overlappingPeriodAllowed, participantCanWithdraw, withdrawDate);
+		
+		if (broker.getEnrollmentDoneDate() != null && selectionEndDate != null && selectionEndDate.after(new Date())) {
+			topicBrokerService.resetEnrollmentProcessStatus(doer, broker);
+		}
 	}
 	
 	private void synchTopicBrokers(Long repositoryEntryKey, Long identityKey) {

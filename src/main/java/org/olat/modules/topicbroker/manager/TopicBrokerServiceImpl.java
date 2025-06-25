@@ -266,6 +266,25 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 	
 	@Override
+	public void resetEnrollmentProcessStatus(Identity doer, TBBrokerRef broker) {
+		TBBroker reloadedBroker = getBroker(broker);
+		if (reloadedBroker == null || reloadedBroker.getEnrollmentDoneDate() == null) {
+			return;
+		}
+		
+		if (reloadedBroker instanceof TBBrokerImpl brokerImpl) {
+			String before = TopicBrokerXStream.toXml(brokerImpl);
+			
+			brokerImpl.setEnrollmentStartDate(null);
+			brokerImpl.setEnrollmentDoneDate(null);
+			reloadedBroker = brokerDao.updateBroker(brokerImpl);
+			
+			String after = TopicBrokerXStream.toXml(reloadedBroker);
+			auditLogDao.create(TBAuditLog.Action.brokerEnrollmentReset, before, after, doer, reloadedBroker);
+		}
+	}
+	
+	@Override
 	public void sendEnrollmentEmails(final TBBroker broker, final List<Identity> identities) {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
 		

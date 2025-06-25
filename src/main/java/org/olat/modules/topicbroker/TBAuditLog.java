@@ -53,6 +53,7 @@ public interface TBAuditLog extends CreateInfo {
 		brokerUpdateContent,
 		brokerEnrollmentStart,
 		brokerEnrollmentDone,
+		brokerEnrollmentReset,
 		participantCreate,
 		participantUpdateContent,
 		topicCreate,
