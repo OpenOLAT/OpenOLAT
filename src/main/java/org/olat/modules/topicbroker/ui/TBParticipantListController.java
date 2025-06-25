@@ -123,6 +123,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	private FlexiFiltersTab tabEnrolledFully;
 	private FormLink bulkEmailButton;
 	private FormLink bulkNotificationButton;
+	private FormLink bulkWithdrawEnrollmentsButton;
+	private FormLink bulkResetSelectionsButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormLink enrollmentManualStartLink;
 	private FormLink notificationsLink;
@@ -134,6 +136,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	private TBEnrollmentManualProcessController enrollmentManualCtrl;
 	private ContactFormController contactCtrl;
 	private ConfirmationController notificationConfirmationCtrl;
+	private ConfirmationController withdrawEnrollmentsConfirmationCtrl;
+	private ConfirmationController resetSelectionConfirmationCtrl;
 
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
@@ -328,6 +332,14 @@ public class TBParticipantListController extends FormBasicController implements 
 		bulkNotificationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_notification");
 		bulkNotificationButton.setVisible(false);
 		tableEl.addBatchButton(bulkNotificationButton);
+		
+		bulkWithdrawEnrollmentsButton = uifactory.addFormLink("participants.bulk.withdraw.enrollments", flc, Link.BUTTON);
+		bulkWithdrawEnrollmentsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_withdraw");
+		tableEl.addBatchButton(bulkWithdrawEnrollmentsButton);
+		
+		bulkResetSelectionsButton = uifactory.addFormLink("participants.bulk.reset.selections", flc, Link.BUTTON);
+		bulkResetSelectionsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_unselect");
+		tableEl.addBatchButton(bulkResetSelectionsButton);
 	}
 	
 	private void updateCommandUI() {
@@ -594,6 +606,18 @@ public class TBParticipantListController extends FormBasicController implements 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (withdrawEnrollmentsConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doWithdrawEnrollments(ureq, (List<Identity>)withdrawEnrollmentsConfirmationCtrl.getUserObject());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (resetSelectionConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doResetSelections(ureq, (List<Identity>)resetSelectionConfirmationCtrl.getUserObject());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source instanceof TBParticipantSelectionsController) {
 			if (event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
@@ -608,10 +632,14 @@ public class TBParticipantListController extends FormBasicController implements 
 		removeAsListenerAndDispose(enrollmentManualCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(notificationConfirmationCtrl);
+		removeAsListenerAndDispose(withdrawEnrollmentsConfirmationCtrl);
+		removeAsListenerAndDispose(resetSelectionConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
 		enrollmentManualCtrl = null;
 		contactCtrl = null;
 		notificationConfirmationCtrl = null;
+		withdrawEnrollmentsConfirmationCtrl = null;
+		resetSelectionConfirmationCtrl = null;
 		cmc = null;
 	}
 
@@ -625,6 +653,10 @@ public class TBParticipantListController extends FormBasicController implements 
 			doBulkEmail(ureq);
 		} else if (source == bulkNotificationButton) {
 			doBulkNotification(ureq);
+		} else if (source == bulkWithdrawEnrollmentsButton) {
+			doBulkWithdrawEnrollmentsConfirmation(ureq);
+		} else if (source == bulkResetSelectionsButton) {
+			doBulkResetSelectionsConfirmation(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -790,6 +822,111 @@ public class TBParticipantListController extends FormBasicController implements 
 	
 	private void doSendNotification(List<Identity> identities) {
 		topicBrokerService.sendEnrollmentEmails(broker, identities);
+	}
+	
+	private void doBulkWithdrawEnrollmentsConfirmation(UserRequest ureq) {
+		if (guardModalController(withdrawEnrollmentsConfirmationCtrl)) return;
+		
+		List<Long> selectedIdentityKeys = new ArrayList<>();
+		int numEnrollments = 0;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex != null && !selectedIndex.isEmpty()) {
+			for (Integer index : selectedIndex) {
+				TBParticipantRow row = dataModel.getObject(index.intValue());
+				if (row != null && row.getNumEnrollments() > 0) {
+					selectedIdentityKeys.add(row.getIdentityKey());
+					numEnrollments += row.getNumEnrollments();
+				}
+			}
+		}
+		
+		List<Identity> selectedIdentities = securityManager.loadIdentityByKeys(selectedIdentityKeys);
+		if (selectedIdentities.isEmpty()) {
+			showWarning("participants.bulk.withdraw.enrollments.empty");
+			return;
+		}
+		
+		withdrawEnrollmentsConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("participants.bulk.withdraw.enrollments.message", String.valueOf(numEnrollments)),
+				translate("participants.bulk.withdraw.enrollments.confirmation"),
+				translate("reset"));
+		withdrawEnrollmentsConfirmationCtrl.setUserObject(selectedIdentities);
+		listenTo(withdrawEnrollmentsConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				withdrawEnrollmentsConfirmationCtrl.getInitialComponent(), true,
+				translate("participants.bulk.withdraw.enrollments"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doWithdrawEnrollments(UserRequest ureq, List<Identity> identities) {
+		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
+		searchParams.setIdentities(identities);
+		searchParams.setFetchTopic(true);
+		searchParams.setFetchIdentity(true);
+		List<TBSelection> selections = topicBrokerService.getSelections(searchParams);
+		for (TBSelection selection : selections) {
+			if (selection.isEnrolled()) {
+				topicBrokerService.withdraw(getIdentity(), selection.getParticipant().getIdentity(), selection.getTopic(), false);
+			}
+		}
+		
+		loadModel(ureq);
+	}
+	
+	private void doBulkResetSelectionsConfirmation(UserRequest ureq) {
+		if (guardModalController(resetSelectionConfirmationCtrl)) return;
+		
+		List<Long> selectedIdentityKeys = new ArrayList<>();
+		int numSelectionWithoutEnrollments = 0;
+		int numSelectionWithEnrollments = 0;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex != null && !selectedIndex.isEmpty()) {
+			for (Integer index : selectedIndex) {
+				TBParticipantRow row = dataModel.getObject(index.intValue());
+				if (row != null && row.getSelections() != null && !row.getSelections().isEmpty()) {
+					selectedIdentityKeys.add(row.getIdentityKey());
+					numSelectionWithoutEnrollments += row.getSelections().size();
+					numSelectionWithoutEnrollments -= row.getNumEnrollments();
+					numSelectionWithEnrollments += row.getNumEnrollments();
+				}
+			}
+		}
+		
+		List<Identity> selectedIdentities = securityManager.loadIdentityByKeys(selectedIdentityKeys);
+		if (selectedIdentities.isEmpty()) {
+			showWarning("participants.bulk.reset.selections.empty");
+			return;
+		}
+		
+		resetSelectionConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("participants.bulk.reset.selections.message", String.valueOf(numSelectionWithoutEnrollments), String.valueOf(numSelectionWithEnrollments)),
+				translate("participants.bulk.reset.selections.confirmation"),
+				translate("reset"));
+		resetSelectionConfirmationCtrl.setUserObject(selectedIdentities);
+		listenTo(resetSelectionConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				resetSelectionConfirmationCtrl.getInitialComponent(), true,
+				translate("participants.bulk.reset.selections"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doResetSelections(UserRequest ureq, List<Identity> identities) {
+		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
+		searchParams.setIdentities(identities);
+		searchParams.setFetchTopic(true);
+		searchParams.setFetchIdentity(true);
+		List<TBSelection> selections = topicBrokerService.getSelections(searchParams);
+		for (TBSelection selection : selections) {
+			topicBrokerService.unselect(getIdentity(), selection.getParticipant().getIdentity(), selection.getTopic());
+		}
+		
+		loadModel(ureq);
 	}
 
 }

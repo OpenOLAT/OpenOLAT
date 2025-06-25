@@ -346,13 +346,13 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			putInitialPanel(mainVC);
 			
 			if (row.isEnrolled()) {
-				addLink("withdraw", CMD_WITHDRAW, "o_icon o_icon-fw o_icon_tb_withdraw");
+				addLink("withdraw.enrollment", CMD_WITHDRAW, "o_icon o_icon-fw o_icon_tb_withdraw");
 			} else {
 				addLink("enroll", CMD_ENROLL, "o_icon o_icon-fw o_icon_tb_enroll");
 			}
 			
 			names.add("divider");
-			addLink("remove", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_unselect");
+			addLink("reset.selection", CMD_UNSELECT, "o_icon o_icon-fw o_icon_tb_unselect");
 			
 			mainVC.contextPut("names", names);
 		}
