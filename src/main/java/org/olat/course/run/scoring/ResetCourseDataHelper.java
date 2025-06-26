@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -266,8 +267,12 @@ public class ResetCourseDataHelper {
 			log.error("", e);
 		}
 		
+		Boolean previousPassed = null;
 		if (!resetCourse) {
 			CourseAssessmentService assessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			
+			previousPassed = userCourseEnv.getScoreAccounting().getScoreEvaluation(
+					userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()).getPassed();
 			
 			if (resetPassedOverridden) {
 				assessmentService.resetRootPassed(doer, userCourseEnv);
@@ -301,6 +306,19 @@ public class ResetCourseDataHelper {
 		// 4) Evaluate all
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		dbInstance.commitAndCloseSession();
+		
+		if (!resetCourse) {
+			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			AssessmentEvaluation rootAssessmentEvaluation = userCourseEnv.getScoreAccounting().getScoreEvaluation(
+					rootNode);
+			Boolean currentPassed = rootAssessmentEvaluation.getPassed();
+			if (!Objects.equals(previousPassed, currentPassed)) {
+				// Save root score evaluation to propagate to efficiency statement and certificate
+				CoreSpringFactory.getImpl(CourseAssessmentService.class)
+					.saveScoreEvaluation(rootNode, null, rootAssessmentEvaluation, userCourseEnv, false, null);
+				dbInstance.commit();
+			}
+		}
 		
 		if(resetCourse) {
 			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();

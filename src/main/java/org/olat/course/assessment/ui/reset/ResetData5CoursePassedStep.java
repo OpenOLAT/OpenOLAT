@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.assessment.ui.reset.ResetWizardContext.ResetDataStep;
@@ -49,7 +50,9 @@ public class ResetData5CoursePassedStep extends BasicStep {
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		wizardContext.setCurrent(ResetDataStep.coursePassed);
-		return new PrevNextFinishConfig(true, true, false);
+		return nextStep() == Step.NOSTEP
+				? new PrevNextFinishConfig(false, false ,true)
+				: new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
