@@ -161,6 +161,12 @@ dialog.dialog .tox .tox-dialog-wrap__backdrop {
 	background: none;
 }
 
+// Limit modal in dialogs
+dialog.dialog .tox-dialog.tox-dialog--width-lg {
+	max-width: calc($modal-lg - 20px);
+}
+
+
 // Show ok / cancel button on very small devices
 @media (max-width: 470px) {
 	.mce-foot {
