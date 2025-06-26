@@ -47,10 +47,13 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -78,6 +81,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private VFSMetadataDAO vfsMetadataDao;
+	@Autowired
 	private RepositoryService repositoryService;
 	
 	@Before
@@ -86,7 +91,7 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 	}
 	
-  @After
+	@After
 	public void tearDown() throws Exception {
 		try {
 			if(conn != null) {
@@ -161,41 +166,52 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		
 		//create single page
 		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
-		assertNotNull(fileUrl);
+		Assert.assertNotNull(fileUrl);
 		File file = new File(fileUrl.toURI());
 		
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		conn.addMultipart(method, file.getName(), file);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		String relPath = "course/" + courseWithBc.course.getResourceableId() + "/foldernodes/" + courseWithBc.bcNode.getIdent();
+		VFSMetadata fileMetadata = vfsMetadataDao.getMetadata(relPath, file.getName(), Boolean.FALSE);
+		Assert.assertNotNull(fileMetadata);
+		Assert.assertEquals(file.length(), fileMetadata.getFileSize());
+		
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());
-		assertNotNull(item);
+		Assert.assertNotNull(item);
 	}
 	
 	@Test
-	public void testUploadFile_withSpecialCharacter() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+	public void testUploadFileWithSpecialCharacter() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
 		CourseWithBC courseWithBc = deployCourse();
 		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").build();
 		
 		//create single page
 		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
-		assertNotNull(fileUrl);
+		Assert.assertNotNull(fileUrl);
 		File file = new File(fileUrl.toURI());
 		String filename = "SingleP\u00E4ge.html";
 		
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		conn.addMultipart(method, filename, file);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		String relPath = "course/" + courseWithBc.course.getResourceableId() + "/foldernodes/" + courseWithBc.bcNode.getIdent();
+		VFSMetadata fileMetadata = vfsMetadataDao.getMetadata(relPath, filename, Boolean.FALSE);
+		Assert.assertNotNull(fileMetadata);
+		Assert.assertEquals(file.length(), fileMetadata.getFileSize());
+		Assert.assertEquals(filename, fileMetadata.getFilename());
 
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve(filename);
-		assertNotNull(item);
-		assertEquals(filename, item.getName());
+		Assert.assertNotNull(item);
+		Assert.assertEquals(filename, item.getName());
 	}
 	
 	@Test
@@ -206,12 +222,16 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("RootFolder").build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		String relPath = "course/" + courseWithBc.course.getResourceableId() + "/foldernodes/" + courseWithBc.bcNode.getIdent();
+		VFSMetadata folderMetadata = vfsMetadataDao.getMetadata(relPath, "RootFolder", Boolean.TRUE);
+		Assert.assertNotNull(folderMetadata);
 		
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve("RootFolder");
-		assertNotNull(item);
-		assertTrue(item instanceof VFSContainer);
+		Assert.assertNotNull(item);
+		Assert.assertTrue(item instanceof VFSContainer);
 	}
 	
 	@Test
