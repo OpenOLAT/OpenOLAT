@@ -235,12 +235,10 @@ public class DataCollectionListController extends FormBasicController
 		filters.add(new FlexiTableTextFilter(translate("data.collection.id"), DataCollectionFilter.key.name(), false));
 		
 		filters.add(new FlexiTableDateRangeFilter(translate("data.collection.start"),
-				DataCollectionFilter.start.name(), false, false, translate("data.collection.start.after"),
-				translate("data.collection.start.before"), getLocale()));
-		
+				DataCollectionFilter.start.name(), false, false, getLocale()));
+
 		filters.add(new FlexiTableDateRangeFilter(translate("data.collection.deadline"),
-				DataCollectionFilter.deadline.name(), false, false, translate("data.collection.deadline.after"),
-				translate("data.collection.deadline.before"), getLocale()));
+				DataCollectionFilter.deadline.name(), false, false, getLocale()));
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(entry(QualityDataCollectionStatus.PREPARATION.name(), translate("data.collection.status.preparation")));

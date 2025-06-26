@@ -427,8 +427,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		filters.add(authorFilter);
 
 		FlexiTableDateRangeFilter publishDateFilter = new FlexiTableDateRangeFilter(translate("table.filter.publish.date"),
-				FeedItemFilter.PUBLISHDATE.name(), true, true, translate("table.filter.publish.date.from"),
-				translate("table.filter.publish.date.to"), getLocale());
+				FeedItemFilter.PUBLISHDATE.name(), true, true, getLocale());
 		filters.add(publishDateFilter);
 
 		SelectionValues statusValues = new SelectionValues();

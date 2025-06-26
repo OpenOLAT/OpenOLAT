@@ -271,9 +271,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			filters.add(new FlexiTableMultiSelectionFilter(translate("calendar.type"), ProjCalendarFilter.type.name(), typeValues, true));
 		}
 		
-		filters.add(new FlexiTableDateRangeFilter(translate("filter.date.range"),
-				ProjCalendarFilter.daterange.name(), true, false, translate("filter.date.range.from"),
-				translate("filter.date.range.to"), getLocale()));
+		filters.add(new FlexiTableDateRangeFilter(translate("filter.date.range"), ProjCalendarFilter.daterange.name(),
+				true, false, getLocale()));
 		
 		List<TagInfo> tagInfos = projectService.getTagInfos(project, null);
 		if (!tagInfos.isEmpty()) {

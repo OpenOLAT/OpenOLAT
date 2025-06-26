@@ -451,8 +451,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				FILTER_TYPE, typesValues, true);
 		filters.add(typeFilter);
 		
-		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"), FILTER_PERIOD, true, false,
-				translate("filter.date.range.label"), translate("filter.date.to"), getLocale());
+		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"),
+				FILTER_PERIOD, true, false, getLocale());
 		filters.add(periodFilter);
 		
 		if(config.isWithMixMaxColumn()) {

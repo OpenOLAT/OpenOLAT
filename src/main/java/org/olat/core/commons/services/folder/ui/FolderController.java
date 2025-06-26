@@ -751,7 +751,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		filters.add(new FlexiTableDateRangeFilter(translate("modified.date"), FILTER_MODIFIED_DATE, true, true,
-				translate("from"), translate("to"), getLocale()));
+				getLocale()));
 		
 		filters.add(new FlexiTableTextFilter(translate("table.title"), FILTER_TITLE, true));
 		

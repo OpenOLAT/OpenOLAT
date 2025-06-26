@@ -172,8 +172,7 @@ public class AssessmentInspectionLogController extends FormBasicController {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		FlexiTableDateRangeFilter dateFilter = new FlexiTableDateRangeFilter(translate("filter.event.date"), FILTER_DATE,
-				true, true, translate("filter.event.date.from"),
-				translate("filter.event.date.to"), getLocale());
+				true, true, getLocale());
 		filters.add(dateFilter);
 
 		tableEl.setFilters(true, filters, false, false);

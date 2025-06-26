@@ -238,7 +238,7 @@ public class UserRoleHistoryController extends FormBasicController implements Ex
 		}
 		
 		FlexiTableDateRangeFilter dateFilter = new FlexiTableDateRangeFilter(translate("filter.date"), FILTER_DATE,
-				true, true, translate("filter.date.range.label"), translate("filter.date.to"), getLocale());
+				true, true, getLocale());
 		filters.add(dateFilter);
 
 		tableEl.setFilters(true, filters, false, false);

@@ -286,8 +286,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		filters.add(new FlexiTableMultiSelectionFilter(translate("topic.group.restriction"), FILTER_GROUP, groupValues, true));
 		
 		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("topic.execution.period"),
-				FILTER_EXECUTION_PERIOD, true, false, translate("topic.execution.period"), translate("to.separator"),
-				getLocale());
+				FILTER_EXECUTION_PERIOD, true, false, getLocale());
 		filters.add(periodFilter);
 		
 		tableEl.setFilters(true, filters, false, false);

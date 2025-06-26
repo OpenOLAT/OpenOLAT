@@ -31,11 +31,13 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -49,18 +51,15 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 	private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
 	private final boolean timeEnabled;
-	private final String dateLabel;
-	private final String separator;
 	private final Locale locale;
+	private final Translator translator;
 	private DateRange filterDateRange;
 	
-	public FlexiTableDateRangeFilter(String label, String filter, boolean defaultVisible, boolean timeEnabled,
-			String dateLabel, String separator, Locale locale) {
+	public FlexiTableDateRangeFilter(String label, String filter, boolean defaultVisible, boolean timeEnabled, Locale locale) {
 		super(label, filter);
 		this.timeEnabled = timeEnabled;
-		this.dateLabel = dateLabel;
-		this.separator = separator;
 		this.locale = locale;
+		this.translator = Util.createPackageTranslator(FlexiTableElementImpl.class, locale);
 		setDefaultVisible(defaultVisible);
 	}
 	
@@ -92,10 +91,10 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 		if (filterDateRange != null) {
 			List<String> values = new ArrayList<>(2);
 			if (filterDateRange.getStart() != null) {
-				values.add(dateLabel + ": " + formatDate(filterDateRange.getStart()));
+				values.add(translator.translate("from") + ": " + formatDate(filterDateRange.getStart()));
 			}
 			if (filterDateRange.getEnd() != null) {
-				values.add(separator + ": " + formatDate(filterDateRange.getEnd()));
+				values.add(translator.translate("to.separator") + ": " + formatDate(filterDateRange.getEnd()));
 			}
 			if (!values.isEmpty()) {
 				return values;
@@ -125,13 +124,13 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 			}
 			
 			if (dateRange.getStart() != null) {
-				label.append(dateLabel).append(": ").append(formatDate(dateRange.getStart()));
+				label.append(translator.translate("from")).append(": ").append(formatDate(dateRange.getStart()));
 			}
 			if (dateRange.getEnd() != null) {
 				if (dateRange.getStart() != null) {
 					label.append(", ");
 				}
-				label.append(separator).append(": ").append(formatDate(dateRange.getEnd()));
+				label.append(translator.translate("to.separator")).append(": ").append(formatDate(dateRange.getEnd()));
 			}
 			
 			if(withHtml) {
@@ -158,13 +157,13 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, dateLabel, separator, filterDateRange);
+		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, filterDateRange);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
 		DateRange dateRange = toDateRange(preselectedValue);
-		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, dateLabel, separator, dateRange);
+		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, dateRange);
 	}
 
 	private DateRange toDateRange(Object object) {

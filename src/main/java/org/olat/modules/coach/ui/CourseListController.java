@@ -218,7 +218,7 @@ public class CourseListController extends FormBasicController implements Activat
 				FILTER_MARKED, markedKeyValue, true));
     	
 		filters.add(new FlexiTableDateRangeFilter(translate("filter.date.range"), FILTER_PERIOD, true, false,
-				translate("filter.date.range.label"), translate("filter.date.to"), getLocale()));
+				getLocale()));
 		
 		SelectionValues notVisitedPK = new SelectionValues();
 		notVisitedPK.add(SelectionValues.entry(FILTER_NOT_VISITED, translate("filter.not.visited")));

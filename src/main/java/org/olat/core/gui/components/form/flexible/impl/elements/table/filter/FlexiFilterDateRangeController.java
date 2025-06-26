@@ -51,17 +51,13 @@ public class FlexiFilterDateRangeController extends FormBasicController {
 
 	private final FlexiTableDateRangeFilter filter;
 	private final boolean timeEnabled;
-	private final String dateLabel;
-	private final String separator;
 	private final DateRange initialDateRange;
 
 	public FlexiFilterDateRangeController(UserRequest ureq, WindowControl wControl, FlexiTableDateRangeFilter filter,
-			boolean timeEnabled, String dateLabel, String separator, DateRange initialDateRange) {
+			boolean timeEnabled, DateRange initialDateRange) {
 		super(ureq, wControl, LAYOUT_VERTICAL, Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
 		this.timeEnabled = timeEnabled;
-		this.dateLabel = dateLabel;
-		this.separator = separator;
 		this.initialDateRange = initialDateRange;
 		
 		initForm(ureq);
@@ -69,20 +65,20 @@ public class FlexiFilterDateRangeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer datesCont = FormLayoutContainer.createVerticalFormLayout("dates", getTranslator());
+		FormLayoutContainer datesCont = FormLayoutContainer.createCustomFormLayout("dates", getTranslator(), velocity_root + "/filter_date_range.html");
 		datesCont.setRootForm(mainForm);
 		formLayout.add("dates", datesCont);
 		
 		Date start = initialDateRange != null? initialDateRange.getStart(): null;
 		Date end = initialDateRange != null? initialDateRange.getEnd(): null;
-		rangeEl = uifactory.addDateChooser("start", null, start, datesCont);
+		rangeEl = uifactory.addDateChooser("range", null, start, datesCont);
 		rangeEl.setElementCssClass("o_date_scope_range");
 		rangeEl.showLabel(true);
-		rangeEl.setLabel(dateLabel, null, false);
+		rangeEl.setLabel("from", null);
 		rangeEl.setDateChooserTimeEnabled(timeEnabled);
 		rangeEl.setSecondDate(true);
 		rangeEl.setSecondDate(end);
-		rangeEl.setSeparator(separator, true);
+		rangeEl.setSeparator("to.separator");
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		updateButton = uifactory.addFormLink("update", buttonsCont, Link.BUTTON_SMALL);

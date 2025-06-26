@@ -442,8 +442,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
 		
 		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("topic.execution.period"),
-				FILTER_EXECUTION_PERIOD, true, false, translate("topic.execution.period"), translate("to.separator"),
-				getLocale());
+				FILTER_EXECUTION_PERIOD, true, false, getLocale());
 		filters.add(periodFilter);
 		
 		topicTableEl.setFilters(true, filters, false, false);

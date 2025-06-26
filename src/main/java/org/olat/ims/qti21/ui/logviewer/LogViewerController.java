@@ -164,8 +164,7 @@ public class LogViewerController extends FormBasicController implements FlexiTab
 		filters.add(new FlexiTableTextFilter(translate("filter.event.title"), FILTER_TITLE, true));
 		
 		FlexiTableDateRangeFilter dateFilter = new FlexiTableDateRangeFilter(translate("filter.event.date"), FILTER_DATE,
-				true, true, translate("filter.event.date.from"),
-				translate("filter.event.date.to"), getLocale());
+				true, true, getLocale());
 		filters.add(dateFilter);
 		
 		tableEl.setFilters(true, filters, false, true);

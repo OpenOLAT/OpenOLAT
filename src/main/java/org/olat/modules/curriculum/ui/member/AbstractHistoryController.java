@@ -155,7 +155,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		FlexiTableDateRangeFilter dateFilter = new FlexiTableDateRangeFilter(translate("filter.date"), FILTER_DATE,
-				true, true, translate("filter.date.range.label"), translate("filter.date.to"), getLocale());
+				true, true, getLocale());
 		filters.add(dateFilter);
 
 		tableEl.setFilters(true, filters, false, false);
