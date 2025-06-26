@@ -49,6 +49,7 @@ public class CoachReportsListController extends ExportsListController {
 	@Override
 	public SearchExportMetadataParameters getSearchParams() {
 		SearchExportMetadataParameters params = new SearchExportMetadataParameters(null, null, List.of(type));
+		params.setCreator(getIdentity());
 		return params;
 	}
 }

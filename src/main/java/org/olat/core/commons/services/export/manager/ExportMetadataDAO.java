@@ -264,6 +264,10 @@ public class ExportMetadataDAO {
 			sb.append(")");
 		}
 
+		if (params.getCreator() != null) {
+			sb.and().append("creator.key=:creatorKey");
+		}
+
 		TypedQuery<ExportMetadata> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ExportMetadata.class);
 		if(params.hasRepositoryEntries()) {
@@ -308,6 +312,10 @@ public class ExportMetadataDAO {
 			}
 		}
 		
+		if (params.getCreator() != null) {
+			query.setParameter("creatorKey", params.getCreator().getKey());
+		}
+
 		return query.getResultList();
 	}
 }

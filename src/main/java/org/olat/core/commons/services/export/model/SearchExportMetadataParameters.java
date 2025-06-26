@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.id.Identity;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -50,7 +51,8 @@ public class SearchExportMetadataParameters {
 	private Boolean onlyAdministrators;
 	
 	private List<String> roles;
-	
+	private Identity creator;
+
 	public SearchExportMetadataParameters(List<ArchiveType> archiveTypes) {
 		this.archiveTypes = archiveTypes;
 	}
@@ -155,5 +157,13 @@ public class SearchExportMetadataParameters {
 
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
+	}
+
+	public Identity getCreator() {
+		return creator;
+	}
+
+	public void setCreator(Identity creator) {
+		this.creator = creator;
 	}
 }
