@@ -112,6 +112,8 @@ public class EditOrganisationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_organisation_metadata_form");
+		
 		if(organisation != null) {
 			String key = organisation.getKey().toString();
 			uifactory.addStaticTextElement("organisation.key", key, formLayout);

@@ -85,6 +85,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		searchLink.setI18nKey(searchLabel);
 		
 		exploreLink = uifactory.addFormLink("explore", "", "", formLayout, Link.NONTRANSLATED);
+		
 		exploreLink.setUrl(bcFactory.getSearchUrl());
 		
 		if (catalogModule.hasHeaderBgImage()) {

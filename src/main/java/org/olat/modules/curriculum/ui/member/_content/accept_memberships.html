@@ -1,16 +1,18 @@
-<fieldset class="o_block">
-	<legend>$r.translate("details.memberships")</legend>
-	$r.render("admin.note", "vertical")
-</fieldset>
-<fieldset class="o_block">
-	<legend>$r.translate("membership")</legend>
-	$r.render("table")
-	<div class="o_button_group o_button_group_left">
-		<div class="btn-group">
-		$r.render("apply")
-		$r.render("action.more")
+<div class="o_sel_accept_cancel_membership">
+	<fieldset class="o_block">
+		<legend>$r.translate("details.memberships")</legend>
+		$r.render("admin.note", "vertical")
+	</fieldset>
+	<fieldset class="o_block">
+		<legend>$r.translate("membership")</legend>
+		$r.render("table")
+		<div class="o_button_group o_button_group_left">
+			<div class="btn-group">
+			$r.render("apply")
+			$r.render("action.more")
+			</div>
+			$r.render("apply.without.notifications")
+			$r.render("cancel")
 		</div>
-		$r.render("apply.without.notifications")
-		$r.render("cancel")
-	</div>
-</fieldset>
+	</fieldset>
+</div>

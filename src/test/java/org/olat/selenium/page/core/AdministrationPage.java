@@ -31,6 +31,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
 import org.olat.selenium.page.library.LibraryAdminPage;
 import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
+import org.olat.selenium.page.repository.CatalogAdminPage;
 import org.olat.selenium.page.taxonomy.TaxonomyAdminPage;
 import org.olat.selenium.page.tracing.ContactTracingAdminPage;
 import org.olat.selenium.page.user.PasswordAndAuthenticationAdminPage;
@@ -128,6 +129,15 @@ public class AdministrationPage {
 		return this;
 	}
 	
+	public AdministrationPage selectCustomizing() {
+		By customizingLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'sysAdminMenueNodeCustomizing')]");
+		OOGraphene.waitElement(customizingLinkBy, browser).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
+		By customizingLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'active_parent')]/a[contains(@onclick,'sysAdminMenueNodeCustomizing')]");
+		OOGraphene.waitElement(customizingLinkOpenBy, browser);
+		return this;
+	}
+	
 	public AdministrationPage clearCache(String cacheName) {
 		selectSystemInfo();
 		
@@ -162,6 +172,14 @@ public class AdministrationPage {
 		By configurationFormBy = By.cssSelector("fieldset.o_sel_lectures_configuration_form");
 		OOGraphene.waitElement(configurationFormBy, browser);
 		return new LectureAdminSettingsPage(browser);
+	}
+	
+	public OrganisationsAdminPage openOrganisations() {
+		selectModules();
+		openSubMenu("o_sel_organisations");
+		OOGraphene.waitBusyAndScrollTop(browser);
+		
+		return new OrganisationsAdminPage(browser).assertOnAdminConfiguration();
 	}
 	
 	public LibraryAdminPage openLibrarySettings() {
@@ -312,6 +330,13 @@ public class AdministrationPage {
 		return new JupyterHubSettingsPage(browser);
 	}
 	
+	public CatalogAdminPage openCatalog() {
+		selectModules();
+		openSubMenu("o_sel_catalog");
+		
+		return new CatalogAdminPage(browser);
+	}
+	
 	public MediaServerPage openMediaServer() {
 		selectLogin()
 			.selectSecurity();
@@ -322,6 +347,14 @@ public class AdministrationPage {
 		OOGraphene.waitElement(mediaServerSelectedBy, browser);
 		
 		return new MediaServerPage(browser);
+	}
+	
+	public SitesPage openSites() {
+		OOGraphene.scrollBottom(By.cssSelector("li.o_sel_customizing"), browser);
+		selectCustomizing();
+		openSubMenu("o_sel_coursesites");
+		
+		return new SitesPage(browser).assertOnSites();
 	}
 	
 	private void openSubMenu(String liClass) {

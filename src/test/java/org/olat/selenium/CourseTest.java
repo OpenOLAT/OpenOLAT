@@ -153,8 +153,6 @@ public class CourseTest extends Deployments {
 			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
 			.nextAccess()
-			.selectCatalog(false)
-			.nextCatalog() // -> no problem found
 			.finish();
 		
 		//back to the course
@@ -221,8 +219,6 @@ public class CourseTest extends Deployments {
 			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
 			.nextAccess()
-			.selectCatalog(false)
-			.nextCatalog() // -> no problem found
 			.finish();
 		
 		//back to the course
@@ -337,7 +333,6 @@ public class CourseTest extends Deployments {
 		courseWizard
 			.selectAllCourseElements()
 			.nextNodes()
-			.nextCatalog()
 			.finish();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
@@ -743,9 +738,11 @@ public class CourseTest extends Deployments {
 	
 	
 	/**
-	 * Create a catalog, create a course, while publishing add the
-	 * course to the catalog. Go to the catalog, find the course and
-	 * open it.
+	 * Create a catalog version 1, first enable the catalog v1.
+	 * Then create a course, while publishing add the course to
+	 * the catalog. Go to the catalog, find the course and
+	 * open it.<br>
+	 * Least, reactivate catalog version 2
 	 * 
 	 * @param loginPage
 	 * @throws IOException
@@ -756,7 +753,7 @@ public class CourseTest extends Deployments {
 	public void catalogRoundTrip()
 	throws IOException, URISyntaxException {
 		
-		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		UserVO administrator = new UserRestClient(deploymentUrl).createAdministrator();
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		
 		//administrator create the categories in the catalog
@@ -765,6 +762,23 @@ public class CourseTest extends Deployments {
 			.loginAs(administrator)
 			.resume();
 		NavigationPage adminNavBar = NavigationPage.load(browser);
+		AdministrationPage administration = adminNavBar
+			.openAdministration();
+		administration
+			.openCatalog()
+			.enableCatalogV1();
+		administration
+			.openSites()
+			.assertOnSites()
+			.enableCatalogV1()
+			.enableCatalogAdmin();
+		
+		// Log out to load again the sites
+		new UserToolsPage(browser)
+			.logout();
+		adminLogin
+			.loginAs(administrator)
+			.resume();
 		
 		String node1 = "First level " + UUID.randomUUID();
 		String node2_1 = "Second level first element " + UUID.randomUUID();
@@ -773,11 +787,11 @@ public class CourseTest extends Deployments {
 		String node2_1Short = "1.1l " + JunitTestHelper.miniRandom();
 		String node2_2Short = "1.2l " + JunitTestHelper.miniRandom();
 		adminNavBar
-				.openCatalogAdministration()
-				.addCatalogNode(node1, node1Short, "First level of the catalog")
-				.selectNode(node1Short)
-				.addCatalogNode(node2_1, node2_1Short, "First element of the second level")
-				.addCatalogNode(node2_2, node2_2Short, "Second element of the second level");
+			.openCatalogAdministration()
+			.addCatalogNode(node1, node1Short, "First level of the catalog")
+			.selectNode(node1Short)
+			.addCatalogNode(node2_1, node2_1Short, "First element of the second level")
+			.addCatalogNode(node2_2, node2_2Short, "Second element of the second level");
 		
 		//An author create a course and publish it under a category
 		//created above
@@ -798,7 +812,7 @@ public class CourseTest extends Deployments {
 			.publish()
 			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
-			.nextAccess()
+			.nextAccessV1dep()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)
 			//.nextCatalog() // -> no problem found
@@ -820,7 +834,18 @@ public class CourseTest extends Deployments {
 		By courseTitleBy = By.cssSelector("div.o_course_run h2");
 		WebElement courseTitleEl = OOGraphene.waitElement(courseTitleBy, browser);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
+		
+		// Reset to catalov v2
+		adminLogin = LoginPage.load(browser, deploymentUrl);
+		adminLogin
+			.loginAs(administrator)
+			.resume();
+		NavigationPage.load(browser)
+			.openAdministration()
+			.openCatalog()
+			.enableCatalogV2();
 	}
+	
 	
 	/**
 	 * Create a course with a calendar element, add a recurring event
@@ -1662,8 +1687,6 @@ public class CourseTest extends Deployments {
 			.nextSelectNodes()
 			.selectAccess(UserAccess.membersOnly)
 			.nextAccess()
-			.selectCatalog(false)
-			.nextCatalog() // -> no problem found
 			.finish();
 		courseEditor
 			.clickToolbarBack()

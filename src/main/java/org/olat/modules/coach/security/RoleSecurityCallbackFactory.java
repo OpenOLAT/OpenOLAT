@@ -131,6 +131,11 @@ public class RoleSecurityCallbackFactory {
 		public boolean canViewLecturesAndAbsences() {
 			return roleRights.contains(LecturesAndAbsencesRightProvider.RELATION_RIGHT);
 		}
+		
+		@Override
+		public boolean canViewAbsenceReport() {
+			return roleRights.contains(AbsenceReportRightProvider.RELATION_RIGHT);
+		}
 
 		@Override
 		public boolean canViewQualityReport() {

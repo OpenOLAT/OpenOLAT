@@ -50,6 +50,12 @@ public class MyCoursesPage {
 		return this;
 	}
 	
+	/**
+	 * Check the presence of the element in the card view
+	 * 
+	 * @param title The title of the curriculum element
+	 * @return Itself
+	 */
 	public MyCoursesPage assertOnCurriculumElementInList(String title) {
 		title = Formatter.truncateOnly(title, 55);
 		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");

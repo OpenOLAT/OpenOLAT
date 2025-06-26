@@ -67,6 +67,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer organisationCont = FormLayoutContainer.createDefaultFormLayout("organisations", getTranslator());
+		organisationCont.setElementCssClass("o_sel_org_admin_configuration");
 		organisationCont.setFormTitle(translate("organisation.configuration"));
 		organisationCont.setFormInfo(translate("organisation.configuration.help"));
 		organisationCont.setFormInfoHelp("manual_admin/administration/Modules_Organisations/");

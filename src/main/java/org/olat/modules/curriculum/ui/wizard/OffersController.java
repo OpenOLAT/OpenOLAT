@@ -240,6 +240,7 @@ public class OffersController extends StepFormBasicController {
 		}
 		
 		billingAdresseSelectLink = uifactory.addFormLink("select.billing.address", formLayout, Link.BUTTON);
+		billingAdresseSelectLink.setElementCssClass("o_sel_billing_address_select");
 		
 		priceEl = uifactory.addStaticTextElement("booking.offer.price", "booking.offer.price", "", formLayout);
 		cancellationFeeEl = uifactory.addStaticTextElement("booking.offer.cancellation.fee", "booking.offer.cancellation.fee", "", formLayout);

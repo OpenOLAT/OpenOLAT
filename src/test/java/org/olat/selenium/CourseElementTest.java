@@ -1976,7 +1976,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithForum_guest()
+	public void courseWithForumGuestAccess()
 	throws IOException, URISyntaxException {
 		WebDriver guestBrowser = getWebDriver(1);
 		
@@ -1987,13 +1987,7 @@ public class CourseElementTest extends Deployments {
 			.loginAs(administrator)
 			.resume();
 		
-		String node1 = "Forums " + UUID.randomUUID();
-		String node1Short = "Forum " + JunitTestHelper.miniRandom();
 		NavigationPage navBar = NavigationPage.load(browser);
-		navBar
-			.openCatalogAdministration()
-			.addCatalogNode(node1, node1Short, "First level of the catalog");
-		
 		//create a course
 		String courseTitle = "Guest FO " + UUID.randomUUID();
 		navBar
@@ -2020,24 +2014,21 @@ public class CourseElementTest extends Deployments {
 			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
 			.nextAccess()
-			.selectCatalog(true)
-			.selectCategory(null, node1)
-			.nextCatalog() // -> no problem found
 			.finish();
 		//back in course
-		courseEditor.clickToolbarBack();
-		
-		// guest go to the catalog and find the course
+		CoursePageFragment course = courseEditor.clickToolbarBack();
+		course
+			.settings()
+			.accessConfiguration()
+			.editAccessForGuest("It's free", true)
+			.clickToolbarBack();
+
+		// Guest go to the catalog and find the course
 		LoginPage guestLogin = LoginPage.load(guestBrowser, deploymentUrl);
 		guestLogin
-			.asGuest();
-
-		NavigationPage guestNavBar = NavigationPage.load(guestBrowser);
-		guestNavBar
-			.openCatalog()
-			.selectCatalogEntry(node1, node1Short)
-			.select(courseTitle)
-			.start();
+			.asCatalog()
+			.exploreOffers()
+			.visitCourse(courseTitle);
 		
 		//go to the forum
 		new CoursePageFragment(guestBrowser)
@@ -2081,6 +2072,7 @@ public class CourseElementTest extends Deployments {
 			.clickBack()
 			.assertThreadListOnNumber("Your favorite author", 3);
 	}
+	
 
 	/**
 	 * An author setup a course with a LTI course element with score enabled.

@@ -77,7 +77,9 @@ public class OrganisationAdminController extends BasicController implements Acti
 		configurationLink = LinkFactory.createLink("configuration", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
 		organisationListLink = LinkFactory.createLink("organisation.structure", mainVC, this);
+		organisationListLink.setElementCssClass("o_sel_org_organisations_list");
 		organisationTypeListLink = LinkFactory.createLink("organisation.types", mainVC, this);
+		organisationTypeListLink.setElementCssClass("o_sel_org_organisations_type_list");
 		organisationEmailDomainLink = LinkFactory.createLink("organisation.email.domains", mainVC, this);
 		doOpenConfiguration(ureq);
 		if(organisationModule.isEnabled()) {

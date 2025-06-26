@@ -44,6 +44,13 @@ public class CurriculumElementMembersPage {
 		return this;
 	}
 	
+	public CurriculumElementMembersPage activeScope() {
+		By pendingScopeBy = By.xpath("//ul[contains(@class,'o_scopes')]//button[div/span/div/div/i[contains(@class,'o_icon_circle_check')]]");
+		OOGraphene.waitElement(pendingScopeBy, browser).click();
+		OOGraphene.waitElement(By.className("o_sel_curriculum_element_members"), browser);
+		return this;
+	}
+	
 	public CurriculumElementMembersPage assertOnMemberInList(UserVO user) {
 		By memberBy = By.xpath("//div[contains(@class,'o_sel_curriculum_element_members')]//table//td/a[text()[contains(.,'" + user.getFirstName() + "')]]");
 		OOGraphene.waitElement(memberBy, browser);
@@ -56,6 +63,37 @@ public class CurriculumElementMembersPage {
 		
 		OOGraphene.waitModalWizard(browser);
 		return new CurriculumElementMembersWizardPage(browser);
+	}
+	
+	public CurriculumElementMembersPage pendingScope() {
+		By pendingScopeBy = By.xpath("//ul[contains(@class,'o_scopes')]//button[div/span/div/div/i[contains(@class,'o_icon_timelimit_half')]]");
+		OOGraphene.waitElement(pendingScopeBy, browser).click();
+		OOGraphene.waitElement(By.className("o_sel_curriculum_element_pending_members"), browser);
+		return this;
+	}
+	
+	public CurriculumElementMembersPage assertOnPendingMemberInList(UserVO user) {
+		By memberBy = By.xpath("//div[contains(@class,'o_sel_curriculum_element_pending_members')]//table//td/a[text()[contains(.,'" + user.getFirstName() + "')]]");
+		OOGraphene.waitElement(memberBy, browser);
+		return this;
+	}
+	
+	public CurriculumElementMembersPage acceptPendingMemberInList(UserVO user) {
+		By toolsBy = By.xpath("//div[contains(@class,'o_sel_curriculum_element_pending_members')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/a[i[contains(@class,'o_icon_actions')]]");
+		OOGraphene.waitElement(toolsBy, browser).click();
+		
+		OOGraphene.waitCallout(browser, "ul.o_dropdown a>i.o_icon_accepted");
+		By acceptBy = By.xpath("//ul[contains(@class,'o_dropdown')]/li/a[i[contains(@class,'o_icon_accepted')]]");
+		OOGraphene.waitElement(acceptBy, browser).click();
+		
+		OOGraphene.waitModalDialog(browser, "div.o_sel_accept_cancel_membership");
+		
+		By confirmBy = By.cssSelector("dialog div.o_sel_accept_cancel_membership .o_button_group button.btn.btn-primary");
+		browser.findElement(confirmBy).click();
+		
+		OOGraphene.waitModalDialogDisappears(browser);
+		
+		return this;
 	}
 
 }

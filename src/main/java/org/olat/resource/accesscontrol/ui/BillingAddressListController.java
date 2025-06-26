@@ -98,6 +98,7 @@ public class BillingAddressListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer titleCont = FormLayoutContainer.createDefaultFormLayout("title", getTranslator());
+		titleCont.setElementCssClass("o_sel_billing_address_list");
 		titleCont.setFormTitle(translate("billing.addresses"));
 		titleCont.setRootForm(mainForm);
 		formLayout.add(titleCont);
@@ -108,6 +109,7 @@ public class BillingAddressListController extends FormBasicController {
 		formLayout.add(buttonsTopCont);
 		
 		createLink = uifactory.addFormLink("create", buttonsTopCont, Link.BUTTON);
+		createLink.setElementCssClass("o_sel_billing_address_add");
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

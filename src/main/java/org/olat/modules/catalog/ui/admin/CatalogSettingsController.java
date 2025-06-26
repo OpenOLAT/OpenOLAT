@@ -112,6 +112,7 @@ public class CatalogSettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setElementCssClass("o_sel_catalog_admin_general");
 		generalCont.setFormTitle(translate("admin.settings"));
 		generalCont.setRootForm(mainForm);
 		formLayout.add("general", generalCont);
@@ -121,6 +122,7 @@ public class CatalogSettingsController extends FormBasicController {
 		enabledSV.add(entry(KEY_V1, translate("admin.enabled.v1")));
 		enabledSV.add(entry(KEY_V2, translate("admin.enabled.v2")));
 		enabledEl = uifactory.addRadiosVertical("admin.enabled", generalCont, enabledSV.keys(), enabledSV.values());
+		enabledEl.setElementCssClass("o_sel_catalog_admin_enable");
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 		if (catalogV2Module.isEnabled()) {
 			enabledEl.select(KEY_V2, true);
@@ -159,6 +161,7 @@ public class CatalogSettingsController extends FormBasicController {
 		
 		webPublishEnabledEl = uifactory.addToggleButton("admin.webpub.enabled", "admin.webpub.enabled", translate("on"),
 				translate("off"), generalCont);
+		webPublishEnabledEl.setElementCssClass("o_sel_catalog_admin_webpublish");
 		webPublishEnabledEl.toggle(catalogV2Module.isWebPublishEnabled());
 		webPublishEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		

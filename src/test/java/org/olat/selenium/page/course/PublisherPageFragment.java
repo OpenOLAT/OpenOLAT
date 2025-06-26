@@ -61,13 +61,16 @@ public class PublisherPageFragment {
 		quickPublish(UserAccess.registred);
 	}
 	
+	/**
+	 * Short to publish a course (no catalog / catalog v2)
+	 * 
+	 * @param access Specify access
+	 */
 	public void quickPublish(UserAccess access) {
 		assertOnPublisher()
 			.nextSelectNodes()
 			.selectAccess(access)
 			.nextAccess()
-			.selectCatalog(false)
-			.nextCatalog() // -> no problem found
 			.finish();
 	}
 	
@@ -77,9 +80,24 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
-	public PublisherPageFragment nextAccess() {
+	/**
+	 * Next from access with catalog v1.
+	 * 
+	 * @return Itself
+	 */
+	public PublisherPageFragment nextAccessV1dep() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_course_editor_publish"), browser);
+		return this;
+	}
+	
+	/**
+	 * Next from access if catalog is not active or catalog v2
+	 * @return Itself
+	 */
+	public PublisherPageFragment nextAccess() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_warnings"), browser);
 		return this;
 	}
 	

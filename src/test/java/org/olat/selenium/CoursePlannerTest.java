@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.curriculum.CoursePlannerPage;
 import org.olat.selenium.page.curriculum.CurriculumComposerPage;
@@ -226,6 +227,115 @@ public class CoursePlannerTest extends Deployments {
 		
 		courseElementPage
 			.changeStatus(CurriculumElementStatus.provisional);
+		
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		NavigationPage.load(browser)
+			.openMyCourses()
+			.openInPreparation()
+			.assertOnCurriculumElementInList(elementName)
+			.more(elementName)
+			.assertOnCurriculumElementDetails(elementName);
+	}
+	
+	
+	/**
+	 * An administrator creates an address in administration. As a curriculum
+	 * manager, it creates a curriculum, an element with a type single course
+	 * implementation but without course. It configures an invoice booking
+	 * method. It books a participant to the element and select the invoice
+	 * with confirmation by an administrator.<br>
+	 * In scope pending, it finds the future member and confirms it as a
+	 * full member.<br>
+	 * The participant logs in and goes in "My courses", in scope
+	 * "In preparation" to read some details about the future course.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void bookingWithInvoice()
+	throws IOException, URISyntaxException {
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Sally");
+		UserVO manager = new UserRestClient(deploymentUrl).createCurriculumManager("John");
+		UserVO administrator = new UserRestClient(deploymentUrl).createAdministrator();
+		
+		String typeName = "Single course inv.";
+		CurriculumElementTypeVO type = new CurriculumRestClient(deploymentUrl)
+				.createSingleCourseImplementationType(typeName, "C-CUR-3");
+		
+		// open meeting for guest
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs(administrator)
+			.resume();
+		
+		String addressId = UUID.randomUUID().toString();
+		
+		AdministrationPage administration = NavigationPage.load(browser)
+			.openAdministration();
+		administration
+			.openOrganisations()
+			.assertOnAdminConfiguration()
+			.openOrganisationsList()
+			.editOrganisation("OpenOLAT")
+			.openAddressList()
+			.addAddress(addressId, "frentix", "Okenstr. 1234", "Zurich", "Switzerlan")
+			.saveAddress();
+		
+		LoginPage managerLoginPage = LoginPage.load(browser, deploymentUrl);
+		managerLoginPage
+			.loginAs(manager.getLogin(), manager.getPassword());
+		NavigationPage navBar = NavigationPage.load(browser);
+
+		CoursePlannerPage coursePlannerPage = navBar
+			.openCoursePlanner();
+		
+		String id = UUID.randomUUID().toString();
+		String curriculumName = "Curriculum 3 " + id;
+		String curriculumRef = "CUR-3 " + id;
+		CurriculumPage curriculumPage = coursePlannerPage
+			.openCurriculumBrowser()
+			.addCurriculum(curriculumName, curriculumRef)
+			.assertOnCurriculumInTable(curriculumName)
+			.openCurriculum(curriculumName);
+
+		String eid = UUID.randomUUID().toString();
+		String elementName = "Element 3 " + eid;
+		String elementIdentifier = "INV-3 " + eid;
+		CurriculumComposerPage curriculumComposer = curriculumPage
+			.openImplementationsTab()
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
+			.assertOnCurriculumElementInTable(elementName);
+		
+		CurriculumElementPage courseElementPage = curriculumComposer
+			.selectCurriculumElementInTable(elementName)
+			.assertOnImplementationDetails();
+		
+		// Configure invoice
+		courseElementPage
+			.openOffersTab()
+			.addInvoice()
+			.configureInvoiceMethod("Invoice 1", "Invoice for admin.", "10", true);
+		
+		CurriculumElementMembersPage elementMembersPage = courseElementPage
+			.openMembersTab();
+		elementMembersPage
+			.addMember()
+			.searchMember(participant, true)
+			.selectInvoiceOffer("10", addressId)
+			.membershipCommentOnly()
+			.confirmation(participant)
+			.notification();
+		
+		elementMembersPage
+			.pendingScope()
+			.assertOnPendingMemberInList(participant)
+			.acceptPendingMemberInList(participant)
+			.activeScope()
+			.assertOnMemberInList(participant);
 		
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage

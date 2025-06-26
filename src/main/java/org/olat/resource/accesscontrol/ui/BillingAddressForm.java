@@ -78,16 +78,20 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_billing_address_form");
+		
 		if (billingAddress != null && billingAddress.getKey() != null && ureq.getUserSession().getRoles().isAdministrator()) {
 			uifactory.addStaticTextElement("billing.address.id", billingAddress.getKey().toString(), formLayout);
 		}
 		
 		String identifier = billingAddress != null? billingAddress.getIdentifier(): null;
 		identifierEl = uifactory.addTextElement("billing.address.identifier", 255, identifier, formLayout);
+		identifierEl.setElementCssClass("o_sel_billing_address_identifier");
 		identifierEl.setMandatory(true);
 		
 		String nameLine1 = billingAddress != null? billingAddress.getNameLine1(): null;
 		nameLine1El = uifactory.addTextElement("billing.address.name.line1", 255, nameLine1, formLayout);
+		nameLine1El.setElementCssClass("o_sel_billing_address_name_line1");
 		nameLine1El.setMandatory(true);
 		
 		String nameLine2 = billingAddress != null? billingAddress.getNameLine2(): null;
@@ -95,6 +99,7 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		
 		String addressLine1 = billingAddress != null? billingAddress.getAddressLine1(): null;
 		addressLine1El = uifactory.addTextElement("billing.address.address.line1", 255, addressLine1, formLayout);
+		addressLine1El.setElementCssClass("o_sel_billing_address_line1");
 		addressLine1El.setMandatory(true);
 		
 		String addressLine2 = billingAddress != null? billingAddress.getAddressLine2(): null;
@@ -117,10 +122,12 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		
 		String city = billingAddress != null? billingAddress.getCity(): null;
 		cityEl = uifactory.addTextElement("billing.address.city", 255, city, formLayout);
+		cityEl.setElementCssClass("o_sel_billing_address_city");
 		cityEl.setMandatory(true);
 		
 		String country = billingAddress != null? billingAddress.getCountry(): null;
 		countryEl = uifactory.addTextElement("billing.address.country", 255, country, formLayout);
+		countryEl.setElementCssClass("o_sel_billing_address_country");
 		countryEl.setMandatory(true);
 	}
 

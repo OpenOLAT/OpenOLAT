@@ -79,7 +79,7 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 		showInvoicesReports = false;
 		if (roles.isLineManager()) {
 			RoleSecurityCallback roleSecurityCallback = getRoleSecurityCallback(identity, organisationService, OrganisationRoles.linemanager);
-			if (roleSecurityCallback.canViewLecturesAndAbsences()) {
+			if (roleSecurityCallback.canViewAbsenceReport()) {
 				showAbsencesReports = true;
 			}
 			if (roleSecurityCallback.canViewInvoicesReport()) {
@@ -93,7 +93,7 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 
 		if (roles.isEducationManager()) {
 			RoleSecurityCallback roleSecurityCallback = getRoleSecurityCallback(identity, organisationService, OrganisationRoles.educationmanager);
-			if (roleSecurityCallback.canViewLecturesAndAbsences()) {
+			if (roleSecurityCallback.canViewAbsenceReport()) {
 				showAbsencesReports = true;
 			}
 			if (roleSecurityCallback.canViewInvoicesReport()) {

@@ -1,17 +1,19 @@
-<div class="o_flex_first_grow o_block">
-	#if($r.available("search.all.levels"))
-	<div class="btn-group">
-		$r.render("search.all.levels")
-		$r.render("search.this.level")
-	</div>	
-	#end
-	<div class="">
-		#if($r.available("accept.all"))
-			$r.render("accept.all")
+<div class="o_sel_curriculum_element_pending_members">
+	<div class="o_flex_first_grow o_block">
+		#if($r.available("search.all.levels"))
+		<div class="btn-group">
+			$r.render("search.all.levels")
+			$r.render("search.this.level")
+		</div>	
 		#end
-		#if($r.available("add.participants"))
-			$r.render("add.participants")
-		#end
+		<div class="">
+			#if($r.available("accept.all"))
+				$r.render("accept.all")
+			#end
+			#if($r.available("add.participants"))
+				$r.render("add.participants")
+			#end
+		</div>
 	</div>
+	$r.render("table")
 </div>
-$r.render("table")

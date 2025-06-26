@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.olat.core.util.StringHelper;
 import org.olat.selenium.page.core.LoginPasswordForgottenPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.repository.CatalogV2Page;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -119,13 +120,24 @@ public class LoginPage {
 	}
 	
 	/**
-	 * Enter OpenOLAT as guest
+	 * Enter OpenOlat as guest
 	 */
 	public void asGuest() {
 		By guestLinkBy = By.xpath("//a[i[contains(@class,'o_icon_provider_guest')]]");
 		OOGraphene.waitElement(guestLinkBy, browser).click();
 		By footerUserDivBy = By.id("o_footer_user");
 		OOGraphene.waitElement(footerUserDivBy, browser);
+	}
+	
+	/**
+	 * Enter web catalog as guest
+	 * 
+	 * @return The catalog
+	 */
+	public CatalogV2Page asCatalog() {
+		By guestLinkBy = By.xpath("//a[contains(@class,'o_login_catalog_button')]");
+		OOGraphene.waitElement(guestLinkBy, browser).click();
+		return new CatalogV2Page(browser).assertOnCatalog();
 	}
 	
 	public LoginPage startLogin() {
