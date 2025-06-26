@@ -527,10 +527,13 @@ public class VFSWebservice {
 		try(OutputStream out = newFile.getOutputStream(false)) {
 			FileUtils.cpio(file, out, "Copy");
 			FileUtils.closeSafely(file);
-			return Response.ok(createFileVO(newFile, uriInfo)).build();
 		} catch (IOException e) {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
+
+		// Generate metadata
+		newFile.getMetaInfo();
+		return Response.ok(createFileVO(newFile, uriInfo)).build();
 	}
 
 	protected Response get(List<PathSegment> path, UriInfo uriInfo, Request request) {
