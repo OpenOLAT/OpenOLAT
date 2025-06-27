@@ -78,6 +78,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	@Value("${onlyoffice.conversion.path}")
 	private String conversionPath;
 	private String conversionUrl;
+	@Value("${onlyoffice.jwt.secret}")
 	private String jwtSecret;
 	private SecretKey jwtSignKey;
 	@Value("${onlyoffice.editor.enabled:false}")
@@ -219,16 +220,22 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	}
 	
 	public String getApiUrl() {
+		if (!StringHelper.containsNonWhitespace(apiUrl)) {
+			apiUrl = baseUrl + apiPath;
+		}
 		return apiUrl;
 	}
 	
 	public String getConversionUrl() {
+		if (!StringHelper.containsNonWhitespace(conversionUrl)) {
+			conversionUrl = baseUrl + conversionPath;
+		}
 		return conversionUrl;
 	}
 	
 	private void resetApiUrls() {
-		this.apiUrl = baseUrl + apiPath;
-		this.conversionUrl = baseUrl + conversionPath;
+		this.apiUrl = null;
+		this.conversionUrl = null;
 	}
 	
 	public String getJwtSecret() {
