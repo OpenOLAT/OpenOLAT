@@ -27,7 +27,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
@@ -365,6 +367,24 @@ public class ItemDAOTest extends OlatTestCase {
 
 		//check values
 		assertThat(item).isNull();
+	}
+	
+	@Test
+	public void loadItemByResNameResIdGuid() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Feed feed = feedDao.createFeedForResourceable(resource);
+		dbInstance.commitAndCloseSession();
+
+		// create an item
+		String guid = UUID.randomUUID().toString();
+		Item item = new ItemImpl(feed);
+		item.setGuid(guid);
+		item = itemDao.createItem(feed, item);
+		dbInstance.commitAndCloseSession();
+
+		// reload the item from the database
+		Item loadedItem = itemDao.loadItemByGuid(feed.getResourceableTypeName(), feed.getResourceableId(), guid);
+		Assert.assertEquals(item, loadedItem);
 	}
 	
 	@Test

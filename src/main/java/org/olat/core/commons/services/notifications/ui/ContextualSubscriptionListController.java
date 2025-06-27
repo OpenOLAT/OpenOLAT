@@ -24,15 +24,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.services.help.HelpLinkSPI;
-import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
-import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionListDataModel.ContextualSubscriptionListCols;
@@ -45,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -81,46 +80,47 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	// default filter value, last seven days
 	private Date selectedFilterDate = DateUtils.addDays(new Date(), -7);
 
-	private FormToggle subscribeToggle;
-	private Subscriber subscriber;
-	private final SubscriptionContext subscriptionContext;
-	private final PublisherData publisherData;
-
 	private FlexiTableElement tableEl;
 	private ContextualSubscriptionListDataModel dataModel;
+
+	private List<Subscriber> subscribers;
+	private List<Subscription> subscriptions;
+	private final List<PublisherDecorated> publishers;
 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 
 	@Autowired
 	private NotificationsManager notificationsManager;
-	@Autowired
-	private HelpModule helpModule;
 
-	protected ContextualSubscriptionListController(UserRequest ureq, WindowControl wControl,
-												   SubscriptionContext subscriptionContext, PublisherData publisherData) {
+	protected ContextualSubscriptionListController(UserRequest ureq, WindowControl wControl, List<PublisherDecorated> publishers) {
 		super(ureq, wControl, "con_subs_overview");
-		this.subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
-		this.subscriptionContext = subscriptionContext;
-		this.publisherData = publisherData;
-
+		this.publishers = List.copyOf(publishers);
+		
+		List<Publisher> list = publishers.stream()
+				.map(PublisherDecorated::publisher)
+				.toList();
+		subscribers = notificationsManager.getSubscribers(getIdentity(), list);
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		subscribeToggle = uifactory.addToggleButton("command.subscribe", "command.subscribe", translate("on"), translate("off"), flc);
-		subscribeToggle.addActionListener(FormEvent.ONCHANGE);
-		flc.put("toggle", subscribeToggle.getComponent());
+		Map<Publisher,Subscriber> pubSubs = subscribers.stream()
+				.collect(Collectors.toMap(Subscriber::getPublisher, s -> s, (u, v) -> u));
+		
+		subscriptions = new ArrayList<>();
+		for(PublisherDecorated labelledPublisher:publishers) {
+			Subscriber subscriber = pubSubs.get(labelledPublisher.publisher());
+			initSubscribtion(labelledPublisher, subscriber);
+		}
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("toggles", subscriptions);
+		}
 
-		HelpLinkSPI provider = helpModule.getManualProvider();
-		Component helpPageLink = provider.getHelpPageLink(ureq, translate("help"), translate("command.subscribe"),
-				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/personal_menu/Personal_Tools/#subscriptions");
-		flc.put("helpLink", helpPageLink);
-
-		FormLink toolsLink = uifactory.addFormLink("tools_Link", "tools", "", null, flc, Link.NONTRANSLATED);
+		FormLink toolsLink = uifactory.addFormLink("toolsLink", "tools", "", null, flc, Link.NONTRANSLATED);
 		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
-		flc.put("toolsLink", toolsLink.getComponent());
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ContextualSubscriptionListCols.description));
@@ -144,41 +144,45 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		tableEl.setRowRenderer(row, this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "notifications-subs-list");
 
-		flc.put("table", tableEl.getComponent());
-
-		if (subscriber == null || !subscriber.isEnabled()) {
-			subscribeToggle.toggleOff();
-		} else {
-			subscribeToggle.toggleOn();
-		}
 		loadModel();
 		toggleFilterTabs(ureq);
 		initEmptyTableSettings();
 	}
+	
+	private void initSubscribtion(PublisherDecorated labelledPublisher, Subscriber subscriber) {
+		Publisher publisher = labelledPublisher.publisher();
+		if(subscriber == null) {
+			subscriber = notificationsManager.createDisabledSubscriberIfAbsent(getIdentity(), publisher);
+		}
+		
+		FormToggle subscribeToggle = uifactory.addToggleButton("command.subscribe." + publisher.getKey(), "command.subscribe", translate("on"), translate("off"), flc);
+		subscribeToggle.addActionListener(FormEvent.ONCHANGE);
+		subscribeToggle.toggle(subscriber != null && subscriber.isEnabled());
+		String name = labelledPublisher.translated()
+				? labelledPublisher.subscribeI18nLabel()
+				: translate(labelledPublisher.subscribeI18nLabel());
+		Subscription subscription = new Subscription(subscribeToggle, name, publisher, subscriber);
+		subscribeToggle.setUserObject(subscription);
+		subscriptions.add(subscription);
+	}
 
 	private void loadModel() {
-		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
-
-		if (subscriber == null) {
-			subscriber = notificationsManager.createDisabledSubscriberIfAbsent(getIdentity(), subscriptionContext, publisherData);
-		}
-
-		Map<Subscriber, SubscriptionInfo> subsInfoMap = initSubsInfoMap(selectedFilterDate);
-
 		List<ContextualSubscriptionListRow> rows = new ArrayList<>();
-		if (subsInfoMap.get(subscriber) != null) {
-			List<SubscriptionListItem> subscriptionListItems = subsInfoMap.get(subscriber).getSubscriptionListItems();
-
-			for (SubscriptionListItem subscriptionListItem : subscriptionListItems) {
-				ContextualSubscriptionListRow row =
-						new ContextualSubscriptionListRow(subscriptionListItem.getDescription(), subscriptionListItem.getIconCssClass(),
-								subscriptionListItem.getLink(), subscriptionListItem.getDate(), getLocale());
-
-				rows.add(row);
+		for(Subscriber subscriber:subscribers) {
+			Map<Subscriber, SubscriptionInfo> subsInfoMap = initSubsInfoMap(selectedFilterDate);
+			if (subsInfoMap.get(subscriber) != null) {
+				List<SubscriptionListItem> subscriptionListItems = subsInfoMap.get(subscriber).getSubscriptionListItems();
+	
+				for (SubscriptionListItem subscriptionListItem : subscriptionListItems) {
+					ContextualSubscriptionListRow row =
+							new ContextualSubscriptionListRow(subscriptionListItem.getDescription(), subscriptionListItem.getIconCssClass(),
+									subscriptionListItem.getLink(), subscriptionListItem.getDate(), getLocale());
+	
+					rows.add(row);
+				}
 			}
 		}
 		dataModel.setObjects(rows);
-
 		tableEl.reset(false, true, true);
 	}
 
@@ -187,9 +191,9 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	}
 
 	private Map<Subscriber, SubscriptionInfo> initSubsInfoMap(Date compareDate) {
-		if (subscriber != null) {
+		if (subscribers != null && !subscribers.isEmpty()) {
 			return NotificationHelper.getSubscriptionMap(getLocale(), true,
-					compareDate, Collections.singletonList(subscriber));
+					compareDate, subscribers);
 		}
 		return Collections.emptyMap();
 	}
@@ -233,22 +237,8 @@ public class ContextualSubscriptionListController extends FormBasicController im
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == subscribeToggle) {
-			if (subscribeToggle.isOn()) {
-				if (subscriber != null) {
-					notificationsManager.updateSubscriber(subscriber, true); // enable it
-					subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
-				} else {
-					subscriber = notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData); // fallback
-				}
-			} else {
-				if (subscriber != null) {
-					notificationsManager.updateSubscriber(subscriber, false); // disable it
-				} else {
-					// should not happen, but safe fallback
-					notificationsManager.unsubscribe(getIdentity(), subscriptionContext);
-				}
-			}
+		if (source instanceof FormToggle subscribeToggle && subscribeToggle.getUserObject() instanceof Subscription subscription) {
+			doToggleSubscription(subscribeToggle, subscription);
 			loadModel();
 			initEmptyTableSettings();
 			fireEvent(ureq, event);
@@ -263,8 +253,13 @@ public class ContextualSubscriptionListController extends FormBasicController im
 				}
 				loadModel();
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				subscribeToggle.toggleOn();
-				notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData);
+				for(Subscription subscription:subscriptions) {
+					subscription.subscribeToggle().toggleOn();
+					Subscriber subscriber = notificationsManager.subscribe(getIdentity(), subscription.publisher());
+					subscription.subscribeToggle().setUserObject(new Subscription(subscription.subscribeToggle(),
+							subscription.name(), subscription.publisher(), subscriber));
+				}
+
 				toggleFilterTabs(ureq);
 				initEmptyTableSettings();
 				fireEvent(ureq, event);
@@ -274,6 +269,43 @@ public class ContextualSubscriptionListController extends FormBasicController im
 				doOpenTools(ureq, link.getFormDispatchId());
 			}
 		}
+	}
+	
+	private void doToggleSubscription(FormToggle subscribeToggle, Subscription subscription) {
+		Subscriber subscriber = subscription.subscriber();
+		Publisher publisher = subscription.publisher();
+		
+		if (subscribeToggle.isOn()) {
+			if (subscriber != null) {
+				notificationsManager.updateSubscriber(subscriber, true); // enable it
+				subscriber = notificationsManager.getSubscriber(getIdentity(), subscription.publisher());
+			} else {
+				subscriber = notificationsManager.subscribe(getIdentity(), subscription.publisher()); // fallback
+			}
+			
+			// Enable automatically all sub-contexts if the root context is enabled
+			for(Subscription otherSubscription:subscriptions) {
+				if(otherSubscription.publisher().getParentPublisher() != null
+						&& publisher.equals(otherSubscription.publisher().getParentPublisher())) {
+					Subscriber otherSubscriber = otherSubscription.subscriber();
+					if(otherSubscriber == null || !otherSubscriber.isEnabled()) {
+						otherSubscriber = notificationsManager.subscribe(getIdentity(), otherSubscription.publisher());
+						otherSubscription.subscribeToggle().setUserObject(new Subscription(otherSubscription.subscribeToggle(),
+								otherSubscription.name(), otherSubscription.publisher(), otherSubscriber));
+						otherSubscription.subscribeToggle().toggleOn();
+					}
+				}
+			}
+		} else {
+			if (subscriber != null) {
+				notificationsManager.updateSubscriber(subscriber, false); // disable it
+			} else {
+				// should not happen, but safe fallback
+				notificationsManager.unsubscribe(getIdentity(), subscription.publisher());
+			}
+		}
+		
+		subscribeToggle.setUserObject(new Subscription(subscribeToggle, subscription.name(), subscription.publisher(), subscriber));
 	}
 
 	private void doOpenTools(UserRequest ureq, String dispatchID) {
@@ -332,6 +364,13 @@ public class ContextualSubscriptionListController extends FormBasicController im
 			toolsCalloutCtrl.deactivate();
 			removeAsListenerAndDispose(toolsCalloutCtrl);
 			toolsCalloutCtrl = null;
+		}
+	}
+	
+	public record Subscription(FormToggle subscribeToggle, String name, Publisher publisher, Subscriber subscriber) {
+		
+		public String getComponentName() {
+			return subscribeToggle.getComponent().getComponentName();
 		}
 	}
 }

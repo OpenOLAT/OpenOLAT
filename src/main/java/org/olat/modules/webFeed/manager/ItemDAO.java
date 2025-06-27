@@ -151,6 +151,23 @@ public class ItemDAO {
 		return items != null && !items.isEmpty()? items.get(0): null;
 	}
 	
+	public Item loadItemByGuid(String feedResourceName, Long feedResourceId, String itemGuid) {
+		if (itemGuid == null) return null;
+		
+		String query = """
+				select data from item data
+				inner join fetch data.feed as feed
+				where data.guid=:guid and feed.resourceableId=:resourceableId and feed.resourceableType=:resourceableName""";
+		
+		List<Item >items = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Item.class)
+				.setParameter("resourceableName", feedResourceName)
+				.setParameter("resourceableId", feedResourceId)
+				.setParameter("guid", itemGuid)
+				.getResultList();
+		return items != null && !items.isEmpty()? items.get(0): null;
+	}
+	
 	/**
 	 * Loads an item by GUID. This method is not safe because a GUID is only
 	 * unique inside a feed. If more then one item have the same GUID, it return

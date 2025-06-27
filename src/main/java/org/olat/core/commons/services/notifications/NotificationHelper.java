@@ -19,20 +19,19 @@
  */ 
 package org.olat.core.commons.services.notifications;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.ui.NotificationNewsController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -63,7 +62,7 @@ public class NotificationHelper {
 	}
 	
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Identity identity, Locale locale, boolean showWithNewsOnly, Date compareDate) {
-		return getSubscriptionMap(identity, locale, showWithNewsOnly, compareDate, Collections.<String>emptyList());
+		return getSubscriptionMap(identity, locale, showWithNewsOnly, compareDate, List.of());
 	}
 	
 	/**
@@ -78,7 +77,7 @@ public class NotificationHelper {
 	 */
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Identity identity, Locale locale, boolean showWithNewsOnly, Date compareDate, List<String> types) {
 		NotificationsManager man = CoreSpringFactory.getImpl(NotificationsManager.class);
-		List<Subscriber> subs = man.getSubscribers(identity, types, true);
+		List<Subscriber> subs = man.getSubscribers(identity, types, PublisherChannel.PULL, true, true);
 		return getSubscriptionMap(locale, showWithNewsOnly, compareDate, subs);	
 	}
 	

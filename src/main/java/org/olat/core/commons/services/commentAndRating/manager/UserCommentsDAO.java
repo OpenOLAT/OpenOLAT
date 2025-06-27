@@ -131,6 +131,22 @@ public class UserCommentsDAO {
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 	}
+	
+	public UserComment getCommentByKey(Long key) {
+		String  query = """
+				select comment from usercomment as comment
+				left join fetch comment.creator as creatorIdent
+				left join fetch creatorIdent.user as creatorUser
+				left join fetch comment.parent as parentComment
+				left join fetch parentComment.creator as parentCreatorIdent
+				left join fetch parentCreatorIdent.user as parentCreatorUser
+				where comment.key=:key""";
+		List<UserComment> comments = dbInstance.getCurrentEntityManager()
+				.createQuery(query, UserComment.class)
+				.setParameter("key", key)
+				.getResultList();
+		return comments == null || comments.isEmpty() ? null : comments.get(0);
+	}
 
 	public UserComment updateComment(UserComment comment, String newCommentText) {
 		// First reload parent from cache to prevent stale object or cache issues

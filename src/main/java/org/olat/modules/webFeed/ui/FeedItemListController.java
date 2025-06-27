@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.commons.controllers.navigation.NavigationEvent;
 import org.olat.core.commons.controllers.navigation.YearNavigationController;
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagComponentFactory;
@@ -123,6 +124,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private List<FeedItemDTO> feedItemDTOList;
 	private Set<Long> selectedTagKeys;
 	private List<TagInfo> tagInfos;
+	private Publisher feedCommentPublisher;
 
 	private LockResult lock;
 	private final FeedSecurityCallback feedSecCallback;
@@ -155,7 +157,6 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private FeedBulkAddTagsController bulkAddTagsCtrl;
 	private FeedBulkRemoveTagsController bulkRemoveTagsCtrl;
 
-
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -183,7 +184,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	protected FeedItemListController(UserRequest ureq, WindowControl wControl, Feed feed,
 									 FeedSecurityCallback feedSecCallback, FeedUIFactory feedUIFactory,
 									 VelocityContainer vcMain, VelocityContainer vcInfo,
-									 FeedItemDisplayConfig displayConfig, FeedViewHelper helper) {
+									 FeedItemDisplayConfig displayConfig, Publisher feedCommentPublisher, FeedViewHelper helper) {
 		super(ureq, wControl, "feed_overview");
 		// using because each feed type has its own translations
 		setTranslator(feedUIFactory.getTranslator());
@@ -195,6 +196,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		this.displayConfig = displayConfig;
 		this.helper = helper;
 		this.selectedTagKeys = new HashSet<>();
+		this.feedCommentPublisher = feedCommentPublisher;
 
 		// loads and fills this.feedItems
 		loadFeedItems();
@@ -582,7 +584,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			String formattedTags = TagUIFactory.getFormattedTags(getLocale(), tags);
 			itemFlc.contextPut("formattedTags", formattedTags);
 			feedItemCtrl = new FeedItemController(ureq, getWindowControl(), feedItem, reloadedFeed, helper, feedUIFactory, feedSecCallback,
-					displayConfig, itemFlc.getFormItemComponent());
+					displayConfig, feedCommentPublisher, itemFlc.getFormItemComponent());
 			listenTo(feedItemCtrl);
 			vcMain.put("selected_feed_item", feedItemCtrl.getInitialComponent());
 		}

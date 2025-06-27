@@ -35,7 +35,6 @@ import jakarta.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
@@ -51,7 +50,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="usercomment")
 @Table(name="o_usercomment")
-public class UserCommentImpl implements Persistable, CreateInfo, UserComment {
+public class UserCommentImpl implements UserComment {
 
 	private static final long serialVersionUID = -1396648859230164778L;
 

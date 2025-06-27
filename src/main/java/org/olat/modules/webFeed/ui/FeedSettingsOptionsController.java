@@ -23,8 +23,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.webFeed.Feed;
@@ -38,12 +40,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class FeedSettingsOptionsController extends FormBasicController {
+	
+	private static final String PUSH = "push";
 
 	private final Feed feed;
 	private final boolean readOnly;
 
 	private FormToggle ratingToggle;
 	private FormToggle commentToggle;
+	private MultipleSelectionElement pushEmailEl;
 
 	@Autowired
 	private FeedManager feedManager;
@@ -60,9 +65,18 @@ public class FeedSettingsOptionsController extends FormBasicController {
 		setFormTitle("options.config.title");
 
 		ratingToggle = uifactory.addToggleButton("feed.rate.entries.toggle", "feed.rate.entries.toggle", translate("on"), translate("off"), formLayout);
-		commentToggle = uifactory.addToggleButton("feed.comment.entries.toggle", "feed.comment.entries.toggle", translate("on"), translate("off"), formLayout);
 		ratingToggle.toggle(feed.getCanRate());
+		
+		commentToggle = uifactory.addToggleButton("feed.comment.entries.toggle", "feed.comment.entries.toggle", translate("on"), translate("off"), formLayout);
 		commentToggle.toggle(feed.getCanComment());
+		
+		SelectionValues pushEmailPK = new SelectionValues();
+		pushEmailPK.add(SelectionValues.entry(PUSH, translate("feed.comment.push.email.value")));
+		pushEmailEl = uifactory.addCheckboxesHorizontal("feed.comment.push.email", formLayout, pushEmailPK.keys(), pushEmailPK.values());
+		pushEmailEl.addActionListener(FormEvent.ONCHANGE);
+		if(feed.isPushEmailComments()) {
+			pushEmailEl.select(PUSH, true);
+		}
 
 		if (readOnly) {
 			ratingToggle.setEnabled(false);
@@ -77,7 +91,7 @@ public class FeedSettingsOptionsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormToggle) {
+		if (source instanceof FormToggle || pushEmailEl == source) {
 			updateFeedWithFeedback();
 		}
 	}
@@ -85,6 +99,7 @@ public class FeedSettingsOptionsController extends FormBasicController {
 	private void updateFeedWithFeedback() {
 		feed.setCanRate(ratingToggle.isOn());
 		feed.setCanComment(commentToggle.isOn());
+		feed.setPushEmailComments(pushEmailEl.isAtLeastSelected(1));
 		feedManager.updateFeed(feed);
 	}
 }

@@ -19,11 +19,14 @@
  */
 package org.olat.core.commons.services.commentAndRating.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.commons.services.notifications.ui.PublisherDecorated;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -181,10 +184,19 @@ public class UserCommentsAndRatingsController extends BasicController implements
 
 	private void initSubscriptionCtrl(UserRequest ureq) {
 		if (publishingInformations != null) {
-			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
-					publishingInformations.getContext(), publishingInformations.getData());
-			listenTo(subscriptionCtrl);
-			userCommentsAndRatingsVC.put("subscription", subscriptionCtrl.getInitialComponent());
+			if(publishingInformations.publisher() != null) {
+				PublisherDecorated decoratedPublisher = new PublisherDecorated(publishingInformations.publisher(),
+						PublisherDecorated.DEFAULT_SUBSCRIBE_I18N, false);
+				subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
+						List.of(decoratedPublisher), false);
+			} else {
+				subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
+						publishingInformations.context(), publishingInformations.data());
+			}
+			if(subscriptionCtrl != null) {
+				listenTo(subscriptionCtrl);
+				userCommentsAndRatingsVC.put("subscription", subscriptionCtrl.getInitialComponent());
+			}
 		}
 	}
 

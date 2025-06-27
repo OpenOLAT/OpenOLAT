@@ -121,5 +121,10 @@ public interface Feed extends OLATResourceable, CreateInfo, ModifiedInfo {
 	 * @param canComment set to true or false
 	 */
 	public void setCanComment(boolean canComment);
+	
+	
+	public boolean isPushEmailComments();
+	
+	public void setPushEmailComments(boolean enable);
 
 }

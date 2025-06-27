@@ -82,6 +82,8 @@ public interface NotificationsManager {
 	 * @return
 	 */
 	public boolean sendMailToUserAndUpdateSubscriber(Identity curIdent, List<SubscriptionItem> items, Translator translator, List<Subscriber> subscribersToUpdate);
+	
+	public boolean sendEmail(Identity to, Translator translator, List<SubscriptionItem> subItems);
 
 	/**
 	 * @param key
@@ -90,21 +92,31 @@ public interface NotificationsManager {
 	public Subscriber getSubscriber(Long key);
 
 	/**
-	 * Get the publisher or return null if not exists
-	 * @param subsContext
-	 * @return the publisher belonging to the given context or null
+	 * Get the root publisher for the specified publication context
+	 * or return null if not exists.
+	 * 
+	 * @param subsContext The context (course, resource, question pool)
+	 * @return The root publisher belonging to the given context or null
 	 */
 	public Publisher getPublisher(SubscriptionContext subsContext);
 	
 	/**
-	 * Get or create the publisher
+	 * Get or create the publisher. 
 	 * @param scontext
 	 * @param pdata
 	 * @return
 	 */
-	public Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata);
+	public Publisher getOrCreatePublisher(SubscriptionContext scontext, PublisherData pdata);
 	
-	public List<Publisher> getAllPublisher();
+	/**
+	 * Get or create a publisher hold by a parent one.
+	 * 
+	 * @param scontext The publication context
+	 * @param pdata The publisher date
+	 * @param parent The container publisher
+	 * @return A new publisher
+	 */
+	public Publisher getOrCreatePublisherWithData(SubscriptionContext scontext, PublisherData pdata, Publisher parent, PublisherChannel channel);
 
 	/**
 	 * deletes all publishers of the given olatresourceable. e.g. ores =
@@ -125,13 +137,34 @@ public interface NotificationsManager {
 	public Subscriber getSubscriber(IdentityRef identity, Publisher publisher);
 	
 	/**
-	 * Get the subscriber (enable or not) of a user by context.
+	 * 
+	 * @param identity The identity which subscribes
+	 * @param publishers A list of publishers
+	 * @return List of subscriptions
+	 */
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<Publisher> publishers);
+	
+	/**
+	 * Has at least an enabled subscriber
+	 * 
+	 * @param identity The identity
+	 * @param publishers A list of publishers
+	 * @return true if at least the identity subscribed to a publisher
+	 */
+	public boolean hasSubscribers(IdentityRef identity, List<Publisher> publishers);
+	
+	/**
+	 * Get the subscriber (enable or not) of a user by context. This is the root publisher
+	 * the context.
 	 * 
 	 * @param identity The identity
 	 * @param subscriptionContext The resource context
 	 * @return A subscriber (publisher is not fetched)
 	 */
 	public Subscriber getSubscriber(Identity identity, SubscriptionContext subscriptionContext);
+	
+
+	public Subscriber getSubscriber(Identity identity, SubscriptionContext subscriptionContext, PublisherData data);
 	
 	/**
 	 * Delete the subscriber with the specified primary key.
@@ -169,14 +202,32 @@ public interface NotificationsManager {
 	public void markSubscriberRead(Identity identity, SubscriptionContext subsContext);
 
 	/**
-	 * call this method to indicate that there is news for the given
-	 * subscriptionContext
+	 * The method update only the root publisher and not the sub-publishers!
 	 * 
-	 * @param subscriptionContext
+	 * @param subscriptionContext The context
 	 * @param ignoreNewsFor
 	 */
 	public void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvent);
 	
+	/**
+	 * The method will update the specified publisher and eventually the parent publisher
+	 * if the parent is PULL and the specified one not.
+	 * 
+	 * @param publisher The publisher
+	 * @param ignoreNewsFor Ignore the news for this identity
+	 * @param sendEvent Send multi-user events
+	 */
+	public void markPublisherNews(Publisher publisher, Identity ignoreNewsFor, boolean sendEvent);
+	
+	/**
+	 * The method will update all publisher with the same type and data and eventually the parent publishers
+	 * if the parent is PULL and these ones not.
+	 * 
+	 * @param publisherType The type of publisher
+	 * @param data The data
+	 * @param ignoreNewsFor Ignore the news for this identity
+	 * @param sendEvent Send multi-user events
+	 */
 	public void markPublisherNews(String publisherType, String data, Identity ignoreNewsFor, boolean sendEvent);
 
 	public void registerAsListener(GenericEventListener gel, Identity ident);
@@ -259,16 +310,6 @@ public interface NotificationsManager {
 	public SubscriptionItem createSubscriptionItem(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent);
 
 	public SubscriptionInfo getNoSubscriptionInfo();
-
-
-	/**
-	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
-	 * belonging to this person), enabled or not
-	 * 
-	 * @param identity
-	 * @return List of Subscriber Objects which belong to the identity
-	 */
-	public List<Subscriber> getSubscribers(Identity identity, boolean enabledOnly);
 	
 	/**
 	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
@@ -277,7 +318,7 @@ public interface NotificationsManager {
 	 * @param types
 	 * @return
 	 */
-	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types, boolean enabledOnly);
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types, PublisherChannel channel, boolean enabledOnly, boolean withSubPublishers);
 
 	
 	/**
@@ -301,6 +342,9 @@ public interface NotificationsManager {
 	 */
 	Subscriber subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
+
+	Subscriber subscribe(Identity identity, Publisher publisher);
+	
 	/**
 	 * The method is equivalent to the method above but is done through the JMS server.
 	 * 
@@ -319,18 +363,22 @@ public interface NotificationsManager {
 	public void unsubscribeAllForIdentityAndResId(IdentityRef identity, Long resId);
 
 	/**
-	 * @param identity
-	 * @param subscriptionContext
+	 * Unsuscribe all publishers of the specified context.
+	 * 
+	 * @param identity The identity
+	 * @param subscriptionContext The context
 	 */
-	public void unsubscribe(Identity identity, SubscriptionContext subscriptionContext);
+	public void unsubscribeContext(Identity identity, SubscriptionContext subscriptionContext);
 	
 	/**
+	 * Unsuscribe the specified publisher
 	 * 
-	 * @param identities
-	 * @param subscriptionContext
+	 * @param identity The identity
+	 * @param publisher The publisher
 	 */
-	public void unsubscribe(List<Identity> identities, SubscriptionContext subscriptionContext);
+	public void unsubscribe(Identity identity, Publisher publisher);
 	
+
 	/**
 	 * @return the handler for the type
 	 */
@@ -387,5 +435,5 @@ public interface NotificationsManager {
 	 * @param data The data used to create the publisher if it does not already exist.
 	 * @return The existing or newly created (disabled) subscriber.
 	 */
-	Subscriber createDisabledSubscriberIfAbsent(Identity identity, SubscriptionContext context, PublisherData data);
+	Subscriber createDisabledSubscriberIfAbsent(Identity identity, Publisher publisher);
 }

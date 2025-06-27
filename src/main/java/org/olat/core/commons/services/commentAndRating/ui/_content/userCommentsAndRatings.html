@@ -1,4 +1,5 @@
 <div class="o_ratings_and_comments">
+	<div class="o_ratings_header">
 	#if ($enableRatings)
 		<div id="o_rating_wrapper_$viewIdent" class="o_rating_wrapper">
 			#if($r.available("ratingUserC"))
@@ -13,6 +14,10 @@
 			#end
 		</div>
 	#end
+	#if($r.available("subscription"))
+		<div class="o_notifications">$r.render("subscription")</div>
+	#end
+	</div>
 	#if ($enableComments)
 		<fieldset id="o_comments_area">
 			<legend>$commentsCountLegend</legend>
@@ -20,9 +25,6 @@
 				$r.render("commentsCtrl")
 			#end
 		</fieldset>
-	#end
-	#if($r.available("subscription"))
-		<div class="o_notifications">$r.render("subscription")</div>
 	#end
 </div> 
 

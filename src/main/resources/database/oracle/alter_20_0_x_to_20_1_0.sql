@@ -1,19 +1,19 @@
 -- Quality management
-alter table o_eva_form_survey add column e_public_part_identifier varchar(128);
-alter table o_eva_form_participation add column e_email varchar(128) null;
-alter table o_eva_form_participation add column e_first_name varchar(128) null;
-alter table o_eva_form_participation add column e_last_name varchar(128) null;
+alter table o_eva_form_survey add e_public_part_identifier varchar(128);
+alter table o_eva_form_participation add e_email varchar(128) null;
+alter table o_eva_form_participation add e_first_name varchar(128) null;
+alter table o_eva_form_participation add e_last_name varchar(128) null;
 
 create unique index idx_eva_surv_ppident_idx on o_eva_form_survey (e_public_part_identifier);
 
 -- Badges
-alter table o_badge_class add column b_root_id varchar(36) default null;
-alter table o_badge_class add column b_version_type varchar(32) default null;
-alter table o_badge_class add column b_verification_method varchar(32) default 'hosted'; 
-alter table o_badge_class add column b_private_key clob default null;
-alter table o_badge_class add column b_public_key clob default null;
-alter table o_badge_class add column fk_previous_version number(20) default null;
-alter table o_badge_class add column fk_next_version number(20) default null;
+alter table o_badge_class add b_root_id varchar(36) default null;
+alter table o_badge_class add b_version_type varchar(32) default null;
+alter table o_badge_class add b_verification_method varchar(32) default 'hosted'; 
+alter table o_badge_class add b_private_key clob default null;
+alter table o_badge_class add b_public_key clob default null;
+alter table o_badge_class add fk_previous_version number(20) default null;
+alter table o_badge_class add fk_next_version number(20) default null;
 
 create index o_badge_class_root_id_idx on o_badge_class (b_root_id);
 
@@ -24,6 +24,20 @@ alter table o_badge_class add constraint badge_class_to_next_version_idx foreign
 create index idx_badge_class_to_next_version_idx on o_badge_class(fk_next_version);
 
 -- Topic broker
-alter table o_tb_broker add column t_operlapping_period_allowed number default 1;
-alter table o_tb_topic add column t_begin_date date;
-alter table o_tb_topic add column t_end_date date;
+alter table o_tb_broker add t_operlapping_period_allowed number default 1;
+alter table o_tb_topic add t_begin_date date;
+alter table o_tb_topic add t_end_date date;
+
+-- Feed
+alter table o_feed add f_push_email_comments number default 0;
+
+-- Notifications
+alter table o_noti_pub add fk_root_publisher number(20) default null;
+alter table o_noti_pub add fk_parent_publisher number(20) default null;
+alter table o_noti_pub add channeltype varchar(16) default 'PULL';
+
+alter table o_noti_pub add constraint pub_to_root_pub_idx foreign key (fk_root_publisher) references o_noti_pub (publisher_id);
+create index idx_pub_to_root_pub_idx on o_noti_pub (fk_root_publisher);
+alter table o_noti_pub add constraint pub_to_parent_pub_idx foreign key (fk_parent_publisher) references o_noti_pub (publisher_id);
+create index idx_pub_to_parent_pub_idx on o_noti_pub (fk_parent_publisher);
+

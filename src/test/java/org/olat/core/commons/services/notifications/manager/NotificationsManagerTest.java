@@ -39,11 +39,14 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -51,7 +54,6 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -89,7 +91,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testCreatePublisher() {
+	public void createPublisher() {
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("PS", Long.valueOf(123), identifier);
 		PublisherData publisherData = new PublisherData("testPublisherSubscriber", "e.g. forumdata=keyofforum", null);
@@ -112,8 +114,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testUpdateAllSubscribers() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID());
+	public void updateAllSubscribers() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-2");
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("PS2", Long.valueOf(124), identifier);
 		PublisherData publisherData = new PublisherData("testUpdateAllSubscribers", "e.g. forumdata=keyofforum", null);
@@ -144,8 +146,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testUpdateSubscriber() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID());
+	public void updateSubscriber() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-1");
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("PS2", Long.valueOf(124), identifier);
 		PublisherData publisherData = new PublisherData("testUpdateSubscriber", "e.g. forumdata=keyofforum", null);
@@ -168,7 +170,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testCreateUpdatePublisher() {
+	public void createUpdatePublisher() {
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("PS2", Long.valueOf(124), identifier);
 		PublisherData publisherData = new PublisherData("testPublisherSubscriber", "e.g. forumdata=keyofforum", null);
@@ -196,23 +198,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void  testAllPublishers() {
-		String identifier = UUID.randomUUID().toString().replace("-", "");
-		SubscriptionContext context = new SubscriptionContext("All", Long.valueOf(123), identifier);
-		PublisherData publisherData = new PublisherData("testAllPublishers", "e.g. forumdata=keyofforum", null);
-		
-		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(publisher);
-
-		List<Publisher> publishers = notificationManager.getAllPublisher();
-		Assert.assertNotNull(publishers);
-		Assert.assertTrue(publishers.contains(publisher));
-	}
-	
-	@Test
-	public void testSubscribe() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID().toString());
+	public void subscribe() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-3");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("All", Long.valueOf(123), identifier);
@@ -243,8 +230,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testMarkSubscriberRead() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID().toString());
+	public void markSubscriberRead() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-4");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("All", Long.valueOf(123), identifier);
@@ -273,8 +260,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testUnsubscribe_v1() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("unsubs-" + UUID.randomUUID().toString());
+	public void unsubscribeBySubscriber() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("unsubs-1");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("All", Long.valueOf(123), identifier);
@@ -301,8 +288,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testUnsubscribe_v2() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("unsubs-" + UUID.randomUUID().toString());
+	public void unsubscribeByContext() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("unsubs-2");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("All", Long.valueOf(123), identifier);
@@ -320,7 +307,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(subscriber);
 		
 		//unsubscribe
-		notificationManager.unsubscribe(id, context);
+		notificationManager.unsubscribeContext(id, context);
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -329,9 +316,42 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testValidSubscribers() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("valid1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("valid1-" + UUID.randomUUID().toString());
+	public void unsubscribeByContextSeveralPublishers() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("unsubs-8");
+		//create 3 publishers in the same context
+		Long resId = CodeHelper.getForeverUniqueID();
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("All", resId, identifier);
+		PublisherData publisherData = new PublisherData("testMultiUnsubscribe", "e.g. forumdata=keyofforum", null);
+		Publisher rootPublisher = notificationManager.getOrCreatePublisherWithData(context, publisherData, null, PublisherChannel.PULL);
+		PublisherData subPublisher1Data = new PublisherData("testMultiUnsubscribeSub", "comment-forum-1", null);
+		Publisher subPublisher1 = notificationManager.getOrCreatePublisherWithData(context, subPublisher1Data, rootPublisher, PublisherChannel.DIRECT_EMAIL);
+		PublisherData subPublisher2Data = new PublisherData("testMultiUnsubscribeSub", "comment-forum-2", null);
+		Publisher subPublisher2 = notificationManager.getOrCreatePublisherWithData(context, subPublisher2Data, rootPublisher, PublisherChannel.DIRECT_EMAIL);
+		dbInstance.commitAndCloseSession();
+		
+		//subscribe
+		Subscriber rootSubscriber = notificationManager.subscribe(id, rootPublisher);
+		Subscriber subscriber1 = notificationManager.subscribe(id, subPublisher1);
+		Subscriber subscriber2 = notificationManager.subscribe(id, subPublisher2);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rootSubscriber);
+		Assert.assertNotNull(subscriber1);
+		Assert.assertNotNull(subscriber2);
+		
+		//unsubscribe
+		notificationManager.unsubscribeContext(id, context);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean subscribed = notificationManager.hasSubscribers(id, List.of(rootPublisher, subPublisher1, subPublisher2));
+		Assert.assertFalse(subscribed);
+	}
+	
+	@Test
+	public void validSubscribers() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1-2");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("Valid", Long.valueOf(123), identifier);
@@ -354,9 +374,9 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testValidSubscribersOf() {
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("valid1b-" + UUID.randomUUID().toString());
+	public void validSubscribersOf() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b-2");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("Validb", Long.valueOf(123), identifier);
@@ -379,7 +399,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetSubscriberIdentities() {
+	public void getSubscriberIdentities() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b1-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("valid1b2-");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("disabled1b-");
@@ -395,27 +415,48 @@ public class NotificationsManagerTest extends OlatTestCase {
 		notificationManager.subscribe(id3, context, publisherData);
 		dbInstance.commitAndCloseSession();
 		
-		notificationManager.unsubscribe(id3, context);
+		notificationManager.unsubscribeContext(id3, context);
 		dbInstance.commitAndCloseSession();
 		
 		//get identities with enabled subscribers
 		List<Identity> identities = notificationManager.getSubscriberIdentities(publisher, true);
-		Assert.assertNotNull(identities);
-		Assert.assertEquals(2, identities.size());
-		Assert.assertTrue(identities.contains(id1));
-		Assert.assertTrue(identities.contains(id2));
+		Assertions.assertThat(identities)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(id1, id2);
 		
 		//get identities with enabled subscribers
 		List<Identity> allIdentities = notificationManager.getSubscriberIdentities(publisher, false);
-		Assert.assertNotNull(allIdentities);
-		Assert.assertEquals(3, allIdentities.size());
-		Assert.assertTrue(allIdentities.contains(id1));
-		Assert.assertTrue(allIdentities.contains(id2));
-		Assert.assertTrue(allIdentities.contains(id3));
+		Assertions.assertThat(allIdentities)
+			.hasSize(3)
+			.containsExactlyInAnyOrder(id1, id2, id3);
 	}
 	
 	@Test
-	public void testGetSubscribersByTypes() {
+	public void getSubscribersAll() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("type-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("type-2");
+		
+		//create a first publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context1 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier);
+		PublisherData publisherData1 = new PublisherData("testGetSubscribersByType1", "e.g. forumdata=keyofforum", null);
+		notificationManager.getOrCreatePublisher(context1, publisherData1);
+		dbInstance.commitAndCloseSession();
+		
+		//add subscribers
+		Subscriber sub1 = notificationManager.subscribe(id1, context1, publisherData1);
+		Subscriber sub2 = notificationManager.subscribe(id2, context1, publisherData1);
+		dbInstance.commitAndCloseSession();
+
+		//get subscribers without types
+		List<Subscriber> subscribers = notificationManager.getSubscribers(id1, null, null, true, true);
+		Assertions.assertThat(subscribers)
+			.containsExactly(sub1)
+			.doesNotContain(sub2);
+	}
+
+	@Test
+	public void getSubscribersByType() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("type1-");
 		//create a first publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
@@ -431,34 +472,114 @@ public class NotificationsManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//add subscribers
-		notificationManager.subscribe(id, context1, publisherData1);
-		notificationManager.subscribe(id, context2, publisherData2);
+		Subscriber sub1 = notificationManager.subscribe(id, context1, publisherData1);
+		Subscriber sub2 = notificationManager.subscribe(id, publisher2);
 		dbInstance.commitAndCloseSession();
-		
-		//get subscribers without types
-		List<Subscriber> emptySubscribers = notificationManager.getSubscribers(id, null, true);
-		Assert.assertNotNull(emptySubscribers);
-		Assert.assertEquals(2, emptySubscribers.size());
 
 		//get subscribers with 1 type
-		List<String> types = Collections.singletonList(publisher1.getType());
-		List<Subscriber> typedSubscribers = notificationManager.getSubscribers(id, types, true);
-		Assert.assertNotNull(typedSubscribers);
-		Assert.assertEquals(1, typedSubscribers.size());
+		List<String> types = List.of(publisher1.getType());
+		List<Subscriber> typedSubscribers = notificationManager.getSubscribers(id, types, null, true, false);
+		Assertions.assertThat(typedSubscribers)
+			.containsExactlyInAnyOrder(sub1)
+			.doesNotContain(sub2);
+	}
 
+	@Test
+	public void getSubscribersByListOfTypes() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("type1-");
+		//create a first publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context1 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier);
+		PublisherData publisherData1 = new PublisherData("testGetSubscribersByType1", "e.g. forumdata=keyofforum", null);
+		Publisher publisher1 = notificationManager.getOrCreatePublisher(context1, publisherData1);
+		dbInstance.commitAndCloseSession();
+		
+		String identifier2 = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context2 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier2);
+		PublisherData publisherData2 = new PublisherData("testGetSubscribersByType2", "e.g. forumdata=keyofforum", null);
+		Publisher publisher2 = notificationManager.getOrCreatePublisher(context2, publisherData2);
+		dbInstance.commitAndCloseSession();
+		
+		//add subscribers
+		Subscriber sub1 = notificationManager.subscribe(id, context1, publisherData1);
+		Subscriber sub2 = notificationManager.subscribe(id, publisher2);
+		dbInstance.commitAndCloseSession();
+		
 		//get subscribers with 2 types
-		List<String> allTypes = new ArrayList<>(2);
-		allTypes.add(publisher1.getType());
-		allTypes.add(publisher2.getType());
-		List<Subscriber> allSubscribers = notificationManager.getSubscribers(id, allTypes, true);
-		Assert.assertNotNull(allSubscribers);
-		Assert.assertEquals(2, allSubscribers.size());
+		List<String> allTypes = List.of(publisher1.getType(), publisher2.getType());
+		List<Subscriber> allSubscribers = notificationManager.getSubscribers(id, allTypes, null, true, false);
+		Assertions.assertThat(allSubscribers)
+			.containsExactlyInAnyOrder(sub1, sub2);
 	}
 	
-	//markPublisherNews
+	@Test
+	public void getSubscribersWithSubs() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("type1-");
+		//create a first publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context1 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier);
+		PublisherData publisherData1 = new PublisherData("testGetSubscribersByType1", "e.g. forumdata=keyofforum", null);
+		Publisher publisher1 = notificationManager.getOrCreatePublisher(context1, publisherData1);
+		dbInstance.commitAndCloseSession();
+		
+		String identifier2 = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context2 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier2);
+		PublisherData publisherData2 = new PublisherData("testGetSubscribersByType2", "e.g. forumdata=keyofforum", null);
+		Publisher publisher2 = notificationManager.getOrCreatePublisherWithData(context2, publisherData2, publisher1, PublisherChannel.DIRECT_EMAIL);
+		dbInstance.commitAndCloseSession();
+		
+		//add subscribers
+		Subscriber sub1 = notificationManager.subscribe(id, context1, publisherData1);
+		Subscriber sub2 = notificationManager.subscribe(id, publisher2);
+		dbInstance.commitAndCloseSession();
+		
+		//get subscribers with 2 types but without sub-subscribers
+		List<String> allTypes = List.of(publisher1.getType(), publisher2.getType());
+		List<Subscriber> withoutSubSubscribers = notificationManager.getSubscribers(id, allTypes, null, true, false);
+		Assertions.assertThat(withoutSubSubscribers)
+			.containsExactlyInAnyOrder(sub1);
+		
+		//get subscribers with 2 types but with sub-subscribers
+		List<Subscriber> withSubSubscribers = notificationManager.getSubscribers(id, allTypes, null, true, true);
+		Assertions.assertThat(withSubSubscribers)
+			.containsExactlyInAnyOrder(sub1, sub2);
+	}
 	
 	@Test
-	public void testGetSubscriptionInfos() {
+	public void getSubscribersByChannel() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("type1-");
+		//create a first publisher
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context1 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier);
+		PublisherData publisherData1 = new PublisherData("testGetSubscribersByType1", "e.g. forumdata=keyofforum", null);
+		Publisher publisher1 = notificationManager.getOrCreatePublisherWithData(context1, publisherData1, null, PublisherChannel.PULL);
+		dbInstance.commitAndCloseSession();
+		
+		String identifier2 = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context2 = new SubscriptionContext("Subscribers", Long.valueOf(123), identifier2);
+		PublisherData publisherData2 = new PublisherData("testGetSubscribersByType2", "e.g. forumdata=keyofforum", null);
+		Publisher publisher2 = notificationManager.getOrCreatePublisherWithData(context2, publisherData2, publisher1, PublisherChannel.DIRECT_EMAIL);
+		dbInstance.commitAndCloseSession();
+		
+		//add subscribers
+		Subscriber sub1 = notificationManager.subscribe(id, context1, publisherData1);
+		Subscriber sub2 = notificationManager.subscribe(id, publisher2);
+		dbInstance.commitAndCloseSession();
+		
+		//get subscribers with 2 types but only mail channel
+		List<String> allTypes = List.of(publisher1.getType(), publisher2.getType());
+		List<Subscriber> mailedSubscribers = notificationManager.getSubscribers(id, allTypes, PublisherChannel.DIRECT_EMAIL, true, true);
+		Assertions.assertThat(mailedSubscribers)
+			.containsExactlyInAnyOrder(sub2);
+		
+		//get subscribers with 2 types and all channels
+		List<Subscriber> allSubscribers = notificationManager.getSubscribers(id, allTypes, null, true, true);
+		Assertions.assertThat(allSubscribers)
+			.containsExactlyInAnyOrder(sub1, sub2);
+	}
+	
+	@Test
+	public void getSubscriptionInfos() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fi1-");
 		SubscriptionContext context = new SubscriptionContext("Course", Long.valueOf(789521), UUID.randomUUID().toString());
 		PublisherData publisherData = new PublisherData("Forum", "e.g. forumdata=keyofforum", null);
@@ -473,7 +594,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testSubscriptions() {
+	public void notifyAllSubscriptions() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fi1-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fi2-");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("fi3-");
@@ -506,7 +627,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		notificationManager.notifyAllSubscribersByEmail();
 		
 		dbInstance.closeSession();
-		notificationManager.unsubscribe(id1, sc);
+		notificationManager.unsubscribeContext(id1, sc);
 		dbInstance.closeSession();
 		
 		boolean isStillSub = notificationManager.isSubscribed(id1, sc);
@@ -520,11 +641,11 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test(expected=DBRuntimeException.class)
-	public void testDuplicateSubscribers() throws Exception {
+	public void duplicateSubscribers() throws Exception {
 		try {
 			PublisherData pd = new PublisherData("CreateSubscriber@2x", "e.g. forumdata=keyofforum", null);
 			SubscriptionContext sc = new SubscriptionContext("Course", Long.valueOf(1238778567), UUID.randomUUID().toString().replace("-", ""));
-			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fci@2x-" + UUID.randomUUID().toString());
+			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fci@2x-");
 			Publisher publisher = notificationManager.getOrCreatePublisher(sc, pd);
 			dbInstance.commit();
 			
@@ -541,7 +662,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	
 	@Test
 	public void deletePublishersOf() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-5");
 		//create a publisher
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("DeletePublishers", CodeHelper.getForeverUniqueID(), identifier);
@@ -567,8 +688,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testCreateDisabledSubscriberIfAbsent() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID());
+	public void createDisabledSubscriberIfAbsent() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("subs-" + UUID.randomUUID());
 		String identifier = UUID.randomUUID().toString().replace("-", "");
 		SubscriptionContext context = new SubscriptionContext("CDS", Long.valueOf(321), identifier);
 		PublisherData publisherData = new PublisherData("testCreateDisabledSubscriber", "data", null);
@@ -579,7 +700,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 
 		// Create subscriber if absent (should create new disabled one)
 		Subscriber subscriber = notificationManager
-				.createDisabledSubscriberIfAbsent(id, context, publisherData);
+				.createDisabledSubscriberIfAbsent(id, publisher);
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertNotNull(subscriber);
@@ -589,7 +710,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 
 		// Call again - should return same subscriber, unchanged
 		Subscriber again = notificationManager
-				.createDisabledSubscriberIfAbsent(id, context, publisherData);
+				.createDisabledSubscriberIfAbsent(id, publisher);
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertEquals(subscriber, again);
@@ -599,12 +720,12 @@ public class NotificationsManagerTest extends OlatTestCase {
 	 * Test creation of concurrent subscriber
 	 */
 	@Test
-	public void testConcurrentCreateSubscriberWithOneIdentity() {
+	public void concurrentCreateSubscriberWithOneIdentity() {
 		final int NUM_OF_THREADS =  isOracleConfigured() ? 25 : 100;
 		
 		PublisherData pd = new PublisherData("CreateSubscriber", "e.g. forumdata=keyofforum", null);
 		SubscriptionContext sc = new SubscriptionContext("Course", Long.valueOf(1238778566), UUID.randomUUID().toString().replace("-", ""));
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fci-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fci-");
 		
 		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
 		List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
@@ -630,21 +751,21 @@ public class NotificationsManagerTest extends OlatTestCase {
 			log.error("Excpetion during concurrent subscription: ", e);
 		}
 
-		assertTrue("It throws an exception in test", exceptionHolder.isEmpty());	
-		assertEquals("Thread(s) did not finish", NUM_OF_THREADS, statusList.size());
-		assertTrue("Subscriber does not exists",  notificationManager.isSubscribed(id, sc));
+		Assert.assertTrue("It throws an exception in test", exceptionHolder.isEmpty());	
+		Assert.assertEquals("Thread(s) did not finish", NUM_OF_THREADS, statusList.size());
+		Assert.assertTrue("Subscriber does not exists",  notificationManager.isSubscribed(id, sc));
 	}
 	
 	/**
 	 * Test creation of concurrent subscriber
 	 */
 	@Test
-	public void testConcurrentSubscriberOperationsWithOneIdentity() {
+	public void concurrentSubscriberOperationsWithOneIdentity() {
 		final int NUM_OF_THREADS = 25;
 		
 		PublisherData pd = new PublisherData("MPSubscriber", "e.g. forumdata=keyofforum", null);
 		SubscriptionContext sc = new SubscriptionContext("MPSubscriber", Long.valueOf(1238778566), UUID.randomUUID().toString().replace("-", ""));
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fci-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fci-");
 		
 		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
 		List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<>(1));
@@ -729,7 +850,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	 * Start 10 threads which call 'subscribe' with same SubscriptionContext.
 	 */
 	@Test
-	public void testConcurrentFindOrCreatePublisher() {
+	public void concurrentFindOrCreatePublisher() {
 		final int NUM_OF_THREADS = 10;
 
 		PublisherData pd = new PublisherData("Forum", "e.g. forumdata=keyofforum", null );
@@ -740,7 +861,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		List<Boolean> statusList = Collections.synchronizedList(new ArrayList<>(1));
 		List<SubscribeThread> threads = new ArrayList<>();
 		for(int i=0; i<NUM_OF_THREADS; i++) {
-			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fci-" + i + "-" + UUID.randomUUID().toString());
+			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fci-" + i);
 			SubscribeThread thread = new SubscribeThread(sc, pd, id, exceptionHolder, statusList, finishCount);
 			threads.add(thread);
 		}

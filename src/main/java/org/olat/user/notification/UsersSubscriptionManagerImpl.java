@@ -126,7 +126,7 @@ public class UsersSubscriptionManagerImpl implements UsersSubscriptionManager, G
 	@Override
 	public void unsubscribe(Identity identity) {
 		SubscriptionContext context = getNewUsersSubscriptionContext();
-		notificationsManager.unsubscribe(identity, context);	
+		notificationsManager.unsubscribeContext(identity, context);	
 	}
 	
 	/**

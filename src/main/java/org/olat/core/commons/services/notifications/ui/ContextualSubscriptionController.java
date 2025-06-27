@@ -26,7 +26,13 @@
 
 package org.olat.core.commons.services.notifications.ui;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -52,11 +58,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ContextualSubscriptionController extends BasicController {
 
 	private Link subscribeButton;
-	private final VelocityContainer myContent;
+	private VelocityContainer myContent;
 
-	private final PublisherData publisherData;
-	private final SubscriptionContext subscriptionContext;
-	private Subscriber subscriber;
+	private List<PublisherDecorated> publishers;
 
 	private CloseableCalloutWindowController eventCalloutCtrl;
 	private Controller contextualSubscriptionListCtrl;
@@ -85,28 +89,51 @@ public class ContextualSubscriptionController extends BasicController {
 	public ContextualSubscriptionController(UserRequest ureq, WindowControl wControl,
 											SubscriptionContext subscriptionContext, PublisherData publisherData, boolean optOut) {
 		super(ureq, wControl);
-		this.subscriptionContext = subscriptionContext;
-		this.publisherData = publisherData;
-		myContent = createVelocityContainer("consubs");
-		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
-		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
-
-		if (subscriptionContext == null) {
+		Publisher publisher = notificationsManager.getOrCreatePublisherWithData(subscriptionContext, publisherData, null, PublisherChannel.PULL);
+		if (publisher == null) {
 			putInitialPanel(new Panel("empty:nosubscription"));
 			return;
 		}
+		
+		if (optOut) {
+			notificationsManager.subscribe(getIdentity(), publisher);
+		}
+		publishers = List.of(new PublisherDecorated(publisher, "command.subscribe", false));
+		init();
+	}
+	
+	public ContextualSubscriptionController(UserRequest ureq, WindowControl wControl, List<PublisherDecorated> labelledPublishers, boolean optOut) {
+		super(ureq, wControl);
+		this.publishers = List.copyOf(labelledPublishers);
 
 		if (optOut) {
-			notificationsManager.subscribe(getIdentity(), subscriptionContext, publisherData);
+			List<Publisher> publishers = labelledPublishers.stream()
+					.map(PublisherDecorated::publisher)
+					.toList();
+			List<Subscriber> subscribers = notificationsManager.getSubscribers(getIdentity(), publishers);
+			Map<Publisher,Subscriber> subscribersMap = subscribers.stream()
+					.collect(Collectors.toMap(Subscriber::getPublisher, p -> p, (u, v) -> u));
+			for(PublisherDecorated publisher:labelledPublishers) {
+				if(!subscribersMap.containsKey(publisher.publisher())) {
+					notificationsManager.subscribe(getIdentity(), publisher.publisher());
+				}
+			}
 		}
+		init();
+	}
+
+	private void init() {
+		myContent = createVelocityContainer("consubs");
+		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 
 		subscribeButton = LinkFactory.createLink("command.subscribe", "subscribe", getTranslator(), myContent, this, Link.BUTTON + Link.NONTRANSLATED);
 		subscribeButton.setTitle(translate("command.subscribe"));
 		subscribeButton.setCustomDisplayText("");
-		toggleSubscriptionIcon();
 		subscribeButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		subscribeButton.setElementCssClass("o_noti_subscribe_link");
 		subscribeButton.setGhost(true);
+		
+		toggleSubscriptionIcon();
 
 		putInitialPanel(myContent);
 	}
@@ -117,7 +144,7 @@ public class ContextualSubscriptionController extends BasicController {
 		removeAsListenerAndDispose(eventCalloutCtrl);
 		removeAsListenerAndDispose(contextualSubscriptionListCtrl);
 
-		contextualSubscriptionListCtrl = new ContextualSubscriptionListController(ureq, getWindowControl(), subscriptionContext, publisherData);
+		contextualSubscriptionListCtrl = new ContextualSubscriptionListController(ureq, getWindowControl(), publishers);
 		listenTo(contextualSubscriptionListCtrl);
 
 		Component eventCmp = contextualSubscriptionListCtrl.getInitialComponent();
@@ -152,13 +179,16 @@ public class ContextualSubscriptionController extends BasicController {
 
 	private void toggleSubscriptionIcon() {
 		myContent.contextRemove("command.subscribe");
-		subscriber = notificationsManager.getSubscriber(getIdentity(), subscriptionContext);
-		if (subscriber != null && subscriber.isEnabled()) {
+		
+		List<Publisher> list = publishers.stream()
+				.map(PublisherDecorated::publisher)
+				.toList();
+		boolean hasSubscriber = notificationsManager.hasSubscribers(getIdentity(), list);
+		if (hasSubscriber) {
 			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon-bell");
 		} else {
 			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reminder");
 		}
-		myContent.contextPut("command.subscribe", subscribeButton);
 	}
 
 	private void cleanUp() {

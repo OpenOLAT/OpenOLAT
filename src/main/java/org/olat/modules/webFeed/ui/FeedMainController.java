@@ -20,12 +20,17 @@
 package org.olat.modules.webFeed.ui;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.commons.services.notifications.ui.PublisherDecorated;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
@@ -88,6 +93,8 @@ public class FeedMainController extends BasicController implements Activateable2
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private FeedManager feedManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	/**
 	 * Constructor for learning resource (not course nodes)
@@ -194,10 +201,23 @@ public class FeedMainController extends BasicController implements Activateable2
 			vcInfo.contextPut("showFeedImage", moduleConfig.getBooleanSafe(AbstractFeedCourseNode.CONFIG_KEY_SHOW_FEED_IMAGE, false));
 		}
 
+		Publisher commentPublisher = null;
 		if (subsContext != null) {
 			String businessPath = wControl.getBusinessControl().getAsString();
 			PublisherData data = new PublisherData(ores.getResourceableTypeName(), ores.getResourceableId().toString(), businessPath);
-			ContextualSubscriptionController cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
+			Publisher feedPublisher = notificationsManager.getOrCreatePublisherWithData(subsContext, data, null, PublisherChannel.PULL);
+			List<PublisherDecorated> publishers = new ArrayList<>(2);
+			publishers.add(new PublisherDecorated(feedPublisher, PublisherDecorated.DEFAULT_SUBSCRIBE_I18N, false));
+			
+			if(displayConfig.isShowCRInDetails()) {
+				String commentTypeName = ores.getResourceableTypeName().replace("FileResource", "Comment");
+				String commentBusinessPath = businessPath + "[Comment:0]";
+				PublisherData commentData = new PublisherData(commentTypeName, ores.getResourceableId().toString(), commentBusinessPath);
+				commentPublisher = notificationsManager.getOrCreatePublisherWithData(subsContext, commentData, feedPublisher, PublisherChannel.PULL);
+				publishers.add(new PublisherDecorated(commentPublisher, translate("command.subscribe.comment"), true));
+			}
+			
+			ContextualSubscriptionController cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), publishers, false);
 			listenTo(cSubscriptionCtrl);
 			vcInfo.put("subscription", cSubscriptionCtrl.getInitialComponent());
 		}
@@ -215,7 +235,7 @@ public class FeedMainController extends BasicController implements Activateable2
 
 		vcMain.put("info", vcInfo);
 
-		feedItemListCtrl = new FeedItemListController(ureq, wControl, feed, callback, feedUIFactory, vcMain, vcInfo, displayConfig, helper);
+		feedItemListCtrl = new FeedItemListController(ureq, wControl, feed, callback, feedUIFactory, vcMain, vcInfo, displayConfig, commentPublisher, helper);
 		listenTo(feedItemListCtrl);
 
 		vcMain.put("items", feedItemListCtrl.getInitialComponent());

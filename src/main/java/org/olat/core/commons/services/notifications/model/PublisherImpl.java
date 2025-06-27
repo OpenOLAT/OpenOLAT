@@ -29,8 +29,13 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -39,6 +44,7 @@ import jakarta.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.id.Persistable;
 
 /**
@@ -95,12 +101,22 @@ public class PublisherImpl implements Publisher  {
 	private String data; 
 	// 0 = ok
 	@Column(name="state", nullable=false, insertable=true, updatable=false)
-	private int state; 
+	private int state;
+	@Enumerated(EnumType.STRING)
+	@Column(name="channeltype", nullable=false, insertable=true, updatable=false)
+	private PublisherChannel channelType;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="latestnews", nullable=false, insertable=true, updatable=true)
 	private Date latestNewsDate;
-
+	
+	@ManyToOne(targetEntity=PublisherImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_root_publisher", nullable=false, updatable=false)
+	private Publisher rootPublisher;
+	
+	@ManyToOne(targetEntity=PublisherImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_parent_publisher", nullable=false, updatable=false)
+	private Publisher parentPublisher;
 
 	/**
 	 * for hibernate only
@@ -222,7 +238,16 @@ public class PublisherImpl implements Publisher  {
 	public void setState(int state) {
 		this.state = state;
 	}
-	
+
+	@Override
+	public PublisherChannel getChannelType() {
+		return channelType;
+	}
+
+	public void setChannelType(PublisherChannel channelType) {
+		this.channelType = channelType;
+	}
+
 	/**
 	 * @return Returns the latestNewsDate.
 	 */
@@ -247,6 +272,24 @@ public class PublisherImpl implements Publisher  {
 	@Override
 	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
+	}
+
+	@Override
+	public Publisher getRootPublisher() {
+		return rootPublisher;
+	}
+
+	public void setRootPublisher(Publisher rootPublisher) {
+		this.rootPublisher = rootPublisher;
+	}
+
+	@Override
+	public Publisher getParentPublisher() {
+		return parentPublisher;
+	}
+
+	public void setParentPublisher(Publisher parentPublisher) {
+		this.parentPublisher = parentPublisher;
 	}
 
 	@Override

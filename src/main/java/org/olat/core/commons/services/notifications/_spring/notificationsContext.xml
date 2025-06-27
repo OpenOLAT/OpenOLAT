@@ -5,19 +5,11 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+	<import resource="classpath:org/olat/core/commons/services/notifications/_spring/notifications_jms_${jms.provider}.xml" />
 
-	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl">
-		<property name="dbInstance" ref="database"/>
-		<property name="securityManager" ref="baseSecurityManager"/>
-		<property name="propertyManager" ref="propertyManager"/>
-		<property name="coordinatorManager" ref="coordinatorManager" />
-		<!-- 
-			Configure which notification intervals you want the user to choose from. 
-			Don't add other intervals unless you also implement them. But you can surely
-			remove the ones you don't want to offer 
-		-->
-		<property name="notificationIntervals">
-			<map>
+	<bean id="notificationIntervalsMap" class="java.util.HashMap">
+	    <constructor-arg>
+	        <map >
 				<entry value="${notification.interval.never}" key="never" />
 				<entry value="${notification.interval.monthly}" key="monthly" />
 				<entry value="${notification.interval.weekly}" key="weekly" />
@@ -26,14 +18,7 @@
 				<entry value="${notification.interval.four-hourly}" key="four-hourly" />
 				<entry value="${notification.interval.two-hourly}" key="two-hourly" />
 			</map>
-		</property>
-		<!-- 
-			The default interval that is used when no specific interval is configured for the user.
-			Must also be in the list of notificationIntervals above. 
-		-->
-		<property name="defaultNotificationInterval">
-			<value>${notification.interval.default}</value>
-		</property>
+	    </constructor-arg>
 	</bean>
 	
 	<!-- Notification config:

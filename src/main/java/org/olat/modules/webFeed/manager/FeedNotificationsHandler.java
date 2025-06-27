@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -51,7 +49,6 @@ import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,8 +70,6 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 	private RepositoryManager repoManager;
 	@Autowired
 	private NotificationsManager notificationsManager;
-	@Autowired
-	private CommentAndRatingService commentAndRatingService;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
@@ -171,20 +166,6 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 						desc = translator.translate("notifications.entry.modified", title, "???");
 					}
 					items.add(new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass));
-				}
-			}
-
-			List<UserComment> comments = commentAndRatingService.getComments(item.getFeed(), item.getGuid());
-			for (UserComment comment : comments) {
-				if (compareDate.before(comment.getCreationDate())) {
-					String desc;
-					String modifier = UserManager.getInstance().getUserDisplayName(comment.getCreator().getKey());
-					if(StringHelper.containsNonWhitespace(modifier)) {
-						desc = translator.translate("notifications.entry.commented", new String[] { title, modifier });
-					} else {
-						desc = translator.translate("notifications.entry.commented", new String[] { title, "???" });
-					}
-					items.add(new SubscriptionListItem(desc, urlToSend, businessPath, comment.getCreationDate(), iconCssClass));
 				}
 			}
 		}

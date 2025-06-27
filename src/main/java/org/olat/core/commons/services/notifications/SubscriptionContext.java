@@ -70,6 +70,10 @@ public class SubscriptionContext implements Serializable {
 	public SubscriptionContext(OLATResourceable ores, String subidentifier) {
 		this (ores.getResourceableTypeName(), ores.getResourceableId(), subidentifier);
 	}
+	
+	public static final SubscriptionContext valueOf(Publisher publisher) {
+		return new SubscriptionContext(publisher.getResName(), publisher.getResId(), publisher.getSubidentifier());
+	}
 
 	/**
 	 * @return resId

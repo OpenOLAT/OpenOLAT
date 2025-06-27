@@ -22,10 +22,15 @@ package org.olat.modules.webFeed.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.model.FeedImpl;
+import org.olat.modules.webFeed.model.PublisherSubscriber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -114,6 +119,40 @@ public class FeedDAO {
 		if (feed != null) {
 			dbInstance.getCurrentEntityManager().remove(feed);
 		}
+	}
+	
+	public List<PublisherSubscriber> getPublisherByType(IdentityRef identity, String publisherType, String data, Long resourceKey, List<GroupRoles> roles) {
+		String q = """
+			select pub, sub from notipublisher pub
+			left join notisub as sub on (pub.key=sub.publisher.key and sub.identity.key=:identityKey)
+			where pub.type=:type and pub.data=:data
+			and pub.resName=:resName and pub.resId in (select courseOres.resId from olatresource courseOres
+			  inner join references as ref on (ref.source.key=courseOres.key)
+			  inner join repositoryentry as v on (courseOres.key=v.olatResource.key)
+			  inner join v.groups as rel
+			  inner join rel.group as reGroup
+		      inner join reGroup.members as reMember
+			  where ref.target.key=:resourceKey
+			  and reMember.identity.key=:identityKey and reMember.role in (:roles)
+			)""";
+		
+		List<String> rolesList = roles.stream()
+				.map(GroupRoles::name).toList();
+		
+		List<Object[]> rawObjectList = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), Object[].class)
+				.setParameter("resName", "CourseModule")
+				.setParameter("type", publisherType)
+				.setParameter("data", data)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", rolesList)
+				.getResultList();
+		return rawObjectList.stream().map(arr -> {
+			Publisher publisher = (Publisher)arr[0];
+			Subscriber subscriber = (Subscriber)arr[1];
+			return new PublisherSubscriber(publisher, subscriber);
+		}).toList();
 	}
 	
 }

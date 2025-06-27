@@ -27,3 +27,16 @@ create index idx_badge_class_to_next_version_idx on o_badge_class(fk_next_versio
 alter table o_tb_broker add column t_operlapping_period_allowed bool default true;
 alter table o_tb_topic add column t_begin_date timestamp;
 alter table o_tb_topic add column t_end_date timestamp;
+
+-- Feed
+alter table o_feed add column f_push_email_comments bool default false;
+
+-- Notifications
+alter table o_noti_pub add column fk_root_publisher int8 default null;
+alter table o_noti_pub add column fk_parent_publisher int8 default null;
+alter table o_noti_pub add column channeltype varchar(16) default 'PULL';
+
+alter table o_noti_pub add constraint pub_to_root_pub_idx foreign key (fk_root_publisher) references o_noti_pub (publisher_id);
+create index idx_pub_to_root_pub_idx on o_noti_pub (fk_root_publisher);
+alter table o_noti_pub add constraint pub_to_parent_pub_idx foreign key (fk_parent_publisher) references o_noti_pub (publisher_id);
+create index idx_pub_to_parent_pub_idx on o_noti_pub (fk_parent_publisher);

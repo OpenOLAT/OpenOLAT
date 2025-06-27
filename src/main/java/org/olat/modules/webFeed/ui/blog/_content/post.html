@@ -52,7 +52,7 @@
 					</div>
 				</div>
 			</div>
-	
+
 			<div class="o_feed_content o_feed_detail_content">
 				$!helper.getItemDescriptionForBrowser($item)
 				#set($podId = $r.getUniqueId())
@@ -76,12 +76,15 @@
 			</div>
 		</div>
 
+		#if($r.available("comments") && $feed.getCanComment())
 		<div class="o_block_footer">
+			#if($r.available("itemSubscriptions"))
+				<div class="o_button_group o_button_group_right">HHH $r.render("itemSubscriptions")</div>
+			#end
 			<div class="clearfix">
-				#if($r.available("comments") && $feed.getCanComment())
-					$r.render("comments")
-				#end
+				$r.render("comments")
 			</div>
 		</div>
+		#end
 	</div>
 </div>

@@ -367,6 +367,13 @@ ul.o_dropdown {
 			gap: 15px;
 			margin-left: auto;
 		}
+		
+		.o_notifications_subscribe_toggle {
+			margin-bottom: 10px;
+		}
+		.o_notifications_subscribe_toggle:last-child {
+			margin-bottom: 0;
+		}
 	}
 
 	>div .o_table_toolbar {

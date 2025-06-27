@@ -23,7 +23,6 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +46,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 import org.olat.core.gui.UserRequest;
@@ -114,6 +114,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted structure element (fully populated)
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Operation(summary = "Retrieve metadata",
 	description = "Retrieves metadata of the course node")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas",
@@ -143,8 +144,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 
 		final Set<String> subscribed = new HashSet<>();
-		List<String> notiTypes = Collections.singletonList("FolderModule");
-		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
+		List<String> notiTypes = List.of("FolderModule");
+		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, PublisherChannel.PULL, true, false);
 		for(Subscriber sub:subs) {
 			Long courseKey = sub.getPublisher().getResId();
 			if(courseId.equals(courseKey)) {
@@ -319,6 +320,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted structure element (fully populated)
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Path("{nodeId}")
 	@Operation(summary = "Retrieves metadata of the course node",
 	description = "Retrieves metadata of the course node")
@@ -348,8 +350,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode);
 		if(accessible) {
 			Set<String> subscribed = new HashSet<>();
-			List<String> notiTypes = Collections.singletonList("FolderModule");
-			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
+			List<String> notiTypes = List.of("FolderModule");
+			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, PublisherChannel.PULL, true, false);
 			for(Subscriber sub:subs) {
 				Long courseKey = sub.getPublisher().getResId();
 				if(courseId.equals(courseKey)) {

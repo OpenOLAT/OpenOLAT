@@ -37,8 +37,11 @@ import org.olat.core.commons.services.folder.ui.FileBrowserSelectionMode;
 import org.olat.core.commons.services.folder.ui.FolderQuota;
 import org.olat.core.commons.services.folder.ui.event.FileBrowserSelectionEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.NotificationsPushService;
+import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -61,6 +64,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -128,6 +132,8 @@ public class UserCommentFormController extends FormBasicController {
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private NotificationsPushService notificationsService;
 	@Autowired
 	private CommentAndRatingService commentAndRatingService;
 
@@ -500,22 +506,42 @@ public class UserCommentFormController extends FormBasicController {
 				toBeUpdatedComment = commentAndRatingService.updateComment(toBeUpdatedComment, commentText);
 				handleUpdateResult(ureq);
 			}
+			markAsNews(toBeUpdatedComment);
 			toggleCommentFormElem();
 			resetForm();
 			flc.setDirty(false);
 		}
 	}
+	
+	private void markAsNews(UserComment comment) {
+		if(publishingInformations != null) {
+			PublisherData data = publishingInformations.data();
+			SubscriptionContext context = publishingInformations.context();
+			OLATResourceable object = OresHelper.createOLATResourceableInstance(UserComment.class, comment.getKey());
+			String operation = comment.getParent() != null ? "comment-reply" : "comment-new";
+			notificationsService.sendMessage(context, data, object, operation);
+		}
+	}
 
 	private void handleSubscription() {
-		if (publishingInformations != null) {
+		if(publishingInformations != null && publishingInformations.publisher() != null) {
 			if (subscribeOnce) {
-				Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.getContext());
+				Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.publisher());
 				if (subscriber == null) {
-					notificationsManager.subscribe(getIdentity(), publishingInformations.getContext(), publishingInformations.getData());
+					notificationsManager.subscribe(getIdentity(), publishingInformations.publisher());
 				}
 				subscribeOnce = false;
 			}
-			notificationsManager.markPublisherNews(publishingInformations.getContext(), null, false);
+			notificationsManager.markPublisherNews(publishingInformations.publisher(), null, false);
+		} else if (publishingInformations != null) {
+			if (subscribeOnce) {
+				Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.context());
+				if (subscriber == null) {
+					notificationsManager.subscribe(getIdentity(), publishingInformations.context(), publishingInformations.data());
+				}
+				subscribeOnce = false;
+			}
+			notificationsManager.markPublisherNews(publishingInformations.context(), null, false);
 		}
 	}
 

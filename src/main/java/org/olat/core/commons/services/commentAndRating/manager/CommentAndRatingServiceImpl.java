@@ -29,7 +29,6 @@ import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRat
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.commentAndRating.model.UserCommentsCount;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -59,9 +58,6 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	private UserRatingsDAO userRatingsDao;
 	@Autowired
 	private UserCommentsDAO userCommentsDao;
-	@Autowired
-	private NotificationsManager notificationsManager;
-
 
 	@Override
 	public Long countRatings(OLATResourceable ores, String resSubPath) {
@@ -126,9 +122,7 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	@Override
 	public UserComment createComment(Identity creator, OLATResourceable ores,
 			String resSubPath, String commentText) {
-		UserComment comment = userCommentsDao.createComment(creator, ores, resSubPath, commentText);
-		markPublisherNews(comment);
-		return comment;
+		return userCommentsDao.createComment(creator, ores, resSubPath, commentText);
 	}
 
 	@Override
@@ -138,16 +132,12 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 
 	@Override
 	public UserComment replyTo(UserComment originalComment, Identity creator, String replyCommentText) {
-		UserComment reply = userCommentsDao.replyTo(originalComment, creator, replyCommentText);
-		markPublisherNews(reply);
-		return reply;
+		return userCommentsDao.replyTo(originalComment, creator, replyCommentText);
 	}
 
 	@Override
 	public UserComment updateComment(UserComment comment, String newCommentText) {
-		UserComment updatedComment = userCommentsDao.updateComment(comment, newCommentText);
-		markPublisherNews(updatedComment);
-		return updatedComment;
+		return userCommentsDao.updateComment(comment, newCommentText);
 	}
 
 	@Override
@@ -197,15 +187,5 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 		int delCount = userCommentsDao.deleteAllCommentsIgnoringSubPath(ores);
 		delCount += userRatingsDao.deleteAllRatingsIgnoringSubPath(ores);
 		return delCount;
-	}
-
-	private void markPublisherNews(UserComment comment) {
-		if (comment == null) return;
-
-		notificationsManager.markPublisherNews(
-				comment.getResName(),
-				comment.getResId().toString(),
-				null,
-				false);
 	}
 }

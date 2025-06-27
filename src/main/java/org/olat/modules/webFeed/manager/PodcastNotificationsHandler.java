@@ -36,8 +36,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PodcastNotificationsHandler extends FeedNotificationsHandler {
 	
-	private static final String NOTIFICATIONS_HEADER_PODCAST = "notifications.header.podcast";
-	private static final String CSS_CLASS_ICON_PODCAST = "o_podcast_icon";
+	public static final String NOTIFICATIONS_HEADER_PODCAST = "notifications.header.podcast";
+	public static final String CSS_CLASS_ICON_PODCAST = "o_podcast_icon";
 
 	@Override
 	protected String getCssClassIcon() {

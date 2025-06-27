@@ -31,6 +31,7 @@ import java.util.Map;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.SubscriptionItem;
@@ -128,7 +129,7 @@ public class NotificationNewsController extends BasicController implements Activ
 			notiTypes.add(newsType);
 		}
 
-		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity, notiTypes, true);
+		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity, notiTypes, PublisherChannel.PULL, true, true);
 
 		newsVC.contextPut("subs", subs);
 		subsInfoMap = NotificationHelper.getSubscriptionMap(getLocale(), true,

@@ -562,7 +562,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.create(Action.projectMemberRemove, null, null, doer, project, identity);
 			markNews(project);
 			
-			Subscriber subscriber = notificationManager.getSubscriber(identity, getSubscriptionContext(project));
+			Subscriber subscriber = notificationManager.getSubscriber(identity, getSubscriptionContext(project), getPublisherData(bcFactory, project));
 			if (subscriber != null) {
 				notificationManager.deleteSubscriber(subscriber.getKey());
 			}

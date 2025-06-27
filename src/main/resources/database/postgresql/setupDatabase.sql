@@ -200,8 +200,11 @@ create table o_noti_pub (
    resid int8,
    subident varchar(128),
    businesspath varchar(255),
+   channeltype varchar(16) default 'PULL',
    state int4,
    latestnews timestamp not null,
+   fk_root_publisher int8,
+   fk_parent_publisher int8,
    primary key (publisher_id)
 );
 
@@ -3563,6 +3566,7 @@ create table o_feed (
    f_external boolean,
    f_external_feed_url varchar(4000),
    f_external_image_url varchar(4000),
+   f_push_email_comments bool default false,
    primary key (id)
 );
 
@@ -5149,6 +5153,11 @@ create index idx_sub_to_id_pub_idx on o_noti_sub (publisher_id, fk_publisher);
 create index idx_sub_to_id_ident_idx on o_noti_sub (publisher_id, fk_identity);
 -- index created idx_sub_to_pub_ident_idx on unique constraint
 create index idx_sub_to_id_pub_ident_idx on o_noti_sub (publisher_id, fk_publisher, fk_identity);
+
+alter table o_noti_pub add constraint pub_to_root_pub_idx foreign key (fk_root_publisher) references o_noti_pub (publisher_id);
+create index idx_pub_to_root_pub_idx on o_noti_pub (fk_root_publisher);
+alter table o_noti_pub add constraint pub_to_parent_pub_idx foreign key (fk_parent_publisher) references o_noti_pub (publisher_id);
+create index idx_pub_to_parent_pub_idx on o_noti_pub (fk_parent_publisher);
 
 -- catalog entry
 alter table o_catentry add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry;

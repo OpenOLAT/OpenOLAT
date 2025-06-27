@@ -31,6 +31,7 @@ import org.olat.core.commons.services.notifications.NotificationUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -128,7 +129,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		// Load subscriptions from DB. Don't use the ureq.getIdentity() but the
 		// subscriberIdentity instead to make this controller also be usable in the
 		// admin environment (admins might change notifications for a user)
-		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity, false);
+		List<Subscriber> subs = notificationsManager.getSubscribers(subscriberIdentity, null, PublisherChannel.PULL, false, true);
 		for (Iterator<Subscriber> subIt = subs.iterator(); subIt.hasNext(); ) {
 			Subscriber sub = subIt.next();
 			if (!notificationsManager.isPublisherValid(sub.getPublisher())) {

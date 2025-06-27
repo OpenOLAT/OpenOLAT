@@ -51,6 +51,7 @@ import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -128,7 +129,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 
 		final Set<Long> subcribedForums = new HashSet<>();
 		List<String> notiTypes = Collections.singletonList("Forum");
-		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
+		List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, PublisherChannel.PULL, true, false);
 		for(Subscriber sub:subs) {
 			Long forumKey = Long.parseLong(sub.getPublisher().getData());
 			subcribedForums.add(forumKey);
@@ -291,8 +292,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			FOCourseNode forumNode = (FOCourseNode)courseNode;
 
 			Set<Long> subscriptions = new HashSet<>();
-			List<String> notiTypes = Collections.singletonList("Forum");
-			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, true);
+			List<String> notiTypes = List.of("Forum");
+			List<Subscriber> subs = notificationsManager.getSubscribers(ureq.getIdentity(), notiTypes, PublisherChannel.PULL, true, false);
 			for(Subscriber sub:subs) {
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
 				subscriptions.add(forumKey);

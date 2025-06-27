@@ -47,16 +47,19 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -74,7 +77,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -97,6 +99,10 @@ import org.olat.user.UserDataDeletable;
 import org.olat.user.UserDataExportable;
 import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description: <br>
@@ -105,6 +111,7 @@ import org.springframework.beans.factory.InitializingBean;
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
  */
+@Service("notificationsManager")
 public class NotificationsManagerImpl implements NotificationsManager, UserDataDeletable, UserDataExportable, GenericEventListener, InitializingBean {
 	private static final Logger log = Tracing.createLoggerFor(NotificationsManagerImpl.class);
 
@@ -120,44 +127,26 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	private Map<String, NotificationsHandler> notificationHandlers;
 	
 	private List<String> notificationIntervals;
+	@Value("${notification.interval.default}")
 	private String defaultNotificationInterval;
 	private static final Map<String, Integer> INTERVAL_DEF_MAP = buildIntervalMap();
 	private Object lockObject = new Object();
-	
-	private DB dbInstance;
-	private BaseSecurity securityManager;
-	private PropertyManager propertyManager;
-	private CoordinatorManager coordinatorManager;
 
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private PublisherDAO publisherDao;
+	@Autowired
+	private SubscriberDAO subscriberDao;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private PropertyManager propertyManager;
 	
-	/**
-	 * [user by Spring]
-	 * @param securityManager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
+	private CoordinatorManager coordinatorManager;
 	
-	/**
-	 * [used by Spring]
-	 * @param propertyManager
-	 */
-	public void setPropertyManager(PropertyManager propertyManager) {
-		this.propertyManager = propertyManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param coordinatorManager
-	 */
-	public void setCoordinatorManager(CoordinatorManager coordinatorManager) {
+	@Autowired
+	public NotificationsManagerImpl(CoordinatorManager coordinatorManager) {
 		this.coordinatorManager = coordinatorManager;
 	}
 
@@ -183,7 +172,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 * @return a persisted publisher with ores/subidentifier as the composite
 	 *         primary key
 	 */
-	private Publisher createAndPersistPublisher(String resName, Long resId, String subidentifier, String type, String data, String businessPath) {
+	private Publisher createAndPersistPublisher(String resName, Long resId, String subidentifier,
+			String type, String data, String businessPath, Publisher parent, PublisherChannel channel) {
 		if (resName == null || resId == null || subidentifier == null) {
 			throw new AssertException("resName, resId, and subidentifier must not be null");
 		}
@@ -192,8 +182,19 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			log.error("Businesspath too long for publisher: {} with business path: {}", resName, businessPath);
 			businessPath = businessPath.substring(0, 230);
 		}
-		PublisherImpl pi = new PublisherImpl(resName, resId, subidentifier, type, data, businessPath, new Date(), PUB_STATE_OK);
-		pi.setCreationDate(new Date());
+		
+		Date creationDate = new Date();
+		PublisherImpl pi = new PublisherImpl(resName, resId, subidentifier, type, data, businessPath, creationDate, PUB_STATE_OK);
+		pi.setCreationDate(creationDate);
+		pi.setChannelType(channel);
+		if(parent != null) {
+			pi.setParentPublisher(parent);
+			if(parent.getRootPublisher() == null) {
+				pi.setRootPublisher(parent);
+			} else {
+				pi.setRootPublisher(parent.getRootPublisher());
+			}
+		}
 		dbInstance.getCurrentEntityManager().persist(pi);
 		return pi;
 	}
@@ -216,42 +217,42 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 
 	/**
 	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
-	 * belonging to this person)
-	 * 
-	 * @param identity
-	 * @return List of Subscriber Objects which belong to the identity
-	 */
-	@Override
-	public List<Subscriber> getSubscribers(Identity identity, boolean enabledOnly) {
-		return getSubscribers(identity, Collections.<String>emptyList(), enabledOnly);
-	}
-
-	/**
-	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
 	 * belonging to this person) restricted to the specified types
 	 * 
 	 * @param identity
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
 	@Override
-	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types, boolean enabledOnly) {
-		if(identity == null) return Collections.emptyList();
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types,
+			PublisherChannel channel, boolean enabledOnly, boolean withSubPublishers) {
+		if(identity == null) return List.of();
 		
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
-		  .append("where sub.identity.key = :identityKey");
+		  .where().append(" sub.identity.key = :identityKey");
 		if(enabledOnly) {
-			sb.append(" and sub.enabled=true");
+			sb.and().append(" sub.enabled=true");
 		}
 		if(types != null && !types.isEmpty()) {
-			sb.append(" and publisher.type in (:types)");
+			sb.and().append(" publisher.type in (:types)");
 		}
+		if(!withSubPublishers) {
+			sb.and().append(" publisher.parentPublisher is null");
+		}
+		if(channel != null) {
+			sb.and().append(" publisher.channelType=:channel");
+		}
+		
+		
 		TypedQuery<Subscriber> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Subscriber.class)
 				.setParameter("identityKey", identity.getKey());
 		if(types != null && !types.isEmpty()) {
 			query.setParameter("types", types);
+		}
+		if(channel != null) {
+			query.setParameter("channel", channel);
 		}
 		return query.getResultList();
 	}
@@ -268,7 +269,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		StringBuilder q = new StringBuilder(256);
 		q.append("select sub from notisub sub")
 		 .append(" inner join fetch sub.publisher as pub ")
-		 .append(" where sub.identity.key=:anIdentityKey and sub.enabled=true and pub.state=").append(PUB_STATE_OK);
+		 .append(" where pub.parentPublisher is null and sub.identity.key=:anIdentityKey and sub.enabled=true and pub.state=").append(PUB_STATE_OK);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
@@ -381,7 +382,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 
 		Date defaultCompareDate = getDefaultCompareDate();
-		List<Subscriber> subscribers = getSubscribers(ident, true);
+		List<Subscriber> subscribers = getSubscribers(ident, null, PublisherChannel.PULL, true, false);
 		if(subscribers.isEmpty()) {
 			return;
 		}
@@ -537,7 +538,8 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 	}
 	
-	private boolean sendEmail(Identity to, Translator translator, List<SubscriptionItem> subItems) {
+	@Override
+	public boolean sendEmail(Identity to, Translator translator, List<SubscriptionItem> subItems) {
 		String title = translator.translate("rss.title", NotificationHelper.getFormatedName(to));
 		StringBuilder htmlText = new StringBuilder();
 		htmlText.append("<style>");
@@ -631,47 +633,71 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 * @param pdata
 	 * @return the publisher
 	 */
-	public Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata) {
-		return findOrCreatePublisher(scontext, pdata);
+	@Override
+	public Publisher getOrCreatePublisher(SubscriptionContext scontext, PublisherData pdata) {
+		return findOrCreatePublisher(scontext, pdata, PublisherChannel.PULL);
 	}
-	/**
-	 * @param scontext
-	 * @param pdata
-	 * @return the publisher
-	 */
-	private Publisher findOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata) {
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(scontext.getResName() + "_" + scontext.getSubidentifier(),scontext.getResId());
-		//o_clusterOK by:cg
-		//fxdiff VCRP-16:prevent nested doInSync
-		Publisher pub = getPublisher(scontext);
+	
+	@Override
+	public Publisher getOrCreatePublisherWithData(final SubscriptionContext scontext, final PublisherData pdata,
+			final Publisher parent, final PublisherChannel channel) {
+		Publisher pub = getPublisher(scontext, pdata);
 		if(pub != null) {
 			return pub;
 		}
-		
+
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(scontext.getResName() + "_" + scontext.getSubidentifier(), scontext.getResId());
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, () -> {
-			Publisher p = getPublisher(scontext);
+			Publisher p = getPublisher(scontext, pdata);
 			// if not found, create it
 			if (p == null) {
 				p = createAndPersistPublisher(scontext.getResName(), scontext.getResId(), scontext.getSubidentifier(), pdata.getType(), pdata
-						.getData(), pdata.getBusinessPath());
+						.getData(), pdata.getBusinessPath(), parent, channel);
 			}
 			return p;
 		});
 	}
 
 	/**
-	 * @param subsContext
-	 * @return the publisher belonging to the given context or null
+	 * @param scontext
+	 * @param pdata
+	 * @return the publisher
 	 */
+	private Publisher findOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata, final PublisherChannel channel) {
+		//o_clusterOK by:cg
+		Publisher pub = getPublisher(scontext);
+		if(pub != null) {
+			return pub;
+		}
+		
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(scontext.getResName() + "_" + scontext.getSubidentifier(),scontext.getResId());
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, () -> {
+			Publisher p = getPublisher(scontext);
+			// if not found, create it
+			if (p == null) {
+				p = createAndPersistPublisher(scontext.getResName(), scontext.getResId(), scontext.getSubidentifier(), pdata.getType(), pdata
+						.getData(), pdata.getBusinessPath(), null, channel);
+			}
+			return p;
+		});
+	}
+	
 	@Override
 	public Publisher getPublisher(SubscriptionContext subsContext) {
-		StringBuilder q = new StringBuilder();
+		return getPublisher(subsContext, null);
+	}
+	
+	public Publisher getPublisher(SubscriptionContext subsContext, PublisherData data) {
+		QueryBuilder q = new QueryBuilder();
 		q.append("select pub from notipublisher pub ")
-		 .append(" where pub.resName=:resName and pub.resId=:resId");
+		 .where().append(" pub.resName=:resName and pub.resId=:resId");
 		if(StringHelper.containsNonWhitespace(subsContext.getSubidentifier())) {
-			q.append(" and pub.subidentifier=:subidentifier");
+			q.and().append(" pub.subidentifier=:subidentifier");
 		} else {
-			q.append(" and (pub.subidentifier='' or pub.subidentifier is null)");
+			q.and().append(" (pub.subidentifier='' or pub.subidentifier is null)");
+		}
+		if(data != null) {
+			q.and().append(" pub.type=:type and pub.data=:data");
 		}
 		
 		TypedQuery<Publisher> query = dbInstance.getCurrentEntityManager()
@@ -682,13 +708,15 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		if(StringHelper.containsNonWhitespace(subsContext.getSubidentifier())) {
 			query.setParameter("subidentifier", subsContext.getSubidentifier());
 		}
+		if(data != null) {
+			query.setParameter("type", data.getType())
+			     .setParameter("data", data.getData());
+		}
 		List<Publisher> res = query.getResultList();
 		if (res.isEmpty()) return null;
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
 		return res.get(0);
 	}
-	
-	
 
 	@Override
 	public void updatePublisherData(SubscriptionContext subsContext, PublisherData data){
@@ -743,27 +771,29 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 		return pub;
 	}
+	
+	private Publisher getRootPublisherForUpdate(SubscriptionContext subsContext) {
+		Publisher pub = publisherDao.getRootPublisher(subsContext);
+		if(pub != null) {
+			dbInstance.getCurrentEntityManager().lock(pub, LockModeType.PESSIMISTIC_WRITE);
+		}
+		return pub;
+	}
 
 	@Override
-	public Subscriber createDisabledSubscriberIfAbsent(Identity identity, SubscriptionContext context, PublisherData data) {
-		Publisher publisher = getPublisher(context);
-		if (publisher == null) {
-			publisher = findOrCreatePublisher(context, data);
+	public Subscriber createDisabledSubscriberIfAbsent(Identity identity, Publisher publisher) {
+		publisher = getPublisherForUpdate(publisher);
+		Subscriber subscriber = getSubscriber(identity, publisher);
+		if (subscriber == null) {
+			subscriber = new SubscriberImpl(publisher, identity);
+			subscriber.setEnabled(false); // mark as deactivated (OO-8593)
+			((SubscriberImpl)subscriber).setCreationDate(new Date());
+			subscriber.setLastModified(subscriber.getCreationDate());
+			subscriber.setLatestEmailed(subscriber.getCreationDate());
+			dbInstance.getCurrentEntityManager().persist(subscriber);
 		}
-
-		Subscriber existing = getSubscriber(identity, publisher);
-		if (existing == null) {
-			SubscriberImpl newSubscriber = new SubscriberImpl(publisher, identity);
-			newSubscriber.setEnabled(false); // mark as deactivated (OO-8593)
-			newSubscriber.setCreationDate(new Date());
-			newSubscriber.setLastModified(new Date());
-			newSubscriber.setLatestEmailed(new Date());
-			dbInstance.getCurrentEntityManager().persist(newSubscriber);
-			dbInstance.commit();
-			return newSubscriber;
-		}
-
-		return existing;
+		dbInstance.commit();
+		return subscriber;
 	}
 
 	private Publisher getPublisherForUpdate(Publisher publisher) {
@@ -777,13 +807,6 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			return reloadedPublisher;
 		}
 		return null;
-	}
-	
-	@Override
-	public List<Publisher> getAllPublisher() {
-		String q = "select pub from notipublisher pub";
-		return dbInstance.getCurrentEntityManager().createQuery(q, Publisher.class)
-				.getResultList();
 	}
 
 	/**
@@ -801,12 +824,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 	
 	private List<Publisher> getPublishers(String publisherType, String data) {
-		String q = "select pub from notipublisher pub where pub.type=:publisherType and pub.data=:data";
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Publisher.class)
-				.setParameter("publisherType", publisherType)
-				.setParameter("data", data)
-				.getResultList();
+		return publisherDao.getPublishers(publisherType, data);
 	}
 
 	/**
@@ -847,17 +865,23 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	@Override
 	public Subscriber getSubscriber(IdentityRef identity, Publisher publisher) {
-		List<Subscriber> res = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("subscribersByPublisherAndIdentity", Subscriber.class)
-				.setParameter("publisherKey", publisher.getKey())
-				.setParameter("identityKey", identity.getKey())
-				.getResultList();
+		List<Subscriber> res = subscriberDao.getSubscriber(identity, publisher);
 
 		if (res.isEmpty()) return null;
 		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
 		return res.get(0);
 	}
 	
+	@Override
+	public List<Subscriber> getSubscribers(IdentityRef identity, List<Publisher> publishers) {
+		return subscriberDao.getSubscribers(identity, publishers);
+	}
+
+	@Override
+	public boolean hasSubscribers(IdentityRef identity, List<Publisher> publishers) {
+		return subscriberDao.hasSubscribers(identity, publishers);
+	}
+
 	/**
 	 * @param identity The identity
 	 * @param subscriptionContext The context of the publisher
@@ -866,26 +890,14 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	@Override
 	public Subscriber getSubscriber(Identity identity, SubscriptionContext subscriptionContext) {
-		StringBuilder q = new StringBuilder(256);		
-		q.append("select sub from notisub as sub ")
-		 .append(" inner join sub.publisher as pub ")
-		 .append(" where sub.identity.key=:anIdentityKey and pub.resName=:resName and pub.resId=:resId");
-		if(StringHelper.containsNonWhitespace(subscriptionContext.getSubidentifier())) {
-			q.append(" and pub.subidentifier=:subidentifier");
-		} else {
-			q.append(" and (pub.subidentifier=:subidentifier or pub.subidentifier is null)");
-		}
-
-		List<Subscriber> subscribers = dbInstance.getCurrentEntityManager()
-				.createQuery(q.toString(), Subscriber.class)
-				.setParameter("anIdentityKey", identity.getKey())
-				.setParameter("resName", subscriptionContext.getResName())
-				.setParameter("resId", subscriptionContext.getResId())
-				.setParameter("subidentifier", subscriptionContext.getSubidentifier())
-				.getResultList();
-		return subscribers.isEmpty() ? null : subscribers.get(0);
+		return subscriberDao.getSubscriberOfRootPublisher(identity, subscriptionContext);
 	}
 	
+	@Override
+	public Subscriber getSubscriber(Identity identity, SubscriptionContext subscriptionContext, PublisherData data) {
+		return subscriberDao.getSubscriber(identity, subscriptionContext, data);
+	}
+
 	@Override
 	public List<Subscriber> getSubscribers(Publisher publisher, boolean enabledOnly) {
 		StringBuilder sb = new StringBuilder(256);
@@ -993,7 +1005,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
 		if(toUpdate == null) {
 			//create the publisher
-			findOrCreatePublisher(subscriptionContext, publisherData);
+			findOrCreatePublisher(subscriptionContext, publisherData, PublisherChannel.PULL);
 			//lock the publisher
 			toUpdate = getPublisherForUpdate(subscriptionContext);
 		}
@@ -1003,6 +1015,21 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			// no subscriber -> create.
 			// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
 			// news after subscription time
+			s = doCreateAndPersistSubscriber(toUpdate, identity);
+		} else if(!s.isEnabled()) {
+			s.setEnabled(true);
+			mergeSubscriber(s);
+		}
+		dbInstance.commit();
+		return s;
+	}
+	
+	@Override
+	public Subscriber subscribe(Identity identity, Publisher publisher) {
+		//need to sync as opt-in is sometimes implemented
+		Publisher toUpdate = getPublisherForUpdate(publisher);
+		Subscriber s = getSubscriber(identity, toUpdate);
+		if (s == null) {
 			s = doCreateAndPersistSubscriber(toUpdate, identity);
 		} else if(!s.isEnabled()) {
 			s.setEnabled(true);
@@ -1042,7 +1069,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
 		if(toUpdate == null) {
 			//create the publisher
-			findOrCreatePublisher(subscriptionContext, publisherData);
+			findOrCreatePublisher(subscriptionContext, publisherData, PublisherChannel.PULL);
 			//lock the publisher
 			toUpdate = getPublisherForUpdate(subscriptionContext);
 		}
@@ -1070,7 +1097,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
 		if(toUpdate == null) {
 			//create the publisher
-			findOrCreatePublisher(subscriptionContext, publisherData);
+			findOrCreatePublisher(subscriptionContext, publisherData, PublisherChannel.PULL);
 			//lock the publisher
 			toUpdate = getPublisherForUpdate(subscriptionContext);
 		}
@@ -1096,20 +1123,48 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 * @param ignoreNewsFor
 	 */
 	@Override
-	public void markPublisherNews(final SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvents) {
+	public void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvents) {
 		// to make sure: ignore if no subscriptionContext
 		if (subscriptionContext == null) return;
 
-		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
+		Publisher toUpdate = getRootPublisherForUpdate(subscriptionContext);
 		if(toUpdate == null) {
 			return;
 		}
 		toUpdate.setLatestNewsDate(new Date());
 		Publisher publisher = dbInstance.getCurrentEntityManager().merge(toUpdate);
 		dbInstance.commit();//commit the select for update
-
-		// no need to sync, since there is only one gui thread at a time from one
-		// user
+		markPublisherNewsPostProcessing(publisher, ignoreNewsFor, sendEvents);
+	}
+	
+	@Override
+	public void markPublisherNews(Publisher publisher, Identity ignoreNewsFor, boolean sendEvents) {
+		if (publisher == null) return;
+		
+		Publisher toUpdate = getPublisherForUpdate(publisher);
+		if(toUpdate == null) {
+			return;
+		}
+		toUpdate.setLatestNewsDate(new Date());
+		publisher = dbInstance.getCurrentEntityManager().merge(toUpdate);
+		dbInstance.commit();//commit the select for update
+		
+		if(toUpdate.getChannelType() != PublisherChannel.PULL
+				&& toUpdate.getParentPublisher() != null && toUpdate.getParentPublisher().getChannelType() == PublisherChannel.PULL) {
+			Publisher parentToUpdate = getPublisherForUpdate(toUpdate.getParentPublisher());
+			if(parentToUpdate != null) {
+				parentToUpdate.setLatestNewsDate(new Date());
+				parentToUpdate = dbInstance.getCurrentEntityManager().merge(parentToUpdate);
+				dbInstance.commit();//commit the select for update
+				markPublisherNewsPostProcessing(parentToUpdate, ignoreNewsFor, sendEvents);
+			}
+		}
+		
+		markPublisherNewsPostProcessing(publisher, ignoreNewsFor, sendEvents);
+	}
+	
+	private void markPublisherNewsPostProcessing(Publisher publisher, Identity ignoreNewsFor, boolean sendEvents) {
+		// no need to sync, since there is only one gui thread at a time from one user
 		if (ignoreNewsFor != null) {
 			markSubscriberRead(ignoreNewsFor, publisher);
 		}
@@ -1153,6 +1208,16 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 				Publisher publisher = dbInstance.getCurrentEntityManager().merge(toUpdate);
 				dbInstance.commit();//commit the select for update
 				updatedPublishers.add(publisher);
+			}
+			if(toUpdate.getChannelType() != PublisherChannel.PULL
+					&& toUpdate.getParentPublisher() != null && toUpdate.getParentPublisher().getChannelType() == PublisherChannel.PULL) {
+				Publisher parentToUpdate = getPublisherForUpdate(toUpdate.getParentPublisher());
+				if(parentToUpdate != null) {
+					parentToUpdate.setLatestNewsDate(new Date());
+					parentToUpdate = dbInstance.getCurrentEntityManager().merge(parentToUpdate);
+					dbInstance.commit();//commit the select for update
+					updatedPublishers.add(parentToUpdate);
+				}
 			}
 		}
 
@@ -1206,33 +1271,13 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	public void deregisterAsListener(GenericEventListener gel) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, oresMyself);
 	}
-	
-	/**
-	 * @param identity
-	 * @param subscriptionContext
-	 */
-	@Override
-	public void unsubscribe(Identity identity, SubscriptionContext subscriptionContext) {
-		Publisher p = getPublisherForUpdate(subscriptionContext);
-		if (p != null) {
-			Subscriber s = getSubscriber(identity, p);
-			if (s != null) {
-				s.setEnabled(false);
-				dbInstance.getCurrentEntityManager().merge(s);
-			} else {
-				log.warn("could not unsubscribe {} from publisher:{},{},{}", identity.getKey(), p.getResName(), p.getResId(), p.getSubidentifier());
-			}
-		}
-		dbInstance.commit();
-	}
-	
-	@Override
-	public void unsubscribe(List<Identity> identities, SubscriptionContext subscriptionContext) {
-		if(identities == null || identities.isEmpty()) return;
 
-		Publisher p = getPublisherForUpdate(subscriptionContext);
-		if (p != null) {
-			for(Identity identity:identities) {
+	@Override
+	public void unsubscribeContext(Identity identity, SubscriptionContext subscriptionContext) {
+		List<Publisher> publishers = publisherDao.getPublishers(subscriptionContext);
+		for(Publisher publisher:publishers) {
+			Publisher p = getPublisherForUpdate(publisher);
+			if (p != null) {
 				Subscriber s = getSubscriber(identity, p);
 				if (s != null) {
 					s.setEnabled(false);
@@ -1240,6 +1285,21 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 				} else {
 					log.warn("could not unsubscribe {} from publisher:{},{},{}", identity.getKey(), p.getResName(), p.getResId(), p.getSubidentifier());
 				}
+			}
+			dbInstance.commit();
+		}
+	}
+	
+	@Override
+	public void unsubscribe(Identity identity, Publisher publisher) {
+		Publisher p = getPublisherForUpdate(publisher);
+		if (p != null) {
+			Subscriber s = getSubscriber(identity, p);
+			if (s != null) {
+				s.setEnabled(false);
+				dbInstance.getCurrentEntityManager().merge(s);
+			} else {
+				log.warn("could not unsubscribe {} from publisher:{},{},{}", identity.getKey(), p.getResName(), p.getResId(), p.getSubidentifier());
 			}
 		}
 		dbInstance.commit();
@@ -1476,7 +1536,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		List<Subscriber> subscribers = getSubscribers(identity, false);
+		List<Subscriber> subscribers = getSubscribers(identity, null, null, false, true);
 		for (Subscriber subscriber:subscribers) {
 			deleteSubscriber(subscriber);
 		}
@@ -1503,7 +1563,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			row.addCell(3, "Title");
 			row.addCell(4, "Enabled");
 			
-			List<Subscriber> subscribers = getSubscribers(identity, false);
+			List<Subscriber> subscribers = getSubscribers(identity, null, null, false, true);
 			for(Subscriber subscriber:subscribers) {
 				exportSubscriberData(subscriber, sheet, workbook, locale);
 			}
@@ -1537,10 +1597,13 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 * 
 	 * @param notificationIntervals
 	 */
-	public void setNotificationIntervals(Map<String, Boolean> intervals) {
+	@Autowired @Qualifier("notificationIntervalsMap")
+	public void setNotificationIntervals(HashMap<String, Object> intervals) {
 		notificationIntervals = new ArrayList<>();
-		for(String key : intervals.keySet()) {
-			if (intervals.get(key)) {
+		for(Map.Entry<String,Object> entry : intervals.entrySet()) {
+			String key = entry.getKey();
+			Object val = entry.getValue();
+			if ("true".equals(val) || Boolean.TRUE.equals(val)) {
 				if(key.length() <= 16) {
 					notificationIntervals.add(key);
 				} else {

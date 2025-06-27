@@ -44,7 +44,6 @@ import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 
@@ -61,7 +60,7 @@ import org.olat.core.id.Persistable;
 @Table(name="o_noti_sub")
 @NamedQuery(name="subscribersByPublisher", query="select sub from notisub sub where sub.publisher=:publisher")
 @NamedQuery(name="subscribersByPublisherAndIdentity", query="select sub from notisub as sub where sub.publisher.key=:publisherKey and sub.identity.key=:identityKey")
-public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
+public class SubscriberImpl implements Subscriber  {
 	private static final long serialVersionUID = 6165097156137862263L;
 	
 	@Id
@@ -210,8 +209,7 @@ public class SubscriberImpl implements Subscriber, CreateInfo, Persistable  {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof SubscriberImpl) {
-			SubscriberImpl s = (SubscriberImpl)obj;
+		if(obj instanceof SubscriberImpl s) {
 			return getKey() != null && getKey().equals(s.getKey());
 		}
 		return false;

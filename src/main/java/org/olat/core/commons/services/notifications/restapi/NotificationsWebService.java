@@ -249,6 +249,7 @@ public class NotificationsWebService {
 	 *         correspond to a <code>SubscriptionInfoVO</code>. <code>SubscriptionInfoVO</code>
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Operation(summary = "Retrieves the notification of the logged in user", description = "Retrieves the notification of the logged in user")
 	@ApiResponse(responseCode = "200", description = "Ok.",
 			content = {

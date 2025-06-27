@@ -24,25 +24,9 @@ package org.olat.core.commons.services.notifications;
  * same object.
  * 
  * Initial date: 19 déc. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class PublishingInformations {
-	
-	private final PublisherData data;
-	private final SubscriptionContext context;
-	
-	public PublishingInformations(PublisherData data, SubscriptionContext context) {
-		this.data = data;
-		this.context = context;
-	}
-	
-	public PublisherData getData() {
-		return data;
-	}
-	
-	public SubscriptionContext getContext() {
-		return context;
-	}
-
+public record PublishingInformations(PublisherData data, SubscriptionContext context, Publisher publisher) {
+	//
 }

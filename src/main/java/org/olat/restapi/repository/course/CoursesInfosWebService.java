@@ -46,6 +46,7 @@ import jakarta.ws.rs.core.Response.Status;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -111,6 +112,7 @@ public class CoursesInfosWebService {
 	 * @return
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Operation(summary = "Get course informations", description = "Get course informations viewable by the authenticated user")
 	@ApiResponse(responseCode = "200", description = "List of visible courses", content = {
 			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
@@ -121,7 +123,6 @@ public class CoursesInfosWebService {
 			@Context Request request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 
-		//fxdiff VCRP-1,2: access control of resources
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
@@ -161,6 +162,7 @@ public class CoursesInfosWebService {
 	 * @return
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Path("{courseId}")
 	@Operation(summary = "Get course informations", description = "Get course informations viewable by the authenticated user")
 	@ApiResponse(responseCode = "200", description = "Course informations", content = {
@@ -189,10 +191,8 @@ public class CoursesInfosWebService {
 	
 	private void collectSubscriptions(Identity identity, Set<Long> forumNotified, Map<Long,Set<String>> courseNotified) {
 		//collect subscriptions
-		List<String> notiTypes = new ArrayList<>();
-		notiTypes.add("FolderModule");
-		notiTypes.add("Forum");
-		List<Subscriber> subs = notificationsManager.getSubscribers(identity, notiTypes, true);
+		List<String> notiTypes = List.of("FolderModule", "Forum");
+		List<Subscriber> subs = notificationsManager.getSubscribers(identity, notiTypes, PublisherChannel.PULL, true, false);
 		for(Subscriber sub:subs) {
 			String publisherType = sub.getPublisher().getType();
 			String resName = sub.getPublisher().getResName();

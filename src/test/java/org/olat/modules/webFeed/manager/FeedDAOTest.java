@@ -23,13 +23,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.model.FeedImpl;
+import org.olat.modules.webFeed.model.PublisherSubscriber;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +59,10 @@ public class FeedDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private FeedDAO feedDao;
+	@Autowired
+	private ReferenceManager referenceManager;
+	@Autowired
+	private NotificationsManager notificationManager;
 	
 	@Test
 	public void createFeed_ores() {
@@ -281,6 +298,66 @@ public class FeedDAOTest extends OlatTestCase {
 		
 		Feed reloaded1 = feedDao.loadFeed(feed.getKey());
 		Assert.assertNotNull(reloaded1);
+	}
+	
+	@Test
+	public void getPublisherByType() {
+		// Create the course
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("feed-pub-1");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		// Create the pseudo-blog with a reference
+		String subIdentifier = Long.toString(CodeHelper.getForeverUniqueID());
+		OLATResource feedRessource = JunitTestHelper.createRandomResource();
+		referenceManager.addReference(course.getOlatResource(), feedRessource, subIdentifier);
+		
+		// Add a publisher
+		SubscriptionContext context = new SubscriptionContext(course.getOlatResource().getResourceableTypeName(),
+				course.getOlatResource().getResourceableId(), subIdentifier);
+		PublisherData publisherData = new PublisherData(feedRessource.getResourceableTypeName(), feedRessource.getResourceableId().toString(), null);
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		
+		List<PublisherSubscriber> publishersSubscribers = feedDao.getPublisherByType(owner,
+				publisherData.getType(), publisherData.getData(), feedRessource.getKey(), List.of(GroupRoles.owner));
+		Assertions.assertThat(publishersSubscribers)
+			.hasSize(1)
+			.map(PublisherSubscriber::publisher)
+			.containsExactly(publisher);
+	}
+	
+	@Test
+	public void getPublisherByTypeWithSubscriber() {
+		// Create the course
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("feed-pub-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		// Create the pseudo-blog with a reference
+		String subIdentifier = Long.toString(CodeHelper.getForeverUniqueID());
+		OLATResource feedRessource = JunitTestHelper.createRandomResource();
+		referenceManager.addReference(course.getOlatResource(), feedRessource, subIdentifier);
+		
+		// Add a publisher
+		SubscriptionContext context = new SubscriptionContext(course.getOlatResource().getResourceableTypeName(),
+				course.getOlatResource().getResourceableId(), subIdentifier);
+		PublisherData publisherData = new PublisherData(feedRessource.getResourceableTypeName(), feedRessource.getResourceableId().toString(), null);
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commit();
+		Subscriber subscriber = notificationManager.subscribe(owner, publisher);
+		dbInstance.commitAndCloseSession();
+		
+		List<PublisherSubscriber> publishersSubscribers = feedDao.getPublisherByType(owner,
+				publisherData.getType(), publisherData.getData(), feedRessource.getKey(), List.of(GroupRoles.owner));
+		// Check subscriber
+		Assertions.assertThat(publishersSubscribers)
+			.hasSize(1)
+			.map(PublisherSubscriber::subscriber)
+			.containsExactly(subscriber)
+			.map(Subscriber::getPublisher)
+			.containsExactly(publisher);
+		// Check publisher
+		Assertions.assertThat(publishersSubscribers)
+			.hasSize(1)
+			.map(PublisherSubscriber::publisher)
+			.containsExactly(publisher);
 	}
 
 }

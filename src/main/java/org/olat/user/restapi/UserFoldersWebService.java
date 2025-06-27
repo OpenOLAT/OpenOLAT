@@ -24,7 +24,6 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 import org.olat.core.id.Identity;
@@ -164,6 +164,7 @@ public class UserFoldersWebService {
 	 * @return The folders
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Operation(summary = "Retrieves a list of folders on a user base", description = "Retrieves a list of folders on a user base. All folders of groups \n" + 
 			" where the user is participant/tutor + all folders in course where\n" + 
 			" the user is a participant (owner, tutor or participant)")
@@ -193,8 +194,8 @@ public class UserFoldersWebService {
 		final Map<Long,Collection<String>> courseNotified = new HashMap<>();
 		NotificationsManager man = CoreSpringFactory.getImpl(NotificationsManager.class);
 		{//collect subscriptions
-			List<String> notiTypes = Collections.singletonList("FolderModule");
-			List<Subscriber> subs = man.getSubscribers(ureqIdentity, notiTypes, true);
+			List<String> notiTypes = List.of("FolderModule");
+			List<Subscriber> subs = man.getSubscribers(ureqIdentity, notiTypes, PublisherChannel.PULL, true, false);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				if("BusinessGroup".equals(resName)) {

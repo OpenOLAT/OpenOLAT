@@ -86,6 +86,9 @@ public class FeedImpl implements Feed, Serializable {
 	private boolean canRate;
 	@Column(name = "f_cancomment", nullable = false, insertable = true, updatable = true)
 	private boolean canComment;
+	@Column(name = "f_push_email_comments", nullable = false, insertable = true, updatable = true)
+	private boolean pushEmailComments;
+	
 	
 	/**
 	 * A feed can either be internal, external or unspecified.
@@ -282,6 +285,16 @@ public class FeedImpl implements Feed, Serializable {
 	}
 
 	@Override
+	public boolean isPushEmailComments() {
+		return pushEmailComments;
+	}
+
+	@Override
+	public void setPushEmailComments(boolean pushEmailComments) {
+		this.pushEmailComments = pushEmailComments;
+	}
+
+	@Override
 	public int hashCode() {
 		return getKey() == null ? 43254 : getKey().hashCode();
 	}
@@ -290,8 +303,7 @@ public class FeedImpl implements Feed, Serializable {
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
-		} else if(obj instanceof FeedImpl) {
-			FeedImpl feed = (FeedImpl)obj;
+		} else if(obj instanceof FeedImpl feed) {
 			return getKey() != null && getKey().equals(feed.getKey());
 		}
 		return false;

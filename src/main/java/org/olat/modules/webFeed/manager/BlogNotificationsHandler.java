@@ -36,8 +36,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class BlogNotificationsHandler extends FeedNotificationsHandler {
 	
-	private static final String NOTIFICATIONS_HEADER_BLOG = "notifications.header.blog";
-	private static final String CSS_CLASS_ICON_BLOG = "o_blog_icon";
+	public static final String NOTIFICATIONS_HEADER_BLOG = "notifications.header.blog";
+	public static final String CSS_CLASS_ICON_BLOG = "o_blog_icon";
 	
 
 	@Override

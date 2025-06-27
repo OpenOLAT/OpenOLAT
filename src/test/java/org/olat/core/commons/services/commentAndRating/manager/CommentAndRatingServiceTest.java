@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.commentAndRating.manager;
 
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,8 +29,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.NotificationsPushService;
 import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
+import org.olat.test.OlatTestCase;
 
 /**
  *
@@ -39,7 +40,7 @@ import org.olat.resource.OLATResource;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CommentAndRatingServiceTest {
+public class CommentAndRatingServiceTest extends OlatTestCase {
 
 	private static final String RESOURCEABLE_TYPE_NAME = "resurcable type name";
 	private static final Long RESOURCABLE_ID = 5L;
@@ -61,6 +62,8 @@ public class CommentAndRatingServiceTest {
 	private UserCommentsDAO userCommentsDaoMock;
 	@Mock
 	private NotificationsManager notificationsManagerMock;
+	@Mock
+	private NotificationsPushService notificationsPushService;
 
 	@InjectMocks
 	private CommentAndRatingServiceImpl sut = new  CommentAndRatingServiceImpl();
@@ -95,89 +98,5 @@ public class CommentAndRatingServiceTest {
 		sut.replyTo(userCommentMock, identityDummy, REPLY_TEXT);
 
 		verify(userCommentsDaoMock).replyTo(userCommentMock, identityDummy, REPLY_TEXT);
-	}
-
-	@Test
-	public void shouldMarkPublisherNewsWhenCommentCreated() {
-		when(userCommentsDaoMock.createComment(identityDummy, resourceMock, RES_SUB_PATH, COMMENT_TEXT))
-				.thenReturn(userCommentMock);
-
-		sut.createComment(identityDummy, resourceMock, RES_SUB_PATH, COMMENT_TEXT);
-
-		verify(notificationsManagerMock).markPublisherNews(
-				RESOURCEABLE_TYPE_NAME,
-				RESOURCABLE_ID.toString(),
-				IGNORE_NEWS_FOR_NOBODY,
-				SEND_NO_EVENTS);
-	}
-
-	@Test
-	public void shouldMarkPublisherNewsWhenCommentUpdated() {
-		when(userCommentsDaoMock.updateComment(userCommentMock, UPDATED_COMMENT_TEXT))
-				.thenReturn(userCommentMock);
-
-		sut.updateComment(userCommentMock, UPDATED_COMMENT_TEXT);
-
-		verify(notificationsManagerMock).markPublisherNews(
-				RESOURCEABLE_TYPE_NAME,
-				RESOURCABLE_ID.toString(),
-				IGNORE_NEWS_FOR_NOBODY,
-				SEND_NO_EVENTS);
-	}
-
-	@Test
-	public void shouldMarkPublisherNewsWhenRepliedToComment() {
-		when(userCommentsDaoMock.replyTo(userCommentMock, identityDummy, REPLY_TEXT))
-				.thenReturn(userCommentMock);
-
-		sut.replyTo(userCommentMock, identityDummy, REPLY_TEXT);
-
-		verify(notificationsManagerMock).markPublisherNews(
-				RESOURCEABLE_TYPE_NAME,
-				RESOURCABLE_ID.toString(),
-				IGNORE_NEWS_FOR_NOBODY,
-				SEND_NO_EVENTS);
-	}
-
-	@Test
-	public void shouldNotMarkPublisherNewsWhenCommentCreationFailed() {
-		when(userCommentsDaoMock.createComment(identityDummy, resourceMock, RES_SUB_PATH, COMMENT_TEXT))
-				.thenReturn(null);
-
-		sut.createComment(identityDummy, resourceMock, RES_SUB_PATH, COMMENT_TEXT);
-
-		verify(notificationsManagerMock, never()).markPublisherNews(
-				RESOURCEABLE_TYPE_NAME,
-				RESOURCABLE_ID.toString(),
-				IGNORE_NEWS_FOR_NOBODY,
-				SEND_NO_EVENTS);
-	}
-
-	@Test
-	public void shouldNotMarkPublisherNewsWhenCommentUpdateFailed() {
-		when(userCommentsDaoMock.updateComment(userCommentMock, UPDATED_COMMENT_TEXT))
-				.thenReturn(null);
-
-		sut.updateComment(userCommentMock, UPDATED_COMMENT_TEXT);
-
-		verify(notificationsManagerMock, never()).markPublisherNews(
-				RESOURCEABLE_TYPE_NAME,
-				RESOURCABLE_ID.toString(),
-				IGNORE_NEWS_FOR_NOBODY,
-				SEND_NO_EVENTS);
-	}
-
-	@Test
-	public void shouldNotMarkPublisherNewsWhenReplyToCommentFailed() {
-		when(userCommentsDaoMock.replyTo(userCommentMock, identityDummy, REPLY_TEXT))
-				.thenReturn(null);
-
-		sut.replyTo(userCommentMock, identityDummy, REPLY_TEXT);
-
-		verify(notificationsManagerMock, never()).markPublisherNews(
-				RESOURCEABLE_TYPE_NAME,
-				RESOURCABLE_ID.toString(),
-				IGNORE_NEWS_FOR_NOBODY,
-				SEND_NO_EVENTS);
 	}
 }

@@ -249,7 +249,7 @@ public class VideoDisplayController extends BasicController {
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
 		SubscriptionContext ctx = new SubscriptionContext(ores.getResourceableTypeName(), ores.getResourceableId(), subIdent);
 		PublisherData data = new PublisherData(VideoFileResource.TYPE_NAME, ores.getResourceableId() + "-" + subIdent, businessPath);
-		return new PublishingInformations(data, ctx);
+		return new PublishingInformations(data, ctx, null);
 	}
 	
 	public VideoMeta getVideoMetadata() {

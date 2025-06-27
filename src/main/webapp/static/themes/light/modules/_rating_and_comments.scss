@@ -265,16 +265,22 @@
 }
 
 .o_ratings_and_comments {
-	.o_rating_wrapper {
-		vertical-align: middle;
-		display: inline-block;
+	display: flex;
+	flex-direction: column;
+	
+	.o_ratings_header {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		
+		.o_notifications {
+			flex-grow: 2;
+		}
 	}
+	
 	a.o_comments {
 		margin-left: $padding-large-vertical;
 		position: relative;
 		top: 0.1em; /* fix line correlation to stars */
-	}
-	div.o_notifications {
-		float: right;
 	}
 }

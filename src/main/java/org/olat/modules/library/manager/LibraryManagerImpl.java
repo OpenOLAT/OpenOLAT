@@ -397,7 +397,7 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	public void unsubscribe(Identity identity) {
 		SubscriptionContext context = getSubscriptionContext();
 		if(context != null) {
-			notificationsManager.unsubscribe(identity, context);
+			notificationsManager.unsubscribeContext(identity, context);
 		}
 	}
 	

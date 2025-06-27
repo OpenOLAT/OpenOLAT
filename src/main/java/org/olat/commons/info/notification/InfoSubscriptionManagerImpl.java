@@ -86,7 +86,7 @@ public class InfoSubscriptionManagerImpl implements InfoSubscriptionManager {
 	@Override
 	public void unsubscribe(OLATResourceable resource, String subPath, Identity identity) {
 		SubscriptionContext context = getInfoSubscriptionContext(resource, subPath);
-		notificationsManager.unsubscribe(identity, context);
+		notificationsManager.unsubscribeContext(identity, context);
 	}
 	
 	@Override

@@ -93,6 +93,11 @@ public interface Publisher extends Persistable, CreateInfo {
 	public void setState(int state);
 	
 	/**
+	 * @return The communication channel, the default is PULL, standard subscriptions.
+	 */
+	public PublisherChannel getChannelType();
+	
+	/**
 	 * @return the date of the latestNews this publisher has.
 	 */
 	public Date getLatestNewsDate();
@@ -106,5 +111,10 @@ public interface Publisher extends Persistable, CreateInfo {
 	public String getBusinessPath();
 
 	public void setBusinessPath(String businessPath);
+	
+	
+	public Publisher getRootPublisher();
+	
+	public Publisher getParentPublisher();
 	
 }

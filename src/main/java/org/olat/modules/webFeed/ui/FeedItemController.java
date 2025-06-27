@@ -24,6 +24,12 @@ import java.util.List;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherChannel;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.PublishingInformations;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -66,6 +72,8 @@ public class FeedItemController extends BasicController implements Activateable2
 
 	@Autowired
 	private PortfolioV2Module portfolioModule;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	/**
 	 * @param ureq
@@ -73,7 +81,7 @@ public class FeedItemController extends BasicController implements Activateable2
 	 * @param displayConfig 
 	 */
 	public FeedItemController(UserRequest ureq, WindowControl wControl, Item item, Feed feed, FeedViewHelper helper, FeedUIFactory feedUIFactory,
-							  FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig, VelocityContainer vcItem) {
+							  FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig, Publisher feedCommentPublisher, VelocityContainer vcItem) {
 		super(ureq, wControl);
 		// using because each feed type has its own translations
 		setTranslator(feedUIFactory.getTranslator());
@@ -118,12 +126,22 @@ public class FeedItemController extends BasicController implements Activateable2
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
 			//ratings
-			UserCommentsAndRatingsController ratingsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, false, secCallback.canRate(), true);
+			UserCommentsAndRatingsController ratingsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback,
+					null, false, secCallback.canRate(), true);
 			listenTo(ratingsCtrl);
 			vcItem.put("ratings", ratingsCtrl.getInitialComponent());
 
 			//comments
-			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, null, secCallback.canViewComments(), false, true);
+			PublishingInformations publishingInformations = null;
+			if(feedCommentPublisher != null) {
+				SubscriptionContext subsContext = SubscriptionContext.valueOf(feedCommentPublisher);
+				PublisherData data = new PublisherData("Comment.FeedItem", item.getKey().toString(), feedCommentPublisher.getBusinessPath() + "[Item:" + item.getKey() + "][Comment:0]");
+				Publisher commentPublisher = notificationsManager.getOrCreatePublisherWithData(subsContext, data, feedCommentPublisher, PublisherChannel.DIRECT_EMAIL);
+				publishingInformations = new PublishingInformations(data, subsContext, commentPublisher);
+			}
+
+			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback,
+					publishingInformations, secCallback.canViewComments(), false, true);
 			listenTo(commentsCtrl);
 			vcItem.put("comments", commentsCtrl.getInitialComponent());
 		}

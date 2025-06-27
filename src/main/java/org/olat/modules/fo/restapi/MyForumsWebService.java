@@ -49,6 +49,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -159,6 +160,7 @@ public class MyForumsWebService {
 	 * @return The forums
 	 */
 	@GET
+	@Deprecated(since="20.1", forRemoval=true)
 	@Operation(summary = "Retrieves a list of forums on a user base", description = "Retrieves a list of forums on a user base. All forums of groups \n" + 
 			"where the user is participant/tutor + all forums in course where\n" + 
 			"the user is a participant (owner, tutor or participant)")
@@ -187,13 +189,13 @@ public class MyForumsWebService {
 		} else {
 			roles = getRoles(httpRequest);
 		}
-
+		
 		Map<Long,Long> groupNotified = new HashMap<>();
 		Map<Long,Collection<Long>> courseNotified = new HashMap<>();
 		final Set<Long> subscriptions = new HashSet<>();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("Forum");
-			List<Subscriber> subs = notificationsManager.getSubscribers(retrievedUser, notiTypes, true);
+			List<Subscriber> subs = notificationsManager.getSubscribers(retrievedUser, notiTypes, PublisherChannel.PULL, true, false);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
