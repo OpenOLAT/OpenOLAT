@@ -148,6 +148,7 @@ import org.olat.user.UserManager;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.DatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -701,12 +702,19 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.append(" left join cer.olatResource res");
 		sb.append(" left join usercourseinfos infos on (infos.identity = cer.identity and infos.resource = res)");
 		sb.append(" left join certificateentryconfig config on config.entry.key = entry.key");
-		sb.append(" where coachMembership.identity.key = :identityKey ");
-		sb.append(" and coachMembership.role").in(GroupRoles.coach);
-		sb.append(" and userMembership.role = 'user'");
+		sb.where().append(" coachMembership.identity.key = :identityKey");
+		sb.and().append(" coachMembership.role").in(GroupRoles.coach, GroupRoles.owner);
+		sb.and().append(" userMembership.role").in(GroupRoles.participant);
+		
+		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
+	}
 
+	@NotNull
+	private List<CertificateIdentityConfig> getCertificateIdentityConfigs(Identity identity, 
+																		  List<UserPropertyHandler> userPropertyHandlers, 
+																		  Date from, Date to, QueryBuilder sb) {
 		if (from != null && to != null) {
-			sb.append(" and cer.creationDate between :from and :to");
+			sb.and().append(" cer.creationDate between :from and :to");
 		}
 
 		TypedQuery<Object[]> typedQuery = dbInstance.getCurrentEntityManager()
@@ -742,26 +750,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.append(" left join repositoryentry entry on entry.olatResource = res");
 		sb.append(" left join usercourseinfos infos on (infos.identity = cer.identity and infos.resource = res)");
 		sb.append(" left join certificateentryconfig config on config.entry.key = entry.key");
-		sb.append(" where mgmtMembership.identity.key = :identityKey ");
-		sb.append(" and mgmtMembership.role").in(OrganisationRoles.educationmanager, OrganisationRoles.linemanager);
-		sb.append(" and userMembership.role = 'user'");
-		
-		if (from != null && to != null) {
-			sb.append(" and cer.creationDate between :from and :to");
-		}
+		sb.where().append(" mgmtMembership.identity.key = :identityKey ");
+		sb.and().append(" mgmtMembership.role").in(OrganisationRoles.educationmanager, OrganisationRoles.linemanager);
+		sb.and().append(" userMembership.role").in(OrganisationRoles.user);
 
-		TypedQuery<Object[]> typedQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		typedQuery.setParameter("identityKey", identity.getKey());
-		
-		if (from != null && to != null) {
-			typedQuery.setParameter("from", from);
-			typedQuery.setParameter("to", to);
-		}
-		
-		return typedQuery.getResultList().stream()
-				.map(objects -> mapToCertificateIdentityConfig(objects, userPropertyHandlers))
-				.toList();
+		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
 	}
 
 	private CertificateIdentityConfig mapToCertificateIdentityConfig(Object[] objects, List<UserPropertyHandler> userPropertyHandlers) {
