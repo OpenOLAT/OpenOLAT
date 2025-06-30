@@ -34,7 +34,7 @@ import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 /**
  * 
  * Initial date: 8 juin 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -74,6 +74,9 @@ public class LectureBlockVO implements LectureBlockRef {
 	
 	private String status;
 	private String rollCallStatus;
+	
+	private String meetingTitle;
+	private String meetingUrl;
 
 	private Long repoEntryKey;
 	
@@ -97,6 +100,9 @@ public class LectureBlockVO implements LectureBlockRef {
 		compulsory = block.isCompulsory(); 
 		plannedLectures = block.getPlannedLecturesNumber();
 		this.repoEntryKey = repoEntryKey;
+		
+		meetingTitle = block.getMeetingTitle();
+		meetingUrl = block.getMeetingUrl();
 		
 		status = block.getStatus() == null ? null : block.getStatus().name();
 		rollCallStatus = block.getRollCallStatus() == null ? null : block.getRollCallStatus().name();
@@ -229,5 +235,21 @@ public class LectureBlockVO implements LectureBlockRef {
 
 	public void setRollCallStatus(String rollCallStatus) {
 		this.rollCallStatus = rollCallStatus;
+	}
+
+	public String getMeetingTitle() {
+		return meetingTitle;
+	}
+
+	public void setMeetingTitle(String meetingTitle) {
+		this.meetingTitle = meetingTitle;
+	}
+
+	public String getMeetingUrl() {
+		return meetingUrl;
+	}
+
+	public void setMeetingUrl(String meetingUrl) {
+		this.meetingUrl = meetingUrl;
 	}
 }

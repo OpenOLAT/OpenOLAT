@@ -152,6 +152,11 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@JoinColumn(name="fk_lecture_block")
 	private Set<LectureBlockToTaxonomyLevel> taxonomyLevels;
 	
+	@Column(name="l_meeting_title", nullable=true, insertable=true, updatable=true)
+	private String meetingTitle;
+	@Column(name="l_meeting_url", nullable=true, insertable=true, updatable=true)
+	private String meetingUrl;
+	
 	@OneToOne(targetEntity=BigBlueButtonMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_meeting", nullable=true, insertable=true, updatable=true)
 	private BigBlueButtonMeeting bbbMeeting;
@@ -458,6 +463,26 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		Date start = getStartDate();
 		Date end = getEndDate();
 		return start != null && start.compareTo(date) <= 0 && end != null && date.compareTo(end) <= 0;
+	}
+
+	@Override
+	public String getMeetingTitle() {
+		return meetingTitle;
+	}
+
+	@Override
+	public void setMeetingTitle(String meetingTitle) {
+		this.meetingTitle = meetingTitle;
+	}
+
+	@Override
+	public String getMeetingUrl() {
+		return meetingUrl;
+	}
+
+	@Override
+	public void setMeetingUrl(String meetingUrl) {
+		this.meetingUrl = meetingUrl;
 	}
 	
 	@Override

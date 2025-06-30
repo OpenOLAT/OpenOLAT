@@ -35,3 +35,7 @@ alter table o_noti_pub add column channeltype varchar(16) default 'PULL';
 
 alter table o_noti_pub add constraint pub_to_root_pub_idx foreign key (fk_root_publisher) references o_noti_pub (publisher_id);
 alter table o_noti_pub add constraint pub_to_parent_pub_idx foreign key (fk_parent_publisher) references o_noti_pub (publisher_id);
+
+-- Lecture block meeting url
+alter table o_lecture_block add column l_meeting_title varchar(1024);
+alter table o_lecture_block add column l_meeting_url varchar(1024);

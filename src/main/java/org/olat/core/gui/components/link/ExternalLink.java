@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 
 /**
  * 
@@ -30,7 +31,7 @@ import org.olat.core.gui.components.EscapeMode;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ExternalLink extends AbstractComponent {
+public class ExternalLink extends AbstractComponent implements FormBaseComponent {
 	
 	private static final ExternalLinkRenderer RENDERER = new ExternalLinkRenderer();
 
@@ -43,14 +44,36 @@ public class ExternalLink extends AbstractComponent {
 	private String cssClass;
 	private EscapeMode escapeMode = EscapeMode.html;
 	
+	private final ExternalLinkItem formItem;
+	
 	public ExternalLink(String id, String name) {
+		this(id, name, null);
+	}
+	
+	public ExternalLink(String id, String name, ExternalLinkItem formItem) {
 		super(id, name);
+		this.formItem = formItem;
 		setDomReplacementWrapperRequired(false);
 	}
 	
 	public ExternalLink(String name) {
+		this(name, (ExternalLinkItem)null);
+	}
+	
+	public ExternalLink(String name, ExternalLinkItem formItem) {
 		super(name);
+		this.formItem = formItem;
 		setDomReplacementWrapperRequired(false);
+	}
+
+	@Override
+	public String getFormDispatchId() {
+		return DISPPREFIX.concat(super.getDispatchID());
+	}
+
+	@Override
+	public ExternalLinkItem getFormItem() {
+		return formItem;
 	}
 
 	public String getUrl() {

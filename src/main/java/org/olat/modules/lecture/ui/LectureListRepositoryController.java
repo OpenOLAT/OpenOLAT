@@ -75,6 +75,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.scope.DateScope;
@@ -262,6 +263,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private DialogBoxController deleteAssessmentModeDialogBox;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
+	private EditOnlineMeetingURLController onlineMeetingURLCtrl;
 	private LectureBlockOnlineMeetingController onlineMeetingCtrl;
 	private AssignNewRepositoryEntryController assignNewEntryCtrl;
 	private ConfirmationController confirmChangeToLocationMeetingCtrl;
@@ -517,7 +519,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(compulsoryColumn);
 		}
 		
-		if(config.withOnlineMeeting() != Visibility.NO && isOnlineMeetingEnabled()) {
+		if(config.withOnlineMeeting() != Visibility.NO) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.withOnlineMeeting() == Visibility.SHOW, BlockCols.onlineMeeting));
 		}
 
@@ -768,11 +770,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		thisLevelButton.setVisible(canSubelements);
 	}
 	
-	private boolean isOnlineMeetingEnabled() {
-		return (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())
-				|| (bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled());
-	}
-	
 	@Override
 	public boolean isDetailsRow(int row, Object rowObject) {
 		return true;
@@ -948,16 +945,24 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				block.isAssessmentMode(), rollCallEnabled, getTranslator());
 		row.setTeachersList(teachersList);
 		
-		if(isOnlineMeetingEnabled() && (b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {
-			FormLink onlineMeetingLink = uifactory.addFormLink("oom_" + b.getKey(), CMD_OPEN_ONLINE_MEETING, "open.online.meeting", tableEl, Link.LINK_CUSTOM_CSS);
-			onlineMeetingLink.setDomReplacementWrapperRequired(false);
-			onlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_vc_icon");
-			if(b.getStartDate() != null && b.getStartDate().compareTo(now) <= 0
-					&& b.getEndDate() != null && b.getEndDate().compareTo(now) >= 0) {
-				onlineMeetingLink.setPrimary(true);
+		if(config.withOnlineMeeting() != Visibility.NO) {
+			if((b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {
+				FormLink onlineMeetingLink = uifactory.addFormLink("oom_" + b.getKey(), CMD_OPEN_ONLINE_MEETING, "open.online.meeting", tableEl, Link.LINK_CUSTOM_CSS);
+				onlineMeetingLink.setDomReplacementWrapperRequired(false);
+				onlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_vc_icon");
+				if(b.getStartDate() != null && b.getStartDate().compareTo(now) <= 0
+						&& b.getEndDate() != null && b.getEndDate().compareTo(now) >= 0) {
+					onlineMeetingLink.setPrimary(true);
+				}
+				onlineMeetingLink.setUserObject(row);
+				row.setOpenOnlineMeetingLink(onlineMeetingLink);
+			} else if(StringHelper.containsNonWhitespace(b.getMeetingUrl())) {
+				String id = "oom_" + b.getKey();
+				ExternalLinkItem onlineMeetingLink = uifactory.addExternalLink(id, id, b.getMeetingUrl(), "_blank", tableEl);
+				onlineMeetingLink.setName(translate("open.online.meeting"));
+				onlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_vc_icon");
+				row.setOpenOnlineMeetingLink(onlineMeetingLink);
 			}
-			onlineMeetingLink.setUserObject(row);
-			row.setOpenOnlineMeetingLink(onlineMeetingLink);
 		}
 		
 		row.setNextScheduled(nextScheduledBlock != null && nextScheduledBlock.getKey().equals(b.getKey()));
@@ -1357,6 +1362,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				}
 				cleanUp();
 			}
+		} else if(onlineMeetingURLCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				reloadModelWithDetails(ureq, onlineMeetingURLCtrl.getLectureBlock());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(rollCallCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.BACK_EVENT) {
 				reloadModel(ureq, rollCallCtrl.getLectureBlock());
@@ -1442,6 +1453,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(deleteLectureBlocksCtrl);
 		removeAsListenerAndDispose(assessmentModeEditCtrl);
 		removeAsListenerAndDispose(addLectureWizardCtrl);
+		removeAsListenerAndDispose(onlineMeetingURLCtrl);
 		removeAsListenerAndDispose(rollCallWizardCtrl);
 		removeAsListenerAndDispose(assignNewEntryCtrl);
 		removeAsListenerAndDispose(manageTeachersCtrl);
@@ -1457,6 +1469,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		deleteLectureBlocksCtrl = null;
 		assessmentModeEditCtrl = null;
 		addLectureWizardCtrl = null;
+		onlineMeetingURLCtrl = null;
 		rollCallWizardCtrl = null;
 		assignNewEntryCtrl = null;
 		manageTeachersCtrl = null;
@@ -1971,6 +1984,17 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		loadModel(ureq);
 	}
 	
+	private void doChangeToOnlineMeetingURL(UserRequest ureq, LectureBlockRow row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		onlineMeetingURLCtrl = new EditOnlineMeetingURLController(ureq, getWindowControl(), lectureBlock);
+		listenTo(onlineMeetingURLCtrl);
+		
+		String title = translate("confirmation.change.to.online.meeting.url.title", row.getTitle());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), onlineMeetingURLCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doConfirmChangeToLocationMeeting(UserRequest ureq, LectureBlockRow row) {
 		String escapedTitle = StringHelper.escapeHtml(row.getTitle());
 		String message = translate("confirmation.change.to.location.meeting.text", escapedTitle);
@@ -1993,6 +2017,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		BigBlueButtonMeeting bigBlueButtonMeeting = lectureBlock.getBBBMeeting();
 		lectureBlock.setTeamsMeeting(null);
 		lectureBlock.setBBBMeeting(null);
+		lectureBlock.setMeetingUrl(null);
+		lectureBlock.setMeetingTitle(null);
 		lectureService.save(lectureBlock, null);
 		
 		if(teamsMeeting != null) {
@@ -2129,6 +2155,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		private Link openOnlineMeetingLink;
 		private Link changeToOnlineMeetingLink;
 		private Link changeToLocationMeetingLink;
+		private Link changeToOnlineMeetingURLLink;
 		private Link attendanceListForSignatureLink;
 		private Link addAssessmentModeLink;
 		private Link editAssessmentModeLink;
@@ -2143,7 +2170,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
 			
 			LectureBlock lectureBlock = row.getLectureBlock();
-			if((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled())
+			if(StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl())) {
+				changeToLocationMeetingLink = LinkFactory.createLink("change.to.location.meeting", "change.to.location.meeting", getTranslator(), mainVC, this, Link.LINK);
+				changeToLocationMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_icon_location");
+			} else if((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled())
 					|| (teamsModule.isEnabled() && teamsModule.isLecturesEnabled())) {
 				if(lectureBlock.getBBBMeeting() != null || lectureBlock.getTeamsMeeting() != null) {			
 					openOnlineMeetingLink = LinkFactory.createLink("open.online.meeting", CMD_OPEN_ONLINE_MEETING, getTranslator(), mainVC, this, Link.LINK);
@@ -2154,6 +2184,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 					changeToOnlineMeetingLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
 					changeToOnlineMeetingLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
 				}
+			} else {
+				changeToOnlineMeetingURLLink = LinkFactory.createLink("change.to.online.meeting", "change.to.online.meeting", getTranslator(), mainVC, this, Link.LINK);
+				changeToOnlineMeetingURLLink.setIconLeftCSS("o_icon o_icon-fw o_vc_icon");
 			}
 			
 			RepositoryEntryLectureConfiguration entryConfig = null;
@@ -2251,6 +2284,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				doOpenOnlineMeeting(ureq, row);
 			} else if(changeToOnlineMeetingLink == source) {
 				doChangeToOnlineMeeting(ureq, row);
+			} else if(changeToOnlineMeetingURLLink == source) {
+				doChangeToOnlineMeetingURL(ureq, row);
 			} else if(changeToLocationMeetingLink == source) {
 				doConfirmChangeToLocationMeeting(ureq, row);
 			} else if(exportLink == source) {

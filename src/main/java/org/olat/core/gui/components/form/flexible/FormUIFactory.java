@@ -1692,6 +1692,16 @@ public class FormUIFactory {
 		return link;
 	}
 	
+	public ExternalLinkItem addExternalLink(String id, String name, String url, String target, FlexiTableElement tableEl) {
+		ExternalLinkItemImpl link = new ExternalLinkItemImpl(id, name);
+		link.setTarget(target);
+		link.setUrl(url);
+		if(tableEl instanceof FlexiTableElementImpl flexiTable) {
+			flexiTable.addFormItem(link);
+		}
+		return link;
+	}
+	
 	public EmptyStateItem addEmptyState(String name, String i18nLabel, FormItemContainer formLayout) {
 		EmptyStateItem item = new EmptyStateItem(name);
 		setLabelIfNotNull(i18nLabel, item);

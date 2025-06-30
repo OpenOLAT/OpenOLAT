@@ -23,10 +23,12 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableTimeLineRow;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -67,7 +69,7 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private List<Identity> teachersList;
 
 	private FormLink rollCallLink;
-	private FormLink openOnlineMeetingLink;
+	private FormItem openOnlineMeetingLink;
 	
 	private final String entryUrl;
 	private final ZonedDateTime date;
@@ -276,21 +278,29 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 		return openOnlineMeetingLink != null;
 	}
 	
-	public FormLink getOpenOnlineMeetingSmallButton() {
-		if(openOnlineMeetingLink != null) {
-			openOnlineMeetingLink.setCustomEnabledLinkCSS("btn btn-xs btn-default");
+	public String getMeetingTitle() {
+		return lectureBlock.getMeetingTitle();
+	}
+	
+	public FormItem getOpenOnlineMeetingSmallButton() {
+		if(openOnlineMeetingLink instanceof FormLink link) {
+			link.setCustomEnabledLinkCSS("btn btn-xs btn-default");
+		} else if(openOnlineMeetingLink instanceof ExternalLinkItem link) {
+			link.setCssClass("btn btn-xs btn-default");
 		}
 		return openOnlineMeetingLink;
 	}
 	
-	public FormLink getOpenOnlineMeetingButton() {
-		if(openOnlineMeetingLink != null) {
-			openOnlineMeetingLink.setCustomEnabledLinkCSS("btn btn-default");
+	public FormItem getOpenOnlineMeetingButton() {
+		if(openOnlineMeetingLink instanceof FormLink link) {
+			link.setCustomEnabledLinkCSS("btn btn-default");
+		} else if(openOnlineMeetingLink instanceof ExternalLinkItem link) {
+			link.setCssClass("btn btn-default");
 		}
 		return openOnlineMeetingLink;
 	}
 
-	public void setOpenOnlineMeetingLink(FormLink openOnlineMeetingLink) {
+	public void setOpenOnlineMeetingLink(FormItem openOnlineMeetingLink) {
 		this.openOnlineMeetingLink = openOnlineMeetingLink;
 	}
 	

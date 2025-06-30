@@ -118,6 +118,7 @@ public interface LectureService {
 	 * the fresh block.
 	 * 
 	 * @param lectureBlock The block to merge or persist
+	 * @param groups The list of groups to synchronize: null mean ignore synchronization, empty remove all, list synchronize the list
 	 * @return The merged block
 	 */
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups);

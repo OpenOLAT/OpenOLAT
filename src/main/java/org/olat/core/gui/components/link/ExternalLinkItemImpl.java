@@ -35,12 +35,12 @@ public class ExternalLinkItemImpl extends FormItemImpl implements ExternalLinkIt
 	
 	public ExternalLinkItemImpl(String name) {
 		super(name);
-		externalLink = new ExternalLink(name);
+		externalLink = new ExternalLink(name, this);
 	}
 	
 	public ExternalLinkItemImpl(String id, String name) {
 		super(id, name, false);
-		externalLink = new ExternalLink(id, name);
+		externalLink = new ExternalLink(id, name, this);
 	}
 
 	@Override

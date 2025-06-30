@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -124,6 +125,7 @@ public class EditLectureBlockController extends FormBasicController {
 
 	private static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
 	private static final String TEAMS_MEETING = "teams";
+	private static final String OTHER_MEETING = "other";
 	private static final String BIGBLUEBUTTON_MEETING = "bigbluebutton";
 	
 	private TextElement titleEl;
@@ -138,6 +140,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private FormToggle enabledOnlineMeetingEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
+	private TextElement onlineMeetingProviderUrlEl;
+	private TextElement onlineMeetingProviderNameEl;
 	
 	private final boolean readOnly;
 	private final boolean embedded;
@@ -340,6 +344,7 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl.setMinLength(1);
 		
 		// Online meeting
+		String meetingUrl = lectureBlock == null ? null : lectureBlock.getMeetingUrl();
 		SelectionValues meetingPK = new SelectionValues();
 		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
 			meetingPK.add(SelectionValues.entry(BIGBLUEBUTTON_MEETING, translate("lecture.online.meeting.bigbluebutton"), null, "o_icon o_bigbluebuttonmeeting_icon", null, true));
@@ -347,22 +352,33 @@ public class EditLectureBlockController extends FormBasicController {
 		if(teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
 			meetingPK.add(SelectionValues.entry(TEAMS_MEETING, translate("lecture.online.meeting.teams"), null, "o_icon o_teamsmeeting_icon", null, true));
 		}
-
+		meetingPK.add(SelectionValues.entry(OTHER_MEETING, translate("lecture.online.meeting.other"), null, "o_icon o_icon_external_link", null, true));
 		enabledOnlineMeetingEl = uifactory.addToggleButton("lecture.online.meeting", "lecture.online.meeting",
 				translate("on"), translate("off"), formLayout);
-		enabledOnlineMeetingEl.toggle(bigBlueButtonMeeting != null || teamsMeeting != null);
+		enabledOnlineMeetingEl.toggle(bigBlueButtonMeeting != null || teamsMeeting != null || StringHelper.containsNonWhitespace(meetingUrl));
 		enabledOnlineMeetingEl.setVisible(!meetingPK.isEmpty());
 		enabledOnlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
 		
 		onlineMeetingEl = uifactory.addCardSingleSelectHorizontal("onlinemeeting.provider", null, formLayout, meetingPK);
 		onlineMeetingEl.setVisible(enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn());
+		onlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
 		if(meetingPK.containsKey(BIGBLUEBUTTON_MEETING) && bigBlueButtonMeeting != null) {
 			onlineMeetingEl.select(BIGBLUEBUTTON_MEETING, true);
 		} else if(meetingPK.containsKey(TEAMS_MEETING) && teamsMeeting != null) {
 			onlineMeetingEl.select(TEAMS_MEETING, true);
+		} else if(meetingPK.containsKey(OTHER_MEETING) && lectureBlock != null
+				&& StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl())) {
+			onlineMeetingEl.select(OTHER_MEETING, true);
 		}
+		
 		editOnlineMeetingButton = uifactory.addFormLink("edit.online.meeting", formLayout, Link.BUTTON_SMALL);
 		editOnlineMeetingButton.setVisible(false);
+		
+		onlineMeetingProviderNameEl = uifactory.addTextElement("lecture.online.meeting.provider.name", 32, "Zoom", formLayout);
+		onlineMeetingProviderNameEl.setMandatory(true);
+		onlineMeetingProviderUrlEl = uifactory.addTextElement("lecture.online.meeting.provider.url", 256, null, formLayout);
+		onlineMeetingProviderUrlEl.setMandatory(true);
+		
 		updateOnlineMeetingUI();
 		
 		// Teachers
@@ -512,9 +528,19 @@ public class EditLectureBlockController extends FormBasicController {
 				onlineMeetingEl.select(BIGBLUEBUTTON_MEETING, true);
 			} else if(teamsModule.isEnabled() && teamsModule.isLecturesEnabled()) {
 				onlineMeetingEl.select(TEAMS_MEETING, true);
+			} else {
+				onlineMeetingEl.select(OTHER_MEETING, true);
 			}
 		}
-		editOnlineMeetingButton.setVisible(enableOnlineMeeting && onlineMeetingEl.isOneSelected() && !embedded);
+		
+		editOnlineMeetingButton.setVisible(enableOnlineMeeting && onlineMeetingEl.isOneSelected()
+				&& (BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey()) || TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()))
+				&& !embedded);
+		
+		boolean enabledOnlineMeetingUrl = enableOnlineMeeting && onlineMeetingEl.isOneSelected()
+				&& OTHER_MEETING.equals(onlineMeetingEl.getSelectedKey()) && !embedded;
+		onlineMeetingProviderNameEl.setVisible(enabledOnlineMeetingUrl);
+		onlineMeetingProviderUrlEl.setVisible(enabledOnlineMeetingUrl);
 	}
 
 	@Override
@@ -576,6 +602,9 @@ public class EditLectureBlockController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		onlineMeetingEl.clearError();
+		onlineMeetingProviderNameEl.clearError();
+		onlineMeetingProviderUrlEl.clearError();
 		if(onlineMeetingEl.isVisible()) {
 			if(!onlineMeetingEl.isOneSelected()) {
 				onlineMeetingEl.setErrorKey("form.legende.mandatory");
@@ -600,9 +629,36 @@ public class EditLectureBlockController extends FormBasicController {
 							allOk &= false;
 						}
 					}
+				} else if(OTHER_MEETING.equals(onlineMeetingEl.getSelectedKey()) && teamsMeeting == null) {
+					if(!StringHelper.containsNonWhitespace(onlineMeetingProviderNameEl.getValue())) {
+						onlineMeetingProviderNameEl.setErrorKey("form.legende.mandatory");
+						allOk &= false;
+					}
+						
+					if (!StringHelper.containsNonWhitespace(onlineMeetingProviderUrlEl.getValue())) {
+						onlineMeetingProviderUrlEl.setErrorKey("form.legende.mandatory");
+						allOk &= false;
+					} else {
+						allOk &= validateUrl(onlineMeetingProviderUrlEl);
+					}
 				}
 			}
 		}
+		return allOk;
+	}
+	
+	private boolean validateUrl(TextElement textEl) {
+		boolean allOk = true;
+
+		if (StringHelper.containsNonWhitespace(textEl.getValue())) {
+			try {
+				new URL(textEl.getValue()).toURI();
+			} catch(Exception e) {
+				textEl.setErrorKey("error.url.not.valid");
+				allOk &= false;
+			}
+		}
+
 		return allOk;
 	}
 
@@ -627,6 +683,8 @@ public class EditLectureBlockController extends FormBasicController {
 				stepsListener.onStepsChanged(ureq);
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			}
+		} else if(onlineMeetingEl == source) {
+			updateOnlineMeetingUI();
 		} else if(editOnlineMeetingButton == source) {
 			if(BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 				doEditBigBlueButtonMeeting(ureq);
@@ -750,12 +808,27 @@ public class EditLectureBlockController extends FormBasicController {
 			if(teamsMeeting != null) {
 				teamsService.deleteMeeting(teamsMeeting);
 			}
+			lectureBlock.setMeetingTitle(null);
+			lectureBlock.setMeetingUrl(null);
 		} else if(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
 			lectureBlock.setBBBMeeting(null);
 			lectureBlock.setTeamsMeeting(teamsMeeting);
 			if(bigBlueButtonMeeting != null) {
 				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			}
+			lectureBlock.setMeetingTitle(null);
+			lectureBlock.setMeetingUrl(null);
+		} else if(enableOnlineMeeting && OTHER_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
+			lectureBlock.setMeetingTitle(onlineMeetingProviderNameEl.getValue());
+			lectureBlock.setMeetingUrl(onlineMeetingProviderUrlEl.getValue());
+			lectureBlock.setBBBMeeting(null);
+			if(bigBlueButtonMeeting != null) {
+				bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			}
+			lectureBlock.setTeamsMeeting(null);
+			if(teamsMeeting != null) {
+				teamsService.deleteMeeting(teamsMeeting);
 			}
 		} else {
 			lectureBlock.setBBBMeeting(null);
@@ -766,6 +839,8 @@ public class EditLectureBlockController extends FormBasicController {
 			if(teamsMeeting != null) {
 				teamsService.deleteMeeting(teamsMeeting);
 			}
+			lectureBlock.setMeetingTitle(null);
+			lectureBlock.setMeetingUrl(null);
 		}
 	}
 	

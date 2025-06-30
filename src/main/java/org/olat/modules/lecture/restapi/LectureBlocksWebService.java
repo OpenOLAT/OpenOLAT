@@ -224,6 +224,12 @@ public class LectureBlocksWebService {
 			block.setManagedFlagsString(blockVo.getManagedFlagsString());
 		}
 		block.setPlannedLecturesNumber(blockVo.getPlannedLectures());
+		if(blockVo.getMeetingTitle() != null) {
+			block.setMeetingTitle(blockVo.getMeetingTitle());
+		}
+		if(blockVo.getMeetingUrl() != null) {
+			block.setMeetingUrl(blockVo.getMeetingUrl());
+		}
 		
 		if(autoclose) {
 			block.setStatus(LectureBlockStatus.done);

@@ -3624,6 +3624,8 @@ create table o_lecture_block (
   l_descr mediumtext,
   l_preparation mediumtext,
   l_location varchar(255),
+  l_meeting_title varchar(1024),
+  l_meeting_url varchar(1024),
   l_comment mediumtext,
   l_start_date datetime not null,
   l_end_date datetime not null,

@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCol
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
@@ -103,7 +104,7 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private FormLink editButton;
 	private FormLink openEntryLink;
-	private FormLink openOnlineMeetingButton;
+	private FormItem openOnlineMeetingButton;
 	
 	private FlexiTableElement tableEl;
 	private StaticTextElement participantsEl;
@@ -178,6 +179,11 @@ public class LectureListDetailsController extends FormBasicController {
 		if(lectureBlock.getTeamsMeeting() != null || lectureBlock.getBBBMeeting() != null) {
 			openOnlineMeetingButton = uifactory.addFormLink("open.online.meeting", "open.online.meeting", "online.room", formLayout, Link.BUTTON);
 			openOnlineMeetingButton.setFormLayout("vertical");
+		} else if(StringHelper.containsNonWhitespace(lectureBlock.getMeetingUrl())) {
+			ExternalLinkItem button = uifactory.addExternalLink("open.external.meeting", "open.external.meeting", lectureBlock.getMeetingUrl(), "_blank", formLayout);
+			button.setName(translate("open.online.meeting"));
+			button.setLabel("online.room", null);
+			button.setCssClass("btn btn-default");
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {

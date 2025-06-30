@@ -24,6 +24,11 @@
 	
 		#if($r.available("open.online.meeting"))
 			<div>$r.render("open.online.meeting", "vertical")</div>
+		#elseif($r.available("open.external.meeting"))
+			<div>
+				$r.render("open.external.meeting", "label")
+				<div class="form-group clearfix">$r.render("open.external.meeting", "nolayout")</div>
+			</div>
 		#end
 		
 		#if($r.available("edit")) 

@@ -136,6 +136,24 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 
 	public boolean isRunningAt(Date date);
 	
+	
+	/**
+	 * Title to an online meeting
+	 * 
+	 * @return Title of the online meeting
+	 */
+	public String getMeetingTitle();
+
+	public void setMeetingTitle(String meetingTitle);
+
+	/**
+	 * @return Url which refers to the meeting
+	 */
+	public String getMeetingUrl();
+
+	public void setMeetingUrl(String meetingUrl);
+
+	
 	public BigBlueButtonMeeting getBBBMeeting();
 	
 	public void setBBBMeeting(BigBlueButtonMeeting meeting);

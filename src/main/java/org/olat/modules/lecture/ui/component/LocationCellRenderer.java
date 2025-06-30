@@ -52,6 +52,8 @@ public class LocationCellRenderer implements FlexiCellRenderer {
 				target.append("<span><i class='o_icon o_icon-fw ").append("o_vc_icon", "o_icon_location", onlineMeeting).append("'> </i> ");
 				if(StringHelper.containsNonWhitespace(blockRow.getLocation())) {
 					target.appendHtmlEscaped(blockRow.getLocation());
+				} else if(StringHelper.containsNonWhitespace(blockRow.getMeetingTitle())) {
+					target.appendHtmlEscaped(blockRow.getMeetingTitle());
 				} else if(onlineMeeting) {
 					target.append(translator.translate("lecture.online.meeting"));
 				}
