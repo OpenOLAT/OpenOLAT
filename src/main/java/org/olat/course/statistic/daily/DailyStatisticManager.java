@@ -61,7 +61,7 @@ public class DailyStatisticManager implements IStatisticManager {
 	/** the SimpleDateFormat with which the column headers will be created formatted by the database, 
 	 * so change this in coordination with any db changes if you really need to 
 	 **/
-	private final SimpleDateFormat columnHeaderFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	private final SimpleDateFormat columnHeaderFormat = new SimpleDateFormat(StatisticResult.DATETIME_FORMAT);
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
@@ -79,8 +79,11 @@ public class DailyStatisticManager implements IStatisticManager {
 		}
 		
 		String header = headerId;
-		try{
-			Date d = columnHeaderFormat.parse(headerId);
+		try {
+			Date d;
+			synchronized(columnHeaderFormat) {
+				d = columnHeaderFormat.parse(headerId);
+			}
 
 			Calendar c = Calendar.getInstance(ureq.getLocale());
 			c.setTime(d);
