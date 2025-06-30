@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -100,12 +101,23 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 			OpenXMLWorksheet coursesWorksheet = workbook.nextWorksheet();
 			generateCoursesHeader(coursesWorksheet, userPropertyHandlers, translator);
 			List<CertificateIdentityConfig> certificates = loadCertificates(identity, userPropertyHandlers);
-			generateCoursesData(coursesWorksheet, certificates, userPropertyHandlers, formatter);
+			Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements = new HashMap<>();
+			if (curriculumEnabled) {
+				Set<RepositoryEntryRef> repositoryEntries = certificates.stream().map(CertificateIdentityConfig::getEntry)
+						.filter(Objects::nonNull).map(RepositoryEntry::getKey).map(RepositoryEntryRefImpl::new)
+						.collect(Collectors.toSet());
+				CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDAO = 
+						CoreSpringFactory.getImpl(CurriculumRepositoryEntryRelationDAO.class);
+				courseToCurriculumElements =
+						curriculumRepositoryEntryRelationDAO.getCurriculumElementsForRepositoryEntries(repositoryEntries);
+			}
+			generateCoursesData(coursesWorksheet, certificates, userPropertyHandlers, formatter, courseToCurriculumElements);
 			if (curriculumEnabled) {
 				OpenXMLWorksheet curriculaWorksheet = workbook.nextWorksheet();
 				curriculaWorksheet.setHeaderRows(1);
 				generateCurriculaHeader(curriculaWorksheet, userPropertyHandlers, translator);
-				generateCurriculaData(curriculaWorksheet, certificates, userPropertyHandlers, formatter);
+				generateCurriculaData(curriculaWorksheet, certificates, userPropertyHandlers, formatter, 
+						courseToCurriculumElements);
 			}
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
@@ -123,6 +135,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 
 	private int generateCommonCourseHeader(Row header, int pos, List<UserPropertyHandler> userPropertyHandlers, 
 										   Translator translator) {
+		header.addCell(pos++, translator.translate("export.header.certificate.id"));
 		header.addCell(pos++, translator.translate("export.header.course"));
 		header.addCell(pos++, translator.translate("export.header.externalReference"));
 
@@ -149,9 +162,24 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	}
 
 	private void generateCoursesData(OpenXMLWorksheet coursesWorksheet,
-									 List<CertificateIdentityConfig> certificates, 
-									 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter) {
+									 List<CertificateIdentityConfig> certificates,
+									 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter, 
+									 Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements) {
 		certificates.forEach(certificateIdentityConfig -> {
+
+			// Skip certificates that have a reference to a course that is referenced by a curriculum element.
+			// These certificates will also appear in the second worksheet, so we skip them here to avoid duplicates.
+			RepositoryEntry entry = certificateIdentityConfig.getEntry();
+			if (entry != null) {
+				RepositoryEntryRef key = new RepositoryEntryRefImpl(certificateIdentityConfig.getEntry().getKey());
+				if (courseToCurriculumElements.containsKey(key)) {
+					Set<CurriculumElement> curriculumElements = courseToCurriculumElements.get(key);
+					if (!curriculumElements.isEmpty()) {
+						return;
+					}
+				}
+			}
+
 			Row row = coursesWorksheet.newRow();
 			int pos = 0;
 
@@ -161,6 +189,9 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	
 	private int commonCourseData(Row row, int pos, CertificateIdentityConfig certificateIdentityConfig, 
 								 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter) {
+		
+		// certificate ID
+		row.addCell(pos++, Long.toString(certificateIdentityConfig.getCertificate().getKey()));
 		
 		// course
 		row.addCell(pos++, certificateIdentityConfig.getCertificate().getCourseTitle());
@@ -221,21 +252,13 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		List<CertificateIdentityConfig> orgCertificates =
 				certificatesManager.getCertificatesForOrganizations(identity, userPropertyHandlers, from, to);
 
-		return Stream.concat(groupCertificates.stream(), orgCertificates.stream()).toList();
+		return Stream.concat(groupCertificates.stream(), orgCertificates.stream()).collect(Collectors.toSet()).stream().toList();
 	}
 
 	private void generateCurriculaData(OpenXMLWorksheet curriculaWorksheet,
 									   List<CertificateIdentityConfig> certificates,
-									   List<UserPropertyHandler> userPropertyHandlers, Formatter formatter) {
-	
-		Set<RepositoryEntryRef> repositoryEntries = certificates.stream().map(CertificateIdentityConfig::getEntry)
-				.filter(Objects::nonNull).map(RepositoryEntry::getKey).map(RepositoryEntryRefImpl::new)
-				.collect(Collectors.toSet());
-		CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDAO = 
-				CoreSpringFactory.getImpl(CurriculumRepositoryEntryRelationDAO.class);
-		Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements = 
-				curriculumRepositoryEntryRelationDAO.getCurriculumElementsForRepositoryEntries(repositoryEntries);
-		
+									   List<UserPropertyHandler> userPropertyHandlers, Formatter formatter, 
+									   Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements) {
 		certificates.forEach(certificateIdentityConfig -> {
 			RepositoryEntry entry = certificateIdentityConfig.getEntry();
 			if (entry == null) {
