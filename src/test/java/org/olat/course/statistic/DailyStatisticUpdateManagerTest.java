@@ -45,7 +45,7 @@ import org.olat.test.JunitTestHelper;
  */
 public class DailyStatisticUpdateManagerTest extends AbstractStatisticUpdateManagerTest {
 
-	private final SimpleDateFormat dailyFormat = new SimpleDateFormat("yyyy-MM-dd");
+	private final SimpleDateFormat dailyFormat = new SimpleDateFormat(StatisticResult.DATETIME_FORMAT);
 	private final DailyStatisticManager dailyStatisticManager = new DailyStatisticManager();
 	
 	@Test
@@ -139,7 +139,7 @@ public class DailyStatisticUpdateManagerTest extends AbstractStatisticUpdateMana
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		return dailyFormat.format(cal.getTime()) + " 00:00:00.0";
+		return dailyFormat.format(cal.getTime());
 	}
 	
 	protected String addLogEntry(RepositoryEntry repositoryEntry, CourseNode courseNode, Calendar start,
