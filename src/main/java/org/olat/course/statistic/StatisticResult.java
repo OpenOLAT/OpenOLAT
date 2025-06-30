@@ -24,8 +24,11 @@
 */
 package org.olat.course.statistic;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,6 +54,8 @@ public class StatisticResult implements TableDataModel {
 	static final Object TOTAL_ROW_TITLE_CELL = new Object();
 	
 	public static final String KEY_NODE = "result_key_node";
+	
+	public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	
 	private List<String> columnHeaders_ = new LinkedList<>();
 	
@@ -107,6 +112,7 @@ public class StatisticResult implements TableDataModel {
 	private void doAddQueryListResultsForNodeAndChildren(CourseNode node, List<Object[]> result, Set<String> groupByKeys) {
 		orderedNodesList_.add(node);
 		
+		final DateFormat columnHeaderFormat = new SimpleDateFormat(DATETIME_FORMAT);
 		for (Iterator<?> it = result.iterator(); it.hasNext();) {
 			Object[] columns = (Object[]) it.next();
 			if (columns.length!=3) {
@@ -118,10 +124,15 @@ public class StatisticResult implements TableDataModel {
 				continue;
 			}
 			
-			String groupByKey = String.valueOf(columns[1]);
+			String groupByKey;
+			if(columns[1] instanceof Date date) {
+				groupByKey = columnHeaderFormat.format(date);
+			} else {
+				groupByKey = String.valueOf(columns[1]);
+			}
 			groupByKeys.add(groupByKey);
-			int count = (Integer)columns[2];
 			
+			int count = (Integer)columns[2];
 			Map<String,Integer> nodeMap = statistic_.get(node);
 			if (nodeMap==null) {
 				nodeMap = new HashMap<>();
