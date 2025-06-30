@@ -705,7 +705,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.where().append(" coachMembership.identity.key = :identityKey");
 		sb.and().append(" coachMembership.role").in(GroupRoles.coach, GroupRoles.owner);
 		sb.and().append(" userMembership.role").in(GroupRoles.participant);
-		
+		sb.and().append(" entry.olatResource = cer.olatResource");
 		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
 	}
 
