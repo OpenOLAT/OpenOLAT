@@ -130,7 +130,6 @@
 			<list>
 				<ref bean="groupIndexer" />
 				<ref bean="repositoryIndexer" />
-				<ref bean="identityIndexer" />
 				<ref bean="documentPoolIndexer" />
 				<ref bean="libraryIndexer" />
 			</list>
@@ -269,33 +268,7 @@
 	<bean id="groupWikiIndexer" class="org.olat.search.service.indexer.group.GroupWikiIndexer" />
 	<bean id="groupInfoIndexer" class="org.olat.search.service.indexer.group.GroupInfoIndexer">
 		<property name="infoMessageManager" ref="infoMessageManager"/>
-	</bean>	
-	
-	<!-- Identity indexers -->
-	<bean id="identityIndexer" class="org.olat.search.service.indexer.identity.IdentityIndexer" >
-		<property name="indexerList">
-			<list>
-				<ref bean="profileIndexer" />
-				<ref bean="publicFolderIndexer"	/>
-			</list>
-		</property>				
 	</bean>
-	
-	<!-- Inject security callback to IdentityIndexer which reduce the visibility of users 
-	     via the full text search to admin and user managers -->
-	<!--
-	<bean id="identityIndexerSecurityCallback" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="identityIndexer" />
-		<property name="targetMethod" value="setSecurityCallback" />
-		<property name="arguments">
-			<bean class="org.olat.search.service.indexer.identity.UserManagerSecurityCallback" />
-		</property>
-	</bean>
-	-->
-	
-	<bean id="profileIndexer"	class="org.olat.search.service.indexer.identity.ProfileIndexer"     />
-	<bean id="publicFolderIndexer"	class="org.olat.search.service.indexer.identity.PublicFolderIndexer" />
-
 
 	<!-- SEARCH PROXY SIDE CONFIGURATION -->
 	<!-- =============================== -->

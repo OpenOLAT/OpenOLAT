@@ -203,44 +203,6 @@
 					</bean>
 				</entry>
 
-				<!--
-					Indexed for fulltext search (only the fields that a user selects to publish are indexed)
-				-->
-				<entry key="org.olat.search.service.document.IdentityDocument">
-					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="propertyHandlers">
-							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
-								<ref bean="userPropertyEmailDisabled" />
-								<ref bean="userPropertyBirthDay" />
-								<ref bean="userPropertyGender" />
-								<ref bean="userPropertyTelPrivate" />
-								<ref bean="userPropertyTelMobile" />
-								<ref bean="userPropertyTelOffice" />
-								<ref bean="userPropertySkype" />
-                                <ref bean="userPropertyXing" />
-                                <ref bean="userPropertyLinkedin" />
-                                <ref bean="userPropertyICQ" />
-								<ref bean="userPropertyHomepage" />
-								<ref bean="userPropertyStreet" />
-								<ref bean="userPropertyExtendedAddress" />
-								<ref bean="userPropertyPoBox" />
-								<ref bean="userPropertyZipCode" />
-								<ref bean="userPropertyRegion" />
-								<ref bean="userPropertyCity" />
-								<ref bean="userPropertyCountry" />
-								<ref bean="userPropertyInstitutionalName" />
-								<ref bean="userPropertyInstitutionalUserIdentifier" />
-								<ref bean="userPropertyInstitutionalEmail" />
-								<ref bean="userPropertyOrgUnit" />
-								<ref bean="userPropertyStudySubject" />
-							</list>
-						</property>
-					</bean>
-				</entry>
-
 				<entry key="org.olat.admin.user.UserSearchForm">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

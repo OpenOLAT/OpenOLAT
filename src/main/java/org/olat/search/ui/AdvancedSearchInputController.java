@@ -91,7 +91,6 @@ public class AdvancedSearchInputController extends FormBasicController {
 	private static final String COURSE_TYPES = "type.course.node*";
 	private static final String BLOG_PODCAST_TYPES = "type.*.podcast type.*.blog type.repository.entry.*.PODCAST type.repository.entry.*.BLOG";
 	private static final String GROUP_TYPES = "type.group";
-	private static final String USER_TYPES = "type.identity";
 	private static final String PORTFOLIO_TYPES = "type.db.EP*Map* type.group.EP*Map*";
 	private static final String OTHER_TYPES = TextDocument.FILE_TYPE + " " + OpenDocument.FORMULA_FILE_TYPE + " " + OpenDocument.GRAPHIC_FILE_TYPE + " " 
 		+ UnkownDocument.UNKOWN_TYPE + " " + OpenDocument.TEXT_FILE_TYPE;
@@ -212,7 +211,6 @@ public class AdvancedSearchInputController extends FormBasicController {
 		documentInfos.add(new DocumentInfo("course", translate("area.courses"), COURSE_TYPES, null));
 		documentInfos.add(new DocumentInfo("blog", translate("area.blogs"), BLOG_PODCAST_TYPES, null));
 		documentInfos.add(new DocumentInfo("group", translate("area.groups"), GROUP_TYPES, null));
-		documentInfos.add(new DocumentInfo("user", translate("area.users"), USER_TYPES, null));
 		documentInfos.add(new DocumentInfo("portfolio", translate("area.portfolio"), PORTFOLIO_TYPES, null));
 		documentInfos.add(new DocumentInfo("others", translate("type.file.others"), null, OTHER_TYPES));
 	}
