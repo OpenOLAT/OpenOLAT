@@ -123,6 +123,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 
 	private int generateCommonCourseHeader(Row header, int pos, List<UserPropertyHandler> userPropertyHandlers, 
 										   Translator translator) {
+		header.addCell(pos++, translator.translate("export.header.certificate.id"));
 		header.addCell(pos++, translator.translate("export.header.course"));
 		header.addCell(pos++, translator.translate("export.header.externalReference"));
 
@@ -161,6 +162,9 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	
 	private int commonCourseData(Row row, int pos, CertificateIdentityConfig certificateIdentityConfig, 
 								 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter) {
+		
+		// certificate ID
+		row.addCell(pos++, Long.toString(certificateIdentityConfig.getCertificate().getKey()));
 		
 		// course
 		row.addCell(pos++, certificateIdentityConfig.getCertificate().getCourseTitle());
@@ -221,7 +225,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		List<CertificateIdentityConfig> orgCertificates =
 				certificatesManager.getCertificatesForOrganizations(identity, userPropertyHandlers, from, to);
 
-		return Stream.concat(groupCertificates.stream(), orgCertificates.stream()).toList();
+		return Stream.concat(groupCertificates.stream(), orgCertificates.stream()).collect(Collectors.toSet()).stream().toList();
 	}
 
 	private void generateCurriculaData(OpenXMLWorksheet curriculaWorksheet,

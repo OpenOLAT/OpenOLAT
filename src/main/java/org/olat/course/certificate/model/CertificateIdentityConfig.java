@@ -22,6 +22,7 @@ package org.olat.course.certificate.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
@@ -106,5 +107,17 @@ public class CertificateIdentityConfig {
 
 	public RepositoryEntry getEntry() {
 		return entry;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		CertificateIdentityConfig that = (CertificateIdentityConfig) o;
+		return Objects.equals(certificate, that.certificate);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(certificate);
 	}
 }
