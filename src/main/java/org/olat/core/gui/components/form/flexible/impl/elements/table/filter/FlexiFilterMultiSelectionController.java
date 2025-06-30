@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
@@ -37,15 +38,10 @@ public class FlexiFilterMultiSelectionController extends AbstractMultiSelectionC
 	
 	private final FlexiTableMultiSelectionFilter filter;
 
-	public FlexiFilterMultiSelectionController(UserRequest ureq, WindowControl wControl,
+	public FlexiFilterMultiSelectionController(UserRequest ureq, WindowControl wControl, Form form,
 			FlexiTableMultiSelectionFilter filter, List<String> preselectedKeys) {
-		super(ureq, wControl, filter.getSelectionValues(), preselectedKeys);
+		super(ureq, wControl, form, filter.getSelectionValues(), preselectedKeys);
 		this.filter = filter;
-	}
-
-	@Override
-	protected boolean isClearLink() {
-		return true;
 	}
 	
 	@Override

@@ -20,17 +20,12 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter.Type;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -42,19 +37,18 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiFilterTextController extends FormBasicController {
+public class FlexiFilterTextController extends FlexiFilterExtendedController {
 
 	private TextElement textEl;
-	private FormLink clearButton;
-	private FormLink updateButton;
 	
 	private final Type type;
 	private final String preselectedValue;
 	private final FlexiTableTextFilter filter;
 	
-	public FlexiFilterTextController(UserRequest ureq, WindowControl wControl,
+	public FlexiFilterTextController(UserRequest ureq, WindowControl wControl, Form form,
 			FlexiTableTextFilter filter, String preselectedValue, Type type, Translator translator) {
-		super(ureq, wControl, "field_text", translator);
+		super(ureq, wControl, LAYOUT_CUSTOM, "field_text", form);
+		setTranslator(translator);
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale(), getTranslator()));
 		this.type = type;
 		this.filter = filter;
@@ -78,14 +72,10 @@ public class FlexiFilterTextController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(preselectedValue)) {
 			textEl.setFocus(true);
 		}
-
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-		clearButton.setElementCssClass("o_filter_clear");
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		textEl.clearError();
@@ -109,32 +99,14 @@ public class FlexiFilterTextController extends FormBasicController {
 		
 		return allOk;
 	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(updateButton == source && validateFormLogic(ureq)) {
-			doUpdate(ureq);
-		} else if(clearButton == source) {
-			doClear(ureq);
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		doUpdate(ureq);
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
 	
-	private void doUpdate(UserRequest ureq) {
+	@Override
+	public void doUpdate(UserRequest ureq) {
 		fireEvent(ureq, new ChangeValueEvent(filter, textEl.getValue()));
 	}
 	
-	private void doClear(UserRequest ureq) {
+	@Override
+	public void doClear(UserRequest ureq) {
 		textEl.setValue("");
 		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}

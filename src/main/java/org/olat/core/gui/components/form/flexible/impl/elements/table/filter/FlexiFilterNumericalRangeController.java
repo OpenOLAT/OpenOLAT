@@ -22,16 +22,13 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableNumericalRangeFilter.NumericalRange;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -42,21 +39,20 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class FlexiFilterNumericalRangeController extends FormBasicController {
+public class FlexiFilterNumericalRangeController extends FlexiFilterExtendedController {
 	
 	private TextElement startEl;
 	private TextElement endEl;
-	private FormLink clearButton;
-	private FormLink updateButton;
 
 	private final FlexiTableNumericalRangeFilter filter;
 	private final String startLabel;
 	private final String endLabel;
 	private final NumericalRange initialRange;
 
-	public FlexiFilterNumericalRangeController(UserRequest ureq, WindowControl wControl, FlexiTableNumericalRangeFilter filter,
+	public FlexiFilterNumericalRangeController(UserRequest ureq, WindowControl wControl, Form form, FlexiTableNumericalRangeFilter filter,
 			String startLabel, String endLabel, NumericalRange initialRange) {
-		super(ureq, wControl, "date_range", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+		super(ureq, wControl, LAYOUT_CUSTOM, "date_range", form);
+		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
 		this.startLabel = startLabel;
 		this.endLabel = endLabel;
@@ -82,44 +78,17 @@ public class FlexiFilterNumericalRangeController extends FormBasicController {
 		endEl = uifactory.addTextElement("end", 12, end, datesCont);
 		endEl.showLabel(true);
 		endEl.setLabel(endLabel, null, false);
-		
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
-		updateButton.setElementCssClass("o_sel_flexiql_update");
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-		clearButton.setElementCssClass("o_filter_clear");
-	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (clearButton == source) {
-			doClear(ureq);
-		} else if(updateButton == source) {
-			if(validateFormLogic(ureq)) {
-				doUpdate(ureq);
-			}
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if (source == clearButton || source == startEl || source == endEl) {
+		if (source == startEl || source == endEl) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		doUpdate(ureq);
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateDouble(startEl);
 		allOk &= validateDouble(endEl);
@@ -142,7 +111,8 @@ public class FlexiFilterNumericalRangeController extends FormBasicController {
 		return allOk;
 	}
 	
-	private void doUpdate(UserRequest ureq) {
+	@Override
+	public void doUpdate(UserRequest ureq) {
 		if(startEl.getValue() != null || endEl.getValue() != null) {
 			NumericalRange dateRange = new NumericalRange();
 			dateRange.setStart(toDouble(startEl.getValue()));
@@ -163,7 +133,8 @@ public class FlexiFilterNumericalRangeController extends FormBasicController {
 		}
 	}
 	
-	private void doClear(UserRequest ureq) {
+	@Override
+	public void doClear(UserRequest ureq) {
 		startEl.setValue(null);
 		endEl.setValue(null);
 		fireEvent(ureq, new ChangeValueEvent(filter, null));

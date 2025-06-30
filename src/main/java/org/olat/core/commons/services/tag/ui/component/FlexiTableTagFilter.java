@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.tag.ui.component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,8 @@ import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFilterExtendedController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -175,15 +177,11 @@ public class FlexiTableTagFilter extends FlexiTableFilter implements FlexiTableE
 	public boolean isSelected() {
 		return value != null && !value.isEmpty();
 	}
-
+	
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new TagFilterSelectionController(ureq, wControl, this, getValues());
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		Collection<String> preselectedKeys = preselectedValue != null? convert(preselectedValue): getValues();
+		return new TagFilterSelectionController(ureq, wControl, form, this, preselectedKeys);
 	}
-
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		List<String> preselectedKeys = convert(preselectedValue);
-		return new TagFilterSelectionController(ureq, wControl, this, preselectedKeys);
-	}
+	
 }

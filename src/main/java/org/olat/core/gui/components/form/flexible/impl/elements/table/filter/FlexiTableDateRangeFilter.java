@@ -31,8 +31,8 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
@@ -156,14 +156,9 @@ public class FlexiTableDateRangeFilter extends FlexiTableFilter implements Flexi
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, filterDateRange);
-	}
-
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		DateRange dateRange = toDateRange(preselectedValue);
-		return new FlexiFilterDateRangeController(ureq, wControl, this, timeEnabled, dateRange);
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		DateRange dateRange = preselectedValue != null? toDateRange(preselectedValue): filterDateRange;
+		return new FlexiFilterDateRangeController(ureq, wControl, form, this, timeEnabled, dateRange);
 	}
 
 	private DateRange toDateRange(Object object) {

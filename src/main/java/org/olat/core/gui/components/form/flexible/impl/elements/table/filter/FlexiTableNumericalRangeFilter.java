@@ -29,7 +29,7 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -149,16 +149,11 @@ public class FlexiTableNumericalRangeFilter extends FlexiTableFilter implements 
 	private static boolean isSelected(NumericalRange range) {
 		return range != null && (range.getStart() != null || range.getEnd() != null);
 	}
-
+	
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterNumericalRangeController(ureq, wControl, this, startLabel, endLabel, filterNumericalRange);
-	}
-
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		NumericalRange range = toNumericalRange(preselectedValue);
-		return new FlexiFilterNumericalRangeController(ureq, wControl, this, startLabel, endLabel, range);
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		NumericalRange range = preselectedValue != null? toNumericalRange(preselectedValue): filterNumericalRange;
+		return new FlexiFilterNumericalRangeController(ureq, wControl, form, this, startLabel, endLabel, range);
 	}
 
 	private NumericalRange toNumericalRange(Object object) {

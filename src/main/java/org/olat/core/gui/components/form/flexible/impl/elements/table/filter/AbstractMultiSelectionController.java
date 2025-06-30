@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
@@ -49,10 +49,8 @@ import org.olat.core.util.Util;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractMultiSelectionController extends FormBasicController {
+public abstract class AbstractMultiSelectionController extends FlexiFilterExtendedController {
 
-	private FormLink clearButton;
-	private FormLink updateButton;
 	private TextElement quickSearchEl;
 	private FormLink quickSearchButton;
 	private FormLink resetQuickSearchButton;
@@ -64,14 +62,14 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 	
 	private final Set<String> selectedKeys = new HashSet<>();
 
-	public AbstractMultiSelectionController(UserRequest ureq, WindowControl wControl, SelectionValuesSupplier availableValues, Collection<String> preselectedKeys) {
-		super(ureq, wControl, "field_list", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+	public AbstractMultiSelectionController(UserRequest ureq, WindowControl wControl, Form form,
+			SelectionValuesSupplier availableValues, Collection<String> preselectedKeys) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "field_list", form);
+		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.availableValues = availableValues;
 		this.preselectedKeys = preselectedKeys;
 		initForm(ureq);
 	}
-	
-	protected abstract boolean isClearLink();
 	
 	protected abstract Event createChangedEvent(@SuppressWarnings("hiding") Set<String> selectedKeys);
 	
@@ -109,23 +107,12 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 		}
 		
 		((FormLayoutContainer)formLayout).contextPut("numOfItems", Integer.valueOf(keys.length));
-		
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
-		updateButton.setElementCssClass("o_sel_flexiql_update");
-		if (isClearLink()) {
-			clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-			clearButton.setElementCssClass("o_filter_clear");
-		}
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(listEl == source) {
 			doSelectItem(ureq);
-		} else if(clearButton == source) {
-			doClear(ureq);
-		} else if(updateButton == source) {
-			doUpdate(ureq);
 		} else if(quickSearchEl == source) {
 			doQuickSearch();
 		} else if(quickSearchButton == source) {
@@ -138,22 +125,13 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if(source == clearButton || source == listEl || source == quickSearchButton) {
+		if(source == listEl || source == quickSearchButton) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		doUpdate(ureq);
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
 	
-	private void doUpdate(UserRequest ureq) {
+	@Override
+	public void doUpdate(UserRequest ureq) {
 		selectedKeys.addAll(listEl.getSelectedKeys());
 		fireEvent(ureq, createChangedEvent(selectedKeys));
 	}
@@ -182,7 +160,8 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 		}
 	}
 	
-	private void doClear(UserRequest ureq) {
+	@Override
+	public void doClear(UserRequest ureq) {
 		listEl.uncheckAll();
 		listEl.setKeysAndValues(availableValues.keys(), availableValues.values(), null, availableValues.icons());
 		selectedKeys.clear();

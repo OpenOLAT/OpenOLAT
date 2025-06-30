@@ -2,7 +2,6 @@
 	<h4>$r.translate("customize.columns")</h4>
 	$r.render("columns")
 #elseif($r.visible("filter"))
-	<h4>$r.escapeHtml($filterLabel)</h4>
 	$r.render("filter")
 #elseif($r.visible("sort"))
 	<h4>$r.translate("sort.settings")</h4>

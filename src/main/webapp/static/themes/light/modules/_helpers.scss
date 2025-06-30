@@ -268,6 +268,17 @@
 	gap: 10px;
 }
 
+/* Primary light button */
+.o_button_primary_light {
+	@include button-variant($o-button-primary-light-color, $o-button-primary-light-bg, $o-button-primary-light-border);
+	&:focus,
+	&:hover {
+	  color: $o-button-primary-light-hover-color;
+	  background-color: $o-button-primary-light-hover-bg;
+	  border-color: $o-button-primary-light-hover-border;
+	}
+}
+
 /* need some empty block before and after */
 .o_mega_buttons_3_centered {
 	grid-template-columns: 3fr repeat(3, minmax(207px, 1fr)) 3fr;

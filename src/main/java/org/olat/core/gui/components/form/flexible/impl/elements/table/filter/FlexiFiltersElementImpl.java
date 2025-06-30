@@ -454,9 +454,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				doApplyFilterValue(ureq, cve.getFilter(), cve.getValue());
 				filtersCallout.deactivate();
 				cleanUp();
+				onFilterClosed();
 			} else if(event == Event.CANCELLED_EVENT) {
 				filtersCallout.deactivate();
-				cleanUp();
+				cleanUp()
+				;onFilterClosed();
 			}
 		} else if(saveCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -478,6 +480,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			cleanUp();
 		} else if(filtersCallout == source) {
 			cleanUp();
+			onFilterClosed();
 		} else if(addFiltersCallout == source) {
 			cleanUp();
 		} else if(cmc == source) {
@@ -582,13 +585,27 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doOpenFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {
-		filterCtrl = filter.getController(ureq, wControl, component.getTranslator());
+		button.setElementCssClass("o_table_filter o_filter_open");
+		component.setDirty(true);
+		
+		filterCtrl = new FlexiFilterBasicController(ureq, wControl, component.getTranslator(), true, filter, null);
 		filterCtrl.addControllerListener(this);
 
 		filtersCallout = new CloseableCalloutWindowController(ureq, wControl, filterCtrl.getInitialComponent(),
 				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true, null));
 		filtersCallout.addControllerListener(this);
 		filtersCallout.activate();
+	}
+	
+	private void onFilterClosed() {
+		for (FlexiFilterButton filterButton : filterButtons) {
+			if (filterButton.getButtonItem() instanceof FormLink button
+					&& StringHelper.containsNonWhitespace(button.getElementCssClass())
+					&& button.getElementCssClass().indexOf(" o_filter_open") > -1) {
+				button.setElementCssClass(button.getElementCssClass().replace(" o_filter_open", ""));
+				component.setDirty(true);
+			}
+		}
 	}
 
 	private void doFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {

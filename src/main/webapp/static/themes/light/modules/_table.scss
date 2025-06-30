@@ -479,6 +479,12 @@ table.table.o_table_nowrap>tbody>tr>td {
 				&.o_filter_active {
 					@include button-variant($o-table-filter-active-color, $o-table-filter-active-bg, $o-table-filter-active-border);
 				}
+				&.o_filter_open {
+					@include button-variant($o-table-filter-active-color, $o-table-filter-active-bg, $o-table-filter-active-border);
+					i.o_icon {
+						transform: rotate(180deg);
+					}
+				}
 			}
 			
 			>li>fieldset.o_table_filter {
@@ -617,8 +623,26 @@ table.table.o_table_nowrap>tbody>tr>td {
 	}
 }
 
-a.o_filter_clear {
-	padding-left: 1em;
+.o_table_filter_callout {
+	.o_table_filter_callout_header {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		>:last-child {
+			margin-left: auto;
+		}
+	}
+	.o_filter_update {
+		width: 100%;
+	}
+	.form-group {
+		margin-bottom: 0;
+	}
+	.o_filter_list_values {
+		// Because every chechbox has always margins
+		margin-top: -10px;
+		margin-bottom: -10px;
+	}
 }
 
 .input-group.o_autocompletion {

@@ -31,8 +31,8 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -171,13 +171,8 @@ public class FlexiTablePeriodFilter extends FlexiTableFilter implements FlexiTab
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterPeriodController(ureq, wControl, this);
-	}
-
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		return new FlexiFilterPeriodController(ureq, wControl, this);
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		return new FlexiFilterPeriodController(ureq, wControl, form, this);
 	}
 	
 	public record PeriodWithUnit(Period period, boolean past, int value, ChronoUnit unit) implements Serializable {

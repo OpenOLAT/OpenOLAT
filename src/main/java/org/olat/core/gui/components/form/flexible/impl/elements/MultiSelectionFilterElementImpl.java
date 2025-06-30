@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.MultiSelectionController;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.MultiSelectionController.KeysSelectedEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.MultiSelectionController.MultiSelectionFormController.KeysSelectedEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;

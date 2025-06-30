@@ -24,9 +24,9 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -138,15 +138,11 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 	public boolean isSelected() {
 		return value != null && !value.isEmpty();
 	}
-
+	
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterSingleSelectionController(ureq, wControl, this, getValue());
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		String preselectedKey = preselectedValue instanceof String key ? key : getValue();
+		return new FlexiFilterSingleSelectionController(ureq, wControl, form, this, preselectedKey);
 	}
-
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		String preselectedKey = preselectedValue instanceof String key ? key : null;
-		return new FlexiFilterSingleSelectionController(ureq, wControl, this, preselectedKey);
-	}
+	
 }

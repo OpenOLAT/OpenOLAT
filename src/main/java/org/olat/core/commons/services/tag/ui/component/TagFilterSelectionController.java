@@ -34,11 +34,12 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.ChangeValueEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFilterExtendedController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -52,13 +53,11 @@ import org.olat.core.util.Util;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TagFilterSelectionController extends FormBasicController {
+public class TagFilterSelectionController extends FlexiFilterExtendedController {
 	
 	private static final String CMD_TOGGLE = "toggle";
 
 	private final Comparator<TagItem> comparator;
-	private FormLink clearButton;
-	private FormLink updateButton;
 	private TextElement quickSearchEl;
 	private FormLink quickSearchButton;
 	private FormLink resetQuickSearchButton;
@@ -69,11 +68,11 @@ public class TagFilterSelectionController extends FormBasicController {
 	private List<TagItem> tagItems;
 	private int counter;
 
-
-	public TagFilterSelectionController(UserRequest ureq, WindowControl wControl, FlexiTableTagFilter filter,
+	public TagFilterSelectionController(UserRequest ureq, WindowControl wControl, Form form, FlexiTableTagFilter filter,
 			Collection<String> preselectedKeys) {
-		super(ureq, wControl, "tag_filter", Util.createPackageTranslator(TagUIFactory.class, ureq.getLocale()));
+		super(ureq, wControl, LAYOUT_CUSTOM, "tag_filter", form);
 		this.filter = filter;
+		setTranslator(Util.createPackageTranslator(TagUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, getLocale(), getTranslator()));
 		this.selectedKeys = preselectedKeys != null
 				? preselectedKeys.stream().map(Long::valueOf).collect(Collectors.toSet())
@@ -110,11 +109,6 @@ public class TagFilterSelectionController extends FormBasicController {
 		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
 		
 		((FormLayoutContainer)formLayout).contextPut("numOfItems", Long.valueOf(filter.getAllTags().size()));
-		
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
-		updateButton.setElementCssClass("o_sel_flexiql_update");
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-		clearButton.setElementCssClass("o_filter_clear");
 		
 		tagsCont = FormLayoutContainer.createCustomFormLayout("tags", getTranslator(), velocity_root + "/tag_selection_tags.html");
 		tagsCont.setRootForm(mainForm);
@@ -162,11 +156,7 @@ public class TagFilterSelectionController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (updateButton == source) {
-			doSelect(ureq);
-		} else if(clearButton == source) {
-			doClear(ureq);
-		} else if (quickSearchEl == source) {
+		if (quickSearchEl == source) {
 			doQuickSearch();
 		} else if (resetQuickSearchButton == source) {
 			doResetQuickSearch();
@@ -177,20 +167,17 @@ public class TagFilterSelectionController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		doSelect(ureq);
-	}
 	
-	private void doSelect(UserRequest ureq) {
+	@Override
+	public void doUpdate(UserRequest ureq) {
 		List<String> keys = selectedKeys != null
 				? selectedKeys.stream().map(l -> l.toString()).toList()
 				: null;
 		fireEvent(ureq, new ChangeValueEvent(filter, keys));
 	}
 	
-	private void doClear(UserRequest ureq) {
+	@Override
+	public void doClear(UserRequest ureq) {
 		selectedKeys.clear();
 		tagItems.forEach(item -> item.getLink().setVisible(true));
 		quickSearchEl.setValue("");

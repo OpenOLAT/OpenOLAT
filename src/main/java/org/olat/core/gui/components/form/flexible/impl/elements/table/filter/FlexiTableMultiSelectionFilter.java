@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.util.SelectionValuesSupplier;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -195,15 +195,11 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	public boolean isSelected() {
 		return value != null && !value.isEmpty();
 	}
-
+	
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterMultiSelectionController(ureq, wControl, this, getValues());
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		List<String> preselectedKeys = preselectedValue != null? convert(preselectedValue): getValues();
+		return new FlexiFilterMultiSelectionController(ureq, wControl, form, this, preselectedKeys);
 	}
-
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		List<String> preselectedKeys = convert(preselectedValue);
-		return new FlexiFilterMultiSelectionController(ureq, wControl, this, preselectedKeys);
-	}
+	
 }

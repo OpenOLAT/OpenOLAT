@@ -22,16 +22,13 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -42,18 +39,17 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiFilterSingleSelectionController extends FormBasicController {
+public class FlexiFilterSingleSelectionController extends FlexiFilterExtendedController {
 	
-	private FormLink clearButton;
-	private FormLink updateButton;
 	private SingleSelection listEl;
 	
 	private final String preselectedKey;
 	private final FlexiTableSingleSelectionFilter filter;
 	
 	public FlexiFilterSingleSelectionController(UserRequest ureq, WindowControl wControl,
-			FlexiTableSingleSelectionFilter filter, String preselectedKey) {
-		super(ureq, wControl, "field_list_unlimited", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+			Form form, FlexiTableSingleSelectionFilter filter, String preselectedKey) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "field_list_unlimited", form);
+		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, getLocale()));
 		this.filter = filter;
 		this.preselectedKey = preselectedKey;
 		initForm(ureq);
@@ -73,41 +69,17 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 		}
 		
 		((FormLayoutContainer)formLayout).contextPut("numOfItems", Integer.valueOf(keys.length));
-		
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
-		updateButton.setElementCssClass("o_sel_flexiql_update");
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-		clearButton.setElementCssClass("o_filter_clear");
-	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(clearButton == source) {
-			doClear(ureq);
-		} else if(updateButton == source) {
-			doUpdate(ureq);
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if(source == clearButton || source == listEl) {
+		if(source == listEl) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		doUpdate(ureq);
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
 	
-	private void doUpdate(UserRequest ureq) {
+	@Override
+	public void doUpdate(UserRequest ureq) {
 		if(listEl.isOneSelected()) {
 			fireEvent(ureq, new ChangeValueEvent(filter, listEl.getSelectedKey()));
 		} else {
@@ -115,7 +87,8 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 		}
 	}
 	
-	private void doClear(UserRequest ureq) {
+	@Override
+	public void doClear(UserRequest ureq) {
 		if(listEl.isOneSelected()) {
 			listEl.select(listEl.getSelectedKey(), false);
 		}

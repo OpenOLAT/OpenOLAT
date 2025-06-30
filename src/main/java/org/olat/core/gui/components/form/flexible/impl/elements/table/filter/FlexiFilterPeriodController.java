@@ -28,14 +28,12 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTablePeriodFilter.PeriodWithUnit;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -46,7 +44,7 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiFilterPeriodController extends FormBasicController {
+public class FlexiFilterPeriodController extends FlexiFilterExtendedController {
 	
 	private TextElement valueEl;
 	private SingleSelection unitEl;
@@ -57,8 +55,9 @@ public class FlexiFilterPeriodController extends FormBasicController {
 	private PeriodWithUnit filterPeriod;
 	private final FlexiTablePeriodFilter filter;
 
-	public FlexiFilterPeriodController(UserRequest ureq, WindowControl wControl, FlexiTablePeriodFilter filter) {
-		super(ureq, wControl, "period", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+	public FlexiFilterPeriodController(UserRequest ureq, WindowControl wControl, Form form, FlexiTablePeriodFilter filter) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "period", form);
+		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
 		filterPeriod = filter.getPeriodWithUnit();
 		initForm(ureq);
@@ -94,15 +93,10 @@ public class FlexiFilterPeriodController extends FormBasicController {
 		unitEl.setDomReplacementWrapperRequired(false);
 		String unit = filterPeriod == null ? ChronoUnit.DAYS.name() : filterPeriod.unit().name();
 		unitEl.select(unit, true);
-		
-		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
-		updateButton.setElementCssClass("o_sel_flexiql_update");
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-		clearButton.setElementCssClass("o_filter_clear");
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		valueEl.clearError();
@@ -132,18 +126,9 @@ public class FlexiFilterPeriodController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
 	
-	private void doUpdate(UserRequest ureq) {
+	@Override
+	public void doUpdate(UserRequest ureq) {
 		if(unitEl.isOneSelected() && StringHelper.isLong(valueEl.getValue())) {
 			fireEvent(ureq, new ChangeValueEvent(filter, toPeriod()));
 		} else {
@@ -151,7 +136,8 @@ public class FlexiFilterPeriodController extends FormBasicController {
 		}
 	}
 	
-	private void doClear(UserRequest ureq) {
+	@Override
+	public void doClear(UserRequest ureq) {
 		if(unitEl.isOneSelected()) {
 			valueEl.setValue("");
 			unitEl.select(ChronoUnit.DAYS.name(), true);

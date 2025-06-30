@@ -30,9 +30,9 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterItem;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.util.SelectionValuesSupplier;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -181,19 +181,20 @@ public class FlexiTableOneClickSelectionFilter extends FlexiTableFilter implemen
 		}
 		return mse;
 	}
-	
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return new FlexiFilterOneClickSelectionController(ureq, wControl, this, getValues());
-	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		String preselectedKey = convert(preselectedValue);
-		List<String> preselectedKeys = new ArrayList<>(2);
-		if(StringHelper.containsNonWhitespace(preselectedKey)) {
-			preselectedKeys.add(preselectedKey);
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form, Translator translator, Object preselectedValue) {
+		List<String> preselectedKeys;
+		if (preselectedValue != null) {
+			String preselectedKey = convert(preselectedValue);
+			preselectedKeys = new ArrayList<>(2);
+			if(StringHelper.containsNonWhitespace(preselectedKey)) {
+				preselectedKeys.add(preselectedKey);
+			}
+		} else {
+			preselectedKeys = getValues();
 		}
-		return new FlexiFilterOneClickSelectionController(ureq, wControl, this, preselectedKeys);
+		return new FlexiFilterOneClickSelectionController(ureq, wControl, null, this, preselectedKeys);
 	}
+	
 }

@@ -144,14 +144,11 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 	
 	private void doSelectFilter(UserRequest ureq, FlexiFilterButton filterButton) {
 		FilterToValue filterToValue = getFilterToValue(filterButton.getFilter());
-		if(filterToValue == null) {
-			filterCtrl = filterButton.getFilter().getController(ureq, getWindowControl(), tableEl.getComponent().getTranslator());
-		} else {
-			filterCtrl = filterButton.getFilter().getController(ureq, getWindowControl(), tableEl.getComponent().getTranslator(), filterToValue.getValue());
-		}
+		Object preselectedValue = filterToValue != null? filterToValue.getValue(): null;
+		filterCtrl = new FlexiFilterBasicController(ureq, getWindowControl(), tableEl.getComponent().getTranslator(),
+				false, filterButton.getFilter(), preselectedValue);
 		listenTo(filterCtrl);
 		mainVC.put("filter", filterCtrl.getInitialComponent());
-		mainVC.contextPut("filterLabel", filterButton.getFilter().getLabel());
 	}
 	
 	private FilterToValue getFilterToValue(FlexiTableExtendedFilter filter) {

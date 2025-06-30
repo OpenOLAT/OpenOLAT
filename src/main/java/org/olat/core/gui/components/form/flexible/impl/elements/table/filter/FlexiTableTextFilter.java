@@ -24,7 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -131,21 +131,17 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
-		return getController(ureq, wControl, translator, getValue());
-	}
-	
-	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object val) {
-		String preselectedValue = val instanceof String string? string : null;
-		FlexiFilterTextController filterEl = new FlexiFilterTextController(ureq, wControl, this, preselectedValue, type, translator);
+	public FlexiFilterExtendedController getController(UserRequest ureq, WindowControl wControl, Form form,
+			Translator translator, Object preselectedValue) {
+		String value = preselectedValue instanceof String string? string : getValue();
+		FlexiFilterTextController filterCtrl = new FlexiFilterTextController(ureq, wControl, form, this, value, type, translator);
 		if(StringHelper.containsNonWhitespace(textAddOn)) {
-			filterEl.setTextAddOn(textAddOn);
+			filterCtrl.setTextAddOn(textAddOn);
 		}
 		if(StringHelper.containsNonWhitespace(description)) {
-			filterEl.setFormInfo(description);
+			filterCtrl.setFormInfo(description);
 		}
-		return filterEl;
+		return filterCtrl;
 	}
 
 	@Override
@@ -163,4 +159,5 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 		TEXT,
 		INTEGER,
 	}
+	
 }

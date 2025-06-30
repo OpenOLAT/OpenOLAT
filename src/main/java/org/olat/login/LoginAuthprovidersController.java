@@ -357,7 +357,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private void addCatalogLinkIfApplicable(VelocityContainer contentBorn) {
 		if (catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled() && catalogV2Module.isWebPublishLoginSite()) {
 			ExternalLink catalogLink = LinkFactory.createExternalLink("login.catalog", "", WebCatalogDispatcher.getBaseUrl().toString());
-			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default o_login_btn_icon_right");
+			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default o_button_primary_light o_login_btn_icon_right");
 			catalogLink.setName(translate("login.catalog.explore"));
 			catalogLink.setIconRightCSS("o_icon o_icon_arrow_right");
 			catalogLink.setTarget("_self");

@@ -1,0 +1,15 @@
+<div class="o_table_filter_callout">
+	<div class="o_table_filter_callout_header o_block_bottom">
+		<h4>$title</h4>
+		#if($r.available("close"))
+			<h4>$r.render("close")</h4>
+		#end
+	</div>
+	<div class="o_block">
+		$r.render("clear")
+	</div>
+	$r.render("extended")
+	<div class="o_block_large_top">
+		$r.render("update")
+	</div>
+</div>
