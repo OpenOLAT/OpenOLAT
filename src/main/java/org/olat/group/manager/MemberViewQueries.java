@@ -273,8 +273,15 @@ public class MemberViewQueries {
 			MemberView view = views.computeIfAbsent(member, id
 					-> new MemberView(id, userPropertyHandlers, locale));
 			
-			view.setCreationDate(membership.getCreationDate());
-			view.setLastModified(membership.getLastModified());
+			// Creation date: take the earliest date if user has multiple membership entries
+			if (view.getCreationDate() == null || membership.getCreationDate().before(view.getCreationDate())) {
+				view.setCreationDate(membership.getCreationDate());
+			}
+
+			// Last modified: take the latest date if user has multiple membership entries
+			if (view.getLastModified() == null ||  membership.getLastModified().after(view.getLastModified())) {
+				view.setLastModified(membership.getLastModified());
+			}
 			
 			if(defaultGroup != null && defaultGroup.booleanValue()) {
 				view.setRepositoryEntry(entry);
