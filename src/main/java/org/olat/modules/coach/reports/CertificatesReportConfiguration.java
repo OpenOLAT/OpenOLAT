@@ -285,7 +285,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 
 			// curriculum element types
 			String types = curriculumElements.stream().map(CurriculumElement::getType)
-					.map(CurriculumElementType::getIdentifier).collect(Collectors.joining("|"));
+					.map(CurriculumElementType::getDisplayName).collect(Collectors.joining("|"));
 			row.addCell(pos++, types);
 			
 			commonCourseData(row, pos, certificateIdentityConfig, userPropertyHandlers, formatter, translator);
