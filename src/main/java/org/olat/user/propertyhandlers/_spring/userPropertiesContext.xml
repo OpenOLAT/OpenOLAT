@@ -2371,16 +2371,48 @@
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
-								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
+				<!--  Report of courses' users memberships -->
+				<entry key="org.olat.repository.ui.report.UsersMembershipsReport">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Report users course memberships" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
 							</set>
 						</property>
 					</bean>
