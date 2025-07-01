@@ -111,13 +111,13 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 				courseToCurriculumElements =
 						curriculumRepositoryEntryRelationDAO.getCurriculumElementsForRepositoryEntries(repositoryEntries);
 			}
-			generateCoursesData(coursesWorksheet, certificates, userPropertyHandlers, formatter, courseToCurriculumElements);
+			generateCoursesData(coursesWorksheet, certificates, userPropertyHandlers, formatter, courseToCurriculumElements, translator);
 			if (curriculumEnabled) {
 				OpenXMLWorksheet curriculaWorksheet = workbook.nextWorksheet();
 				curriculaWorksheet.setHeaderRows(1);
 				generateCurriculaHeader(curriculaWorksheet, userPropertyHandlers, translator);
 				generateCurriculaData(curriculaWorksheet, certificates, userPropertyHandlers, formatter, 
-						courseToCurriculumElements);
+						courseToCurriculumElements, translator);
 			}
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
@@ -163,8 +163,9 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 
 	private void generateCoursesData(OpenXMLWorksheet coursesWorksheet,
 									 List<CertificateIdentityConfig> certificates,
-									 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter, 
-									 Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements) {
+									 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter,
+									 Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements, 
+									 Translator translator) {
 		certificates.forEach(certificateIdentityConfig -> {
 
 			// Skip certificates that have a reference to a course that is referenced by a curriculum element.
@@ -183,12 +184,12 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 			Row row = coursesWorksheet.newRow();
 			int pos = 0;
 
-			commonCourseData(row, pos, certificateIdentityConfig, userPropertyHandlers, formatter);
+			commonCourseData(row, pos, certificateIdentityConfig, userPropertyHandlers, formatter, translator);
 		});
 	}
 	
-	private int commonCourseData(Row row, int pos, CertificateIdentityConfig certificateIdentityConfig, 
-								 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter) {
+	private int commonCourseData(Row row, int pos, CertificateIdentityConfig certificateIdentityConfig,
+								 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter, Translator translator) {
 		
 		// certificate ID
 		row.addCell(pos++, Long.toString(certificateIdentityConfig.getCertificate().getKey()));
@@ -217,7 +218,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		}
 
 		// success state
-		row.addCell(pos++, certificateIdentityConfig.getCertificate().getStatus().name());
+		row.addCell(pos++, getSuccessState(certificateIdentityConfig, translator));
 
 		// issued on
 		row.addCell(pos++, formatter.formatDateAndTime(certificateIdentityConfig.getCertificate().getCreationDate()));
@@ -233,6 +234,13 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		}
 		
 		return pos;
+	}
+	
+	private String getSuccessState(CertificateIdentityConfig certificateIdentityConfig, Translator translator) {
+		if (certificateIdentityConfig.getPassed() == null) {
+			return translator.translate("export.value.undefined");
+		}
+		return certificateIdentityConfig.getPassed() ? translator.translate("export.value.passed") : translator.translate("export.value.failed");
 	}
 
 	private List<CertificateIdentityConfig> loadCertificates(Identity identity, 
@@ -252,13 +260,17 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		List<CertificateIdentityConfig> orgCertificates =
 				certificatesManager.getCertificatesForOrganizations(identity, userPropertyHandlers, from, to);
 
-		return Stream.concat(groupCertificates.stream(), orgCertificates.stream()).collect(Collectors.toSet()).stream().toList();
+		Set<CertificateIdentityConfig> certificates = Stream.concat(groupCertificates.stream(), orgCertificates.stream()).collect(Collectors.toSet());
+		certificatesManager.enhanceCertificatesWithPassedInformation(certificates);
+		
+		return certificates.stream().toList();
 	}
 
 	private void generateCurriculaData(OpenXMLWorksheet curriculaWorksheet,
 									   List<CertificateIdentityConfig> certificates,
-									   List<UserPropertyHandler> userPropertyHandlers, Formatter formatter, 
-									   Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements) {
+									   List<UserPropertyHandler> userPropertyHandlers, Formatter formatter,
+									   Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements, 
+									   Translator translator) {
 		certificates.forEach(certificateIdentityConfig -> {
 			RepositoryEntry entry = certificateIdentityConfig.getEntry();
 			if (entry == null) {
@@ -291,7 +303,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 					.collect(Collectors.joining("|"));
 			row.addCell(pos++, externalReferences);
 
-			commonCourseData(row, pos, certificateIdentityConfig, userPropertyHandlers, formatter);
+			commonCourseData(row, pos, certificateIdentityConfig, userPropertyHandlers, formatter, translator);
 		});
 	}
 

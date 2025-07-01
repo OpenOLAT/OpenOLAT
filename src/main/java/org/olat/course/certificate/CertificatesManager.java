@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -207,6 +208,14 @@ public interface CertificatesManager {
 	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, 
 																		   List<UserPropertyHandler> userPropertyHandlers, 
 																		   Date from, Date to);
+
+	/**
+	 * Enhances the provided set of certificates with additional information 
+	 * about whether the associated participant has passed the associated course.
+	 *
+	 * @param certificates the set of certificates to be enhanced with 'passed' information.
+	 */
+	public void enhanceCertificatesWithPassedInformation(Set<CertificateIdentityConfig> certificates);
 
 	/**
 	 * Check if certification is allowed and check if a certificate was

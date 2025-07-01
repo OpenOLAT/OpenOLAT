@@ -42,6 +42,7 @@ public class CertificateIdentityConfig {
 	private List<String> identityProps;
 	private RepositoryEntryCertificateConfiguration certificateConfig;
 	private Date initialLaunchDate;
+	private Boolean passed;
 	private RepositoryEntry entry;
 
 	public void setCertificate(Certificate certificate) {
@@ -107,6 +108,14 @@ public class CertificateIdentityConfig {
 
 	public RepositoryEntry getEntry() {
 		return entry;
+	}
+
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	public void setPassed(Boolean passed) {
+		this.passed = passed;
 	}
 
 	@Override
