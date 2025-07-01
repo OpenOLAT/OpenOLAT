@@ -715,6 +715,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.and().append(" coachMembership.role").in(GroupRoles.coach, GroupRoles.owner);
 		sb.and().append(" userMembership.role").in(GroupRoles.participant);
 		sb.and().append(" entry.olatResource = cer.olatResource");
+		sb.and().append(" cer.last = true");
 		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
 	}
 
@@ -766,6 +767,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.where().append(" mgmtMembership.identity.key = :identityKey ");
 		sb.and().append(" mgmtMembership.role").in(OrganisationRoles.educationmanager, OrganisationRoles.linemanager);
 		sb.and().append(" userMembership.role").in(OrganisationRoles.user);
+		sb.and().append(" cer.last = true");
 
 		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
 	}
@@ -775,6 +777,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		int srcIdx = 0;
 		if (objects[srcIdx++] instanceof Certificate certificate) {
 			certificateIdentityConfig.setCertificate(certificate);
+			certificateIdentityConfig.setIdentityKey(certificate.getIdentity().getKey());
 		}
 		if (objects[srcIdx++] instanceof RepositoryEntryCertificateConfiguration config) {
 			certificateIdentityConfig.setConfig(config);
