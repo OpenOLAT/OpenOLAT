@@ -51,7 +51,7 @@ public class ResetData5CoursePassedStep extends BasicStep {
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		wizardContext.setCurrent(ResetDataStep.coursePassed);
 		return nextStep() == Step.NOSTEP
-				? new PrevNextFinishConfig(false, false ,true)
+				? new PrevNextFinishConfig(true, false ,true)
 				: new PrevNextFinishConfig(true, true, false);
 	}
 

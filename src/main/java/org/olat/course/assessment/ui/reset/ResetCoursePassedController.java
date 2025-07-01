@@ -250,7 +250,11 @@ public class ResetCoursePassedController extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
-
+	@Override
+	protected void formFinish(UserRequest ureq) {
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
