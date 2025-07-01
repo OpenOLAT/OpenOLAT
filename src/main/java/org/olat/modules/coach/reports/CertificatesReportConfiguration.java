@@ -111,7 +111,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 				courseToCurriculumElements =
 						curriculumRepositoryEntryRelationDAO.getCurriculumElementsForRepositoryEntries(repositoryEntries);
 			}
-			generateCoursesData(coursesWorksheet, certificates, userPropertyHandlers, formatter, courseToCurriculumElements, translator);
+			generateCoursesData(coursesWorksheet, certificates, userPropertyHandlers, formatter, translator);
 			if (curriculumEnabled) {
 				OpenXMLWorksheet curriculaWorksheet = workbook.nextWorksheet();
 				curriculaWorksheet.setHeaderRows(1);
@@ -164,23 +164,8 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	private void generateCoursesData(OpenXMLWorksheet coursesWorksheet,
 									 List<CertificateIdentityConfig> certificates,
 									 List<UserPropertyHandler> userPropertyHandlers, Formatter formatter,
-									 Map<RepositoryEntryRef, Set<CurriculumElement>> courseToCurriculumElements, 
 									 Translator translator) {
 		certificates.forEach(certificateIdentityConfig -> {
-
-			// Skip certificates that have a reference to a course that is referenced by a curriculum element.
-			// These certificates will also appear in the second worksheet, so we skip them here to avoid duplicates.
-			RepositoryEntry entry = certificateIdentityConfig.getEntry();
-			if (entry != null) {
-				RepositoryEntryRef key = new RepositoryEntryRefImpl(certificateIdentityConfig.getEntry().getKey());
-				if (courseToCurriculumElements.containsKey(key)) {
-					Set<CurriculumElement> curriculumElements = courseToCurriculumElements.get(key);
-					if (!curriculumElements.isEmpty()) {
-						return;
-					}
-				}
-			}
-
 			Row row = coursesWorksheet.newRow();
 			int pos = 0;
 
