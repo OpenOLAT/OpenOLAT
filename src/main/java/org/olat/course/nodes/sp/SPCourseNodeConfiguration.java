@@ -65,6 +65,6 @@ public class SPCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.content.name();
+		return CourseNodeGroup.other.name();
 	}
 }
