@@ -44,6 +44,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -141,7 +142,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("acService")
-public class ACFrontendManager implements ACService, UserDataExportable {
+public class ACFrontendManager implements ACService, UserDataExportable, OrganisationDataDeletable {
 
 	private static final Logger log = Tracing.createLoggerFor(ACFrontendManager.class);
 
@@ -360,6 +361,23 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public void deleteOffers(OLATResource resource) {
 		accessManager.findOfferByResource(resource, true, null, false, null, null).forEach(offer -> accessManager.deleteOffer(offer));
+	}
+	
+	@Override
+	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
+		List<OfferToOrganisation> offerToOrganisations = offerToOrganisationDAO.loadRelations(null, organisation);
+		for (OfferToOrganisation offerToOrganisation : offerToOrganisations) {
+			Offer offer = offerToOrganisation.getOffer();
+			offerToOrganisationDAO.delete(offerToOrganisation);
+			
+			List<OfferToOrganisation> offerWithOrganisations = offerToOrganisationDAO.loadRelations(offer, null);
+			if (offerWithOrganisations.isEmpty()) {
+				deleteOffer(offer);
+			}
+			dbInstance.commit();
+		}
+		
+		return true;
 	}
 
 	@Override
