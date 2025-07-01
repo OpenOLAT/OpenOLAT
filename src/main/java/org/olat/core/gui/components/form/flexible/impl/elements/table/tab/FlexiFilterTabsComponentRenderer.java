@@ -75,7 +75,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		sb.append("</ul>");
 		
 		Component cmp = tabEl.getRemoveFiltersButton().getComponent();
-		if(tabEl.hasFilterChanges()) {
+		if(tabEl.isAnyFilterSelected()) {
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, cmp.getTranslator(), renderResult, args);
 		}
 		cmp.setDirty(false);

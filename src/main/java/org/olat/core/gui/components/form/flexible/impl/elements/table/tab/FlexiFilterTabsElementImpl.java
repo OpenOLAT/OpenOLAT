@@ -67,10 +67,9 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		component.setDomReplacementWrapperRequired(false);
 
 		String dispatchId = component.getDispatchID();
-		removeFiltersButton = new FormLinkImpl(dispatchId.concat("_rmrFiltersButton"), "rmrFiltersButton", "remove.active.filters", Link.BUTTON);
+		removeFiltersButton = new FormLinkImpl(dispatchId.concat("_rmrFiltersButton"), "rmrFiltersButton", "reset.filters", Link.BUTTON);
 		removeFiltersButton.setDomReplacementWrapperRequired(false);
 		removeFiltersButton.setGhost(true);
-		removeFiltersButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		removeFiltersButton.setElementCssClass("o_table_remove_filters");
 		removeFiltersButton.setTranslator(translator);
 		components = Map.of("rmrFiltersButton", removeFiltersButton);
@@ -85,7 +84,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		return filtersEl != null && filtersEl.isEnabled() && filtersEl.isExpanded();
 	}
 	
-	protected boolean hasFilterChanges() {
+	protected boolean isAnyFilterSelected() {
 		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
 		if(filtersEl == null) {
 			return false;
@@ -93,7 +92,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		
 		List<FlexiFilterButton> filterButtons = filtersEl.getFiltersButtons();
 		for(FlexiFilterButton filterButton:filterButtons) {
-			if(!filterButton.isImplicit() && filterButton.isChanged()) {
+			if(!filterButton.isImplicit() && filterButton.getFilter().isSelected()) {
 				return true;
 			}
 		}

@@ -283,7 +283,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		return selectedFilters;
 	}
 	
-	protected boolean hasFilterChanges() {
+	protected boolean isAnyFilterSelected() {
 		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
 		if(filtersEl == null) {
 			return false;
@@ -291,7 +291,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		
 		List<FlexiFilterButton> filterButtonsList = filtersEl.getFiltersButtons();
 		for(FlexiFilterButton filterButton:filterButtonsList) {
-			if(!filterButton.isImplicit() && filterButton.isChanged()) {
+			if(!filterButton.isImplicit() && filterButton.getFilter().isSelected()) {
 				return true;
 			}
 		}
@@ -457,8 +457,8 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				onFilterClosed();
 			} else if(event == Event.CANCELLED_EVENT) {
 				filtersCallout.deactivate();
-				cleanUp()
-				;onFilterClosed();
+				cleanUp();
+				onFilterClosed();
 			}
 		} else if(saveCtrl == source) {
 			if(event == Event.DONE_EVENT) {
