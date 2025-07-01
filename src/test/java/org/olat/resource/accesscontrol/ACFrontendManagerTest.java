@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -473,6 +474,36 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(acService.getOfferOrganisations(offer)).isEmpty();
+	}
+	
+	@Test
+	public void shouldDeleteOfferWhenOrganisationIsDeleted() {
+		OrganisationDataDeletable organisationDataDeletable = (OrganisationDataDeletable)acService;
+		Offer offer = acService.createOffer(createRandomResource(), random());
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+		
+		// Add two organisations
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		acService.updateOfferOrganisations(offer, List.of(organisation1, organisation2));
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).containsExactlyInAnyOrder(organisation1, organisation2);
+		
+		// Delete an organisation
+		organisationDataDeletable.deleteOrganisationData(organisation1, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).containsExactlyInAnyOrder(organisation2);
+		assertThat(acOfferManager.loadOfferByKey(offer.getKey()).isValid()).isTrue();
+		
+		// Delete the second organisation
+		organisationDataDeletable.deleteOrganisationData(organisation2, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acService.getOfferOrganisations(offer)).isEmpty();
+		assertThat(acOfferManager.loadOfferByKey(offer.getKey()).isValid()).isFalse();
 	}
 	
 }
