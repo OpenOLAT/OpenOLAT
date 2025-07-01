@@ -31,12 +31,16 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Resource;
 import jakarta.jms.ConnectionFactory;
@@ -139,6 +143,7 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -688,6 +693,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<CertificateIdentityConfig> getCertificatesForGroups(Identity identity,
 																	List<UserPropertyHandler> userPropertyHandlers,
 																	Date from, Date to) {
+		if (log.isDebugEnabled()) {
+			log.debug("getCertificatesForGroups(identity = {})", identity.getKey());
+		}
+
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct cer, config, infos.initialLaunch, entry ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -705,7 +714,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.where().append(" coachMembership.identity.key = :identityKey");
 		sb.and().append(" coachMembership.role").in(GroupRoles.coach, GroupRoles.owner);
 		sb.and().append(" userMembership.role").in(GroupRoles.participant);
-		
+		sb.and().append(" entry.olatResource = cer.olatResource");
 		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
 	}
 
@@ -735,6 +744,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, 
 																		   List<UserPropertyHandler> userPropertyHandlers, 
 																		   Date from, Date to) {
+		if (log.isDebugEnabled()) {
+			log.debug("getCertificatesForOrganizations(identity = {})", identity.getKey());
+		}
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct cer, config, infos.initialLaunch, entry ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -779,6 +792,65 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 
 		return certificateIdentityConfig;
+	}
+
+	@Override
+	public void enhanceCertificatesWithPassedInformation(Set<CertificateIdentityConfig> certificates) {
+		Set<Long> courseKeys = certificates.stream().map(CertificateIdentityConfig::getEntry).filter(Objects::nonNull).map(RepositoryEntry::getKey).collect(Collectors.toSet());
+		Set<Long> participantKeys = certificates.stream().map(CertificateIdentityConfig::getIdentityKey).collect(Collectors.toSet());
+
+		if (log.isDebugEnabled()) {
+			log.debug("enhanceCertificatesWithPassedInformation for {} certificates", certificates.size());
+			log.debug(" course keys: {}", courseKeys);
+			log.debug(" participant keys: {}", participantKeys);
+		}
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select re.key, ae.identity.key, ae.passed ");
+		sb.append("from assessmententry ae ");
+		sb.append("inner join ae.repositoryEntry as re ");
+		sb.append("inner join courseelement rootElement on (rootElement.repositoryEntry.key = re.key and rootElement.subIdent = ae.subIdent) ");
+		sb.where().append("ae.repositoryEntry.key in :courseKeys ");
+		sb.and().append("ae.identity.key in :participantKeys ");
+		sb.and().append("ae.entryRoot = true ");
+		sb.and().append("ae.completion is not null ");
+		sb.and().append("rootElement.passedMode <> 'none' ");
+		sb.and().append("re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		
+		Map<CourseAndParticipantKeys, Boolean> passed = new HashMap<>();
+		
+		dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("courseKeys", courseKeys)
+				.setParameter("participantKeys", participantKeys).getResultStream().forEach(r -> enhanceCertificatesWithPassedInformation(passed, r));
+		
+		certificates.forEach(c -> {
+			if (c.getEntry() == null) {
+				return;
+			}
+			CourseAndParticipantKeys courseAndParticipantKeys = new CourseAndParticipantKeys(c.getEntry().getKey(), c.getIdentityKey());
+			if (passed.containsKey(courseAndParticipantKeys)) {
+				c.setPassed(passed.get(courseAndParticipantKeys));
+			}
+		});
+	}
+
+	private record CourseAndParticipantKeys(Long courseKey, Long participantKey) {}
+	
+	private void enhanceCertificatesWithPassedInformation(Map<CourseAndParticipantKeys, Boolean> passed, Object[] result) {
+		if (result.length != 3) {
+			return;
+		}
+		if (result[0] instanceof Long courseKey && result[1] instanceof Long participantKey) {
+			CourseAndParticipantKeys courseAndParticipantKeys = new CourseAndParticipantKeys(courseKey, participantKey);
+			if (passed.containsKey(courseAndParticipantKeys)) {
+				return;
+			}
+			if (result[2] instanceof Boolean passedBoolean) {
+				passed.put(courseAndParticipantKeys, passedBoolean);
+				return;
+			}
+			passed.put(courseAndParticipantKeys, null);
+		}
 	}
 
 	@Override
