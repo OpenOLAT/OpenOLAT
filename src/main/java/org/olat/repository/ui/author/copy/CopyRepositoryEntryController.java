@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CopyRepositoryEntryController extends FormBasicController {
 
 	private TextElement displaynameEl;
+	private TextElement externalRefEl;
 	
 	private RepositoryEntry copyEntry;
 	private final RepositoryEntry sourceEntry;
@@ -61,13 +62,16 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String sourceName = sourceEntry.getDisplayname() + " " + translate("copy.suffix");
-		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, sourceName, formLayout);
-		displaynameEl.setDisplaySize(30);
+		String displayName = translate("copy.entry", sourceEntry.getDisplayname());
+		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, displayName, formLayout);
 		displaynameEl.setMandatory(true);
 		
-		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
-		formLayout.add("buttonContainer", buttonContainer);
+		String externalRef = StringHelper.containsNonWhitespace(sourceEntry.getExternalRef())
+				? translate("copy.entry", sourceEntry.getExternalRef())
+				: null;
+		externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref.long", 255, externalRef, formLayout);
+		
+		FormLayoutContainer buttonContainer = uifactory.addButtonsFormLayout("buttonContainer", null, formLayout);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 		uifactory.addFormSubmitButton("details.copy", buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
@@ -80,8 +84,9 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String displayname = displaynameEl.getValue();
+		String externalRef = externalRefEl.getValue();
 		fireEvent(ureq, Event.CLOSE_EVENT);
-		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, null);
+		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
@@ -95,7 +100,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
-			displaynameEl.setErrorKey("cif.error.displayname.empty", new String[] {});
+			displaynameEl.setErrorKey("cif.error.displayname.empty");
 			allOk = false;
 		} else if (displaynameEl.hasError()) {
 			allOk = false;
