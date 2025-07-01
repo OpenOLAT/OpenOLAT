@@ -212,7 +212,7 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		
 		tabPane.setSelectedPane(ureq, levelsTab);
 		if (taxonomyLevelsCtrl != null) {
-			List<ContextEntry> entries = taxonomyLevel != null
+			List<ContextEntry> entries = taxonomyLevel == null
 					? List.of()
 					: BusinessControlFactory.getInstance().createCEListFromResourceable(taxonomyLevel, null);
 			taxonomyLevelsCtrl.activate(ureq, entries, null);

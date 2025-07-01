@@ -448,7 +448,6 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 					model.open(openIndex);
 					tableEl.reset(false, false, true);
 				}
-				doSelectTaxonomyLevel(ureq, createTaxonomyLevelCtrl.getTaxonomyLevel());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -726,7 +725,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private void doNewLevel(UserRequest ureq) {
-		doCreateTaxonomyLevel(ureq, null);
+		doCreateTaxonomyLevel(ureq, parentLevel);
 	}
 	
 	private void doCreateTaxonomyLevel(UserRequest ureq, TaxonomyLevel parentLevel) {
