@@ -72,6 +72,9 @@ public class FlexiFilterDateRangeController extends FlexiFilterExtendedControlle
 		rangeEl.setSecondDate(true);
 		rangeEl.setSecondDate(end);
 		rangeEl.setSeparator("to.separator");
+		rangeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		updateClearButtonUI(ureq, rangeEl.getDate() != null || rangeEl.getSecondDate() != null);
 	}
 	
 	@Override
@@ -81,6 +84,14 @@ public class FlexiFilterDateRangeController extends FlexiFilterExtendedControlle
 		}
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == rangeEl) {
+			updateClearButtonUI(ureq, rangeEl.getDate() != null || rangeEl.getSecondDate() != null);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	public void doUpdate(UserRequest ureq) {
 		if(rangeEl.getDate() != null || rangeEl.getSecondDate() != null) {

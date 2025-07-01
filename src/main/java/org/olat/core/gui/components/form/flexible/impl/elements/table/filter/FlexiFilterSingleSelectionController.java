@@ -64,9 +64,11 @@ public class FlexiFilterSingleSelectionController extends FlexiFilterExtendedCon
 		listEl.setAllowNoSelection(true);
 		listEl.addActionListener(FormEvent.ONCHANGE);
 		listEl.setEscapeHtml(false);
+		listEl.addActionListener(FormEvent.ONCHANGE);
 		if(StringHelper.containsNonWhitespace(preselectedKey) &&availableValues.containsKey(preselectedKey)) {
 			listEl.select(preselectedKey, true);
 		}
+		updateClearButtonUI(ureq, listEl.isOneSelected());
 		
 		((FormLayoutContainer)formLayout).contextPut("numOfItems", Integer.valueOf(keys.length));
 	}
@@ -78,6 +80,14 @@ public class FlexiFilterSingleSelectionController extends FlexiFilterExtendedCon
 		}
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == listEl) {
+			updateClearButtonUI(ureq, listEl.isOneSelected());
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	public void doUpdate(UserRequest ureq) {
 		if(listEl.isOneSelected()) {

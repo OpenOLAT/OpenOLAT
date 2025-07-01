@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
 /**
@@ -31,6 +32,10 @@ import org.olat.core.gui.control.WindowControl;
  *
  */
 public abstract class FlexiFilterExtendedController extends FormBasicController {
+	
+	public static Event CLEAR_BUTTON_UI_EVENT = new Event("update-clear-button");
+	
+	private boolean clearButtonEnabled = false;
 
 	public FlexiFilterExtendedController(UserRequest ureq, WindowControl wControl, int layout,
 			String customLayoutPageName, Form externalMainForm) {
@@ -40,6 +45,15 @@ public abstract class FlexiFilterExtendedController extends FormBasicController 
 	public abstract void doUpdate(UserRequest ureq);
 
 	public abstract void doClear(UserRequest ureq);
+	
+	public boolean isClearButtonEnabled() {
+		return clearButtonEnabled;
+	}
+	
+	protected void updateClearButtonUI(UserRequest ureq, boolean enabled) {
+		clearButtonEnabled = enabled;
+		fireEvent(ureq, CLEAR_BUTTON_UI_EVENT);
+	}
 	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {

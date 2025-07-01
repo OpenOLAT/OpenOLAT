@@ -25,7 +25,6 @@ import java.time.temporal.ChronoUnit;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -49,8 +48,6 @@ public class FlexiFilterPeriodController extends FlexiFilterExtendedController {
 	private TextElement valueEl;
 	private SingleSelection unitEl;
 	private SingleSelection pastEl;
-	private FormLink clearButton;
-	private FormLink updateButton;
 
 	private PeriodWithUnit filterPeriod;
 	private final FlexiTablePeriodFilter filter;
@@ -83,6 +80,7 @@ public class FlexiFilterPeriodController extends FlexiFilterExtendedController {
 		valueEl = uifactory.addTextElement("value", null, 5, val, formLayout);
 		valueEl.setDisplaySize(5);
 		valueEl.setDomReplacementWrapperRequired(false);
+		valueEl.addActionListener(FormEvent.ONCHANGE);
 
 		SelectionValues unitPK = new SelectionValues();
 		unitPK.add(SelectionValues.entry(ChronoUnit.DAYS.name(), translate("filter.day")));
@@ -93,8 +91,18 @@ public class FlexiFilterPeriodController extends FlexiFilterExtendedController {
 		unitEl.setDomReplacementWrapperRequired(false);
 		String unit = filterPeriod == null ? ChronoUnit.DAYS.name() : filterPeriod.unit().name();
 		unitEl.select(unit, true);
+		
+		updateClearButtonUI(ureq, StringHelper.containsNonWhitespace(valueEl.getValue()));
 	}
-
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == valueEl) {
+			updateClearButtonUI(ureq, StringHelper.containsNonWhitespace(valueEl.getValue()));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -115,16 +123,6 @@ public class FlexiFilterPeriodController extends FlexiFilterExtendedController {
 		}
 		
 		return allOk;
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(clearButton == source) {
-			doClear(ureq);
-		} else if(updateButton == source && validateFormLogic(ureq)) {
-			doUpdate(ureq);
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override

@@ -585,7 +585,8 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doOpenFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {
-		button.setElementCssClass("o_table_filter o_filter_open");
+		String elementCssClass = StringHelper.blankIfNull(button.getComponent().getElementCssClass());
+		button.setElementCssClass(elementCssClass + " o_filter_open");
 		component.setDirty(true);
 		
 		filterCtrl = new FlexiFilterBasicController(ureq, wControl, component.getTranslator(), true, filter, null);
@@ -602,7 +603,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			if (filterButton.getButtonItem() instanceof FormLink button
 					&& StringHelper.containsNonWhitespace(button.getElementCssClass())
 					&& button.getElementCssClass().indexOf(" o_filter_open") > -1) {
-				button.setElementCssClass(button.getElementCssClass().replace(" o_filter_open", ""));
+				setFilterButtonCssClass(filterButton, filterButton.getFilter().isSelected());
 				component.setDirty(true);
 			}
 		}

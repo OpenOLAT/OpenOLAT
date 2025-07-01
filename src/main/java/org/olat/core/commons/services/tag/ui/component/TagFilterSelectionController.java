@@ -115,6 +115,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 		formLayout.add("tags", tagsCont);
 		
 		initTagLinks();
+		updateClearButtonUI(ureq, isAnyTagSelected());
 	}
 
 	private void initTagLinks() {
@@ -162,7 +163,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 			doResetQuickSearch();
 		} else if (source instanceof FormLink link) {
 			if (CMD_TOGGLE.equals(link.getCmd())) {
-				doToggleTag(link);
+				doToggleTag(ureq, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -184,7 +185,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}
 	
-	private void doToggleTag(FormLink link) {
+	private void doToggleTag(UserRequest ureq, FormLink link) {
 		if (link.getUserObject() instanceof TagItem tagItem) {
 			boolean selected = !tagItem.isSelected();
 			if (tagItem.getKey() != null) {
@@ -199,7 +200,12 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 				tagItems.removeIf(item -> item.getKey() == null && item.getLink() == link);
 				tagsCont.setDirty(true);
 			}
+			updateClearButtonUI(ureq, isAnyTagSelected());
 		}
+	}
+
+	private boolean isAnyTagSelected() {
+		return tagItems.stream().anyMatch(TagItem::isSelected);
 	}
 
 	private void doQuickSearch() {

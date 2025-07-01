@@ -628,8 +628,8 @@ table.table.o_table_nowrap>tbody>tr>td {
 		display: flex;
 		align-items: baseline;
 		gap: 10px;
-		>:last-child {
-			margin-left: auto;
+		>:first-child {
+			margin-right: auto;
 		}
 	}
 	.o_filter_update {

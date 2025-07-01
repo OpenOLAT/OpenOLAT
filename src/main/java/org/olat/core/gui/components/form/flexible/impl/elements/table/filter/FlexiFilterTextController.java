@@ -20,9 +20,11 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter.Type;
 import org.olat.core.gui.control.Controller;
@@ -69,9 +71,20 @@ public class FlexiFilterTextController extends FlexiFilterExtendedController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		textEl = uifactory.addTextElement("text", null, 255, preselectedValue, formLayout);
 		textEl.setDomReplacementWrapperRequired(false);
+		textEl.addActionListener(FormEvent.ONCHANGE);
 		if(!StringHelper.containsNonWhitespace(preselectedValue)) {
 			textEl.setFocus(true);
 		}
+		
+		updateClearButtonUI(ureq, StringHelper.containsNonWhitespace(textEl.getValue()));
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == textEl) {
+			updateClearButtonUI(ureq, StringHelper.containsNonWhitespace(textEl.getValue()));
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

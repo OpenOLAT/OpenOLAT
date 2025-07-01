@@ -105,6 +105,7 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 				}
 			}
 		}
+		updateClearButtonUI(ureq, !listEl.getSelectedKeys().isEmpty());
 		
 		((FormLayoutContainer)formLayout).contextPut("numOfItems", Integer.valueOf(keys.length));
 	}
@@ -141,6 +142,7 @@ public abstract class AbstractMultiSelectionController extends FlexiFilterExtend
 			selectedKeys.clear();
 		}
 		selectedKeys.addAll(listEl.getSelectedKeys());
+		updateClearButtonUI(ureq, !listEl.getSelectedKeys().isEmpty());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

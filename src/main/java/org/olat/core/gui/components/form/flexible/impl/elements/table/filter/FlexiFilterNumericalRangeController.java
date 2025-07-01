@@ -72,12 +72,20 @@ public class FlexiFilterNumericalRangeController extends FlexiFilterExtendedCont
 		startEl = uifactory.addTextElement("start", 12, start, datesCont);
 		startEl.showLabel(true);
 		startEl.setLabel(startLabel, null, false);
+		startEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String end = initialRange != null && initialRange.getEnd() != null
 				? FlexiTableNumericalRangeFilter.formatNumerical(initialRange.getEnd()) : null;
 		endEl = uifactory.addTextElement("end", 12, end, datesCont);
 		endEl.showLabel(true);
 		endEl.setLabel(endLabel, null, false);
+		endEl.addActionListener(FormEvent.ONCHANGE);
+		
+		updateClearButtonUI(ureq, isValueAvailable());
+	}
+	
+	private boolean isValueAvailable() {
+		return StringHelper.containsNonWhitespace(startEl.getValue()) || StringHelper.containsNonWhitespace(endEl.getValue());
 	}
 	
 	@Override
@@ -87,6 +95,14 @@ public class FlexiFilterNumericalRangeController extends FlexiFilterExtendedCont
 		}
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == startEl || source == endEl) {
+			updateClearButtonUI(ureq, isValueAvailable());
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);

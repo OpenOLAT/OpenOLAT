@@ -77,12 +77,13 @@ public class FlexiFilterBasicController extends FormBasicController {
 			closeButton.setElementCssClass("o_filter_close");
 		}
 		
-		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
-		clearButton.setElementCssClass("o_filter_clear");
-		
 		filterCtrl = filter.getController(ureq, getWindowControl(), mainForm, compTranslator, preselectedValue);
 		listenTo(filterCtrl);
 		formLayout.add("extended", filterCtrl.getInitialFormItem());
+		
+		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
+		clearButton.setElementCssClass("o_filter_clear");
+		clearButton.setEnabled(filterCtrl.isClearButtonEnabled());
 		
 		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON);
 		updateButton.setElementCssClass("o_sel_flexiql_update o_filter_update o_button_primary_light");
@@ -98,7 +99,11 @@ public class FlexiFilterBasicController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == filterCtrl) {
-			fireEvent(ureq, event);
+			if (event == FlexiFilterExtendedController.CLEAR_BUTTON_UI_EVENT) {
+				clearButton.setEnabled(filterCtrl.isClearButtonEnabled());
+			} else {
+				fireEvent(ureq, event);
+			}
 		}
 		super.event(ureq, source, event);
 	}
