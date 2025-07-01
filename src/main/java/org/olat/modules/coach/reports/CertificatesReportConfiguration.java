@@ -156,7 +156,7 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 
 		header.addCell(pos++, translator.translate("export.header.element"));
 		header.addCell(pos++, translator.translate("export.header.externalReference"));
-		header.addCell(pos++, translator.translate("export.header.elementType"));
+		header.addCell(pos++, translator.translate("export.header.element.type"));
 		
 		generateCommonCourseHeader(header, pos, userPropertyHandlers, translator);
 	}
