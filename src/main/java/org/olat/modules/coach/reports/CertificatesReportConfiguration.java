@@ -154,9 +154,9 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		Row header = curriculaWorksheet.newRow();
 		int pos = 0;
 
-		header.addCell(pos++, translator.translate("export.header.curricula"));
-		header.addCell(pos++, translator.translate("export.header.curriculumType"));
+		header.addCell(pos++, translator.translate("export.header.element"));
 		header.addCell(pos++, translator.translate("export.header.externalReference"));
+		header.addCell(pos++, translator.translate("export.header.elementType"));
 		
 		generateCommonCourseHeader(header, pos, userPropertyHandlers, translator);
 	}
@@ -278,16 +278,16 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 					.collect(Collectors.joining("|"));
 			row.addCell(pos++, names);
 			
+			// curriculum element external references
+			String externalReferences = curriculumElements.stream().map(CurriculumElement::getIdentifier)
+					.collect(Collectors.joining("|"));
+			row.addCell(pos++, externalReferences);
+
 			// curriculum element types
 			String types = curriculumElements.stream().map(CurriculumElement::getType)
 					.map(CurriculumElementType::getIdentifier).collect(Collectors.joining("|"));
 			row.addCell(pos++, types);
 			
-			// curriculum element external references
-			String externalReferences = curriculumElements.stream().map(CurriculumElement::getExternalId)
-					.collect(Collectors.joining("|"));
-			row.addCell(pos++, externalReferences);
-
 			commonCourseData(row, pos, certificateIdentityConfig, userPropertyHandlers, formatter, translator);
 		});
 	}
