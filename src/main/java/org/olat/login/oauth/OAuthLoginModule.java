@@ -129,11 +129,6 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	@Value("${oauth.datenlotsen.endpoint}")
 	private String datenlotsenEndpoint;
 	
-	private boolean tequilaEnabled;
-	private String tequilaApiKey;
-	private String tequilaApiSecret;
-	private String tequilaOAuth2Endpoint;
-	
 	private boolean openIdConnectIFEnabled;
 	private boolean openIdConnectIFRootEnabled;
 	private String openIdConnectIFApiKey;
@@ -266,13 +261,6 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		azureAdfsApiKey = getStringPropertyValue("azureAdfsApiKey", azureAdfsApiKey);
 		azureAdfsApiSecret = getStringPropertyValue("azureAdfsApiSecret", azureAdfsApiSecret);
 		azureAdfsTenant = getStringPropertyValue("azureAdfsTenant", azureAdfsTenant);
-		
-		// Tequila
-		String tequilaEnabledObj = getStringPropertyValue("tequilaEnabled", true);
-		tequilaEnabled = "true".equals(tequilaEnabledObj);
-		tequilaApiKey = getStringPropertyValue("tequilaApiKey", false);
-		tequilaApiSecret = getStringPropertyValue("tequilaApiSecret", false);
-		tequilaOAuth2Endpoint = getStringPropertyValue("tequilaOAuth2Endpoint", false);
 		
 		// Switch edu-ID
 		String switchEduIDEnabledObj = getStringPropertyValue("switchEduIDEnabled", Boolean.toString(switchEduIDEnabled));
@@ -802,42 +790,6 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setDatenlotsenEndpoint(String endpoint) {
 		this.datenlotsenEndpoint = endpoint;
 		setStringProperty("datenlotsenEndpoint", endpoint, true);
-	}
-
-	public boolean isTequilaEnabled() {
-		return tequilaEnabled;
-	}
-
-	public void setTequilaEnabled(boolean tequilaEnabled) {
-		this.tequilaEnabled = tequilaEnabled;
-		setStringProperty("tequilaEnabled", tequilaEnabled ? "true" : "false", true);
-	}
-
-	public String getTequilaApiKey() {
-		return tequilaApiKey;
-	}
-
-	public void setTequilaApiKey(String tequilaApiKey) {
-		this.tequilaApiKey = tequilaApiKey;
-		setStringProperty("tequilaApiKey", tequilaApiKey, true);
-	}
-
-	public String getTequilaApiSecret() {
-		return tequilaApiSecret;
-	}
-
-	public void setTequilaApiSecret(String tequilaApiSecret) {
-		this.tequilaApiSecret = tequilaApiSecret;
-		setSecretStringProperty("tequilaApiSecret", tequilaApiSecret, true);
-	}
-
-	public String getTequilaOAuth2Endpoint() {
-		return tequilaOAuth2Endpoint;
-	}
-
-	public void setTequilaOAuth2Endpoint(String tequilaOAuth2Endpoint) {
-		this.tequilaOAuth2Endpoint = tequilaOAuth2Endpoint;
-		setStringProperty("tequilaOAuth2Endpoint", tequilaOAuth2Endpoint, true);
 	}
 	
 	public boolean isKeycloakEnabled() {

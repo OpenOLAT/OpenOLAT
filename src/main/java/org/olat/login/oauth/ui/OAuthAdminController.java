@@ -94,10 +94,6 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement azureAdfsApiKeyEl;
 	private TextElement azureAdfsApiSecretEl;
 	private TextElement azureAdfsTenantEl;
-	
-	private TextElement tequilaApiKeyEl;
-	private TextElement tequilaApiSecretEl;
-	private TextElement tequilaOAuth2EndpointEl;
 
 	private MultipleSelectionElement switchEduIDDefaultEl;
 	private MultipleSelectionElement switchEduIDMFAEl;
@@ -186,7 +182,6 @@ public class OAuthAdminController extends FormBasicController {
 			case "keycloak": container = initKeycloakForm(formLayout); break;
 			case "switcheduid": container = initSwitchEduIDForm(formLayout); break;
 			case "datenlotsen": container = initDatenlotsenForm(formLayout); break;
-			case "tequila": container = initTequilaForm(formLayout); break;
 			case "OpenIDConnect": container = initOpenIDConnectForm(formLayout); break;
 			default: {
 				if(!(spi instanceof GenericOAuth2Provider) && !(spi instanceof OpenIdConnectFullConfigurableProvider)) {
@@ -433,28 +428,6 @@ public class OAuthAdminController extends FormBasicController {
 		return keycloakCont;
 	}
 	
-	private FormLayoutContainer initTequilaForm(FormItemContainer formLayout) {
-		FormLayoutContainer tequilaCont = FormLayoutContainer.createDefaultFormLayout("tequila", getTranslator());
-		tequilaCont.setFormTitle(translate("tequila.admin.title"));
-		tequilaCont.setFormTitleIconCss("o_icon o_icon_provider_tequila");
-		tequilaCont.setVisible(oauthModule.isTequilaEnabled());
-		tequilaCont.setRootForm(mainForm);
-		formLayout.add(tequilaCont);
-
-		String tequilaOAuth2Endpoint = oauthModule.getTequilaOAuth2Endpoint();
-		tequilaOAuth2EndpointEl = uifactory.addTextElement("tequila.oauth2.endpoint", "tequila.oauth2.endpoint", 256, tequilaOAuth2Endpoint, tequilaCont);
-		tequilaOAuth2EndpointEl.setExampleKey("tequila.oauth2.endpoint.example", null);
-		tequilaOAuth2EndpointEl.setMandatory(true);
-		
-		String tequilaApiKey = oauthModule.getTequilaApiKey();
-		tequilaApiKeyEl = uifactory.addTextElement("tequila.id", "tequila.api.id", 256, tequilaApiKey, tequilaCont);
-		tequilaApiKeyEl.setMandatory(true);
-		String tequilaApiSecret = oauthModule.getTequilaApiSecret();
-		tequilaApiSecretEl = uifactory.addTextElement("tequila.secret", "tequila.api.secret", 256, tequilaApiSecret, tequilaCont);
-		tequilaApiSecretEl.setMandatory(true);
-		return tequilaCont;
-	}
-	
 	private FormLayoutContainer initSwitchEduIDForm(FormItemContainer formLayout) {
 		FormLayoutContainer switchEduIdCont = FormLayoutContainer.createDefaultFormLayout("switchEduID", getTranslator());
 		switchEduIdCont.setFormTitle(translate("switcheduid.admin.title"));
@@ -694,7 +667,6 @@ public class OAuthAdminController extends FormBasicController {
 			case "keycloak": commitKeycloak(enabled); break;
 			case "switcheduid": commitSwitchEduID(enabled); break;
 			case "datenlotsen": commitDatenlotsen(enabled); break;
-			case "tequila": commitTequila(enabled); break;
 			case "OpenIDConnect": commitOpenIdConnectIF(enabled); break;
 			default: {
 				getLogger().error("Cannot save provider: {}", spiName);
@@ -831,20 +803,6 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setDatenlotsenApiKey("");
 			oauthModule.setDatenlotsenApiSecret("");
 			oauthModule.setDatenlotsenEndpoint("");
-		}
-	}
-	
-	private void commitTequila(boolean enabled) {
-		if(enabled) {
-			oauthModule.setTequilaEnabled(true);
-			oauthModule.setTequilaApiKey(tequilaApiKeyEl.getValue());
-			oauthModule.setTequilaApiSecret(tequilaApiSecretEl.getValue());
-			oauthModule.setTequilaOAuth2Endpoint(tequilaOAuth2EndpointEl.getValue());
-		} else {
-			oauthModule.setTequilaEnabled(false);
-			oauthModule.setTequilaApiKey("");
-			oauthModule.setTequilaApiSecret("");
-			oauthModule.setTequilaOAuth2Endpoint("");
 		}
 	}
 	
