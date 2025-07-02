@@ -200,7 +200,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		List<IssuedBadgeRow> issuedBadgeRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry,
 						nullEntryMeansAll).stream()
 				.map(ba -> {
-					IssuedBadgeRow row = new IssuedBadgeRow(ba);
+					IssuedBadgeRow row = new IssuedBadgeRow(ba, openBadgesManager);
 					forgeRow(row, ba);
 					return row;
 				}).toList();

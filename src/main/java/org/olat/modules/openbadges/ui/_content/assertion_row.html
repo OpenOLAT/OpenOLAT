@@ -9,6 +9,10 @@
 		<div class="o_badge_assertion_status o_labeled o_badge_verification_verified">
 			<i class="o_icon o_icon-fw o_icon-check-double"></i> $r.translate("verified")
 		</div>
+		#elseif($row.expired)
+ 		<div class="o_badge_assertion_status o_labeled o_badge_assertion_status_expired">
+			$r.translate("expired")
+		</div>
 		#end
 	</div>
 	<div class="o_badge_meta panel-body o_min_height">

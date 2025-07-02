@@ -45,13 +45,16 @@ public class IssuedBadgeRow {
 	private String addToLinkedInUrl;
 	private String recipientName;
 	private boolean verified;
+	private final boolean expired;
 
-	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
+	public IssuedBadgeRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize, 
+						  OpenBadgesManager openBadgesManager) {
 		BadgeClass badgeClass = badgeAssertionWithSize.badgeAssertion().getBadgeClass();
 		this.name = badgeClass.getName();
 		this.version = badgeClass.getVersion();
 		this.badgeAssertionWithSize = badgeAssertionWithSize;
 		this.verified = BadgeVerification.signed.equals(badgeClass.getVerificationMethod());
+		this.expired = openBadgesManager.isBadgeAssertionExpired(badgeAssertionWithSize.badgeAssertion());
 	}
 
 	public BadgeAssertion getBadgeAssertion() {
@@ -140,5 +143,9 @@ public class IssuedBadgeRow {
 
 	public void setVerified(boolean verified) {
 		this.verified = verified;
+	}
+
+	public boolean isExpired() {
+		return expired;
 	}
 }
