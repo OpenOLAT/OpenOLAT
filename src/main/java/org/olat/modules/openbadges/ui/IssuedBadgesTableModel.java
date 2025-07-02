@@ -61,7 +61,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 		return switch (COLS[col]) {
 			case image -> row.getBadgeAssertion().getBakedImage();
 			case title -> row.getName();
-			case status -> row.getBadgeAssertion().getStatus();
+			case status -> row.getBadgeAssertion();
 			case issuer -> row.getBadgeAssertion().getBadgeClass().getIssuerDisplayString();
 			case version -> OpenBadgesUIFactory.versionString(translator, row.getBadgeAssertion().getBadgeClass(), false, false);
 			case verification -> row.getBadgeAssertion().getBadgeClass().getVerificationMethod();

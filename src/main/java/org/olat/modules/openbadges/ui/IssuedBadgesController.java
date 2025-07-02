@@ -150,7 +150,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.title, CMD_SELECT));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.status, new BadgeAssertionStatusRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.status, new BadgeAssertionStatusRenderer(openBadgesManager)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.issuer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.version, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgeCols.verification, new BadgeVerificationCellRenderer()));

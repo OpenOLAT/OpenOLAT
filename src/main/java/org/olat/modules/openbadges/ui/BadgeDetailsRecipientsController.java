@@ -107,7 +107,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.version));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.verification, new BadgeVerificationCellRenderer()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer(openBadgesManager)));
 		columnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 
 		tableModel = new TableModel(columnModel, userManager, getTranslator());
@@ -373,7 +373,7 @@ public class BadgeDetailsRecipientsController extends FormBasicController {
 			BadgeAssertion badgeAssertion = row.badgeAssertion();
 			return switch (Cols.values()[col]) {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
-				case status -> badgeAssertion.getStatus();
+				case status -> badgeAssertion;
 				case verification -> badgeAssertion.getBadgeClass().getVerificationMethod();
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 				case version -> OpenBadgesUIFactory.versionString(translator, badgeAssertion.getBadgeClass(), true, false);

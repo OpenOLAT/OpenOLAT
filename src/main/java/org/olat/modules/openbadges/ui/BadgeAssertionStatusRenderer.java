@@ -22,6 +22,7 @@ package org.olat.modules.openbadges.ui;
 import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
  * Initial date: 2024-08-23<br>
@@ -29,12 +30,23 @@ import org.olat.modules.openbadges.BadgeAssertion;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BadgeAssertionStatusRenderer extends LabelCellRenderer {
+	
+	private final OpenBadgesManager openBadgesManager;
 
+	public BadgeAssertionStatusRenderer(OpenBadgesManager openBadgesManager) {
+		super();
+		this.openBadgesManager = openBadgesManager;
+	}
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
-		if (val instanceof BadgeAssertion.BadgeAssertionStatus status) {
-			return translator.translate("assertion.status." + status.name());
+		if (val instanceof BadgeAssertion badgeAssertion) {
+			if (openBadgesManager.isBadgeAssertionExpired(badgeAssertion)) {
+				return translator.translate("expired");
+			}
+			if (badgeAssertion.getStatus() != null) {
+				return translator.translate("assertion.status." + badgeAssertion.getStatus().name());
+			}
 		}
 		return "";
 	}
@@ -46,8 +58,13 @@ public class BadgeAssertionStatusRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getElementCssClass(Object val) {
-		if (val instanceof BadgeAssertion.BadgeAssertionStatus status) {
-			return "o_badge_assertion_status_" + status.name();
+		if (val instanceof BadgeAssertion badgeAssertion) {
+			if (openBadgesManager.isBadgeAssertionExpired(badgeAssertion)) {
+				return "o_badge_assertion_status_expired";
+			}
+			if (badgeAssertion.getStatus() != null) {
+				return "o_badge_assertion_status_" + badgeAssertion.getStatus().name();
+			}
 		}
 		return null;
 	}

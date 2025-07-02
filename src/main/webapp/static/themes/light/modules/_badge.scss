@@ -552,6 +552,10 @@ span.o_labeled_light {
 		color: o-a11y-color($btn-warning-border, $o-toolbar-bg-color);
 	}
 	
+	&.o_badge_assertion_status_expired {
+		color: o-a11y-color($btn-warning-border, $o-toolbar-bg-color);
+	}
+	
 	&.o_badge_verification_verified {
 		color: o-a11y-color($btn-info-border, $o-toolbar-bg-color);
 	}
@@ -592,6 +596,10 @@ span.o_labeled_light {
 
 	&.o_badge_assertion_status_reset {
 		background-color: $btn-warning-bg;
+	}
+	
+	&.o_badge_assertion_status_expired {
+		background-color: o-a11y-color($btn-warning-bg, $o-labeled-grey-color);
 	}
 	
 	&.o_badge_verification_verified {
