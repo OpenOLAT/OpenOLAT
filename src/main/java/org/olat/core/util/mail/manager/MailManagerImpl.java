@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -51,6 +52,7 @@ import jakarta.activation.FileDataSource;
 import jakarta.mail.Address;
 import jakarta.mail.Authenticator;
 import jakarta.mail.BodyPart;
+import jakarta.mail.Header;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -67,6 +69,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -1864,12 +1867,10 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		try{
 			if (mailModule.isMailHostEnabled() && result.getReturnCode() == MailerResult.OK) {
 				// now send the mail
-				if(Settings.isDebuging()) {
-					logMessage(msg);
-				}
+				logMessage(Level.DEBUG, msg);
 				Transport.send(msg);
 			} else if(Settings.isDebuging() && result.getReturnCode() == MailerResult.OK) {
-				logMessage(msg);
+				logMessage(Level.INFO, msg);
 			} else {
 				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
 			}
@@ -1886,28 +1887,37 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		}
 	}
 	
-	private void logMessage(MimeMessage msg) throws MessagingException {
+	private void logMessage(Level level, MimeMessage msg) throws MessagingException {
 		try {
-			log.info("E-mail send: {}", msg.getSubject());
-			logRecipients(msg, RecipientType.TO);
-			logRecipients(msg, RecipientType.BCC);
-			logRecipients(msg, RecipientType.CC);
+			log.log(level, "E-mail send: {}", msg.getSubject());
+			if(msg instanceof SMTPMessage smtpMsg) {
+				log.log(level, "Envelope from : {}", smtpMsg.getEnvelopeFrom());
+			}
+			logRecipients(level, msg, RecipientType.TO);
+			logRecipients(level, msg, RecipientType.BCC);
+			logRecipients(level, msg, RecipientType.CC);
+			
+			for(Enumeration<Header> headerIt=msg.getAllHeaders(); headerIt.hasMoreElements(); ) {
+				Header header = headerIt.nextElement();
+				log.log(level, "Header {} : {}", header.getName(), header.getValue());
+			}
+
 			Object content = msg.getContent();
 			if(content instanceof MimeMultipart) {
 				MimeMultipart mmp = (MimeMultipart)content;
 				for(int i=0; i<mmp.getCount(); i++) {
 					if(i > 0) log.info("---------------------");
-					log.info("Content    : {}", mmp.getBodyPart(i).getContent());
+					log.log(level, "Content : {}", mmp.getBodyPart(i).getContent());
 				}
 			} else {
-				log.info("Content    : {}", msg.getContent());
+				log.log(level, "Content : {}", msg.getContent());
 			}
 		} catch (IOException e) {
 			log.error("", e);
 		}
 	}
 	
-	private void logRecipients(MimeMessage msg, RecipientType type) throws MessagingException {
+	private void logRecipients(Level level, MimeMessage msg, RecipientType type) throws MessagingException {
 		Address[] recipients = msg.getRecipients(type);
 		if(recipients != null && recipients.length > 0) {
 			StringBuilder sb = new StringBuilder();
@@ -1915,7 +1925,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(recipient.toString());
 			}
-			log.info("{}        : {}", type, sb);
+			log.log(level, "Recipients {} : {}", type, sb);
 		}
 	}
 	
