@@ -232,6 +232,22 @@ public class ResetCoursePassedController extends StepFormBasicController {
 	
 	@Override
 	protected void formNext(UserRequest ureq) {
+		updateContext();
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+	
+	@Override
+	protected void formFinish(UserRequest ureq) {
+		updateContext();
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	private void updateContext() {
 		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
 		List<Identity> participantsResetPassed = new ArrayList<>();
 		List<Identity> participantsArchiveCertificate = new ArrayList<>();
@@ -246,18 +262,6 @@ public class ResetCoursePassedController extends StepFormBasicController {
 		}
 		dataContext.setParticipantsResetPassed(participantsResetPassed);
 		dataContext.setParticipantsArchiveCertificate(participantsArchiveCertificate);
-		
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-	
-	@Override
-	protected void formFinish(UserRequest ureq) {
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
-	}
-	
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
 	}
 	
 	private static final class CertificateRenderer implements FlexiCellRenderer {
