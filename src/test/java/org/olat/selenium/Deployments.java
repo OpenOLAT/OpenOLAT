@@ -162,7 +162,7 @@ public class Deployments {
 		    
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setPreference("browser.crashReports.unsubmittedCheck.autoSubmit2", Boolean.TRUE);
-			profile.setPreference("browser.migration.version", 140);
+			profile.setPreference("browser.migration.version", 160);
 			profile.setPreference("browser.startup.page", 1);
 			profile.setPreference("browser.sessionstore.resume_from_crash", Boolean.FALSE);
 			profile.setPreference("browser.sessionstore.max_resumed_crashes", 0);
