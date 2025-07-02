@@ -59,7 +59,6 @@ public class TaxonomyTreePage {
 		List<WebElement> tableEls = browser.findElements(tableBy);
 		if(tableEls.isEmpty()) {
 			newLevel(identifier, name);
-			clickBackInBreadcrumb();
 		}
 		return this;
 	}
@@ -95,8 +94,8 @@ public class TaxonomyTreePage {
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		// wait update in the table
-		By editTabsBy = By.className("o_sel_taxonomy_level_tabs");
-		OOGraphene.waitElement(editTabsBy, browser);
+		By tableBy = By.className("o_sel_taxonomy_levels_tree");
+		OOGraphene.waitElement(tableBy, browser);
 		return this;
 	}
 
