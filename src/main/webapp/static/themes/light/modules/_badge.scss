@@ -553,7 +553,7 @@ span.o_labeled_light {
 	}
 	
 	&.o_badge_assertion_status_expired {
-		color: o-a11y-color($btn-warning-border, $o-toolbar-bg-color);
+		color: $btn-warning-bg;
 	}
 	
 	&.o_badge_verification_verified {
@@ -599,7 +599,7 @@ span.o_labeled_light {
 	}
 	
 	&.o_badge_assertion_status_expired {
-		background-color: o-a11y-color($btn-warning-bg, $o-labeled-grey-color);
+		background-color: $btn-warning-bg;
 	}
 	
 	&.o_badge_verification_verified {
