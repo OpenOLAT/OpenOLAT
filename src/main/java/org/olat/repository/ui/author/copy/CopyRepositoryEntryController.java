@@ -21,6 +21,7 @@
 package org.olat.repository.ui.author.copy;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -31,8 +32,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,6 +61,8 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		this.sourceEntry = sourceEntry;
 
 		initForm(ureq);
+		validateDisplayName(ureq);
+		validateExternalRef(ureq);
 	}
 
 	@Override
@@ -65,11 +70,15 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		String displayName = translate("copy.entry", sourceEntry.getDisplayname());
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, displayName, formLayout);
 		displaynameEl.setMandatory(true);
+		displaynameEl.setInlineValidationOn(true);
 		
 		String externalRef = StringHelper.containsNonWhitespace(sourceEntry.getExternalRef())
 				? translate("copy.entry", sourceEntry.getExternalRef())
 				: null;
 		externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref.long", 255, externalRef, formLayout);
+		externalRefEl.setHelpText(translate("cif.externalref.hover"));
+		externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
+		externalRefEl.setInlineValidationOn(true);
 		
 		FormLayoutContainer buttonContainer = uifactory.addButtonsFormLayout("buttonContainer", null, formLayout);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
@@ -101,13 +110,53 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
 			displaynameEl.setErrorKey("cif.error.displayname.empty");
-			allOk = false;
+			allOk &= false;
 		} else if (displaynameEl.hasError()) {
-			allOk = false;
+			allOk &= false;
 		} else {
 			displaynameEl.clearError();
 		}
 
 		return allOk;
+	}
+	
+	@Override
+	protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+		boolean ok = super.validateFormItem(ureq, item);
+		if(ok && item == displaynameEl) {
+			validateDisplayName(ureq);
+		} else if(ok && item == externalRefEl) {
+			validateExternalRef(ureq);
+		}
+		return ok;
+	}
+	
+	private void validateDisplayName(UserRequest ureq) {
+		if(StringHelper.containsNonWhitespace(displaynameEl.getValue())
+				&& hasLikeRepositoryEntry(ureq, displaynameEl.getValue().toLowerCase(), null)) {
+			displaynameEl.setWarningKey("error.exists.displayname");
+		} else {
+			displaynameEl.clearWarning();
+		}
+	}
+	
+	private void validateExternalRef(UserRequest ureq) {
+		if(StringHelper.containsNonWhitespace(externalRefEl.getValue())
+				&& hasLikeRepositoryEntry(ureq, null, externalRefEl.getValue().toLowerCase())) {
+			externalRefEl.setWarningKey("error.exists.ext.ref");
+		} else {
+			externalRefEl.clearWarning();
+		}
+	}
+	
+	private boolean hasLikeRepositoryEntry(UserRequest ureq, String displayName, String reference) {
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(),
+				ureq.getUserSession().getRoles());
+		params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
+		params.setExactSearch(true);
+		params.setCanCopy(true);
+		params.setDisplayname(displayName);
+		params.setReference(reference);
+		return repositoryService.countAuthorView(params) > 0;
 	}
 }
