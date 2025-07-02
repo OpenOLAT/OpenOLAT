@@ -19,36 +19,15 @@
  */
 package org.olat.modules.topicbroker;
 
-import java.util.Set;
-
-import org.olat.core.id.Identity;
-
 /**
  * 
- * Initial date: 17 Jun 2024<br>
+ * Initial date: Jul 2, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentStats {
+public enum TBTopicEnrollmentStatus {
 	
-	int getNumIdentities();
-	
-	int getNumRequiredEnrollments();
-	
-	int getNumEnrollments();
-	
-	int getNumEnrollments(int selectionSortOrder);
-	
-	int getNumEnrollments(TBTopicRef topic);
-	
-	int getNumWaitingList(TBTopicRef topic);
-	
-	int getNumTopicsTotal();
-	
-	int getNumTopicsMinReached();
-	
-	Set<Identity> getIdentitiesWaitingList();
-	
-	Set<Identity> getIdentitiesNoSelection();
+	held,
+	notHeld
 
 }

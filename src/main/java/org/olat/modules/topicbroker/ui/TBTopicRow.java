@@ -30,6 +30,7 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.modules.topicbroker.TBCustomField;
 import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicEnrollmentStatus;
 import org.olat.modules.topicbroker.TBTopicRef;
 
 /**
@@ -46,6 +47,9 @@ public class TBTopicRow implements TBTopicRef {
 	private int minEnrollments;
 	private int numEnrollments;
 	private String enrolledString;
+	private TBTopicEnrollmentStatus enrollmentStatus;
+	private String translatedEnrollmentStatus;
+	private String availability;
 	private int waitingList;
 	private String waitingListString;
 	private List<TBGroupRestrictionInfo> groupRestrictions;
@@ -129,6 +133,30 @@ public class TBTopicRow implements TBTopicRef {
 
 	public void setEnrolledString(String enrolledString) {
 		this.enrolledString = enrolledString;
+	}
+
+	public TBTopicEnrollmentStatus getEnrollmentStatus() {
+		return enrollmentStatus;
+	}
+
+	public void setEnrollmentStatus(TBTopicEnrollmentStatus enrollmentStatus) {
+		this.enrollmentStatus = enrollmentStatus;
+	}
+
+	public String getTranslatedEnrollmentStatus() {
+		return translatedEnrollmentStatus;
+	}
+
+	public void setTranslatedEnrollmentStatus(String translatedEnrollmentStatus) {
+		this.translatedEnrollmentStatus = translatedEnrollmentStatus;
+	}
+
+	public String getAvailability() {
+		return availability;
+	}
+
+	public void setAvailability(String availability) {
+		this.availability = availability;
 	}
 
 	public int getWaitingList() {

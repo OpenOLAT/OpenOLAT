@@ -212,6 +212,12 @@
 	}
 }
 .o_labeled_light {
+	&.o_tb_label_light_held {
+		@extend %o_labeled_light_green;
+	}
+	&.o_tb_label_light_not_held {
+		@extend %o_labeled_light_red;
+	}
 	&.o_tb_label_light_selected {
 		@extend %o_labeled_light_yellow;
 	}
@@ -280,4 +286,22 @@
 	display: flex;
 	gap: 10px;
 	align-items: baseline;
+}
+
+.o_tb_enrollment_manual {
+	.o_tb_enrollment_manual_header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		column-gap: 5px;
+		
+		.o_tb_enrollment_manual_header_cmds {
+			margin-left: auto;
+			display: flex;
+			column-gap: 5px;
+		}
+	}
+	.o_important_with_icon {
+		margin-top: 0;
+	}
 }

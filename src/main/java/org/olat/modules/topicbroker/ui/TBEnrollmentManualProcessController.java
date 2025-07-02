@@ -29,7 +29,6 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -47,7 +46,6 @@ import org.olat.modules.topicbroker.TBEnrollmentProcess;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
-import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
@@ -65,19 +63,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	private static final String CMD_SELECT_RUN = "selrun_";
-	private static final String[] KEYS = new String[] { "xx" };
 	
-	private FormSubmit applyLink;
 	private FormLink runStartLink;
 	private DropdownItem runsDropdown;
-	private MultipleSelectionElement emailNotificationEl;
+	private FormSubmit acceptLink;
+	private FormLink acceptWithoutNotificationLink;
 
 	private CloseableModalController cmc;
 	private ConfirmationController doneConfirmationCtrl;
 	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
 
 	private TBBroker broker;
-	private final TBSecurityCallback secCallback;
 	private final List<Identity> identities;
 	private final List<TBParticipant> participants;
 	private final List<TBTopic> topics;
@@ -91,10 +87,9 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private TopicBrokerService topicBrokerService;
 
 	public TBEnrollmentManualProcessController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
+			TBParticipantCandidates participantCandidates) {
 		super(ureq, wControl, "enrollment_manual_process");
 		this.broker = broker;
-		this.secCallback = secCallback;
 		participantCandidates.refresh();
 		identities = participantCandidates.getAllIdentities();
 		
@@ -118,9 +113,10 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("processRuns", String.valueOf(topicBrokerModule.getRuns()));
-		
+		runStartLink = uifactory.addFormLink("enrollment.manual.run.again", formLayout, Link.BUTTON);
+		runStartLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_run_start");
 		runsDropdown = uifactory.addDropdownMenu("enrollment.manual.runs", null, formLayout, getTranslator());
+		
 		runsDropdown.setOrientation(DropdownOrientation.right);
 		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
 		runsDropdown.setVisible(false);
@@ -134,17 +130,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		emailCont.setRootForm(mainForm);
 		formLayout.add("email", emailCont);
 		
-		emailNotificationEl = uifactory.addCheckboxesHorizontal("enrollment.manual.notification", emailCont, KEYS,
-				new String[] { translate("enrollment.manual.notification.value") });
-		emailNotificationEl.select(KEYS[0], secCallback.canSendNotification());
-		emailNotificationEl.setEnabled(secCallback.canSendNotification());
-		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		emailCont.add("buttons", buttonLayout);
-		applyLink = uifactory.addFormSubmitButton("enrollment.manual.apply", buttonLayout);
-		runStartLink = uifactory.addFormLink("enrollment.manual.run.again", buttonLayout, Link.BUTTON);
-		runStartLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_run");
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		acceptLink = uifactory.addFormSubmitButton("enrollment.manual.accept", formLayout);
+		acceptWithoutNotificationLink = uifactory.addFormLink("enrollment.manual.accept.without.notification", formLayout, Link.BUTTON);
 	}
 	
 	private void updateEnrollmentDone() {
@@ -152,16 +139,17 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		boolean enrollmentStarted = broker.getEnrollmentStartDate() != null;
 		flc.contextPut("enrollmentDone", enrollmentStarted);
 		
-		boolean applyAvailable = !enrollmentStarted && !runs.isEmpty();
-		applyLink.setEnabled(applyAvailable);
-		applyLink.setSubmitAndValidate(applyAvailable);
+		boolean acceptAvailable = !enrollmentStarted && !runs.isEmpty();
+		acceptLink.setEnabled(acceptAvailable);
+		acceptLink.setSubmitAndValidate(acceptAvailable);
+		acceptWithoutNotificationLink.setEnabled(acceptAvailable);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (doneConfirmationCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				saveEnrollments();
+			if (event == Event.DONE_EVENT && doneConfirmationCtrl.getUserObject() instanceof Boolean withNotification) {
+				saveEnrollments(withNotification);
 				fireEvent(ureq, FormEvent.DONE_EVENT);
 			}
 			cmc.deactivate();
@@ -181,6 +169,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == runStartLink) {
 			doRunEnrollmentProcess();
+		} else if (source == acceptWithoutNotificationLink) {
+			doConfirmAccept(ureq, Boolean.FALSE);
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (cmd.startsWith(CMD_SELECT_RUN)) {
@@ -196,45 +186,41 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		updateEnrollmentDone();
-		allOk &= applyLink.isVisible();
+		allOk &= acceptLink.isVisible();
 		
 		return allOk;
-	}
-
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doConfirmApply(ureq);
+		doConfirmAccept(ureq, Boolean.TRUE);
 	}
 	
-	private void doConfirmApply(UserRequest ureq) {
-		String textI18nKey = emailNotificationEl.isAtLeastSelected(1)
-				? "enrollment.manual.confirm.text.email" 
-				: "enrollment.manual.confirm.text" ;
+	private void doConfirmAccept(UserRequest ureq, Boolean withNotification) {
+		String textI18nKey = withNotification
+				? "enrollment.manual.accept.text.email" 
+				: "enrollment.manual.accept.text" ;
 		doneConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate(textI18nKey, String.valueOf(selectedProcessWrapper.getStats().getNumEnrollments())),
-				translate("enrollment.manual.confirm.confirm"),
-				translate("enrollment.manual.confirm.button"));
+				translate("enrollment.manual.accept.accept.confirm"),
+				translate("enrollment.manual.accept.accept"));
 		listenTo(doneConfirmationCtrl);
+		doneConfirmationCtrl.setUserObject(withNotification);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
-				true, translate("enrollment.manual.confirm.title"), true);
+				true, translate("enrollment.manual.accept.title"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private void saveEnrollments() {
+	private void saveEnrollments(boolean withNotification) {
 		if (selectedProcessWrapper != null) {
 			if (isChangesSinceRun()) {
 				showWarning("error.changes.since.last.run");
 			} else {
 				topicBrokerService.updateEnrollmentProcessStart(getIdentity(), broker);
 				selectedProcessWrapper.getProcess().persist(getIdentity());
-				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker, emailNotificationEl.isAtLeastSelected(1));
+				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker, withNotification);
 			}
 		}
 	}
@@ -259,7 +245,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		int run = runs.size();
 		String cmd = CMD_SELECT_RUN + run;
 		FormLink selectPosLink = uifactory.addFormLink("selectp_" + run, cmd, "", null, flc, Link.NONTRANSLATED);
-		selectPosLink.setI18nKey(translate("enrollment.manual.run.num", String.valueOf(run), String.valueOf(enrollmentStats.getNumEnrollments())));
+		selectPosLink.setI18nKey(getRunLinkText(run, enrollmentStats));
 		runsDropdown.addElement(selectPosLink);
 		
 		doSelectRun(run);
@@ -268,14 +254,29 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private void doSelectRun(int runNo) {
 		EnrollmentProcessWrapper wrapper = runs.get(runNo - 1);
 		selectedProcessWrapper = wrapper;
+		TBEnrollmentStats enrollmentStats = selectedProcessWrapper.getStats();
 		
-		runsDropdown.setTranslatedLabel(translate("enrollment.manual.run.num", String.valueOf(runNo),
-				String.valueOf(selectedProcessWrapper.getStats().getNumEnrollments())));
+		runsDropdown.setTranslatedLabel(getRunLinkText(runNo, enrollmentStats));
 		runsDropdown.setVisible(runs.size() > 1);
+		
+		flc.contextPut("processRunNo", String.valueOf(runNo));
+		flc.contextPut("processRuns", topicBrokerModule.getRuns());
 		
 		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());
 		
 		updateEnrollmentDone();
+	}
+	
+	private String getRunLinkText(int run, TBEnrollmentStats enrollmentStats) {
+		return translate("enrollment.manual.run", 
+				String.valueOf(run),
+				"<i class=\"o_icon o_icon_tb_enrollments\"> </i> ",
+				String.valueOf(enrollmentStats.getNumEnrollments()),
+				String.valueOf(enrollmentStats.getNumRequiredEnrollments()),
+				"<i class=\"o_icon o_icon_tb_topics\"> </i> ",
+				String.valueOf(enrollmentStats.getNumTopicsMinReached()),
+				String.valueOf(enrollmentStats.getNumTopicsTotal())
+			);
 	}
 	
 	private static final class EnrollmentProcessWrapper {

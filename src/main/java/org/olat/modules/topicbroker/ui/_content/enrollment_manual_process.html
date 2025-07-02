@@ -1,18 +1,27 @@
-#if($enrollmentDone)
-	<div class="o_warning_with_icon">$r.translate("enrollment.manual.done")</div>
-#else
-	<div class="o_important_with_icon">$r.translate("enrollment.manual.info.runs", $processRuns)</div>
-	<div class="o_button_group o_button_group_right">
-		#if($r.available("enrollment.manual.runs") && $r.visible("enrollment.manual.runs"))
-			$r.render("enrollment.manual.runs")
-		#end
+<div class="o_tb_enrollment_manual">
+	<div class="o_tb_enrollment_manual_header">
+		<div class="o_tb_enrollment_manual_header_title">
+			<h3>$r.translate("enrollment.manual.title")</h3>
+		</div>
+		<div class="o_tb_enrollment_manual_header_cmds">
+			$r.render("enrollment.manual.run.again")
+			#if($r.available("enrollment.manual.runs") && $r.visible("enrollment.manual.runs"))
+				$r.render("enrollment.manual.runs")
+			#end
+		</div>
 	</div>
-	
-	<fieldset class="o_block_large">
-		<legend>$r.translate("enrollment.manual.result")</legend>
-		$r.render("runOverview")
-	</fieldset>
-	<div>
-		$r.render("email")
-	</div>
-#end
+		
+	#if($enrollmentDone)
+		<div class="o_warning_with_icon">$r.translate("enrollment.manual.done")</div>
+	#else
+		<fieldset class="o_block_large">
+			<legend>$r.translate("enrollment.manual.result.run", $processRunNo)</legend>
+			<div class="o_important_with_icon">$r.translate("enrollment.manual.info.runs", $processRuns)</div>
+			$r.render("runOverview")
+		</fieldset>
+		<div class="o_button_group o_button_group_left">
+			$r.render("enrollment.manual.accept")
+			$r.render("enrollment.manual.accept.without.notification")
+		</div>
+	#end
+</div>

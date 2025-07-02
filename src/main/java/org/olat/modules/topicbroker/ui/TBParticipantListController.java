@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -73,12 +74,19 @@ import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerStatus;
@@ -91,6 +99,8 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
@@ -134,6 +144,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	
 	private CloseableModalController cmc;
 	private TBEnrollmentManualProcessController enrollmentManualCtrl;
+	private LayoutMain3ColsBackController enrollmentLayoutCtr;
 	private ContactFormController contactCtrl;
 	private ConfirmationController notificationConfirmationCtrl;
 	private ConfirmationController withdrawEnrollmentsConfirmationCtrl;
@@ -158,6 +169,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BaseSecurityManager securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public TBParticipantListController(UserRequest ureq, WindowControl wControl, TBBroker broker,
 			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
@@ -588,12 +601,12 @@ public class TBParticipantListController extends FormBasicController implements 
 	@SuppressWarnings("unchecked")
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (enrollmentManualCtrl == source) {
+			enrollmentLayoutCtr.deactivate();
 			broker = topicBrokerService.getBroker(broker);
 			updateBrokerStatusUI();
 			updateBrokerConfigUI();
 			updateEnrollmentManualUI();
 			loadModel(ureq);
-			cmc.deactivate();
 			cleanUp();
 		} else if (source == contactCtrl) {
 			if (cmc != null) {
@@ -622,6 +635,8 @@ public class TBParticipantListController extends FormBasicController implements 
 			if (event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
+		} else if (source == enrollmentLayoutCtr && event == Event.BACK_EVENT) {
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		}
@@ -630,12 +645,14 @@ public class TBParticipantListController extends FormBasicController implements 
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(enrollmentManualCtrl);
+		removeAsListenerAndDispose(enrollmentLayoutCtr);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(notificationConfirmationCtrl);
 		removeAsListenerAndDispose(withdrawEnrollmentsConfirmationCtrl);
 		removeAsListenerAndDispose(resetSelectionConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
 		enrollmentManualCtrl = null;
+		enrollmentLayoutCtr = null;
 		contactCtrl = null;
 		notificationConfirmationCtrl = null;
 		withdrawEnrollmentsConfirmationCtrl = null;
@@ -698,18 +715,27 @@ public class TBParticipantListController extends FormBasicController implements 
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
+	
 	private void doEnrollmentManual(UserRequest ureq) {
-		if (guardModalController(enrollmentManualCtrl)) return;
-		
-		enrollmentManualCtrl = new TBEnrollmentManualProcessController(
-				ureq, getWindowControl(), broker, secCallback, participantCandidates);
+		enrollmentManualCtrl = new TBEnrollmentManualProcessController(ureq, getWindowControl(), broker, participantCandidates);
 		listenTo(enrollmentManualCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				enrollmentManualCtrl.getInitialComponent(), true, translate("enrollment.manual.start"), true);
-		listenTo(cmc);
-		cmc.activate();
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(getIdentity());
+		identityEnv.setRoles(ureq.getUserSession().getRoles());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		
+		CourseNode courseNode = course.getRunStructure().getNode(broker.getSubIdent());
+		
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), enrollmentManualCtrl, userCourseEnv, courseNode, "o_icon_topicbroker");
+		
+		enrollmentLayoutCtr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, ctrl.getInitialComponent(), null);
+		enrollmentLayoutCtr.addDisposableChildController(enrollmentManualCtrl);
+		enrollmentLayoutCtr.activate();
+		listenTo(enrollmentLayoutCtr);
 	}
 	
 	private void doBulkEmail(UserRequest ureq) {

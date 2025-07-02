@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -108,7 +107,6 @@ import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
-import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
@@ -432,18 +430,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			topicKeyToSelections = selections.stream()
 					.collect(Collectors.groupingBy(selection -> selection.getTopic().getKey()));
 			
-			fullyEnrolledParticipantKeys = new HashSet<>();
-			Map<TBParticipant, List<TBSelection>> participantToEnrollments = selections.stream()
-					.filter(TBSelection::isEnrolled)
-					.collect(Collectors.groupingBy(TBSelection::getParticipant));
-			for (Entry<TBParticipant, List<TBSelection>> pts : participantToEnrollments.entrySet()) {
-				TBParticipant participant = pts.getKey();
-				int numEnrollments = pts.getValue().size();
-				int requiredEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
-				if (numEnrollments >= requiredEnrollments) {
-					fullyEnrolledParticipantKeys.add(participant.getKey());
-				}
-			}
+			fullyEnrolledParticipantKeys = TBUIFactory.getFullyEnrolledParticipantKeys(broker, selections);
 		}
 		
 		topics.sort((r1, r2) -> Integer.compare(r1.getSortOrder(), r2.getSortOrder()));

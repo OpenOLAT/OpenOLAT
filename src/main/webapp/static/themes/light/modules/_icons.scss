@@ -1218,6 +1218,8 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_enrollments { @include o-add-icon('clipboard-list');}
 .o_icon_tb_topics { @include o-add-icon('circle', false);}
 .o_icon_tb_notification { @include o-add-icon('envelope-open-text');}
+.o_icon_tb_topic_held { @include o-add-icon('check-circle');}
+.o_icon_tb_topic_not_held { @include o-add-icon('circle-xmark');}
 .o_icon_tb_selection_enrolled { @include o-add-icon('check-circle');}
 .o_icon_tb_selection_surplus { @include o-add-icon('circle-minus');}
 .o_icon_tb_selection_not_enrolled { @include o-add-icon('n');}
@@ -1225,7 +1227,9 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_selection_waiting_list { @include o-add-icon('hourglass');}
 .o_icon_tb_select_first { @include o-add-icon('arrows-up-to-line');}
 .o_icon_tb_select_last { @include o-add-icon('arrows-down-to-line');}
+.o_icon_tb_priority { @include o-add-icon('scale-balanced');}
 .o_icon_tb_run { @include o-add-icon('rotate-right');}
+.o_icon_tb_run_start { @include o-add-icon('play');}
 
 /* Course node selection course node */
 .o_icon_cns { @include o-add-icon('arrows-turn-right'); transform: scaleY(-1);}

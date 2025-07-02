@@ -17,38 +17,41 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker;
+package org.olat.modules.topicbroker.ui;
 
-import java.util.Set;
-
-import org.olat.core.id.Identity;
+import org.olat.core.gui.components.table.LabelCellRenderer;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 17 Jun 2024<br>
+ * Initial date: Jul 2, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentStats {
+public class TBTopicEnrollmentStatusRenderer extends LabelCellRenderer {
+
+	@Override
+	protected String getCellValue(Object val, Translator translator) {
+		if (val instanceof TBTopicRow row) {
+			return row.getTranslatedEnrollmentStatus();
+		}
+		return null;
+	}
 	
-	int getNumIdentities();
+	@Override
+	protected String getIconCssClass(Object val) {
+		if (val instanceof TBTopicRow row) {
+			return TBUIFactory.getStatusIconCss(row.getEnrollmentStatus());
+		}
+		return null;
+	}
 	
-	int getNumRequiredEnrollments();
-	
-	int getNumEnrollments();
-	
-	int getNumEnrollments(int selectionSortOrder);
-	
-	int getNumEnrollments(TBTopicRef topic);
-	
-	int getNumWaitingList(TBTopicRef topic);
-	
-	int getNumTopicsTotal();
-	
-	int getNumTopicsMinReached();
-	
-	Set<Identity> getIdentitiesWaitingList();
-	
-	Set<Identity> getIdentitiesNoSelection();
+	@Override
+	protected String getElementCssClass(Object val) {
+		if (val instanceof TBTopicRow row) {
+			return TBUIFactory.getLabelLightCss(row.getEnrollmentStatus());
+		}
+		return null;
+	}
 
 }

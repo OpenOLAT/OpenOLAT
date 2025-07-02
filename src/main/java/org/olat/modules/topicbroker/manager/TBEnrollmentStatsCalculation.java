@@ -20,8 +20,10 @@
 package org.olat.modules.topicbroker.manager;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,12 +47,13 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 
 	private final int numIdentities;
 	private Map<Integer, Integer> selectionSortOrderToNum = new HashMap<>();
-	private Map<Long, Integer> topicKeyToNum = new HashMap<>();
+	private Map<Long, Integer> topicKeyToNumEnrollments = new HashMap<>();
+	private Map<Long, Integer> topicKeyToNumWaitingList = new HashMap<>();
 	private int numRequiredEnrollments = 0;
 	private int numEnrollments = 0;
 	private final int numTopicsTotal;
-	private int numWaitingList = 0;
-	private int numMissing = 0;
+	private final Set<Identity> identitiesWaitingList = new HashSet<>();
+	private final Set<Identity> identitiesNoSelection = new HashSet<>();
 	
 	public TBEnrollmentStatsCalculation(TBBroker broker, List<Identity> identities,
 			List<TBParticipant> participants, List<TBTopic> topics, List<TBSelection> selections) {
@@ -61,41 +64,36 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 		Map<Long, List<TBSelection>> identityKeyToSelections = selections.stream()
 				.collect(Collectors.groupingBy(selection -> selection.getParticipant().getIdentity().getKey()));
 		
+		Set<Long> fullyEnrolledParticipantKeys = TBUIFactory.getFullyEnrolledParticipantKeys(broker, selections);
+		
 		for (Identity identity : identities) {
 			TBParticipant participant = identityKeyToParticipant.get(identity.getKey());
 			int participantNaxEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
 			
-			int participantNumEnrollments = 0;
-			int participantNumWaitingList = 0;
-			
 			List<TBSelection> identitySelections = identityKeyToSelections.getOrDefault(identity.getKey(), List.of());
-			for (int i = 0; i < broker.getMaxSelections() && i < identitySelections.size(); i++) {
-				TBSelection selection = identitySelections.get(i);
-				if (selection.isEnrolled()) {
-					Integer sortOrder = Integer.valueOf(selection.getSortOrder());
-					Integer currentCount = selectionSortOrderToNum.getOrDefault(sortOrder, Integer.valueOf(0));
-					selectionSortOrderToNum.put(sortOrder, currentCount + 1);
-					participantNumEnrollments++;
-					
+			if (identitySelections.isEmpty()) {
+				identitiesNoSelection.add(identity);
+			} else {
+				for (int i = 0; i < broker.getMaxSelections() && i < identitySelections.size(); i++) {
+					TBSelection selection = identitySelections.get(i);
 					Long topicKey = selection.getTopic().getKey();
-					Integer currentTopicCount = topicKeyToNum.getOrDefault(topicKey, Integer.valueOf(0));
-					topicKeyToNum.put(topicKey, currentTopicCount + 1);
-				} else {
-					participantNumWaitingList++;
+					if (selection.isEnrolled()) {
+						Integer sortOrder = Integer.valueOf(selection.getSortOrder());
+						Integer currentCount = selectionSortOrderToNum.getOrDefault(sortOrder, Integer.valueOf(0));
+						selectionSortOrderToNum.put(sortOrder, currentCount + 1);
+						
+						Integer currentTopicCount = topicKeyToNumEnrollments.getOrDefault(topicKey, Integer.valueOf(0));
+						topicKeyToNumEnrollments.put(topicKey, currentTopicCount + 1);
+					} else {
+						if (!fullyEnrolledParticipantKeys.contains(selection.getParticipant().getKey())) {
+							Integer currentTopicWaitingList = topicKeyToNumWaitingList.getOrDefault(topicKey, Integer.valueOf(0));
+							topicKeyToNumWaitingList.put(topicKey, currentTopicWaitingList + 1);
+							identitiesWaitingList.add(identity);
+						}
+					}
 				}
-			}
-			
-			numRequiredEnrollments += participantNaxEnrollments;
-			numEnrollments += participantNumEnrollments;
-			
-			if (participantNumEnrollments < participantNaxEnrollments) {
-				int enrollmentsGap = participantNaxEnrollments - participantNumEnrollments;
-				if (enrollmentsGap <= participantNumWaitingList) {
-					numWaitingList += enrollmentsGap;
-				} else {
-					numWaitingList += participantNumWaitingList;
-					numMissing += (enrollmentsGap - participantNumWaitingList);
-				}
+				
+				numRequiredEnrollments += participantNaxEnrollments;
 			}
 		}
 	}
@@ -122,7 +120,12 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 
 	@Override
 	public int getNumEnrollments(TBTopicRef topic) {
-		return topicKeyToNum.getOrDefault(topic.getKey(), Integer.valueOf(0)).intValue();
+		return topicKeyToNumEnrollments.getOrDefault(topic.getKey(), Integer.valueOf(0)).intValue();
+	}
+
+	@Override
+	public int getNumWaitingList(TBTopicRef topic) {
+		return topicKeyToNumWaitingList.getOrDefault(topic.getKey(), Integer.valueOf(0)).intValue();
 	}
 
 	@Override
@@ -134,17 +137,17 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 	public int getNumTopicsMinReached() {
 		// If a topic did not reached the minimum number of participants,
 		// all enrollments were removed by the enrollment process.
-		return topicKeyToNum.size();
+		return topicKeyToNumEnrollments.size();
 	}
 
 	@Override
-	public int getNumWaitingList() {
-		return numWaitingList;
+	public Set<Identity> getIdentitiesWaitingList() {
+		return identitiesWaitingList;
 	}
 
 	@Override
-	public int getNumMissing() {
-		return numMissing;
+	public Set<Identity> getIdentitiesNoSelection() {
+		return identitiesNoSelection;
 	}
 
 }

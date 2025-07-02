@@ -20,7 +20,12 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
@@ -30,8 +35,10 @@ import org.olat.modules.topicbroker.TBBrokerStatus;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBParticipant;
+import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionStatus;
 import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicEnrollmentStatus;
 
 /**
  * 
@@ -47,6 +54,22 @@ public class TBUIFactory {
 			maxEnrollments = participant.getRequiredEnrollments();
 		}
 		return maxEnrollments;
+	}
+	
+	public static Set<Long> getFullyEnrolledParticipantKeys(TBBroker broker, List<TBSelection> selections) {
+		Set<Long> fullyEnrolledParticipantKeys = new HashSet<>();
+		Map<TBParticipant, List<TBSelection>> participantToEnrollments = selections.stream()
+				.filter(TBSelection::isEnrolled)
+				.collect(Collectors.groupingBy(TBSelection::getParticipant));
+		for (Entry<TBParticipant, List<TBSelection>> pts : participantToEnrollments.entrySet()) {
+			TBParticipant participant = pts.getKey();
+			int numEnrollments = pts.getValue().size();
+			int requiredEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
+			if (numEnrollments >= requiredEnrollments) {
+				fullyEnrolledParticipantKeys.add(participant.getKey());
+			}
+		}
+		return fullyEnrolledParticipantKeys;
 	}
 	
 	public static TBBrokerStatus getBrokerStatus(TBBroker broker) {
@@ -109,6 +132,58 @@ public class TBUIFactory {
 		return "<span class=\"o_labeled " + getLabelCss(status) 
 				+ "\"><i class=\"o_icon " + getStatusIconCss(status)
 				+ "\"> </i> "+ getTranslatedStatus(translator, status) + "</span>";
+	}
+	
+	public static TBTopicEnrollmentStatus getEnrollmentStatus(Integer minParticipants, int numEnrollments) {
+		return numEnrollments >= intOrZero(minParticipants)? TBTopicEnrollmentStatus.held: TBTopicEnrollmentStatus.notHeld;
+	}
+
+	public static String getTranslatedStatus(Translator translator, TBTopicEnrollmentStatus status) {
+		if (status != null) {
+			switch (status) {
+			case held: return translator.translate("topic.enrollment.status.held");
+			case notHeld: return translator.translate("topic.enrollment.status.not.held");
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getStatusIconCss(TBTopicEnrollmentStatus status) {
+		if (status != null) {
+			switch (status) {
+			case held: return "o_icon_tb_topic_held";
+			case notHeld: return "o_icon_tb_topic_not_held";
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getLabelLightCss(TBTopicEnrollmentStatus status) {
+		if (status != null) {
+			switch (status) {
+			case held: return "o_tb_label_light_held";
+			case notHeld: return "o_tb_label_light_not_held";
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getAvailability(Translator translator, TBTopicEnrollmentStatus status, int maxParticipants,
+			int numEnrollments, int numWaitingList) {
+		if (TBTopicEnrollmentStatus.notHeld == status) {
+			return null;
+		}
+		
+		if (numEnrollments >= maxParticipants) {
+			if (numWaitingList > 0) {
+				return  translator.translate("topic.availability.full.waiting");
+			}
+			return translator.translate("topic.availability.full");
+		}
+		return translator.translate("topic.availability.seats.left", String.valueOf(maxParticipants - numEnrollments));
 	}
 	
 	public static TBSelectionStatus getSelectionStatus(TBBroker broker, int requiredEnrollments,
@@ -361,6 +436,10 @@ public class TBUIFactory {
 		
 		columns += "</ul>";
 		return columns;
+	}
+	
+	private static int intOrZero(Integer integer) {
+		return integer != null? integer.intValue(): 0;
 	}
 
 }

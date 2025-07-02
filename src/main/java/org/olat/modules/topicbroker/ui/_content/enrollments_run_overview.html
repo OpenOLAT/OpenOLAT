@@ -1,10 +1,16 @@
 $r.render("widgets")
-<div class="o_block_top">
+<div class="o_block_large_top">
 	$r.render("scope")
-	#if($r.visible("enrollmenttable"))
-		$r.render("enrollmenttable")
-	#end
 	#if($r.visible("topictable"))
 		$r.render("topictable")
+	#end
+	#if($r.visible("prioritytable"))
+		$r.render("prioritytable")
+	#end
+	#if($r.visible("waitinglisttable"))
+		$r.render("waitinglisttable")
+	#end
+	#if($r.visible("noselectiontable"))
+		$r.render("noselectiontable")
 	#end
 </div>

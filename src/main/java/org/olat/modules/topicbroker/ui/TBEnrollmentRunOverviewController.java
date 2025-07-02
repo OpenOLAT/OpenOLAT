@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -46,11 +47,15 @@ import org.olat.core.gui.components.widget.WidgetFactory;
 import org.olat.core.gui.components.widget.WidgetGroup;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.ui.TBEnrollmentRunDataModel.EnrollmentRunCols;
 import org.olat.modules.topicbroker.ui.TBTopicDataModel.TopicCols;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -60,29 +65,46 @@ import org.olat.modules.topicbroker.ui.TBTopicDataModel.TopicCols;
  */
 public class TBEnrollmentRunOverviewController extends FormBasicController {
 
-	private static final String SCOPE_ENROLLMENTS = "participants";
 	private static final String SCOPE_TOPICS = "topics";
+	private static final String SCOPE_PRIORIY = "priority";
+	private static final String SCOPE_WAITING_LIST = "waiting";
+	private static final String SCOPE_NO_SELECTION = "no.selection";
 	
-	private FigureWidget participantsWidget;
 	private FigureWidget enrollmentsWidget;
 	private ProgressBar enrollmentsProgress;
 	private FigureWidget topicsWidget;
 	private ProgressBar topicsProgress;
+	private FigureWidget participantsWidget;
 	private FormScopeSelection scopeEl;
-	private TBEnrollmentRunDataModel enrollmentsDataModel;
-	private FlexiTableElement enrollmentsTableEl;
+	private TBEnrollmentRunDataModel prioriryDataModel;
+	private FlexiTableElement priorityTableEl;
 	private TBTopicDataModel topicsDataModel;
 	private FlexiTableElement topicsTableEl;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	private TBParticipantDataModel waitingListDataModel;
+	private FlexiTableElement waitingListTableEl;
+	private TBParticipantDataModel noSelectionDataModel;
+	private FlexiTableElement noSelectionTableEl;
 	
 	private final TBBroker broker;
 	private final List<TBTopic> topics;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	protected TBEnrollmentRunOverviewController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			TBBroker broker, List<TBTopic> topics) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "enrollments_run_overview", mainForm);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.broker = broker;
 		this.topics = topics;
 		this.topics.sort((r1, r2) -> Integer.compare(r1.getSortOrder(), r2.getSortOrder()));
+		
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TBParticipantDataModel.USAGE_IDENTIFIER,
+				isAdministrativeUser);
 		
 		initForm(ureq);
 		updateUI();
@@ -91,10 +113,6 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		WidgetGroup widgetGroup = WidgetFactory.createWidgetGroup("widgets", flc.getFormItemComponent());
-		
-		participantsWidget = WidgetFactory.createFigureWidget("participantsWidget", flc.getFormItemComponent(),
-				translate("widget.participants.title"), "o_icon_num_participants");
-		widgetGroup.add(participantsWidget);
 		
 		enrollmentsWidget = WidgetFactory.createFigureWidget("enrollmentsWidget", flc.getFormItemComponent(),
 				translate("widget.enrollments.title"), "o_icon_tb_enrollments");
@@ -118,29 +136,18 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		topicsWidget.setAdditionalCssClass("o_widget_progress");
 		widgetGroup.add(topicsWidget);
 		
+		participantsWidget = WidgetFactory.createFigureWidget("participantsWidget", flc.getFormItemComponent(),
+				translate("widget.participants.title"), "o_icon_num_participants");
+		widgetGroup.add(participantsWidget);
+		
 		List<Scope> scopes = List.of(
-				ScopeFactory.createScope(SCOPE_ENROLLMENTS, translate("scope.enrollments"), null),
-				ScopeFactory.createScope(SCOPE_TOPICS, translate("scope.topics"), null)
+				ScopeFactory.createScope(SCOPE_TOPICS, translate("scope.by.topics"), null, "o_icon o_icon_tb_topics"),
+				ScopeFactory.createScope(SCOPE_PRIORIY, translate("scope.by.priorities"), null, "o_icon o_icon_tb_priority"),
+				ScopeFactory.createScope(SCOPE_WAITING_LIST, translate("scope.waiting.list"), null, "o_icon o_icon_important"),
+				ScopeFactory.createScope(SCOPE_NO_SELECTION, translate("scope.no.selection"), null, "o_icon o_icon_error")
 				);
 		scopeEl = uifactory.addScopeSelection("scope", null, formLayout, scopes);
 		scopeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		
-		// Enrollments
-		FlexiTableColumnModel enrollmentsColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		
-		enrollmentsColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EnrollmentRunCols.priority));
-		
-		DefaultFlexiColumnModel enrollmentsColumn = new DefaultFlexiColumnModel(EnrollmentRunCols.enrollments,
-				new TextFlexiCellRenderer(EscapeMode.none));
-		enrollmentsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
-		enrollmentsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
-		enrollmentsColumnsModel.addFlexiColumnModel(enrollmentsColumn);
-		
-		enrollmentsDataModel = new TBEnrollmentRunDataModel(enrollmentsColumnsModel);
-		enrollmentsTableEl = uifactory.addTableElement(getWindowControl(), "enrollmenttable", enrollmentsDataModel, 20, false, getTranslator(), formLayout);
-		enrollmentsTableEl.setCustomizeColumns(false);
-		enrollmentsTableEl.setNumOfRowsEnabled(false);
 		
 		
 		// Topics
@@ -159,21 +166,85 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		maxParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		topicsColumnsModel.addFlexiColumnModel(maxParticipantsColumn);
 		
+		topicsColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.enrollmentStatus, new TBTopicEnrollmentStatusRenderer()));
+		topicsColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.enrollmentAvailability));
+		
 		DefaultFlexiColumnModel enrolledColumn = new DefaultFlexiColumnModel(TopicCols.enrolled, new TextFlexiCellRenderer(EscapeMode.none));
 		enrolledColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		enrolledColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		topicsColumnsModel.addFlexiColumnModel(enrolledColumn);
 		
+		DefaultFlexiColumnModel waitingListColumn = new DefaultFlexiColumnModel(TopicCols.waitingList);
+		waitingListColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		waitingListColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		topicsColumnsModel.addFlexiColumnModel(waitingListColumn);
+		
 		topicsDataModel = new TBTopicDataModel(topicsColumnsModel);
 		topicsTableEl = uifactory.addTableElement(getWindowControl(), "topictable", topicsDataModel, 20, false, getTranslator(), formLayout);
 		topicsTableEl.setCustomizeColumns(false);
 		topicsTableEl.setNumOfRowsEnabled(false);
+		
+		
+		// Priorities
+		FlexiTableColumnModel priorityColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		priorityColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EnrollmentRunCols.priority));
+		
+		DefaultFlexiColumnModel priorityColumn = new DefaultFlexiColumnModel(EnrollmentRunCols.enrollments,
+				new TextFlexiCellRenderer(EscapeMode.none));
+		priorityColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		priorityColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		priorityColumnsModel.addFlexiColumnModel(priorityColumn);
+		
+		prioriryDataModel = new TBEnrollmentRunDataModel(priorityColumnsModel);
+		priorityTableEl = uifactory.addTableElement(getWindowControl(), "prioritytable", prioriryDataModel, 20, false, getTranslator(), formLayout);
+		priorityTableEl.setCustomizeColumns(false);
+		priorityTableEl.setNumOfRowsEnabled(false);
+		
+		
+		// Waiting list
+		FlexiTableColumnModel waitingListColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		int colIndex = TBParticipantDataModel.USER_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
+			String propName = userPropertyHandler.getName();
+			boolean visible = userManager.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
+			waitingListColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
+					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, null, true, propName));
+		}
+		
+		waitingListDataModel = new TBParticipantDataModel(waitingListColumnsModel, getLocale());
+		waitingListTableEl = uifactory.addTableElement(getWindowControl(), "waitinglisttable", waitingListDataModel, 20, false, getTranslator(), formLayout);
+		waitingListTableEl.setEmptyTableMessageKey("participants.empty.waiting.list");
+		waitingListTableEl.setCustomizeColumns(false);
+		waitingListTableEl.setNumOfRowsEnabled(false);
+		
+		
+		// No selection
+		FlexiTableColumnModel noSelectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		colIndex = TBParticipantDataModel.USER_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
+			String propName = userPropertyHandler.getName();
+			boolean visible = userManager.isMandatoryUserProperty(TBParticipantDataModel.USAGE_IDENTIFIER, userPropertyHandler);
+			noSelectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
+					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, null, true, propName));
+		}
+		
+		noSelectionDataModel = new TBParticipantDataModel(noSelectionColumnsModel, getLocale());
+		noSelectionTableEl = uifactory.addTableElement(getWindowControl(), "noselectiontable", noSelectionDataModel, 20, false, getTranslator(), formLayout);
+		noSelectionTableEl.setEmptyTableMessageKey("participants.empty.no.selection");
+		noSelectionTableEl.setCustomizeColumns(false);
+		noSelectionTableEl.setNumOfRowsEnabled(false);
 	}
 	
 	private void updateUI() {
-		boolean enrollments = SCOPE_ENROLLMENTS.equals(scopeEl.getSelectedKey());
-		enrollmentsTableEl.setVisible(enrollments);
-		topicsTableEl.setVisible(!enrollments);
+		topicsTableEl.setVisible(SCOPE_TOPICS.equals(scopeEl.getSelectedKey()));
+		priorityTableEl.setVisible(SCOPE_PRIORIY.equals(scopeEl.getSelectedKey()));
+		waitingListTableEl.setVisible(SCOPE_WAITING_LIST.equals(scopeEl.getSelectedKey()));
+		noSelectionTableEl.setVisible(SCOPE_NO_SELECTION.equals(scopeEl.getSelectedKey()));
 	}
 
 	@Override
@@ -191,20 +262,44 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 	
 	public void updateModel(TBEnrollmentStats enrollmentStats) {
 		// Widgets
-		participantsWidget.setValue(String.valueOf(enrollmentStats.getNumIdentities()));
-		
 		enrollmentsWidget.setValue(String.valueOf(enrollmentStats.getNumEnrollments()));
-		enrollmentsWidget.setDesc(translate("widget.enrollments.desc", String.valueOf(enrollmentStats.getNumRequiredEnrollments())));
+		enrollmentsWidget.setDesc(translate("widget.enrollments.description", String.valueOf(enrollmentStats.getNumRequiredEnrollments())));
 		enrollmentsProgress.setActual(enrollmentStats.getNumEnrollments());
 		enrollmentsProgress.setMax(enrollmentStats.getNumRequiredEnrollments());
 		
 		topicsWidget.setValue(String.valueOf(enrollmentStats.getNumTopicsMinReached()));
-		topicsWidget.setDesc(translate("widget.topics.desc", String.valueOf(enrollmentStats.getNumTopicsTotal())));
+		topicsWidget.setDesc(translate("widget.topics.description", String.valueOf(enrollmentStats.getNumTopicsTotal())));
 		topicsProgress.setActual(enrollmentStats.getNumTopicsMinReached());
 		topicsProgress.setMax(enrollmentStats.getNumTopicsTotal());
 		
+		participantsWidget.setValue(String.valueOf(enrollmentStats.getNumIdentities()));
 		
-		// Enrollments
+		
+		// Topics
+		List<TBTopicRow> topicRows = new ArrayList<>(topics.size());
+		for (TBTopic topic : topics) {
+			TBTopicRow row = new TBTopicRow(topic);
+			row.setNumEnrollments(enrollmentStats.getNumEnrollments(topic));
+			row.setWaitingList(enrollmentStats.getNumWaitingList(topic));
+			row.setWaitingListString(String.valueOf(row.getWaitingList()));
+			row.setEnrolledString(String.valueOf(row.getNumEnrollments()));
+			row.setEnrollmentStatus(TBUIFactory.getEnrollmentStatus(topic.getMinParticipants(), row.getNumEnrollments()));
+			row.setTranslatedEnrollmentStatus(TBUIFactory.getTranslatedStatus(getTranslator(), row.getEnrollmentStatus()));
+			row.setAvailability(TBUIFactory.getAvailability(getTranslator(), row.getEnrollmentStatus(),
+					row.getMaxParticipants(), row.getNumEnrollments(), row.getWaitingList()));
+			
+			if (topic.getMinParticipants() != null) {
+				row.setMinParticipantsString(topic.getMinParticipants().toString());
+			}
+			
+			topicRows.add(row);
+		}
+		
+		topicsDataModel.setObjects(topicRows);
+		topicsTableEl.reset();
+		
+		
+		// Priorities
 		List<TBEnrollmentRunRow> enrollmentRows = new ArrayList<>();
 		for (int i = 1; i <= broker.getMaxSelections(); i++) {
 			TBEnrollmentRunRow row = new TBEnrollmentRunRow();
@@ -213,48 +308,30 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 			enrollmentRows.add(row);
 		}
 		
-		TBEnrollmentRunRow rowWaitingList = new TBEnrollmentRunRow();
-		rowWaitingList.setPriority(translate("selection.status.waiting.list"));
-		String waitingListString = enrollmentStats.getNumWaitingList() == 0
-				? String.valueOf(enrollmentStats.getNumWaitingList())
-				: "<span><i class=\"o_icon o_icon_warn\"></i> " + enrollmentStats.getNumWaitingList() + "</span>";
-		rowWaitingList.setEnrollments(waitingListString);
-		enrollmentRows.add(rowWaitingList);
-		
-		TBEnrollmentRunRow rowMissing = new TBEnrollmentRunRow();
-		rowMissing.setPriority(translate("selection.missing"));
-		String missingString = enrollmentStats.getNumMissing() == 0
-				? String.valueOf(enrollmentStats.getNumMissing())
-				: "<span><i class=\"o_icon o_icon_error\"></i> " + enrollmentStats.getNumMissing() + "</span>";
-		rowMissing.setEnrollments(missingString);
-		enrollmentRows.add(rowMissing);
-		
-		enrollmentsDataModel.setObjects(enrollmentRows);
-		enrollmentsTableEl.reset();
+		prioriryDataModel.setObjects(enrollmentRows);
+		priorityTableEl.reset();
 		
 		
-		// Topics
-		List<TBTopicRow> topicRows = new ArrayList<>(topics.size());
-		for (TBTopic topic : topics) {
-			TBTopicRow row = new TBTopicRow(topic);
-			row.setNumEnrollments(enrollmentStats.getNumEnrollments(topic));
-			row.setEnrolledString(String.valueOf(row.getNumEnrollments()));
-			
-			if (topic.getMinParticipants() != null) {
-				row.setMinParticipantsString(topic.getMinParticipants().toString());
-				if (row.getNumEnrollments() == 0) {
-					String minParticipantsString = "<span title=\"" + translate("topic.selections.message.selections.less.min") + "\"><i class=\"o_icon o_icon_error\"></i> ";
-					minParticipantsString += row.getMinParticipantsString();
-					minParticipantsString += "</span>";
-					row.setMinParticipantsString(minParticipantsString);
-				}
-			}
-			
-			topicRows.add(row);
+		// Waiting list
+		List<TBParticipantRow> waitingListRows = new ArrayList<>(enrollmentStats.getIdentitiesWaitingList().size());
+		for (Identity identity : enrollmentStats.getIdentitiesWaitingList()) {
+			TBParticipantRow row = new TBParticipantRow(identity, userPropertyHandlers, getLocale());
+			waitingListRows.add(row);
 		}
 		
-		topicsDataModel.setObjects(topicRows);
-		topicsTableEl.reset();
+		waitingListDataModel.setObjects(waitingListRows);
+		waitingListTableEl.reset();
+		
+		
+		// No selection
+		List<TBParticipantRow> noSelectionRows = new ArrayList<>(enrollmentStats.getIdentitiesNoSelection().size());
+		for (Identity identity : enrollmentStats.getIdentitiesNoSelection()) {
+			TBParticipantRow row = new TBParticipantRow(identity, userPropertyHandlers, getLocale());
+			noSelectionRows.add(row);
+		}
+		
+		noSelectionDataModel.setObjects(noSelectionRows);
+		noSelectionTableEl.reset();
 	}
 
 }
