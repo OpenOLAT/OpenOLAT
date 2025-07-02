@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.openbadges.BadgeVerification;
 
@@ -28,7 +27,7 @@ import org.olat.modules.openbadges.BadgeVerification;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgeVerificationCellRenderer extends LabelCellRenderer {
+public class BadgeVerificationCellRenderer extends BadgeClassVerificationCellRenderer {
 
 
 	@Override
@@ -38,7 +37,7 @@ public class BadgeVerificationCellRenderer extends LabelCellRenderer {
 				return translator.translate("verified");
 			}
 		}
-		return null;
+		return super.getCellValue(val, translator);
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class BadgeVerificationCellRenderer extends LabelCellRenderer {
 				return "o_icon-check-double";
 			}			
 		}
-		return null;
+		return super.getIconCssClass(val);
 	}
 
 	@Override
@@ -58,6 +57,6 @@ public class BadgeVerificationCellRenderer extends LabelCellRenderer {
 				return "o_badge_verification_verified";
 			}
 		}
-		return null;
+		return super.getElementCssClass(val);
 	}
 }
