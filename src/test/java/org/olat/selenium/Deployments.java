@@ -33,9 +33,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.notification.RunNotifier;
 import org.olat.core.logging.Tracing;
 import org.olat.test.ArquillianDeployments;
 import org.openqa.selenium.Dimension;
@@ -156,9 +153,6 @@ public class Deployments {
 			FirefoxOptions options = new FirefoxOptions();
 			//options.setLogLevel(FirefoxDriverLogLevel.TRACE);
 			options.enableBiDi();
-			options.setCapability("moz:debuggerAddress", false);
-			options.setCapability("webSocketUrl", true);
-		    options.addPreference("remote.active-protocols", 1);
 		    
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setPreference("browser.crashReports.unsubmittedCheck.autoSubmit2", Boolean.TRUE);
@@ -166,11 +160,12 @@ public class Deployments {
 			profile.setPreference("browser.startup.page", 1);
 			profile.setPreference("browser.sessionstore.resume_from_crash", Boolean.FALSE);
 			profile.setPreference("browser.sessionstore.max_resumed_crashes", 0);
+			profile.setPreference("extensions.formautofill.addresses.enabled", Boolean.FALSE);
+			profile.setPreference("extensions.formautofill.addresses.capture.enabled", Boolean.FALSE);
 			profile.setPreference("fission.webContentIsolationStrategy", 0);
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
 			profile.setPreference("pdfjs.enabledCache.initialized", Boolean.TRUE);
 			profile.setPreference("pdfjs.enabledCache.state", Boolean.TRUE);
-			profile.setPreference("remote.events.async.enabled", Boolean.FALSE);
 			profile.setPreference("sidebar.visibility", "hide-sidebar");
 
 			options.setProfile(profile);
@@ -186,40 +181,5 @@ public class Deployments {
 			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), options);
 		}
 		return driver;
-	}
-	
-	/*
-	protected void startDevTools(WebDriver driver) {
-		try {
-			if(driver instanceof ChromeDriver chromeDriver) {
-				DevTools devTools = chromeDriver.getDevTools();
-				devTools.createSessionIfThereIsNotOne();
-				devTools.send(org.openqa.selenium.devtools.v129.log.Log.enable());
-				devTools.send(org.openqa.selenium.devtools.v129.console.Console.enable());
-				devTools.addListener(org.openqa.selenium.devtools.v129.log.Log.entryAdded(), logEntry -> {
-					log.warn("Chrome: {} {}", logEntry.getLevel(), logEntry.getText());
-				});
-				devTools.addListener(org.openqa.selenium.devtools.v129.console.Console.messageAdded(), logEntry -> {
-					log.warn("Chrome console: {} {}", logEntry.getLevel(), logEntry.getText());
-				});
-			}
-		} catch (Exception e) {
-			log.error("Cannot start dev tools", e);
-		}
-	}
-	*/
-	
-	public static class SeleniumListener extends RunListener {
-		
-		private RunNotifier runNotifier;
-
-		@Override
-		public void testFailure(Failure failure) throws Exception {
-			super.testFailure(failure);
-			runNotifier.pleaseStop();
-		}
-		
-		
-		
 	}
 }
