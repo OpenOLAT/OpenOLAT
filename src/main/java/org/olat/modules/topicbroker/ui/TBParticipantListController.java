@@ -703,7 +703,7 @@ public class TBParticipantListController extends FormBasicController implements 
 			} else if (event instanceof FlexiTableFilterTabEvent) {
 				detailsOpenIdentityKeys = null;
 				loadModel(ureq);
-			} else if (event instanceof FlexiTableSearchEvent ftse) {
+			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq);
 			}
 		}
