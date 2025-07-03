@@ -42,8 +42,10 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class AppointmentsConfigController extends FormBasicController {
 
-	private MultipleSelectionElement orzanizersEl;
+	private static final String[] onKeys = new String[]{"on"};
 
+	private MultipleSelectionElement organizersEl;
+	private MultipleSelectionElement notificationForOrganizersEl;
 	private final ModuleConfiguration configs;
 
 	public AppointmentsConfigController(UserRequest ureq, WindowControl wControl, AppointmentsCourseNode courseNode) {
@@ -61,25 +63,41 @@ public class AppointmentsConfigController extends FormBasicController {
 		SelectionValues organizersKV = new SelectionValues();
 		organizersKV.add(SelectionValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, translate("config.edit.owner")));
 		organizersKV.add(SelectionValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, translate("config.edit.coach")));
-		orzanizersEl = uifactory.addCheckboxesVertical("config.edit.organizers", formLayout, organizersKV.keys(), organizersKV.values(), 1);
-		orzanizersEl.addActionListener(FormEvent.ONCHANGE);
-		orzanizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER));
-		orzanizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH));
+		organizersEl = uifactory.addCheckboxesVertical("config.edit.organizers", formLayout, organizersKV.keys(), organizersKV.values(), 1);
+		organizersEl.addActionListener(FormEvent.ONCHANGE);
+		organizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER));
+		organizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH));
+
+		String[] onValues = new String[]{translate("config.edit.send.notification.after.selected.appointment")};
+		notificationForOrganizersEl = uifactory.addCheckboxesHorizontal("config.edit.notification.for.organizers", 
+				formLayout, onKeys, onValues);
+		notificationForOrganizersEl.addActionListener(FormEvent.ONCHANGE);
+		boolean notification = configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_NOTIFICATION_FOR_ORGANIZERS);
+		if (notification) {
+			notificationForOrganizersEl.select(onKeys[0], true);
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == orzanizersEl) {
+		if (source == organizersEl) {
 			setOrganizers(ureq);
+		} else if (source == notificationForOrganizersEl) {
+			setNotificationForOrganizers(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	private void setOrganizers(UserRequest ureq) {
-		Collection<String> selectedOrganizers = orzanizersEl.getSelectedKeys();
+		Collection<String> selectedOrganizers = organizersEl.getSelectedKeys();
 		configs.setBooleanEntry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, selectedOrganizers.contains(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER));
 		configs.setBooleanEntry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, selectedOrganizers.contains(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+	}
+
+	private void setNotificationForOrganizers(UserRequest ureq) {
+		configs.setBooleanEntry(AppointmentsCourseNode.CONFIG_KEY_NOTIFICATION_FOR_ORGANIZERS, notificationForOrganizersEl.isAtLeastSelected(1));
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);		
 	}
 
 	@Override
