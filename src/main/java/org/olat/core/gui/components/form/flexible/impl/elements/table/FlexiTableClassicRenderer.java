@@ -430,12 +430,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		int columnIndex = fcm.getColumnIndex();
 		Object cellValue = columnIndex >= 0 ? 
 				dataModel.getValueAt(row, columnIndex) : null;
-		renderCellValue(renderer, target, ftC, fcm, cellValue, row, ubu, translator, renderResult);
+		renderCellValue(renderer, target, ftC, fcm, cellValue, row, ubu, translator, renderResult, false);
 		target.append("</td>");
 	}
 	
 	private void renderCellValue(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, Object cellValue,
-			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult, boolean footer) {
 		FlexiTableElementImpl ftE = ftC.getFormItem();
 		if (cellValue instanceof FormItem formItem) {
 			if(formItem instanceof JSDateChooser dChooser) {
@@ -453,7 +453,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				renderFormItem(renderer, target, ubu, translator, renderResult, ftE, formItem);
 			}
 		} else {
-			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);
+			
+			FlexiCellRenderer cellRenderer = fcm.getCellRenderer();
+			if (footer && fcm.getFooterCellRenderer() != null) {
+				cellRenderer = fcm.getFooterCellRenderer();
+			}
+			cellRenderer.render(renderer, target, cellValue, row, ftC, ubu, translator);
 		}
 	}
 
@@ -548,7 +553,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 					} else {
 						String cssClass = getAlignmentCssClass(alignment);
 						target.append("<td class=\"").append(cssClass).append("\">");
-						renderCellValue(renderer, target, ftC, fcm, cellValue, j, ubu, translator, renderResult);
+						renderCellValue(renderer, target, ftC, fcm, cellValue, j, ubu, translator, renderResult, true);
 						target.append("</td>");
 					}
 				}
