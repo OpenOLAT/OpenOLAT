@@ -68,6 +68,7 @@ public class FindingConfirmationController extends FormBasicController {
 	private FlexiTableElement usersTableEl;
 	
 	private final Appointment appointment;
+	private final boolean sendParticipationNotificationToOrganizers;
 	private final Topic topic;
 	private final RepositoryEntry entry;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -85,8 +86,9 @@ public class FindingConfirmationController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public FindingConfirmationController(UserRequest ureq, WindowControl wControl, Appointment appointment) {
+	public FindingConfirmationController(UserRequest ureq, WindowControl wControl, Appointment appointment, boolean sendParticipationNotificationToOrganizers) {
 		super(ureq, wControl, "finding_confirmation");
+		this.sendParticipationNotificationToOrganizers = sendParticipationNotificationToOrganizers;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.appointment = appointment;
 		this.topic = appointment.getTopic();
@@ -218,7 +220,7 @@ public class FindingConfirmationController extends FormBasicController {
 		}
 		Collection<Identity> identities = securityManager.loadIdentityByKeys(addedIdentityKeys);
 		appointmentsService.createParticipations(appointment, identities, getIdentity(), topic.isMultiParticipation(),
-				topic.isAutoConfirmation(), false);
+				topic.isAutoConfirmation(), false, sendParticipationNotificationToOrganizers);
 		
 		List<Participation> unselectedParticipations = new ArrayList<>();
 		for (Participation participation : participations) {

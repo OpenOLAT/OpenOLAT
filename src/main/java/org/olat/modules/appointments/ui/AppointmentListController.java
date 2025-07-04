@@ -795,7 +795,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 
 	private void doCreateParticipation(Appointment appointment) {
 		ParticipationResult participationResult = appointmentsService.createParticipations(appointment,
-				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation(), true);
+				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation(), 
+				true, secCallback.isSendParticipationNotificationToOrganizers());
 		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
 			showWarning("participation.not.created");
 		}
@@ -865,7 +866,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	private void doConfirmFinding(UserRequest ureq, Appointment appointment) {
-		findingConfirmationCtrl = new FindingConfirmationController(ureq, getWindowControl(), appointment);
+		findingConfirmationCtrl = new FindingConfirmationController(ureq, getWindowControl(), appointment, 
+				secCallback.isSendParticipationNotificationToOrganizers());
 		listenTo(findingConfirmationCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), findingConfirmationCtrl.getInitialComponent(), true,
@@ -887,7 +889,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	private void doAddUser(Appointment appointment, List<Identity> identities) {
 		ParticipationResult result = appointmentsService.createParticipations(appointment, identities, getIdentity(),
-				topic.isMultiParticipation(), topic.isAutoConfirmation(), false);
+				topic.isMultiParticipation(), topic.isAutoConfirmation(), false, secCallback.isSendParticipationNotificationToOrganizers());
 		if (ParticipationResult.Status.appointmentFull == result.getStatus()) {
 			showWarning("error.not.as.many.participations.left");
 		} else if (ParticipationResult.Status.ok != result.getStatus()) {

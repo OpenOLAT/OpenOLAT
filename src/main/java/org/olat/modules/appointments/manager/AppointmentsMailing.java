@@ -49,6 +49,7 @@ import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.modules.appointments.ui.AppointmentsUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -70,6 +71,8 @@ public class AppointmentsMailing {
 	private UserManager userManager;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	void sendAppointmentConfirmed(Appointment appointment) {
 		if (appointment == null) return;
@@ -362,4 +365,31 @@ public class AppointmentsMailing {
 		return new MailContextImpl("[RepositoryEntry:" + topic.getEntry().getKey() + "]");
 	}
 
+	void sendAppointmentSelectionNotification(Appointment appointment, Identity organizer, Identity participant) {
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(organizer.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
+
+		String appointmentName = appointment.getTopic().getTitle();
+		String subject = translator.translate("email.appointment.headline", appointmentName);
+		
+		String emailRecipientName = userManager.getUserDisplayName(organizer.getKey());
+		RepositoryEntry reloadedEntry = repositoryService.loadByKey(appointment.getTopic().getEntry().getKey());
+		String courseUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + reloadedEntry.getKey();
+		String courseName = reloadedEntry.getDisplayname();
+		String participantName = userManager.getUserDisplayName(participant.getKey());
+		String formattedAppointments = createFormatedAppointments(Collections.singletonList(appointment), translator);
+		
+		String body = translator.translate("email.appointment.body", emailRecipientName, courseUrl, courseName, 
+				participantName, formattedAppointments);		
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(organizer);
+		bundle.setContent(subject, body);
+		bundle.setContext(getMailContext(appointment.getTopic()));
+		
+		MailerResult result = mailManager.sendMessage(bundle);
+		if (!result.isSuccessful()) {
+			log.warn(MessageFormat.format("Mail could not be sent to organizer {0}: {1}", organizer, result.getErrorMessage()));
+		}
+	} 
 }

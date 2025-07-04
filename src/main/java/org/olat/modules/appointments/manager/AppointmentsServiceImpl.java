@@ -613,7 +613,8 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 
 	@Override
 	public ParticipationResult createParticipations(Appointment appointment, Collection<Identity> identities,
-			Identity createdBy, boolean multiParticipations, boolean autoConfirmation, boolean rejectIfConfirmed) {
+			Identity createdBy, boolean multiParticipations, boolean autoConfirmation, boolean rejectIfConfirmed,
+			boolean sendParticipationNotificationToOrganizers) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
 		appointmentParams.setAppointment(appointment);
 		appointmentParams.setFetchTopic(true);
@@ -625,6 +626,11 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		Appointment reloadedAppointment = appointments.get(0);
 		if (!autoConfirmation && rejectIfConfirmed && Status.confirmed == reloadedAppointment.getStatus()) {
 			return ParticipationResult.APPOINTMENT_CONFIRMED;
+		}
+		
+		List<Organizer> organizers = new ArrayList<>();
+		if (sendParticipationNotificationToOrganizers) {
+			organizers = organizerDao.loadOrganizers(appointment.getTopic());
 		}
 		
 		ParticipationSearchParams params = new ParticipationSearchParams();
@@ -665,6 +671,10 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 			}
 			if (Status.confirmed == appointment.getStatus()) {
 				appointmentsMailing.sendParticipationCreated(participation);
+			}
+			
+			for (Organizer organizer: organizers) {
+				appointmentsMailing.sendAppointmentSelectionNotification(appointment, organizer.getIdentity(), identity);
 			}
 		}
 		

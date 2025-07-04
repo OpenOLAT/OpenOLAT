@@ -63,5 +63,6 @@ public interface AppointmentsSecurityCallback {
 	
 	public boolean canSubscribe(Collection<Organizer> organizers);
 
+	public boolean isSendParticipationNotificationToOrganizers();
 	
 }
