@@ -344,7 +344,7 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl.setMinLength(1);
 		
 		// Online meeting
-		String meetingUrl = lectureBlock == null ? null : lectureBlock.getMeetingUrl();
+		String onlineMeetingUrl = lectureBlock == null ? null : lectureBlock.getMeetingUrl();
 		SelectionValues meetingPK = new SelectionValues();
 		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isLecturesEnabled()) {
 			meetingPK.add(SelectionValues.entry(BIGBLUEBUTTON_MEETING, translate("lecture.online.meeting.bigbluebutton"), null, "o_icon o_bigbluebuttonmeeting_icon", null, true));
@@ -355,11 +355,13 @@ public class EditLectureBlockController extends FormBasicController {
 		meetingPK.add(SelectionValues.entry(OTHER_MEETING, translate("lecture.online.meeting.other"), null, "o_icon o_icon_external_link", null, true));
 		enabledOnlineMeetingEl = uifactory.addToggleButton("lecture.online.meeting", "lecture.online.meeting",
 				translate("on"), translate("off"), formLayout);
-		enabledOnlineMeetingEl.toggle(bigBlueButtonMeeting != null || teamsMeeting != null || StringHelper.containsNonWhitespace(meetingUrl));
+		enabledOnlineMeetingEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
+		enabledOnlineMeetingEl.toggle(bigBlueButtonMeeting != null || teamsMeeting != null || StringHelper.containsNonWhitespace(onlineMeetingUrl));
 		enabledOnlineMeetingEl.setVisible(!meetingPK.isEmpty());
 		enabledOnlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
 		
 		onlineMeetingEl = uifactory.addCardSingleSelectHorizontal("onlinemeeting.provider", null, formLayout, meetingPK);
+		onlineMeetingEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
 		onlineMeetingEl.setVisible(enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn());
 		onlineMeetingEl.addActionListener(FormEvent.ONCHANGE);
 		if(meetingPK.containsKey(BIGBLUEBUTTON_MEETING) && bigBlueButtonMeeting != null) {
@@ -374,9 +376,12 @@ public class EditLectureBlockController extends FormBasicController {
 		editOnlineMeetingButton = uifactory.addFormLink("edit.online.meeting", formLayout, Link.BUTTON_SMALL);
 		editOnlineMeetingButton.setVisible(false);
 		
-		onlineMeetingProviderNameEl = uifactory.addTextElement("lecture.online.meeting.provider.name", 32, "Zoom", formLayout);
+		String onlineMeetingTitle = lectureBlock == null ? "Zoom" : lectureBlock.getMeetingTitle();
+		onlineMeetingProviderNameEl = uifactory.addTextElement("lecture.online.meeting.provider.name", 32, onlineMeetingTitle, formLayout);
+		onlineMeetingProviderNameEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
 		onlineMeetingProviderNameEl.setMandatory(true);
-		onlineMeetingProviderUrlEl = uifactory.addTextElement("lecture.online.meeting.provider.url", 256, null, formLayout);
+		onlineMeetingProviderUrlEl = uifactory.addTextElement("lecture.online.meeting.provider.url", 256, onlineMeetingUrl, formLayout);
+		onlineMeetingProviderUrlEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.onlineMeeting));
 		onlineMeetingProviderUrlEl.setMandatory(true);
 		
 		updateOnlineMeetingUI();
