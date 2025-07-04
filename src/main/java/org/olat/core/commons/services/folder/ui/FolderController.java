@@ -523,8 +523,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			trashMessageEl.setVisible(trashView);
 		}
 		bulkDownloadButton.setVisible(!trashView);
-		bulkMoveButton.setVisible(!trashView && canEditCurrentContainer);
-		bulkCopyButton.setVisible(!trashView && canEditCurrentContainer);
+		bulkMoveButton.setVisible(FolderView.folder == folderView && canEditCurrentContainer);
+		bulkCopyButton.setVisible(FolderView.folder == folderView && canEditCurrentContainer);
 		bulkZipButton.setVisible(!trashView && canEditCurrentContainer);
 		bulkEmailButton.setVisible(!trashView);
 		
