@@ -266,5 +266,10 @@ public class VFSMetadataContainer extends VFSMetadataItem implements VFSContaine
 		}
 		return null;
 	}
+	
+	@Override
+	public String toString() {
+		return "VFSMetadataContainer [rel path=" + getRelPath() + "] ";
+	}
 
 }
