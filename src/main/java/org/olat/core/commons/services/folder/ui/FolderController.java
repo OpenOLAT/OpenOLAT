@@ -2325,7 +2325,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				VFSContainer uncachedTargetContainer = (VFSContainer)getUncachedItem(params.getTargetContainer());
 				VFSContainer uncachedSourceContainer = (VFSContainer)getUncachedItem(sourceContainer);
 				if (VFSManager.isContainerDescendantOrSelf(uncachedTargetContainer, uncachedSourceContainer)) {
-					showWarning("error.copy.overlapping");
+					showWarning(params.isMove()? "error.move.overlapping": "error.copy.overlapping");
 					loadModel(ureq);
 					return;
 				}
@@ -2341,12 +2341,27 @@ public class FolderController extends FormBasicController implements Activateabl
 				return;
 			}
 			
+			if (params.getOverwrite() == null && itemToCopy.getParentContainer() != null 
+					&& itemToCopy.getParentContainer().getRelPath().equalsIgnoreCase(params.getTargetContainer().getRelPath())) {
+				// We assume all items to copy are in the same source folder.
+				if (params.isMove()) {
+					showWarning("error.move.same.source.target", String.valueOf(params.getItemsToCopy().size()));
+					loadModel(ureq);
+					return;
+				}
+				
+				// If copy is inside a folder, create a new item.
+				// Overwriting and new versions makes no sense in this case.
+				params.setOverwrite(Boolean.FALSE);
+			}
+			
 			if (params.getTargetContainer().resolve(itemToCopy.getName()) != null) {
+				// If an item with the same name exist, let the user decide if a new file should be created.
 				itemsWithSameNameExists.add(itemToCopy);
 			}
 		}
 		
-		if (!itemsWithSameNameExists.isEmpty() && !params.isSuppressVersion()) {
+		if (params.getOverwrite() == null && !itemsWithSameNameExists.isEmpty() && !params.isSuppressVersion()) {
 			doShowOverwriteConfirmation(ureq, params, itemsWithSameNameExists);
 			return;
 		}
@@ -2439,7 +2454,8 @@ public class FolderController extends FormBasicController implements Activateabl
 							}
 							if (!fileIgnored) {
 								vfsItemToCopy = appendMissingLicense(vfsItemToCopy, params.getLicense());
-								vfsStatus = params.getTargetContainer().copyFrom(vfsItemToCopy, getIdentity());
+								VFSContainer uncachedTargetContainer = (VFSContainer)getUncachedItem(params.getTargetContainer());
+								vfsStatus = uncachedTargetContainer.copyFrom(vfsItemToCopy, getIdentity());
 							}
 						}
 					}
