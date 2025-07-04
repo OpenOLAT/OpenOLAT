@@ -50,6 +50,7 @@ public class IssuedBadgesSortDelegate extends SortableFlexiTableModelDelegate<Is
 	protected void sort(List<IssuedBadgeRow> rows) {
 		if (IssuedBadgesTableModel.COLS[getColumnIndex()] == IssuedBadgesTableModel.IssuedBadgeCols.status) {
 			rows.sort(Comparator.comparing(this::statusColumnString));
+			return;
 		}
 		super.sort(rows);
 	}

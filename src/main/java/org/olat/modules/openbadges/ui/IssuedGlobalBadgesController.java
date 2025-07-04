@@ -329,6 +329,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		protected void sort(List<Row> rows) {
 			if (Cols.values()[getColumnIndex()] == Cols.status) {
 				rows.sort(Comparator.comparing(this::statusColumnString));
+				return;
 			}
 			super.sort(rows);
 		}
