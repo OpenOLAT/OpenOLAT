@@ -2322,7 +2322,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		List<VFSItem> itemsWithSameNameExists = new ArrayList<>(1);
 		for (VFSItem itemToCopy : params.getItemsToCopy()) {
 			if (itemToCopy instanceof VFSContainer sourceContainer) {
-				if (VFSManager.isContainerDescendantOrSelf(params.getTargetContainer(), sourceContainer)) {
+				VFSContainer uncachedTargetContainer = (VFSContainer)getUncachedItem(params.getTargetContainer());
+				VFSContainer uncachedSourceContainer = (VFSContainer)getUncachedItem(sourceContainer);
+				if (VFSManager.isContainerDescendantOrSelf(uncachedTargetContainer, uncachedSourceContainer)) {
 					showWarning("error.copy.overlapping");
 					loadModel(ureq);
 					return;
