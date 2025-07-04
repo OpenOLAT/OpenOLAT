@@ -215,10 +215,9 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			return VFSSuccess.ERROR_NAME_ALREDY_USED;
 		}
 		
-		// add either file bla.txt or folder blu as a child of this folder
 		if (source instanceof VFSContainer sourceContainer) {
-			if (VFSManager.isSelfOrParent(sourceContainer, this)) {
-				log.warn("Cannot copy file {}  overlapping", this);
+			if (isSame(sourceContainer)) {
+				log.warn("Cannot copy {} to {}: it is the same", sourceContainer, this);
 				return VFSSuccess.ERROR_OVERLAPPING;
 			}
 			
