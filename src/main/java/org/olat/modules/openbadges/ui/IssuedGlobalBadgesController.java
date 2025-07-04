@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -297,7 +298,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		@Override
 		public void sort(SortKey sortKey) {
 			if (sortKey != null) {
-				List<Row> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, locale).sort();
+				List<Row> rows = new BadgeAssertionSortDelegate(sortKey, this, locale).sort();
 				super.setObjects(rows);
 			}
 		}
@@ -315,6 +316,29 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 				case revoke -> row.revokeLink();
 				case delete -> row.deleteLink();
 			};
+		}
+	}
+	
+	private class BadgeAssertionSortDelegate extends SortableFlexiTableModelDelegate<Row> {
+
+		public BadgeAssertionSortDelegate(SortKey orderBy, SortableFlexiTableDataModel<Row> tableModel, Locale locale) {
+			super(orderBy, tableModel, locale);
+		}
+
+		@Override
+		protected void sort(List<Row> rows) {
+			if (Cols.values()[getColumnIndex()] == Cols.status) {
+				rows.sort(Comparator.comparing(this::statusColumnString));
+			}
+			super.sort(rows);
+		}
+
+		private String statusColumnString(Row row) {
+			if (openBadgesManager.isBadgeAssertionExpired(row.badgeAssertionWithSize.badgeAssertion())) {
+				return translate("expired");
+			} else {
+				return translate("assertion.status." + row.badgeAssertionWithSize.badgeAssertion().getStatus().name());
+			}
 		}
 	}
 }

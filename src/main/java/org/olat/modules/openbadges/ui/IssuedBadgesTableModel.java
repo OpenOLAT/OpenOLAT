@@ -27,9 +27,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
  * Initial date: 2023-06-28<br>
@@ -39,15 +39,17 @@ import org.olat.core.util.Util;
 public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBadgeRow>
 		implements SortableFlexiTableDataModel<IssuedBadgeRow> {
 
-	private static final IssuedBadgeCols[] COLS = IssuedBadgeCols.values();
+	static final IssuedBadgeCols[] COLS = IssuedBadgeCols.values();
 
 	private final Locale locale;
 	private final Translator translator;
+	private final OpenBadgesManager openBadgesManager;
 
-	public IssuedBadgesTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public IssuedBadgesTableModel(FlexiTableColumnModel columnModel, Locale locale, OpenBadgesManager openBadgesManager) {
 		super(columnModel);
 		this.locale = locale;
 		translator = Util.createPackageTranslator(IssuedBadgesTableModel.class, locale);
+		this.openBadgesManager = openBadgesManager;
 	}
 
 	@Override
@@ -74,7 +76,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 	@Override
 	public void sort(SortKey sortKey) {
 		if (sortKey != null) {
-			List<IssuedBadgeRow> rows = new SortableFlexiTableModelDelegate<>(sortKey, this, locale).sort();
+			List<IssuedBadgeRow> rows = new IssuedBadgesSortDelegate(sortKey, this, locale, openBadgesManager, translator).sort();
 			super.setObjects(rows);
 		}
 	}

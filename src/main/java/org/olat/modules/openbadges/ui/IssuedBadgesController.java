@@ -161,7 +161,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		
 		columnModel.addFlexiColumnModel(new ActionsColumnModel(IssuedBadgeCols.tools));
 
-		tableModel = new IssuedBadgesTableModel(columnModel, getLocale());
+		tableModel = new IssuedBadgesTableModel(columnModel, getLocale(), openBadgesManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10,
 				false, getTranslator(), formLayout);
 		tableEl.setCssDelegate(CssDelegate.DELEGATE);
