@@ -113,8 +113,10 @@ public class ExcelExport {
 		
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			headerRow.addCell(col + i, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()));
+			headerRow.addCell(col++, translator.translate(userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
+		
+		headerRow.addCell(col, translator.translate("appointment.comment"));
 	}
 	
 	private void addContent(OpenXMLWorkbook workbook, OpenXMLWorksheet worksheet) {
@@ -144,6 +146,8 @@ public class ExcelExport {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			dataRow.addCell(col++, userPropertyHandler.getUserProperty(user, translator.getLocale()));
 		}
+
+		dataRow.addCell(col, participation.getComment());
 	}
 
 }
