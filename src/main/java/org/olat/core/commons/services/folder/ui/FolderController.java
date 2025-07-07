@@ -2316,6 +2316,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		if (!canEdit(params.getTargetContainer())) {
 			showWarning("error.copy.target.read.only");
+			cleanUp();
 			return;
 		}
 		
@@ -2326,17 +2327,20 @@ public class FolderController extends FormBasicController implements Activateabl
 				VFSContainer uncachedSourceContainer = (VFSContainer)getUncachedItem(sourceContainer);
 				if (VFSManager.isContainerDescendantOrSelf(uncachedTargetContainer, uncachedSourceContainer)) {
 					showWarning(params.isMove()? "error.move.overlapping": "error.copy.overlapping");
+					cleanUp();
 					loadModel(ureq);
 					return;
 				}
 			}
 			if (vfsLockManager.isLockedForMe(itemToCopy, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
 				showWarning("error.copy.locked");
+				cleanUp();
 				loadModel(ureq);
 				return;
 			}
 			if (itemToCopy.canCopy() != VFSStatus.YES) {
 				showWarning("error.copy.other");
+				cleanUp();
 				loadModel(ureq);
 				return;
 			}
@@ -2346,6 +2350,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				// We assume all items to copy are in the same source folder.
 				if (params.isMove()) {
 					showWarning("error.move.same.source.target", String.valueOf(params.getItemsToCopy().size()));
+					cleanUp();
 					loadModel(ureq);
 					return;
 				}
