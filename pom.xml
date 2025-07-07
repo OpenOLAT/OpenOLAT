@@ -21,7 +21,7 @@
 	</organization>
 	<licenses>
 		<license>
-			<name>Apache 2.0 Open Source License</name>
+			<name>Apache 2.0 Open Source L6icense</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
 			<distribution>manual</distribution>
 			<comments>OpenOLAT is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</comments>
@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.43.0</version>
+			<version>6.44.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
