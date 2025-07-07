@@ -147,6 +147,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private CloseableCalloutWindowController calloutCtrl;
 	private ParticipationRemoveController removeCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
+	private AppointmentSelectController appointmentSelectCtrl;
 
 	protected Topic topic;
 	protected final AppointmentsSecurityCallback secCallback;
@@ -672,7 +673,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		if (source == confirmParticipationCrtl) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				Appointment appointment = (Appointment)confirmParticipationCrtl.getUserObject();
-				doCreateParticipation(appointment);
+				doCreateParticipation(ureq, appointment);
 				updateModel();
 			}
 		} else if (findingConfirmationCtrl == source) {
@@ -695,6 +696,16 @@ public abstract class AppointmentListController extends FormBasicController impl
 			cleanUp();
 		} else if (appointmentDeleteCtrl == source) {
 			if (event == Event.DONE_EVENT) {
+				updateModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (appointmentSelectCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doCreateParticipation(appointmentSelectCtrl.getAppointment(), appointmentSelectCtrl.getComment());
+				updateModel();
+			} else if (event == Event.CANCELLED_EVENT) {
+				doCreateParticipation(appointmentSelectCtrl.getAppointment(), null);
 				updateModel();
 			}
 			cmc.deactivate();
@@ -731,6 +742,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private void cleanUp() {
 		removeAsListenerAndDispose(findingConfirmationCtrl);
 		removeAsListenerAndDispose(appointmentDeleteCtrl);
+		removeAsListenerAndDispose(appointmentSelectCtrl);
 		removeAsListenerAndDispose(addAppointmentsCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
@@ -739,6 +751,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		removeAsListenerAndDispose(cmc);
 		findingConfirmationCtrl = null;
 		appointmentDeleteCtrl = null;
+		appointmentSelectCtrl = null;
 		addAppointmentsCtrl = null;
 		appointmentEditCtrl = null;
 		userSearchCtrl = null;
@@ -767,7 +780,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			if (topic.isAutoConfirmation()) {
 				doSelfConfirmParticipation(ureq, row);
 			} else {
-				doCreateParticipation(row.getAppointment());
+				doCreateParticipation(ureq, row.getAppointment());
 			}
 		} else {
 			appointmentsService.deleteParticipation(row.getParticipation());
@@ -793,15 +806,42 @@ public abstract class AppointmentListController extends FormBasicController impl
 		confirmParticipationCrtl.setUserObject(row.getAppointment());
 	}
 
-	private void doCreateParticipation(Appointment appointment) {
-		ParticipationResult participationResult = appointmentsService.createParticipations(appointment,
-				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation(), 
-				true, secCallback.isSendParticipationNotificationToOrganizers());
-		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
-			showWarning("participation.not.created");
+	private void doCreateParticipation(UserRequest ureq, Appointment appointment) {
+		if (secCallback.isParticipantCanComment()) {
+			doShowCommentDialog(ureq, appointment);
+		} else {
+			doCreateParticipation(appointment, null);
 		}
 	}
 
+	private void doCreateParticipation(Appointment appointment, String comment) {
+		ParticipationResult participationResult = appointmentsService.createParticipations(appointment,
+				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation(),
+				true, secCallback.isSendParticipationNotificationToOrganizers());
+		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
+			showWarning("participation.not.created");
+			return;
+		}
+
+		if (StringHelper.containsNonWhitespace(comment)) {
+			participationResult.getParticipations().forEach(participation -> {
+				participation.setComment(comment);
+				appointmentsService.updateParticipation(participation);
+			});
+		}
+	}
+	
+	private void doShowCommentDialog(UserRequest ureq, Appointment appointment) {
+		String title = translate("comment.for", appointment.getTopic().getTitle());
+		appointmentSelectCtrl = new AppointmentSelectController(ureq, getWindowControl(), appointment);
+		listenTo(appointmentSelectCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				appointmentSelectCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doAddStartDurationAppointments(UserRequest ureq) {
 		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.startDuration);
 		listenTo(addAppointmentsCtrl);

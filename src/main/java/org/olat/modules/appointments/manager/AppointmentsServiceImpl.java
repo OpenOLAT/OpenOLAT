@@ -757,6 +757,11 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		
 		return ParticipationResult.of(participations);
 	}
+
+	@Override
+	public void updateParticipation(Participation participation) {
+		participationDao.updateParticipation(participation);
+	}
 	
 	@Override
 	public void deleteParticipations(Collection<? extends ParticipationRef> participationRefs, boolean sendEmail, boolean autoConfirmation) {

@@ -62,6 +62,7 @@ public class AppointmentsSecurityCallbackFactory {
 		private final boolean readOnly;
 		private final boolean organizerCandidate;
 		private final boolean sendParticipationNotificationToOrganizers;
+		private final boolean participantCanComment;
 
 		public UserAppointmentsSecurityCallback(ModuleConfiguration config, UserCourseEnvironment userCourseEnv,
 				OrganizerCandidateSupplier organizerCandidateSupplier) {
@@ -76,6 +77,7 @@ public class AppointmentsSecurityCallbackFactory {
 			this.coachCanEditTopic = nodeRightService.isGranted(config, userCourseEnv, AppointmentsCourseNode.EDIT_TOPIC);
 			this.coachCanEditAppointment = nodeRightService.isGranted(config, userCourseEnv, AppointmentsCourseNode.EDIT_APPOINTMENT);
 			this.sendParticipationNotificationToOrganizers = config.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_NOTIFICATION_FOR_ORGANIZERS);
+			this.participantCanComment = config.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_PARTICIPANT_COMMENT);
 		}
 
 		@Override
@@ -224,6 +226,11 @@ public class AppointmentsSecurityCallbackFactory {
 		@Override
 		public boolean isSendParticipationNotificationToOrganizers() {
 			return sendParticipationNotificationToOrganizers;
+		}
+
+		@Override
+		public boolean isParticipantCanComment() {
+			return participantCanComment;
 		}
 	}
 
