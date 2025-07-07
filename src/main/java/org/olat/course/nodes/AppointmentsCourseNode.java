@@ -81,6 +81,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_ORGANIZER_OWNER = "organizer.ower";
 	public static final String CONFIG_KEY_ORGANIZER_COACH = "organizer.coach";
 	public static final String CONFIG_KEY_NOTIFICATION_FOR_ORGANIZERS = "notification.for.organizers";
+	public static final String CONFIG_KEY_PARTICIPANT_COMMENT = "participant.comment";
 	private static final String LEGACY_COACH_EDIT_TOPIC = "coach.edit.topic";
 	private static final String LEGACY_COACH_EDIT_APPOINTMENT = "coach.edit.appointment";
 

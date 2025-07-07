@@ -46,6 +46,7 @@ public class AppointmentsConfigController extends FormBasicController {
 
 	private MultipleSelectionElement organizersEl;
 	private MultipleSelectionElement notificationForOrganizersEl;
+	private MultipleSelectionElement participantsCanCommentEl;
 	private final ModuleConfiguration configs;
 
 	public AppointmentsConfigController(UserRequest ureq, WindowControl wControl, AppointmentsCourseNode courseNode) {
@@ -68,13 +69,26 @@ public class AppointmentsConfigController extends FormBasicController {
 		organizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER));
 		organizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH));
 
-		String[] onValues = new String[]{translate("config.edit.send.notification.after.selected.appointment")};
+		String[] notificationOnValues = new String[] {
+				translate("config.edit.send.notification.after.selected.appointment")
+		};
 		notificationForOrganizersEl = uifactory.addCheckboxesHorizontal("config.edit.notification.for.organizers", 
-				formLayout, onKeys, onValues);
+				formLayout, onKeys, notificationOnValues);
 		notificationForOrganizersEl.addActionListener(FormEvent.ONCHANGE);
 		boolean notification = configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_NOTIFICATION_FOR_ORGANIZERS);
 		if (notification) {
 			notificationForOrganizersEl.select(onKeys[0], true);
+		}
+		
+		String[] commentOnValues = new String[] {
+				translate("config.edit.participants.can.comment")
+		};
+		participantsCanCommentEl = uifactory.addCheckboxesHorizontal("config.edit.comment", formLayout, onKeys,
+				commentOnValues);
+		participantsCanCommentEl.addActionListener(FormEvent.ONCHANGE);
+		boolean canComment = configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_PARTICIPANT_COMMENT);
+		if (canComment) {
+			participantsCanCommentEl.select(onKeys[0], true);
 		}
 	}
 
@@ -84,6 +98,8 @@ public class AppointmentsConfigController extends FormBasicController {
 			setOrganizers(ureq);
 		} else if (source == notificationForOrganizersEl) {
 			setNotificationForOrganizers(ureq);
+		} else if (source == participantsCanCommentEl) {
+			setParticipantsCanComment(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -98,6 +114,11 @@ public class AppointmentsConfigController extends FormBasicController {
 	private void setNotificationForOrganizers(UserRequest ureq) {
 		configs.setBooleanEntry(AppointmentsCourseNode.CONFIG_KEY_NOTIFICATION_FOR_ORGANIZERS, notificationForOrganizersEl.isAtLeastSelected(1));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);		
+	}
+	
+	private void setParticipantsCanComment(UserRequest ureq) {
+		configs.setBooleanEntry(AppointmentsCourseNode.CONFIG_KEY_PARTICIPANT_COMMENT, participantsCanCommentEl.isAtLeastSelected(1));
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override
