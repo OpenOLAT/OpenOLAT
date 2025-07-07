@@ -51,9 +51,14 @@ class ParticipationDAO {
 	private DB dbInstance;
 	
 	Participation createParticipation(Appointment appointment, Identity identity, Identity createdBy) {
+		return createParticipation(appointment, identity, createdBy, null);
+	}
+
+	Participation createParticipation(Appointment appointment, Identity identity, Identity createdBy, String comment) {
 		ParticipationImpl participation = new ParticipationImpl();
 		participation.setCreationDate(new Date());
 		participation.setLastModified(participation.getCreationDate());
+		participation.setComment(comment);
 		participation.setAppointment(appointment);
 		participation.setIdentity(identity);
 		participation.setCreatedBy(createdBy);

@@ -70,11 +70,12 @@ public class ParticipationDAOTest extends OlatTestCase {
 	public void shouldCreateParticipation() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		Identity caoch = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		Topic topic = topicDao.createTopic(entry, JunitTestHelper.random());
 		Appointment appointment = appointmentDao.createAppointment(topic);
 		appointment = appointmentDao.loadByKey(appointment.getKey());
-		Participation participation = sut.createParticipation(appointment, identity, caoch);
+		String comment = "A short comment from participant to organizer";
+		Participation participation = sut.createParticipation(appointment, identity, coach, comment);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -83,8 +84,9 @@ public class ParticipationDAOTest extends OlatTestCase {
 		softly.assertThat(participation.getCreationDate()).isNotNull();
 		softly.assertThat(participation.getLastModified()).isNotNull();
 		softly.assertThat(participation.getAppointment()).isEqualTo(appointment);
+		softly.assertThat(participation.getComment()).isEqualTo(comment);
 		softly.assertThat(participation.getIdentity()).isEqualTo(identity);
-		softly.assertThat(participation.getCreatedBy()).isEqualTo(caoch);
+		softly.assertThat(participation.getCreatedBy()).isEqualTo(coach);
 		softly.assertAll();
 	}
 
@@ -97,13 +99,22 @@ public class ParticipationDAOTest extends OlatTestCase {
 		Participation participation = sut.createParticipation(appointment, identity, identity);
 		dbInstance.commitAndCloseSession();
 		
+		String newComment = "new comment";
+		participation.setComment(newComment);
 		sut.updateParticipation(participation);
 		dbInstance.commitAndCloseSession();
 		
 		participation = sut.loadByKey(participation.getKey());
 		
 		SoftAssertions softly = new SoftAssertions();
-		//no updateable fields yet
+		softly.assertThat(participation).isNotNull();
+		softly.assertThat(participation.getKey()).isNotNull();
+		softly.assertThat(participation.getCreationDate()).isNotNull();
+		softly.assertThat(participation.getLastModified()).isNotNull();
+		softly.assertThat(participation.getAppointment()).isEqualTo(appointment);
+		softly.assertThat(participation.getComment()).isEqualTo(newComment);
+		softly.assertThat(participation.getIdentity()).isEqualTo(identity);
+		softly.assertThat(participation.getCreatedBy()).isEqualTo(identity);
 		softly.assertAll();
 	}
 	

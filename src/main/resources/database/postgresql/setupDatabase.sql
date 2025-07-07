@@ -4319,6 +4319,7 @@ create table o_ap_participation (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   a_comment varchar(4000),
    fk_appointment_id int8 not null,
    fk_identity_id int8 not null,
    fk_identity_created_by int8 not null,

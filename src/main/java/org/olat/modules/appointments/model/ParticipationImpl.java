@@ -63,6 +63,9 @@ public class ParticipationImpl implements Persistable, Participation {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
+	@Column(name="a_comment", nullable=true, insertable=true, updatable=true)
+	private String comment;
+
 	@ManyToOne(targetEntity=AppointmentImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_appointment_id", nullable=false, insertable=true, updatable=false)
 	private Appointment appointment;
@@ -99,6 +102,16 @@ public class ParticipationImpl implements Persistable, Participation {
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	@Override
+	public String getComment() {
+		return comment;
+	}
+
+	@Override
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 	@Override

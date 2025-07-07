@@ -45,3 +45,5 @@ create index idx_pub_to_parent_pub_idx on o_noti_pub (fk_parent_publisher);
 alter table o_lecture_block add l_meeting_title varchar(1024);
 alter table o_lecture_block add l_meeting_url varchar(1024);
 
+-- Appointment scheduling
+alter table o_ap_participation add a_comment varchar(4000);

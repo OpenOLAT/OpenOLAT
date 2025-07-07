@@ -4299,6 +4299,7 @@ create table o_ap_participation (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   a_comment varchar(4000),
    fk_appointment_id bigint not null,
    fk_identity_id bigint not null,
    fk_identity_created_by bigint not null,

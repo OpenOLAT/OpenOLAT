@@ -4370,6 +4370,7 @@ create table o_ap_participation (
    id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
+   a_comment varchar(4000),
    fk_appointment_id number(20) not null,
    fk_identity_id number(20) not null,
    fk_identity_created_by number(20) not null,
