@@ -15,6 +15,10 @@
 		<div class="o_warning_with_icon">$r.translate("enrollment.manual.done")</div>
 	#else
 		<fieldset class="o_block_large">
+			<legend>$r.translate("enrollment.strategy.title")</legend>
+			$r.render("strategy")
+		</fieldset>
+		<fieldset class="o_block_large">
 			<legend>$r.translate("enrollment.manual.result.run", $processRunNo)</legend>
 			<div class="o_important_with_icon">$r.translate("enrollment.manual.info.runs", $processRuns)</div>
 			$r.render("runOverview")

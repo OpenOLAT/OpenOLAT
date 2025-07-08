@@ -35,10 +35,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class TopicBrokerModule extends AbstractSpringModule {
 	
-	private static final String KEY_RUNS = "topic.broker.runs";
+	private static final String KEY_MAX_DURATION_MILLIS = "process.max.duration.millis";
 	
-	@Value("${topic.broker.runs}")
-	private int runs;
+	@Value("${topic.broker.process.max.duration.millis:5000}")
+	private int processMaxDurationMillis;
 	
 	@Autowired
 	public TopicBrokerModule(CoordinatorManager coordinatorManager) {
@@ -56,19 +56,19 @@ public class TopicBrokerModule extends AbstractSpringModule {
 	}
 	
 	private void updateProperties() {
-		String runsObj = getStringPropertyValue(KEY_RUNS, true);
-		if (StringHelper.isLong(runsObj)) {
-			runs = Integer.valueOf(runsObj);
+		String processMaxDurationMillisObj = getStringPropertyValue(KEY_MAX_DURATION_MILLIS, true);
+		if (StringHelper.isLong(processMaxDurationMillisObj)) {
+			processMaxDurationMillis = Integer.valueOf(processMaxDurationMillisObj);
 		}
 	}
 	
-	public int getRuns() {
-		return runs;
+	public int getProcessMaxDurationMillis() {
+		return processMaxDurationMillis;
 	}
 
-	public void setRuns(int runs) {
-		this.runs = runs;
-		setStringProperty(KEY_RUNS, String.valueOf(runs), true);
+	public void setProcessMaxDurationMillis(int processMaxDurationMillis) {
+		this.processMaxDurationMillis = processMaxDurationMillis;
+		setStringProperty(KEY_MAX_DURATION_MILLIS, String.valueOf(processMaxDurationMillis), true);
 	}
 	
 }

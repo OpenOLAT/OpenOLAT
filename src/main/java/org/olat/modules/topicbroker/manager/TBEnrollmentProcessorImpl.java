@@ -19,6 +19,7 @@
  */
 package org.olat.modules.topicbroker.manager;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentProcess;
 import org.olat.modules.topicbroker.TBEnrollmentProcessor;
+import org.olat.modules.topicbroker.TBEnrollmentStrategy;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBTopic;
 
@@ -38,39 +40,138 @@ import org.olat.modules.topicbroker.TBTopic;
 public class TBEnrollmentProcessorImpl implements TBEnrollmentProcessor {
 
 	private static final Logger log = Tracing.createLoggerFor(TBEnrollmentProcessorImpl.class);
-
-	private final int runs;
+	
+	private final int maxDurationMillis;
 	private final TBBroker broker;
 	private final List<TBTopic> topics;
 	private final List<TBSelection> selections;
+	private final TBEnrollmentStrategy strategy;
+	private final List<TBEnrollmentStrategy> debugStrategies;
+	private long runs = 0;
+	private long durationMillis = 0;
+	private double bestStrategyValue = 0;
 	private DefaultEnrollmentProcess bestProcess;
 
-	public TBEnrollmentProcessorImpl(int runs, TBBroker broker, List<TBTopic> topics, List<TBSelection> selections) {
-		this.runs = runs;
+	public TBEnrollmentProcessorImpl(int maxDurationMillis, TBBroker broker, List<TBTopic> topics, List<TBSelection> selections,
+			TBEnrollmentStrategy strategy, List<TBEnrollmentStrategy> debugStrategies) {
+		this.maxDurationMillis = maxDurationMillis;
 		this.broker = broker;
 		this.topics = topics;
 		this.selections = selections;
+		this.strategy = strategy;
+		this.debugStrategies = debugStrategies;
 		runProcesses();
 	}
 
 	private void runProcesses() {
-		for (int i = 0; i < runs; i++) {
-			DefaultEnrollmentProcess currentProcess = new DefaultEnrollmentProcess(broker, topics, selections);
-			if (log.isDebugEnabled()) {
-				long numEnromments = currentProcess.getPreviewSelections().stream().filter(TBSelection::isEnrolled).count();
-				log.debug("Process {}: costs={}, numEnrollments={}", i, currentProcess.getCosts(), numEnromments);
+		BigInteger guessNumRuns = guessNumRuns();
+		long maxRuns = toLong(guessNumRuns);
+		runs = 1;
+		long start = System.currentTimeMillis();
+		durationMillis = 0;
+		
+		log.debug("Processor started.");
+		while (runs <= maxRuns && durationMillis < maxDurationMillis) {
+			runProcess(runs);
+			runs++;
+			long finish = System.currentTimeMillis();
+			durationMillis = finish - start;
+		}
+		log.debug("Processor finished. Guessed runs={}, Runs={}, Duration millis={}, Millis per run={}",
+				guessNumRuns, runs-1, durationMillis, (double)durationMillis / (runs-1));
+		
+		log.debug("Best process enrollments:");
+		logSelections(bestProcess.getPreviewSelections());
+	}
+
+	private void runProcess(long currentRun) {
+		DefaultEnrollmentProcess currentProcess = new DefaultEnrollmentProcess(broker, topics, selections);
+		List<TBSelection> previewSelections = currentProcess.getPreviewSelections();
+		//logSelections(previewSelections);
+		
+		double currentStrategyValue = strategy.getValue(previewSelections);
+		if (log.isDebugEnabled()) {
+			long numEnrollments = previewSelections.stream().filter(TBSelection::isEnrolled).count();
+			log.debug("Process {}: strategy={}, value={}, numEnrollments={}",
+					currentRun, getStrategyName(strategy), currentStrategyValue, numEnrollments);
+			
+			if (debugStrategies != null && !debugStrategies.isEmpty()) {
+				for (TBEnrollmentStrategy debugStrategy : debugStrategies) {
+					double debugStrategyValue = debugStrategy.getValue(previewSelections);
+					log.debug("Process {}: strategy={}, value={}",
+							currentRun, getStrategyName(debugStrategy), debugStrategyValue);
+				}
 			}
 			
-			if (bestProcess == null || bestProcess.getCosts() < currentProcess.getCosts()) {
-				bestProcess = currentProcess;
-				log.debug("Process {} is the best so far.", i);
-			}
-		}	
+		}
+		
+		if (bestProcess == null || bestStrategyValue < currentStrategyValue) {
+			bestStrategyValue = currentStrategyValue;
+			bestProcess = currentProcess;
+			log.debug("Process {} is the best so far.", currentRun);
+		}
+	}
+
+	private String getStrategyName(TBEnrollmentStrategy logStrategy) {
+		if (logStrategy != null && logStrategy.getConfig() != null && logStrategy.getConfig().getType() != null) {
+			return logStrategy.getConfig().getType().name();
+		}
+		return "";
+	}
+
+	private void logSelections(List<TBSelection> selections) {
+		if (log.isDebugEnabled()) {
+			selections.stream()
+				.filter(TBSelection::isEnrolled)
+				.sorted((s1, s2) -> Long.compare(s1.getTopic().getKey(), s2.getTopic().getKey()))
+				.forEach(selection -> log.debug("Topic: {}, Participant: {}, Selection: {}",
+						selection.getTopic().getKey(),
+						selection.getParticipant().getKey(),
+						selection.getKey()
+					));
+		}
 	}
 
 	@Override
 	public TBEnrollmentProcess getBest() {
 		return bestProcess;
 	}
+
+	@Override
+	public long getRuns() {
+		return runs;
+	}
+
+	@Override
+	public long getDurationMillis() {
+		return durationMillis;
+	}
+
+	public void setDurationMillis(long durationMillis) {
+		this.durationMillis = durationMillis;
+	}
+
+	/*
+	 * Very rudimentary estimate of the number of possibilities.
+	 */
+	private BigInteger guessNumRuns() {
+		return factorial(topics.size()).multiply(factorial(broker.getMaxSelections()));
+	}
+
+	private long toLong(BigInteger guessedRuns) {
+		if (guessedRuns.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) >= 0 &&
+			guessedRuns.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) <= 0) {
+			return guessedRuns.longValue();
+		}
+		return Long.MAX_VALUE;
+	}
+	
+	private BigInteger factorial(int x) {
+			BigInteger result = BigInteger.ONE;
+			for (int i = 2; i <= x; i++) {
+				result = result.multiply(BigInteger.valueOf(i));
+			}
+			return result;
+		}
 
 }

@@ -34,6 +34,7 @@ import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerStatus;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionStatus;
@@ -438,7 +439,60 @@ public class TBUIFactory {
 		return columns;
 	}
 	
-	private static int intOrZero(Integer integer) {
+	public static String getTypeIconCss(TBEnrollmentStrategyType type) {
+		if (type != null) {
+			switch (type) {
+			case maxEnrollments: return "o_icon_tb_strategy_max_enrollments";
+			case maxPriorities: return "o_icon_tb_strategy_max_priorities";
+			case maxTopics: return "o_icon_tb_strategy_max_topics";
+			case custom: return "o_icon_tb_strategy_custom";
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getTranslatedType(Translator translator, TBEnrollmentStrategyType type) {
+		if (type != null) {
+			switch (type) {
+			case maxEnrollments: return translator.translate("enrollment.strategy.max.enrollments");
+			case maxPriorities: return translator.translate("enrollment.strategy.max.priorities");
+			case maxTopics: return translator.translate("enrollment.strategy.max.topics");
+			case custom: return translator.translate("enrollment.strategy.custom");
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getTranslatedTypeDesc(Translator translator, TBEnrollmentStrategyType type) {
+		if (type != null) {
+			switch (type) {
+			case maxEnrollments: return translator.translate("enrollment.strategy.max.enrollments.desc");
+			case maxPriorities: return translator.translate("enrollment.strategy.max.priorities.desc");
+			case maxTopics: return translator.translate("enrollment.strategy.max.topics.desc");
+			case custom: return translator.translate("enrollment.strategy.custom.desc");
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getTranslatedWeight(Translator translator, Integer weight) {
+		if (weight != null) {
+			switch (weight) {
+			case 1: return translator.translate("enrollment.strategy.overview.weight.low");
+			case 2: return translator.translate("enrollment.strategy.overview.weight.low.neutral");
+			case 3: return translator.translate("enrollment.strategy.overview.weight.neutral");
+			case 4: return translator.translate("enrollment.strategy.overview.weight.neutral.high");
+			case 5: return translator.translate("enrollment.strategy.overview.weight.high");
+			default:
+			}
+		}
+		return translator.translate("enrollment.strategy.overview.weight.not.considered");
+	}
+	
+	public static int intOrZero(Integer integer) {
 		return integer != null? integer.intValue(): 0;
 	}
 

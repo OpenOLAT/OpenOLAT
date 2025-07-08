@@ -41,6 +41,8 @@ public interface SliderElement extends FormItem {
 
 	public void setStep(int step);
 	
+	public void setVertical(boolean vertical);
+	
 	public void setValue(double value);
 	
 	public double getValue();

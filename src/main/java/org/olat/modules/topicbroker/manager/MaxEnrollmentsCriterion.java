@@ -17,20 +17,39 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker;
+package org.olat.modules.topicbroker.manager;
+
+import java.util.List;
+
+import org.olat.modules.topicbroker.TBEnrollmentStrategyCriterion;
+import org.olat.modules.topicbroker.TBSelection;
 
 /**
  * 
- * Initial date: 29 Oct 2024<br>
+ * Initial date: Jun 25, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentProcessor {
+public class MaxEnrollmentsCriterion implements TBEnrollmentStrategyCriterion {
 	
-	TBEnrollmentProcess getBest();
-	
-	long getRuns();
-	
-	long getDurationMillis();
-	
+	private final int numRequiredEnrollmentsTotal;
+
+	public MaxEnrollmentsCriterion(int numRequiredEnrollmentsTotal) {
+		this.numRequiredEnrollmentsTotal = numRequiredEnrollmentsTotal;
+	}
+
+	@Override
+	public String getType() {
+		return "strategy.criterion.max.enrollments";
+	}
+
+	@Override
+	public double getValue(List<TBSelection> selections) {
+		long enrollmments = selections.stream()
+				.filter(TBSelection::isEnrolled)
+				.distinct()
+				.count();
+			return numRequiredEnrollmentsTotal > 0? (double)enrollmments / numRequiredEnrollmentsTotal : 0;
+	}
+
 }

@@ -305,3 +305,80 @@
 		margin-top: 0;
 	}
 }
+.o_tb_weighting {
+	display: grid;
+	grid-template-columns: $o-tb-weighting-legend-width repeat(3, 1fr);
+	grid-template-rows: repeat(2, math.div($o-tb-weighting-heigth, 2)) 1fr;
+	justify-items: center;
+	align-items: center;	
+	
+	.o_tb_weighting_legend_top {
+		grid-area: 1 / 1;
+		align-self: start;
+		justify-self: end;
+		margin-right: 1em;
+		margin-top: -0.5em;
+	}
+	.o_tb_weighting_legend_bottom {
+		grid-area: 2 / 1;
+		align-self: end;
+		justify-self: end;
+		margin-right: 1em;
+		margin-bottom: -0.5em;
+	}
+	.o_tb_weighting_slider_grid_top {
+		grid-column: 2 / -1;
+		grid-row: 1;
+		align-self: stretch;
+		justify-self: stretch;
+		border-top: $o-tb-weighting-grid-border;
+		border-bottom: $o-tb-weighting-grid-border;
+	}
+	.o_tb_weighting_slider_grid_bottom {
+		grid-column: 2 / -1;
+		grid-row: 2;
+		align-self: stretch;
+		justify-self: stretch;
+		border-bottom: $o-tb-weighting-grid-border;
+	}
+	.o_tb_weighting_enrollments_slider {
+		grid-column: 2;
+		grid-row: 1 / span 2;
+	}
+	.o_tb_weighting_enrollments_label {
+		grid-area: 3 / 2;
+	}
+	.o_tb_weighting_topics_slider {
+		grid-column: 3;
+		grid-row: 1 / span 2;
+	}
+	.o_tb_weighting_topics_label {
+		grid-area: 3 / 3;
+	}
+	.o_tb_weighting_priorities_slider {
+		grid-column: 4;
+		grid-row: 1 / span 2;
+	}
+	.o_tb_weighting_priorities_label {
+		grid-area: 3 / 4;
+	}
+	
+	.o_tb_weighting_label {
+		padding: $o-tb-weighting-label-padding;
+		label {
+			font-weight: normal;
+		}
+	}
+	
+	.o_slider_wrapper {
+		.ui-slider {
+			height: $o-tb-weighting-heigth;
+		}
+		.ui-slider-pip {
+			display: none;
+		}
+		.ui-slider-pips {
+			margin-bottom: 0;
+		}
+	}
+}

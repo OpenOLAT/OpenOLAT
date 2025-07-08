@@ -41,6 +41,7 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 	private double minValue;
 	private double maxValue;
 	private int step;
+	private boolean vertical = false;
 	
 	private final SliderElement sliderElement;
 	
@@ -94,6 +95,14 @@ public class SliderElementComponent extends FormBaseComponentImpl {
 
 	public void setStep(int step) {
 		this.step = step;
+	}
+
+	public boolean isVertical() {
+		return vertical;
+	}
+
+	public void setVertical(boolean vertical) {
+		this.vertical = vertical;
 	}
 
 	@Override

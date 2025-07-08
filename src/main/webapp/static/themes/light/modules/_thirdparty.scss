@@ -103,7 +103,7 @@
 /*
  * slider
  */
-.ui-slider.ui-slider-horizontal.ui-widget-content {
+.ui-slider.ui-widget-content {
 	border-color: $o-slider-border;
 	background: $o-slider-background;
 	
@@ -112,7 +112,7 @@
 	}
 }
 
-.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+.o_has_value.ui-slider.ui-widget-content {
 	.ui-slider-handle {
 		border: 1px solid $o-slider-handler-border-color;
 		background-image: none;
@@ -120,7 +120,7 @@
 	}
 }
 
-.o_no_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+.o_no_value.ui-slider.ui-widget-content {
 	.ui-slider-handle {
 		border: 3px solid $o-slider-handler-border-color;
 		background-image: none;

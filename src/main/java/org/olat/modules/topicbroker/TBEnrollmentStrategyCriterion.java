@@ -19,18 +19,22 @@
  */
 package org.olat.modules.topicbroker;
 
+import java.util.List;
+
 /**
  * 
- * Initial date: 29 Oct 2024<br>
+ * Initial date: Jun 25, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentProcessor {
+public interface TBEnrollmentStrategyCriterion {
 	
-	TBEnrollmentProcess getBest();
+	public String getType();
 	
-	long getRuns();
-	
-	long getDurationMillis();
-	
+	/**
+	 * @param selections
+	 * @return a value between 0 (bad) and 1 (good)
+	 */
+	public double getValue(List<TBSelection> selections);
+
 }

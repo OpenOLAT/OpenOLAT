@@ -19,11 +19,11 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -74,6 +74,11 @@ public class SliderElementImpl extends FormItemImpl implements SliderElement {
 	@Override
 	public void setStep(int step) {
 		component.setStep(step);
+	}
+	
+	@Override
+	public void setVertical(boolean vertical) {
+		component.setVertical(vertical);
 	}
 
 	@Override

@@ -1227,6 +1227,11 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_selection_waiting_list { @include o-add-icon('hourglass');}
 .o_icon_tb_select_first { @include o-add-icon('arrows-up-to-line');}
 .o_icon_tb_select_last { @include o-add-icon('arrows-down-to-line');}
+.o_icon_tb_strategy { @include o-add-icon('gears');}
+.o_icon_tb_strategy_max_enrollments { @include o-add-icon('users');}
+.o_icon_tb_strategy_max_priorities { @include o-add-icon('scale-balanced');}
+.o_icon_tb_strategy_max_topics { @include o-add-icon('circle', false);}
+.o_icon_tb_strategy_custom { @include o-add-icon('gears');}
 .o_icon_tb_priority { @include o-add-icon('scale-balanced');}
 .o_icon_tb_run { @include o-add-icon('rotate-right');}
 .o_icon_tb_run_start { @include o-add-icon('play');}

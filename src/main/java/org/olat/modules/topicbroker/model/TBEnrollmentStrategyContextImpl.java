@@ -17,20 +17,41 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker;
+package org.olat.modules.topicbroker.model;
+
+import org.olat.modules.topicbroker.TBEnrollmentStrategyContext;
 
 /**
  * 
- * Initial date: 29 Oct 2024<br>
+ * Initial date: Jul 7, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentProcessor {
+public class TBEnrollmentStrategyContextImpl implements TBEnrollmentStrategyContext {
 	
-	TBEnrollmentProcess getBest();
+	private final int maxSelections;
+	private final int numTopicsTotal;
+	private final int numRequiredEnrollmentsTotal;
 	
-	long getRuns();
-	
-	long getDurationMillis();
+	public TBEnrollmentStrategyContextImpl(int maxSelections, int numTopicsTotal, int numRequiredEnrollmentsTotal) {
+		this.maxSelections = maxSelections;
+		this.numTopicsTotal = numTopicsTotal;
+		this.numRequiredEnrollmentsTotal = numRequiredEnrollmentsTotal;
+	}
+
+	@Override
+	public int getMaxSelections() {
+		return maxSelections;
+	}
+
+	@Override
+	public int getNumTopicsTotal() {
+		return numTopicsTotal;
+	}
+
+	@Override
+	public int getNumRequiredEnrollmentsTotal() {
+		return numRequiredEnrollmentsTotal;
+	}
 	
 }

@@ -17,20 +17,24 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker;
+package org.olat.modules.topicbroker.ui.events;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 29 Oct 2024<br>
+ * Initial date: Jul 3, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentProcessor {
+public class TBEnrollmentProcessRunEvent extends Event {
 	
-	TBEnrollmentProcess getBest();
+	private static final long serialVersionUID = 1427098901911037570L;
 	
-	long getRuns();
+	public static final TBEnrollmentProcessRunEvent EVENT = new TBEnrollmentProcessRunEvent();
 	
-	long getDurationMillis();
-	
+	private TBEnrollmentProcessRunEvent() {
+		super("process-run");
+	}
+
 }

@@ -19,18 +19,34 @@
  */
 package org.olat.modules.topicbroker;
 
+import java.util.List;
+
 /**
  * 
- * Initial date: 29 Oct 2024<br>
+ * Initial date: Jun 25, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentProcessor {
+public interface TBEnrollmentStrategy {
 	
-	TBEnrollmentProcess getBest();
+	/**
+	 * Add a criterion. If a criterion of a type is already present it is replaced.
+	 * 
+	 * @param criterion The criterion
+	 * @param weight The weight of the criterion in the overall value calculation. 
+	 */
+	public void addCriterion(TBEnrollmentStrategyCriterion criterion, int weight);
 	
-	long getRuns();
+	/**
+	 * @param selections
+	 * @return a value between 0 (bad) and 1 (good)
+	 */
+	public double getValue(List<TBSelection> selections);
 	
-	long getDurationMillis();
-	
+	/**
+	 * Get the config of the strategy.
+	 * This was added in the first line for logging purposes.
+	 */
+	public TBEnrollmentStrategyConfig getConfig();
+
 }

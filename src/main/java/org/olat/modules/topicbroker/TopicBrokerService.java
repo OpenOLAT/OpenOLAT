@@ -170,7 +170,8 @@ public interface TopicBrokerService {
 	public TBEnrollmentStats getEnrollmentStats(TBBroker broker, List<Identity> identities,
 			List<TBParticipant> participants, List<TBTopic> topics, List<TBSelection> selections);
 	
-	public TBEnrollmentProcessor createProcessor(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections);
+	public TBEnrollmentProcessor createProcessor(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections,
+			TBEnrollmentStrategy strategy, List<TBEnrollmentStrategy> debugStrategies);
 	
 	public void log(TBAuditLog.Action action, String before, String after, Identity doer, TBBroker broker,
 			TBParticipant participant, TBTopic topic, TBSelection selection);

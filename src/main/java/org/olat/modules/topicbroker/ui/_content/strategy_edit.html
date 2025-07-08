@@ -1,0 +1,39 @@
+<div class="o_form">
+$r.render("preset", "vertical")
+#if($custom)
+	<fieldset class="o_block_large">
+		<legend>$r.translate("enrollment.strategy.weighting")</legend>
+		<div class="o_tb_weighting o_block">
+			<div class="o_tb_weighting_legend_top">
+				$r.translate("enrollment.strategy.weighting.high")
+			</div>
+			<div class="o_tb_weighting_legend_bottom">
+				$r.translate("enrollment.strategy.weighting.low")
+			</div>
+			<div class="o_tb_weighting_enrollments_slider">
+				$r.render("max.enrollments.slider", "min")
+			</div>
+			<div class="o_tb_weighting_label o_tb_weighting_enrollments_label">
+				$r.render("max.enrollments.slider", "label")
+			</div>
+			<div class="o_tb_weighting_topics_slider">
+				$r.render("max.topics.slider", "min")
+			</div>
+			<div class="o_tb_weighting_label o_tb_weighting_topics_label">
+				$r.render("max.topics.slider", "label")
+			</div>
+			<div class="o_tb_weighting_priorities_slider">
+				$r.render("max.priorities.slider", "min")
+			</div>
+			<div class="o_tb_weighting_label o_tb_weighting_priorities_label">
+				$r.render("max.priorities.slider", "label")
+			</div>
+			<div class="o_tb_weighting_slider_grid_top">
+			</div>
+			<div class="o_tb_weighting_slider_grid_bottom">
+			</div>
+		</div>
+	</fieldset>
+#end
+$r.render("buttons")
+</div>

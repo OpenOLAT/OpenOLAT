@@ -21,16 +21,24 @@ package org.olat.modules.topicbroker;
 
 /**
  * 
- * Initial date: 29 Oct 2024<br>
+ * Initial date: Jul 2, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentProcessor {
+public interface TBEnrollmentStrategyConfig {
 	
-	TBEnrollmentProcess getBest();
+	TBEnrollmentStrategyType getType();
 	
-	long getRuns();
-	
-	long getDurationMillis();
-	
+	Integer getMaxEnrollmentsWeight();
+
+	void setMaxEnrollmentsWeight(Integer maxEnrollmentsWeight);
+
+	Integer getMaxTopicsWeight();
+
+	void setMaxTopicsWeight(Integer maxTopicsWeight);
+
+	Integer getMaxPrioritiesWeight();
+
+	void setMaxPrioritiesWeight(Integer maxPrioritiesWeight);
+
 }

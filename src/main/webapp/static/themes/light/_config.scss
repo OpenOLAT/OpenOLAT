@@ -1825,6 +1825,11 @@ $o-tb-priority-waiting-color-inv				: white !default;
 $o-tb-priority-not-enrolled-color			: #aaa !default;
 $o-tb-priority-not-enrolled-color-inv		: white !default;
 $o-tb-priority-fillin-color					: $text-muted !default;
+$o-tb-weighting-heigth						: 200px !default;
+$o-tb-weighting-legend-width					: 100px !default;
+$o-tb-weighting-grid-border					: 1px solid $panel-default-border !default;
+$o-tb-weighting-label-padding				: 1em !default;
+
 
 /* Course node selection */
 $o-cns-status-selected-color					: brown !default;

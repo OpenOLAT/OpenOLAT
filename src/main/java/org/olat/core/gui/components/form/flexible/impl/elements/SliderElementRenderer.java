@@ -69,8 +69,11 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 			sb.append("  step: ").append(sec.getStep()).append(",\n");
 		}
 		sb.append("  min: ").append(sec.getMinValue()).append(",\n")
-		  .append("  max: ").append(sec.getMaxValue()).append(",\n")
-		  .append("  slide: function(event, ui) {\n")
+		  .append("  max: ").append(sec.getMaxValue()).append(",\n");
+		if (sec.isVertical()) {
+			sb.append("  orientation: \"vertical\",\n");
+		}
+		sb.append("  slide: function(event, ui) {\n")
 		  .append("    jQuery('#").append(inputId).append("').val(ui.value);\n")
 		  .append("    setFlexiFormDirty('").append(formDispatchFieldId).append("');\n")
 		  .append("    o_info.lastFormFocusEl='").append(formDispatchFieldId).append("';")

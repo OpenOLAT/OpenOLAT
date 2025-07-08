@@ -67,6 +67,10 @@ import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
 import org.olat.modules.topicbroker.TBEnrollmentProcessor;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
+import org.olat.modules.topicbroker.TBEnrollmentStrategy;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyConfig;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyContext;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyFactory;
 import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantRef;
@@ -1219,7 +1223,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			topicSearchParams.setBroker(broker);
 			List<TBTopic> topics = getTopics(topicSearchParams);
 			
-			createProcessor(broker, topics, selections).getBest().persist(null);
+			TBEnrollmentStrategyConfig config = TBEnrollmentStrategyFactory.getDefaultConfig();
+			TBEnrollmentStrategyContext context = TBEnrollmentStrategyFactory.createContext(broker, topics, selections);
+			TBEnrollmentStrategy evaluator = TBEnrollmentStrategyFactory.createStrategy(config, context);
+			createProcessor(broker, topics, selections, evaluator, null).getBest().persist(null);
 		}
 		updateEnrollmentProcessDone(null, broker, true);
 		dbInstance.commitAndCloseSession();
@@ -1261,8 +1268,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 	
 	@Override
-	public TBEnrollmentProcessor createProcessor(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections) {
-		return new TBEnrollmentProcessorImpl(topicBrokerModule.getRuns(), broker, topics, selections);
+	public TBEnrollmentProcessor createProcessor(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections,
+			TBEnrollmentStrategy strategy, List<TBEnrollmentStrategy> debugStrategies) {
+		return new TBEnrollmentProcessorImpl(topicBrokerModule.getProcessMaxDurationMillis(),
+				broker, topics, selections, strategy, debugStrategies);
 	}
 	
 	@Override

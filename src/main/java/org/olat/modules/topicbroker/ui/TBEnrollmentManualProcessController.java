@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -40,10 +41,16 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentProcess;
+import org.olat.modules.topicbroker.TBEnrollmentProcessor;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
+import org.olat.modules.topicbroker.TBEnrollmentStrategy;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyConfig;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyContext;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyFactory;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSelection;
@@ -52,6 +59,7 @@ import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerModule;
 import org.olat.modules.topicbroker.TopicBrokerService;
+import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TBEnrollmentManualProcessController extends FormBasicController {
+	
+	private static final Logger log = Tracing.createLoggerFor(TBEnrollmentManualProcessController.class);
 
 	private static final String CMD_SELECT_RUN = "selrun_";
 	
@@ -71,6 +81,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private ConfirmationController doneConfirmationCtrl;
+	private TBEnrollmentStrategyController enrollmentStrategyCtrl;
 	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
 
 	private TBBroker broker;
@@ -79,6 +90,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private final List<TBTopic> topics;
 	private final List<TBSelection> selections;
 	private final List<EnrollmentProcessWrapper> runs = new ArrayList<>(3);
+	private final TBEnrollmentStrategyContext strategyContext;
+	private final List<TBEnrollmentStrategy> debugStrategies;
 	private EnrollmentProcessWrapper selectedProcessWrapper;
 	
 	@Autowired
@@ -106,9 +119,23 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		
 		participants = selections.stream().map(TBSelection::getParticipant).distinct().toList();
 		
+		strategyContext = TBEnrollmentStrategyFactory.createContext(broker, topics, selections);
+		debugStrategies = initDebugStrategies();
+		
 		initForm(ureq);
 		updateEnrollmentDone();
 		doRunEnrollmentProcess();
+	}
+
+	private List<TBEnrollmentStrategy> initDebugStrategies() {
+		if (log.isDebugEnabled()) {
+			return List.of(
+					TBEnrollmentStrategyFactory.createStrategy(TBEnrollmentStrategyFactory.createMaxEnrollmentsConfig(), strategyContext),
+					TBEnrollmentStrategyFactory.createStrategy(TBEnrollmentStrategyFactory.createMaxPrioritiesConfig(), strategyContext),
+					TBEnrollmentStrategyFactory.createStrategy(TBEnrollmentStrategyFactory.createMaxTopicsConfig(), strategyContext)
+				);
+		}
+		return null;
 	}
 
 	@Override
@@ -120,6 +147,11 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		runsDropdown.setOrientation(DropdownOrientation.right);
 		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
 		runsDropdown.setVisible(false);
+		
+		enrollmentStrategyCtrl = new TBEnrollmentStrategyController(ureq, getWindowControl(), mainForm);
+		enrollmentStrategyCtrl.setStrategyConfig(TBEnrollmentStrategyFactory.getDefaultConfig());
+		listenTo(enrollmentStrategyCtrl);
+		formLayout.add("strategy", enrollmentStrategyCtrl.getInitialFormItem());
 		
 		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker, topics);
 		listenTo(enrollmentRunOverviewCtrl);
@@ -147,7 +179,11 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (doneConfirmationCtrl == source) {
+		if (source == enrollmentStrategyCtrl) {
+			if (event == TBEnrollmentProcessRunEvent.EVENT) {
+				doRunEnrollmentProcess();
+			}
+		} else if (doneConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT && doneConfirmationCtrl.getUserObject() instanceof Boolean withNotification) {
 				saveEnrollments(withNotification);
 				fireEvent(ureq, FormEvent.DONE_EVENT);
@@ -234,12 +270,16 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	}
 
 	private void doRunEnrollmentProcess() {
-		Date startDate = new Date();
-		TBEnrollmentProcess process = topicBrokerService.createProcessor(broker, topics, selections).getBest();
+		TBEnrollmentStrategyConfig strategyConfig = enrollmentStrategyCtrl.getStrategyConfig();
+		TBEnrollmentStrategy strategy = TBEnrollmentStrategyFactory.createStrategy(strategyConfig, strategyContext);
+		TBEnrollmentProcessor processor = topicBrokerService.createProcessor(broker, topics, selections, strategy, debugStrategies);
+		TBEnrollmentProcess process = processor.getBest();
 		TBEnrollmentStats enrollmentStats = topicBrokerService.getEnrollmentStats(broker, identities, participants,
 				topics, process.getPreviewSelections());
 		
-		EnrollmentProcessWrapper wrapper = new EnrollmentProcessWrapper(startDate, process, enrollmentStats);
+		Date startDate = new Date();
+		EnrollmentProcessWrapper wrapper = new EnrollmentProcessWrapper(startDate, strategyConfig, process,
+				processor.getRuns(), enrollmentStats);
 		runs.add(wrapper);
 		
 		int run = runs.size();
@@ -260,8 +300,9 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		runsDropdown.setVisible(runs.size() > 1);
 		
 		flc.contextPut("processRunNo", String.valueOf(runNo));
-		flc.contextPut("processRuns", topicBrokerModule.getRuns());
+		flc.contextPut("processRuns", wrapper.getRuns());
 		
+		enrollmentStrategyCtrl.setStrategyConfig(wrapper.getStrategyConfig());
 		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());
 		
 		updateEnrollmentDone();
@@ -282,12 +323,17 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private static final class EnrollmentProcessWrapper {
 		
 		private final Date startDate;
+		private final TBEnrollmentStrategyConfig strategyConfig;
 		private final TBEnrollmentProcess process;
+		private final long runs;
 		private final TBEnrollmentStats stats;
 		
-		public EnrollmentProcessWrapper(Date startDate, TBEnrollmentProcess process, TBEnrollmentStats stats) {
+		public EnrollmentProcessWrapper(Date startDate, TBEnrollmentStrategyConfig strategyConfig,
+				TBEnrollmentProcess process, long runs, TBEnrollmentStats stats) {
 			this.startDate = startDate;
+			this.strategyConfig = strategyConfig;
 			this.process = process;
+			this.runs = runs;
 			this.stats = stats;
 		}
 
@@ -295,8 +341,16 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 			return startDate;
 		}
 
+		public TBEnrollmentStrategyConfig getStrategyConfig() {
+			return strategyConfig;
+		}
+
 		public TBEnrollmentProcess getProcess() {
 			return process;
+		}
+
+		public long getRuns() {
+			return runs;
 		}
 
 		public TBEnrollmentStats getStats() {
