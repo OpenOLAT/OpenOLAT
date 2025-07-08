@@ -47,3 +47,5 @@ alter table o_lecture_block add column l_meeting_url varchar(1024);
 
 -- Appointment scheduling
 alter table o_ap_participation add a_comment varchar(4000);
+alter table o_ap_appointment add a_use_enrollment_deadline boolean default false not null;
+alter table o_ap_appointment add a_enrollment_deadline_minutes int8 default 0 not null;

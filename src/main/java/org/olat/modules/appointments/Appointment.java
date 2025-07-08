@@ -100,7 +100,15 @@ public interface Appointment extends AppointmentRef, ModifiedInfo, CreateInfo {
 	 * @param recordingEnabled
 	 */
 	public void setRecordingEnabled(boolean recordingEnabled);
-	
+
+	boolean isUseEnrollmentDeadline();
+
+	void setUseEnrollmentDeadline(boolean useEnrollmentDeadline);
+
+	Long getEnrollmentDeadlineMinutes();
+
+	void setEnrollmentDeadlineMinutes(Long enrollmentDeadlineMinutes);
+
 	public BigBlueButtonMeeting getBBBMeeting();
 	
 	public TeamsMeeting getTeamsMeeting();

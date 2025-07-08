@@ -4309,6 +4309,8 @@ create table o_ap_appointment (
    a_meeting_title varchar(1024),
    a_meeting_url varchar(1024),
    a_recording_enabled boolean default false not null,
+   a_use_enrollment_deadline boolean default false not null,
+   a_enrollment_deadline_minutes int8 default 0 not null,
    fk_topic_id int8 not null,
    fk_meeting_id bigint,
    fk_teams_id bigint,

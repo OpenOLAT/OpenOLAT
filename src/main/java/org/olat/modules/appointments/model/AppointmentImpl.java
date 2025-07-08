@@ -90,7 +90,10 @@ public class AppointmentImpl implements Persistable, Appointment {
 	private String meetingUrl;
 	@Column(name="a_recording_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean recordingEnabled;
-	
+	@Column(name="a_use_enrollment_deadline", nullable=false, insertable=true, updatable=true)
+	private boolean useEnrollmentDeadline;
+	@Column(name="a_enrollment_deadline_minutes", nullable=false, insertable=true, updatable=true)
+	private Long enrollmentDeadlineMinutes;
 	@ManyToOne(targetEntity=TopicImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_topic_id", nullable=false, insertable=true, updatable=false)
 	private Topic topic;
@@ -228,6 +231,26 @@ public class AppointmentImpl implements Persistable, Appointment {
 
 	public void setRecordingEnabled(boolean recordingEnabled) {
 		this.recordingEnabled = recordingEnabled;
+	}
+
+	@Override
+	public boolean isUseEnrollmentDeadline() {
+		return useEnrollmentDeadline;
+	}
+
+	@Override
+	public void setUseEnrollmentDeadline(boolean useEnrollmentDeadline) {
+		this.useEnrollmentDeadline = useEnrollmentDeadline;
+	}
+
+	@Override
+	public Long getEnrollmentDeadlineMinutes() {
+		return enrollmentDeadlineMinutes;
+	}
+
+	@Override
+	public void setEnrollmentDeadlineMinutes(Long enrollmentDeadlineMinutes) {
+		this.enrollmentDeadlineMinutes = enrollmentDeadlineMinutes;
 	}
 
 	@Override
