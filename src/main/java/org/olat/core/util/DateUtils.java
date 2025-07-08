@@ -435,4 +435,111 @@ public class DateUtils {
 		return ChronoUnit.DAYS.between(lDate1, lDate2);
 	}
 
+	/**
+	 * Converts a time string in the format "Xd Yh Zm" into total minutes.
+	 * The function accepts any combination of days (d), hours (h), and minutes (m),
+	 * separated by spaces. The units are case-insensitive.
+	 * <p>
+	 * Examples:
+	 * - "1d 1h 1m" → 1501 minutes (1440 + 60 + 1)
+	 * - "2h 30m"   → 150 minutes
+	 * - "1d"       → 1440 minutes
+	 *
+	 * @param timeString The input string in format "Xd Yh Zm" where X, Y, and Z are integers
+	 *                   and d, h, m represent days, hours, and minutes respectively.
+	 *                   Parts can be omitted and whitespace is trimmed.
+	 * @return The total number of minutes as a long value.
+	 * Returns 0 if the input is null or empty.
+	 */
+	public static long parseTimeToMinutes(String timeString) {
+		if (timeString == null || timeString.trim().isEmpty()) {
+			return 0;
+		}
+
+		long totalMinutes = 0;
+		String[] parts = timeString.trim().split("\\s+");
+
+		for (String part : parts) {
+			part = part.trim().toLowerCase();
+			if (part.isEmpty()) continue;
+
+			int value;
+			try {
+				value = Integer.parseInt(part.substring(0, part.length() - 1));
+			} catch (NumberFormatException e) {
+				continue;
+			}
+
+			char unit = part.charAt(part.length() - 1);
+			switch (unit) {
+				case 'd':
+					totalMinutes += (long) value * 24 * 60; // days to minutes
+					break;
+				case 'h':
+					totalMinutes += value * 60L;      // hours to minutes
+					break;
+				case 'm':
+					totalMinutes += value;           // already in minutes
+					break;
+				default:
+					throw new NumberFormatException("Invalid unit: " + unit);
+			}
+		}
+
+		return totalMinutes;
+	}
+
+	/**
+	 * Converts a number of minutes into a formatted time string using days, hours, and minutes.
+	 * The output format is "Xd Yh Zm" where parts with zero values are omitted.
+	 * All values are represented as positive integers.
+	 * <p>
+	 * Examples:
+	 * - 1501 minutes → "1d 1h 1m" (1440 + 60 + 1)
+	 * - 150 minutes  → "2h 30m"
+	 * - 1440 minutes → "1d"
+	 * - 0 minutes    → "0m"
+	 *
+	 * @param minutes The number of minutes to convert
+	 * @return A formatted string in the pattern "Xd Yh Zm" where X, Y, and Z are integers
+	 * representing days, hours, and minutes respectively. Parts with zero values
+	 * are omitted except when the total is zero, then "0m" is returned.
+	 */
+	public static String formatMinutesToTimeString(long minutes) {
+		if (minutes == 0) {
+			return "0m";
+		}
+
+		StringBuilder result = new StringBuilder();
+		boolean needsSpace = false;
+
+		// Calculate days
+		long days = minutes / (24 * 60);
+		if (days > 0) {
+			result.append(days).append("d");
+			needsSpace = true;
+			minutes %= (24 * 60);
+		}
+
+		// Calculate hours
+		long hours = minutes / 60;
+		if (hours > 0) {
+			if (needsSpace) {
+				result.append(" ");
+			}
+			result.append(hours).append("h");
+			needsSpace = true;
+			minutes %= 60;
+		}
+
+		// Add remaining minutes
+		if (minutes > 0) {
+			if (needsSpace) {
+				result.append(" ");
+			}
+			result.append(minutes).append("m");
+		}
+
+		return result.toString();
+	}
 }
