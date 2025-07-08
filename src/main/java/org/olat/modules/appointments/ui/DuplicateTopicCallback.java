@@ -95,6 +95,8 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 				: appointmentInput.getAppointment().getMaxParticipations();
 		appointment.setMaxParticipations(maxParticipations);
 		appointment.setStart(appointmentInput.getStart());
+		appointment.setUseEnrollmentDeadline(appointmentInput.appointment.isUseEnrollmentDeadline());
+		appointment.setEnrollmentDeadlineMinutes(appointmentInput.appointment.getEnrollmentDeadlineMinutes());
 		appointment = getAppointmentsService().saveAppointment(appointment);
 		
 		if (appointmentInput.getAppointment().getBBBMeeting() != null) {

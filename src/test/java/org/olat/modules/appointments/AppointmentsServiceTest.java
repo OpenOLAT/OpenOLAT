@@ -739,6 +739,8 @@ public class AppointmentsServiceTest extends OlatTestCase {
 		appointment.setStart(new GregorianCalendar(2020, 7, 16, 8, 30, 0).getTime());
 		appointment.setEnd(new GregorianCalendar(2020, 7, 16, 15, 30, 0).getTime());
 		appointment.setLocation(random());
+		appointment.setUseEnrollmentDeadline(false);
+		appointment.setEnrollmentDeadlineMinutes(0L);
 		appointment = sut.saveAppointment(appointment);
 		return appointment;
 	}

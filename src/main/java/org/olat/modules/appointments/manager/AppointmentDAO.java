@@ -66,7 +66,8 @@ class AppointmentDAO {
 		appointment.setTopic(topic);
 		appointment.setStatus(Appointment.Status.planned);
 		appointment.setStatusModified(appointment.getCreationDate());
-		
+		appointment.setUseEnrollmentDeadline(false);
+		appointment.setEnrollmentDeadlineMinutes(0L);
 		return appointment;
 	}
 	
