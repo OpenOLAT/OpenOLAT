@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -111,6 +112,9 @@ public class AppointmentCreateController extends FormBasicController {
 	private MultipleSelectionElement organizerEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
+	private FormToggle enrollmentDeadlineEl;
+	private FormLayoutContainer enrollmentTimeLayout;
+	private TextElement timeEl;
 	private TextElement providerNameEl;
 	private TextElement providerUrlEl;
 	private TextElement detailsEl;
@@ -246,6 +250,21 @@ public class AppointmentCreateController extends FormBasicController {
 		if (topic == null) {
 			maxParticipationsEl.setHelpTextKey("appointment.init.value", null);
 		}
+		
+		enrollmentDeadlineEl = uifactory.addToggleButton("enrollment.deadline", "enrollment.deadline", null, null, formLayout);
+		enrollmentDeadlineEl.addActionListener(FormEvent.ONCHANGE);
+
+		enrollmentTimeLayout = FormLayoutContainer.createHorizontalFormLayout("horizontal", getTranslator());
+		enrollmentTimeLayout.setElementCssClass("o_enrollment_layout");
+		enrollmentTimeLayout.setLabel("time", null);
+		formLayout.add(enrollmentTimeLayout);
+		enrollmentTimeLayout.setVisible(false);
+
+		timeEl = uifactory.addTextElement("time", null, 10, "1h", enrollmentTimeLayout);
+		timeEl.setExampleKey("enrollment.deadline.time.hint", null);
+
+		StaticTextElement enrollmentTimeTextEl = uifactory.addStaticTextElement("enrollment.before.text", null, translate("enrollment.before.text"), enrollmentTimeLayout);
+		enrollmentTimeTextEl.setElementCssClass("o_enrollment_static_text");
 		
 		if (topic != null) {
 			detailsEl = uifactory.addTextAreaElement("appointment.details", "appointment.details", 2000, 4, 72, false,
@@ -410,6 +429,8 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		maxParticipationsEl.setVisible(enrollment);
 		
+		enrollmentTimeLayout.setVisible(enrollmentDeadlineEl.isOn());
+		
 		startDurationCont.setVisible(AppointmentInputType.startDuration == appointmentInputType);
 		
 		startEndCont.setVisible(AppointmentInputType.startEnd == appointmentInputType);
@@ -524,6 +545,8 @@ public class AppointmentCreateController extends FormBasicController {
 				AppointmentWrapper wrapper = (AppointmentWrapper)source.getUserObject();
 				doSetEndDate(wrapper);
 			}
+		} else if (enrollmentDeadlineEl == source) {
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -553,6 +576,20 @@ public class AppointmentCreateController extends FormBasicController {
 			} catch (NumberFormatException e) {
 				maxParticipationsEl.setErrorKey("error.positiv.number");
 				allOk &= false;
+			}
+		}
+		
+		if (enrollmentDeadlineEl.isOn()) {
+			timeEl.clearError();
+			if (!StringHelper.containsNonWhitespace(timeEl.getValue())) {
+				timeEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else {
+				try {
+					DateUtils.parseTimeToMinutes(timeEl.getValue());
+				} catch (NumberFormatException e) {
+					timeEl.setErrorKey("error.time.format");
+				}
 			}
 		}
 		
@@ -858,6 +895,7 @@ public class AppointmentCreateController extends FormBasicController {
 				appointment = addBBBMeeting(appointment);
 				appointment = addTeamsMeeting(appointment);
 				appointment = addOthersMeeting(appointment);
+				appointment = addEnrollmentDeadline(appointment);
 				appointmentsService.saveAppointment(appointment);
 			}
 		}
@@ -901,6 +939,7 @@ public class AppointmentCreateController extends FormBasicController {
 			appointment = addBBBMeeting(appointment);
 			appointment = addTeamsMeeting(appointment);
 			appointment = addOthersMeeting(appointment);
+			appointment = addEnrollmentDeadline(appointment);
 			appointmentsService.saveAppointment(appointment);
 		}
 	}
@@ -961,6 +1000,18 @@ public class AppointmentCreateController extends FormBasicController {
 		if (meetingEl != null && meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_OTHER)) {
 			appointment = appointmentsService.addOthersMeeting(appointment, providerNameEl.getValue(),
 					providerUrlEl.getValue(), recordOptionEl.getSelectedKey().equals(KEYS_YES_NO[0]));
+		}
+		return appointment;
+	}
+	
+	private Appointment addEnrollmentDeadline(Appointment appointment) {
+		boolean userEnrollmentDeadline = enrollmentDeadlineEl.isOn();
+		appointment.setUseEnrollmentDeadline(userEnrollmentDeadline);
+		if (userEnrollmentDeadline) {
+			long enrollmentDeadlineMinutes = DateUtils.parseTimeToMinutes(timeEl.getValue());
+			appointment.setEnrollmentDeadlineMinutes(enrollmentDeadlineMinutes);
+		} else {
+			appointment.setEnrollmentDeadlineMinutes(0L);
 		}
 		return appointment;
 	}

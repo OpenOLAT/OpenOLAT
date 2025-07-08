@@ -289,3 +289,16 @@
 		margin: 0px;
 	}
 }
+
+fieldset.o_form.o_enrollment_layout {
+
+	input {
+		max-width: 11em;
+	}
+	
+	div.form-group.clearfix.o_enrollment_static_text {
+		vertical-align: top;
+		margin-left: 4px;
+	}
+} 
+
