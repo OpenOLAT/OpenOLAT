@@ -24,7 +24,7 @@ import java.io.File;
 import jakarta.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -34,6 +34,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -49,10 +50,13 @@ public class CurriculumStorage {
 	
 	private File bcrootDirectory;
 	private File elementsDirectory;
+	
+	@Autowired
+	private FolderModule folderModule;
 
 	@PostConstruct
 	public void initFolders() {
-		bcrootDirectory = new File(FolderConfig.getCanonicalRoot());
+		bcrootDirectory = new File(folderModule.getCanonicalRoot());
 		File rootDirectory = new File(bcrootDirectory, "curriculum");
 		elementsDirectory = new File(rootDirectory, "element");
 		if (!elementsDirectory.exists()) {

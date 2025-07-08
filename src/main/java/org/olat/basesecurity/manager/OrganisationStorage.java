@@ -23,10 +23,11 @@ import java.io.File;
 
 import jakarta.annotation.PostConstruct;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,10 +41,13 @@ public class OrganisationStorage {
 
 	private File bcrootDirectory;
 	private File organisationsDirectory;
+	
+	@Autowired
+	private FolderModule folderModule;
 
 	@PostConstruct
 	public void initFolders() {
-		bcrootDirectory = new File(FolderConfig.getCanonicalRoot());
+		bcrootDirectory = new File(folderModule.getCanonicalRoot());
 		organisationsDirectory = new File(bcrootDirectory, "organisation");
 		if (!organisationsDirectory.exists()) {
 			organisationsDirectory.mkdirs();

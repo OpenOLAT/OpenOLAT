@@ -2349,7 +2349,7 @@ public class FolderController extends FormBasicController implements Activateabl
 					&& itemToCopy.getParentContainer().getRelPath().equalsIgnoreCase(params.getTargetContainer().getRelPath())) {
 				// We assume all items to copy are in the same source folder.
 				if (params.isMove()) {
-					showWarning("error.move.same.source.target", String.valueOf(params.getItemsToCopy().size()));
+					showWarning("error.move.same.source.target");
 					cleanUp();
 					loadModel(ureq);
 					return;
