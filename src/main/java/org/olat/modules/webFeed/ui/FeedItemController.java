@@ -169,10 +169,12 @@ public class FeedItemController extends BasicController implements Activateable2
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (entries != null && !entries.isEmpty()) {
+		if (entries != null && !entries.isEmpty() && commentsCtrl != null) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if (ACTIVATION_KEY_COMMENTS.equals(type) && commentsCtrl != null) {
 				commentsCtrl.scrollToCommentsArea();
+			} else if("comment".equalsIgnoreCase(type)) {
+				commentsCtrl.activate(ureq, entries, state);
 			}
 		}
 	}

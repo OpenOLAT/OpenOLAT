@@ -67,6 +67,12 @@ implements FlexiTableCssDelegate, SortableFlexiTableDataModel<FeedItemRow>, Filt
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		return "";
 	}
+	
+	public FeedItemRow getItemByKey(Long key) {
+		return getObjects().stream()
+				.filter(row -> key.equals(row.getItem().getKey()))
+				.findFirst().orElse(null);
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

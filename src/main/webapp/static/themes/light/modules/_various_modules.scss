@@ -357,22 +357,24 @@ ul.o_dropdown {
 		}
 	}
 	.o_notifications_subs_callout {
-		display: flex;
-		align-items: baseline;
-		padding-bottom: 10px;
-
-		.o_notifications_help {
-			display: flex;
-			align-items: baseline;
-			gap: 15px;
-			margin-left: auto;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		margin-top: 10px;
+		
+		> h4 {
+			margin: 0 0 10px 0;
 		}
 		
-		.o_notifications_subscribe_toggle {
-			margin-bottom: 10px;
-		}
-		.o_notifications_subscribe_toggle:last-child {
-			margin-bottom: 0;
+		.o_notifications_subscribe_toggles {
+			grid-row-end: span 2;
+		
+			.o_notifications_subscribe_toggle {
+				margin-bottom: 10px;
+			}
+			.o_notifications_subscribe_toggle:last-child {
+				margin-bottom: 0;
+			}
 		}
 	}
 

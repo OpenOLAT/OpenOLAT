@@ -81,6 +81,10 @@
 	.o_button_container {
 		padding: $padding-large-horizontal 0 $padding-large-horizontal 0;
 	}
+	
+	.o_comment_highlight {
+	  	@include box-shadow(0 1px 10px rgba(240,173,78,.5));
+	}
 
 	.o_comment_wrapper {
 		>blockquote {

@@ -259,9 +259,8 @@ public class FeedMainController extends BasicController implements Activateable2
 		if(entries == null || entries.isEmpty()) return;
 
 		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(name != null && name.startsWith("FeedItem")) {
-			Long feedItemKey = entries.get(0).getOLATResourceable().getResourceableId();
-			activateByFeedItem(ureq, feedItemKey);
+		if(name != null && name.startsWith("FeedItem") && feedItemListCtrl != null) {
+			feedItemListCtrl.activate(ureq, entries, state);
 		}
 	}
 

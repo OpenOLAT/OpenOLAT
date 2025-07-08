@@ -63,37 +63,17 @@ class NotificationSubscriptionTableDataModel extends DefaultFlexiTableDataModel<
 
 	@Override
 	public Object getValueAt(NotificationSubscriptionRow row, int col) {
-		switch (COLS[col]) {
-			case key -> {
-				return row.getKey();
-			}
-			case section -> {
-				return row.getSection();
-			}
-			case learningResource -> {
-				return row.getLearningResource();
-			}
-			case subRes -> {
-				return row.getSubRes();
-			}
-			case addDesc -> {
-				return row.getAddDesc();
-			}
-			case statusToggle -> {
-				return row.getStatusToggle();
-			}
-			case creationDate -> {
-				return row.getCreationDate();
-			}
-			case lastEmail -> {
-				return row.getLastEmail();
-			}
-			case deleteLink -> {
-				return row.getDeleteLink();
-			}
-			default -> {
-				return "ERROR";
-			}
-		}
+		return switch (COLS[col]) {
+			case key ->  row.getKey();
+			case section -> row.getSection();
+			case learningResource -> row.getLearningResource();
+			case subRes -> row.getSubRes();
+			case addDesc -> row.getAddDesc();
+			case statusToggle -> row.getStatusToggle();
+			case creationDate -> row.getCreationDate();
+			case lastEmail -> row.getLastEmail();
+			case deleteLink -> row.getDeleteLink();
+			default -> "ERROR";
+		};
 	}
 }

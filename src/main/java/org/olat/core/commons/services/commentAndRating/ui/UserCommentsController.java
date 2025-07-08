@@ -33,8 +33,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.PortraitSize;
@@ -54,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gnaegi
  */
-public class UserCommentsController extends BasicController {
+public class UserCommentsController extends BasicController implements Activateable2 {
 
 	// Configuration
 	private final CommentAndRatingSecurityCallback securityCallback;
@@ -144,6 +148,18 @@ public class UserCommentsController extends BasicController {
 		// Child controllers autodisposed by basic controller
 		commentControllers = null;
         super.doDispose();
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("comment".equalsIgnoreCase(type)) {
+			Long key = entries.get(0).getOLATResourceable().getResourceableId();
+			userCommentsVC.contextPut("goToComment", new ConsumableBoolean(true));
+			userCommentsVC.contextPut("goToCommentId", key);
+		}
 	}
 
 	@Override

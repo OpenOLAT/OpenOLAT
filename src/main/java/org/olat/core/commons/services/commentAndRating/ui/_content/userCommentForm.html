@@ -3,6 +3,9 @@
 		$r.render("comments.form.placeholder")
 	#end
 	$r.render("commentElem")
+	#if($f.hasError("commentElem") || $f.hasWarning("commentElem"))
+		<div>$r.render("commentElem","error")</div>
+	#end
     <div class="o_button_container">
 		$r.render("buttonContainer")
     </div>

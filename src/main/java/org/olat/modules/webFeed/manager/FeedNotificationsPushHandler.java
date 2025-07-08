@@ -35,6 +35,7 @@ import jakarta.jms.Session;
 import jakarta.jms.Topic;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.coordinate.cluster.jms.JMSHelper;
@@ -117,6 +118,8 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 	@Autowired
 	private SubscriberDAO subscriberDao;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private UserCommentsDAO userCommentsDao;
 	@Autowired
 	private ReferenceManager referenceManager;
@@ -189,7 +192,7 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 		
 		List<Notification> notifications = collectIdentitiesToNotify(feedEntry, feed, item, comment);
 		for(Notification notification:notifications) {
-			if(!notification.veto()) {
+			if(!notification.veto() && notification.identity().getStatus().intValue() < Identity.STATUS_VISIBLE_LIMIT.intValue()) {
 				notify(notification, item, comment, feedEntry);
 			}
 		}
@@ -246,6 +249,15 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 					notifyList.add(owner);
 					notifications.add(getBestTarget(owner, subscribersItem, NotificationAs.COURSE_OWNER));
 				}
+			}
+		}
+		
+		// Notify author of the blog post
+		if(item.getAuthorKey() != null) {
+			Identity itemAuthor = securityManager.loadIdentityByKey(item.getAuthorKey());
+			if(!notifyList.contains(itemAuthor)) {
+				notifyList.add(itemAuthor);
+				notifications.add(getBestTarget(itemAuthor, subscribersItem, NotificationAs.OTHER));
 			}
 		}
 		

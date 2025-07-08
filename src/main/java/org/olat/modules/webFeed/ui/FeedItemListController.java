@@ -86,8 +86,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
@@ -114,7 +116,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class FeedItemListController extends FormBasicController implements FlexiTableComponentDelegate {
+public class FeedItemListController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
 	private List<Item> feedItems;
 	private List<FeedItemRow> itemRows;
@@ -571,7 +573,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		toolsCalloutCtrl.activate();
 	}
 
-	public void displayFeedItem(UserRequest ureq, Item feedItem) {
+	public FeedItemController displayFeedItem(UserRequest ureq, Item feedItem) {
 		// remove toggle for individual item view
 		vcInfo.remove("toggle");
 		vcMain.remove(rightColFlc.getFormItemComponent());
@@ -587,7 +589,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 					displayConfig, feedCommentPublisher, itemFlc.getFormItemComponent());
 			listenTo(feedItemCtrl);
 			vcMain.put("selected_feed_item", feedItemCtrl.getInitialComponent());
+			return feedItemCtrl;
 		}
+		return null;
 	}
 
 	private void createButtonsForFeedItem(FeedItemRow feedItemRow) {
@@ -892,6 +896,24 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 			if (isToggleOn != null && isToggleOn) {
 				vcMain.put("rightColumn", rightColFlc.getFormItemComponent());
+			}
+		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("FeedItem".equals(name)) {
+			Long itemKey = entries.get(0).getOLATResourceable().getResourceableId();
+			FeedItemRow row = tableModel.getItemByKey(itemKey);
+			if(row != null) {
+				FeedItemController itemCtrl = displayFeedItem(ureq, row.getItem());
+				if(itemCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					itemCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			}
 		}
 	}

@@ -1,14 +1,15 @@
 <div class="o_notifications_news_wrapper">
 	<div class="o_notifications_subs_callout">
-		<div class="o_notifications_subscribe_toggles">
-			#foreach($toggle in $toggles)
-				<div class="o_notifications_subscribe_toggle">$r.render(${toggle.getComponentName()}) <strong><i class="o_icon o_icon-fw o_icon_notification" aria-hidden="true"></i> ${toggle.name()}</strong></div>
-			#end
-		</div>
+		<h4 class="o_notifications_title">$r.translate("modal.subscriptions")</h4>
         <div class="o_notifications_help">
             $r.contextHelpWithWrapper("manual_user/personal_menu/Personal_Tools/#subscriptions")
             $r.render("toolsLink")
         </div>
+        <div class="o_notifications_subscribe_toggles">
+			#foreach($toggle in $toggles)
+				<div class="o_notifications_subscribe_toggle">$r.render(${toggle.getComponentName()}) <strong><i class="o_icon o_icon-fw o_icon_notification" aria-hidden="true"></i> ${toggle.name()}</strong></div>
+			#end
+		</div>
     </div>
     $r.render("table.con.subs")
 </div>

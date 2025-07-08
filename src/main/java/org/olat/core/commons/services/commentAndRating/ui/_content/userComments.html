@@ -14,4 +14,12 @@
 			$r.render("$commentController.getViewCompName()")
 		#end
 	</div>
+	
+	#if(${goToComment.isTrue()})
+	<script>
+	"use strict;"
+	o_scrollToElement('#o_comment_$goToCommentId');
+	jQuery('#o_comment_$goToCommentId').addClass('o_comment_highlight');
+	</script> 
+	#end
 </div>
