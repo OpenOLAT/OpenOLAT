@@ -39,7 +39,6 @@ import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -57,7 +56,6 @@ import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedChangedEvent;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -194,6 +192,8 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo.contextPut("feed", feed);
 		vcInfo.contextPut("helper", helper);
 		vcInfo.contextPut("suppressCache", "");
+		vcInfo.contextPut("selectedFeedItem", Boolean.FALSE);
+		
 		// if there is no moduleConfig (e.g. learning resource itself) then always show metadata
 		if (moduleConfig != null) {
 			vcInfo.contextPut("showFeedDesc", moduleConfig.getBooleanSafe(AbstractFeedCourseNode.CONFIG_KEY_SHOW_FEED_DESC, false));
@@ -250,29 +250,12 @@ public class FeedMainController extends BasicController implements Activateable2
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 
 		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(name != null && name.startsWith("FeedItem") && feedItemListCtrl != null) {
 			feedItemListCtrl.activate(ureq, entries, state);
-		}
-	}
-
-	private void activateByFeedItem(UserRequest ureq, Long feedItemKey) {
-		Item feedItem = feedManager.loadItem(feedItemKey);
-
-		// check if the feedItem is not null and verify that the requested item
-		// is part of the current feed/ores
-		if (feedItem != null && Objects.equals(feedItem.getFeed().getKey(), feed.getKey())) {
-			feedItemListCtrl.displayFeedItem(ureq, feedItem);
-		} else {
-			vcMain.remove("selected_feed_item");
 		}
 	}
 

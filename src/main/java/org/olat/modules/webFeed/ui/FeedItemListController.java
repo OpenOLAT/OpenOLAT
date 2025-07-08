@@ -589,6 +589,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 					displayConfig, feedCommentPublisher, itemFlc.getFormItemComponent());
 			listenTo(feedItemCtrl);
 			vcMain.put("selected_feed_item", feedItemCtrl.getInitialComponent());
+			vcInfo.contextPut("selectedFeedItem", Boolean.TRUE);
 			return feedItemCtrl;
 		}
 		return null;
@@ -890,6 +891,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 	private void removeSelectedComponent(UserRequest ureq) {
 		vcMain.remove("selected_feed_item");
+		vcInfo.contextPut("selectedFeedItem", Boolean.FALSE);
 		if (toggleTimelineTags != null) {
 			vcInfo.put("toggle", toggleTimelineTags.getComponent());
 			Boolean isToggleOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(FeedItemListController.class, "timeline-tags-toggle");

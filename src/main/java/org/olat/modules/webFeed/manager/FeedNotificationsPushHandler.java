@@ -42,28 +42,24 @@ import org.olat.commons.coordinate.cluster.jms.JMSHelper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.NotificationsPushService;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
-import org.olat.core.commons.services.notifications.SubscriptionInfo;
-import org.olat.core.commons.services.notifications.SubscriptionItem;
 import org.olat.core.commons.services.notifications.manager.SubscriberDAO;
-import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
-import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.fileresource.types.PodcastFileResource;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.PublisherSubscriber;
@@ -112,6 +108,8 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 	@Autowired
 	private FeedDAO feedDao;
 	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private I18nManager i18nManager;
@@ -125,8 +123,6 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
-	@Autowired
-	private NotificationsManager notificationsManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
@@ -288,38 +284,35 @@ public class FeedNotificationsPushHandler implements InitializingBean, Disposabl
 			return;
 		}
 		
-		String title = item.getTitle();
-		Identity creator = comment.getCreator();
-		String type = feedEntry.getOlatResource().getResourceableTypeName();
-		
 		Locale locale = i18nManager.getLocaleOrDefault(identityToNotify.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(FeedMainController.class, locale,
 				Util.createPackageTranslator(NotificationSubscriptionController.class, locale));
-	
-		String iconCssClass;
-		String modifier = userManager.getUserDisplayName(creator);
-		if(PodcastFileResource.TYPE_NAME.equals(type)) {
-			iconCssClass = CSSHelper.getIconCssClassFor(PodcastNotificationsHandler.CSS_CLASS_ICON_PODCAST);
-		} else {
-			iconCssClass = CSSHelper.getIconCssClassFor(BlogNotificationsHandler.CSS_CLASS_ICON_BLOG);
-		}
 
-		String desc;
-		if(StringHelper.containsNonWhitespace(modifier)) {
-			desc = translator.translate("notifications.entry.commented", new String[] { title, modifier });
-		} else {
-			desc = translator.translate("notifications.entry.commented", new String[] { title, "???" });
-		}
-		
 		String businessPath = resourcePath + "[FeedItem:" + item.getKey() + "][Comment:" + comment.getKey() + "]";
 		String urlToSend = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(businessPath);
-		SubscriptionListItem subscriptionListItem = new SubscriptionListItem(desc, urlToSend, businessPath, comment.getCreationDate(), iconCssClass);
-		SubscriptionInfo si = new SubscriptionInfo(comment.getResId(), comment.getResName(), new TitleItem(title, iconCssClass), List.of(subscriptionListItem));
-
-		String description = si.getSpecificInfo(SubscriptionInfo.MIME_HTML, locale);
-		SubscriptionItem subscriptionItem = new SubscriptionItem(title, urlToSend, description);
-		notificationsManager.sendEmail(identityToNotify, translator, List.of(subscriptionItem));
+		
+		String body = buildBody(item, comment, urlToSend, translator);
+		
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(toNotify.identity());
+		bundle.setContent("Hello", body);
+		mailManager.sendExternMessage(bundle, new MailerResult(), true);
+	}
+	
+	private String buildBody(Item item, UserComment comment, String urlToSend, Translator translator) {
+		String[] args = new String[] {
+			item.getTitle(),
+			userManager.getUserDisplayName(comment.getCreator()),
+			Formatter.getInstance(translator.getLocale()).formatDateAndTime(comment.getCreationDate())
+		};
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("<p>").append(translator.translate("notifications.comment", args)).append("</p>")
+		  .append("<div class='o_email_box'>").append(comment.getComment()).append("</div>")
+		  .append("<div class='o_email_button_group'><a class='o_email_button' href='").append(urlToSend).append("'>").append(translator.translate("notifications.comment.view")).append("</a></div>");
+		
+		return sb.toString();
 	}
 	
 	/**
