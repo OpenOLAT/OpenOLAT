@@ -37,6 +37,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.webFeed.manager.BlogCommentNotificationsHandler;
 import org.olat.modules.webFeed.manager.PodcastCommentNotificationsHandler;
 import org.olat.repository.LifecycleModule;
@@ -55,6 +56,7 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 	private static final String MIGRATE_LIFECYCLE_ENABLED = "MIGRATE_LIFECYCLE_ENABLED";
 	private static final String UPDATE_BADGE_CLASSES = "UPDATE BADGE CLASSES";
 	private static final String MIGRATE_FEED_PUBLISHERS = "MIGRATE FEED PUBLISHERS";
+	private static final String UPDATE_BROKER_AUTO_STRATEGY = "UPDATE BROKER AUTO STRATEGY";
 
 	@Autowired
 	private DB dbInstance;
@@ -83,6 +85,7 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 		allOk &= migrateLifecycleModuleSetting(upgradeManager, uhd);
 		allOk &= updateBadgeClasses(upgradeManager, uhd);
 		allOk &= migrateFeedPublishers(upgradeManager, uhd);
+		allOk &= updateTopicBrokerAutoStrategy(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -214,4 +217,29 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 				.setParameter("publisherKey", publisher.getKey())
 				.getResultList();
 	}
+	
+	private boolean updateTopicBrokerAutoStrategy(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(UPDATE_BROKER_AUTO_STRATEGY)) {
+			try {
+				log.info("Updating topic broker auto strategy");
+				
+				String updateQuery = "update topicbrokerbroker set autoEnrollmentStrategyType = '" + TBEnrollmentStrategyType.maxPriorities.name() + "' where autoEnrollment = true";
+				int updateCount = dbInstance.getCurrentEntityManager().createQuery(updateQuery).executeUpdate();
+				dbInstance.commitAndCloseSession();
+				
+				log.info("Updating topic broker auto strategy for {} topic brokers", updateCount);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(UPDATE_BROKER_AUTO_STRATEGY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
+	}
+	
 }

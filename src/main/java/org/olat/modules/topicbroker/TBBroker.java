@@ -58,6 +58,10 @@ public interface TBBroker extends TBBrokerRef, OLATResourceable, ModifiedInfo, C
 	
 	void setAutoEnrollment(boolean autoEnrollment);
 	
+	TBEnrollmentStrategyType getAutoEnrollmentStrategyType();
+	
+	void setAutoEnrollmentStrategyType(TBEnrollmentStrategyType autoEnrollmentStrategyType);
+	
 	boolean isOverlappingPeriodAllowed();
 	
 	void setOverlappingPeriodAllowed(boolean overlappingPeriodAllowed);

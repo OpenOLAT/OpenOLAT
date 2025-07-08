@@ -42,6 +42,10 @@ public class TBEnrollmentStrategyFactory {
 	}
 	
 	public static TBEnrollmentStrategyConfig createConfig(TBEnrollmentStrategyType type) {
+		if (type == null) {
+			return getDefaultConfig();
+		}
+		
 		return switch (type) {
 		case maxEnrollments -> createMaxEnrollmentsConfig();
 		case maxPriorities -> createMaxPrioritiesConfig();

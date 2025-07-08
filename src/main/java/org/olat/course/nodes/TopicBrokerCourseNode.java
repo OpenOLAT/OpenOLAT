@@ -72,6 +72,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
@@ -94,7 +95,7 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implemen
 	public static final String TYPE = "topicbroker";
 	public static final String ICON_CSS = "o_icon_topicbroker";
 	
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_ENROLLMENTS_PER_PARTICIPANT = "enrollments.per.participant";
 	public static final String CONFIG_KEY_SELECTIONS_PER_PARTICIPANT = "selections.per.participant";
 	public static final String CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS = "participant.can.reduce.enrollments";
@@ -106,6 +107,8 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implemen
 	public static final String CONFIG_KEY_SELECTION_DURATION = "selection.duration";
 	public static final String CONFIG_KEY_SELECTION_END = "selection.end";
 	public static final String CONFIG_KEY_ENROLLMENT_AUTO = "enrollment.auto";
+	public static final String CONFIG_KEY_ENROLLMENT_AUTO_STRATEGY = "enrollment.auto.strategy";
+	public static final String CONFIG_VALUE_ENROLLMENT_AUTO_STRATEGY_DEFAULT = TBEnrollmentStrategyType.maxEnrollments.name();
 	public static final String CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED = "overlapping.period.allowed";
 	// End date only for participants.
 	public static final String CONFIG_KEY_WITHDRAW_END = "withdraw.end";
@@ -220,6 +223,11 @@ public class TopicBrokerCourseNode extends AbstractAccessableCourseNode implemen
 		}
 		if (config.getConfigurationVersion() < 2) {
 			config.setBooleanEntry(CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED, true);
+		}
+		if (config.getConfigurationVersion() < 3) {
+			if (config.getBooleanSafe(CONFIG_KEY_ENROLLMENT_AUTO)) {
+				config.setStringValue(CONFIG_KEY_ENROLLMENT_AUTO_STRATEGY, CONFIG_VALUE_ENROLLMENT_AUTO_STRATEGY_DEFAULT);
+			}
 		}
 		// Configs are synchronized with TBBroker. If you add new configs, you probably
 		// have to upgrade the TBBroker with an Upgrader because the publish process is

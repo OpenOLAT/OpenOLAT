@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -49,6 +50,7 @@ import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.ui.TBUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -76,6 +78,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 	private DateChooser selectionPeriodAbsEl;
 	private MultipleSelectionElement criteriaEl;
 	private SingleSelection enrollmentAutoEl;
+	private SingleSelection autoStrategyEl;
 	private FormLayoutContainer withdrawEndRelCont;
 	private TextElement withdrawEndRelativeEl;
 	private DateChooser withdrawEndAbsEl;
@@ -220,8 +223,27 @@ public class TBConfigController extends FormBasicController implements Controlle
 		enrollmentSV.add(SelectionValues.entry(Boolean.TRUE.toString(), translate("config.enrollment.auto.auto"), translate("config.enrollment.auto.auto.desc"), "o_icon o_icon_tb_method_auto", null, true));
 		enrollmentAutoEl = uifactory.addCardSingleSelectHorizontal("config.enrollment.auto", "config.enrollment.auto", enrollmentCont, enrollmentSV);
 		enrollmentAutoEl.select(String.valueOf(moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO)), true);
+		enrollmentAutoEl.addActionListener(FormEvent.ONCHANGE);
+		
+		SelectionValues autoStrategyValues = new SelectionValues();
+		autoStrategyValues.add(createPresetEntry(TBEnrollmentStrategyType.maxEnrollments));
+		autoStrategyValues.add(createPresetEntry(TBEnrollmentStrategyType.maxPriorities));
+		autoStrategyValues.add(createPresetEntry(TBEnrollmentStrategyType.maxTopics));
+		autoStrategyEl = uifactory.addCardSingleSelectHorizontal("preset", "enrollment.strategy.preset", enrollmentCont, autoStrategyValues);
+		autoStrategyEl.select(moduleConfig.getStringValue(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO_STRATEGY,
+				TopicBrokerCourseNode.CONFIG_VALUE_ENROLLMENT_AUTO_STRATEGY_DEFAULT), true);
 		
 		updateSelectionPeriodUI();
+		updateEnrollmentAutoUI();
+	}
+
+	private SelectionValue createPresetEntry(TBEnrollmentStrategyType type) {
+		return entry(
+				type.name(),
+				TBUIFactory.getTranslatedType(getTranslator(), type),
+				TBUIFactory.getTranslatedTypeDesc(getTranslator(), type),
+				"o_icon " +  TBUIFactory.getTypeIconCss(type),
+				null, true);
 	}
 
 	private void updateSelectionPeriodUI() {
@@ -240,12 +262,18 @@ public class TBConfigController extends FormBasicController implements Controlle
 		withdrawEndAbsEl.setVisible(canWithdraw && !relativDates);
 	}
 	
+	private void updateEnrollmentAutoUI() {
+		autoStrategyEl.setVisible(Boolean.valueOf(enrollmentAutoEl.getSelectedKey()));
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == participantCanEl) {
 			updateSelectionPeriodUI();
 		} else if (source == relativeDatesEl) {
 			updateSelectionPeriodUI();
+		} else if (source == enrollmentAutoEl) {
+			updateEnrollmentAutoUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -385,6 +413,12 @@ public class TBConfigController extends FormBasicController implements Controlle
 		moduleConfig.setDateValue(TopicBrokerCourseNode.CONFIG_KEY_SELECTION_START, selectionPeriodDueDateConfig.getAbsoluteDate());
 		
 		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO, Boolean.valueOf(enrollmentAutoEl.getSelectedKey()));
+		if (moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO)) {
+			moduleConfig.setStringValue(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO_STRATEGY, autoStrategyEl.getSelectedKey());
+		} else {
+			moduleConfig.remove(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO_STRATEGY);
+		}
+		
 		moduleConfig.setBooleanEntry(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED, !criteriaEl.isKeySelected(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED));
 		
 		// clean up

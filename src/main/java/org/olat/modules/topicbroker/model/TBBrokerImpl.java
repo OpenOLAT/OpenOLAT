@@ -23,6 +23,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,6 +37,7 @@ import jakarta.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -76,6 +79,9 @@ public class TBBrokerImpl implements TBBroker, Persistable {
 	private boolean participantCanEditRequiredEnrollments;
 	@Column(name="t_auto_enrollment", nullable=true, insertable=true, updatable=true)
 	private boolean autoEnrollment;
+	@Enumerated(EnumType.STRING)
+	@Column(name="t_auto_strategy_type", nullable=true, insertable=true, updatable=true)
+	private TBEnrollmentStrategyType autoEnrollmentStrategyType;
 	@Column(name="t_operlapping_period_allowed", nullable=true, insertable=true, updatable=true)
 	private boolean overlappingPeriodAllowed;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -195,6 +201,16 @@ public class TBBrokerImpl implements TBBroker, Persistable {
 	@Override
 	public void setAutoEnrollment(boolean autoEnrollment) {
 		this.autoEnrollment = autoEnrollment;
+	}
+
+	@Override
+	public TBEnrollmentStrategyType getAutoEnrollmentStrategyType() {
+		return autoEnrollmentStrategyType;
+	}
+
+	@Override
+	public void setAutoEnrollmentStrategyType(TBEnrollmentStrategyType autoEnrollmentStrategyType) {
+		this.autoEnrollmentStrategyType = autoEnrollmentStrategyType;
 	}
 
 	@Override

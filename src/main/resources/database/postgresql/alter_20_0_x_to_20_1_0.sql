@@ -24,6 +24,7 @@ alter table o_badge_class add constraint badge_class_to_next_version_idx foreign
 create index idx_badge_class_to_next_version_idx on o_badge_class(fk_next_version);
 
 -- Topic broker
+alter table o_tb_broker add column t_auto_strategy_type varchar(64);
 alter table o_tb_broker add column t_operlapping_period_allowed bool default true;
 alter table o_tb_topic add column t_begin_date timestamp;
 alter table o_tb_topic add column t_end_date timestamp;

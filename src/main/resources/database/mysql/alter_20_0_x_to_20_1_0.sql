@@ -21,6 +21,7 @@ alter table o_badge_class add constraint badge_class_to_previous_version_idx for
 alter table o_badge_class add constraint badge_class_to_next_version_idx foreign key (fk_next_version) references o_badge_class (id);
 
 -- Topic broker
+alter table o_tb_broker add column t_auto_strategy_type varchar(64);
 alter table o_tb_broker add column t_operlapping_period_allowed bool default true;
 alter table o_tb_topic add column t_begin_date datetime;
 alter table o_tb_topic add column t_end_date datetime;

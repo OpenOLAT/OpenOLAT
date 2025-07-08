@@ -55,7 +55,8 @@ public interface TopicBrokerService {
 	
 	public TBBroker updateBroker(Identity doer, TBBrokerRef broker, Integer maxSelections, Date selectionStartDate,
 			Date selectionEndDate, Integer requiredEnrollments, boolean participantCanEditRequiredEnrollments,
-			boolean autoEnrollment, boolean overlappingPeriodAllowed, boolean participantCanWithdraw, Date withdrawEndDate);
+			boolean autoEnrollment, TBEnrollmentStrategyType autoEnrollmentStrategyType,
+			boolean overlappingPeriodAllowed, boolean participantCanWithdraw, Date withdrawEndDate);
 
 	public void updateEnrollmentProcessStart(Identity doer, TBBrokerRef broker);
 	

@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.model;
 import java.util.Date;
 
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -41,6 +42,7 @@ public class TBTransientBroker implements TBBroker {
 	private Integer requiredEnrollments;
 	private boolean participantCanEditRequiredEnrollments;
 	private boolean autoEnrollment;
+	private TBEnrollmentStrategyType autoEnrollmentStrategyType;
 	private boolean overlappingPeriodAllowed;
 	private Date enrollmentStartDate;
 	private Date enrollmentDoneDate;
@@ -147,6 +149,16 @@ public class TBTransientBroker implements TBBroker {
 	@Override
 	public void setAutoEnrollment(boolean autoEnrollment) {
 		this.autoEnrollment = autoEnrollment;
+	}
+
+	@Override
+	public TBEnrollmentStrategyType getAutoEnrollmentStrategyType() {
+		return autoEnrollmentStrategyType;
+	}
+
+	@Override
+	public void setAutoEnrollmentStrategyType(TBEnrollmentStrategyType autoEnrollmentStrategyType) {
+		this.autoEnrollmentStrategyType = autoEnrollmentStrategyType;
 	}
 
 	@Override

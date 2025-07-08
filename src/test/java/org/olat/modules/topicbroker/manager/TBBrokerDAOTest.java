@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerSearchParams;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.model.TBBrokerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -80,6 +81,8 @@ public class TBBrokerDAOTest extends OlatTestCase {
 		broker.setRequiredEnrollments(requiredEnrollments);
 		broker.setParticipantCanEditRequiredEnrollments(true);
 		broker.setAutoEnrollment(true);
+		TBEnrollmentStrategyType autoEnrollmentStrategyType = TBEnrollmentStrategyType.maxPriorities;
+		broker.setAutoEnrollmentStrategyType(autoEnrollmentStrategyType);
 		((TBBrokerImpl)broker).setEnrollmentStartDate(new Date());
 		((TBBrokerImpl)broker).setEnrollmentDoneDate(new Date());
 		broker.setParticipantCanWithdraw(true);
@@ -96,6 +99,7 @@ public class TBBrokerDAOTest extends OlatTestCase {
 		assertThat(reloadedBroker.getRequiredEnrollments()).isEqualTo(requiredEnrollments);
 		assertThat(reloadedBroker.isParticipantCanEditRequiredEnrollments()).isTrue();
 		assertThat(reloadedBroker.isAutoEnrollment()).isTrue();
+		assertThat(reloadedBroker.getAutoEnrollmentStrategyType()).isEqualTo(autoEnrollmentStrategyType);
 		assertThat(reloadedBroker.getEnrollmentStartDate()).isNotNull();
 		assertThat(reloadedBroker.getEnrollmentDoneDate()).isNotNull();
 		assertThat(reloadedBroker.isParticipantCanWithdraw()).isTrue();

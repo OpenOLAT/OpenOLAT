@@ -71,6 +71,7 @@ import org.olat.modules.topicbroker.TBEnrollmentStrategy;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyConfig;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyContext;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyFactory;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantRef;
@@ -166,8 +167,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	@Override
 	public TBBroker updateBroker(Identity doer, TBBrokerRef broker, Integer maxSelections, Date selectionStartDate,
 			Date selectionEndDate, Integer requiredEnrollments, boolean participantCanEditRequiredEnrollments,
-			boolean autoEnrollment, boolean overlappingPeriodAllowed, boolean participantCanWithdraw,
-			Date withdrawEndDate) {
+			boolean autoEnrollment, TBEnrollmentStrategyType autoEnrollmentStrategyType,
+			boolean overlappingPeriodAllowed, boolean participantCanWithdraw, Date withdrawEndDate) {
 		TBBroker reloadedBroker = getBroker(broker);
 		if (reloadedBroker == null) {
 			return null;
@@ -197,6 +198,10 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		}
 		if (reloadedBroker.isAutoEnrollment() != autoEnrollment) {
 			reloadedBroker.setAutoEnrollment(autoEnrollment);
+			contentChanged = true;
+		}
+		if (reloadedBroker.getAutoEnrollmentStrategyType() != autoEnrollmentStrategyType) {
+			reloadedBroker.setAutoEnrollmentStrategyType(autoEnrollmentStrategyType);
 			contentChanged = true;
 		}
 		if (reloadedBroker.isAutoEnrollment() != autoEnrollment) {
@@ -1223,7 +1228,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			topicSearchParams.setBroker(broker);
 			List<TBTopic> topics = getTopics(topicSearchParams);
 			
-			TBEnrollmentStrategyConfig config = TBEnrollmentStrategyFactory.getDefaultConfig();
+			TBEnrollmentStrategyConfig config = TBEnrollmentStrategyFactory.createConfig(broker.getAutoEnrollmentStrategyType());
 			TBEnrollmentStrategyContext context = TBEnrollmentStrategyFactory.createContext(broker, topics, selections);
 			TBEnrollmentStrategy evaluator = TBEnrollmentStrategyFactory.createStrategy(config, context);
 			createProcessor(broker, topics, selections, evaluator, null).getBest().persist(null);

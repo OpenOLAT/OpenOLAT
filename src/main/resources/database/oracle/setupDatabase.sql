@@ -4788,6 +4788,7 @@ create table o_tb_broker (
    t_required_enrollments number(20),
    t_p_can_edit_r_enrollments number,
    t_auto_enrollment number,
+   t_auto_strategy_type varchar(64),
    t_operlapping_period_allowed number default 1,
    t_enrollment_start_date date,
    t_enrollment_done_date date,

@@ -43,6 +43,7 @@ import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.nodes.topicbroker.TopicBrokerCourseNodeService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.TopicBrokerExportService;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.repository.RepositoryEntry;
@@ -101,6 +102,13 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 				: Integer.valueOf(1);
 		boolean participantCanEditRequiredEnrollments = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_REDUCE_ENROLLMENTS);
 		boolean autoEnrollment = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO);
+		TBEnrollmentStrategyType autoEnrollmentStrategyType = null;
+		if (autoEnrollment) {
+			autoEnrollmentStrategyType = TBEnrollmentStrategyType.valueOf(
+					moduleConfig.getStringValue(TopicBrokerCourseNode.CONFIG_KEY_ENROLLMENT_AUTO_STRATEGY,
+							TopicBrokerCourseNode.CONFIG_VALUE_ENROLLMENT_AUTO_STRATEGY_DEFAULT));
+		}
+		
 		boolean overlappingPeriodAllowed = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED);
 		
 		boolean participantCanWithdraw = moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_PARTICIPANT_CAN_WITHDRAW);
@@ -130,7 +138,7 @@ public class TopicBrokerCourseNodeServiceImpl implements TopicBrokerCourseNodeSe
 		
 		TBBroker broker = topicBrokerService.getOrCreateBroker(doer, courseEntry, courseNode.getIdent());
 		topicBrokerService.updateBroker(doer, broker, selectionsPerParticipant, selectionStartDate, selectionEndDate,
-				enrollmentsPerParticipant, participantCanEditRequiredEnrollments, autoEnrollment,
+				enrollmentsPerParticipant, participantCanEditRequiredEnrollments, autoEnrollment, autoEnrollmentStrategyType,
 				overlappingPeriodAllowed, participantCanWithdraw, withdrawDate);
 		
 		if (broker.getEnrollmentDoneDate() != null && selectionEndDate != null && selectionEndDate.after(new Date())) {
