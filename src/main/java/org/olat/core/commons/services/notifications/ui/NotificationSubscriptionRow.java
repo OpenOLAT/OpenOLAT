@@ -21,6 +21,7 @@ package org.olat.core.commons.services.notifications.ui;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 
@@ -34,6 +35,7 @@ public class NotificationSubscriptionRow {
 	private Long key;
 	private String section;
 	private String addDesc;
+	private Publisher publisher;
 	private FormToggle statusToggle;
 	private FormLink learningResource;
 	private FormLink subRes;
@@ -41,14 +43,15 @@ public class NotificationSubscriptionRow {
 	private Date lastEmail;
 	private FormLink deleteLink;
 
-	public NotificationSubscriptionRow(String section, FormLink learningResource, FormLink subRes,
-									   String addDesc, FormToggle statusToggle, Date creationDate,
-									   Date lastEmail, FormLink deleteLink, Long subKey) {
+	public NotificationSubscriptionRow(String section, Publisher publisher, FormLink learningResource,
+			FormLink subRes, String addDesc, FormToggle statusToggle, Date creationDate,
+			Date lastEmail, FormLink deleteLink, Long subKey) {
 		this.key = subKey;
 		this.section = section;
 		this.learningResource = learningResource;
 		this.subRes = subRes;
 		this.addDesc = addDesc;
+		this.publisher = publisher;
 		this.statusToggle = statusToggle;
 		this.creationDate = creationDate;
 		this.lastEmail = lastEmail;
@@ -61,6 +64,10 @@ public class NotificationSubscriptionRow {
 
 	public String getSection() {
 		return section;
+	}
+	
+	public Publisher getPublisher() {
+		return publisher;
 	}
 
 	public FormLink getLearningResource() {

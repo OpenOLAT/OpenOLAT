@@ -245,7 +245,10 @@ public class NotificationSubscriptionController extends FormBasicController {
 			if (pub.getType().equals("MarkedGroupTask")) {
 				subIdent = pub.getSubidentifier().replaceAll("\\D+", "");
 				titlePostFix = " (" + resourceType.substring(resourceType.indexOf("(")+1, resourceType.indexOf(")")) + ")";
+			} else if(pub.getType().equals("Comment.BLOG") || pub.getType().equals("Comment.PODCAST")) {
+				titlePostFix = " (" + translate("comments") + ")";
 			}
+			
 			try {
 				ICourse course = CourseFactory.loadCourse(OresHelper.createOLATResourceableInstance(pub.getResName(), pub.getResId()));
 				CourseNode courseNode = course.getRunStructure().getNode(subIdent);
@@ -267,7 +270,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		subRes.setIconLeftCSS(iconCssFromHandler);
 
-		NotificationSubscriptionRow row = new NotificationSubscriptionRow(section, learningResource, subRes, addDesc, statusToggle,
+		NotificationSubscriptionRow row = new NotificationSubscriptionRow(section, pub, learningResource, subRes, addDesc, statusToggle,
 				sub.getCreationDate(), sub.getLatestEmailed(), deleteLink, sub.getKey());
 		learningResource.setUserObject(row);
 		subRes.setUserObject(row);
