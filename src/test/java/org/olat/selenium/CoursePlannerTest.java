@@ -38,12 +38,14 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.MyCoursesPage;
 import org.olat.selenium.page.curriculum.CoursePlannerPage;
 import org.olat.selenium.page.curriculum.CurriculumComposerPage;
 import org.olat.selenium.page.curriculum.CurriculumElementMembersPage;
 import org.olat.selenium.page.curriculum.CurriculumElementPage;
 import org.olat.selenium.page.curriculum.CurriculumPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.CurriculumRestClient;
 import org.olat.test.rest.UserRestClient;
@@ -346,5 +348,112 @@ public class CoursePlannerTest extends Deployments {
 			.assertOnCurriculumElementInList(elementName)
 			.more(elementName)
 			.assertOnCurriculumElementDetails(elementName);
+	}
+	
+	
+
+	/**
+	 * A manager upload a course, create a product in the course planner.
+	 * It adds a new element with the course, publish both for the web. It
+	 * adds a free offer to them.<br>
+	 * A user explores the catalog, choose the element, login within the
+	 * catalog and book automatically the course, see it in "My courses"
+	 * and opens it.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userBookingFromWebCatalog()
+	throws IOException, URISyntaxException {
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Astrid");
+		UserVO manager = new UserRestClient(deploymentUrl).createCurriculumManager("John");
+
+		String typeName = "Free planner course";
+		CurriculumElementTypeVO type = new CurriculumRestClient(deploymentUrl)
+				.createSingleCourseImplementationType(typeName, "C-CUR-4");
+		
+		LoginPage managerLoginPage = LoginPage.load(browser, deploymentUrl);
+		managerLoginPage
+			.loginAs(manager.getLogin(), manager.getPassword());
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		String courseTitle = "Free course " + UUID.randomUUID();
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/curriculum_course.zip");
+		File courseFile = new File(courseUrl.toURI());
+		
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(courseTitle, courseFile);
+		// Publish the course
+		new RepositoryEditDescriptionPage(browser)
+			.clickToolbarBack();
+		CoursePageFragment.getCourse(browser)
+			.edit()
+			.autoPublish()
+			.changeStatus(RepositoryEntryStatusEnum.published);
+
+		CoursePlannerPage coursePlannerPage = navBar
+			.openCoursePlanner();
+		
+		String id = UUID.randomUUID().toString();
+		String curriculumName = "Curriculum 4 " + id;
+		String curriculumRef = "CUR-4 " + id;
+		CurriculumPage curriculumPage = coursePlannerPage
+			.openCurriculumBrowser()
+			.addCurriculum(curriculumName, curriculumRef)
+			.assertOnCurriculumInTable(curriculumName)
+			.openCurriculum(curriculumName);
+
+		String eid = UUID.randomUUID().toString();
+		String elementName = "Element 4 " + eid;
+		String elementIdentifier = "FREE-4 " + eid;
+		CurriculumComposerPage curriculumComposer = curriculumPage
+			.openImplementationsTab()
+			.addCurriculumElement(elementName, elementIdentifier, type.getDisplayName())
+			.assertOnCurriculumElementInTable(elementName);
+		
+		CurriculumElementPage courseElementPage = curriculumComposer
+			.selectCurriculumElementInTable(elementName)
+			.assertOnImplementationDetails();
+		
+		// Add course to element
+		courseElementPage
+			.openResourcesTab()
+			.assertOnTemplatesList()
+			.selectCourse(courseTitle)
+			.assertOnCourseInResourcesList(courseTitle);
+		
+		String freeBookingName = "Free!";
+		// Configure a booking
+		courseElementPage
+			.openOffersTab()
+			.addFreeBooking()
+			.configureFreeBooking(freeBookingName, true);
+		
+		// Publish the element
+		courseElementPage
+			.changeStatus(CurriculumElementStatus.confirmed);
+		
+		new UserToolsPage(browser)
+			.logout();
+		
+		// Participant explores the catalog
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.asCatalog()
+			.exploreOffers()
+			.openCourse(elementName)
+			.login(participant)
+			.startCourse(elementName);
+		
+		new MyCoursesPage(browser)
+			.assertOnMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment participantCourse = CoursePageFragment.getCourse(browser);
+		participantCourse
+			.assertOnLearnPathNodeDone("Participant list");
 	}
 }
