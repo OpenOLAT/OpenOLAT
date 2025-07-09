@@ -432,8 +432,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
+		if(rootElement == null || rootElement.getParent() == null) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
+		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
@@ -509,7 +511,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
 		
 		for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
-			if(status == CurriculumElementStatus.deleted) continue;
+			if(status == CurriculumElementStatus.deleted
+					|| (rootElement != null && rootElement.getParent() != null
+						&& (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))) {
+				continue;
+			}
 			
 			FlexiFiltersTab statusTab = FlexiFiltersTabFactory.tabWithImplicitFilters(status.name(), translate("filter." + status.name()),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
