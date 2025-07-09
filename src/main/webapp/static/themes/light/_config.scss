@@ -1836,7 +1836,7 @@ $o-cns-status-selected-color					: brown !default;
 $o-cns-status-done-color						: $brand-success !default;
 
 /* Not available visual */
-$o-not-available-bg: 		linear-gradient(40deg, rgba($brand-primary,1), rgba(#fff, 0.5) 90%), linear-gradient(160deg, rgba(#000,1), rgba($brand-primary, 0.3) 40%), linear-gradient(280deg, rgba($brand-primary,0.7), rgba(#000, 0.6) 80%);
+$o-not-available-bg: 		linear-gradient(40deg, rgba($brand-primary,1), rgba(#fff, 0.5) 90%), linear-gradient(160deg, rgba(#000,1), rgba($brand-primary, 0.3) 40%), linear-gradient(280deg, rgba($brand-primary,0.7), rgba(#000, 0.6) 80%) !default;
 
 /* Vertical timeline */
 $o-v-timeline-rows-gap								: 5px !default;
