@@ -22,6 +22,7 @@ package org.olat.modules.appointments.ui;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -414,7 +415,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		}
 	}
 
-	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {
+	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment, boolean selected) {
 		Locale locale = getLocale();
 		Date begin = appointment.getStart();
 		Date end = appointment.getEnd();
@@ -471,12 +472,52 @@ public abstract class AppointmentListController extends FormBasicController impl
 		row.setDateShort1(dateShort1);
 		row.setDateShort2(dateShort2);
 		row.setTime(time);
+		forgeEnrollmentDeadline(row, appointment, selected);
 		row.setLocation(AppointmentsUIFactory.getDisplayLocation(getTranslator(), appointment));
 		row.setDetails(appointment.getDetails());
 		row.setEscapedDetails(StringHelper.escapeHtml(row.getDetails()));
 		forgeDayElement(row, appointment.getStart());
 	}
-	
+
+	private void forgeEnrollmentDeadline(AppointmentRow row, Appointment appointment, boolean selected) {
+		if (!appointment.isUseEnrollmentDeadline()) {
+			return;
+		}
+		if (!canSelect()) {
+			return;
+		}
+		if (selected) {
+			return;
+		}
+		Long enrollmentDeadlineMinutes = appointment.getEnrollmentDeadlineMinutes();
+		if (enrollmentDeadlineMinutes == null) {
+			return;
+		}
+		Date enrollmentDeadline = DateUtils.addMinutes(appointment.getStart(), -enrollmentDeadlineMinutes.intValue());
+		Date now  = new Date();
+		boolean pastDeadline = now.after(enrollmentDeadline);
+		if (DateUtils.isSameDay(enrollmentDeadline, new Date())) {
+			String timeShort = Formatter.getInstance(getLocale()).formatTimeShort(enrollmentDeadline);
+			row.setEnrollmentDeadline(translate("appointment.select.until.today", timeShort));
+			row.setEnrollmentDeadlineCSS(pastDeadline ? "o_past_deadline" : "o_today");
+			return;
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, 1);
+		Date tomorrow = cal.getTime();
+		if (DateUtils.isSameDay(enrollmentDeadline, tomorrow)) {
+			String timeShort = Formatter.getInstance(getLocale()).formatTimeShort(enrollmentDeadline);
+			row.setEnrollmentDeadline(translate("appointment.select.until.tomorrow", timeShort));
+			row.setEnrollmentDeadlineCSS("o_after_today");
+			return;
+		}
+		
+		String dateTime = Formatter.getInstance(getLocale()).formatDateAndTime(enrollmentDeadline);
+		row.setEnrollmentDeadline(translate("appointment.select.until", dateTime));
+		row.setEnrollmentDeadlineCSS(pastDeadline ? "o_past_deadline" : "o_after_today");
+	}
+
 	protected void forgeDayElement(AppointmentRow row, Date date) {
 		DateElement dayEl = DateComponentFactory.createDateElementWithYear("day_" + row.getKey(), date);
 		row.setDayEl(dayEl);

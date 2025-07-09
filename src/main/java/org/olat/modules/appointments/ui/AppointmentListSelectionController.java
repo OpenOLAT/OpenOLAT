@@ -20,6 +20,7 @@
 package org.olat.modules.appointments.ui;
 
 import static java.util.Collections.emptyList;
+import static org.olat.modules.appointments.ui.AppointmentsUIFactory.checkEnrollmentDeadline;
 import static org.olat.modules.appointments.ui.AppointmentsUIFactory.isEndInFuture;
 
 import java.util.ArrayList;
@@ -165,7 +166,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		if (myParticipation.isPresent()) {
 			row.setParticipation(myParticipation.get());
 		}
-		forgeAppointmentView(row, appointment);
+		forgeAppointmentView(row, appointment, selected);
 		if (row.getParticipation() != null) {
 			Participation participation = row.getParticipation();
 			Identity identity = participation.getIdentity();
@@ -200,6 +201,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			boolean selectable = false;
 			if ((Appointment.Status.planned == appointment.getStatus() || (topic.isAutoConfirmation() && !selected)) 
 					&& isEndInFuture(appointment, now)
+					&& checkEnrollmentDeadline(appointment, now)
 					&& (freeParticipations == null || freeParticipations.intValue() > 0)) {
 				selectable = true;
 			}

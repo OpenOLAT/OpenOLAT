@@ -81,6 +81,18 @@ public class AppointmentsUIFactory {
 		return now.before(end);
 	}
 	
+	public static boolean checkEnrollmentDeadline(Appointment appointment, Date now) {
+		if (!appointment.isUseEnrollmentDeadline()) {
+			return true;
+		}
+		Long enrollmentDeadlineMinutes = appointment.getEnrollmentDeadlineMinutes();
+		if (enrollmentDeadlineMinutes == null) {
+			return false;
+		}
+		Date enrollmentDeadLine = DateUtils.addMinutes(appointment.getStart(), -enrollmentDeadlineMinutes.intValue());
+		return now.before(enrollmentDeadLine);
+	}
+	
 	public static boolean isEndInPast(Appointment appointment, Date now) {
 		return !isEndInFuture(appointment, now);
 	}

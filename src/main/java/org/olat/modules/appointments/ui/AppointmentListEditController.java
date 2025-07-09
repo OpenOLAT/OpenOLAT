@@ -135,7 +135,7 @@ public class AppointmentListEditController extends AppointmentListController {
 			List<BigBlueButtonRecordingReference> recordingReferences, boolean noAppointmentConfirmed) {
 		AppointmentRow row = new AppointmentRow(appointment);
 		
-		forgeAppointmentView(row, appointment);
+		forgeAppointmentView(row, appointment, false);
 		
 		forgeParticipants(row, participations);
 

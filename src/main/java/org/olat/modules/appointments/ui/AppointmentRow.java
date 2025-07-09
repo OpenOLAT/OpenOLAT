@@ -62,7 +62,9 @@ public class AppointmentRow {
 	private FormLink selectLink;
 	private FormLink confirmLink;
 	private DropdownItem commandDropdown;
-	
+	private String enrollmentDeadline;
+	private String enrollmentDeadlineCSS;
+
 	public AppointmentRow(Appointment appointment) {
 		this.appointment = appointment;
 	}
@@ -279,4 +281,19 @@ public class AppointmentRow {
 		this.commandDropdown = commandDropdown;
 	}
 
+	public String getEnrollmentDeadline() {
+		return enrollmentDeadline;
+	}
+
+	public void setEnrollmentDeadline(String enrollmentDeadline) {
+		this.enrollmentDeadline = enrollmentDeadline;
+	}
+
+	public String getEnrollmentDeadlineCSS() {
+		return enrollmentDeadlineCSS;
+	}
+
+	public void setEnrollmentDeadlineCSS(String enrollmentDeadlineCSS) {
+		this.enrollmentDeadlineCSS = enrollmentDeadlineCSS;
+	}
 }

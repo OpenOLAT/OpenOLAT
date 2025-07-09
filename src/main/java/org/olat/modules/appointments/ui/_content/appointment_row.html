@@ -14,6 +14,7 @@
 				$r.render($row.dayElName)
 			#end
 			<div class="o_main">
+				<div class="o_main_header">
 				#if($row.getDateLong() && $row.getDateLong() != "")
 					<div class="o_date o_long">
 						<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
@@ -38,6 +39,14 @@
 						$row.getTime()
 					</div>
 				#end
+				#if($row.getEnrollmentDeadline() && $row.getEnrollmentDeadline() != "")	
+					<div class="o_enrollment_deadline">
+						<span class="o_labeled_light $row.getEnrollmentDeadlineCSS()">
+							$row.getEnrollmentDeadline()
+						</span>
+					</div>
+				#end
+				</div>
 				#if($row.getLocation() && $row.getLocation() != "")
 					<div>
 						<i class="o_icon o_icon-fw o_icon_home">&nbsp;</i>

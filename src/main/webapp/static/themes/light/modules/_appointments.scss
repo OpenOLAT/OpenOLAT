@@ -148,9 +148,33 @@
 	.o_datecomp {
 		margin-top: 4px;
 	}
+	
+	.o_main_header {
+		display: block;
+		
+		.o_enrollment_deadline {
+			display: inline-block;
+			margin-left: 0.2em;
+			margin-bottom: 0.2em;
+			line-height: $line-height-base;
+
+			.o_labeled_light {
+				&.o_past_deadline {
+					@extend %o_labeled_light_red;
+				}
+				&.o_today {
+					@extend %o_labeled_light_yellow;						
+				}
+				&.o_after_today {
+					@extend %o_labeled_light_blue;
+				}
+			}
+		}
+	}
 		
 	.o_date,
 	.o_time {
+		display: inline-block;
 		font-weight: bold;
 		font-size: 110%;
 		margin-bottom: 0.2em;
