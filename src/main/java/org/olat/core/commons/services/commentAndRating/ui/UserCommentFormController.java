@@ -64,6 +64,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -165,32 +166,6 @@ public class UserCommentFormController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	private static boolean containsEmptyPTag(String str) {
-		String startTag = "<p>";
-		String endTag = "</p>";
-
-		// Find the first occurrence of the start tag
-		int startIndex = str.indexOf(startTag);
-		while (startIndex != -1) {
-			// Find the corresponding end tag
-			int endIndex = str.indexOf(endTag, startIndex + startTag.length());
-			if (endIndex != -1) {
-				// Get the content between the tags
-				String content = str.substring(startIndex + startTag.length(), endIndex);
-				// Check if the content is empty or contains only whitespace
-				if (!StringHelper.containsNonWhitespace(content)) {
-					return true;
-				}
-				// Move past this end tag to search for the next start tag
-				startIndex = str.indexOf(startTag, endIndex + endTag.length());
-			} else {
-				// No matching end tag found, stop searching
-				break;
-			}
-		}
-		return false;
-	}
-
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (parentComment == null) {
@@ -225,20 +200,23 @@ public class UserCommentFormController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		commentElem.clearError();
 		String commentText = commentElem.getValue();
-
-		if ((!StringHelper.containsNonWhitespace(commentText) || containsEmptyPTag(commentText))
-				&& uploadedFiles.isEmpty()) {
-			commentElem.setErrorKey("comments.form.input.invalid");
-			allOk = false;
-		} else if (commentText.length() <= MAX_COMMENT_LENGTH) {
-			commentElem.clearError();
-		} else {
+		if(StringHelper.containsNonWhitespace(commentText) && commentText.length() > MAX_COMMENT_LENGTH) {
 			commentElem.setErrorKey("input.toolong", Integer.toString(MAX_COMMENT_LENGTH));
-			allOk = false;
+			allOk &= false;
+		} else {
+			commentText = FilterFactory.getHtmlTagsFilter().filter(commentText);
+			if(!StringHelper.containsNonWhitespace(commentText) && uploadedFiles.isEmpty()) {
+				commentElem.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
 		}
+		
 		return allOk;
 	}
+
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
