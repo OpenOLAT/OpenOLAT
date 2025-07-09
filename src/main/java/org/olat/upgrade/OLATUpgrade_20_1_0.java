@@ -34,6 +34,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.manager.PublisherDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.course.nodes.tu.TUModule;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -57,9 +58,12 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 	private static final String UPDATE_BADGE_CLASSES = "UPDATE BADGE CLASSES";
 	private static final String MIGRATE_FEED_PUBLISHERS = "MIGRATE FEED PUBLISHERS";
 	private static final String UPDATE_BROKER_AUTO_STRATEGY = "UPDATE BROKER AUTO STRATEGY";
+	private static final String MIGRATE_TU_COURSE_NODE = "MIGRATE TUNNEL COURSE NODE";
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private TUModule toModule;
 	@Autowired
 	private PublisherDAO publisherDao;
 	@Autowired
@@ -86,6 +90,7 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 		allOk &= updateBadgeClasses(upgradeManager, uhd);
 		allOk &= migrateFeedPublishers(upgradeManager, uhd);
 		allOk &= updateTopicBrokerAutoStrategy(upgradeManager, uhd);
+		allOk &= migrateTUCourseNode(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -242,4 +247,22 @@ public class OLATUpgrade_20_1_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	private boolean migrateTUCourseNode(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(MIGRATE_TU_COURSE_NODE)) {
+			try {
+				log.info("Migrate tunnel course node");
+				toModule.setEnabled(true);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_TU_COURSE_NODE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
+	}
 }

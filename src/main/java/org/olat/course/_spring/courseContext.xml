@@ -137,6 +137,27 @@
 				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
-	</bean>	
+	</bean>
+	
+	<!-- Tunnel element panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7423" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.course.nodes.tu.TUAdminConfigurationController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="privacy" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.course.nodes.tu"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean> 
+	
 
 </beans>

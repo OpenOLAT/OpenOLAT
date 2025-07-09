@@ -27,6 +27,7 @@ package org.olat.course.nodes.tu;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -49,6 +50,11 @@ public class TUCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	@Override
 	public CourseNode getInstance() {
 		return new TUCourseNode();
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return CoreSpringFactory.getImpl(TUModule.class).isEnabled() && super.isEnabled();
 	}
 
 	@Override
