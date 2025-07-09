@@ -238,6 +238,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.status, new AppointmentStatusCellRenderer()));
+		DefaultFlexiColumnModel deadlineModel = new DefaultFlexiColumnModel(AppointmentCols.deadline);
+		deadlineModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(deadlineModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppointmentCols.location));

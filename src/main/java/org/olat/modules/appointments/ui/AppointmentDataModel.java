@@ -19,6 +19,7 @@
  */
 package org.olat.modules.appointments.ui;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -27,6 +28,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
+import org.olat.modules.appointments.Appointment;
 
 /**
  * 
@@ -68,6 +71,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 		switch(AppointmentCols.values()[col]) {
 			case id: return row.getAppointment().getKey();
 			case status: return row.getAppointment().getStatus();
+			case deadline: return getDeadline(row.getAppointment());
 			case start: return row.getAppointment().getStart();
 			case end: return row.getAppointment().getEnd();
 			case location: return AppointmentsUIFactory.getDisplayLocation(translator, row.getAppointment());
@@ -82,10 +86,22 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 			default: return null;
 		}
 	}
-	
+
+	private Date getDeadline(Appointment appointment) {
+		if (!appointment.isUseEnrollmentDeadline()) {
+			return null;
+		}
+		Long deadlineMinutes = appointment.getEnrollmentDeadlineMinutes();
+		if (deadlineMinutes == null) {
+			return null;
+		}
+		return DateUtils.addMinutes(appointment.getStart(), -deadlineMinutes.intValue());
+	}
+
 	public enum AppointmentCols implements FlexiSortableColumnDef {
 		id("appointment.id"),
 		status("appointment.status"),
+		deadline("appointment.deadline"),
 		start("appointment.start"),
 		end("appointment.end"),
 		location("appointment.location"),
