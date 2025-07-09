@@ -78,7 +78,7 @@ public class ImplementationController extends BasicController {
 		listenTo(headerCtrl);
 		mainVC.put("elementHeader", headerCtrl.getInitialComponent());
 		
-		CurriculumElementListConfig config = CurriculumElementListConfig.config(true);
+		CurriculumElementListConfig config = CurriculumElementListConfig.config(false);
 		elementListCtrl = new CurriculumElementListController(ureq, wControl, stackPanel,
 				getIdentity(), curriculum, rootElement, secCallback, config);
 		listenTo(elementListCtrl);

@@ -19,7 +19,9 @@
  */
 package org.olat.selenium.page.repository;
 
+import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -67,6 +69,26 @@ public class CatalogV2Page {
 	 */
 	public CatalogV2Page visitCourse(String title) {
 		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h4[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_start')]");
+		OOGraphene.waitElement(courseBy, browser).click();
+		return this;
+	}
+	
+	public CatalogV2Page openCourse(String title) {
+		By courseBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/a/h4[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_catalog_start')]");
+		OOGraphene.waitElement(courseBy, browser).click();
+		return this;
+	}
+	
+	public CatalogV2Page login(UserVO user) {
+		new LoginPage(browser).loginAs(user.getLogin(), user.getPassword());
+
+		By landingPointBy = By.cssSelector(".o_navbar_button a>i.o_icon_login");
+		OOGraphene.waitElementDisappears(landingPointBy, 5, browser);
+		return this;
+	}
+	
+	public CatalogV2Page startCourse(String title) {
+		By courseBy = By.xpath("//div[contains(@class,'o_repo_details')]//div[@class='o_meta_wrapper'][div/h2[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_start') and contains(@class,'o_button_call_to_action')]");
 		OOGraphene.waitElement(courseBy, browser).click();
 		return this;
 	}

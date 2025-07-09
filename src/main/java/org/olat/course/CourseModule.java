@@ -110,9 +110,9 @@ public class CourseModule extends AbstractSpringModule {
 	private String teaserImageStyleName;
 	private TeaserImageStyle teaserImageStyle;
 	private String systemImagesProvided;
-	
-	private Integer courseArchiveRetention;
+
 	@Value("${course.archive.retention:10}")
+	private Integer courseArchiveRetention;
 	
 	// Repository types
 	public static final String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);

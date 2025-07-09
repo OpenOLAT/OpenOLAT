@@ -45,11 +45,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  *
  */
 public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> implements FlexiBusinessPathModel {
-	
-	private static final List<CurriculumElementStatus> ACTIVE_STATUS = List.of(CurriculumElementStatus.confirmed,
-			CurriculumElementStatus.active);
-	private static final List<RepositoryEntryStatusEnum> ENTRY_ACTIVE_STATUS = List.of(RepositoryEntryStatusEnum.published);
-	
+
 	private final Locale locale;
 	
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
@@ -66,11 +62,12 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		if(StringHelper.containsNonWhitespace(searchString) || tab != null) {
 			String lowerSearchString = searchString == null ? null : searchString.toLowerCase();
 			Long searchKey = StringHelper.isLong(lowerSearchString) ? Long.valueOf(lowerSearchString) : null;
-			boolean activeOnly = tab != null && CurriculumElementListController.ACTIVE_TAB.equals(tab.getId());
+			List<CurriculumElementStatus> statusList = filteredStatus(tab);
+			List<RepositoryEntryStatusEnum> entryStatusList = filteredEntryStatus(tab);
 			
 			List<CurriculumElementWithViewsRow> filteredRows = backupRows.stream()
 				.filter(row -> (quickSearch(lowerSearchString, row) || searchKey(searchKey, row)))
-				.filter(row -> (!activeOnly || isActive(row)))
+				.filter(row -> filterStatus(row, statusList, entryStatusList))
 				.collect(Collectors.toList());
 
 			reconstructParentLine(filteredRows);
@@ -91,11 +88,36 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		}
 	}
 	
-	private boolean isActive(CurriculumElementWithViewsRow row) {
+	private List<CurriculumElementStatus> filteredStatus(FlexiFiltersTab tab) {
+		if(tab == null) return List.of();
+		return switch(tab.getId()) {
+			case CurriculumElementListController.ALL_TAB -> CurriculumElementListController.ALL_STATUS;
+			case CurriculumElementListController.ACTIVE_TAB -> CurriculumElementListController.ACTIVE_STATUS;
+			case CurriculumElementListController.PREPARATION_TAB -> CurriculumElementListController.PREPARATION_STATUS;
+			case CurriculumElementListController.FINISHED_TAB -> CurriculumElementListController.FINISHED_STATUS;
+			default -> List.of();
+		};
+	}
+	
+	private List<RepositoryEntryStatusEnum> filteredEntryStatus(FlexiFiltersTab tab) {
+		if(tab == null) return List.of();
+		return switch(tab.getId()) {
+			case CurriculumElementListController.ALL_TAB -> CurriculumElementListController.ALL_ENTRY_STATUS;
+			case CurriculumElementListController.ACTIVE_TAB -> CurriculumElementListController.ACTIVE_ENTRY_STATUS;
+			case CurriculumElementListController.PREPARATION_TAB -> CurriculumElementListController.PREPARATION_ENTRY_STATUS;
+			case CurriculumElementListController.FINISHED_TAB -> CurriculumElementListController.FINISHED_ENTRY_STATUS;
+			default -> List.of();
+		};
+	}
+	
+	private boolean filterStatus(CurriculumElementWithViewsRow row, List<CurriculumElementStatus> statusList,
+			List<RepositoryEntryStatusEnum> entryStatusList) {
+		if(statusList.isEmpty()) return true;
+		
 		CurriculumElementStatus elementStatus = row.getCurriculumElementStatus();
 		RepositoryEntryStatusEnum entryStatus = row.getEntryStatus();
-		return (elementStatus != null && ACTIVE_STATUS.contains(elementStatus))
-				|| (entryStatus != null && ENTRY_ACTIVE_STATUS.contains(entryStatus));
+		return (elementStatus != null && statusList.contains(elementStatus))
+				|| (entryStatus != null && entryStatusList.contains(entryStatus));
 	}
 	
 	private void reconstructParentLine(List<CurriculumElementWithViewsRow> rows) {

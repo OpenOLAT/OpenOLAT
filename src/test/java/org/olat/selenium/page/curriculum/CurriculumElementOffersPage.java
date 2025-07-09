@@ -50,5 +50,12 @@ public class CurriculumElementOffersPage {
 				.openAddDropMenu()
 				.addInvoiceMethod();
 	}
+	
+	public BookingPage addFreeBooking() {
+		BookingPage bookingPage = new BookingPage(browser);
+		return bookingPage
+				.openAddDropMenu()
+				.addFreeBooking();
+	}
 
 }

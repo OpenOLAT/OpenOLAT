@@ -170,7 +170,8 @@ public class InPreparationQueries {
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join fetch v.educationalType as educationalType")
 		  .where()
-		  .append(" el.parent.key is null and type.maxRepositoryEntryRelations=1 and type.singleElement=true");
+		  .append(" el.parent.key is null");// Implementatin single course or with structure
+		  //.append(" el.parent.key is null and type.maxRepositoryEntryRelations=1 and type.singleElement=true");
 
 		sb.and().append("(");
 		// check participants
