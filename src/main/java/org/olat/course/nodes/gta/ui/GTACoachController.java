@@ -30,7 +30,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.AccessSearchParams;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -100,7 +99,6 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private GTACoachedGroupGradingController groupGradingCtrl;
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
-	private ContextualSubscriptionController contextualSubscriptionCtr;
 	private ConfirmRevisionsController confirmRevisionsCtrl;
 	private GTACoachPeerReviewController peerReviewController;
 	private DialogBoxController confirmReviewDocumentCtrl;
@@ -692,6 +690,9 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(refDate);
 			cal.add(Calendar.DATE, -1);
+			cal.set(Calendar.HOUR_OF_DAY, 23);
+			cal.set(Calendar.MINUTE, 59);
+			cal.set(Calendar.SECOND, 59);
 			refDate = cal.getTime();
 		}
 
