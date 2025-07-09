@@ -47,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
@@ -66,7 +65,6 @@ import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -99,6 +97,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -128,13 +127,41 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementListController extends FormBasicController implements FlexiTableCssDelegate, FlexiTableComponentDelegate {
+public class CurriculumElementListController extends FormBasicController implements FlexiTableCssDelegate {
+	
+	static final List<CurriculumElementStatus> ALL_STATUS = List.of(CurriculumElementStatus.preparation,
+			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+			CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+			CurriculumElementStatus.finished);
+	
+	static final List<RepositoryEntryStatusEnum> ALL_ENTRY_STATUS = List.of(RepositoryEntryStatusEnum.preparation,
+			RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished,
+			RepositoryEntryStatusEnum.published, RepositoryEntryStatusEnum.closed);
+	
+	static final List<CurriculumElementStatus> ACTIVE_STATUS = List.of(CurriculumElementStatus.provisional,
+			CurriculumElementStatus.confirmed, CurriculumElementStatus.active);
+	
+	static final List<RepositoryEntryStatusEnum> ACTIVE_ENTRY_STATUS = List.of(RepositoryEntryStatusEnum.published);
+	
+	static final List<CurriculumElementStatus> PREPARATION_STATUS = List.of(CurriculumElementStatus.preparation);
+	
+	static final List<RepositoryEntryStatusEnum> PREPARATION_ENTRY_STATUS = List.of(RepositoryEntryStatusEnum.preparation,
+			RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished);
+	
+	static final List<CurriculumElementStatus> FINISHED_STATUS = List.of(CurriculumElementStatus.cancelled, CurriculumElementStatus.finished);
+	
+	static final List<RepositoryEntryStatusEnum> FINISHED_ENTRY_STATUS = List.of(RepositoryEntryStatusEnum.closed);
+	
 	
 	static final String ALL_TAB = "All";
 	static final String ACTIVE_TAB = "Active";
+	static final String PREPARATION_TAB = "Preparation";
+	static final String FINISHED_TAB = "Finished";
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab activeTab;
+	private FlexiFiltersTab preparationTab;
+	private FlexiFiltersTab finishedTab;
 	
 	private FlexiTableElement tableEl;
 	private CurriculumElementWithViewsDataModel tableModel;
@@ -220,18 +247,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
-		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setElementCssClass("o_curriculumtable");
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
 		tableEl.setSearchEnabled(true);
-		
-		VelocityContainer row = createVelocityContainer("curriculum_element_row");
-		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
-		tableEl.setRowRenderer(row, this);
-		
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v4-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
 		
@@ -248,6 +268,14 @@ public class CurriculumElementListController extends FormBasicController impleme
 		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB, translate("filter.active"),
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(activeTab);
+		
+		preparationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB, translate("filter.preparation"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(preparationTab);
+		
+		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB, translate("filter.finished"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(finishedTab);
 
 		tableEl.setFilterTabs(true, tabs);
 	}
@@ -293,11 +321,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 			sb.append(" repo_status_").append(rowWithView.getEntryStatus());
 		}
 		return sb.toString();
-	}
-
-	@Override
-	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
 	}
 
 	private void loadModel() {

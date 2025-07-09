@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -48,8 +47,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
 
     private CertificateAndEfficiencyStatementListController certificateListController;
 
-    private Link curriculumShow;
-    private Link curriculumHide;
+
     private boolean showCurriculum;
     private VelocityContainer content;
 
@@ -63,7 +61,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
 
         content = createVelocityContainer("certificate_list_wrapper");
 
-        hideCurriculumStructure(ureq);
+        showCertificatesList(ureq);
 
         putInitialPanel(content);
     }
@@ -73,7 +71,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
         if(entries != null && !entries.isEmpty()) {
             ContextEntry currentEntry = entries.get(0);
 
-            Activateable2 selectedCtrl = hideCurriculumStructure(ureq);
+            Activateable2 selectedCtrl = showCertificatesList(ureq);
             List<ContextEntry> subEntries = entries.subList(1, entries.size());
             selectedCtrl.activate(ureq, subEntries, currentEntry.getTransientState());
         }
@@ -81,11 +79,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
 
     @Override
     protected void event(UserRequest ureq, Component source, Event event) {
-        if (source == curriculumHide) {
-            hideCurriculumStructure(ureq);
-        } else if (source == curriculumShow) {
-            showCurriculumStructure(ureq);
-        }
+        //
     }
 
     @Override
@@ -93,24 +87,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
     	//
     }
 
-    public Activateable2 showCurriculumStructure(UserRequest ureq) {
-        /*showCurriculum = true;
-
-        if (certificateCurriculumListController == null) {
-            WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITH_CURRICULUM), null);
-            certificateCurriculumListController = new CertificateAndEfficiencyStatementCurriculumListController(ureq, bwControl, stackPanel, mentee, curriculumSecurityCallback, roleSecurityCallback);
-            listenTo(certificateCurriculumListController);
-        }
-
-        content.contextPut("showCurriculum", showCurriculum);
-        content.put("content", certificateCurriculumListController.getInitialComponent());
-    	addToHistory(ureq, certificateCurriculumListController);
-        return certificateCurriculumListController;*/
-    	
-    	return hideCurriculumStructure(ureq);
-    }
-
-    public Activateable2 hideCurriculumStructure(UserRequest ureq) {
+    private Activateable2 showCertificatesList(UserRequest ureq) {
         showCurriculum = false;
 
         if (certificateListController == null) {

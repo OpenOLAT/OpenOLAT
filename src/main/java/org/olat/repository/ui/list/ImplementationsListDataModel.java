@@ -40,9 +40,13 @@ public class ImplementationsListDataModel extends DefaultFlexiTableDataModel<Imp
 implements SortableFlexiTableDataModel<ImplementationRow> {
 	
 	private static final ImplementationsCols[] COLS = ImplementationsCols.values();
-	private static final List<CurriculumElementStatus> ACTIVE_STATUS = List.of(CurriculumElementStatus.preparation,
-			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active);
-	private static final List<CurriculumElementStatus> FINISHED_STATUS = List.of(CurriculumElementStatus.finished);
+	private static final List<CurriculumElementStatus> FAVORITE_STATUS = List.of(CurriculumElementStatus.provisional,
+			CurriculumElementStatus.confirmed, CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+			CurriculumElementStatus.finished);
+	private static final List<CurriculumElementStatus> ACTIVE_STATUS = List.of(CurriculumElementStatus.provisional,
+			CurriculumElementStatus.confirmed, CurriculumElementStatus.active);
+	private static final List<CurriculumElementStatus> FINISHED_STATUS = List.of(CurriculumElementStatus.cancelled,
+			CurriculumElementStatus.finished);
 	
 	private final Locale locale;
 	private List<ImplementationRow> backups;
@@ -69,6 +73,7 @@ implements SortableFlexiTableDataModel<ImplementationRow> {
 		if(ImplementationsListController.FAVORITE_TAB.equals(tabId)) {
 			List<ImplementationRow> filtered = backups.stream()
 					.filter(ImplementationRow::isMarked)
+					.filter(r -> FAVORITE_STATUS.contains(r.getCurriculumElement().getElementStatus()))
 					.toList();
 			super.setObjects(filtered);
 		} else if(ImplementationsListController.ACTIVE_TAB.equals(tabId)) {
