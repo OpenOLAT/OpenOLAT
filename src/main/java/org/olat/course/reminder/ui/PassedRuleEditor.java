@@ -139,7 +139,6 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 		}
 		if(!statusEl.isAtLeastSelected(1)) {
 			statusEl.select(PassedRuleSPI.Status.gradedFailed.name(), true);
-			statusEl.select(PassedRuleSPI.Status.notGraded.name(), true);
 		}
 		
 		return ruleCont;
