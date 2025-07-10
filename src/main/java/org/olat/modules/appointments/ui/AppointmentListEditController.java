@@ -49,7 +49,7 @@ public class AppointmentListEditController extends AppointmentListController {
 	
 	private final static List<String> FILTERS = List.of(
 			AppointmentDataModel.FILTER_STATUS,
-			AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE,
+			AppointmentDataModel.FILTER_OCCUPANCY_STATUS,
 			AppointmentDataModel.FILTER_FUTURE);
 	private final static List<String> FILTERS_DEFAULT = List.of(AppointmentDataModel.FILTER_ALL);
 

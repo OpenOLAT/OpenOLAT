@@ -115,7 +115,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String FILTER_KEY_PAST = "past";
 	private static final String FILTER_KEY_FUTURE = "future";
 	private static final String FILTER_KEY_PARTICIPATED = "participated";
-	private static final String FILTER_KEY_PARTICIPATIONS_AVAILABLE = "participation.available";
+	private static final String FILTER_KEY_OCCUPANCY_FREE_SEATS_AVAILABLE = "occupancy.free.seats.available";
+	private static final String FILTER_KEY_OCCUPANCY_FULLY_BOOKED = "occupancy.fully.booked";
 	private static final String FILTER_KEY_FULLY_BOOKED = "fully.booked";
 	private static final String CMD_MORE = "more";
 	private static final String CMD_SHOW_PARTICIPANTS = "show.participants";
@@ -316,10 +317,11 @@ public abstract class AppointmentListController extends FormBasicController impl
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.participated"), AppointmentDataModel.FILTER_PARTICIPATED, participatedValues, true));
 		}
 		
-		if (filterConfig.contains(AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE)) {
-			SelectionValues values = new SelectionValues();
-			values.add(SelectionValues.entry(FILTER_KEY_PARTICIPATIONS_AVAILABLE, translate("filter.participations.available")));
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.participations.available"), AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE, values, true));
+		if (filterConfig.contains(AppointmentDataModel.FILTER_OCCUPANCY_STATUS)) {
+			SelectionValues occupancyValues = new SelectionValues();
+			occupancyValues.add(SelectionValues.entry(FILTER_KEY_OCCUPANCY_FREE_SEATS_AVAILABLE, translate("filter.free.seats.available")));
+			occupancyValues.add(SelectionValues.entry(FILTER_KEY_OCCUPANCY_FULLY_BOOKED, translate("filter.fully.booked")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.occupancy.status"), AppointmentDataModel.FILTER_OCCUPANCY_STATUS, occupancyValues, true));
 		}
 
 		if (filterConfig.contains(AppointmentDataModel.FILTER_FULLY_BOOKED)) {
@@ -434,11 +436,16 @@ public abstract class AppointmentListController extends FormBasicController impl
 				}
 			}
 			
-			if (AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE.equals(filter.getFilter())) {
+			if (AppointmentDataModel.FILTER_OCCUPANCY_STATUS.equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_PARTICIPATIONS_AVAILABLE)) {
-					activeFilters.add(AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE);
-					rows.removeIf(row -> row.getFreeParticipations() != null && row.getFreeParticipations() < 1);
+				if (values != null && values.size() == 1) {
+					activeFilters.add(AppointmentDataModel.FILTER_OCCUPANCY_STATUS);
+					
+					if (values.get(0).equalsIgnoreCase(FILTER_KEY_OCCUPANCY_FREE_SEATS_AVAILABLE)) {
+						rows.removeIf(row -> row.getFreeParticipations() != null && row.getFreeParticipations() < 1);
+					} else if (values.get(0).equalsIgnoreCase(FILTER_KEY_OCCUPANCY_FULLY_BOOKED)) {
+						rows.removeIf(row -> row.getFreeParticipations() != null && row.getFreeParticipations() >= 1);
+					}
 				}
 			}
 

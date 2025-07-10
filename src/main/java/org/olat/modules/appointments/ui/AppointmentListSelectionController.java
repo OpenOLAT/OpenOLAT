@@ -55,7 +55,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	
 	private final static List<String> FILTERS = List.of(
 			AppointmentDataModel.FILTER_PARTICIPATED,
-			AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE,
+			AppointmentDataModel.FILTER_OCCUPANCY_STATUS,
 			AppointmentDataModel.FILTER_FUTURE,
 			AppointmentDataModel.FILTER_FULLY_BOOKED
 	);

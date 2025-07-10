@@ -44,7 +44,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 	public static final String FILTER_ALL = "all";
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_PARTICIPATED = "participated";
-	public static final String FILTER_PARTICIPATIONS_AVAILABLE = "free";
+	public static final String FILTER_OCCUPANCY_STATUS = "occupancy.status";
 	public static final String FILTER_FUTURE = "future";
 	public static final String FILTER_FULLY_BOOKED = "fully.booked";
 	
