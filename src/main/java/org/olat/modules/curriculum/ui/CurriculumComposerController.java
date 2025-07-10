@@ -432,14 +432,13 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
-		if(rootElement == null || rootElement.getParent() == null) {
+		if(rootElement == null) {
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
 			statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
 		}
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
 		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
-		statusValues.add(SelectionValues.entry(CurriculumElementStatus.deleted.name(), translate("filter.deleted")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
 		filters.add(statusFilter);
@@ -512,8 +511,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
 			if(status == CurriculumElementStatus.deleted
-					|| (rootElement != null && rootElement.getParent() != null
-						&& (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))) {
+					|| (rootElement != null && (status == CurriculumElementStatus.provisional || status == CurriculumElementStatus.confirmed))) {
 				continue;
 			}
 			
