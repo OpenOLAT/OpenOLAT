@@ -34,6 +34,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -365,7 +366,7 @@ public class AppointmentsMailing {
 		return new MailContextImpl("[RepositoryEntry:" + topic.getEntry().getKey() + "]");
 	}
 
-	void sendAppointmentSelectionNotification(Appointment appointment, Identity organizer, Identity participant) {
+	void sendAppointmentSelectionNotification(Appointment appointment, Identity organizer, Identity participant, Participation participation) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(organizer.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 
@@ -378,9 +379,10 @@ public class AppointmentsMailing {
 		String courseName = reloadedEntry.getDisplayname();
 		String participantName = userManager.getUserDisplayName(participant.getKey());
 		String formattedAppointments = createFormatedAppointments(Collections.singletonList(appointment), translator);
+		String comment = createComment(appointment, participation, translator, locale);
 		
 		String body = translator.translate("email.appointment.body", emailRecipientName, courseUrl, courseName, 
-				participantName, formattedAppointments);		
+				participantName, formattedAppointments, comment);		
 		
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(organizer);
@@ -391,5 +393,27 @@ public class AppointmentsMailing {
 		if (!result.isSuccessful()) {
 			log.warn(MessageFormat.format("Mail could not be sent to organizer {0}: {1}", organizer, result.getErrorMessage()));
 		}
-	} 
+	}
+
+	private String createComment(Appointment appointment, Participation participation, Translator translator, Locale locale) {
+		if (!StringHelper.containsNonWhitespace(participation.getComment())) {
+			return "";
+		}
+		String dateTime = Formatter.getInstance(locale).formatDateAndTime(participation.getCreationDate());
+		String participantName = userManager.getUserDisplayName(participation.getIdentity().getKey());
+		String title = appointment.getTopic().getTitle();
+
+		String introduction = translator.translate("email.appointment.participation.comment", dateTime, participantName, title);
+		String comment = processComment(participation.getComment());
+		return "<p>" + introduction + "</p>" + "<div class='o_email_box'>" + comment + "</div>" + "<br><br>"; 
+	}
+	
+	private String processComment(String comment) {
+		return comment
+				.replace("&", "&amp;")
+				.replace("<", "&lt;")
+				.replace(">", "&gt;")
+				.replace("\r\n", "<br>")
+				.replace("\n", "<br>");
+	}
 }

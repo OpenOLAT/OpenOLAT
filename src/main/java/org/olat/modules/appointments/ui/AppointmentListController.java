@@ -904,17 +904,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private void doCreateParticipation(Appointment appointment, String comment) {
 		ParticipationResult participationResult = appointmentsService.createParticipations(appointment,
 				singletonList(getIdentity()), getIdentity(), topic.isMultiParticipation(), topic.isAutoConfirmation(),
-				true, secCallback.isSendParticipationNotificationToOrganizers());
+				true, secCallback.isSendParticipationNotificationToOrganizers(), comment);
 		if (ParticipationResult.Status.ok != participationResult.getStatus()) {
 			showWarning("participation.not.created");
-			return;
-		}
-
-		if (StringHelper.containsNonWhitespace(comment)) {
-			participationResult.getParticipations().forEach(participation -> {
-				participation.setComment(comment);
-				appointmentsService.updateParticipation(participation);
-			});
 		}
 	}
 	
@@ -1016,7 +1008,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	
 	private void doAddUser(Appointment appointment, List<Identity> identities) {
 		ParticipationResult result = appointmentsService.createParticipations(appointment, identities, getIdentity(),
-				topic.isMultiParticipation(), topic.isAutoConfirmation(), false, secCallback.isSendParticipationNotificationToOrganizers());
+				topic.isMultiParticipation(), topic.isAutoConfirmation(), false, secCallback.isSendParticipationNotificationToOrganizers(), null);
 		if (ParticipationResult.Status.appointmentFull == result.getStatus()) {
 			showWarning("error.not.as.many.participations.left");
 		} else if (ParticipationResult.Status.ok != result.getStatus()) {
