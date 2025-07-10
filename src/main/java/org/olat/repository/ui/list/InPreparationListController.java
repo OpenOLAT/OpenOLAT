@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -160,8 +161,10 @@ public class InPreparationListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleLabel));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleSoftkey));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleStart,
+				new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.lifecycleEnd,
+				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.educationalType,
 				new EducationalTypeRenderer()));
