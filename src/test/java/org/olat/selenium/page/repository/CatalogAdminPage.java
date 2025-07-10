@@ -100,6 +100,7 @@ public class CatalogAdminPage {
 	 * @return Itself
 	 */
 	public CatalogAdminPage enableCatalogV1() {
+		OOGraphene.waitBusyAndScrollTop(browser);
 		By enabledBy = By.xpath("//fieldset[contains(@class,'o_sel_catalog_admin_general')]//fieldset[contains(@class,'o_sel_catalog_admin_enable')]//input[@type='radio'][@value='v1']");
 		OOGraphene.waitElement(enabledBy, browser).click();
 		OOGraphene.waitBusy(browser);
@@ -113,6 +114,7 @@ public class CatalogAdminPage {
 	 * @return Itself
 	 */
 	public CatalogAdminPage enableCatalogV2() {
+		OOGraphene.waitBusyAndScrollTop(browser);
 		By enabledBy = By.xpath("//fieldset[contains(@class,'o_sel_catalog_admin_general')]//fieldset[contains(@class,'o_sel_catalog_admin_enable')]//input[@type='radio'][@value='v2']");
 		OOGraphene.waitElement(enabledBy, browser).click();
 		OOGraphene.waitBusy(browser);

@@ -55,9 +55,12 @@ public class SitesPage {
 	 */
 	public SitesPage enableCatalogAdmin() {
 		By enableBy = By.xpath("//div[contains(@class,'o_sel_sites')]//table//td//input[@type='checkbox'][@name='site.enable.olatsites_catalogadmin']");
+		OOGraphene.scrollBottom(enableBy, browser);
 		WebElement enableEl = OOGraphene.waitElement(enableBy, browser);
 		OOGraphene.check(enableEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
+		By enabledBy = By.xpath("//div[contains(@class,'o_sel_sites')]//table//td//input[@type='checkbox'][@name='site.enable.olatsites_catalogadmin'][@checked='checked']");
+		OOGraphene.waitElement(enabledBy, browser);
 		return this;
 	}
 	
@@ -66,6 +69,8 @@ public class SitesPage {
 		WebElement enableEl = OOGraphene.waitElement(enableBy, browser);
 		OOGraphene.check(enableEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
+		By enabledBy = By.xpath("//div[contains(@class,'o_sel_sites')]//table//td//input[@type='checkbox'][@name='site.enable.olatsites_catalog'][@checked='checked']");
+		OOGraphene.waitElement(enabledBy, browser);
 		return this;
 	}
 }

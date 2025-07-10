@@ -228,7 +228,7 @@ public class CoursePlannerTest extends Deployments {
 			.assertOnMemberInList(participant);
 		
 		courseElementPage
-			.changeStatus(CurriculumElementStatus.provisional);
+			.assertOnStatus(CurriculumElementStatus.preparation);
 		
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage

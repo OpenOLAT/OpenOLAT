@@ -65,6 +65,12 @@ public class CurriculumElementPage {
 		return new CurriculumElementOffersPage(browser).assertOnAccessConfiguration();
 	}
 	
+	public CurriculumElementPage assertOnStatus(CurriculumElementStatus status) {
+		By statusBy = By.xpath("//div[contains(@class,'o_curriculum_dashboard_title')]//a[contains(@class,'o_curriculum_status_" + status + "')][contains(@class,'o_labeled')]");
+		OOGraphene.waitElement(statusBy, browser);
+		return this;
+	}
+	
 	public CurriculumElementPage changeStatus(CurriculumElementStatus status) {
 		By statusBy = By.xpath("//div[contains(@class,'o_curriculum_dashboard_title')]//a[contains(@class,'o_curriculum_status_')][contains(@class,'o_labeled')]");
 		OOGraphene.waitElement(statusBy, browser).click();
