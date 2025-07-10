@@ -62,8 +62,7 @@ public class InPreparationQueries {
 	private static final List<String> IN_PREPARATION_STATUS = List.of(RepositoryEntryStatusEnum.preparation.name(),
 			RepositoryEntryStatusEnum.review.name(), RepositoryEntryStatusEnum.coachpublished.name());
 	
-	public static final List<CurriculumElementStatus> IN_PREPARATION_AS_PARTICIPANT_CURRICULUM_STATUS = List.of(CurriculumElementStatus.preparation,
-			CurriculumElementStatus.provisional);
+	private static final List<String> ELEMENT_IN_PREPARATION_STATUS = List.of(CurriculumElementStatus.preparation.name());
 	
 	@Autowired
 	private DB dbInstance;
@@ -170,8 +169,8 @@ public class InPreparationQueries {
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join fetch v.educationalType as educationalType")
 		  .where()
-		  .append(" el.parent.key is null");// Implementatin single course or with structure
-		  //.append(" el.parent.key is null and type.maxRepositoryEntryRelations=1 and type.singleElement=true");
+		  // Implementation single course or with structure
+		  .append(" el.parent.key is null and el.status in (:curriculumElementStatus)");
 
 		sb.and().append("(");
 		// check participants
@@ -191,6 +190,7 @@ public class InPreparationQueries {
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("repoStatus", IN_PREPARATION_STATUS)
+			.setParameter("curriculumElementStatus", ELEMENT_IN_PREPARATION_STATUS)
 			.setParameter("participantRole", GroupRoles.participant.name());
 
 		List<Object[]> elements = query.getResultList();
