@@ -64,6 +64,7 @@ public class AppointmentRow {
 	private DropdownItem commandDropdown;
 	private String enrollmentDeadline;
 	private String enrollmentDeadlineCSS;
+	private Boolean fullyBookedByOthers;
 
 	public AppointmentRow(Appointment appointment) {
 		this.appointment = appointment;
@@ -295,5 +296,13 @@ public class AppointmentRow {
 
 	public void setEnrollmentDeadlineCSS(String enrollmentDeadlineCSS) {
 		this.enrollmentDeadlineCSS = enrollmentDeadlineCSS;
+	}
+
+	public Boolean getFullyBookedByOthers() {
+		return fullyBookedByOthers;
+	}
+
+	public void setFullyBookedByOthers(Boolean fullyBookedByOthers) {
+		this.fullyBookedByOthers = fullyBookedByOthers;
 	}
 }

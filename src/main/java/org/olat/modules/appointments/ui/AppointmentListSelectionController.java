@@ -56,7 +56,9 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	private final static List<String> FILTERS = List.of(
 			AppointmentDataModel.FILTER_PARTICIPATED,
 			AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE,
-			AppointmentDataModel.FILTER_FUTURE);
+			AppointmentDataModel.FILTER_FUTURE,
+			AppointmentDataModel.FILTER_FULLY_BOOKED
+	);
 	private final static List<String> FILTERS_FINDING_DEFAULT = Collections.emptyList();
 	private final static List<String> FILTERS_ENROLLMENT_DEFAULT = FILTERS;
 
@@ -111,10 +113,10 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		pParams.setTopic(topic);
 		pParams.setFetchAppointments(true);
 		pParams.setFetchIdentities(true);
-		List<Participation> allPrticipations = appointmentsService.getParticipations(pParams);
-		Map<Long, List<Participation>> appointmentKeyToParticipation = allPrticipations.stream()
+		List<Participation> allParticipations = appointmentsService.getParticipations(pParams);
+		Map<Long, List<Participation>> appointmentKeyToParticipation = allParticipations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
-		boolean userHasNoConfirmedParticipation = !allPrticipations.stream()
+		boolean userHasNoConfirmedParticipation = !allParticipations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.filter(p -> Appointment.Status.confirmed == p.getAppointment().getStatus())
 				.findFirst()
@@ -148,6 +150,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	private AppointmentRow createAppointmentRow(Topic topic, Appointment appointment,
 			List<Participation> participations, List<BigBlueButtonRecordingReference> recordingReferences,
 			boolean userHasNoConfirmedParticipation, boolean noConfirmedAppointments, Date now) {
+		AppointmentRow row = new AppointmentRow(appointment);
 		Optional<Participation> myParticipation = participations.stream()
 				.filter(p -> p.getIdentity().getKey().equals(getIdentity().getKey()))
 				.findFirst();
@@ -158,11 +161,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 				? maxParticipations.intValue() - participations.size()
 				: null;
 		boolean noFreePlace = freeParticipations != null && freeParticipations < 1;
-		if (Type.finding != topic.getType() && !selected && (confirmedByCoach || noFreePlace)) {
-			return null;
-		}
-		
-		AppointmentRow row = new AppointmentRow(appointment);
+
 		if (myParticipation.isPresent()) {
 			row.setParticipation(myParticipation.get());
 		}
@@ -185,7 +184,12 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
-		
+
+		if (Type.finding != topic.getType() && !selected && (confirmedByCoach || noFreePlace)) {
+			row.setFullyBookedByOthers(true);
+			return row;
+		}
+	
 		if (isParticipationVisible()) {
 			forgeParticipants(row, participations);
 		}
