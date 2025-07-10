@@ -1609,7 +1609,7 @@
 			<!-- Used by email address validator -->
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.9.0</version>
+			<version>1.10.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2034,7 +2034,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.17.0</version>
+			<version>3.18.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
