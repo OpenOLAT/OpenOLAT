@@ -50,6 +50,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.appointments.Appointment;
@@ -94,6 +96,7 @@ public class AppointmentEditController extends FormBasicController {
 	private DateChooser endEl;
 	private TextElement locationEl;
 	private TextElement maxParticipationsEl;
+	private StaticTextElement enrollmentDeadlineEl;
 	private TextElement providerNameEl;
 	private TextElement providerUrlEl;
 	private TextElement detailsEl;
@@ -205,7 +208,8 @@ public class AppointmentEditController extends FormBasicController {
 		maxParticipationsEl = uifactory.addTextElement("appointment.max.participations", 5, maxParticipations,
 				formLayout);
 		maxParticipationsEl.setVisible(Type.finding != topic.getType());
-		
+		enrollmentDeadlineEl = uifactory.addStaticTextElement("enrollment.deadline", "enrollment.deadline", null, formLayout);
+		updateEnrollmentDeadline();
 		String details = appointment == null ? "" : appointment.getDetails();
 		detailsEl = uifactory.addTextAreaElement("appointment.details", "appointment.details", 2000, 4, 72, false,
 				false, details, formLayout);
@@ -373,7 +377,19 @@ public class AppointmentEditController extends FormBasicController {
 		uifactory.addFormSubmitButton(changeI18n, buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
-	
+
+	private void updateEnrollmentDeadline() {
+		if (appointment == null || !appointment.isUseEnrollmentDeadline() 
+				|| appointment.getEnrollmentDeadlineMinutes() == null || appointment.getStart() == null) {
+			enrollmentDeadlineEl.setVisible(false);
+			return;
+		}
+		enrollmentDeadlineEl.setVisible(true);
+		Date enrollmentDeadline = DateUtils.addMinutes(appointment.getStart(), -appointment.getEnrollmentDeadlineMinutes().intValue());
+		String dateTime = Formatter.getInstance(getLocale()).formatDateAndTime(enrollmentDeadline);
+		enrollmentDeadlineEl.setValue(dateTime);
+	}
+
 	private void updateUI() {
 		if (templateEl != null) {
 			boolean bbbMeeting = meetingEl.isOneSelected() && meetingEl.getSelectedKey().equals(KEY_BIGBLUEBUTTON);
