@@ -569,11 +569,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 		String i18n = selected? "appointment.selected": "appointment.select";
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, i18n, null, null, Link.BUTTON);
 		link.setUserObject(row);
+		link.setElementCssClass("o_sel_appointment_select");
 		if (!selected) {
 			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
-			link.setElementCssClass("o_sel_appointment_select btn-primary");
-		} else {
-			link.setElementCssClass("o_sel_appointment_select");
+			link.getComponent().setElementCssClass("btn-primary");
 		}
 		row.setSelectLink(link);
 	}
