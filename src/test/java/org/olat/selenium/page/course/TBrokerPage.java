@@ -111,7 +111,7 @@ public class TBrokerPage {
 		By checkConfirmBy = By.cssSelector("dialog.dialog .o_sel_confirm_form input[name=confirmation]");
 		OOGraphene.check(browser.findElement(checkConfirmBy), Boolean.TRUE);
 		By confirmBy = By.cssSelector("dialog.dialog .o_sel_confirm_form a.o_sel_confirm");
-		browser.findElement(confirmBy).click();
+		OOGraphene.click(confirmBy, browser);
 		
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_confirm_form");
 		OOGraphene.waitElementDisappears(By.className("o_tb_enrollment_manual"), 5, browser);

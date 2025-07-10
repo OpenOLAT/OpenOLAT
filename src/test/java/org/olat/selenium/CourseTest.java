@@ -835,7 +835,7 @@ public class CourseTest extends Deployments {
 		WebElement courseTitleEl = OOGraphene.waitElement(courseTitleBy, browser);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
 		
-		// Reset to catalov v2
+		// Reset to catalog v2
 		adminLogin = LoginPage.load(browser, deploymentUrl);
 		adminLogin
 			.loginAs(administrator)
