@@ -41,6 +41,13 @@
 				$row.participants
 			</div>
 		</div>
+		#if($r.isNotEmpty($row.executionPeriod))
+			<div class="o_tb_topic_card_execution_period o_flex_block_one_line_left">
+				<div class="o_nowrap ">
+					$row.executionPeriod
+				</div>
+			</div>
+		#end
 		<div class="o_tb_topic_card_custom_fields">
 			#if($r.isNotEmpty($row.customFieldItems))
 				#foreach($customField in $row.customFieldItems)

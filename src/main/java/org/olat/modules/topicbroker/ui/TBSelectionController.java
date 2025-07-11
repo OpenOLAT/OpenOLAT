@@ -90,6 +90,7 @@ import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.event.GenericEventListener;
@@ -143,6 +144,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private static final String CMD_DETAILS = "details";
 	private static final String CMD_OPEN_FILE = "open.file";
 	
+	private final Formatter formatter;
 	private InfoPanel configPanel;
 	private FormLink maxEnrollmentsLink;
 	private final TBSelectionStatusRenderer statusRenderer;
@@ -192,6 +194,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		periodEvaluator = new TBPeriodEvaluator(broker);
 		participant = topicBrokerService.getOrCreateParticipant(getIdentity(), broker, getIdentity());
 		statusRenderer = new TBSelectionStatusRenderer();
+		formatter = Formatter.getInstance(getLocale());
 		executionPeriodAvailable = isExecutionPeriodAvailable(broker);
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
@@ -488,6 +491,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			row.setTopic(topic);
 			row.setTitleAbbr(TBUIFactory.getTitleAbbr(topic.getTitle()));
 			row.setParticipants(TBUIFactory.getParticipantRange(getTranslator(), topic));
+			row.setExecutionPeriod(TBUIFactory.getExecutionPeriod(formatter, topic));
 			row.setTopicSortOrder(topic.getSortOrder());
 			
 			TBSelection selection = topicKeyToSelection.get(topic.getKey());

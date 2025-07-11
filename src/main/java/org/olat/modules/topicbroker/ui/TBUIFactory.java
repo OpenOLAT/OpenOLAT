@@ -331,7 +331,7 @@ public class TBUIFactory {
 	}
 	
 	public static String getParticipantRange(Translator translator, TBTopic topic) {
-		String participants = "<i class=\"o_icon o_icon_num_participants\"></i> ";
+		String participants = "<i class=\"o_icon o_icon-fw o_icon_num_participants\"></i> ";
 		if (topic.getMinParticipants() > 0) {
 			participants += translator.translate("topic.participants.label.min.max",
 					String.valueOf(topic.getMinParticipants()), String.valueOf(topic.getMaxParticipants()));
@@ -340,6 +340,25 @@ public class TBUIFactory {
 					String.valueOf(topic.getMaxParticipants()));
 		}
 		return participants;
+	}
+	
+	public static String getExecutionPeriod(Formatter formatter, TBTopic topic) {
+		if (topic.getBeginDate() == null && topic.getEndDate() == null) {
+			return null;
+		}
+		
+		String executionPeriod = "<i class=\"o_icon o_icon-fw o_icon_calendar\"></i> ";
+		if (topic.getBeginDate() != null) {
+			executionPeriod += formatter.formatDateWithDay(topic.getBeginDate());
+			if (topic.getEndDate() != null) {
+				executionPeriod += " - ";
+			}
+		}
+		if (topic.getEndDate() != null) {
+			executionPeriod += formatter.formatDateWithDay(topic.getEndDate());
+		}
+		
+		return executionPeriod;
 	}
 	
 	public static String getTranslatedType(Translator translator, TBCustomFieldType type) {

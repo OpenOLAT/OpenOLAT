@@ -44,6 +44,7 @@ public class TBSelectionRow {
 	private TBSelectionRef selectionRef;
 	private String titleAbbr;
 	private String participants;
+	private String executionPeriod;
 	private String thumbnailUrl;
 	private boolean enrolled;
 	private TBSelectionStatus status;
@@ -117,6 +118,14 @@ public class TBSelectionRow {
 
 	public void setParticipants(String participants) {
 		this.participants = participants;
+	}
+
+	public String getExecutionPeriod() {
+		return executionPeriod;
+	}
+
+	public void setExecutionPeriod(String executionPeriod) {
+		this.executionPeriod = executionPeriod;
 	}
 
 	public boolean isThumbnailAvailable() {
