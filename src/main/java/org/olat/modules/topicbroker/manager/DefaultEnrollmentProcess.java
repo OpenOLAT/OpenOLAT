@@ -206,9 +206,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 			if (participantKeysFullyEnrolled.contains(participant.getKey())) {
 				addActivity(TBAuditLog.Action.participantNEFullyEnrolled, participant.getKey(), topic.getKey(), null, null);
 				it.remove();
-			}
-			
-			if (isPeriodOverlapping(participant, topic.getPeriod())) {
+			} else if (isPeriodOverlapping(participant, topic.getPeriod())) {
 				addActivity(TBAuditLog.Action.participantNEOverlapping, participant.getKey(), topic.getKey(), null, null);
 				it.remove();
 			}
