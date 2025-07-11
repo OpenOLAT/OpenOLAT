@@ -595,8 +595,14 @@ table.table.o_table_nowrap>tbody>tr>td {
 }
 
 .o_table_batch_buttons.o_table_batch_buttons {
-	min-height: 0px; 
+	min-height: 0px;
 	margin: 0;
+	margin-top: -2px;
+}
+div:has(>.o_table_tabs):has(>.o_table_batch_buttons):not(:has(>.o_table_filters_wrapper)) {
+	>.o_table_batch_buttons {
+		margin-top: 18px;
+	}
 }
 
 .input-group .input-group-btn .o_reset_filter_search {
