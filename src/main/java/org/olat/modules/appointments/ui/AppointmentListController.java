@@ -623,7 +623,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		link.setElementCssClass("o_sel_appointment_select");
 		if (!selected) {
 			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
-			link.getComponent().setElementCssClass("btn-primary");
+			link.getComponent().setElementCssClass("btn-primary o_sel_appointment_select");
 		}
 		row.setSelectLink(link);
 	}
@@ -754,7 +754,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 				doRemove(ureq, row.getAppointment());
 			} else if (CMD_EXPORT.equals(cmd) && link.getUserObject() instanceof AppointmentRow row) {
 				doExportParticipations(ureq, row.getAppointment());
-			} else if (CMD_RECORDING.equals(cmd) && link.getUserObject() instanceof BigBlueButtonRecordingReference row) {
+			} else if (CMD_RECORDING.equals(cmd) && link.getUserObject() instanceof BigBlueButtonRecordingReference) {
 				BigBlueButtonRecordingReference recordingReference = (BigBlueButtonRecordingReference)link.getUserObject();
 				doOpenRecording(ureq, recordingReference);
 			} 
