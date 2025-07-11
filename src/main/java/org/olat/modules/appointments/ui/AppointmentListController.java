@@ -442,9 +442,19 @@ public abstract class AppointmentListController extends FormBasicController impl
 					activeFilters.add(AppointmentDataModel.FILTER_OCCUPANCY_STATUS);
 					
 					if (values.get(0).equalsIgnoreCase(FILTER_KEY_OCCUPANCY_FREE_SEATS_AVAILABLE)) {
-						rows.removeIf(row -> row.getFreeParticipations() != null && row.getFreeParticipations() < 1);
+						rows.removeIf(row -> {
+							if (row.getAppointment().getMaxParticipations() == null) {
+								return false; // undefined max -> always seats free
+							} 
+							return row.getFreeParticipations() != null && row.getFreeParticipations() < 1;
+						});
 					} else if (values.get(0).equalsIgnoreCase(FILTER_KEY_OCCUPANCY_FULLY_BOOKED)) {
-						rows.removeIf(row -> row.getFreeParticipations() != null && row.getFreeParticipations() >= 1);
+						rows.removeIf(row -> { 
+							if (row.getAppointment().getMaxParticipations() == null) {
+								return true; // undefined max -> never fully booked
+							}
+							return row.getFreeParticipations() != null && row.getFreeParticipations() >= 1; 
+						});
 					}
 				}
 			}
@@ -457,7 +467,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 						Integer max = row.getAppointment().getMaxParticipations();
 						Integer current = row.getNumberOfParticipations();
 						if (max == null || current == null) {
-							return false;
+							return true;
 						}
 						return !max.equals(current);
 					});
