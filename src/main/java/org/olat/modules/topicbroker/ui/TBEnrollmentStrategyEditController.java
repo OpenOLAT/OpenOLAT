@@ -35,9 +35,13 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBEnrollmentFunction;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyConfig;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyFactory;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
+import org.olat.modules.topicbroker.manager.MaxPrioritiesCriterion;
+import org.olat.modules.topicbroker.ui.components.MaxPrioritiesCriterionChart;
 import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 
 /**
@@ -48,19 +52,28 @@ import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
  */
 public class TBEnrollmentStrategyEditController extends FormBasicController {
 
+	private static final String KEY_NO_BREAK_POINT = "-1";
+	
 	private SingleSelection presetEl;
 	private SliderElement weightMaxEnrollmentEl;
 	private SliderElement weightMaxTopicEl;
 	private SliderElement weightMaxPrioritiesEl;
+	private SingleSelection functionEl;
+	private SingleSelection breakPointEl;
+	private SingleSelection functionAfterEl;
+	private MaxPrioritiesCriterionChart maxPrioritiesCriterionChart;
 
+	private final TBBroker broker;
 	private final TBEnrollmentStrategyConfig initialStrategyConfig;
 
-	protected TBEnrollmentStrategyEditController(UserRequest ureq, WindowControl wControl, TBEnrollmentStrategyConfig initialStrategyConfig) {
+	protected TBEnrollmentStrategyEditController(UserRequest ureq, WindowControl wControl, TBBroker broker, TBEnrollmentStrategyConfig initialStrategyConfig) {
 		super(ureq, wControl, "strategy_edit");
+		this.broker = broker;
 		this.initialStrategyConfig = initialStrategyConfig;
 		
 		initForm(ureq);
 		updateSliderUI();
+		updatePriorityFineTuningUI();
 	}
 
 	public TBEnrollmentStrategyConfig getStrategyConfig() {
@@ -70,6 +83,23 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 			config.setMaxEnrollmentsWeight((int)weightMaxEnrollmentEl.getValue());
 			config.setMaxTopicsWeight((int)weightMaxTopicEl.getValue());
 			config.setMaxPrioritiesWeight((int)weightMaxPrioritiesEl.getValue());
+			
+			TBEnrollmentFunction prioritiesFunction = functionEl.isOneSelected()
+					? TBEnrollmentFunction.valueOf(functionEl.getSelectedKey())
+					: TBEnrollmentFunction.linear;
+			config.setMaxPrioritiesFunction(prioritiesFunction);
+			
+			if (breakPointEl.isOneSelected() && !KEY_NO_BREAK_POINT.equals(breakPointEl.getSelectedKey())) {
+				config.setMaxPriorityBreakPoint(Integer.valueOf(breakPointEl.getSelectedKey()));
+				
+				TBEnrollmentFunction prioritiesFunctionAfter = functionAfterEl.isOneSelected()
+						? TBEnrollmentFunction.valueOf(functionAfterEl.getSelectedKey())
+						: TBEnrollmentFunction.linear;
+				config.setMaxPrioritiesFunctionAfter(prioritiesFunctionAfter);
+			} else {
+				config.setMaxPriorityBreakPoint(null);
+				config.setMaxPrioritiesFunctionAfter(null);
+			}
 		}
 		
 		return config;
@@ -107,6 +137,44 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 		weightMaxPrioritiesEl.setMaxValue(5);
 		weightMaxPrioritiesEl.setValue(intOrThree(initialStrategyConfig.getMaxPrioritiesWeight()));
 		
+		if (broker.getMaxSelections() >= 3) {
+			SelectionValues functionValues = new SelectionValues();
+			functionValues.add(SelectionValues.entry(TBEnrollmentFunction.constant.name(), TBUIFactory.getTranslatedFunction(getTranslator(), TBEnrollmentFunction.constant)));
+			functionValues.add(SelectionValues.entry(TBEnrollmentFunction.linear.name(), TBUIFactory.getTranslatedFunction(getTranslator(), TBEnrollmentFunction.linear)));
+			functionValues.add(SelectionValues.entry(TBEnrollmentFunction.logarithmic.name(), TBUIFactory.getTranslatedFunction(getTranslator(), TBEnrollmentFunction.logarithmic)));
+			functionEl = uifactory.addDropdownSingleselect("enrollment.strategy.function.function", formLayout, functionValues.keys(), functionValues.values());
+			functionEl.addActionListener(FormEvent.ONCHANGE);
+			String functionKey = initialStrategyConfig.getMaxPrioritiesFunction() != null
+					? initialStrategyConfig.getMaxPrioritiesFunction().name()
+					: TBEnrollmentFunction.linear.name();
+			functionEl.select(functionKey, true);
+			
+			SelectionValues breakPointValues = new SelectionValues();
+			breakPointValues.add(SelectionValues.entry(KEY_NO_BREAK_POINT, TBUIFactory.getTranslatedBreakPoint(getTranslator(), null)));
+			for (int i = 2; i < broker.getMaxSelections(); i++) {
+				breakPointValues.add(SelectionValues.entry(String.valueOf(i), TBUIFactory.getTranslatedBreakPoint(getTranslator(), i)));
+			}
+			breakPointEl = uifactory.addDropdownSingleselect("enrollment.strategy.function.break.point", formLayout, breakPointValues.keys(), breakPointValues.values());
+			breakPointEl.addActionListener(FormEvent.ONCHANGE);
+			String breakPointKey = initialStrategyConfig.getMaxPriorityBreakPoint() != null 
+									&& breakPointValues.containsKey(initialStrategyConfig.getMaxPriorityBreakPoint().toString())
+					? initialStrategyConfig.getMaxPriorityBreakPoint().toString()
+					: KEY_NO_BREAK_POINT;
+			breakPointEl.select(breakPointKey, true);
+			
+			functionAfterEl = uifactory.addDropdownSingleselect("enrollment.strategy.function.function.after", formLayout, functionValues.keys(), functionValues.values());
+			functionAfterEl.addActionListener(FormEvent.ONCHANGE);
+			String functionAfterKey = initialStrategyConfig.getMaxPrioritiesFunctionAfter() != null
+					? initialStrategyConfig.getMaxPrioritiesFunctionAfter().name()
+					: TBEnrollmentFunction.linear.name();
+			functionAfterEl.select(functionAfterKey, true);
+			
+			if(formLayout instanceof FormLayoutContainer layoutCont) {
+				maxPrioritiesCriterionChart = new MaxPrioritiesCriterionChart(".chart");
+				layoutCont.put("maxPrioritiesCriterionChart", maxPrioritiesCriterionChart);
+			}
+		}
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		FormSubmit applRunButton = uifactory.addFormSubmitButton("enrollment.strategy.apply.run", buttonLayout);
@@ -131,6 +199,12 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == presetEl) {
 			updateSliderUI();
+		} else if (source == functionEl) {
+			updatePriorityFineTuningUI();
+		} else if (source == breakPointEl) {
+			updatePriorityFineTuningUI();
+		} else if (source == functionAfterEl) {
+			updatePriorityFineTuningUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -146,7 +220,21 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 	}
 
 	private void updateSliderUI() {
-		flc.contextPut("custom", presetEl.isKeySelected(TBEnrollmentStrategyType.custom.name()));
+		boolean custom = presetEl.isKeySelected(TBEnrollmentStrategyType.custom.name());
+		flc.contextPut("custom", custom);
+		if (custom) {
+			updatePriorityFineTuningUI();
+		}
+	}
+
+	private void updatePriorityFineTuningUI() {
+		functionAfterEl.setVisible(breakPointEl.isOneSelected() && !breakPointEl.isKeySelected(KEY_NO_BREAK_POINT));
+		
+		TBEnrollmentStrategyConfig config = getStrategyConfig();
+		if (TBEnrollmentStrategyType.custom == config.getType()) {
+			MaxPrioritiesCriterion criterion = TBEnrollmentStrategyFactory.createMaxPrioritiesCriterion(broker.getMaxSelections(), config);
+			maxPrioritiesCriterionChart.setCriterion(criterion);
+		}
 	}
 
 }

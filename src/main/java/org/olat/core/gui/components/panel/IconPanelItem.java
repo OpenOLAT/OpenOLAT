@@ -94,6 +94,10 @@ public class IconPanelItem extends FormItemImpl implements FormItemCollection {
 	public void setContent(Component content) {
 		iconPanel.setContent(content);
 	}
+	
+	public void setAdditionalContent(Component additionalContent) {
+		iconPanel.setAdditionalContent(additionalContent);
+	}
 
 	public void setIconCssClass(String iconCssClass) {
 		iconPanel.setIconCssClass(iconCssClass);
@@ -111,6 +115,14 @@ public class IconPanelItem extends FormItemImpl implements FormItemCollection {
 		if (StringHelper.containsNonWhitespace(name)) {
 			items.removeIf(link -> link.getComponent().getComponentName().equals(name));
 			iconPanel.removeLink(name);
+		}
+	}
+	
+	public void addAdditionalLink(FormLink link) {
+		if (link != null) {
+			link.setDomReplacementWrapperRequired(false);
+			items.add(link);
+			iconPanel.addAdditionalLink(link.getComponent());
 		}
 	}
 	

@@ -65,6 +65,7 @@ public class TBEnrollmentStrategyFactory {
 		TBEnrollmentStrategyConfigImpl config = new TBEnrollmentStrategyConfigImpl();
 		config.setType(TBEnrollmentStrategyType.maxPriorities);
 		config.setMaxPrioritiesWeight(Integer.valueOf(3));
+		config.setMaxPrioritiesFunction(TBEnrollmentFunction.linear);
 		return config;
 	}
 	
@@ -81,6 +82,7 @@ public class TBEnrollmentStrategyFactory {
 		config.setMaxEnrollmentsWeight(Integer.valueOf(3));
 		config.setMaxTopicsWeight(Integer.valueOf(3));
 		config.setMaxPrioritiesWeight(Integer.valueOf(3));
+		config.setMaxPrioritiesFunction(TBEnrollmentFunction.linear);
 		return config;
 	}
 	
@@ -117,7 +119,7 @@ public class TBEnrollmentStrategyFactory {
 		
 		if (config.getMaxPrioritiesWeight() != null && config.getMaxPrioritiesWeight() > 0) {
 			int maxSelections = context.getMaxSelections();
-			TBEnrollmentStrategyCriterion criterion = createMaxPrioritiesCriterion(maxSelections);
+			TBEnrollmentStrategyCriterion criterion = createMaxPrioritiesCriterion(maxSelections, config);
 			evaluator.addCriterion(criterion, config.getMaxPrioritiesWeight());
 		}
 		
@@ -132,8 +134,14 @@ public class TBEnrollmentStrategyFactory {
 		return new MaxEnrollmentsCriterion(numRequiredEnrollmentsTotal);
 	}
 	
-	public static MaxPrioritiesCriterion createMaxPrioritiesCriterion(int maxSelections) {
-		return new MaxPrioritiesCriterion(maxSelections);
+	public static MaxPrioritiesCriterion createMaxPrioritiesCriterion(int maxSelections, TBEnrollmentStrategyConfig config) {
+		return createMaxPrioritiesCriterion(maxSelections, config.getMaxPrioritiesFunction(),
+				config.getMaxPriorityBreakPoint(), config.getMaxPrioritiesFunctionAfter());
+	}
+	
+	public static MaxPrioritiesCriterion createMaxPrioritiesCriterion(int maxSelections,
+			TBEnrollmentFunction function, Integer breakPoint, TBEnrollmentFunction functionAfter) {
+		return new MaxPrioritiesCriterion(maxSelections, function, breakPoint, functionAfter);
 	}
 
 }

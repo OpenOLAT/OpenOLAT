@@ -17,41 +17,40 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker;
+package org.olat.modules.topicbroker.ui.components;
+
+import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.chart.DefaultD3Component;
+import org.olat.modules.topicbroker.manager.MaxPrioritiesCriterion;
 
 /**
  * 
- * Initial date: Jul 2, 2025<br>
+ * Initial date: Jul 9, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentStrategyConfig {
+public class MaxPrioritiesCriterionChart extends DefaultD3Component {
 	
-	TBEnrollmentStrategyType getType();
+	private static final MaxPrioritiesCriterionChartRenderer RENDERER = new MaxPrioritiesCriterionChartRenderer();
 	
-	Integer getMaxEnrollmentsWeight();
+	private MaxPrioritiesCriterion criterion;
 
-	void setMaxEnrollmentsWeight(Integer maxEnrollmentsWeight);
+	public MaxPrioritiesCriterionChart(String name) {
+		super(name);
+	}
 
-	Integer getMaxTopicsWeight();
+	@Override
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return RENDERER;
+	}
 
-	void setMaxTopicsWeight(Integer maxTopicsWeight);
+	public MaxPrioritiesCriterion getCriterion() {
+		return criterion;
+	}
 
-	Integer getMaxPrioritiesWeight();
-
-	void setMaxPrioritiesWeight(Integer maxPrioritiesWeight);
+	public void setCriterion(MaxPrioritiesCriterion criterion) {
+		this.criterion = criterion;
+		setDirty(true);
+	}
 	
-	TBEnrollmentFunction getMaxPrioritiesFunction();
-	
-	void setMaxPrioritiesFunction(TBEnrollmentFunction maxPrioritiesFunction);
-
-	Integer getMaxPriorityBreakPoint();
-
-	void setMaxPriorityBreakPoint(Integer maxPriorityBreakPoint);
-	
-	TBEnrollmentFunction getMaxPrioritiesFunctionAfter();
-
-	void setMaxPrioritiesFunctionAfter(TBEnrollmentFunction maxPrioritiesFunctionAfter);
-
-
 }

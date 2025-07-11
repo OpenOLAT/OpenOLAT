@@ -21,37 +21,14 @@ package org.olat.modules.topicbroker;
 
 /**
  * 
- * Initial date: Jul 2, 2025<br>
+ * Initial date: Jul 8, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public interface TBEnrollmentStrategyConfig {
+public enum TBEnrollmentFunction {
 	
-	TBEnrollmentStrategyType getType();
+	constant,
+	linear,
+	logarithmic
 	
-	Integer getMaxEnrollmentsWeight();
-
-	void setMaxEnrollmentsWeight(Integer maxEnrollmentsWeight);
-
-	Integer getMaxTopicsWeight();
-
-	void setMaxTopicsWeight(Integer maxTopicsWeight);
-
-	Integer getMaxPrioritiesWeight();
-
-	void setMaxPrioritiesWeight(Integer maxPrioritiesWeight);
-	
-	TBEnrollmentFunction getMaxPrioritiesFunction();
-	
-	void setMaxPrioritiesFunction(TBEnrollmentFunction maxPrioritiesFunction);
-
-	Integer getMaxPriorityBreakPoint();
-
-	void setMaxPriorityBreakPoint(Integer maxPriorityBreakPoint);
-	
-	TBEnrollmentFunction getMaxPrioritiesFunctionAfter();
-
-	void setMaxPrioritiesFunctionAfter(TBEnrollmentFunction maxPrioritiesFunctionAfter);
-
-
 }

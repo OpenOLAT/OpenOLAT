@@ -19,6 +19,7 @@
  */
 package org.olat.modules.topicbroker.model;
 
+import org.olat.modules.topicbroker.TBEnrollmentFunction;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyConfig;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 
@@ -30,21 +31,24 @@ import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
  */
 public class TBEnrollmentStrategyConfigImpl implements TBEnrollmentStrategyConfig {
 	
-	private TBEnrollmentStrategyType tBEnrollmentStrategyType;
+	private TBEnrollmentStrategyType type;
 	// max enrollments
 	private Integer maxEnrollmentsWeight;
 	// max topics
 	private Integer maxTopicsWeight;
 	// max priorities
 	private Integer maxPrioritiesWeight;
+	private TBEnrollmentFunction maxPrioritiesFunction;
+	private Integer maxPriorityBreakPoint;
+	private TBEnrollmentFunction maxPrioritiesFunctionAfter;
 
 	@Override
 	public TBEnrollmentStrategyType getType() {
-		return tBEnrollmentStrategyType;
+		return type;
 	}
 
-	public void setType(TBEnrollmentStrategyType tBEnrollmentStrategyType) {
-		this.tBEnrollmentStrategyType = tBEnrollmentStrategyType;
+	public void setType(TBEnrollmentStrategyType type) {
+		this.type = type;
 	}
 
 	@Override
@@ -76,6 +80,35 @@ public class TBEnrollmentStrategyConfigImpl implements TBEnrollmentStrategyConfi
 	public void setMaxPrioritiesWeight(Integer maxPrioritiesWeight) {
 		this.maxPrioritiesWeight = maxPrioritiesWeight;
 	}
-	
 
+	@Override
+	public TBEnrollmentFunction getMaxPrioritiesFunction() {
+		return maxPrioritiesFunction;
+	}
+
+	@Override
+	public void setMaxPrioritiesFunction(TBEnrollmentFunction maxPrioritiesFunction) {
+		this.maxPrioritiesFunction = maxPrioritiesFunction;
+	}
+
+	@Override
+	public Integer getMaxPriorityBreakPoint() {
+		return maxPriorityBreakPoint;
+	}
+
+	@Override
+	public void setMaxPriorityBreakPoint(Integer maxPriorityBreakPoint) {
+		this.maxPriorityBreakPoint = maxPriorityBreakPoint;
+	}
+
+	@Override
+	public TBEnrollmentFunction getMaxPrioritiesFunctionAfter() {
+		return maxPrioritiesFunctionAfter;
+	}
+
+	@Override
+	public void setMaxPrioritiesFunctionAfter(TBEnrollmentFunction maxPrioritiesFunctionAfter) {
+		this.maxPrioritiesFunctionAfter = maxPrioritiesFunctionAfter;
+	}
+	
 }

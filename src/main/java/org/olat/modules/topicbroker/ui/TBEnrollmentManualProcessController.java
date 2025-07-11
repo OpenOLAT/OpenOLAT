@@ -57,7 +57,6 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
-import org.olat.modules.topicbroker.TopicBrokerModule;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +93,6 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private final List<TBEnrollmentStrategy> debugStrategies;
 	private EnrollmentProcessWrapper selectedProcessWrapper;
 	
-	@Autowired
-	private TopicBrokerModule topicBrokerModule;
 	@Autowired
 	private TopicBrokerService topicBrokerService;
 
@@ -148,7 +145,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
 		runsDropdown.setVisible(false);
 		
-		enrollmentStrategyCtrl = new TBEnrollmentStrategyController(ureq, getWindowControl(), mainForm);
+		enrollmentStrategyCtrl = new TBEnrollmentStrategyController(ureq, getWindowControl(), mainForm, broker);
 		enrollmentStrategyCtrl.setStrategyConfig(TBEnrollmentStrategyFactory.getDefaultConfig());
 		listenTo(enrollmentStrategyCtrl);
 		formLayout.add("strategy", enrollmentStrategyCtrl.getInitialFormItem());
@@ -300,7 +297,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		runsDropdown.setVisible(runs.size() > 1);
 		
 		flc.contextPut("processRunNo", String.valueOf(runNo));
-		flc.contextPut("processRuns", wrapper.getRuns());
+		flc.contextPut("processRuns", String.valueOf(wrapper.getRuns()));
 		
 		enrollmentStrategyCtrl.setStrategyConfig(wrapper.getStrategyConfig());
 		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());

@@ -382,3 +382,29 @@
 		}
 	}
 }
+
+.o_tb_priority_criterion {
+	.o_tb_priority_criterion_selection {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); // 2 or 3 equal columns
+		align-items: end;
+	}
+	.o_tb_priority_criterion_chart {
+		display: flex;
+		justify-content: center;
+	}
+}
+.o_tb_function_chart_line {
+	stroke-width: 2;
+	stroke: $o-d3chart-default;
+	fill: none;
+	&.o_tb_help_line {
+		stroke: $gray-light;
+		stroke-width: 1;
+		opacity: 0.5;
+		&.o_tb_dash {
+			stroke-dasharray: 3,3;
+		}
+	}
+}

@@ -37,7 +37,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyConfig;
+import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 
 /**
@@ -49,16 +51,20 @@ import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 public class TBEnrollmentStrategyController extends FormBasicController {
 	
 	private IconPanelItem iconPanel;
-	private IconPanelLabelTextContent iconPanelContent;
+	private IconPanelLabelTextContent weightinglContent;
+	private IconPanelLabelTextContent customContent;
 	private FormLink editLink;
+	private FormLink editAdditionalLink;
 	
 	private CloseableModalController cmc;
 	private TBEnrollmentStrategyEditController strategyEditCtrl;
 	
+	private final TBBroker broker;
 	private TBEnrollmentStrategyConfig strategyConfig;
 
-	protected TBEnrollmentStrategyController(UserRequest ureq, WindowControl wControl, Form form) {
+	public TBEnrollmentStrategyController(UserRequest ureq, WindowControl wControl, Form form, TBBroker broker) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "strategy_config", form);
+		this.broker = broker;
 		
 		initForm(ureq);
 	}
@@ -67,13 +73,20 @@ public class TBEnrollmentStrategyController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		iconPanel = uifactory.addIconPanel("strategy", null, formLayout);
 		
-		iconPanelContent = new IconPanelLabelTextContent("content");
-		iconPanel.setContent(iconPanelContent);
+		weightinglContent = new IconPanelLabelTextContent("weighting");
+		iconPanel.setContent(weightinglContent);
+		customContent = new IconPanelLabelTextContent("costom");
+		customContent.setColumnWidth(6);
 		
 		editLink = uifactory.addFormLink("edit", "edit", "enrollment.strategy.edit", null, formLayout, Link.BUTTON);
 		editLink.setGhost(true);
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_strategy");
 		iconPanel.addLink(editLink);
+		
+		editAdditionalLink = uifactory.addFormLink("edit.additional", "edit.additional", "enrollment.strategy.edit", null, formLayout, Link.BUTTON);
+		editAdditionalLink.setGhost(true);
+		editAdditionalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_strategy");
+		iconPanel.addAdditionalLink(editAdditionalLink);
 	}
 	
 	public TBEnrollmentStrategyConfig getStrategyConfig() {
@@ -89,17 +102,35 @@ public class TBEnrollmentStrategyController extends FormBasicController {
 		iconPanel.setIconCssClass("o_icon " + TBUIFactory.getTypeIconCss(strategyConfig.getType()));
 		iconPanel.setTitle(TBUIFactory.getTranslatedType(getTranslator(), strategyConfig.getType()));
 		
-		//boolean custom = TBEnrollmentStrategyType.custom == strategyConfig.getType();
-		//iconPanelContent.setColumnWidth(custom? 6: 12);
-		
-		List<LabelText> labelTexts = new ArrayList<>();
-		
+		List<LabelText> labelTexts = new ArrayList<>(4);
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.overview.weighting"), ""));
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.overview.enrollments"), TBUIFactory.getTranslatedWeight(getTranslator(), strategyConfig.getMaxEnrollmentsWeight())));
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.overview.priorities"), TBUIFactory.getTranslatedWeight(getTranslator(), strategyConfig.getMaxPrioritiesWeight())));
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.overview.topics"), TBUIFactory.getTranslatedWeight(getTranslator(), strategyConfig.getMaxTopicsWeight())));
+		weightinglContent.setLabelTexts(labelTexts);
 		
-		iconPanelContent.setLabelTexts(labelTexts);
+		boolean custom = TBEnrollmentStrategyType.custom == strategyConfig.getType();
+		if (custom) {
+			weightinglContent.setColumnWidth(6);
+			editLink.setVisible(false);
+			iconPanel.setAdditionalContent(customContent);
+			editAdditionalLink.setVisible(true);
+			
+			List<LabelText> customLabelTexts = new ArrayList<>(4);
+			customLabelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.overview.fine.tuning"), ""));
+			customLabelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.function.function"), TBUIFactory.getTranslatedFunction(getTranslator(), strategyConfig.getMaxPrioritiesFunction())));
+			customLabelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.function.break.point"), TBUIFactory.getTranslatedBreakPoint(getTranslator(), strategyConfig.getMaxPriorityBreakPoint())));
+			if (strategyConfig.getMaxPrioritiesFunctionAfter() != null) {
+				TBUIFactory.getTranslatedFunction(getTranslator(), strategyConfig.getMaxPrioritiesFunctionAfter());
+				customLabelTexts.add(new IconPanelLabelTextContent.LabelText(translate("enrollment.strategy.function.function.after"), TBUIFactory.getTranslatedFunction(getTranslator(), strategyConfig.getMaxPrioritiesFunctionAfter())));
+			}
+			customContent.setLabelTexts(customLabelTexts);
+		} else {
+			weightinglContent.setColumnWidth(3);
+			editLink.setVisible(true);
+			iconPanel.setAdditionalContent(null);
+			editAdditionalLink.setVisible(false);
+		}
 	}
 	
 	@Override
@@ -126,7 +157,7 @@ public class TBEnrollmentStrategyController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == editLink) {
+		if (source == editLink || source == editAdditionalLink) {
 			doEditStrategyConfig(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -140,7 +171,7 @@ public class TBEnrollmentStrategyController extends FormBasicController {
 	private void doEditStrategyConfig(UserRequest ureq) {
 		if (guardModalController(strategyEditCtrl)) return;
 		
-		strategyEditCtrl = new TBEnrollmentStrategyEditController(ureq, getWindowControl(), strategyConfig);
+		strategyEditCtrl = new TBEnrollmentStrategyEditController(ureq, getWindowControl(), broker, strategyConfig);
 		listenTo(strategyEditCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

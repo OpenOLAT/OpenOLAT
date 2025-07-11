@@ -34,6 +34,7 @@ import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerStatus;
 import org.olat.modules.topicbroker.TBCustomFieldDefinition;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBEnrollmentFunction;
 import org.olat.modules.topicbroker.TBEnrollmentStrategyType;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
@@ -490,6 +491,26 @@ public class TBUIFactory {
 			}
 		}
 		return translator.translate("enrollment.strategy.overview.weight.not.considered");
+	}
+	
+	public static final String getTranslatedFunction(Translator translator, TBEnrollmentFunction function) {
+		if (function != null) {
+			switch (function) {
+			case constant: return translator.translate("enrollment.strategy.function.constant");
+			case linear: return translator.translate("enrollment.strategy.function.linear");
+			case logarithmic: return translator.translate("enrollment.strategy.function.logarithmic");
+			default:
+			}
+		}
+		return null;
+	}
+	
+	public static String getTranslatedBreakPoint(Translator translator, Integer breakPoint) {
+		if (breakPoint == null || breakPoint < 0) {
+			return translator.translate("enrollment.strategy.function.without.break.point");
+		}
+		
+		return translator.translate("enrollment.strategy.function.priority", String.valueOf(breakPoint));
 	}
 	
 	public static int intOrZero(Integer integer) {

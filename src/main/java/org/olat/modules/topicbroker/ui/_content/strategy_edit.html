@@ -34,6 +34,23 @@ $r.render("preset", "vertical")
 			</div>
 		</div>
 	</fieldset>
+	#if($r.available("enrollment.strategy.function.function"))
+		<fieldset class="o_block_large">
+		<legend>$r.translate("enrollment.strategy.max.priorities.fine.tuning")</legend>
+			<div class="o_tb_priority_criterion o_block">
+				<div class="o_tb_priority_criterion_selection o_block">
+					$r.render("enrollment.strategy.function.function", "vertical")
+					$r.render("enrollment.strategy.function.break.point", "vertical")
+					#if($r.visible("enrollment.strategy.function.function.after"))
+						$r.render("enrollment.strategy.function.function.after", "vertical")
+					#end
+				</div>
+				<div class="o_tb_priority_criterion_chart o_block">
+					$r.render("maxPrioritiesCriterionChart")
+				</div>
+			</div>
+		</fieldset>
+	#end
 #end
 $r.render("buttons")
 </div>
