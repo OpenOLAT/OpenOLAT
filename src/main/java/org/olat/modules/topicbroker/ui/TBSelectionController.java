@@ -161,6 +161,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private FlexiTableElement topicTableEl;
 	
 	private CloseableModalController cmc;
+	private CloseableModalController delayedCmc;
 	private TBMaxEnrollmentsController maxEnrollmentsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private SelectionToolsController selectionToolsCtrl;
@@ -212,7 +213,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		initForm(ureq);
 		loadModel(false);
-		doInitMaxEnrollments(ureq);
+		doInitMaxEnrollments(ureq, true);
 	}
 
 	private boolean isExecutionPeriodAvailable(TBBroker broker) {
@@ -1032,7 +1033,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == maxEnrollmentsLink) {
-			doUpdateMaxEnrollments(ureq);
+			doUpdateMaxEnrollments(ureq, false);
 		} else if (selectionTableEl == source) {
 			if (event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -1120,13 +1121,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 	}
 	
-	private void doInitMaxEnrollments(UserRequest ureq) {
+	private void doInitMaxEnrollments(UserRequest ureq, boolean delayActivation) {
 		if (maxEnrollmentsLink != null && maxEnrollmentsLink.isVisible() && participant.getRequiredEnrollments() == null) {
-			doUpdateMaxEnrollments(ureq);
+			doUpdateMaxEnrollments(ureq, delayActivation);
 		}
 	}
 	
-	private void doUpdateMaxEnrollments(UserRequest ureq) {
+	private void doUpdateMaxEnrollments(UserRequest ureq, boolean delayActivation) {
 		if (guardModalController(maxEnrollmentsCtrl)) { return; }
 		
 		maxEnrollmentsCtrl = new TBMaxEnrollmentsController(ureq, getWindowControl(), participant);
@@ -1136,7 +1137,18 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				maxEnrollmentsCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
-		cmc.activate();
+		if(delayActivation) {
+			delayedCmc = cmc;
+		} else {
+			cmc.activate();
+		}
+	}
+	
+	public void doUpdateMaxEnrollmentsActivate() {
+		if(delayedCmc != null) {
+			delayedCmc.activate();
+			delayedCmc = null;
+		}
 	}
 	
 	private void doSelectTopic(TBTopicRef topic, Integer sortOrder) {

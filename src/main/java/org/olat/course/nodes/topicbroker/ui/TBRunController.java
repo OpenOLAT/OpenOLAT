@@ -21,10 +21,12 @@ package org.olat.course.nodes.topicbroker.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.nodes.TopicBrokerCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.topicbroker.TBBroker;
@@ -38,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBRunController extends BasicController {
+public class TBRunController extends BasicController implements GenericEventListener {
 	
 	private final TBSelectionController selectionCtrl;
 
@@ -55,6 +57,15 @@ public class TBRunController extends BasicController {
 		selectionCtrl = new TBSelectionController(ureq, wControl, broker);
 		listenTo(selectionCtrl);
 		mainVC.put("selection", selectionCtrl.getInitialComponent());
+		getWindowControl().getWindowBackOffice().addCycleListener(this);
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event == Window.END_OF_DISPATCH_CYCLE || event == Window.BEFORE_RENDER_ONLY) {
+			selectionCtrl.doUpdateMaxEnrollmentsActivate();
+			getWindowControl().getWindowBackOffice().removeCycleListener(this);
+		}
 	}
 
 	@Override
