@@ -27,14 +27,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.DateUtils;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
@@ -61,6 +62,8 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  * 
@@ -762,22 +765,30 @@ public class LectureServiceTest extends OlatTestCase {
 	
 	@Test
 	public void autoCloseRollCall() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("auto-close-owner-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("auto-close-teacher-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDAO.addRole(author, entry, GroupRoles.owner.name());
+		Group entryGroup = repositoryEntryRelationDAO.getDefaultGroup(entry);
+
 		LectureBlock block1 = createMinimalLectureBlock(entry);
 		int period = lectureModule.getRollCallAutoClosePeriod();
 		block1.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
 		block1.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
-		block1 = lectureService.save(block1, null);
+		block1 = lectureService.save(block1, List.of(entryGroup));
+		lectureService.addTeacher(block1, teacher);
 		
 		LectureBlock block2 = createMinimalLectureBlock(entry);
 		block2.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
 		block2.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
-		block2 = lectureService.save(block2, null);
+		block2 = lectureService.save(block2, List.of(entryGroup));
+		lectureService.addTeacher(block2, teacher);
 		
 		LectureBlock block3 = createMinimalLectureBlock(entry);
 		block3.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
 		block3.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
-		block3 = lectureService.save(block3, null);
+		block3 = lectureService.save(block3, List.of(entryGroup));
+		lectureService.addTeacher(block3, teacher);
 		
 		lectureService.autoCloseRollCall();
 		
@@ -789,6 +800,74 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock2.getRollCallStatus());
 		LectureBlock reloadBlock3 = lectureService.getLectureBlock(block3);
 		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock3.getRollCallStatus());
+		
+		// Lecture not configured
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(messages.isEmpty());
+	}
+	
+	@Test
+	public void autoCloseWithRollCall() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("auto-close-owner-2");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("auto-close-teacher-2");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDAO.addRole(author, entry, GroupRoles.owner.name());
+		Group entryGroup = repositoryEntryRelationDAO.getDefaultGroup(entry);
+
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		config.setRollCallEnabled(Boolean.TRUE);
+		config = lectureService.updateRepositoryEntryLectureConfiguration(config);
+		
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		int period = lectureModule.getRollCallAutoClosePeriod();
+		block1.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
+		block1.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
+		block1 = lectureService.save(block1, List.of(entryGroup));
+		lectureService.addTeacher(block1, teacher);
+
+		lectureService.autoCloseRollCall();
+		
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock reloadBlock1 = lectureService.getLectureBlock(block1);
+		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock1.getRollCallStatus());
+		
+		// Lecture and roll call are enabled
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertFalse(messages.isEmpty());
+	}
+	
+	@Test
+	public void autoCloseWithRollCallDisabled() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("auto-close-owner-3");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("auto-close-teacher-3");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDAO.addRole(author, entry, GroupRoles.owner.name());
+		Group entryGroup = repositoryEntryRelationDAO.getDefaultGroup(entry);
+
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		config.setRollCallEnabled(Boolean.FALSE);
+		config = lectureService.updateRepositoryEntryLectureConfiguration(config);
+		
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		int period = lectureModule.getRollCallAutoClosePeriod();
+		block1.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
+		block1.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
+		block1 = lectureService.save(block1, List.of(entryGroup));
+		lectureService.addTeacher(block1, teacher);
+
+		lectureService.autoCloseRollCall();
+		
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock reloadBlock1 = lectureService.getLectureBlock(block1);
+		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock1.getRollCallStatus());
+		
+		// Lecture and roll call are enabled
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(messages.isEmpty());
 	}
 	
 	@Test

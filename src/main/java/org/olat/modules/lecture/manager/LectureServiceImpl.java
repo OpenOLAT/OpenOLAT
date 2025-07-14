@@ -1438,7 +1438,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		recalculateSummary(lectureBlock.getEntry());
 		dbInstance.commit();
 		
-		//send email
+		// Send email
 		sendAutoCloseNotifications(lectureBlock);
 	}
 	
@@ -1448,17 +1448,23 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		if(config.isLectureEnabled()
 				&& entry.getEntryStatus() != RepositoryEntryStatusEnum.trash
 				&& entry.getEntryStatus() != RepositoryEntryStatusEnum.deleted) {
-			List<Identity> owners = repositoryEntryRelationDao
-					.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
-			List<Identity> teachers = getTeachers(lectureBlock);
 			
-			for(Identity owner:owners) {
-				MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
-						owner, teachers, lectureBlock);
-				if(result.getReturnCode() == MailerResult.OK) {
-					log.info(Tracing.M_AUDIT, "Notification of lecture auto-close: {} in course: {}", lectureBlock.getKey(), entry.getKey());
-				} else {
-					log.error("Notification of lecture auto-close cannot be send: {} in course: {}", lectureBlock.getKey(), entry.getKey());
+			boolean rollCallEnabled	= config.getRollCallEnabled() == null
+					? lectureModule.isRollCallDefaultEnabled()
+					: config.getRollCallEnabled();
+			if(rollCallEnabled) {
+				List<Identity> owners = repositoryEntryRelationDao
+						.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+				List<Identity> teachers = getTeachers(lectureBlock);
+				
+				for(Identity owner:owners) {
+					MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
+							owner, teachers, lectureBlock);
+					if(result.getReturnCode() == MailerResult.OK) {
+						log.info(Tracing.M_AUDIT, "Notification of lecture auto-close: {} in course: {}", lectureBlock.getKey(), entry.getKey());
+					} else {
+						log.error("Notification of lecture auto-close cannot be send: {} in course: {}", lectureBlock.getKey(), entry.getKey());
+					}
 				}
 			}
 		}
