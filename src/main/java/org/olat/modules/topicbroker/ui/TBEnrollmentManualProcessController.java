@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentProcess;
@@ -58,6 +59,8 @@ import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
+import org.olat.modules.topicbroker.manager.TopicBrokerXStream;
+import org.olat.modules.topicbroker.model.TBProcessInfos;
 import org.olat.modules.topicbroker.ui.events.TBEnrollmentProcessRunEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -253,6 +256,12 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 			} else {
 				topicBrokerService.updateEnrollmentProcessStart(getIdentity(), broker);
 				selectedProcessWrapper.getProcess().persist(getIdentity());
+				
+				String before = TopicBrokerXStream.toXml(selectedProcessWrapper.getStrategyConfig());
+				topicBrokerService.log(TBAuditLog.Action.brokerEnrollmentStrategy, before, null, null, broker, null, null, null);
+				TBProcessInfos infos = TBProcessInfos.ofStats(selectedProcessWrapper.getStats(), selectedProcessWrapper.getBestStrategyValue());
+				before = TopicBrokerXStream.toXml(infos);
+				topicBrokerService.log(TBAuditLog.Action.brokerEnrollmentStrategyValue, before, null, null, broker, null, null, null);
 				topicBrokerService.updateEnrollmentProcessDone(getIdentity(), broker, withNotification);
 			}
 		}
@@ -276,7 +285,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		
 		Date startDate = new Date();
 		EnrollmentProcessWrapper wrapper = new EnrollmentProcessWrapper(startDate, strategyConfig, process,
-				processor.getRuns(), enrollmentStats);
+				 processor.getBestStrategyValue(), processor.getRuns(), enrollmentStats);
 		runs.add(wrapper);
 		
 		int run = runs.size();
@@ -322,14 +331,16 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		private final Date startDate;
 		private final TBEnrollmentStrategyConfig strategyConfig;
 		private final TBEnrollmentProcess process;
+		private final double bestStrategyValue;
 		private final long runs;
 		private final TBEnrollmentStats stats;
 		
 		public EnrollmentProcessWrapper(Date startDate, TBEnrollmentStrategyConfig strategyConfig,
-				TBEnrollmentProcess process, long runs, TBEnrollmentStats stats) {
+				TBEnrollmentProcess process, double bestStrategyValue, long runs, TBEnrollmentStats stats) {
 			this.startDate = startDate;
 			this.strategyConfig = strategyConfig;
 			this.process = process;
+			this.bestStrategyValue = bestStrategyValue;
 			this.runs = runs;
 			this.stats = stats;
 		}
@@ -344,6 +355,10 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 		public TBEnrollmentProcess getProcess() {
 			return process;
+		}
+
+		public double getBestStrategyValue() {
+			return bestStrategyValue;
 		}
 
 		public long getRuns() {

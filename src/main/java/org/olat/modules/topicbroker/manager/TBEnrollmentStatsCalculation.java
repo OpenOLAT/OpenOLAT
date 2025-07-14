@@ -52,6 +52,7 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 	private int numRequiredEnrollments = 0;
 	private int numEnrollments = 0;
 	private final int numTopicsTotal;
+	private int numWaitingList = 0;
 	private final Set<Identity> identitiesWaitingList = new HashSet<>();
 	private final Set<Identity> identitiesNoSelection = new HashSet<>();
 	
@@ -68,7 +69,8 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 		
 		for (Identity identity : identities) {
 			TBParticipant participant = identityKeyToParticipant.get(identity.getKey());
-			int participantNaxEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
+			int participantRequiredEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
+			int participantNumEnrollments = 0;
 			
 			List<TBSelection> identitySelections = identityKeyToSelections.getOrDefault(identity.getKey(), List.of());
 			if (identitySelections.isEmpty()) {
@@ -84,6 +86,7 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 						
 						Integer currentTopicCount = topicKeyToNumEnrollments.getOrDefault(topicKey, Integer.valueOf(0));
 						topicKeyToNumEnrollments.put(topicKey, currentTopicCount + 1);
+						participantNumEnrollments++;
 					} else {
 						if (!fullyEnrolledParticipantKeys.contains(selection.getParticipant().getKey())) {
 							Integer currentTopicWaitingList = topicKeyToNumWaitingList.getOrDefault(topicKey, Integer.valueOf(0));
@@ -93,8 +96,14 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 					}
 				}
 				
-				numRequiredEnrollments += participantNaxEnrollments;
+				numRequiredEnrollments += participantRequiredEnrollments;
 			}
+			
+			numEnrollments += participantNumEnrollments;
+			if (participantNumEnrollments < participantRequiredEnrollments) {
+				int enrollmentsGap = participantRequiredEnrollments - participantNumEnrollments;
+				numWaitingList += enrollmentsGap;
+ 			}
 		}
 	}
 
@@ -138,6 +147,11 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 		// If a topic did not reached the minimum number of participants,
 		// all enrollments were removed by the enrollment process.
 		return topicKeyToNumEnrollments.size();
+	}
+
+	@Override
+	public int getNumWaitingList() {
+		return numWaitingList;
 	}
 
 	@Override

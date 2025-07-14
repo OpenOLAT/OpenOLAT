@@ -87,6 +87,7 @@ import org.olat.modules.topicbroker.model.TBBrokerImpl;
 import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionImpl;
 import org.olat.modules.topicbroker.model.TBCustomFieldImpl;
 import org.olat.modules.topicbroker.model.TBGroupRestrictionInfoImpl;
+import org.olat.modules.topicbroker.model.TBProcessInfos;
 import org.olat.modules.topicbroker.model.TBSelectionImpl;
 import org.olat.modules.topicbroker.model.TBTopicImpl;
 import org.olat.modules.topicbroker.ui.events.TBBrokerChangedEvent;
@@ -1231,7 +1232,19 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			TBEnrollmentStrategyConfig config = TBEnrollmentStrategyFactory.createConfig(broker.getAutoEnrollmentStrategyType());
 			TBEnrollmentStrategyContext context = TBEnrollmentStrategyFactory.createContext(broker, topics, selections);
 			TBEnrollmentStrategy evaluator = TBEnrollmentStrategyFactory.createStrategy(config, context);
-			createProcessor(broker, topics, selections, evaluator, null).getBest().persist(null);
+			TBEnrollmentProcessor processor = createProcessor(broker, topics, selections, evaluator, null);
+			
+			processor.getBest().persist(null);
+			
+			String before = TopicBrokerXStream.toXml(config);
+			log(TBAuditLog.Action.brokerEnrollmentStrategy, before, null, null, broker, null, null, null);
+			
+			List<TBParticipant> participants = selections.stream().map(TBSelection::getParticipant).distinct().toList();
+			TBEnrollmentStats enrollmentStats = getEnrollmentStats(broker, participantCandidates.getAllIdentities(),
+					participants, topics, processor.getBest().getPreviewSelections());
+			TBProcessInfos infos = TBProcessInfos.ofStats(enrollmentStats, processor.getBestStrategyValue());
+			before = TopicBrokerXStream.toXml(infos);
+			log(TBAuditLog.Action.brokerEnrollmentStrategyValue, before, null, null, broker, null, null, null);
 		}
 		updateEnrollmentProcessDone(null, broker, true);
 		dbInstance.commitAndCloseSession();

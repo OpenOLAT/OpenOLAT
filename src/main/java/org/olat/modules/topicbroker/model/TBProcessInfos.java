@@ -19,6 +19,8 @@
  */
 package org.olat.modules.topicbroker.model;
 
+import org.olat.modules.topicbroker.TBEnrollmentStats;
+
 /**
  * 
  * Initial date: 25 Jun 2024<br>
@@ -34,13 +36,16 @@ public class TBProcessInfos {
 	private Integer numEnrollmentsLeft;
 	private Integer numEnrollmentsRequired;
 	private Integer numWithdraws;
+	private Integer numWaitingList;
 	private Integer priority;
 	private Float cost;
 	private Float budgetBefore;
 	private Float budgetAfter;
 	private Integer numTopicsMaxNotReached;
 	private Integer numTopicsMinNotReached;
+	private Integer numTopicsMinReached;
 	private Integer numParticipantsMaxNotReached;
+	private Double strategyValue;
 	
 	public Integer getNumParticipants() {
 		return numParticipants;
@@ -97,6 +102,14 @@ public class TBProcessInfos {
 	public void setNumWithdraws(Integer numWithdraws) {
 		this.numWithdraws = numWithdraws;
 	}
+
+	public Integer getNumWaitingList() {
+		return numWaitingList;
+	}
+
+	public void setNumWaitingList(Integer numWaitingList) {
+		this.numWaitingList = numWaitingList;
+	}
 	
 	public Integer getPriority() {
 		return priority;
@@ -146,12 +159,28 @@ public class TBProcessInfos {
 		this.numTopicsMinNotReached = numTopicsMinNotReached;
 	}
 
+	public Integer getNumTopicsMinReached() {
+		return numTopicsMinReached;
+	}
+
+	public void setNumTopicsMinReached(Integer numTopicsMinReached) {
+		this.numTopicsMinReached = numTopicsMinReached;
+	}
+
 	public Integer getNumParticipantsMaxNotReached() {
 		return numParticipantsMaxNotReached;
 	}
 
 	public void setNumParticipantsMaxNotReached(Integer numParticipantsMaxNotReached) {
 		this.numParticipantsMaxNotReached = numParticipantsMaxNotReached;
+	}
+
+	public Double getStrategyValue() {
+		return strategyValue;
+	}
+
+	public void setStrategyValue(Double strategyValue) {
+		this.strategyValue = strategyValue;
 	}
 
 	@Override
@@ -282,6 +311,18 @@ public class TBProcessInfos {
 		infos.setNumTopicsMaxNotReached(Integer.valueOf((int)numTopicsMaxNotReached));
 		infos.setNumTopicsMinNotReached(Integer.valueOf((int)numTopicsMinNotReached));
 		infos.setNumParticipantsMaxNotReached(Integer.valueOf((int)numParticipantsMaxNotReached));
+		return infos;
+	}
+
+	public static TBProcessInfos ofStats(TBEnrollmentStats stats, double strategyValue) {
+		TBProcessInfos infos = new TBProcessInfos();
+		infos.setNumTopics(stats.getNumTopicsTotal());
+		infos.setNumTopicsMinReached(stats.getNumTopicsMinReached());
+		infos.setNumTopicsMinNotReached(infos.getNumTopics() - infos.getNumTopicsMinReached());
+		infos.setNumParticipants(stats.getNumIdentities());
+		infos.setNumEnrollments(stats.getNumEnrollments());
+		infos.setNumWaitingList(stats.getNumWaitingList());
+		infos.setStrategyValue(strategyValue);
 		return infos;
 	}
 

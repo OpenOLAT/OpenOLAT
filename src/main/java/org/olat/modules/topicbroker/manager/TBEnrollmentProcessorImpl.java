@@ -138,6 +138,11 @@ public class TBEnrollmentProcessorImpl implements TBEnrollmentProcessor {
 	}
 
 	@Override
+	public double getBestStrategyValue() {
+		return bestStrategyValue;
+	}
+
+	@Override
 	public long getRuns() {
 		return runs;
 	}

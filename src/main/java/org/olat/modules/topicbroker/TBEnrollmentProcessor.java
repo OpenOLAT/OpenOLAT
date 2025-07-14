@@ -29,6 +29,8 @@ public interface TBEnrollmentProcessor {
 	
 	TBEnrollmentProcess getBest();
 	
+	public double getBestStrategyValue();
+	
 	long getRuns();
 	
 	long getDurationMillis();
