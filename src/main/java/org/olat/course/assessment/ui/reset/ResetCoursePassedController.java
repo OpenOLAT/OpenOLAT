@@ -52,6 +52,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
@@ -64,6 +67,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.component.ColorizedScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -89,7 +93,8 @@ public class ResetCoursePassedController extends StepFormBasicController {
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
-	private boolean certificateEnabled;
+	private final AssessmentConfig assessmentConfig;
+	private final boolean certificateEnabled;
 	
 	@Autowired
 	private UserManager userManager;
@@ -99,6 +104,8 @@ public class ResetCoursePassedController extends StepFormBasicController {
 	private UserCourseInformationsManager userInfosMgr;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
@@ -113,6 +120,8 @@ public class ResetCoursePassedController extends StepFormBasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
 		certificateEnabled = certificatesManager.isCertificateEnabled(coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		if (certificateEnabled) {
 			certResetValues = new String[] {
@@ -137,6 +146,10 @@ public class ResetCoursePassedController extends StepFormBasicController {
 			boolean visible = userManager.isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, null, true, "userProp-" + colIndex));
 			colIndex++;
+		}
+		
+		if (Mode.none != assessmentConfig.getScoreMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.score, new ColorizedScoreCellRenderer()));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.passed, new PassedCellRenderer(getLocale())));
