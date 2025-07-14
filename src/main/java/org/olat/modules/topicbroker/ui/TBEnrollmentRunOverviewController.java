@@ -141,14 +141,9 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 				translate("widget.participants.title"), "o_icon_num_participants");
 		widgetGroup.add(participantsWidget);
 		
-		List<Scope> scopes = List.of(
-				ScopeFactory.createScope(SCOPE_TOPICS, translate("scope.by.topics"), null, "o_icon o_icon_tb_topics"),
-				ScopeFactory.createScope(SCOPE_PRIORIY, translate("scope.by.priorities"), null, "o_icon o_icon_tb_priority"),
-				ScopeFactory.createScope(SCOPE_WAITING_LIST, translate("scope.waiting.list"), null, "o_icon o_icon_important"),
-				ScopeFactory.createScope(SCOPE_NO_SELECTION, translate("scope.no.selection"), null, "o_icon o_icon_error")
-				);
-		scopeEl = uifactory.addScopeSelection("scope", null, formLayout, scopes);
+		scopeEl = uifactory.addScopeSelection("scope", null, formLayout, null);
 		scopeEl.addActionListener(FormEvent.ONCHANGE);
+		updateScopesUI(null, null);
 		
 		
 		// Topics
@@ -333,6 +328,36 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		
 		noSelectionDataModel.setObjects(noSelectionRows);
 		noSelectionTableEl.reset();
+		
+		updateScopesUI(waitingListRows.size(), noSelectionRows.size());
+	}
+	
+	private void updateScopesUI(Integer numWaitingList, Integer numNoSelection) {
+		List<Scope> scopes = List.of(
+				ScopeFactory.createScope(SCOPE_TOPICS, translate("scope.by.topics"), null, "o_icon o_icon_tb_topics"),
+				ScopeFactory.createScope(SCOPE_PRIORIY, translate("scope.by.priorities"), null, "o_icon o_icon_tb_priority"),
+				createWaitingListScope(numWaitingList),
+				createNoSelectionScope(numNoSelection)
+				);
+		scopeEl.setScopes(scopes);
+	}
+
+	private Scope createWaitingListScope(Integer noSelectionRows) {
+		return ScopeFactory.createScope(SCOPE_WAITING_LIST, translate("scope.waiting.list"), getScopeHint(noSelectionRows), "o_icon o_icon_important");
+	}
+
+	private Scope createNoSelectionScope(Integer numNoSelection) {
+		return ScopeFactory.createScope(SCOPE_NO_SELECTION, translate("scope.no.selection"), getScopeHint(numNoSelection), "o_icon o_icon_error");
+	}
+
+	private String getScopeHint(Integer noSelectionRows) {
+		if (noSelectionRows != null) {
+			if (noSelectionRows == 1) {
+				return translate("scope.participants.single");
+			}
+			return translate("scope.participants.multi", String.valueOf(noSelectionRows));
+		}
+		return null;
 	}
 
 }
