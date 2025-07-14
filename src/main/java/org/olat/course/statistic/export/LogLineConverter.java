@@ -104,10 +104,12 @@ public class LogLineConverter {
 		}
 
 		Row row = sheet.newRow();
-		
+
 		int col = 0;
 		row.addCell(col++, loggingObject.getCreationDate(), workbook.getStyles().getDateTimeStyle());
-		if(anonymize) {
+		if(identity == null || user == null) {
+			col++;
+		} else if(anonymize) {
 			row.addCell(col++, makeAnonymous(identity.getName(), resourceableId));
 		} else if(isAdministrativeUser) {
 			String userName = user.getNickName();
@@ -120,7 +122,11 @@ public class LogLineConverter {
 		if(!anonymize) {
 			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USAGE_IDENTIFIER, isAdministrativeUser);
 			for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
-				row.addCell(col++, user.getProperty(userPropertyHandler.getName(), null));
+				if(user == null) {
+					col++;
+				} else {
+					row.addCell(col++, user.getProperty(userPropertyHandler.getName(), null));
+				}
 			}
 		}
 
