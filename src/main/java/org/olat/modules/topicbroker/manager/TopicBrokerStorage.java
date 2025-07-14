@@ -28,10 +28,12 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBTopic;
 import org.springframework.stereotype.Service;
@@ -98,7 +100,9 @@ public class TopicBrokerStorage {
 		}
 		
 		String relativePath = File.separator + bcrootDirectory.toPath().relativize(storage.toPath()).toString();
-		return VFSManager.olatRootContainer(relativePath);
+		LocalFolderImpl container = VFSManager.olatRootContainer(relativePath);
+		container.setDefaultItemFilter(new VFSSystemItemFilter());
+		return container;
 	}
 	
 	private VFSLeaf getFirstLeaf(TBTopic topic, String path) {
