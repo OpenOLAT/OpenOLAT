@@ -122,7 +122,7 @@ public class MetaInfoController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mf.metadata.title");
-		setFormContextHelp("Folders#_metadata");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Folder/#metadata");
 
 		// filename
 		uifactory.addStaticTextElement("mf.filename", item.getName(), formLayout);
