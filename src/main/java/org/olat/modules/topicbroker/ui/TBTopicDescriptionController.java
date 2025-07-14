@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -76,6 +77,7 @@ public class TBTopicDescriptionController extends BasicController {
 
 		mainVC.contextPut("description", TBUIFactory.formatPrettyText(topic.getDescription(), null));
 		mainVC.contextPut("participantRange", TBUIFactory.getParticipantRange(getTranslator(), topic));
+		mainVC.contextPut("executionPeriod", TBUIFactory.getExecutionPeriod(Formatter.getInstance(getLocale()), topic));
 		
 		if (groupRestrictions != null && !groupRestrictions.isEmpty()) {
 			Collections.sort(groupRestrictions,  (i1, i2) -> i1.getGroupName().compareToIgnoreCase(i2.getGroupName()));

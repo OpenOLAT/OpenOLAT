@@ -17,6 +17,16 @@
 			$participantRange
 		</div>
 	</div>
+	#if($r.isNotEmpty($executionPeriod))
+		<div class="o_tb_topic_execution_period">
+			<div class="o_tb_legend">
+				$r.translate("topic.execution.period")
+			</div>
+			<div>
+				$executionPeriod
+			</div>
+		</div>
+	#end
 	#if($groups && $groups.size() > 0)
 		<div class="o_tb_group_restrictionss">
 			<div class="o_tb_legend">
