@@ -243,9 +243,6 @@ public abstract class BasicController extends DefaultController {
 	 * @return
 	 */
 	protected String registerCacheableMapper(UserRequest ureq, String cacheableMapperID, Mapper m, int expirationTime) {
-		if (mapperKeys == null) {
-			mapperKeys = new ArrayList<>(2);
-		}
 		MapperKey mapperBaseKey;
 		UserSession usess = ureq == null ? null : ureq.getUserSession();
 		if (cacheableMapperID == null) {
@@ -255,8 +252,15 @@ public abstract class BasicController extends DefaultController {
 			mapperBaseKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, cacheableMapperID, m, expirationTime);
 		}
 		// registration was successful, add to our mapper list
-		mapperKeys.add(mapperBaseKey);
+		registerMapperKey(mapperBaseKey);
 		return mapperBaseKey.getUrl();
+	}
+	
+	protected final synchronized void registerMapperKey(MapperKey mapperBaseKey) {
+		if (mapperKeys == null) {
+			mapperKeys = new ArrayList<>(2);
+		}
+		mapperKeys.add(mapperBaseKey);
 	}
 
 	/**

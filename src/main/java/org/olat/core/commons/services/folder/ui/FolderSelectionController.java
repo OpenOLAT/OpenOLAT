@@ -291,6 +291,7 @@ public class FolderSelectionController extends FormBasicController implements Fi
 				// One mapper per thumbnail per leaf version. The mapper is cached for 10 min or all users.
 				FolderThumbnailMapper thumbnailMapper = new FolderThumbnailMapper(vfsRepositoryService, avModule, row.getMetadata(), row.getVfsItem());
 				MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 10);
+				registerMapperKey(mapperKey);
 				row.setThumbnailUrl(mapperKey.getUrl());
 				if (FolderThumbnailMapper.isAudio(row.getMetadata(), vfsLeaf)) {
 					row.setThumbnailCss("o_folder_card_img_center");

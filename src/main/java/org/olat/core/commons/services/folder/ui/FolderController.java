@@ -1085,7 +1085,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			} else {
 				// One mapper per thumbnail per leaf version. The mapper is cached for 10 min or all users.
 				FolderThumbnailMapper thumbnailMapper = new FolderThumbnailMapper(vfsRepositoryService, avModule, row.getMetadata(), row.getVfsItem());
-				MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 10);
+				MapperKey mapperKey = mapperService.register(null, getThumbnailMapperId(row.getMetadata()), thumbnailMapper, 30);
+				registerMapperKey(mapperKey);
 				row.setThumbnailUrl(mapperKey.getUrl());
 			}
 			row.setThumbnailAvailable(true);
