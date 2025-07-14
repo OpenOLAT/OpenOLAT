@@ -602,6 +602,10 @@ public class PageEditorV2Controller extends BasicController {
 
 	private ContentEditorFragment doCloneAndAddElement(UserRequest ureq, ContentEditorFragment fragmentToClone) {
 		PageElement elementToClone = fragmentToClone.getElement();
+		PageElement reloadedElement = provider.getElements().stream().filter(elementToClone::equals).findFirst().orElse(null);
+		if (reloadedElement != null) {
+			elementToClone = reloadedElement;
+		}
 		
 		CloneElementHandler cloneHandler = cloneHandlerMap.get(elementToClone.getType());
 		if (cloneHandler == null) {
