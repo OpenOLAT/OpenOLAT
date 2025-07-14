@@ -877,7 +877,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		withdrawEnrollmentsConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate("participants.bulk.withdraw.enrollments.message", String.valueOf(numEnrollments)),
 				translate("participants.bulk.withdraw.enrollments.confirmation"),
-				translate("reset"));
+				translate("participants.bulk.withdraw.enrollments.button"));
 		withdrawEnrollmentsConfirmationCtrl.setUserObject(selectedIdentities);
 		listenTo(withdrawEnrollmentsConfirmationCtrl);
 		
