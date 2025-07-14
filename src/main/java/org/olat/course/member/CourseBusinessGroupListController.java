@@ -100,18 +100,21 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		initButtons(formLayout, ureq, !readOnly, false, false, false);
+		final RepositoryEntry uoRe = (RepositoryEntry)getUserObject();
+		final boolean managed = RepositoryEntryManagedFlag.isManaged(uoRe, RepositoryEntryManagedFlag.groups);
+		
+		initButtons(formLayout, ureq, !managed && !readOnly, false, false, false);
 		
 		tableEl.setMultiSelect(!readOnly);
 		tableEl.setSelectAllEnable(!readOnly);
 		
-		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		if(!managed && !readOnly) {
 			duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(duplicateButton);
 			mergeButton = uifactory.addFormLink("table.merge", TABLE_ACTION_MERGE, "table.merge", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(mergeButton);
 		}
+		
 		if(!readOnly) {
 			usersButton = uifactory.addFormLink("table.users.management", TABLE_ACTION_USERS, "table.users.management", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(usersButton);
@@ -124,16 +127,25 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		if(!managed && !readOnly) {
 			removeGroups = uifactory.addFormLink("table.header.remove", TABLE_ACTION_MULTI_UNLINK, "table.header.remove", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeGroups);
-		}
 
-		createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);
-		createGroup.setElementCssClass("o_sel_course_new_group");
-		createGroup.setVisible(!managed && !readOnly);
-		createGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-		addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
-		addGroup.setElementCssClass("o_sel_course_select_group");
-		addGroup.setVisible(!managed && !readOnly);
-		addGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add_search");
+			createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);
+			createGroup.setElementCssClass("o_sel_course_new_group");
+			createGroup.setVisible(!managed && !readOnly);
+			createGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
+			addGroup.setElementCssClass("o_sel_course_select_group");
+			addGroup.setVisible(!managed && !readOnly);
+			addGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add_search");
+		}
+	}
+	
+	@Override
+	protected boolean canCreateBusinessGroup() {
+		RepositoryEntry uoRe = getUserObject() instanceof RepositoryEntry entry
+			? entry
+			: re;
+		boolean managed = RepositoryEntryManagedFlag.isManaged(uoRe, RepositoryEntryManagedFlag.groups);
+		return  !managed && !readOnly && super.canCreateBusinessGroup();
 	}
 
 	@Override
