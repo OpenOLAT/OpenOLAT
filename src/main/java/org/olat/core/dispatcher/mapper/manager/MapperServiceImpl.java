@@ -27,10 +27,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.model.PersistedMapper;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -47,6 +49,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("mapperService")
 public class MapperServiceImpl implements MapperService, InitializingBean {
+	
+	private static final Logger log = Tracing.createLoggerFor(MapperServiceImpl.class);
 	
 	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<>();
 	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<>();
@@ -129,6 +133,9 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		
 		mapperKeyToMapper.put(mapperKey, mapper);
 		mapperKey.setUrl(WebappHelper.getServletContextPath() + DispatcherModule.PATH_MAPPED + encryptedMapId);
+		
+		log.debug("Mappers: with key: {} with sessions: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size());
+		
 		return mapperKey;
 	}
 
@@ -177,6 +184,8 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 				}
 			}
 		}
+		
+		log.debug("Mappers: with key: {} with sessions: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size());
 	}
 	
 	@Override
@@ -188,5 +197,7 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 				mapperDao.updateConfiguration(mapperKey.getMapperId(), sMapper, -1);
 			}
 		}
+		
+		log.debug("Mappers: with key: {} with sessions: {}", mapperKeyToMapper.size(), sessionIdToMapperKeys.size());
 	}
 }
