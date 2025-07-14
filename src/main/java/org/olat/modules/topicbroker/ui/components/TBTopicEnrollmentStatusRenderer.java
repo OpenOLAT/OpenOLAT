@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,44 +14,44 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker.ui;
+package org.olat.modules.topicbroker.ui.components;
 
 import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.topicbroker.ui.TBTopicRow;
+import org.olat.modules.topicbroker.ui.TBUIFactory;
 
 /**
  * 
- * Initial date: 30 May 2024<br>
+ * Initial date: Jul 2, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class TBSelectionStatusRenderer extends LabelCellRenderer {
-	
+public class TBTopicEnrollmentStatusRenderer extends LabelCellRenderer {
+
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
-		if (val instanceof TBSelectionRow row) {
-			return row.getTranslatedStatus();
+		if (val instanceof TBTopicRow row) {
+			return row.getTranslatedEnrollmentStatus();
 		}
 		return null;
 	}
 	
 	@Override
 	protected String getIconCssClass(Object val) {
-		if (val instanceof TBSelectionRow row) {
-			return TBUIFactory.getStatusIconCss(row.getStatus());
+		if (val instanceof TBTopicRow row) {
+			return TBUIFactory.getStatusIconCss(row.getEnrollmentStatus());
 		}
 		return null;
 	}
 	
 	@Override
 	protected String getElementCssClass(Object val) {
-		if (val instanceof TBSelectionRow row) {
-			if (row.getStatus() != null) {
-				return TBUIFactory.getLabelLightCss(row.getStatus());
-			}
+		if (val instanceof TBTopicRow row) {
+			return TBUIFactory.getLabelLightCss(row.getEnrollmentStatus());
 		}
 		return null;
 	}

@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker.ui;
+package org.olat.modules.topicbroker.ui.components;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -26,6 +26,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.topicbroker.ui.TBParticipantRow;
 
 /**
  * 

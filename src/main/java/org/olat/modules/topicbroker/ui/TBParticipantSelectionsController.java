@@ -54,6 +54,7 @@ import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBSelectionDataModel.SelectionCols;
+import org.olat.modules.topicbroker.ui.components.TBSelectionStatusRenderer;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
 import org.springframework.beans.factory.annotation.Autowired;

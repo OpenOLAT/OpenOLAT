@@ -99,6 +99,7 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
+import org.olat.modules.topicbroker.ui.components.TBSelectionsRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserInfoProfileConfig;

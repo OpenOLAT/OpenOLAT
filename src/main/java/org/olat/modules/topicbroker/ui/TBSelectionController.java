@@ -115,6 +115,7 @@ import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBSelectionDataModel.SelectionCols;
+import org.olat.modules.topicbroker.ui.components.TBSelectionStatusRenderer;
 import org.olat.modules.topicbroker.ui.events.TBBrokerChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 

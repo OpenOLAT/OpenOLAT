@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.topicbroker.ui;
+package org.olat.modules.topicbroker.ui.components;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionStatus;
+import org.olat.modules.topicbroker.ui.TBParticipantRow;
+import org.olat.modules.topicbroker.ui.TBUIFactory;
 
 /**
  * 

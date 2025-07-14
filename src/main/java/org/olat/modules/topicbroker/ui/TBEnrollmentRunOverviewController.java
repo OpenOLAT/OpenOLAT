@@ -53,6 +53,7 @@ import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.ui.TBEnrollmentRunDataModel.EnrollmentRunCols;
 import org.olat.modules.topicbroker.ui.TBTopicDataModel.TopicCols;
+import org.olat.modules.topicbroker.ui.components.TBTopicEnrollmentStatusRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
