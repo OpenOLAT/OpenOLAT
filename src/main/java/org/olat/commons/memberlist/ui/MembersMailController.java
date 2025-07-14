@@ -117,8 +117,7 @@ public class MembersMailController extends FormBasicController {
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList, List<Member> waitingList, String bodyTemplate) {
-		super(ureq, wControl, Util.createPackageTranslator(translator, MailHelper.class, ureq.getLocale()));
-		
+		super(ureq, wControl, Util.createPackageTranslator(MailHelper.class, ureq.getLocale(), translator));
 		
 		this.courseEnv = courseEnv;
 		this.ownerList = ownerList;

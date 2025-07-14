@@ -162,8 +162,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
 			boolean canEmail, boolean canDownload,  boolean deduplicateList,
 			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
-		super(ureq, wControl, "members", translator);
-		setTranslator(Util.createPackageTranslator(UserPortraitService.class, getLocale(), translator));
+		super(ureq, wControl, "members", Util
+				.createPackageTranslator(UserPortraitService.class, ureq.getLocale(), translator));
 		
 		this.userCourseEnv = userCourseEnv;
 		this.businessGroup = businessGroup;
