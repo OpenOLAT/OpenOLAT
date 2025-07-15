@@ -58,6 +58,8 @@ public class LectureListRepositoryConfig {
 	
 	private boolean withinCurriculums = false;
 	
+	private boolean showCourseParticipantViewWarning = false;
+	
 	private final String prefsId;
 	
 	private LectureListRepositoryConfig(String prefsId, int titleSize, boolean withScopes, boolean withFilterPresetRelevant,
@@ -302,6 +304,15 @@ public class LectureListRepositoryConfig {
 
 	public LectureListRepositoryConfig withinCurriculums(boolean withinCurriculums) {
 		this.withinCurriculums = withinCurriculums;
+		return this;
+	}
+
+	public boolean showCourseParticipantViewWarning() {
+		return showCourseParticipantViewWarning;
+	}
+
+	public LectureListRepositoryConfig showCourseParticipantViewWarning(boolean showWarning) {
+		this.showCourseParticipantViewWarning = showWarning;
 		return this;
 	}
 

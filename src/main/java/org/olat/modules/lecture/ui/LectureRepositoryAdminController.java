@@ -34,10 +34,12 @@ import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -66,7 +68,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private Link archiveLink;
 	private Link appealsLink;
 	private Link participantsLink;
-	private final Link lecturesLink;
+	private Link lecturesLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
@@ -106,20 +108,29 @@ public class LectureRepositoryAdminController extends BasicController implements
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
-
-		lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
-		segmentView.addSegment(lecturesLink, true);
 		
-		if(secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach) {
-			participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
-			segmentView.addSegment(participantsLink, false);
+		boolean courseParticipantViewWarning = config.showCourseParticipantViewWarning();
+		mainVC.contextPut("courseParticipantViewWarning", Boolean.valueOf(courseParticipantViewWarning));
+		if(courseParticipantViewWarning) {
+			Controller accessDeniedCtrl = MessageUIFactory.createInfoMessage(ureq, wControl,
+					translate("warning.course.participant.view.title"), translate("warning.course.participant.view"));
+			listenTo(accessDeniedCtrl);
+			mainVC.put("accessDenied", accessDeniedCtrl.getInitialComponent());
+		} else {
+			lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
+			segmentView.addSegment(lecturesLink, true);
+			
+			if(secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach) {
+				participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
+				segmentView.addSegment(participantsLink, false);
+			}
+			if(secCallback.canSeeAppeals() && lectureModule.isAbsenceAppealEnabled()) {
+				appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
+				segmentView.addSegment(appealsLink, false);
+			}
+	
+			doOpenLectures(ureq, relevantFilterPath);
 		}
-		if(secCallback.canSeeAppeals() && lectureModule.isAbsenceAppealEnabled()) {
-			appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
-			segmentView.addSegment(appealsLink, false);
-		}
-
-		doOpenLectures(ureq, relevantFilterPath);
 
 		putInitialPanel(mainVC);
 	}
