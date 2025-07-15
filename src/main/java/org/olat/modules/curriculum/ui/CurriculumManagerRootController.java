@@ -236,7 +236,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Events", 0L);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculums-overview-v1")
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculums-overview-v1.1")
 				.withExternalRef(Visibility.HIDE)
 				.withCurriculum(Visibility.SHOW)
 				.withRepositoryEntry(Visibility.SHOW)

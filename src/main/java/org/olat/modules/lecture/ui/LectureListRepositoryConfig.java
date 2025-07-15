@@ -72,10 +72,6 @@ public class LectureListRepositoryConfig {
 		this.withFilterPresetClosed = withFilterPresetClosed;
 	}
 	
-	public static final LectureListRepositoryConfig repositoryEntryAdminConfig(String prefsId) {
-		return new LectureListRepositoryConfig(prefsId, 3, false, true, false, false);
-	}
-	
 	public static final LectureListRepositoryConfig repositoryEntryToolConfig(String prefsId) {
 		return new LectureListRepositoryConfig(prefsId, 3, false, true, true, true);
 	}
@@ -180,8 +176,8 @@ public class LectureListRepositoryConfig {
 		return withRepositoryEntry;
 	}
 
-	public LectureListRepositoryConfig withRepositoryEntry(Visibility withRepositoryEntry) {
-		this.withRepositoryEntry = withRepositoryEntry;
+	public LectureListRepositoryConfig withRepositoryEntry(Visibility repositoryEntry) {
+		this.withRepositoryEntry = repositoryEntry;
 		return this;
 	}
 
@@ -189,8 +185,8 @@ public class LectureListRepositoryConfig {
 		return withLocation;
 	}
 
-	public LectureListRepositoryConfig withLocation(Visibility withLocation) {
-		this.withLocation = withLocation;
+	public LectureListRepositoryConfig withLocation(Visibility location) {
+		this.withLocation = location;
 		return this;
 	}
 
@@ -198,8 +194,8 @@ public class LectureListRepositoryConfig {
 		return withCompulsoryPresence;
 	}
 
-	public LectureListRepositoryConfig withCompulsoryPresence(Visibility withCompulsoryPresence) {
-		this.withCompulsoryPresence = withCompulsoryPresence;
+	public LectureListRepositoryConfig withCompulsoryPresence(Visibility compulsory) {
+		this.withCompulsoryPresence = compulsory;
 		return this;
 	}
 	
@@ -207,8 +203,8 @@ public class LectureListRepositoryConfig {
 		return withNumberOfParticipants;
 	}
 
-	public LectureListRepositoryConfig withNumberOfParticipants(Visibility withNumberOfParticipants) {
-		this.withNumberOfParticipants = withNumberOfParticipants;
+	public LectureListRepositoryConfig withNumberOfParticipants(Visibility numberOfParticipants) {
+		this.withNumberOfParticipants = numberOfParticipants;
 		return this;
 	}
 	
@@ -216,8 +212,8 @@ public class LectureListRepositoryConfig {
 		return withNumberOfLectures;
 	}
 
-	public LectureListRepositoryConfig withNumberOfLectures(Visibility withNumberOfLectures) {
-		this.withNumberOfLectures = withNumberOfLectures;
+	public LectureListRepositoryConfig withNumberOfLectures(Visibility numberOfLectures) {
+		this.withNumberOfLectures = numberOfLectures;
 		return this;
 	}
 
@@ -225,8 +221,8 @@ public class LectureListRepositoryConfig {
 		return withExam;
 	}
 
-	public LectureListRepositoryConfig withExam(Visibility withExam) {
-		this.withExam = withExam;
+	public LectureListRepositoryConfig withExam(Visibility exam) {
+		this.withExam = exam;
 		return this;
 	}
 
@@ -234,8 +230,8 @@ public class LectureListRepositoryConfig {
 		return withOnlineMeeting;
 	}
 
-	public LectureListRepositoryConfig withOnlineMeeting(Visibility withOnlineMeeting) {
-		this.withOnlineMeeting = withOnlineMeeting;
+	public LectureListRepositoryConfig withOnlineMeeting(Visibility onlineMeeting) {
+		this.withOnlineMeeting = onlineMeeting;
 		return this;
 	}
 
@@ -245,11 +241,11 @@ public class LectureListRepositoryConfig {
 
 	/**
 	 * 
-	 * @param withEdit true to set visibility of the edit column, fi true, security callback will be checked
+	 * @param edit true to set visibility of the edit column, fi true, security callback will be checked
 	 * @return Itself
 	 */
-	public LectureListRepositoryConfig withEdit(Visibility withEdit) {
-		this.withEdit = withEdit;
+	public LectureListRepositoryConfig withEdit(Visibility edit) {
+		this.withEdit = edit;
 		return this;
 	}
 
@@ -257,8 +253,8 @@ public class LectureListRepositoryConfig {
 		return withDetailsParticipantsGroups;
 	}
 
-	public LectureListRepositoryConfig withDetailsParticipantsGroups(boolean withDetailsParticipantsGroups) {
-		this.withDetailsParticipantsGroups = withDetailsParticipantsGroups;
+	public LectureListRepositoryConfig withDetailsParticipantsGroups(boolean details) {
+		this.withDetailsParticipantsGroups = details;
 		return this;
 	}
 	
@@ -266,8 +262,8 @@ public class LectureListRepositoryConfig {
 		return withDetailsRepositoryEntry;
 	}
 
-	public LectureListRepositoryConfig withDetailsRepositoryEntry(boolean withDetailsRepositoryEntry) {
-		this.withDetailsRepositoryEntry = withDetailsRepositoryEntry;
+	public LectureListRepositoryConfig withDetailsRepositoryEntry(boolean details) {
+		this.withDetailsRepositoryEntry = details;
 		return this;
 	}
 
@@ -275,8 +271,8 @@ public class LectureListRepositoryConfig {
 		return withDetailsExam;
 	}
 
-	public LectureListRepositoryConfig withDetailsExam(boolean withDetailsExam) {
-		this.withDetailsExam = withDetailsExam;
+	public LectureListRepositoryConfig withDetailsExam(boolean details) {
+		this.withDetailsExam = details;
 		return this;
 	}
 
@@ -284,8 +280,8 @@ public class LectureListRepositoryConfig {
 		return withDetailsUnits;
 	}
 
-	public LectureListRepositoryConfig withDetailsUnits(boolean withDetailsUnits) {
-		this.withDetailsUnits = withDetailsUnits;
+	public LectureListRepositoryConfig withDetailsUnits(boolean details) {
+		this.withDetailsUnits = details;
 		return this;
 	}
 
@@ -293,8 +289,8 @@ public class LectureListRepositoryConfig {
 		return withDetailsExternalRef;
 	}
 
-	public LectureListRepositoryConfig withDetailsExternalRef(boolean withDetailsExternalRef) {
-		this.withDetailsExternalRef = withDetailsExternalRef;
+	public LectureListRepositoryConfig withDetailsExternalRef(boolean details) {
+		this.withDetailsExternalRef = details;
 		return this;
 	}
 	
@@ -302,8 +298,8 @@ public class LectureListRepositoryConfig {
 		return withinCurriculums;
 	}
 
-	public LectureListRepositoryConfig withinCurriculums(boolean withinCurriculums) {
-		this.withinCurriculums = withinCurriculums;
+	public LectureListRepositoryConfig withinCurriculums(boolean curriculums) {
+		this.withinCurriculums = curriculums;
 		return this;
 	}
 
@@ -315,8 +311,6 @@ public class LectureListRepositoryConfig {
 		this.showCourseParticipantViewWarning = showWarning;
 		return this;
 	}
-
-
 
 	public enum Visibility {
 		NO,

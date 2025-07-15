@@ -186,7 +186,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
-				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculum-details-v1")
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculum-details-v1.1")
 						.withExternalRef(Visibility.HIDE)
 						.withCurriculum(Visibility.HIDE)
 						.withRepositoryEntry(Visibility.SHOW)

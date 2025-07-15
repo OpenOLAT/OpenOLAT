@@ -173,7 +173,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		endTime("table.header.end.time"),
 		teachers("table.header.teachers"),
 		tools("action.more"),
-		status("table.header.exec"),
+		status("table.header.status"),
 		rollCallStatus("table.header.rollcall.status"),
 		compulsory("table.header.compulsory.long"),
 		assessmentMode("table.header.assessment.mode"),
