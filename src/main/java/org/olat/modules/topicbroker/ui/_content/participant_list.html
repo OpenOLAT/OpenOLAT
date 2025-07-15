@@ -4,13 +4,13 @@
 		<div>$statusLabel</div>
 	</legend>
 	$r.render("config")
-	#if($r.visible("participants.notifications") || ($r.available("enrollment.manual.start") && $r.visible("enrollment.manual.start")))
+	#if($r.visible("participants.notifications") || ($r.available("enrollment.manual.initiate") && $r.visible("enrollment.manual.initiate")))
 		<div class="o_button_group o_button_group_right">
 			#if($r.visible("participants.notifications"))
 				$r.render("participants.notifications")
 			#end
-			#if($r.available("enrollment.manual.start") && $r.visible("enrollment.manual.start"))
-				$r.render("enrollment.manual.start")
+			#if($r.available("enrollment.manual.initiate") && $r.visible("enrollment.manual.initiate"))
+				$r.render("enrollment.manual.initiate")
 			#end
 		</div>
 	#end

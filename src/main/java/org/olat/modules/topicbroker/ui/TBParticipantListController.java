@@ -275,7 +275,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		updateBrokerStatusUI();
 		
 		if (!broker.isAutoEnrollment() && secCallback.canStartManualEnrollment()) {
-			enrollmentManualStartLink = uifactory.addFormLink("enrollment.manual.start", formLayout, Link.BUTTON);
+			enrollmentManualStartLink = uifactory.addFormLink("enrollment.manual.initiate", formLayout, Link.BUTTON);
 			enrollmentManualStartLink.setElementCssClass("o_sel_tb_enrollment_start");
 			updateEnrollmentManualUI();
 		}
@@ -565,6 +565,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		boolean enrollmentManual = broker.getEnrollmentStartDate() == null
 				&& broker.getSelectionEndDate() != null && broker.getSelectionEndDate().before(new Date());
 		enrollmentManualStartLink.setEnabled(enrollmentManual);
+		enrollmentManualStartLink.setPrimary(enrollmentManual);
 	}
 	
 	private void updateBrokerConfigUI() {

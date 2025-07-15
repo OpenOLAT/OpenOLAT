@@ -116,7 +116,7 @@ public class MaxPrioritiesCriterionChartRenderer extends DefaultComponentRendere
 		  .append("    .style('text-anchor', 'middle')")
 		  .append("    .text('").append(translator.translate("enrollment.strategy.function.chart.weight")).append("')");
 		sb.append(";\n");
-
+		
 		sb.append("var line = d3.line()\n");
 		sb.append("    .x(function(d) { return xScale(d[0]); }) \n");
 		sb.append("    .y(function(d) { return yScale(d[1]); }) \n");
@@ -132,16 +132,16 @@ public class MaxPrioritiesCriterionChartRenderer extends DefaultComponentRendere
 									.y(d => yScale(d.y)));
 				}
 				""";
-		
 		sb.append(drawLineFunction);
 		appendYLines(sb, criterion.getMaxSelections());
+		appendBreakPoint(sb, criterion);
 		appendFunctions(sb, criterion);
 		
 		sb.append("});\n")
 		  .append("/* ]]> */")
 		  .append("</script>\n");
 	}
-	
+
 	private void appendFunctions(StringOutput sb, MaxPrioritiesCriterion criterion) {
 		int xMax = criterion.getCriterionBreakPoint() != null? criterion.getCriterionBreakPoint(): criterion.getMaxSelections();
 		appendFunction(sb, getYFunc(criterion.getCriterionFunction()), 1, xMax, "o_tb_function_chart_line");
@@ -188,6 +188,23 @@ public class MaxPrioritiesCriterionChartRenderer extends DefaultComponentRendere
 			Double yValue = linearFunction.apply(Integer.valueOf(i));
 			appendFunction(sb, String.valueOf(yValue), 1, maxSelections, "o_tb_function_chart_line o_tb_help_line o_tb_dash");
 		}
+	}
+	
+	private void appendBreakPoint(StringOutput sb, MaxPrioritiesCriterion criterion) {
+		if (criterion.getCriterionBreakPoint() == null) {
+			return;
+		}
+		
+		Integer breakPoint = criterion.getCriterionBreakPoint();
+		Double value = criterion.getCriterionFunction().apply(breakPoint);
+		String line = "[1," + value + "],[" + breakPoint + "," + value + "],[" + breakPoint + ",0]";
+		
+		sb.append("svg.append('path')\n");
+		sb.append("  .datum([").append(line).append("])\n");
+		sb.append("  .attr('class', 'line')\n");
+		sb.append("  .attr('d', line)\n");
+		sb.append("  .attr('class', 'o_tb_function_chart_line o_tb_help_line')");
+		sb.append(";\n");
 	}
 
 }

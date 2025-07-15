@@ -334,8 +334,8 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 	
 	private void updateScopesUI(Integer numWaitingList, Integer numNoSelection) {
 		List<Scope> scopes = List.of(
-				ScopeFactory.createScope(SCOPE_TOPICS, translate("scope.by.topics"), null, "o_icon o_icon_tb_topics"),
 				ScopeFactory.createScope(SCOPE_PRIORIY, translate("scope.by.priorities"), null, "o_icon o_icon_tb_priority"),
+				ScopeFactory.createScope(SCOPE_TOPICS, translate("scope.by.topics"), null, "o_icon o_icon_tb_topics"),
 				createWaitingListScope(numWaitingList),
 				createNoSelectionScope(numNoSelection)
 				);
