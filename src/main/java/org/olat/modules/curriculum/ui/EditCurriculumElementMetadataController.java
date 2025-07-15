@@ -211,7 +211,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		List<CurriculumElementType> types = getTypes();
 		SelectionValues typePK = new SelectionValues();
 		for(CurriculumElementType type:types) {
-			typePK.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
+			typePK.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
 		}
 		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typePK.keys(), typePK.values());
 		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && canEdit);
