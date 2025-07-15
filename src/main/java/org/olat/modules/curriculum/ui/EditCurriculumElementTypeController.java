@@ -176,7 +176,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		types.remove(curriculumElementType);
 		SelectionValues subTypePK = new SelectionValues();
 		for(CurriculumElementType type:types) {
-			subTypePK.add(SelectionValues.entry(type.getKey().toString(), StringHelper.escapeHtml(type.getDisplayName())));
+			subTypePK.add(SelectionValues.entry(type.getKey().toString(), type.getDisplayName()));
 		}
 		allowedSubTypesEl = uifactory.addCheckboxesVertical("type.allowed.sub.types", formLayout, subTypePK.keys(), subTypePK.values(), 2);
 		allowedSubTypesEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.subTypes));
