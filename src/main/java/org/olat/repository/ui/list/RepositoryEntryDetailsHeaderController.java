@@ -148,13 +148,13 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.getStartLink().setEnabled(false);
 				
-				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
+				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage();
 				setWarning(translate(accessDeniedMessage.messageI18nKey()), translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
 			} else if (isMember || reSecurity.isMasterCoach()) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.getStartLink().setEnabled(false);
 				
-				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
+				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage();
 				setWarning(translate(accessDeniedMessage.messageI18nKey()), translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
 			} else if(inviteeOnly) {
 				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));

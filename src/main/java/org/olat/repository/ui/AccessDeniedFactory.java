@@ -37,7 +37,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -64,20 +63,8 @@ public class AccessDeniedFactory {
 		return new AccessDeniedController(ureq, wControl, "access.denied.closed", "access.denied.closed.hint", null);
 	}
 	
-	public static AccessDeniedMessage createRepositoryEntryStatusNotPublishedMessage(UserRequest ureq, RepositoryEntry entry) {
-		String messageI18nKey = "access.denied.not.published";
-		String hintI18nKey = null;
-		String[] hintArgs = null;
-		if (entry.getLifecycle() != null && !entry.getLifecycle().isPrivateCycle() && StringHelper.containsNonWhitespace(entry.getLifecycle().getLabel())) {
-			hintI18nKey = "access.denied.not.published.hint.semester";
-			hintArgs = new String[] {entry.getLifecycle().getLabel()}; 
-		} else if (entry.getLifecycle() != null && entry.getLifecycle().isPrivateCycle() && entry.getLifecycle().getValidFrom() != null) {
-			hintI18nKey = "access.denied.not.published.hint.validfrom";
-			hintArgs = new String[] { Formatter.getInstance(ureq.getLocale()).formatDate(entry.getLifecycle().getValidFrom()) }; 
-		} else {
-			hintI18nKey = "access.denied.not.published.hint";
-		}
-		return new AccessDeniedMessage(messageI18nKey, hintI18nKey, hintArgs);
+	public static AccessDeniedMessage createRepositoryEntryStatusNotPublishedMessage() {
+		return new AccessDeniedMessage("access.denied.preparation", "access.denied.preparation.hint", null);
 	}
 	
 	public static Controller createRepositoryEntryStatusNotPublished(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {

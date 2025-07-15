@@ -157,7 +157,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			} else if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
 				startCtrl.getStartLink().setEnabled(true);
 			} else {
-				setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
+				setWarning(translate("access.denied.preparation"), translate("access.denied.preparation.hint"));
 				startCtrl.getStartLink().setEnabled(false);
 			}
 			initLeaveButton();
