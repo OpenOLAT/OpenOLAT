@@ -33,15 +33,26 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.activity.ActivityLogService;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,7 +66,9 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 	private TextElement extraTimeInMinEl;
 	private List<AssessmentMode> assessmentModes;
 	private List<AssessmentTestSession> testSessions;
-	
+
+	private final String subIdent;
+	private final String subIdentName;
 	private final RepositoryEntry entry;
 	
 	@Autowired
@@ -65,13 +78,18 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private ActivityLogService activityLogService;
+	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
-	public ConfirmExtraTimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, List<AssessmentTestSession> testSessions) {
+	public ConfirmExtraTimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, CourseNode courseNode, List<AssessmentTestSession> testSessions) {
 		super(ureq, wControl, "confirm_extra_time");
 		this.entry = entry;
+		subIdent = courseNode.getIdent();
+		subIdentName = courseNode.getShortTitle();
 		this.testSessions = testSessions;
 		assessmentModes = assessmentModeManager.getCurrentAssessmentMode(entry, new Date());
 		initForm(ureq);
@@ -168,7 +186,9 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		int extraTime = getExtraTime();
 		for (AssessmentTestSession testSession:testSessions) {
+			Identity assessedIdentity = testSession.getIdentity();
 			qtiService.extraTimeAssessmentTestSession(testSession, extraTime, getIdentity());
+			logLockActivity(ureq, assessedIdentity, AssessmentLoggingAction.ASSESSMENT_TEST_PROLONGE);
 		}
 		dbInstance.commit();
 		assessmentModeCoordinationService.sendEvent(entry);
@@ -179,4 +199,23 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	private void logLockActivity(UserRequest ureq, Identity assessedIdentity, ILoggingAction action) {
+		if(assessedIdentity == null) return;
+		
+		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromString(entry.getOlatResource());
+	
+		Long identityKey = getIdentity().getKey();
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(entry.getOlatResource(), OlatResourceableType.course, entry.getDisplayname()));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(OresHelper
+			.createOLATResourceableInstance("CourseNode", Long.valueOf(subIdent)), OlatResourceableType.node, subIdentName));
+		loggingResourceableList.add(LoggingResourceable.wrap(assessedIdentity));
+		
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][CourseNode:" + subIdent + "]";
+		String sessionId = activityLogService.getSessionId(ureq.getUserSession());
+		activityLogService.log(action, action.getResourceActionType(), sessionId, identityKey, getClass(), false,
+				businessPath, bcContextEntries, loggingResourceableList);
+	}
+	
 }

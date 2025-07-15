@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,13 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.activity.ActivityLogService;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -45,6 +53,8 @@ import org.olat.course.assessment.AssessmentInspectionLog;
 import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentInspectionStatusEnum;
+import org.olat.course.assessment.AssessmentLoggingAction;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.AssessmentEntryInspection;
 import org.olat.course.assessment.model.AssessmentInspectionConfigurationWithUsage;
@@ -57,6 +67,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +90,8 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private AssessmentInspectionDAO inspectionDao;
+	@Autowired
+	private ActivityLogService activityLogService;
 	@Autowired
 	private AssessmentInspectionLogDAO inspectionLogDao;
 	@Autowired
@@ -117,8 +130,10 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 				noShowInspection.setComment(comment);
 			}
 			inspectionLogDao.createLog(Action.noShow, null, comment, noShowInspection, null);
-			inspectionDao.updateInspection(noShowInspection);
+			AssessmentInspection updatedInspection = inspectionDao.updateInspection(noShowInspection);
 			dbInstance.commit();
+			
+			logLockActivity(updatedInspection, AssessmentLoggingAction.ASSESSMENT_INSPECTION_NO_SHOW, assessedIdentity, true);
 		}
 		dbInstance.commitAndCloseSession();
 	}
@@ -396,6 +411,9 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		
 		AssessmentInspection updatedInspection =  inspectionDao.updateInspection(inspection);
 		dbInstance.commit();
+		
+		logLockActivity(updatedInspection, AssessmentLoggingAction.ASSESSMENT_INSPECTION_START, assessedIdentity, false);
+		
 		return updatedInspection;
 	}
 	
@@ -438,6 +456,9 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	
 		AssessmentInspection updatedInspection = inspectionDao.updateInspection(inspection);
 		dbInstance.commit();
+		
+		logLockActivity(updatedInspection, AssessmentLoggingAction.ASSESSMENT_INSPECTION_END, doer, false);
+		
 		return updatedInspection;
 	}
 	
@@ -452,5 +473,20 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 		return inspectionLogDao.loadLogs(inspection, from, to);
 	}
 	
-	
+	private void logLockActivity(AssessmentInspection inspection, ILoggingAction action, Identity doer, boolean backgroundRequest) {
+		RepositoryEntry repositoryEntry = inspection.getConfiguration().getRepositoryEntry();
+		OLATResource resource = repositoryEntry.getOlatResource();
+		List<ContextEntry> bcContextEntries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+		String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+		
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(resource, OlatResourceableType.course, repositoryEntry.getDisplayname()));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(OresHelper
+				.createOLATResourceableInstance(AssessmentInspection.class, inspection.getKey()), OlatResourceableType.assessmentInspection, ""));
+		
+		Long identityKey = doer == null ? 0l : doer.getKey();
+		
+		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, AssessmentModeCoordinationService.class, backgroundRequest,
+				businessPath, bcContextEntries, loggingResourceableList);
+	}
 }

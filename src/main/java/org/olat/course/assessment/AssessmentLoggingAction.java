@@ -133,7 +133,11 @@ public class AssessmentLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction ASSESSMENT_INSPECTION_GUARD = 
 			new AssessmentLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.guard, ActionObject.assessmentinspection).setTypeList(
 					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentInspection));
-
+	public static final ILoggingAction ASSESSMENT_INSPECTION_NO_SHOW = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.noshow, ActionObject.assessmentinspection).setTypeList(
+					new ResourceableTypeList().addOptional(OlatResourceableType.course, OlatResourceableType.assessmentInspection));
+	
+	
 	public static final ILoggingAction DISADVANTAGE_COMPENSATION_ADD = 
 			new AssessmentLoggingAction(ActionType.tracking, CrudAction.create, ActionVerb.add, ActionObject.disadvantagecompensation).setTypeList(
 					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.targetIdentity));
@@ -144,6 +148,9 @@ public class AssessmentLoggingAction extends BaseLoggingAction {
 			new AssessmentLoggingAction(ActionType.tracking, CrudAction.create, ActionVerb.remove, ActionObject.disadvantagecompensation).setTypeList(
 					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.targetIdentity));
 
+	public static final ILoggingAction ASSESSMENT_TEST_PROLONGE = 
+			new AssessmentLoggingAction(ActionType.tracking, CrudAction.create, ActionVerb.prolonge, ActionObject.test).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.targetIdentity));
 
 	
 	/**

@@ -529,7 +529,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	private void doConfirmExtraTime(UserRequest ureq) {
 		List<AssessmentTestSession> testSessions = Collections.singletonList(lastSession);
-		extraTimeCtrl = new ConfirmExtraTimeController(ureq, getWindowControl(), courseEntry, testSessions);
+		extraTimeCtrl = new ConfirmExtraTimeController(ureq, getWindowControl(), courseEntry, courseNode, testSessions);
 		listenTo(extraTimeCtrl);
 
 		String title = translate("extra.time");

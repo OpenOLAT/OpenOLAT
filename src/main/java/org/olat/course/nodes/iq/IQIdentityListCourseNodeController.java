@@ -842,7 +842,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			return;
 		}
 		
-		extraTimeCtrl = new ConfirmExtraTimeController(ureq, getWindowControl(), getCourseRepositoryEntry(), testSessions);
+		extraTimeCtrl = new ConfirmExtraTimeController(ureq, getWindowControl(), getCourseRepositoryEntry(), courseNode, testSessions);
 		listenTo(extraTimeCtrl);
 
 		String title = translate("extra.time");
