@@ -405,12 +405,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		setAssessmentModeMessage(ureq);
 		updateFakeParticipantMessage(ureq);
+		
+		// For the moment only for lectures
+		if(currentToolCtr == lecturesCtrl) {
+			toolbarPanel.popController(currentToolCtr);
+			RunMainController run = toolControllerDone(ureq, null);
+			if(run != null) {
+				run.activate(ureq, List.of(), null);
+			}
+		}
 	}
 
 	private void loadRights() {
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		// 3) all other rights are defined in the groupmanagement using the learning
+		// 3) all other rights are defined in the group management using the learning
 		// group rights
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
@@ -2443,7 +2452,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				.withDetailsExam(!participant)
 				.withDetailsUnits(false)
 				.withDetailsExternalRef(true)
-				.withinCurriculums(false);
+				.withinCurriculums(false)
+				.showCourseParticipantViewWarning(reSecurity.getCurrentRole() == Role.fakeParticipant);
 		return config;
 	}
 	
