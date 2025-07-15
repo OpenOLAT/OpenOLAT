@@ -622,9 +622,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @return
 	 */
 	protected final boolean hasCopyDeletePermissions() {
-		return (reSecurity.isAdministrativeUser() && hasMatchingOrgRole())
-				||
-				(reSecurity.isEntryAdmin() && reSecurity.getWrappedSecurity().isAdministrativeUser() && hasMatchingOrgRole());
+		return reSecurity.getCurrentRole() != Role.fakeParticipant && reSecurity.getCurrentRole() != Role.participant
+				&& reSecurity.getCurrentRole() != Role.coach && reSecurity.getCurrentRole() != Role.masterCoach
+				&& reSecurity.getCurrentRole() != Role.principal
+				&& ((reSecurity.isAdministrativeUser() && hasMatchingOrgRole())
+						||
+						(reSecurity.isEntryAdmin() && reSecurity.getWrappedSecurity().isAdministrativeUser() && hasMatchingOrgRole()));
 	}
 
 	protected final boolean hasMatchingOrgRole() {
@@ -1233,9 +1236,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return new ACResultAndSecurity(acResult, security);
 	}
 	
-	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
+	private List<Offer> getOffersNowNotInRange(RepositoryEntry entry, Identity identity) {
 		List<? extends OrganisationRef> offerOrganisations = acService.getOfferOrganisations(identity);
-		return acService.getOffers(re, true, false, null, true, null, offerOrganisations);
+		return acService.getOffers(entry, true, false, null, true, null, offerOrganisations);
 	}
 	
 	protected boolean doMark(UserRequest ureq) {
