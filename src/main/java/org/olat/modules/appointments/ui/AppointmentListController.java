@@ -316,7 +316,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.participated"), AppointmentDataModel.FILTER_PARTICIPATED, participatedValues, true));
 		}
 		
-		if (filterConfig.contains(AppointmentDataModel.FILTER_OCCUPANCY_STATUS)) {
+		if (filterConfig.contains(AppointmentDataModel.FILTER_OCCUPANCY_STATUS) && Type.finding != topic.getType()) {
 			SelectionValues occupancyValues = new SelectionValues();
 			occupancyValues.add(SelectionValues.entry(FILTER_KEY_OCCUPANCY_FREE_SEATS_AVAILABLE, translate("filter.free.seats.available")));
 			occupancyValues.add(SelectionValues.entry(FILTER_KEY_OCCUPANCY_FULLY_BOOKED, translate("filter.fully.booked")));
@@ -356,7 +356,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			tabs.add(tabParticipated);
 		}
 		
-		if (filterConfig.contains(AppointmentDataModel.FILTER_OCCUPANCY_STATUS)) {
+		if (filterConfig.contains(AppointmentDataModel.FILTER_OCCUPANCY_STATUS) && Type.finding != topic.getType()) {
 			tabFullyBooked = FlexiFiltersTabFactory.tabWithImplicitFilters(
 					TAB_ID_FULLY_BOOKED,
 					translate("filter.fully.booked"),
