@@ -464,6 +464,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		copy.setRollCallStatus(LectureRollCallStatus.open);
 		copy.setEffectiveLecturesNumber(block.getEffectiveLecturesNumber());
 		copy.setPlannedLecturesNumber(block.getPlannedLecturesNumber());
+		copy.setCompulsory(block.isCompulsory());
 		copy.setStartDate(start);
 		copy.setEndDate(end);
 		if(persist) {
