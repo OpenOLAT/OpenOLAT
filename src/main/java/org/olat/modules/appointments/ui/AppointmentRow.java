@@ -55,6 +55,7 @@ public class AppointmentRow {
 	private Boolean showNumberOfParticipations;
 	private Integer numberOfParticipations;
 	private Integer freeParticipations;
+	private boolean fullyBooked;
 	private FormItem participationsEl;
 	private FormItem dayEl;
 	private String selectionCSS;
@@ -64,7 +65,6 @@ public class AppointmentRow {
 	private DropdownItem commandDropdown;
 	private String enrollmentDeadline;
 	private String enrollmentDeadlineCSS;
-	private Boolean fullyBookedByOthers;
 
 	public AppointmentRow(Appointment appointment) {
 		this.appointment = appointment;
@@ -214,6 +214,14 @@ public class AppointmentRow {
 		this.freeParticipations = freeParticipations;
 	}
 
+	public boolean isFullyBooked() {
+		return fullyBooked;
+	}
+
+	public void setFullyBooked(boolean fullyBooked) {
+		this.fullyBooked = fullyBooked;
+	}
+
 	public FormItem getParticipationsEl() {
 		return participationsEl;
 	}
@@ -297,12 +305,5 @@ public class AppointmentRow {
 	public void setEnrollmentDeadlineCSS(String enrollmentDeadlineCSS) {
 		this.enrollmentDeadlineCSS = enrollmentDeadlineCSS;
 	}
-
-	public Boolean getFullyBookedByOthers() {
-		return fullyBookedByOthers;
-	}
-
-	public void setFullyBookedByOthers(Boolean fullyBookedByOthers) {
-		this.fullyBookedByOthers = fullyBookedByOthers;
-	}
+	
 }

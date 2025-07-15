@@ -56,8 +56,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	private final static List<String> FILTERS = List.of(
 			AppointmentDataModel.FILTER_PARTICIPATED,
 			AppointmentDataModel.FILTER_OCCUPANCY_STATUS,
-			AppointmentDataModel.FILTER_FUTURE,
-			AppointmentDataModel.FILTER_FULLY_BOOKED
+			AppointmentDataModel.FILTER_FUTURE
 	);
 	private final static List<String> FILTERS_FINDING_DEFAULT = Collections.emptyList();
 	private final static List<String> FILTERS_ENROLLMENT_DEFAULT = FILTERS;
@@ -184,9 +183,9 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			row.setTranslatedStatus(translate("appointment.status." + appointment.getStatus().name()));
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
+		row.setFullyBooked(true);
 
 		if (Type.finding != topic.getType() && !selected && (confirmedByCoach || noFreePlace)) {
-			row.setFullyBookedByOthers(true);
 			return row;
 		}
 	
@@ -208,6 +207,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 					&& checkEnrollmentDeadline(appointment, now)
 					&& (freeParticipations == null || freeParticipations.intValue() > 0)) {
 				selectable = true;
+				row.setFullyBooked(false);
 			}
 			
 			boolean unselectable = selected && Appointment.Status.planned == appointment.getStatus();

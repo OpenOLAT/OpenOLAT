@@ -148,6 +148,7 @@ public class AppointmentListEditController extends AppointmentListController {
 				? maxParticipations.intValue() - participations.size()
 				: null;
 		row.setFreeParticipations(freeParticipations);
+		row.setFullyBooked(maxParticipations != null && freeParticipations != null && freeParticipations.intValue() < 1);
 		
 		String selectionCSS = "";
 		boolean showStatus = Type.finding == topic.getType()
