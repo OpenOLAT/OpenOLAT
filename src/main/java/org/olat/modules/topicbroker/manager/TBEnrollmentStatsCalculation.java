@@ -70,6 +70,9 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 		for (Identity identity : identities) {
 			TBParticipant participant = identityKeyToParticipant.get(identity.getKey());
 			int participantRequiredEnrollments = TBUIFactory.getRequiredEnrollments(broker, participant);
+			if (participantRequiredEnrollments == 0) {
+				fullyEnrolledParticipantKeys.add(participant.getKey());
+			}
 			int participantNumEnrollments = 0;
 			
 			List<TBSelection> identitySelections = identityKeyToSelections.getOrDefault(identity.getKey(), List.of());

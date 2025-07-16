@@ -47,6 +47,86 @@ import org.olat.modules.topicbroker.model.TBTransientTopic;
  *
  */
 public class DefaultEnrollmentProcessTest {
+	
+	@Test
+	public void shouldEvaluate_ensureNoEnrollmentIfNoneRequired() {
+		TBBroker broker = createBroker(3, 2);
+		
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		
+		TBTransientTopic topic = createTopic(1, 1, 6);
+		List<TBTopic> topics = List.of(topic);
+		
+		TBTransientSelection selection1 = createSelection(participant1, topic, 1, false);
+		List<TBSelection> selections = List.of(selection1);
+		
+		// Needs an enrollment
+		participant1.setRequiredEnrollments(1);
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		List<TBSelection> previewSelections = sut.getPreviewSelections();
+		
+		assertThat(previewSelections.get(0).isEnrolled()).isTrue();
+		
+		// Needs no enrollment
+		participant1.setRequiredEnrollments(0);
+		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		previewSelections = sut.getPreviewSelections();
+		
+		assertThat(previewSelections.get(0).isEnrolled()).isFalse();
+	}
+	
+	@Test
+	public void shouldEvaluate_ensureNoEnrollmentIfEnoughPreEnrollments() {
+		TBBroker broker = createBroker(3, 3);
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		
+		TBTransientTopic topic1 = createTopic(1, 1, 1);
+		TBTransientTopic topic2 = createTopic(2, 1, 1);
+		TBTransientTopic topic3 = createTopic(3, 1, 1);
+		List<TBTopic> topics = List.of(topic1, topic2, topic3);
+		
+		// 3 require, 3 selected
+		List<TBSelection> selections = List.of(
+				createSelection(participant1, topic1, 1, false),
+				createSelection(participant1, topic2, 2, false),
+				createSelection(participant1, topic3, 3, false));
+		
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		List<TBSelection> previewSelections = sut.getPreviewSelections();
+		
+		List<Long> enrolledTopicKeys = previewSelections.stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getTopic().getKey())
+				.toList();
+		assertThat(enrolledTopicKeys).containsExactlyInAnyOrder(topic1.getKey(), topic2.getKey(), topic3.getKey());
+		
+		// 2 require, 2 pre-selected
+		selections = List.of(
+				createSelection(participant1, topic1, 1, false),
+				createSelection(participant1, topic2, 2, true),
+				createSelection(participant1, topic3, 3, true));
+		
+		participant1.setRequiredEnrollments(2);
+		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		previewSelections = sut.getPreviewSelections();
+		
+		enrolledTopicKeys = previewSelections.stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getTopic().getKey())
+				.toList();
+		assertThat(enrolledTopicKeys).containsExactlyInAnyOrder(topic2.getKey(), topic3.getKey());
+		
+		// 1 require, 2 pre-selected
+		participant1.setRequiredEnrollments(1);
+		sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		previewSelections = sut.getPreviewSelections();
+		
+		enrolledTopicKeys = previewSelections.stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getTopic().getKey())
+				.toList();
+		assertThat(enrolledTopicKeys).containsExactlyInAnyOrder(topic2.getKey(), topic3.getKey());
+	}
 
 	@Test
 	public void shouldEvaluate_allParticipantsIn1Topic() {

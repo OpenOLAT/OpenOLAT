@@ -395,6 +395,15 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 				.computeIfAbsent(topicKeyPriority, key -> new ArrayList<>())
 				.add(matchingParticipant);
 		}
+		
+		// Participant may be fully enrolled if
+		//   - he has 0 required topics
+		//   - he has enough pre-enrolled topics
+		for (MatchingParticipant participant : participantKeyToMatchingParticipant.values()) {
+			if (participant.isMaxEnrollmentsReached()) {
+				participantKeysFullyEnrolled.add(participant.getKey());
+			}
+		}
 	}
 
 	private BigDecimal getPriorityCost(int costPriority) {
