@@ -298,7 +298,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		infos.setNumEnrollments(Integer.valueOf(participant.getNumEnrollments()));
 		infos.setNumEnrollmentsRequired(Integer.valueOf(participant.getRequiredEnrollments()));
 		infos.setPriority(Integer.valueOf(priority));
-		addActivity(TBAuditLog.Action.participantEnroll, participant.getKey(), topic.getKey(), null, infos);
+		addActivity(action, participant.getKey(), topic.getKey(), null, infos);
 
 		if (participant.isMaxEnrollmentsReached()) {
 			participantKeysFullyEnrolled.add(participant.getKey());
@@ -333,26 +333,33 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		List<TBSelection> selectionsWithoutExcludedTopics = new ArrayList<>();
 		Map<Long, List<TBSelection>> participantKeyToSelectionsWithoutExcludedTopics = new HashMap<>();
 		for (TBSelection selection : previewSelections) {
-			if (selection.isEnrolled()) {
-				// Already enrolled by the coach before the evaluation started
-				if (topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
+			if (!topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
+				TBSelection selectionToAdjustSortOrder;
+				if (selection.isEnrolled()) {
+					// Already enrolled by the coach before the evaluation started
+					MatchingParticipant participant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
+					enroll(participant, topicKeyToTopic.get(selection.getTopic().getKey()), 0, priorityCost, TBAuditLog.Action.participantPreEnrolled);
+					selectionToAdjustSortOrder = selection;
+				} else {
+					// Reset all other attributes
+					TBTransientSelection selectionCopy = TBTransientSelection.copyValuesOf(selection);
+					selectionCopy.setTopic(TBTransientTopic.copyKeyAndTitleOf(selection.getTopic()));
+					selectionCopy.setParticipant(selection.getParticipant());
+					selectionsWithoutExcludedTopics.add(selectionCopy);
+					selectionToAdjustSortOrder = selectionCopy;
+				}
+				participantKeyToSelectionsWithoutExcludedTopics
+						.computeIfAbsent(selection.getParticipant().getKey(), key -> new ArrayList<>())
+						.add(selectionToAdjustSortOrder);
+			} else {
+				if (selection.isEnrolled()) {
+					// Already enrolled by the coach before the evaluation started
 					ParticipantKeyTopicKey participantKeyTopicKey = new ParticipantKeyTopicKey(selection.getParticipant().getKey(), selection.getTopic().getKey());
 					if (!withdrawSelections.contains(participantKeyTopicKey)) {
 						withdrawSelections.add(participantKeyTopicKey);
 						addActivity(TBAuditLog.Action.participantWithdraw, participantKeyTopicKey.participantKey(), participantKeyTopicKey.topicKey(), null, null);
 					}
-				} else {
-					MatchingParticipant participant = participantKeyToMatchingParticipant.get(selection.getParticipant().getKey());
-					enroll(participant, topicKeyToTopic.get(selection.getTopic().getKey()), 0, priorityCost, TBAuditLog.Action.participantPreEnrolled);
 				}
-			} else if (!topicKeysMinNotReached.contains(selection.getTopic().getKey())) {
-				TBTransientSelection selectionCopy = TBTransientSelection.copyValuesOf(selection);
-				selectionCopy.setTopic(TBTransientTopic.copyKeyAndTitleOf(selection.getTopic()));
-				selectionCopy.setParticipant(selection.getParticipant());
-				selectionsWithoutExcludedTopics.add(selectionCopy);
-				participantKeyToSelectionsWithoutExcludedTopics
-					.computeIfAbsent(selection.getParticipant().getKey(), key -> new ArrayList<>())
-					.add(selectionCopy);
 			}
 		}
 		
@@ -507,6 +514,18 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 
 		public List<DateRange> getEnrolledPeriods() {
 			return enrolledPeriods;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("MatchingParticipant [");
+			if (key != null) {
+				builder.append("key=");
+				builder.append(key);
+			}
+			builder.append("]");
+			return builder.toString();
 		}
 		
 	}

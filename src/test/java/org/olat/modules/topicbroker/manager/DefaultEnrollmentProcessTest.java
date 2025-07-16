@@ -23,7 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.olat.admin.user.imp.TransientIdentity;
@@ -108,6 +112,72 @@ public class DefaultEnrollmentProcessTest {
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
 		assertThat(previewSelections.stream().filter(TBSelection::isEnrolled).count()).isEqualTo(2);
+	}
+	
+	@Test
+	public void shouldEvaluate_ensureShuffle() {
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		TBTransientParticipant participant2 = createParticipant(2, null);
+		
+		TBBroker broker = createBroker(1, 1);
+		TBTransientTopic topic1 = createTopic(1, 1, 1);
+		List<TBTopic> topics = List.of(topic1);
+		TBTransientSelection selection11 = createSelection(participant1, topic1, 1, false);
+		TBTransientSelection selection21 = createSelection(participant2, topic1, 1, false);
+		List<TBSelection> selections = List.of(selection11, selection21);
+		
+		Set<Long> participantKeysEnrolled = new HashSet<>(2);
+		for (int i = 0; i < 100; i++) {
+			Long participantKey = getParticipantKey_ensureShuffle(broker, topics, selections);
+			participantKeysEnrolled.add(participantKey);
+		}
+		assertThat(participantKeysEnrolled).containsExactlyInAnyOrder(participant1.getKey(), participant2.getKey());
+	}
+	
+	private Long getParticipantKey_ensureShuffle(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections) {
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		return sut.getPreviewSelections().stream()
+				.filter(TBSelection::isEnrolled)
+				.map(selection -> selection.getParticipant().getKey())
+				.toList()
+				.get(0);
+	}
+	
+	@Test
+	public void shouldEvaluate_ensureShuffleSamePriorities() {
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		TBTransientParticipant participant2 = createParticipant(2, null);
+		TBTransientParticipant participant3 = createParticipant(3, null);
+		
+		TBBroker broker = createBroker(2, 1);
+		TBTransientTopic topic1 = createTopic(1, 1, 1);
+		TBTransientTopic topic2 = createTopic(2, 1, 1);
+		List<TBTopic> topics = List.of(topic1, topic2);
+		TBTransientSelection selection11 = createSelection(participant1, topic1, 1, false);
+		TBTransientSelection selection12 = createSelection(participant1, topic2, 2, false);
+		TBTransientSelection selection21 = createSelection(participant2, topic1, 1, false);
+		TBTransientSelection selection22 = createSelection(participant2, topic2, 2, false);
+		TBTransientSelection selection31 = createSelection(participant3, topic2, 1, false);
+		TBTransientSelection selection32 = createSelection(participant3, topic2, 2, false);
+		List<TBSelection> selections = List.of(selection11, selection12, selection21, selection22, selection31, selection32);
+		
+		Set<Long> participantKeysEnrolled = new HashSet<>(2);
+		for (int i = 0; i < 100; i++) {
+			Long participantKey = getParticipantKey_ensureShuffleSamePriority(broker, topics, selections, topic1.getKey());
+			participantKeysEnrolled.add(participantKey);
+		}
+		// participant1 or participant2 gets topic 1 (shuffle) but never participant3
+		assertThat(participantKeysEnrolled).containsExactlyInAnyOrder(participant1.getKey(), participant2.getKey());
+	}
+	
+	private Long getParticipantKey_ensureShuffleSamePriority(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections, Long topic1Key) {
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		return sut.getPreviewSelections().stream()
+				.filter(TBSelection::isEnrolled)
+				.filter(selection -> selection.getTopic().getKey().equals(topic1Key))
+				.map(selection -> selection.getParticipant().getKey())
+				.toList()
+				.get(0);
 	}
 
 	@Test
@@ -245,41 +315,76 @@ public class DefaultEnrollmentProcessTest {
 	}
 	
 	@Test
-	public void shouldEvaluate_ensurePreEnrollmentHasHigherPriorityThanPriority() {
-		TBBroker broker = createBroker(3, 1);
+	public void shouldEvaluate_ensurePreEnrollmentConsumesBudget() {
+		TBBroker broker = createBroker(2, 2);
+		TBTransientParticipant participant1 = createParticipant(1, null);
+		TBTransientParticipant participant2 = createParticipant(2, null);
+		
+		// Every topic has only one seat
+		TBTransientTopic topic1 = createTopic(1, 1, 1);
+		TBTransientTopic topic2 = createTopic(2, 1, 1);
+		List<TBTopic> topics = List.of(topic1, topic2);
+		
+		TBTransientSelection selection11 = createSelection(participant1, topic1, 1, true);
+		TBTransientSelection selection12 = createSelection(participant1, topic2, 2, false);
+		TBTransientSelection selection21 = createSelection(participant2, topic1, 1, false);
+		TBTransientSelection selection22 = createSelection(participant2, topic2, 2, false);
+		List<TBSelection> selections = List.of(selection11, selection12, selection21, selection22);
+		
+		Set<Long> participantKeysEnrolled = new HashSet<>(1);
+		for (int i = 0; i < 100; i++) {
+			Long participantKey = getParticipantKey_ensurePreEnrollmentConsumesBudget(broker, topics, selections, topic2.getKey());
+			participantKeysEnrolled.add(participantKey);
+		}
+		assertThat(participantKeysEnrolled).containsExactlyInAnyOrder(participant2.getKey());
+	}
+
+	private Long getParticipantKey_ensurePreEnrollmentConsumesBudget(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections, Long topic2Key) {
+		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
+		return sut.getPreviewSelections().stream()
+				.filter(TBSelection::isEnrolled)
+				.filter(selection -> selection.getTopic().getKey().equals(topic2Key))
+				.map(selection -> selection.getParticipant().getKey())
+				.toList()
+				.get(0);
+	}
+	
+	@Test
+	public void shouldEvaluate_ensureBudgetHasHigherPriorityIfSamePriority() {
+		TBBroker broker = createBroker(3, 2);
 		TBTransientParticipant participant1 = createParticipant(1, null);
 		TBTransientParticipant participant2 = createParticipant(2, null);
 		TBTransientParticipant participant3 = createParticipant(3, null);
 		
-		TBTransientTopic topic1 = createTopic(1, 1, 6);
-		Long topic1Key = topic1.getKey();
-		TBTransientTopic topic2 = createTopic(2, 1, 6);
-		Long topic2Key = topic2.getKey();
-		List<TBTopic> topics = List.of(topic1, topic2);
+		// Every topic has only one seat
+		TBTransientTopic topic1 = createTopic(1, 1, 1);
+		TBTransientTopic topic2 = createTopic(2, 1, 1);
+		TBTransientTopic topic3 = createTopic(3, 1, 1);
+		TBTransientTopic topic4 = createTopic(4, 1, 1);
+		List<TBTopic> topics = List.of(topic1, topic2, topic3, topic4);
 		
-		// Too low priority
-		TBTransientSelection selection1 = createSelection(participant1, topic1, 1, false);
-		TBTransientSelection selection2 = createSelection(participant2, topic1, 1, false);
-		TBTransientSelection selection31 = createSelection(participant3, topic1, 1, false);
-		// Enrollment has only priority 2
-		TBTransientSelection selection32 = createSelection(participant3, topic2, 2, true);
-		List<TBSelection> selections = List.of(selection1, selection2, selection31, selection32);
+		// participant1 gets topic1 because pre enrolled.
+		// participant2 gets topic2 because priority 1.
+		// participant3 (not participant1) must get topic3 because is has more budget left than participant1.
+		TBTransientSelection selection11 = createSelection(participant1, topic1, 1, true);
+		TBTransientSelection selection12 = createSelection(participant1, topic2, 2, false);
+		TBTransientSelection selection13 = createSelection(participant1, topic3, 3, false);
+		TBTransientSelection selection21 = createSelection(participant2, topic1, 1, false);
+		TBTransientSelection selection22 = createSelection(participant2, topic2, 2, false);
+		TBTransientSelection selection23 = createSelection(participant2, topic3, 3, false);
+		TBTransientSelection selection31 = createSelection(participant3, topic2, 1, false);
+		List<TBSelection> selections = List.of(selection11, selection12, selection13, selection21, selection22,
+				selection23, selection31);
 		
 		DefaultEnrollmentProcess sut = new DefaultEnrollmentProcess(broker, topics, selections);
 		List<TBSelection> previewSelections = sut.getPreviewSelections();
 		
-		List<Long> enrolledParticipantKeys1 = previewSelections.stream()
+		Map<Long, Long> participantKeyToTopicKey = previewSelections.stream()
 				.filter(TBSelection::isEnrolled)
-				.filter(selection -> selection.getTopic().getKey().equals(topic1Key))
-				.map(selection -> selection.getParticipant().getKey())
-				.toList();
-		assertThat(enrolledParticipantKeys1).containsExactlyInAnyOrder(participant1.getKey(), participant2.getKey());
-		List<Long> enrolledParticipantKeys2 = previewSelections.stream()
-				.filter(TBSelection::isEnrolled)
-				.filter(selection -> selection.getTopic().getKey().equals(topic2Key))
-				.map(selection -> selection.getParticipant().getKey())
-				.toList();
-		assertThat(enrolledParticipantKeys2).containsExactlyInAnyOrder(participant3.getKey());
+				.collect(Collectors.toMap(selection -> selection.getParticipant().getKey(), selection -> selection.getTopic().getKey()));
+		assertThat(participantKeyToTopicKey.get(participant1.getKey())).isEqualTo(topic1.getKey());
+		assertThat(participantKeyToTopicKey.get(participant2.getKey())).isEqualTo(topic3.getKey());
+		assertThat(participantKeyToTopicKey.get(participant3.getKey())).isEqualTo(topic2.getKey());
 	}
 	
 	@Test
