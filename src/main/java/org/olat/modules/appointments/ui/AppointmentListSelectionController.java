@@ -184,13 +184,13 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 			row.setStatusCSS("o_ap_status_" + appointment.getStatus().name());
 		}
 		row.setFullyBooked(true);
-
-		if (Type.finding != topic.getType() && !selected && (confirmedByCoach || noFreePlace)) {
-			return row;
-		}
-	
+		
 		if (isParticipationVisible()) {
 			forgeParticipants(row, participations);
+		}
+		
+		if (Type.finding != topic.getType() && !selected && (confirmedByCoach || noFreePlace)) {
+			return row;
 		}
 		
 		Integer numberOfParticipations = Integer.valueOf(participations.size());
