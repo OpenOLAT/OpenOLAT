@@ -3876,8 +3876,8 @@ public class CourseElementTest extends Deployments {
 		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
 		participantAppointment
 			.assertOnTopicMultipleMeetings(topicTitle, 3)
-			.assertOnSelectAppointmentByPosition(1)
-			.selectAppointmentByPosition(1);
+			.assertOnSelectAppointmentByPosition(2)
+			.selectAppointmentByPosition(2);
 		
 		// author confirm the participant's appointment
 		course
@@ -3896,7 +3896,7 @@ public class CourseElementTest extends Deployments {
 		
 		participantAppointment
 			.selectTopicAsParticipant(topicTitle)
-			.assertOnConfirmedAppointmentByPosition(1);
+			.assertOnConfirmedAppointmentByPosition(2);
 	}
 	
 
