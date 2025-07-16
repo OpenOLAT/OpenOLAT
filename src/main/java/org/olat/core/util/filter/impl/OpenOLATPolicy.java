@@ -279,7 +279,7 @@ public class OpenOLATPolicy {
 		
 		.allowElements("dd","tbody","dl","caption","hr","div","dt","ul","init","blockquote","pre","em","figcaption","sub",
 				"strong","img","thead","h1","h2","h3","h4","h5","h6","sup","ol","table","b","figure","strike","i","p",
-				"tfoot","td","s","th","u","li","tr", "span", "video", "audio",
+				"tfoot","td","s","th","u","li","tr", "span", "video", "audio", "code",
 				//QTI
 				"textentryinteraction","hottext","inlinechoiceinteraction","inlinechoice")
 		
