@@ -244,7 +244,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		updateBrokerStatusUI();
 		
 		if (broker.isParticipantCanEditRequiredEnrollments()) {
-			maxEnrollmentsLink = uifactory.addFormLink("selection.individual.enrollments.change", formLayout, Link.BUTTON);
+			maxEnrollmentsLink = uifactory.addFormLink("selection.individual.enrollments.edit", formLayout, Link.BUTTON);
+			maxEnrollmentsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			maxEnrollmentsLink.setGhost(true);
 			
 			updateMaxEnrollmentsEnabledUI();
@@ -1133,7 +1134,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		maxEnrollmentsCtrl = new TBMaxEnrollmentsController(ureq, getWindowControl(), participant);
 		listenTo(maxEnrollmentsCtrl);
 
-		String title = translate("selection.individual.enrollments.change");
+		String title = translate("selection.individual.enrollments.edit");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				maxEnrollmentsCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
