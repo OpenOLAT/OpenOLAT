@@ -355,10 +355,12 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 				moveLink = addLink("move.organisation", "o_icon_move", links);
 			}
 			newLink = addLink("add.organisation.under", "o_icon_levels", links);
-			if(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.delete)) {
-				links.add("-");
-				deleteLink = addLink("delete", "o_icon_delete_item", links);
-			}
+			
+			// Delete action is temporary disabled until the delete process is completely redefined.
+//			if(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.delete)) {
+//				links.add("-");
+//				deleteLink = addLink("delete", "o_icon_delete_item", links);
+//			}
 			mainVC.contextPut("links", links);
 			
 			putInitialPanel(mainVC);
