@@ -566,6 +566,7 @@ public class TBParticipantListController extends FormBasicController implements 
 				&& broker.getSelectionEndDate() != null && broker.getSelectionEndDate().before(new Date());
 		enrollmentManualStartLink.setEnabled(enrollmentManual);
 		enrollmentManualStartLink.setPrimary(enrollmentManual);
+		enrollmentManualStartLink.setVisible(broker.getEnrollmentStartDate() == null && broker.getEnrollmentDoneDate() == null);
 	}
 	
 	private void updateBrokerConfigUI() {
