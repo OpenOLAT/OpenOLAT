@@ -69,7 +69,7 @@ public class RepositoryEntryMyImplementationsQueries {
 			) and (
 			  exists (select membership.key from bgroupmember as membership
 			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
-			  and membership.role=:role
+			  and membership.role in (:roles)
 			 )
 			 or exists (select reservation.key from resourcereservation as reservation
 			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
@@ -81,7 +81,7 @@ public class RepositoryEntryMyImplementationsQueries {
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("role", GroupRoles.participant.name())
+				.setParameter("roles", List.of(GroupRoles.participant.name(), GroupRoles.coach.name()))
 				.getResultList();
 
 		List<CurriculumElement> implementations;
