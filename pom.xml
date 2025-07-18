@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.2.8</org.springframework.version>
+		<org.springframework.version>6.2.9</org.springframework.version>
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -82,10 +82,10 @@
 		<swagger.ui.version>5.26.2</swagger.ui.version>
 		<com.mysql.version>9.3.0</com.mysql.version>
 		<org.postgresql.version>42.7.7</org.postgresql.version>
-		<org.infinispan.version>15.2.4.Final</org.infinispan.version>
+		<org.infinispan.version>15.2.5.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.34.0</version.selenium>
-		<activemq.artemis.version>2.41.0</activemq.artemis.version>
+		<activemq.artemis.version>2.42.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.45.0</version>
+			<version>6.46.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2175,7 +2175,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.21.0</version>
+			<version>1.22.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2342,7 +2342,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.21.0</version>
+			<version>3.22.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
