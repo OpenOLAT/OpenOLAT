@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti21.ui.statistics;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,7 +40,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ArchiveOptions;
@@ -148,15 +146,6 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, result);
 		rootTreeNode.openNode();
 		treeModel.setRootNode(rootTreeNode);
-		
-		TreeNode subRootNode = result.getSubTreeModel().getRootNode();
-		List<INode> subNodes = new ArrayList<>();
-		for(int i=0; i<subRootNode.getChildCount(); i++) {
-			subNodes.add(subRootNode.getChildAt(i));
-		}
-		for(INode subNode:subNodes) {
-			rootTreeNode.addChild(subNode);
-		}
 		return treeModel;
 	}
 
