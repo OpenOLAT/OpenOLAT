@@ -252,7 +252,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v4-"
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v5-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
 		
 		initFilterPresets();

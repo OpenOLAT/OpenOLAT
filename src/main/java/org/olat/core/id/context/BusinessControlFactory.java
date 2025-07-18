@@ -42,6 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -275,7 +276,7 @@ public class BusinessControlFactory {
 	}
 	
 	public BusinessControl createFromString(String businessControlString) {
-		final List<ContextEntry> ces = createCEListFromString(businessControlString);
+		final List<ContextEntry> ces = createCEListFromString(businessControlString, Level.DEBUG);
 		if (ces.isEmpty() || ces.get(0) ==null) {
 			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is {}",
 					businessControlString, new Exception("stacktrace"));
@@ -387,6 +388,10 @@ public class BusinessControlFactory {
 	 * @return
 	 */
 	public List<ContextEntry> createCEListFromString(String businessControlString) {
+		return createCEListFromString(businessControlString, Level.WARN);
+	}
+	
+	public List<ContextEntry> createCEListFromString(String businessControlString, Level level) {
 		List<ContextEntry> entries = new ArrayList<>();
 		if(!StringHelper.containsNonWhitespace(businessControlString)) {
 			return entries;
@@ -417,7 +422,7 @@ public class BusinessControlFactory {
 					}
 					ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, key);
 				} catch (NumberFormatException e) {
-					log.warn("Cannot parse business path:{}", businessControlString, e);
+					log.log(level, "Cannot parse business path:{}", businessControlString, e);
 					return entries;//return what we decoded
 				}
 			}
