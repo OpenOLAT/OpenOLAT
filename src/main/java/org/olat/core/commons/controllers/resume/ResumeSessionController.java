@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.olat.NewControllerFactory;
 import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.landingpages.model.Rules;
@@ -362,7 +363,7 @@ public class ResumeSessionController extends BasicController {
 	private String getRESTRedirectURL(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
 		String url = (String)usess.getEntry("AuthDispatcher:businessPath");
-		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(url);
+		List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(url, Level.DEBUG);
 		return BusinessControlFactory.getInstance().getAsRestPart(ces, true);
 	}
 	
