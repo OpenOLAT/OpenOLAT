@@ -127,6 +127,8 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 			case detailsSmall: return catalogEntryRow;
 			case start: return catalogEntryRow.getStartLink();
 			case startSmall: return catalogEntryRow.getStartLink();
+			case certificate: return catalogEntryRow.isCertificate();
+			case creditPoints: return catalogEntryRow.getCreditPointAmount();
 		}
 		return null;
 	}
@@ -152,7 +154,9 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 		details("table.header.learn.more"),
 		detailsSmall("table.header.learn.more"),
 		start("table.header.start"),
-		startSmall("table.header.start");
+		startSmall("table.header.start"),
+		certificate("table.header.certificate"),
+		creditPoints("table.header.credit.points");
 		
 		private final String i18nHeaderKey;
 		

@@ -30,6 +30,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
+import org.olat.modules.catalog.model.RepositoryEntryInfos;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -81,6 +82,7 @@ public class CatalogRobotsProvider implements RobotsProvider, SitemapProvider {
 			searchParams.setWebPublish(true);
 			List<SitemapItem> items = queries.loadRepositoryEntries(searchParams)
 					.stream()
+					.map(RepositoryEntryInfos::entry)
 					.map(this::toSitemapItem)
 					.collect(Collectors.toList());
 			

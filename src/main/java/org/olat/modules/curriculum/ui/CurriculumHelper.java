@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -108,6 +109,34 @@ public class CurriculumHelper {
 					el.setErrorKey("input.toolong", Integer.toString(maxLength));
 					return false;
 				}
+			}
+		}
+		return true;
+	}
+	
+	public static boolean validateIntegerElement(TextElement el, boolean mandatory) {
+		if (el != null) {
+			el.clearError();
+			if(el.isVisible() && el.isEnabled()) {
+				String val = el.getValue();
+				if (mandatory && !StringHelper.containsNonWhitespace(val)) {
+					el.setErrorKey("form.legende.mandatory");
+					return false;
+				} else if (StringHelper.containsNonWhitespace(val) && !StringHelper.isLong(val)) {
+					el.setErrorKey("form.error.positive.integer");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	public static boolean validateElement(SingleSelection el) {
+		if (el != null) {
+			el.clearError();
+			if(el.isVisible() && el.isEnabled() &&!el.isOneSelected()) {
+				el.setErrorKey("form.legende.mandatory");
+				return false;
 			}
 		}
 		return true;

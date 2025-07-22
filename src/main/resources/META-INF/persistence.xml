@@ -233,6 +233,12 @@
 		<class>org.olat.modules.cemedia.model.MediaToGroupRelationImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToPagePartImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
+		<class>org.olat.modules.creditpoint.model.CreditPointSystemImpl</class>
+		<class>org.olat.modules.creditpoint.model.CreditPointWalletImpl</class>
+		<class>org.olat.modules.creditpoint.model.CreditPointTransactionImpl</class>
+		<class>org.olat.modules.creditpoint.model.CreditPointTransactionDetailsImpl</class>
+		<class>org.olat.modules.creditpoint.model.CurriculumElementCreditPointConfigurationImpl</class>
+		<class>org.olat.modules.creditpoint.model.RepositoryEntryCreditPointConfigurationImpl</class>
 		<class>org.olat.upgrade.model.UpgradeMedia</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>

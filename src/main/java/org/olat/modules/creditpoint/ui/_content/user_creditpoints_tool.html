@@ -1,0 +1,7 @@
+<ul class="o_dropdown list-unstyled">	
+	<li>$r.render("details.transaction")</li>
+	#if($r.available("cancel.transaction"))
+		<li class="divider"></li>
+		<li>$r.render("cancel.transaction")</li>
+	#end
+</ul>

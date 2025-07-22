@@ -14,9 +14,12 @@
 			$r.render("description")
 		</div>
 	#end
-	<div class="o_repo_meta o_repo_info_panel #if($hasDescription) o_repo_column #end">
+	<div class=" #if($hasDescription) o_repo_column #end">
+		#if($r.available("benefits"))
+			$r.render("benefits")
+		#end
 		$r.render("metadata")
-	</div>	
+	</div>
 	<div class="o_repo_footer #if($hasDescription) o_repo_column #end">
 		$r.render("link")
 		#if($r.available("comments"))

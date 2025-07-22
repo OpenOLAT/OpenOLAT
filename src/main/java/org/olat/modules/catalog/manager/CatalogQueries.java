@@ -30,9 +30,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
+import org.olat.modules.catalog.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumStatus;
-import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,18 +53,20 @@ public class CatalogQueries {
 	@Autowired
 	private AccessControlModule acModule;
 
-	public List<RepositoryEntry> loadRepositoryEntries(CatalogEntrySearchParams searchParams) {
+	public List<RepositoryEntryInfos> loadRepositoryEntries(CatalogEntrySearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select v");
-		sb.append(" from repositoryentry as v");
-		sb.append(" inner join fetch v.olatResource as res");
-		sb.append("  left join fetch v.lifecycle as lifecycle");
-		sb.append("  left join fetch v.educationalType as educationalType");
+		sb.append("select new org.olat.modules.catalog.model.RepositoryEntryInfos(v, cerconfig, cpconfig)")
+		  .append(" from repositoryentry as v")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" left join fetch v.educationalType as educationalType")
+		  .append(" left join certificateentryconfig as cerconfig on (cerconfig.entry.key=v.key)")
+		  .append(" left join creditpointrepositoryentry as cpconfig on (cpconfig.repositoryEntry.key=v.key)");
 		AddParams addParams = new AddParams();
 		appendWhereRE(searchParams, sb, addParams);
 
-		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntry.class)
+		TypedQuery<RepositoryEntryInfos> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryInfos.class)
 				.setFlushMode(FlushModeType.COMMIT);
 		appendParamsRE(searchParams, query, addParams);
 

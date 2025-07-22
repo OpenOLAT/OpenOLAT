@@ -135,6 +135,11 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="c_show_lectures", nullable=true, insertable=true, updatable=true)
 	private boolean showLectures;
 	
+	@Column(name="c_show_certificate", nullable=true, insertable=true, updatable=true)
+	private boolean showCertificateBenefit;
+	@Column(name="c_show_creditpoints", nullable=true, insertable=true, updatable=true)
+	private boolean showCreditPointsBenefit;
+	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	private String status;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -483,6 +488,26 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setShowLectures(boolean showLectures) {
 		this.showLectures = showLectures;
+	}
+
+	@Override
+	public boolean isShowCertificateBenefit() {
+		return showCertificateBenefit;
+	}
+
+	@Override
+	public void setShowCertificateBenefit(boolean showCertificateBenefit) {
+		this.showCertificateBenefit = showCertificateBenefit;
+	}
+
+	@Override
+	public boolean isShowCreditPointsBenefit() {
+		return showCreditPointsBenefit;
+	}
+
+	@Override
+	public void setShowCreditPointsBenefit(boolean showCreditPointsBenefit) {
+		this.showCreditPointsBenefit = showCreditPointsBenefit;
 	}
 
 	@Override

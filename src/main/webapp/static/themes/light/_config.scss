@@ -1673,6 +1673,10 @@ $o-edu-type-lecture-course-color			: o-a11y-color($o-cn-style-cat-light-green-co
 $o-edu-type-blendedlearning-course-color	: o-a11y-color($o-cn-style-cat-yellow-color)  !default;
 $o-edu-type-selfstudy-course-color			: o-a11y-color($o-cn-style-cat-dark-green-color)  !default;
 
+/* Course benefits */
+$o-entry-benefit-border-color 				: o-a11y-color($o-cn-style-cat-dark-blue-color) !default;
+$o-entry-benefit-color 						: o-a11y-color($o-cn-style-cat-dark-blue-color)  !default;
+
 /* Export area */
 $o-export-area-meta-color					: #777;
 $o-export-area-rowelem-space-md				: 10px !default;
@@ -1829,6 +1833,10 @@ $o-tb-weighting-heigth						: 200px !default;
 $o-tb-weighting-legend-width					: 100px !default;
 $o-tb-weighting-grid-border					: 1px solid $panel-default-border !default;
 $o-tb-weighting-label-padding				: 1em !default;
+
+/* Credit point */
+$o-cp-deposit-color							: $brand-success;
+$o-cp-withdraw-color						: $brand-danger;
 
 
 /* Course node selection */

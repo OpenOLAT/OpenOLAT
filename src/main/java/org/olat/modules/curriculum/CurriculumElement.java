@@ -132,6 +132,14 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 
 	void setShowLectures(boolean showLectures);
 	
+	boolean isShowCertificateBenefit();
+
+	void setShowCertificateBenefit(boolean showCertificateBenefit);
+
+	boolean isShowCreditPointsBenefit();
+
+	void setShowCreditPointsBenefit(boolean showCreditPointsBenefit);
+	
 	public CurriculumElementStatus getElementStatus();
 	
 	

@@ -67,6 +67,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private CurriculumElementInfosOutlineController outlineCtrl;
 	private CurriculumElementInfoTaughtByController taughtByCtrl;
 	private CurriculumElementInfosOverviewController overviewCtrl;
+	private CurriculumElementInfosBenefitsController benefitsCtrl;
 	private LectureBlocksTimelineController lectureBlocksCtrl;
 
 	private final CurriculumElement element;
@@ -167,6 +168,12 @@ public class CurriculumElementInfosController extends BasicController {
 				mainVC.put("taughtby", taughtByCtrl.getInitialComponent());
 				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
 			}
+		}
+		
+		if(element.isShowCertificateBenefit() || element.isShowCreditPointsBenefit()) {
+			benefitsCtrl = new CurriculumElementInfosBenefitsController(ureq, getWindowControl(), element);
+			listenTo(benefitsCtrl);
+			mainVC.put("benefits", benefitsCtrl.getInitialComponent());
 		}
 		
 		// Overview and lecture blocks	

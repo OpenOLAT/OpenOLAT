@@ -146,20 +146,23 @@
 		.o_repo_column {
 			grid-column-start: span 1;
 		}
-		.o_repo_meta {
-			&.o_repo_column {
-				min-width: 300px;
-				max-width: 450px;
-				margin-top: 20px; // Align with description title
-				margin-left: 60px;
-				column-count: 1;
-				.o_subcolumn {
-					width: auto;
-				}
+		.o_repo_column:has(.o_repo_meta) {
+			min-width: 300px;
+			max-width: 450px;
+			margin-top: 20px; // Align with description title
+			margin-left: 60px;
+			
+		}
+		
+		.o_repo_column .o_repo_meta {
+			column-count: 1;
+			.o_subcolumn {
+				width: auto;
 			}
-			.o_tag.o_taxonomy {
-				max-width: 100%;
-			}
+		}
+			
+		.o_repo_meta .o_tag.o_taxonomy {
+			max-width: 100%;
 		}
 	}
 
@@ -183,6 +186,10 @@
 	border-radius: $o-coursesite-sidecol-radius;
 	background: $o-coursesite-sidecol-bg;
 	padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
+}
+
+.o_repo_info_panel > .o_repo_info_panel {
+	background: white;
 }
 
 .o_license_info {
@@ -216,6 +223,27 @@
 	margin: 15px 15px 15px 0;
 	display: inline-block;
 }
+.o_benefits {
+	margin: 15px 0;
+	
+	h4.o_benefit, h5.o_benefit {
+		display: grid;
+		grid-template-columns: 36px 1fr;
+		
+		> i {
+			align-self: center;
+		}
+		> small {
+			grid-column-start: 2;
+			margin-top: 3px;
+		}
+	}
+	
+	h5.o_benefit {
+		font-size: 1.25em;
+	}
+}
+
 .o_re_access_denied {
 	display: flex;
 	flex-direction: column;

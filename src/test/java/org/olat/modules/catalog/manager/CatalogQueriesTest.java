@@ -40,6 +40,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
+import org.olat.modules.catalog.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -102,7 +103,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntries() {
 		TestCatalogItem catalogItem = createCatalogItem(true);
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 	}
 	@Test
 	public void shouldLoadRepositoryEntries_exclude_private() {
@@ -112,7 +113,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -126,7 +127,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -137,7 +138,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setOfferOrganisations(List.of(organisation));
 		
-		assertThat(sut.loadRepositoryEntries(searchParams)).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -145,23 +146,23 @@ public class CatalogQueriesTest extends OlatTestCase {
 		TestCatalogItem catalogItem = createCatalogItem(true);
 		
 		setOfferValid(catalogItem, null, null);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, -2, 2);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, -2, null);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, null, 2);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, 1, 1);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, 2, 4);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, -4, -2);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, 2, null);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		setOfferValid(catalogItem, null, -2);
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -172,31 +173,31 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.preparation);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.review);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.closed);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.trash);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.deleted);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -207,31 +208,31 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.preparation);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.review);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.closed);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.trash);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.deleted);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -244,7 +245,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -258,7 +259,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -268,14 +269,14 @@ public class CatalogQueriesTest extends OlatTestCase {
 		acService.enableMethod(FreeAccessMethod.class, false);
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
 	public void shouldLoadRepositoryEntriesOpenAccess() {
 		TestCatalogItem catalogItem = createOpenAccessCatalogItem();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -286,7 +287,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -296,7 +297,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setWebPublish(true);
 		
-		assertThat(sut.loadRepositoryEntries(searchParams)).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		acService.getOffers(catalogItem.getRepositoryEntry(), true, false, null, false, null, null).stream()
 		.forEach(offer -> {
@@ -305,7 +306,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(searchParams)).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -317,7 +318,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setOfferOrganisations(List.of(organisation));
 		
-		assertThat(sut.loadRepositoryEntries(searchParams)).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(searchParams)).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -328,31 +329,31 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.preparation);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.review);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.published);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).contains(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).contains(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.closed);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.trash);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 		
 		repositoryManager.setStatus(catalogItem.getRepositoryEntry(), RepositoryEntryStatusEnum.deleted);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 	
 	@Test
@@ -365,14 +366,14 @@ public class CatalogQueriesTest extends OlatTestCase {
 				});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).doesNotContain(catalogItem.getRepositoryEntry());
+		assertThat(sut.loadRepositoryEntries(catalogItem.getSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(catalogItem.getRepositoryEntry());
 	}
 
 	@Test
 	public void shouldLoadRepositoryEntriesForGuests() {
 		RepositoryEntry repositoryEntry = createRepositoryEntryForGuest();
 		
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).contains(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).contains(repositoryEntry);
 	}
 	
 	@Test
@@ -383,7 +384,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				false, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 	}
 	
 	@Test
@@ -392,32 +393,32 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.preparation);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.review);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.coachpublished);
 		dbInstance.commitAndCloseSession();
-		List<RepositoryEntry> repositoryEntries = sut.loadRepositoryEntries(createGuestSearchParams());
-		assertThat(repositoryEntries).doesNotContain(repositoryEntry);
+		List<RepositoryEntryInfos> repositoryEntries = sut.loadRepositoryEntries(createGuestSearchParams());
+		assertThat(repositoryEntries).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.published);
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).contains(repositoryEntry);
-		assertThat(repositoryEntries).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).contains(repositoryEntry);
+		assertThat(repositoryEntries).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.closed);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.trash);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 		
 		repositoryManager.setStatus(repositoryEntry, RepositoryEntryStatusEnum.deleted);
 		dbInstance.commitAndCloseSession();
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 	}
 	
 	@Test
@@ -430,7 +431,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 	}
 	
 	@Test
@@ -444,7 +445,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				});
 		dbInstance.commitAndCloseSession();
 		
-		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).doesNotContain(repositoryEntry);
+		assertThat(sut.loadRepositoryEntries(createGuestSearchParams())).map(RepositoryEntryInfos::entry).doesNotContain(repositoryEntry);
 	}
 	
 	@Test
@@ -453,6 +454,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1),
@@ -462,6 +464,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 				catalogItem.getRepositoryEntry(0).getOlatResource().getKey(),
 				catalogItem.getRepositoryEntry(1).getOlatResource().getKey()));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1));
@@ -476,11 +479,13 @@ public class CatalogQueriesTest extends OlatTestCase {
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setLauncherResourceTypes(List.of(resourceType0));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0));
 		
 		searchParams.setLauncherResourceTypes(List.of(resourceType0, resourceType1));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1));
@@ -500,11 +505,13 @@ public class CatalogQueriesTest extends OlatTestCase {
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setLauncherEducationalTypeKeys(List.of(educationalType1.getKey()));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0));
 		
 		searchParams.setLauncherEducationalTypeKeys(List.of(educationalType1.getKey(), educationalType2.getKey()));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1));
@@ -528,6 +535,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setLauncherTaxonomyLevels(List.of(taxonomyLevel1));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1),
@@ -536,6 +544,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		searchParams.setLauncherTaxonomyLevels(List.of(taxonomyLevel1, taxonomyLevel2));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1),
@@ -544,6 +553,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 		
 		searchParams.setLauncherTaxonomyLevels(List.of(taxonomyLevel2));
 		assertThat(sut.loadRepositoryEntries(searchParams))
+				.map(RepositoryEntryInfos::entry)
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(1),
 						catalogItem.getRepositoryEntry(3));

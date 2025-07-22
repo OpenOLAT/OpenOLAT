@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -42,11 +45,16 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.creditpoint.CreditPointModule;
+import org.olat.modules.creditpoint.CreditPointService;
+import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -75,7 +83,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private static final Set<String> videoMimeTypes = Set.of("video/mp4");
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
-
+	
+	private static final String CERTIFICATE_KEY = "certificate";
+	private static final String CREDIT_POINTS_KEY = "creditpoints";
+	
 	private TextElement teaserEl;
 	private FileElement imageEl;
 	private RichTextElement descriptionEl;
@@ -85,6 +96,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private TextElement expenditureOfWorkEl;
 	private FormToggle showOutlineEl;
 	private FormToggle showLecturesEl;
+	private MultipleSelectionElement showBenefitsEl;
+	private TextElement creditPointsEl;
+	private SingleSelection creditPointSystemEl;
+	private FormLayoutContainer creditPointCont;
 	private RichTextElement objectivesEl;
 	private RichTextElement requirementsEl;
 	private RichTextElement creditsEl;
@@ -92,7 +107,9 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	
 	private CurriculumElement element;
 	private final boolean isRootElement;
+	private final List<CreditPointSystem> systems;
 	private final CurriculumSecurityCallback secCallback;
+	private CurriculumElementCreditPointConfiguration creditPointConfig;
 	private VFSContainer mediaContainer;
 	
 	@Autowired
@@ -101,6 +118,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CreditPointModule creditPointModule;
+	@Autowired
+	private CreditPointService creditPointService;
 
 	public EditCurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			CurriculumSecurityCallback secCallback) {
@@ -109,6 +130,8 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		this.element = element;
 		this.isRootElement = element.getParent() == null;
 		this.secCallback = secCallback;
+		creditPointConfig = creditPointService.getConfiguration(element);
+		systems = creditPointService.getCreditPointSystems();
 		
 		mediaContainer = curriculumService.getMediaContainer(element);
 		if (mediaContainer != null && mediaContainer.getName().equals("media")) {
@@ -189,6 +212,36 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			showLecturesEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showLectures));
 			showLecturesEl.toggle(element == null || element.isShowLectures());
 			
+			SelectionValues benefitsPK = new SelectionValues();
+			benefitsPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("curriculum.element.show.benefits.certificate")));
+			benefitsPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("curriculum.element.show.benefits.creditpoints")));
+			showBenefitsEl = uifactory.addCheckboxesVertical("show.benefits", "curriculum.element.show.benefits", formLayout,
+					benefitsPK.keys(), benefitsPK.values(), 1);
+			showBenefitsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.all));
+			boolean showCertificate = element !=null && element.isShowCertificateBenefit();
+			showBenefitsEl.select(CERTIFICATE_KEY, showCertificate);
+			boolean showCreditPoints = element != null && element.isShowCreditPointsBenefit();
+			showBenefitsEl.select(CREDIT_POINTS_KEY, showCreditPoints);
+			
+			// Credit points
+			creditPointCont = uifactory.addInlineFormLayout("curriculum.element.credit.points", "curriculum.element.credit.points", formLayout);
+			String points = creditPointConfig == null || creditPointConfig.getCreditPoints() == null
+					? null
+					: creditPointConfig.getCreditPoints().toString();
+			creditPointsEl = uifactory.addTextElement("credit.points", null, 6, points, creditPointCont);
+			
+			SelectionValues systemPK = new SelectionValues();
+			for(CreditPointSystem system:systems) {
+				systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName() + " " + system.getLabel()));
+			}
+			creditPointSystemEl = uifactory.addDropdownSingleselect("credit.point.system", null, creditPointCont,
+					systemPK.keys(), systemPK.values());
+			if(creditPointConfig != null && creditPointConfig.getCreditPointSystem() != null
+					&& systemPK.containsKey(creditPointConfig.getCreditPointSystem().getKey().toString())) {
+				creditPointSystemEl.select(creditPointConfig.getCreditPointSystem().getKey().toString(), true);
+			}
+			creditPointCont.setVisible(creditPointModule.isEnabled());
+			
 			uifactory.addSpacerElement("spacer2", formLayout, false);
 			
 			String obj = element.getObjectives() != null ? element.getObjectives() : "";
@@ -252,6 +305,11 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		allOk &= CurriculumHelper.validateTextElement(requirementsEl, false, 2000);
 		allOk &= CurriculumHelper.validateTextElement(creditsEl, false, 2000);
 		
+		if(creditPointCont.isVisible()) {
+			allOk &= CurriculumHelper.validateIntegerElement(creditPointsEl, false);
+			allOk &= CurriculumHelper.validateElement(creditPointSystemEl);
+		}
+		
 		return allOk;
 	}
 
@@ -301,11 +359,18 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element.setExpenditureOfWork(expenditureOfWorkEl.getValue());
 			element.setShowOutline(showOutlineEl.isOn());
 			element.setShowLectures(showLecturesEl.isOn());
+			Collection<String> selectedBenefits = showBenefitsEl.getSelectedKeys();
+			element.setShowCertificateBenefit(selectedBenefits.contains(CERTIFICATE_KEY));
+			element.setShowCreditPointsBenefit(selectedBenefits.contains(CREDIT_POINTS_KEY));
 			element.setObjectives(objectivesEl.getValue());
 			element.setRequirements(requirementsEl.getValue());
 			element.setCredits(creditsEl.getValue());
 			element.setTaughtBys(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()));
 			element = curriculumService.updateCurriculumElement(element);
+		}
+		
+		if(creditPointCont.isVisible()) {
+			commitCreditPointConfiguration();
 		}
 		
 		if (imageEl.getUploadFile() != null) {
@@ -324,6 +389,29 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		
 		element = curriculumService.getCurriculumElement(element);
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void commitCreditPointConfiguration() {
+		creditPointConfig = creditPointService.getConfiguration(element);
+		if(StringHelper.containsNonWhitespace(creditPointsEl.getValue()) && creditPointSystemEl.isOneSelected()) {
+			creditPointConfig.setEnabled(true);
+			creditPointConfig.setCreditPoints(new BigDecimal(creditPointsEl.getValue()));
+			CreditPointSystem system = getSelectedCreditPointSystem();
+			creditPointConfig.setCreditPointSystem(system);
+		} else {
+			creditPointConfig.setEnabled(false);
+			creditPointConfig.setCreditPoints(null);
+			creditPointConfig.setCreditPointSystem(null);
+		}
+		creditPointConfig = creditPointService.updateConfiguration(creditPointConfig);
+	}
+	
+	private CreditPointSystem getSelectedCreditPointSystem() {
+		if(!creditPointSystemEl.isOneSelected()) return null;
+		String selectedKey = creditPointSystemEl.getSelectedKey();
+		return systems.stream()
+				.filter(sys -> selectedKey.equals(sys.getKey().toString()))
+				.findFirst().orElse(null);
 	}
 	
 	private Map<TaughtBy, Integer> getTaughtByCounts() {

@@ -101,6 +101,7 @@ import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.filter.LifecyclePublicHandler;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
+import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
@@ -220,6 +221,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
 	@Autowired
+	private CreditPointModule creditPointModule;
+	@Autowired
 	private LoginModule loginModule;
 	@Autowired
 	private I18nModule i18nModule;
@@ -309,6 +312,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.educationalType, new EducationalTypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.taxonomyLevels, new TaxonomyLevelRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.offers));
+		if(creditPointModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.creditPoints));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.certificate,
+				new CertificateEnabledRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.availability, new ParticipantsAvailabilityRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.detailsSmall,
 				new StaticFlexiCellRenderer(translate("learn.more"), CMD_DETAILS, "btn btn-xs btn-default o_details tablecell", null, null)));

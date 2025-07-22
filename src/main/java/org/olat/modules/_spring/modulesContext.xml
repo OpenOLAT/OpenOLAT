@@ -15,6 +15,7 @@
 	<import resource="classpath:/org/olat/modules/catalog/_spring/catalogContext.xml"/>
 	<import resource="classpath:/org/olat/modules/coach/_spring/coachContext.xml"/>
 	<import resource="classpath:/org/olat/modules/curriculum/_spring/curriculumContext.xml"/>
+	<import resource="classpath:/org/olat/modules/creditpoint/_spring/creditpointContext.xml"/>
 	<import resource="classpath:/org/olat/modules/grade/_spring/gradeContext.xml"/>
 	<import resource="classpath:/org/olat/modules/grading/_spring/gradingContext.xml"/>
 	<import resource="classpath:/org/olat/modules/lecture/_spring/lectureContext.xml"/>

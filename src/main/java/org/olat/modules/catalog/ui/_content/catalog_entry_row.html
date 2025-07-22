@@ -33,6 +33,17 @@
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
 		</span>
 		#end
+		#if(${row.isCertificate()})
+		<span class="o_with_certificate o_flex_item_fix">
+			<span>$r.translate("with.certificate")</span>
+		</span>
+		#end
+		#if($r.isNotEmpty($row.creditPointAmount))
+		<span class="o_with_creditpoint o_flex_item_fix">
+			<span>+ $r.escapeHtml($row.creditPointAmount)</span>
+		</span>
+		#end
+		
 		#if($row.authors && !$row.authors.empty)
 			<div class="o_author o_flex_item_max"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
 		#end

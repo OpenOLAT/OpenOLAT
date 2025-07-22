@@ -49,6 +49,14 @@ public enum PriceAmountFormat {
 	public String getDisplayString() {
 		return displayString;
 	}
+	
+	public char groupingSeparator() {
+		return groupingSeparator;
+	}
+	
+	public char decimalSeparator() {
+		return decimalSeparator;
+	}
 
 	public String format(BigDecimal amount) {
 		DecimalFormat decimalFormat = new DecimalFormat("#,##0.00", new DecimalFormatSymbols(Locale.ENGLISH));

@@ -36,7 +36,6 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -70,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogLauncherCatalogEntryController extends BasicController implements Controller {
+public class CatalogLauncherCatalogEntryController extends BasicController {
 	
 	public static final int PREFERRED_NUMBER_CARDS = 15;
 	private static final String[] SWIPER_JS = new String[] { "js/swiper/swiper-bundle.min.js" };
@@ -165,6 +164,8 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 	private void appendMetadata(LauncherItem item, CatalogEntry entry) {
 		item.setKey(entry.getOlatResource().getKey());
 		item.setEducationalType(entry.getEducationalType());
+		item.setCertificate(entry.isHasCertificate());
+		item.setCreditPointAmount(entry.getCreditPointAmount());
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
 		}
@@ -298,6 +299,8 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 		private String thumbnailRelPath;
 		private List<TaxonomyLevelNamePath> taxonomyLevels;
 		private Link displayNameLink;
+		private boolean certificate;
+		private String creditPointAmount;
 		
 		public Long getKey() {
 			return key;
@@ -389,6 +392,22 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 
 		public void setEducationalTypeName(String educationalTypeName) {
 			this.educationalTypeName = educationalTypeName;
+		}
+
+		public boolean isCertificate() {
+			return certificate;
+		}
+
+		public void setCertificate(boolean certificate) {
+			this.certificate = certificate;
+		}
+
+		public String getCreditPointAmount() {
+			return creditPointAmount;
+		}
+
+		public void setCreditPointAmount(String creditPointAmount) {
+			this.creditPointAmount = creditPointAmount;
 		}
 
 		public String getThumbnailRelPath() {

@@ -84,6 +84,11 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.creditpoint.CreditPointService;
+import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointTransactionType;
+import org.olat.modules.creditpoint.CreditPointWallet;
+import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
@@ -113,6 +118,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CreditPointService creditPointService;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -475,7 +482,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		nodeAssessment.setAssessmentStatus(status);
 		nodeAssessment.setFullyAssessed(fullyAssessed);
 		
-		assessmentService.updateAssessmentEntry(nodeAssessment);
+		nodeAssessment = assessmentService.updateAssessmentEntry(nodeAssessment);
 		DBFactory.getInstance().commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
@@ -485,6 +492,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment);
 		awardBadge(userCourseEnvironment, nodeAssessment.getCoach());
+		transfertCreditPoint(userCourseEnvironment, nodeAssessment);
 	}
 
 	@Override
@@ -621,6 +629,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		updateUserEfficiencyStatement(userCourseEnv);
 		generateCertificate(userCourseEnv);
 		awardBadge(userCourseEnv, assessmentEntry.getCoach());
+		transfertCreditPoint(userCourseEnv, assessmentEntry);
 	}
 	
 	@Override
@@ -669,6 +678,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
+		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
 
 		return assessmentEntry.getPassedOverridable();
 	}
@@ -709,6 +719,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
+		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
 
 		return assessmentEntry.getPassedOverridable();
 	}
@@ -793,6 +804,28 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 						.withSendEmailIdentityRelations(true)
 						.build();
 				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, config);
+			}
+		}
+	}
+	
+	private void transfertCreditPoint(UserCourseEnvironment userCourseEnvironment, AssessmentEntry rootEntry) {
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
+		RepositoryEntryCreditPointConfiguration config = creditPointService.getConfiguration(courseEntry);
+		if (config != null && config.isEnabled()) {
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+			AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
+			int currentRun = ((AssessmentEntryImpl)rootEntry).getRun();
+			if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
+					&& creditPointService.isTransfertAllowed(assessedIdentity, courseEntry.getOlatResource(), currentRun)) {
+				
+				BigDecimal amount = config.getCreditPoints();
+				CreditPointSystem system = config.getCreditPointSystem();
+				CreditPointWallet wallet = creditPointService.getOrCreateWallet(assessedIdentity, system);
+				Date expirationDate = creditPointService.calculateExpirationDate(config.getExpiration(), config.getExpirationType(), new Date(), system);
+				creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, amount, expirationDate,
+						"", wallet, null, cgm.getCourseResource(), currentRun, null, null, null);
 			}
 		}
 	}
