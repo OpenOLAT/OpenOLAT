@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -45,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
@@ -56,10 +58,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressRadialCellRenderer;
-import org.olat.core.gui.components.stack.PopEvent;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -79,15 +77,15 @@ import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
 import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
+import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.ui.author.AccessRenderer;
+import org.olat.repository.ui.author.TechnicalTypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,6 +125,10 @@ public class CourseListController extends FormBasicController implements Activat
 	protected static final String VISIT_LESS_12_MONTHS = "less-12-months";
 	protected static final String VISIT_MORE_12_MONTS = "more-12-months";
 	
+	private static final String CMD_SELECT = "select";
+	private static final String CMD_ASSESSMENT = "assessment";
+	private static final String CMD_INFOS = "infos";
+	
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
 	private static final String FINISHED_TAB_ID = "Finished";
@@ -135,13 +137,10 @@ public class CourseListController extends FormBasicController implements Activat
 	private FlexiFiltersTab allTab;
 	private FlexiTableElement tableEl;
 	private CoursesTableDataModel tableModel;
-	private final TooledStackedPanel stackPanel;
 
 	private int counter = 0;
-	private boolean hasChanged = false;
 	
 	private ToolsController toolsCtrl;
-	private CourseController courseCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	@Autowired
@@ -150,13 +149,9 @@ public class CourseListController extends FormBasicController implements Activat
 	private MarkManager markManager;
 	@Autowired
 	private CoachingService coachingService;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	
-	public CourseListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
+	public CourseListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
-		this.stackPanel = stackPanel;
-		stackPanel.addListener(this);
 
 		initForm(ureq);
 		loadModel();
@@ -170,15 +165,18 @@ public class CourseListController extends FormBasicController implements Activat
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
 		markColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(markColumn);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.key, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.externalId, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.externalRef, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.key));
+		DefaultFlexiColumnModel technicalTypeCol = new DefaultFlexiColumnModel(false, Columns.technicalType);
+		technicalTypeCol.setCellRenderer(new TechnicalTypeRenderer());
+		columnsModel.addFlexiColumnModel(technicalTypeCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.externalId, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.externalRef, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleStart,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleEnd,
 				new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.access,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.access,
 				new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.participants));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.participantsVisited));
@@ -186,13 +184,31 @@ public class CourseListController extends FormBasicController implements Activat
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastVisit,
 				new LastVisitCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion,
-				new ProgressRadialCellRenderer(BarColor.success)));
+				new CompletionCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.successStatus,
 				new SuccessStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusPassed));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusNotPassed));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusUndefined));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.averageScore,
 				new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificates));
 		
+		// Assessment tool
+		DefaultFlexiColumnModel assessmentToolCol = new DefaultFlexiColumnModel(Columns.assessmentTool, CMD_ASSESSMENT,
+				new StaticFlexiCellRenderer("", CMD_ASSESSMENT, null, "o_icon-lg o_icon_assessment_tool", translate("table.header.assessment.tool")));
+		assessmentToolCol.setExportable(false);
+		assessmentToolCol.setIconHeader("o_icon o_icon-lg o_icon_assessment_tool");
+		columnsModel.addFlexiColumnModel(assessmentToolCol);
+		
+		// Infos
+		DefaultFlexiColumnModel infosCol = new DefaultFlexiColumnModel(Columns.infos, CMD_INFOS,
+				new StaticFlexiCellRenderer("", CMD_INFOS, null, "o_icon-lg o_icon_details", translate("table.header.infos")));
+		infosCol.setExportable(false);
+		infosCol.setIconHeader("o_icon o_icon-lg o_icon_details");
+		columnsModel.addFlexiColumnModel(infosCol);
+		
+		// Tools
         ActionsColumnModel actionsCol = new ActionsColumnModel(ParticipantCols.tools);
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
@@ -203,7 +219,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3");
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.2");
 		
 		initFilters();
 		initFiltersPresets(ureq);
@@ -332,30 +348,6 @@ public class CourseListController extends FormBasicController implements Activat
 		return row;
 	}
 	
-	private void reloadModel() {
-		if(hasChanged) {
-			loadModel();
-			hasChanged = false;
-		}
-	}
-	
-	@Override
-	protected void doDispose() {
-		stackPanel.removeListener(this);
-        super.doDispose();
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(source == stackPanel) {
-			if(event instanceof PopEvent pe
-					&& pe.getController() == courseCtrl && hasChanged) {
-				reloadModel();
-			}
-		}
-		super.event(ureq, source, event);
-	}
-	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
@@ -365,9 +357,15 @@ public class CourseListController extends FormBasicController implements Activat
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
-				if("select".equals(se.getCommand())) {
+				if(CMD_SELECT.equals(se.getCommand())) {
 					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
-					selectCourse(ureq, courseStat);
+					doOpenCourse(ureq, courseStat);
+				} else if(CMD_ASSESSMENT.equals(se.getCommand())) {
+					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
+					doOpenAssessmentTool(ureq, courseStat);
+				} else if(CMD_INFOS.equals(se.getCommand())) {
+					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
+					doOpenCourseInfos(ureq, courseStat);
 				} else if(ActionsCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
 					String targetId = ActionsCellRenderer.getId(se.getIndex());
 					CourseStatEntryRow selectedRow = tableModel.getObject(se.getIndex());
@@ -392,19 +390,16 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == courseCtrl) {
-			if(event == Event.CHANGED_EVENT) {
-				hasChanged = true;
-			} else if("next.course".equals(event.getCommand())) {
-				nextCourse(ureq);
-			} else if("previous.course".equals(event.getCommand())) {
-				previousCourse(ureq);
-			}
-		} else if(toolsCtrl == source) {
+		if(toolsCtrl == source) {
 			calloutCtrl.deactivate();
 			cleanUp();
 		} else if(calloutCtrl == source) {
         	cleanUp();
+        } else if(toolsCtrl == source) {
+        	if(event == Event.CLOSE_EVENT) {
+        		calloutCtrl.deactivate();
+        		cleanUp();
+        	}
         }
 		super.event(ureq, source, event);
 	}
@@ -416,64 +411,25 @@ public class CourseListController extends FormBasicController implements Activat
 		toolsCtrl = null;
 	}
 
-	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		ContextEntry ce = entries.get(0);
-		OLATResourceable ores = ce.getOLATResourceable();
-		if("RepositoryEntry".equalsIgnoreCase(ores.getResourceableTypeName())) {
-			Long repoKey = ores.getResourceableId();
-			for(int i=tableModel.getRowCount(); i-->0; ) {
-				CourseStatEntryRow courseStat = tableModel.getObject(i);
-				if(repoKey.equals(courseStat.getRepoKey())) {
-					selectCourse(ureq, courseStat);
-					if(courseCtrl != null) {
-						courseCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
-					}
-					break;
-				}
-			}
-		}
+		//
 	}
 	
-	private void previousCourse(UserRequest ureq) {
-		CourseStatEntryRow currentEntry = courseCtrl.getEntry();
-		int previousIndex = tableModel.getIndexOfObject(currentEntry) - 1;
-		if(previousIndex < 0 || previousIndex >= tableModel.getRowCount()) {
-			previousIndex = tableModel.getRowCount() - 1;
-		}
-		CourseStatEntryRow previousEntry = tableModel.getObject(previousIndex);
-		selectCourse(ureq, previousEntry);
+	private void doOpenCourse(UserRequest ureq, CourseStatEntryRow courseStat) {
+		String businessPath = "[RepositoryEntry:" + courseStat.getRepoKey() +"]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void nextCourse(UserRequest ureq) {
-		CourseStatEntryRow currentEntry = courseCtrl.getEntry();
-		int nextIndex = tableModel.getIndexOfObject(currentEntry) + 1;
-		if(nextIndex < 0 || nextIndex >= tableModel.getRowCount()) {
-			nextIndex = 0;
-		}
-		CourseStatEntryRow nextEntry = tableModel.getObject(nextIndex);
-		selectCourse(ureq, nextEntry);
+	private void doOpenAssessmentTool(UserRequest ureq, CourseStatEntryRow courseStat) {
+		String businessPath = "[RepositoryEntry:" + courseStat.getRepoKey() +"][assessmentToolv2:0][Overview:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void selectCourse(UserRequest ureq, CourseStatEntryRow courseStat) {
-		removeAsListenerAndDispose(courseCtrl);
-		courseCtrl = null;
-		
-		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseStat.getRepoKey(), false);
-		if(re != null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, re.getKey());
-			WindowControl bwControl = addToHistory(ureq, ores, null);
-			
-			int index = tableModel.getIndexOfObject(courseStat);
-			courseCtrl = new CourseController(ureq, bwControl, stackPanel, re, courseStat, index, tableModel.getRowCount());
-			listenTo(courseCtrl);
-			stackPanel.pushController(re.getDisplayname(), courseCtrl);
-		}
+	private void doOpenCourseInfos(UserRequest ureq, CourseStatEntryRow courseStat) {
+		String businessPath = "[RepositoryEntry:" + courseStat.getRepoKey() +"][Infos:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
 	
 	private boolean doMark(UserRequest ureq, CourseStatEntryRow row) {
 		OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepoKey());
@@ -510,15 +466,27 @@ public class CourseListController extends FormBasicController implements Activat
 	
 	private class ToolsController extends BasicController {
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, CourseStatEntryRow entry) {
+		private final Link infosLink;
+		private final Link assessmentToolLink;
+		
+		private final CourseStatEntryRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, CourseStatEntryRow row) {
 			super(ureq, wControl);
+			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tool_courses");
 			
+			assessmentToolLink = LinkFactory.createLink("assessment.tool", "assessment.tool", "assessment", mainVC, this);
+			assessmentToolLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_tool");
+			
+			infosLink = LinkFactory.createLink("infos", "infos", "infos", mainVC, this);
+			infosLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+			
 			String url = BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getRepoKey() + "]");
+					.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + row.getRepoKey() + "]");
 			ExternalLink openCourseLink = LinkFactory.createExternalLink("open.course", translate("open.course"), url);
-			openCourseLink.setIconLeftCSS("o_icon o_icon_content_popup");
+			openCourseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_content_popup");
 			openCourseLink.setName(translate("open.course"));
 			mainVC.put("open.course", openCourseLink);
 			
@@ -527,7 +495,13 @@ public class CourseListController extends FormBasicController implements Activat
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			//
+			if(assessmentToolLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doOpenAssessmentTool(ureq, row);
+			} else if(infosLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doOpenCourseInfos(ureq, row);
+			}
 		}
 	}
 }

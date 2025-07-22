@@ -644,7 +644,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(configuration.isTools()) {
 			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
 					new StaticFlexiCellRenderer("", "details",  null, "o_icon-lg o_icon_details", translate("details")));
-			detailsColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_details");
+			detailsColumn.setIconHeader("o_icon o_icon-lg o_icon_details");
 			detailsColumn.setHeaderLabel(translate("details"));
 			detailsColumn.setAlwaysVisible(true);
 			detailsColumn.setExportable(false);

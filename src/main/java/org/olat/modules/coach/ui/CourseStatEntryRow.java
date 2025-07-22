@@ -60,6 +60,10 @@ public class CourseStatEntryRow {
 		return entry.getRepoDisplayName();
 	}
 	
+	public String getRepoTechnicalType() {
+		return entry.getRepoTechnicalType();
+	}
+	
 	public String getRepoExternalId() {
 		return entry.getRepoExternalId();
 	}
@@ -98,6 +102,18 @@ public class CourseStatEntryRow {
 
 	public SuccessStatus getSuccessStatus() {
 		return entry.getSuccessStatus();
+	}
+	
+	public Long getStatusPassed() {
+		return entry.getSuccessStatus() == null ? null : entry.getSuccessStatus().numPassed();
+	}
+	
+	public Long getStatusNotPassed() {
+		return entry.getSuccessStatus() == null ? null : entry.getSuccessStatus().numFailed();
+	}
+	
+	public Long getStatusUndefined() {
+		return entry.getSuccessStatus() == null ? null : entry.getSuccessStatus().numUndefined();
 	}
 
 	public Double getAverageScore() {

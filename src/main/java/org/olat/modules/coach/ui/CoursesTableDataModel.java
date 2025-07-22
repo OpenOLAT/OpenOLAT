@@ -278,6 +278,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		return switch(COLS[col]) {
 			case key -> row.getRepoKey();
 			case mark -> row.getMarkLink();
+			case technicalType -> row.getRepoTechnicalType();
 			case name -> row.getRepoDisplayName();
 			case externalId -> row.getRepoExternalId();
 			case externalRef -> row.getRepoExternalRef();
@@ -290,6 +291,9 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case lastVisit -> row.getLastVisit();
 			case completion -> row.getAverageCompletion();
 			case successStatus -> row.getSuccessStatus();
+			case statusPassed -> row.getStatusPassed();
+			case statusNotPassed -> row.getStatusNotPassed();
+			case statusUndefined -> row.getStatusUndefined();
 			case averageScore -> row.getAverageScore();
 			case certificates -> row.getCertificates().numOfCoursesWithCertificates() > 0
 					? row.getCertificates().numOfCertificates() : "";
@@ -307,6 +311,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	public enum Columns implements FlexiSortableColumnDef {
 		key("table.header.course.key"),
 		mark("table.header.mark"),
+		technicalType("table.header.technical.type"),
 		name("table.header.course.title"),
 		externalId("table.header.course.externalId"),
 		externalRef("table.header.course.externalRef"),
@@ -319,8 +324,13 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		lastVisit("table.header.last.visit"),
 		completion("table.header.completion"),
 		successStatus("table.header.success.status"),
+		statusPassed("table.header.status.passed"),
+		statusNotPassed("table.header.status.not.passed"),
+		statusUndefined("table.header.status.undefined"),
 		averageScore("table.header.averageScore"),
 		certificates("table.header.certificates"),
+		assessmentTool("table.header.assessment.tool"),
+		infos("table.header.infos"),
 		tools("action.more");
 		
 		private final String i18nKey;

@@ -461,7 +461,7 @@ public class CoachingDAO {
 	
 	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach) {
 		QueryBuilder sb = new QueryBuilder(1024);
-		sb.append("select v.key, lifecycle.key, v.displayname, v.externalId, v.externalRef, v.status,")
+		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
 		  .append("  lifecycle.validFrom, lifecycle.validTo")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
@@ -492,11 +492,12 @@ public class CoachingDAO {
 				CourseStatEntry entry = new CourseStatEntry();
 				entry.setRepoKey(key);
 				entry.setRepoDisplayName((String)rawStat[2]);
-				entry.setRepoExternalId((String)rawStat[3]);
-				entry.setRepoExternalRef((String)rawStat[4]);
-				entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[5]));
-				entry.setLifecycleStartDate((Date)rawStat[6]);
-				entry.setLifecycleEndDate((Date)rawStat[7]);
+				entry.setRepoTechnicalType((String)rawStat[3]);
+				entry.setRepoExternalId((String)rawStat[4]);
+				entry.setRepoExternalRef((String)rawStat[5]);
+				entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[6]));
+				entry.setLifecycleStartDate((Date)rawStat[7]);
+				entry.setLifecycleEndDate((Date)rawStat[8]);
 				return entry;
 			});
 		}
