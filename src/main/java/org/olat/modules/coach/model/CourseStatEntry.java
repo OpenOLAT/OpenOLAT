@@ -41,6 +41,7 @@ public class CourseStatEntry {
 	private String repoDisplayName;
 	private String repoExternalId;
 	private String repoExternalRef;
+	private String repoTechnicalType;
 	private RepositoryEntryStatusEnum status;
 	private Date lifecycleStartDate;
 	private Date lifecycleEndDate;
@@ -93,7 +94,15 @@ public class CourseStatEntry {
 	public void setRepoDisplayName(String repoDisplayName) {
 		this.repoDisplayName = repoDisplayName;
 	}
-	
+
+	public String getRepoTechnicalType() {
+		return repoTechnicalType;
+	}
+
+	public void setRepoTechnicalType(String repoTechnicalType) {
+		this.repoTechnicalType = repoTechnicalType;
+	}
+
 	public String getRepoExternalId() {
 		return repoExternalId;
 	}

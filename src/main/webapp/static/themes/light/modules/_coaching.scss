@@ -33,12 +33,20 @@
 
 .o_coaching_status {
 	display: grid;
-	grid-template-columns: 140px auto;
+	grid-template-columns: 100px auto;
 	column-gap: 0.5em;
 	
 	.o_coaching_numbers {
 		white-space: nowrap;
 	}
+	
+	.progress {
+		max-width: 100px;
+	}
+}
+
+.o_coaching_completion {
+	white-space: nowrap;
 }
 
 .o_eff_statement_details .o_user_infos {
