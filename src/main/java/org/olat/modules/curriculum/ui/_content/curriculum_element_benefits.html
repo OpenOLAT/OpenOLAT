@@ -1,0 +1,17 @@
+<div class="o_benefits o_repo_info_panel">
+	<h4>$r.translate("details.benefits")</h4>
+	<div class="o_repo_info_panel">
+	#if($r.isTrue($hasCreditPoints))
+		<div>
+			<h5 class="o_benefit"><i class="o_icon o_icon-lg o_icon_coins"> </i> #if($r.isNotEmpty($amount)) $r.escapeHtml($amount) #else $r.translate("details.benefits.credit.points")#end
+			#if($r.isNotEmpty($pointsValidity)) <small>$pointsValidity</small>#end</h5>
+		</div>
+	#end
+	
+	#if($r.isTrue($hasCertificate))
+		<div>
+			<h5 class="o_benefit"><i class="o_icon o_icon_certificate"> </i> $r.translate("details.benefits.certificate")</h5>
+		</div>
+	#end
+	</div>
+</div>

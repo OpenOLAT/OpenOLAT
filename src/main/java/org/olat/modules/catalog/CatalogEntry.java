@@ -84,6 +84,10 @@ public interface CatalogEntry {
 	
 	Set<TaxonomyLevel> getTaxonomyLevels();
 	
+	boolean isHasCertificate();
+
+	String getCreditPointAmount();
+	
 	boolean isMember();
 	
 	boolean isReservationAvailable();

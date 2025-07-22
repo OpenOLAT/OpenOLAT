@@ -1,0 +1,14 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("edit"))
+		<li>$r.render("edit")</li>
+	#end
+	#if($r.available("inactivate"))
+		<li>$r.render("inactivate")</li>
+	#elseif($r.available("reactivate")) 
+		<li>$r.render("reactivate")</li>
+	#end
+	#if($r.available("delete"))
+		<li class="divider"></li>
+		<li>$r.render("delete")</li>
+	#end
+</ul>

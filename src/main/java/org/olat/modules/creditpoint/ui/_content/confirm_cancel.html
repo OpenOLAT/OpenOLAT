@@ -1,0 +1,7 @@
+<div class="o_sel_creditpoint_confirm_cancel">
+	<div class="o_info_with_icon">$infosMsg</div>
+	#if($r.isNotEmpty($warningMsg))
+		<div class="o_warning_with_icon">$warningMsg</div>
+	#end
+	$r.render("content")
+</div>

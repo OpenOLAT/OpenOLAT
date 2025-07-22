@@ -1,0 +1,20 @@
+<fieldset class="o_creditpoint_user_overview">
+	<legend>$systemUnit</legend>
+	#if($r.available("add.transaction") || $r.available("remove.transaction"))
+	<div class="o_button_group o_button_group_right">
+		#if($r.available("remove.transaction"))
+			$r.render("remove.transaction")
+		#end
+		#if($r.available("add.transaction"))
+			$r.render("add.transaction")
+		#end
+	</div>
+	#end
+	<div class="o_block_bottom">
+		$r.render("widgets")
+	</div>
+</fieldset>
+<fieldset class="o_creditpoint_user_transactions">
+	<legend>$r.translate("transactions")</legend>
+	$r.render("table")
+</fieldset>

@@ -1,0 +1,16 @@
+.o_creditpoint_amount_debit {
+	color: $o-cp-withdraw-color;
+}
+
+.o_creditpoint_amount_credit {
+	color: $o-cp-deposit-color;
+}
+
+.o_creditpoint_user_overview .o_widgets {
+	grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+	gap: 30px;
+	
+	.o_widget {
+		max-width: 50%;
+	}
+}

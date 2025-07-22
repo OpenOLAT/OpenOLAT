@@ -370,6 +370,10 @@
 			background: $o-coursesite-rowelem-bg;
 		}
 		
+		.o_benefits {
+			margin: 0 5px;
+		}
+		
 		.o_title {
 			margin: 0;
 			padding-bottom: 0.1em;
@@ -447,6 +451,16 @@
 	}
 }
 
+.o_with_certificate, .o_with_creditpoint {
+	@extend %o_labeled;
+	background: transparent;
+	text-transform: none;
+	display: inline-block;
+	border-color: $o-entry-benefit-border-color;
+	color: $o-entry-benefit-color;
+	font-size: 70%; 
+	margin-right: 5px;
+}
 
 
 /* the course catalog */

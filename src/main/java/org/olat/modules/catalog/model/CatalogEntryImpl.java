@@ -79,6 +79,9 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private final boolean singleCourseImplementation;
 	private Long singleCourseEntryKey;
 	private RepositoryEntryStatusEnum singleCourseEntryStartus;
+	
+	private boolean hasCertificate;
+	private String creditPointAmount;
 
 	public CatalogEntryImpl(RepositoryEntry re) {
 		repositotyEntryKey = re.getKey();
@@ -328,6 +331,22 @@ public class CatalogEntryImpl implements CatalogEntry {
 
 	public void setLicense(License license) {
 		this.license = license;
+	}
+
+	public boolean isHasCertificate() {
+		return hasCertificate;
+	}
+
+	public void setHasCertificate(boolean hasCertificate) {
+		this.hasCertificate = hasCertificate;
+	}
+
+	public String getCreditPointAmount() {
+		return creditPointAmount;
+	}
+
+	public void setCreditPointAmount(String creditPointAmount) {
+		this.creditPointAmount = creditPointAmount;
 	}
 
 	@Override

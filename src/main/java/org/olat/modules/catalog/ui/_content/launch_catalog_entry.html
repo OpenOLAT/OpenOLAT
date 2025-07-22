@@ -35,6 +35,21 @@
 								<span>$row.educationalTypeName</span>
 							</div>
 						#end
+						
+						#if(${row.isCertificate()} || $r.isNotEmpty($row.creditPointAmount))
+							<div class="o_benefits">
+							#if(${row.isCertificate()})
+								<div class="o_with_certificate">
+									<span>$r.translate("with.certificate")</span>
+								</div>
+							#end
+							#if($r.isNotEmpty($row.creditPointAmount))
+								<div class="o_with_creditpoint">
+									<span><i class="o_icon o_icon_coins"> </i>  + $r.escapeHtml($row.creditPointAmount)</span>
+								</div>
+							#end
+							</div>
+						#end
 						<div class="o_meta">
 							<div class="o_ext_ref">
 								#if ($row.getExternalRef())

@@ -40,6 +40,8 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.RunMainController;
+import org.olat.modules.creditpoint.CreditPointModule;
+import org.olat.modules.creditpoint.ui.CreditPointRepositoryEntryConfigController;
 import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.ui.OpenBadgesAssessmentSettingsController;
 import org.olat.repository.RepositoryEntry;
@@ -63,6 +65,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private CertificatesOptionsController certificatesCtrl;
 	private OpenBadgesAssessmentSettingsController badgesCtrl;
 	private RecertificationOptionsController recertificationCtrl;
+	private CreditPointRepositoryEntryConfigController creditPointsConfigCtrl;
 	
 	private LockResult lockEntry;
 	private RepositoryEntry entry;
@@ -76,6 +79,8 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
+	@Autowired
+	private CreditPointModule creditPointModule;
 
 	protected CourseAssessmentSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
@@ -114,6 +119,12 @@ public class CourseAssessmentSettingsController extends BasicController {
 		efficiencyStatementCtrl = new EfficiencyStatementController(ureq, wControl, entry, courseConfig, editableAndLocked);
 		listenTo(efficiencyStatementCtrl);
 		mainVC.put("efficiencyStatement", efficiencyStatementCtrl.getInitialComponent());
+		
+		if(creditPointModule.isEnabled()) {
+			creditPointsConfigCtrl = new CreditPointRepositoryEntryConfigController(ureq, wControl, entry, editableAndLocked);
+			listenTo(creditPointsConfigCtrl);
+			mainVC.put("creditpoints", creditPointsConfigCtrl.getInitialComponent());
+		}
 		
 		certificatesCtrl = new CertificatesOptionsController(ureq, wControl, entry, editableAndLocked);
 		listenTo(certificatesCtrl);

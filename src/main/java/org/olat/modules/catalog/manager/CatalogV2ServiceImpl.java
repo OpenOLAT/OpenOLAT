@@ -56,6 +56,8 @@ import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.model.CatalogEntryImpl;
+import org.olat.modules.catalog.model.RepositoryEntryInfos;
+import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -159,20 +161,21 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	@Override
 	public List<CatalogEntry> getCatalogEntries(CatalogEntrySearchParams searchParams) {
 		// RepositoryEntries
-		List<RepositoryEntry> repositoryEntries = queries.loadRepositoryEntries(searchParams);
+		List<RepositoryEntryInfos> repositoryEntriesInfos = queries.loadRepositoryEntries(searchParams);
 		
-		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels = loadRepositoryEntryToTaxonomyLevels(repositoryEntries);
+		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels = loadRepositoryEntryToTaxonomyLevels(repositoryEntriesInfos);
 		
-		List<Long> reMembershipKeys = loadRepositoryEntryMembershipKeys(repositoryEntries, searchParams.getMember());
+		List<Long> reMembershipKeys = loadRepositoryEntryMembershipKeys(repositoryEntriesInfos, searchParams.getMember());
 		
 		Map<Resourceable, ResourceLicense> licenses = null;
 		if (licenseModule.isEnabled(repositoryEntryLicenseHandler)) {
-			licenses = loadLicenses(repositoryEntries);
+			licenses = loadLicenses(repositoryEntriesInfos);
 		}
 		
-		List<CatalogEntry> catalogEntries = new ArrayList<>(repositoryEntries.size());
-		List<OLATResource> resourcesWithAC = new ArrayList<>(repositoryEntries.size());
-		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+		List<CatalogEntry> catalogEntries = new ArrayList<>(repositoryEntriesInfos.size());
+		List<OLATResource> resourcesWithAC = new ArrayList<>(repositoryEntriesInfos.size());
+		for (RepositoryEntryInfos repositoryEntryInfos : repositoryEntriesInfos) {
+			RepositoryEntry repositoryEntry = repositoryEntryInfos.entry();
 			CatalogEntryImpl catalogEntry = new CatalogEntryImpl(repositoryEntry);
 			
 			List<TaxonomyLevel> levels = reToTaxonomyLevels.get(repositoryEntry);
@@ -190,8 +193,17 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			if (repositoryEntry.isPublicVisible()) {
 				resourcesWithAC.add(repositoryEntry.getOlatResource());
 			}
+			
+			boolean hasCertificate = repositoryEntryInfos.certificateConfiguration() != null
+					&& repositoryEntryInfos.certificateConfiguration().isCertificateEnabled();
+			catalogEntry.setHasCertificate(hasCertificate);
+			
+			RepositoryEntryCreditPointConfiguration creditPointConf = repositoryEntryInfos.creditPointConfiguration();
+			String amount = creditPointConf == null || creditPointConf.getCreditPoints() == null
+					? null
+					: creditPointConf.getCreditPoints().toString() + " " + creditPointConf.getCreditPointSystem().getLabel();
+			catalogEntry.setCreditPointAmount(amount);
 		}
-		
 		
 		// CurriculumElements
 		List<OLATResource> ceResourcesWithAC = List.of();
@@ -246,7 +258,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		return catalogEntries;
 	}
 
-	private Map<RepositoryEntryRef, List<TaxonomyLevel>> loadRepositoryEntryToTaxonomyLevels(List<RepositoryEntry> repositoryEntries) {
+	private Map<RepositoryEntryRef, List<TaxonomyLevel>> loadRepositoryEntryToTaxonomyLevels(List<RepositoryEntryInfos> repositoryEntries) {
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels;
 		if (!repositoryEntries.isEmpty() && taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty()) {
 			reToTaxonomyLevels = repositoryService.getTaxonomy(repositoryEntries, false);
@@ -256,10 +268,10 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		return reToTaxonomyLevels;
 	}
 	
-	private List<Long> loadRepositoryEntryMembershipKeys(List<RepositoryEntry> repositoryEntries, Identity identity) {
+	private List<Long> loadRepositoryEntryMembershipKeys(List<RepositoryEntryInfos> repositoryEntries, Identity identity) {
 		if (identity == null) return List.of();
 		
-		List<Long> reMembershipKeys = repositoryEntries.stream().map(RepositoryEntry::getKey).collect(Collectors.toList());
+		List<Long> reMembershipKeys = repositoryEntries.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
 		repositoryService.filterMembership(identity, reMembershipKeys);
 		return reMembershipKeys;
 	}
@@ -339,8 +351,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 				.collect(Collectors.toSet());
 	}
 	
-	private Map<Resourceable,ResourceLicense> loadLicenses(List<RepositoryEntry> repositoryEntries) {
-		Collection<? extends OLATResourceable> resources = repositoryEntries.stream().map(RepositoryEntry::getOlatResource).toList();
+	private Map<Resourceable,ResourceLicense> loadLicenses(List<RepositoryEntryInfos> repositoryEntries) {
+		Collection<? extends OLATResourceable> resources = repositoryEntries.stream().map(RepositoryEntryInfos::getOlatResource).toList();
 		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);
 		return licenses.stream().collect(Collectors
 				.toMap(license -> new Resourceable(license.getResName(), license.getResId()), license -> license, (u, v) -> v));

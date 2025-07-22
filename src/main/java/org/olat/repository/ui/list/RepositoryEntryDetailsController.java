@@ -68,6 +68,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
+	private RepositoryEntryDetailsBenefitsController benefitsCtrl;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
@@ -105,6 +106,10 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			boolean guestOnly = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, guestOnly);
 		}
+		
+		benefitsCtrl = new RepositoryEntryDetailsBenefitsController(ureq, wControl, entry);
+		listenTo(benefitsCtrl);
+		mainVC.put("benefits", benefitsCtrl.getInitialComponent());
 		
 		listenTo(metadataCtrl);
 		mainVC.put("metadata", metadataCtrl.getInitialComponent());

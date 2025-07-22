@@ -86,6 +86,9 @@ public class CatalogEntryRow {
 	private String infoUrl;
 	private String startUrl;
 	
+	private boolean certificate;
+	private String creditPointAmount;
+	
 	private String thumbnailRelPath;
 	private FormItem startLink;
 	
@@ -122,6 +125,9 @@ public class CatalogEntryRow {
 		
 		curriculumKey = catalogEntry.getCurriculumKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
+		
+		certificate = catalogEntry.isHasCertificate();
+		creditPointAmount = catalogEntry.getCreditPointAmount();
 	}
 
 	public Long getRepositotyEntryKey() {
@@ -302,6 +308,14 @@ public class CatalogEntryRow {
 
 	public License getLicense() {
 		return license;
+	}
+
+	public boolean isCertificate() {
+		return certificate;
+	}
+
+	public String getCreditPointAmount() {
+		return creditPointAmount;
 	}
 
 	public boolean isThumbnailAvailable() {

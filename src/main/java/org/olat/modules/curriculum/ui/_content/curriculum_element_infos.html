@@ -21,6 +21,7 @@
 	<div id="collapse_description_${r.getCId()}" class="collapse #if($descriptionOpen) in #end">$description</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_description_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_description_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -44,6 +45,7 @@ jQuery(function() {
 	<div id="collapse_outline_${r.getCId()}" class="collapse #if($outlineOpen) in #end">$r.render("outline")</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_outline_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_outline_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -67,6 +69,7 @@ jQuery(function() {
 	<div id="collapse_taughtby_${r.getCId()}" class="collapse #if($taughtbyOpen) in #end">$r.render("taughtby")</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_taughtby_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_taughtby_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -90,6 +93,7 @@ jQuery(function() {
 	<div id="collapse_objectives_${r.getCId()}" class="collapse #if($objectivesOpen) in #end">$objectives</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_objectives_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_objectives_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -113,6 +117,7 @@ jQuery(function() {
 	<div id="collapse_requirements_${r.getCId()}" class="collapse #if($requirementsOpen) in #end">$requirements</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_requirements_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_requirements_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -136,6 +141,7 @@ jQuery(function() {
 	<div id="collapse_credits_${r.getCId()}" class="collapse #if($creditsOpen) in #end">$credits</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	jQuery('#collapse_credits_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_credits_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -152,8 +158,11 @@ jQuery(function() {
 </div> ##o_curriculum_element_infos_left end
 
 <div class="o_curriculum_element_infos_right">
+#if($r.available("benefits"))
+	$r.render("benefits")
+#end
 #if($r.available("overview"))
-		$r.render("overview")
+	$r.render("overview")
 #end
 #if($r.available("lectures"))
 	<div class="o_curriculum_element_infos_lectures o_ce_info_aside">

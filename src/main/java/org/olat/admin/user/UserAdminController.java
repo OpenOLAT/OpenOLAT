@@ -67,6 +67,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
+import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
+import org.olat.modules.creditpoint.ui.CreditPointUserController;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.modules.dcompensation.ui.UserDisadvantageCompensationListController;
@@ -142,6 +145,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_CURRICULUM		= "view.curriculum";
 	private static final String NLS_VIEW_GRADER			= "view.grader";
 	private static final String NLS_VIEW_PORTFOLIO		= "view.portfolio";
+	private static final String NLS_VIEW_CREDITPOINT	= "view.creditpoint";
 
 	private VelocityContainer myContent;
 	private final TooledStackedPanel stackPanel;
@@ -604,6 +608,15 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 		
+		if (isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
+			userTabP.addTab(ureq, translate(NLS_VIEW_CREDITPOINT), uureq -> {
+				CreditPointSecurityCallback secCallback = CreditPointSecurityCallbackFactory.createSecurityCallback(managerRoles);
+				Controller creditPointCtr = new CreditPointUserController(uureq, getWindowControl(), identity, secCallback);
+				listenTo(creditPointCtr);
+				return creditPointCtr.getInitialComponent();
+			});
+		}
+
 		if (isAdminOf || isPrincipalOf ||  isUserManagerOf || isRolesManagerOf) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
