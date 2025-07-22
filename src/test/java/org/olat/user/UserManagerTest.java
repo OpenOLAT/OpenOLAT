@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl;
 import org.olat.core.id.Identity;
@@ -171,6 +172,32 @@ public class UserManagerTest extends OlatTestCase {
 		Assert.assertEquals("weekly", reloadedUser.getPreferences().getNotificationInterval());
 
 		notificationsManager.setDefaultNotificationInterval(defaultInterval);
+	}
+	
+	@Test
+	public void getUserDisplayNameByIdentity() {
+		//create a user
+		String uuid = UUID.randomUUID().toString();
+		Identity id = createUser(uuid);
+		dbInstance.commitAndCloseSession();
+		
+		String fullname = userManager.getUserDisplayName(id);
+		Assert.assertTrue(fullname.contains("firstcreateid-" +uuid));
+	}
+	
+	@Test
+	public void getUserDisplayNameByLazyIdentity() {
+		//create a user
+		String uuid = UUID.randomUUID().toString();
+		Identity id = createUser(uuid);
+		dbInstance.commitAndCloseSession();
+		
+		// Load lazy reference of identity
+		Identity lazyId = dbInstance.getCurrentEntityManager().getReference(IdentityImpl.class, id.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		String fullname = userManager.getUserDisplayName(lazyId);
+		Assert.assertTrue(fullname.contains("firstcreateid-" +uuid));
 	}
 	
 	private Identity createUser(String uuid) {

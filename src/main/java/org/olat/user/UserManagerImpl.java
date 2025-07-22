@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -508,6 +509,10 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		if (userDisplayNameCreator == null || identity == null) return "";
 		String fullName;
 		try {
+			if(!Persistence.getPersistenceUtil().isLoaded(identity)
+					|| !Persistence.getPersistenceUtil().isLoaded(identity, "user")) {
+				identity = securityManager.loadIdentityByKey(identity.getKey());
+			}
 			fullName = getUserDisplayName(identity.getUser());
 			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
 		} catch (Exception e) {
