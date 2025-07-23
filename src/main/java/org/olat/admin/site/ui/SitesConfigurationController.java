@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
 import org.olat.core.util.StringHelper;
+import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,22 +63,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class SitesConfigurationController extends FormBasicController {
+
+	private static final String SITE_COACHING_TOOL = "olatsites_coaching";
 	
-	@Autowired
-	private SiteDefinitions sitesModule;
-	private final Map<String,SiteDefinition> siteDefs;
-	
-	private final String[] secKeys;
-	private final String[] secValues;
-	
-	private final String[] altKeys;
-	private final String[] altValues;
-	
+	private final SelectionValues secPK;
+	private final SelectionValues altPK;
+
 	private SiteDefModel model;
 	private FlexiTableElement tableEl;
 	
 	private boolean needAlternative = false;
+	private final Map<String,SiteDefinition> siteDefs;
 	private final Map<String,SiteSecurityCallback> securityCallbacks;
+	
+	@Autowired
+	private SiteDefinitions sitesModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	public SitesConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "sites_order");
@@ -84,17 +87,13 @@ public class SitesConfigurationController extends FormBasicController {
 		siteDefs = sitesModule.getAllSiteDefinitionsList();
 		securityCallbacks = CoreSpringFactory.getBeansOfType(SiteSecurityCallback.class);
 		//security callbacks
-		secKeys = new String[securityCallbacks.size()];
-		secValues = new String[securityCallbacks.size()];
-		int count = 0;
+		secPK = new SelectionValues();
 		for(Map.Entry<String, SiteSecurityCallback> secEntry:securityCallbacks.entrySet()) {
-			secKeys[count] = secEntry.getKey();
 			String translation = translate(secEntry.getKey());
-			if(translation.length() < 125) {
-				secValues[count++] = translation;
-			} else {
-				secValues[count++] = secEntry.getKey();
+			if(translation.length() > 125) {
+				translation = secEntry.getKey();
 			}
+			secPK.add(SelectionValues.entry(secEntry.getKey(), translation));
 			
 			if(secEntry.getValue() instanceof SiteViewSecurityCallback) {
 				needAlternative = true;
@@ -103,19 +102,14 @@ public class SitesConfigurationController extends FormBasicController {
 		
 		//alternative controller
 		Map<String,SiteAlternativeControllerCreator> alternativeControllers = CoreSpringFactory.getBeansOfType(SiteAlternativeControllerCreator.class);
-		altKeys = new String[alternativeControllers.size() + 1];
-		altValues = new String[alternativeControllers.size() + 1];
-		int countAlt = 0;
-		altKeys[countAlt] = "none";
-		altValues[countAlt++] = translate("site.alternative.none");
+		altPK = new SelectionValues();
+		altPK.add(SelectionValues.entry("none", translate("site.alternative.none")));
 		for(Map.Entry<String, SiteAlternativeControllerCreator> altEntry:alternativeControllers.entrySet()) {
-			altKeys[countAlt] = altEntry.getKey();
 			String translation = translate(altEntry.getKey());
-			if(translation.length() < 125) {
-				altValues[countAlt++] = translation;
-			} else {
-				altValues[countAlt++] = altEntry.getKey();
+			if(translation.length() > 125) {
+				translation = altEntry.getKey();
 			}
+			altPK.add(SelectionValues.entry(altEntry.getKey(), translation));
 		}
 		
 		initForm(ureq);
@@ -280,7 +274,7 @@ public class SitesConfigurationController extends FormBasicController {
 			
 			String id = config.getId();
 			
-			secCallbackEl = uifactory.addDropdownSingleselect("site.security." + id, "site.security", formLayout, secKeys, secValues, null);
+			secCallbackEl = uifactory.addDropdownSingleselect("site.security." + id, "site.security", formLayout, secPK.keys(), secPK.values(), null);
 			if(siteDef.isFeatureEnabled()) {
 				secCallbackEl.addActionListener(FormEvent.ONCHANGE);
 			} else {
@@ -290,7 +284,7 @@ public class SitesConfigurationController extends FormBasicController {
 			
 			boolean needAlt = false;
 			if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
-				for(String secKey:secKeys) {
+				for(String secKey:secPK.keys()) {
 					if(secKey.equals(config.getSecurityCallbackBeanId())) {
 						secCallbackEl.select(secKey, true);
 						needAlt = (securityCallbacks.containsKey(secKey)
@@ -306,11 +300,11 @@ public class SitesConfigurationController extends FormBasicController {
 				enableSiteEl.setEnabled(false);
 			}
 			
-			altControllerEl = uifactory.addDropdownSingleselect("site.alternative." + id, "site.alternative", formLayout, altKeys, altValues, null);
+			altControllerEl = uifactory.addDropdownSingleselect("site.alternative." + id, "site.alternative", formLayout, altPK.keys(), altPK.values(), null);
 			altControllerEl.addActionListener(FormEvent.ONCHANGE);
 			altControllerEl.setVisible(needAlt);
 			if(StringHelper.containsNonWhitespace(config.getAlternativeControllerBeanId())) {
-				for(String altKey:altKeys) {
+				for(String altKey:altPK.keys()) {
 					if(altKey.equals(config.getAlternativeControllerBeanId())) {
 						altControllerEl.select(altKey, true);
 					}
@@ -321,6 +315,8 @@ public class SitesConfigurationController extends FormBasicController {
 				enableSiteEl.setEnabled(false);
 				altControllerEl.setEnabled(false);
 				secCallbackEl.setEnabled(false);
+			} else if(SITE_COACHING_TOOL.equals(id) && repositoryModule.isMyCoursesParticipantsOnly() && siteDef.isEnabled()) {
+				enableSiteEl.setEnabled(false);
 			}
 		}
 		

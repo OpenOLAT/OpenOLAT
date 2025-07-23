@@ -65,7 +65,8 @@ public class ImplementationController extends BasicController {
 	private CurriculumService curriculumService;
 	
 	public ImplementationController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			CurriculumRef curriculum, CurriculumElement rootElement, CurriculumSecurityCallback secCallback) {
+			CurriculumRef curriculum, CurriculumElement rootElement,
+			boolean participantsOnly, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -78,7 +79,7 @@ public class ImplementationController extends BasicController {
 		listenTo(headerCtrl);
 		mainVC.put("elementHeader", headerCtrl.getInitialComponent());
 		
-		CurriculumElementListConfig config = CurriculumElementListConfig.config(false);
+		CurriculumElementListConfig config = CurriculumElementListConfig.config(false, participantsOnly);
 		elementListCtrl = new CurriculumElementListController(ureq, wControl, stackPanel,
 				getIdentity(), curriculum, rootElement, secCallback, config);
 		listenTo(elementListCtrl);

@@ -324,7 +324,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 
 	private void loadModel() {
-		if(config.isPreparationWarning() && rootElement != null && rootElement.getElementStatus() == CurriculumElementStatus.preparation) {
+		if(config.preparationWarning() && rootElement != null && rootElement.getElementStatus() == CurriculumElementStatus.preparation) {
 			tableModel.setObjects(List.of());
 			tableEl.setEmptyTableSettings("warning.preparation.title", "warning.preparation.desc", "o_icon_curriculum");
 			return;
@@ -335,7 +335,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		CurriculumElementStatus[] visibleStatus = RepositoryEntryMyImplementationsQueries.VISIBLE_STATUS.toArray(new CurriculumElementStatus[0]);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
 				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
-						RepositoryEntryRuntimeType.notEmbedded());
+						RepositoryEntryRuntimeType.notEmbedded(), config.participantsOnly());
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);

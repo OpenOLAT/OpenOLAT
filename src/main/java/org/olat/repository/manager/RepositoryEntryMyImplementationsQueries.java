@@ -55,7 +55,7 @@ public class RepositoryEntryMyImplementationsQueries {
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 
-	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly) {
+	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly, boolean participantsOnly) {
 		String query = """
 			select el from curriculumelement el
 			left join el.type curElementType
@@ -78,10 +78,14 @@ public class RepositoryEntryMyImplementationsQueries {
 		List<String> status = VISIBLE_STATUS.stream()
 				.map(CurriculumElementStatus::name)
 				.toList();
+		List<String> roles = participantsOnly
+				? List.of(GroupRoles.participant.name())
+				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name());
+		
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", List.of(GroupRoles.participant.name(), GroupRoles.coach.name()))
+				.setParameter("roles", roles)
 				.getResultList();
 
 		List<CurriculumElement> implementations;

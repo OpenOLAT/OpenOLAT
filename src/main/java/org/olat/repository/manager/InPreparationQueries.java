@@ -79,8 +79,8 @@ public class InPreparationQueries {
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 
-	public boolean hasInPreparation(IdentityRef identity) {
-		List<RepositoryEntry> entries = searchRepositoryEntries(identity, 0, 1);
+	public boolean hasInPreparation(IdentityRef identity, boolean participantsOnly) {
+		List<RepositoryEntry> entries = searchRepositoryEntries(identity, participantsOnly, 0, 1);
 		if(!entries.isEmpty()) {
 			return true;
 		}
@@ -93,7 +93,7 @@ public class InPreparationQueries {
 		return false;
 	}
 	
-	private List<RepositoryEntry> searchRepositoryEntries(IdentityRef identity, int firstResult, int maxResults) {
+	private List<RepositoryEntry> searchRepositoryEntries(IdentityRef identity, boolean participantsOnly, int firstResult, int maxResults) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select v")
 		  .append(" from repositoryentry as v")
@@ -117,11 +117,15 @@ public class InPreparationQueries {
 		
 		sb.append(")");
 		
+		List<String> roles = participantsOnly
+				? List.of(GroupRoles.participant.name())
+				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name(), GroupRoles.owner.name());
+		
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntry.class)
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("status", IN_PREPARATION_STATUS)
-			.setParameter("roles", List.of(GroupRoles.participant.name(), GroupRoles.coach.name(), GroupRoles.owner.name()));
+			.setParameter("roles", roles);
 		
 		if(maxResults > 0) {
 			query
@@ -131,8 +135,8 @@ public class InPreparationQueries {
 		return query.getResultList();
 	}
 	
-	public List<RepositoryEntryInPreparation> searchRepositoryEntriesInPreparation(IdentityRef identity) {
-		List<RepositoryEntry> entries = searchRepositoryEntries(identity, 0, -1);
+	public List<RepositoryEntryInPreparation> searchRepositoryEntriesInPreparation(IdentityRef identity, boolean participantsOnly) {
+		List<RepositoryEntry> entries = searchRepositoryEntries(identity, participantsOnly, 0, -1);
 		List<Long> entriesKeys = entries.stream()
 				.map(RepositoryEntry::getKey).toList();
 

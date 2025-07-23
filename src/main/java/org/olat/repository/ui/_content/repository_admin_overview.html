@@ -1,0 +1,17 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">$r.translate("admin.coaching.overview")</h3>
+	</div>
+	<div class="panel-body">
+		#if($r.isNotEmpty($warningSite))
+			<div class="o_warning_with_icon o_block">$r.escapeHtml($warningSite)</div>
+		#end
+		
+		$r.render("admin.coaching.courses", "3_9", "form")
+		$r.render("admin.coaching.tool", "3_9", "form")
+		
+		<div class="o_button_group o_button_group_right">
+			$r.render("admin.coaching.sites", "3_9", "form")
+		</div>
+	</div>
+</div>

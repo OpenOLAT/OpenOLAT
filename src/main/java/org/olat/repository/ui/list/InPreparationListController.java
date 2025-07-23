@@ -83,6 +83,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -118,6 +119,7 @@ public class InPreparationListController extends FormBasicController implements 
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 
 	private int count = 0;
+	private final boolean participantsOnly;
 	private List<RepositoryEntryEducationalType> educationalTypes;
 	
 	private Controller infosCtrl;
@@ -126,6 +128,8 @@ public class InPreparationListController extends FormBasicController implements 
 	private MarkManager markManager;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -148,6 +152,8 @@ public class InPreparationListController extends FormBasicController implements 
 		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
 				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
 		educationalTypes = repositoryManager.getAllEducationalTypes();
+		
+		participantsOnly = repositoryModule.isMyCoursesParticipantsOnly();
 		
 		initForm(ureq);
 		loadModel();
@@ -253,7 +259,8 @@ public class InPreparationListController extends FormBasicController implements 
 			}
 		}
 		
-		List<RepositoryEntryInPreparation> entries = inPreparationQueries.searchRepositoryEntriesInPreparation(getIdentity());
+		List<RepositoryEntryInPreparation> entries = inPreparationQueries
+				.searchRepositoryEntriesInPreparation(getIdentity(), participantsOnly);
 		for(RepositoryEntryInPreparation entry:entries) {
 			if(entriesKeys.contains(entry.entry().getKey())) {
 				continue;

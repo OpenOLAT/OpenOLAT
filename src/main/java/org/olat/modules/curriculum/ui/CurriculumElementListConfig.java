@@ -28,21 +28,26 @@ package org.olat.modules.curriculum.ui;
 public class CurriculumElementListConfig {
 	
 	private boolean preparationWarning;
+	private boolean participantsOnly;
 	
-	private CurriculumElementListConfig(boolean preparationWarning) {
+	private CurriculumElementListConfig(boolean preparationWarning, boolean participantsOnly) {
 		this.preparationWarning = preparationWarning;
+		this.participantsOnly = participantsOnly;
 	}
 	
 	public static final CurriculumElementListConfig defaultConfig() {
-		return new CurriculumElementListConfig(false);
+		return new CurriculumElementListConfig(false, false);
 	}
 	
-	public static final CurriculumElementListConfig config(boolean preparationWarning) {
-		return new CurriculumElementListConfig(preparationWarning);
+	public static final CurriculumElementListConfig config(boolean preparationWarning, boolean participantsOnly) {
+		return new CurriculumElementListConfig(preparationWarning, participantsOnly);
 	}
 	
-	public boolean isPreparationWarning() {
+	public boolean preparationWarning() {
 		return preparationWarning;
 	}
 
+	public boolean participantsOnly() {
+		return participantsOnly;
+	}
 }

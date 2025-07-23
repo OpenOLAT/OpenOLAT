@@ -69,7 +69,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-1");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false, true);
 		Assert.assertNotNull(list);
 	}
 	
@@ -78,7 +78,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, true);
 		Assert.assertNotNull(list);
 	}
 	
@@ -100,7 +100,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -123,7 +123,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -146,7 +146,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true);
 		Assertions.assertThat(list)
 			.isEmpty();
 	}
