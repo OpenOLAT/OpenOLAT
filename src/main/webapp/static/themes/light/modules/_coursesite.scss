@@ -212,6 +212,10 @@
 				}	
 			}
 			
+			.o_performance .o_progress > .progress {
+				vertical-align: middle;
+			}
+			
 			.o_access {
 				height: $o-coursesite-rowelem-height-md;	
 				width: $o-coursesite-rowelem-width-md;
@@ -265,10 +269,29 @@
 					}
 				}
 				
+				.o_social_actions {
+					position: absolute;
+					display: flex;
+					flex-direction: row;
+					gap: 5px;
+					top: 0;
+					right: 0;
+					
+					.o_rating {
+						.o_rating_title, o_rating_legend, .o_rating_explanation { 
+							display: none; 
+						}
+					}
+					.o_comments {
+						@extend %o_undecorated;
+					}
+				}
+				
 				.o_actions {
 					position: absolute;
 					display: grid;
 					grid-template-columns: 1fr 1fr;
+					gap: 5px;
 					bottom: 0;
 					right: 0;
 					

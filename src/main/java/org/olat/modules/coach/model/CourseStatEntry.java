@@ -42,9 +42,21 @@ public class CourseStatEntry {
 	private String repoExternalId;
 	private String repoExternalRef;
 	private String repoTechnicalType;
+	private String repoTeaser;
+	private String repoLocation;
+	private String repoAuthors;
 	private RepositoryEntryStatusEnum status;
 	private Date lifecycleStartDate;
 	private Date lifecycleEndDate;
+	
+	private Long educationalTypeKey;
+	
+	private Long resourceId;
+	
+	private Integer myRating;
+	private Double averageRating;
+	private long numOfRatings;
+	private int numOfComments;
 	
 	private int participants;
 	private int participantsVisited;
@@ -103,6 +115,14 @@ public class CourseStatEntry {
 		this.repoTechnicalType = repoTechnicalType;
 	}
 
+	public Long getEducationalTypeKey() {
+		return educationalTypeKey;
+	}
+
+	public void setEducationalTypeKey(Long educationalTypeKey) {
+		this.educationalTypeKey = educationalTypeKey;
+	}
+
 	public String getRepoExternalId() {
 		return repoExternalId;
 	}
@@ -125,6 +145,38 @@ public class CourseStatEntry {
 
 	public void setRepoStatus(RepositoryEntryStatusEnum status) {
 		this.status = status;
+	}
+
+	public String getRepoTeaser() {
+		return repoTeaser;
+	}
+
+	public void setRepoTeaser(String repoTeaser) {
+		this.repoTeaser = repoTeaser;
+	}
+
+	public String getRepoLocation() {
+		return repoLocation;
+	}
+
+	public void setRepoLocation(String repoLocation) {
+		this.repoLocation = repoLocation;
+	}
+
+	public String getRepoAuthors() {
+		return repoAuthors;
+	}
+
+	public void setRepoAuthors(String repoAuthors) {
+		this.repoAuthors = repoAuthors;
+	}
+
+	public Long getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(Long resourceId) {
+		this.resourceId = resourceId;
 	}
 
 	public Date getLifecycleStartDate() {
@@ -210,4 +262,38 @@ public class CourseStatEntry {
 			this.certificates = certificates;
 		}
 	}
+
+	public Integer getMyRating() {
+		return myRating;
+	}
+
+	public void setMyRating(Integer myRating) {
+		this.myRating = myRating;
+	}
+
+	public Double getAverageRating() {
+		return averageRating;
+	}
+
+	public void setAverageRating(Double averageRating) {
+		this.averageRating = averageRating;
+	}
+
+	public long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	public void setNumOfRatings(long numOfRatings) {
+		this.numOfRatings = numOfRatings;
+	}
+
+	public int getNumOfComments() {
+		return numOfComments;
+	}
+
+	public void setNumOfComments(int comments) {
+		this.numOfComments = comments;
+	}
+	
+	
 }

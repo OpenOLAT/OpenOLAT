@@ -21,13 +21,17 @@ package org.olat.modules.coach.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,7 +47,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCol
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -58,6 +64,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.rating.RatingFormEvent;
+import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -70,8 +78,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
@@ -80,10 +92,16 @@ import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.repository.ui.author.TechnicalTypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +116,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseListController extends FormBasicController implements Activateable2 {
+public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
 	protected static final String FILTER_MARKED = "Marked";
 	protected static final String FILTER_PERIOD = "Period";
@@ -139,6 +157,8 @@ public class CourseListController extends FormBasicController implements Activat
 	private CoursesTableDataModel tableModel;
 
 	private int counter = 0;
+	private final MapperKey mapperThumbnailKey;
+	private List<RepositoryEntryEducationalType> educationalTypes;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -146,13 +166,27 @@ public class CourseListController extends FormBasicController implements Activat
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private MapperService mapperService;
+	@Autowired
 	private MarkManager markManager;
 	@Autowired
+	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
-
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		educationalTypes = repositoryManager.getAllEducationalTypes();
+		
 		initForm(ureq);
 		loadModel();
 	}
@@ -217,11 +251,19 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		tableModel = new CoursesTableDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
 		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.3");
+		
+		VelocityContainer row = createVelocityContainer("row_1");
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		row.setTranslator(getTranslator());
+		tableEl.setRowRenderer(row, this);
 		
 		initFilters();
 		initFiltersPresets(ureq);
@@ -318,6 +360,25 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, relevantTab);
     }
+    
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> list = null;
+		if(rowObject instanceof CourseStatEntryRow entryRow) {
+			list = new ArrayList<>(7);
+			list.add(entryRow.getSelectLink().getComponent());
+			list.add(entryRow.getMarkLink().getComponent());
+			list.add(entryRow.getInfosLink().getComponent());
+			list.add(entryRow.getOpenLink().getComponent());
+			if(entryRow.getRatingFormItem() != null) {
+				list.add(entryRow.getRatingFormItem().getComponent());
+			}
+			if(entryRow.getCommentsLink() != null) {
+				list.add(entryRow.getCommentsLink().getComponent());
+			}
+		}
+		return list;
+	}
 
 	private void loadModel() {
 		List<Mark> marks = markManager.getMarks(getIdentity(), List.of("RepositoryEntry"));
@@ -330,26 +391,130 @@ public class CourseListController extends FormBasicController implements Activat
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
 				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey())))
 				.collect(Collectors.toList());
+		loadTaxonomy(rows);
+		
 		tableModel.setObjects(rows);
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
 	}
 	
+	private void loadTaxonomy(List<CourseStatEntryRow> rows) {
+		Map<RepositoryEntryRef,List<TaxonomyLevel>> taxonomy = repositoryService.getTaxonomy(rows, false);
+		for(CourseStatEntryRow row:rows) {
+			List<TaxonomyLevel> levels = taxonomy.get(row);
+			int numOfLevels = levels == null ? 0 : levels.size();
+			row.setNumOfTaxonomyLevels(numOfLevels);
+		}
+	}
+	
 	private CourseStatEntryRow forgeRow(CourseStatEntry entry, boolean marked) {
-		CourseStatEntryRow row = new CourseStatEntryRow(entry);
+		RepositoryEntryEducationalType educationalType = getEducationalType(entry);
+		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType);
 		row.setMarked(marked);
 		
+		forgeActionsLinks(row);
+		forgeComments(entry, row);
+		forgeRatings(entry, row);
+		
+		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance("CourseModule", entry.getResourceId()));
+		if(image != null) {
+			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
+		}
+		
+		if(StringHelper.containsNonWhitespace(entry.getRepoTechnicalType())) {
+			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getRepoTechnicalType()), getLocale());
+			row.setTranslatedTechnicalType(translatedType);
+		}
+		
+		return row;
+	}
+	
+	private RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry) {
+		if(entry.getEducationalTypeKey() == null) return null;
+		return educationalTypes.stream()
+				.filter(type -> type.getKey().equals(entry.getEducationalTypeKey()))
+				.findFirst().orElse(null);
+	}
+	
+	private void forgeRatings(CourseStatEntry entry, CourseStatEntryRow row) {
+		if(!repositoryModule.isRatingEnabled()) return;
+		
+		Integer myRating = entry.getMyRating();
+		Double averageRating = entry.getAverageRating();
+		long numOfRatings = entry.getNumOfRatings();
+
+		float ratingValue = myRating == null ? 0f : myRating.floatValue();
+		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+		
+		String id = "rat_" + row.getKey();
+		RatingWithAverageFormItem ratingEl = new RatingWithAverageFormItem(id, ratingValue, averageRatingValue, 5, numOfRatings);
+		ratingEl.setShowRatingAsText(false);
+		row.setRatingFormItem(ratingEl);
+		ratingEl.setUserObject(row);
+		flc.add(id, ratingEl);
+	}
+
+	private void forgeComments(CourseStatEntry entry, CourseStatEntryRow row) {
+		if(!repositoryModule.isCommentEnabled()) return;
+		
+		long numOfComments = entry.getNumOfComments();
+		String title = "(" + numOfComments + ")";
+		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), CMD_INFOS, title, tableEl, Link.NONTRANSLATED);
+		commentsLink.setUserObject(row);
+		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+		commentsLink.setCustomEnabledLinkCSS("o_comments");
+		commentsLink.setIconLeftCSS(css);
+		row.setCommentsLink(commentsLink);
+	}
+	
+	private void forgeActionsLinks(CourseStatEntryRow row) {
 		//mark
 		String count = Integer.toString(++counter);
-		FormLink markLink = uifactory.addFormLink("mark_".concat(count), "mark", "", null, null, Link.NONTRANSLATED);
+		FormLink markLink = uifactory.addFormLink("mark_".concat(count), "mark", "", tableEl, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		
-		return row;
+		String displayName = StringHelper.escapeHtml(row.getDisplayName());
+		FormLink selectLink = uifactory.addFormLink("select_".concat(count), CMD_SELECT, displayName, tableEl, Link.NONTRANSLATED);
+		selectLink.setUserObject(row);
+		row.setSelectLink(selectLink);
+		
+		FormLink infosLink = uifactory.addFormLink("infos_".concat(count), CMD_INFOS, "learn.more", tableEl, Link.BUTTON);
+		infosLink.setUserObject(row);
+		infosLink.setGhost(true);
+		row.setInfosLink(infosLink);
+		
+		FormLink openLink = uifactory.addFormLink("open_".concat(count), CMD_SELECT, "open", tableEl, Link.BUTTON);
+		openLink.setUserObject(row);
+		openLink.setElementCssClass("btn btn-primary");
+		row.setOpenLink(openLink);
 	}
 	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("select_row");
+				if(StringHelper.isLong(rowKeyStr)) {
+					try {
+						Long rowKey = Long.valueOf(rowKeyStr);
+						List<CourseStatEntryRow> rows = tableModel.getObjects();
+						for(CourseStatEntryRow row:rows) {
+							if(row != null && row.getKey().equals(rowKey)) {
+								doOpenCourse(ureq, row);					
+							}
+						}
+					} catch (NumberFormatException e) {
+						getLogger().warn("Not a valid long: {}", rowKeyStr, e);
+					}
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
@@ -357,7 +522,10 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent
+				&& ratingItem.getUserObject() instanceof CourseStatEntryRow row) {
+			doRating(row, ratingEvent.getRating());
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				if(CMD_SELECT.equals(se.getCommand())) {
 					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
@@ -385,6 +553,10 @@ public class CourseListController extends FormBasicController implements Activat
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
+			} else if(CMD_SELECT.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
+				doOpenCourse(ureq, row);
+			} else if(CMD_INFOS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
+				doOpenCourseInfos(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -419,27 +591,27 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 	
 	private void doOpenCourse(UserRequest ureq, CourseStatEntryRow courseStat) {
-		String businessPath = "[RepositoryEntry:" + courseStat.getRepoKey() +"]";
+		String businessPath = "[RepositoryEntry:" + courseStat.getKey() +"]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenAssessmentTool(UserRequest ureq, CourseStatEntryRow courseStat) {
-		String businessPath = "[RepositoryEntry:" + courseStat.getRepoKey() +"][assessmentToolv2:0][Overview:0]";
+		String businessPath = "[RepositoryEntry:" + courseStat.getKey() +"][assessmentToolv2:0][Overview:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenCourseInfos(UserRequest ureq, CourseStatEntryRow courseStat) {
-		String businessPath = "[RepositoryEntry:" + courseStat.getRepoKey() +"][Infos:0]";
+		String businessPath = "[RepositoryEntry:" + courseStat.getKey() +"][Infos:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private boolean doMark(UserRequest ureq, CourseStatEntryRow row) {
-		OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepoKey());
+		OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getKey());
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.removeMark(item, getIdentity(), null);
 			dbInstance.commit();//before sending, save the changes
 			
-			EntryChangedEvent e = new EntryChangedEvent(() -> row.getRepoKey(), getIdentity(), Change.removeBookmark, "coaching.courses");
+			EntryChangedEvent e = new EntryChangedEvent(() -> row.getKey(), getIdentity(), Change.removeBookmark, "coaching.courses");
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return false;
 		}
@@ -448,9 +620,14 @@ public class CourseListController extends FormBasicController implements Activat
 		markManager.setMark(item, getIdentity(), null, businessPath);
 		dbInstance.commit();//before sending, save the changes
 		
-		EntryChangedEvent e = new EntryChangedEvent(() -> row.getRepoKey(), getIdentity(), Change.addBookmark, "coaching.courses");
+		EntryChangedEvent e = new EntryChangedEvent(() -> row.getKey(), getIdentity(), Change.addBookmark, "coaching.courses");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 		return true;
+	}
+	
+	protected void doRating(CourseStatEntryRow row, float rating) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CourseModule", row.getResourceId());
+		userRatingsDao.updateRating(getIdentity(), ores, null, Math.round(rating));
 	}
 	
 	private void doOpenTools(UserRequest ureq, CourseStatEntryRow entry, String targetId) {
@@ -486,7 +663,7 @@ public class CourseListController extends FormBasicController implements Activat
 			infosLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
 			
 			String url = BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + row.getRepoKey() + "]");
+					.getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + row.getKey() + "]");
 			ExternalLink openCourseLink = LinkFactory.createExternalLink("open.course", translate("open.course"), url);
 			openCourseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_content_popup");
 			openCourseLink.setName(translate("open.course"));

@@ -462,15 +462,17 @@ public class CoachingDAO {
 	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
-		  .append("  lifecycle.validFrom, lifecycle.validTo")
+		  .append("  v.teaser, v.location, v.authors, res.resId, lifecycle.validFrom, lifecycle.validTo,")
+		  .append("  stats.rating, stats.numOfRatings, stats.numOfComments, v.educationalType.key")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as participantGroup")
 		  .append(" left join v.lifecycle as lifecycle")
+		  .append(" left join v.statistics as stats")
 		  .where()
 		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
-		  
+		
 		sb
 		  .and()
 		  .append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
@@ -496,8 +498,16 @@ public class CoachingDAO {
 				entry.setRepoExternalId((String)rawStat[4]);
 				entry.setRepoExternalRef((String)rawStat[5]);
 				entry.setRepoStatus(RepositoryEntryStatusEnum.valueOf((String)rawStat[6]));
-				entry.setLifecycleStartDate((Date)rawStat[7]);
-				entry.setLifecycleEndDate((Date)rawStat[8]);
+				entry.setRepoTeaser((String)rawStat[7]);
+				entry.setRepoLocation((String)rawStat[8]);
+				entry.setRepoAuthors((String)rawStat[9]);
+				entry.setResourceId(PersistenceHelper.extractLong(rawStat, 10));
+				entry.setLifecycleStartDate((Date)rawStat[11]);
+				entry.setLifecycleEndDate((Date)rawStat[12]);
+				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 13));
+				entry.setNumOfRatings(PersistenceHelper.extractPrimitiveLong(rawStat, 14));
+				entry.setNumOfComments(PersistenceHelper.extractPrimitiveInt(rawStat, 15));
+				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 16));
 				return entry;
 			});
 		}
