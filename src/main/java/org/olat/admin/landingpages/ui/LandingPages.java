@@ -37,6 +37,8 @@ public enum LandingPages {
 	infoPage1("page.infoPage1", "/CourseSite/1"),
 	infoPage2("page.infoPage2", "/CourseSite/2"),
 	learnResources("page.learnResources", "/RepositorySite/0"),
+	coachingTool("page.coachingTool", "/CoachSite/0"),
+	coursePlanner("page.coursePlanner", "/CurriculumAdmin/0"),
 	catalog("page.catalog", "/CatalogEntry/0"),
 	portal("page.portal", "/Portal/0");
 	

@@ -112,6 +112,11 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
+	public boolean isMasterCoach(Identity identity) {
+		return coachingDao.isMasterCoach(identity);
+	}
+
+	@Override
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student) {
 		return coachingDao.getStudentsCourses(coach, student);
 	}
