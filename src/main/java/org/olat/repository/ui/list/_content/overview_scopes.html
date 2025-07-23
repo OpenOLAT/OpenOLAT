@@ -1,5 +1,8 @@
 <div class="o_sel_my_courses">
 	<h2><i class="o_icon o_CourseModule_icon"> </i> $r.translate("search.course")</h2>
+	#if($r.available("coachingToolHint"))
+		$r.render("coachingToolHint")
+	#end
 	#if($r.visible("scopes"))
 		$r.render("scopes")
 		<div class="o_segments_content clearfix">

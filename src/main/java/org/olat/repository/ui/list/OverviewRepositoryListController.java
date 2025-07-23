@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.InfoPanel;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeEvent;
@@ -56,6 +57,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -95,6 +97,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private boolean entriesDirty;
 	private final boolean guestOnly;
 	private final EventBus eventBus;
+	private final boolean participantsOnly;
 	
 	@Autowired
 	private ACService acService;
@@ -102,6 +105,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private InPreparationQueries inPreparationQueries;
 	@Autowired
@@ -112,6 +117,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		participantsOnly = repositoryModule.isMyCoursesParticipantsOnly();
 
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
@@ -121,11 +127,31 @@ public class OverviewRepositoryListController extends BasicController implements
 
 		scopes = new ArrayList<>();
 		loadScopes();
+		if(participantsOnly && repositoryModule.isMyCoursesCoachingToolHint()) {
+			loadCoachingToolHint(ureq);
+		}
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
 		putInitialPanel(mainPanel);
+	}
+	
+	private void loadCoachingToolHint(UserRequest ureq) {
+		InfoPanel panel = new InfoPanel("coachingToolHint");
+		panel.setTitle(translate("coaching.tool.hint.title"));
+		
+		List<ContextEntry> ceList = BusinessControlFactory.getInstance().createCEListFromString("[CoachSite:0]");
+		String coachingToolUrl = BusinessControlFactory.getInstance().getAsAuthURIString(ceList, true);
+		
+		StringBuilder informations = new StringBuilder();
+		informations.append(translate("coaching.tool.hint"))
+			.append(" <a href='").append(coachingToolUrl).append("'>")
+			.append(translate("coaching.tool.hint.link")).append("</a>");
+		
+		panel.setInformations(informations.toString());
+		panel.setPersistedStatusId(ureq, "my-courses-coaching-tool-hint-v1");
+		mainVC.put("coachingToolHint", panel);
 	}
 	
 	private void loadScopes() {
@@ -135,7 +161,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		if(!guestOnly) {
 			if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
-				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true);
+				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true, participantsOnly);
 				for(CurriculumElement implementation:implementations) {
 					String name = StringHelper.escapeHtml(implementation.getDisplayName());
 					String hint = scopeDatesHint(implementation);
@@ -147,7 +173,7 @@ public class OverviewRepositoryListController extends BasicController implements
 						null, "o_icon o_icon-fw o_icon_curriculum"));
 			}
 			
-			if(inPreparationQueries.hasInPreparation(getIdentity())) {
+			if(inPreparationQueries.hasInPreparation(getIdentity(), participantsOnly)) {
 				scopes.add(ScopeFactory.createScope(CMD_IN_PREPARATION, translate("search.preparation"),
 					null, "o_icon o_icon-fw o_ac_offer_pending_icon"));
 			}
@@ -311,9 +337,17 @@ public class OverviewRepositoryListController extends BasicController implements
 			SearchMyRepositoryEntryViewParams searchParams
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			searchParams.setMembershipMandatory(true);
-			searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {
-					RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished, RepositoryEntryStatusEnum.published
-				});
+			if(participantsOnly) {
+				searchParams.setParticipantsOnly(true);
+				searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {
+						RepositoryEntryStatusEnum.published
+					});
+			} else {
+				searchParams.setParticipantsOnly(false);
+				searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {
+						RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished, RepositoryEntryStatusEnum.published
+					});
+			}
 			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
 			searchParams.setOfferValidAt(new Date());
 			searchParams.setRuntimeTypes(new RepositoryEntryRuntimeType[] { RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone });

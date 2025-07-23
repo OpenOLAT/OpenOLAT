@@ -53,6 +53,8 @@ public interface CoachingService {
 
 	public CoachingSecurity isCoach(Identity identity, Roles roles);
 	
+	public boolean isMasterCoach(Identity identity);
+	
 
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
 	

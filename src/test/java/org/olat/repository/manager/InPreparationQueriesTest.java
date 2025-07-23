@@ -58,7 +58,7 @@ public class InPreparationQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("inprearation-view-2");
 		dbInstance.commit();
 		
-		List<RepositoryEntryInPreparation> list = inPreparationQueries.searchRepositoryEntriesInPreparation(id);
+		List<RepositoryEntryInPreparation> list = inPreparationQueries.searchRepositoryEntriesInPreparation(id, true);
 		Assert.assertNotNull(list);
 	}
 }

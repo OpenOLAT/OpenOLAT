@@ -19,210 +19,89 @@
  */
 package org.olat.repository.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.Publisher;
-import org.olat.core.commons.services.notifications.PublisherData;
-import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
-import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
-import org.olat.repository.RepositoryModule;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 23.06.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 22 juil. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class RepositoryAdminController extends FormBasicController {
+public class RepositoryAdminController extends BasicController {
+	
+	private final VelocityContainer mainVC;
+	private final SegmentViewComponent segmentView;
+	private final Link configurationLink;
+	private final Link accessLink;
 
-	private static final String NOTIFICATION_REPOSITORY_STATUS_CHANGED = "notification.repository.status.changed";
-	private static final String[] keys = {"on"};
-	private static final String[] leaveKeys = {
-			RepositoryEntryAllowToLeaveOptions.atAnyTime.name(),
-			RepositoryEntryAllowToLeaveOptions.afterEndDate.name(),
-			RepositoryEntryAllowToLeaveOptions.never.name()
-	};
-
-	private FormLink enableAllSubscribersLink;
-	private FormLink disableAllSubscribersLink;
-	private SingleSelection leaveEl;
-	private MultipleSelectionElement ratingEl;
-	private MultipleSelectionElement membershipEl;
-	private MultipleSelectionElement commentEl;
-	private MultipleSelectionElement myCourseSearchEl;
-	private MultipleSelectionElement taxonomyEl;
-	private MultipleSelectionElement notificationEl;
-
-	@Autowired
-	private RepositoryModule repositoryModule;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private TaxonomyService taxonomyService;
-	@Autowired
-	private NotificationsManager notificationsManager;
+	private RepositoryAdminAccessController accessCtrl;
+	private RepositoryAdminConfigurationController configurationCtrl;
 	
 	public RepositoryAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		initForm(ureq);
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
+		
+		mainVC = createVelocityContainer("repository_admin");
+		
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+		configurationLink = LinkFactory.createLink("admin.configuration", mainVC, this);
+		segmentView.addSegment(configurationLink, true);
+		doOpenSettings(ureq);
+		
+		accessLink = LinkFactory.createLink("admin.access", mainVC, this);
+		accessLink.setElementCssClass("o_sel_access");
+		segmentView.addSegment(accessLink, false);
+
+		putInitialPanel(mainVC);
+
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer searchCont = FormLayoutContainer.createDefaultFormLayout("search", getTranslator());
-		searchCont.setFormContextHelp("manual_admin/administration/Modules_Repository/");
-		searchCont.setFormTitle(translate("repository.admin.title"));
-		formLayout.add(searchCont);
-		searchCont.setRootForm(mainForm);
-
-		boolean searchEnabled = repositoryModule.isMyCoursesSearchEnabled();
-		String[] values = new String[] { translate("on") };
-		myCourseSearchEl = uifactory.addCheckboxesHorizontal("my.course.search.enabled", searchCont, keys, values);
-		myCourseSearchEl.addActionListener(FormEvent.ONCHANGE);
-		myCourseSearchEl.select(keys[0], searchEnabled);
-		
-		boolean commentEnabled = repositoryModule.isCommentEnabled();
-		commentEl = uifactory.addCheckboxesHorizontal("my.course.comment.enabled", searchCont, keys, values);
-		commentEl.addActionListener(FormEvent.ONCHANGE);
-		commentEl.select(keys[0], commentEnabled);
-		
-		boolean ratingEnabled = repositoryModule.isRatingEnabled();
-		ratingEl = uifactory.addCheckboxesHorizontal("my.course.rating.enabled", searchCont, keys, values);
-		ratingEl.addActionListener(FormEvent.ONCHANGE);
-		ratingEl.select(keys[0], ratingEnabled);
-
-		boolean requestMembershipEnabled = repositoryModule.isRequestMembershipEnabled();
-		membershipEl = uifactory.addCheckboxesHorizontal("rentry.request.membership", searchCont, keys, values);
-		membershipEl.addActionListener(FormEvent.ONCHANGE);
-		membershipEl.select(keys[0], requestMembershipEnabled);
-		
-		SelectionValues taxonomySV = new SelectionValues();
-		taxonomyService.getTaxonomyList().forEach(
-				taxonomy -> taxonomySV.add(entry(
-						taxonomy.getKey().toString(), 
-						taxonomy.getDisplayName())));
-		taxonomyEl = uifactory.addCheckboxesVertical("selected.taxonomy.tree", searchCont, taxonomySV.keys(), taxonomySV.values(), 1);
-		repositoryModule.getTaxonomyRefs().forEach(taxonomy -> taxonomyEl.select(taxonomy.getKey().toString(), true));
-		taxonomyEl.addActionListener(FormEvent.ONCHANGE);
-		
-		// Leave
-		FormLayoutContainer leaveCont = FormLayoutContainer.createDefaultFormLayout("leave", getTranslator());
-		leaveCont.setFormTitle(translate("repository.admin.leave.title"));
-		formLayout.add(leaveCont);
-		leaveCont.setRootForm(mainForm);
-		
-		String[] leaveValues = new String[] {
-				translate("rentry.leave.atanytime"),
-				translate("rentry.leave.afterenddate"),
-				translate("rentry.leave.never")
-		};
-		leaveEl = uifactory.addDropdownSingleselect("leave.courses", "repository.admin.leave.label", leaveCont, leaveKeys, leaveValues, null);
-		leaveEl.addActionListener(FormEvent.ONCHANGE);
-		RepositoryEntryAllowToLeaveOptions leaveOption = repositoryModule.getAllowToLeaveDefaultOption();
-		if(leaveOption != null) {
-			leaveEl.select(leaveOption.name(), true);
-		} else {
-			leaveEl.select(RepositoryEntryAllowToLeaveOptions.atAnyTime.name(), true);
-		}
-
-		FormLayoutContainer notificationCont = FormLayoutContainer.createDefaultFormLayout("notification", getTranslator());
-		notificationCont.setFormTitle(translate("repository.admin.notification.title"));
-		notificationCont.setFormInfo(translate("repository.admin.notification.desc"));
-		formLayout.add(notificationCont);
-		notificationCont.setRootForm(mainForm);
-
-		String[] notiKeys = new String[]{
-				NOTIFICATION_REPOSITORY_STATUS_CHANGED
-		};
-
-		String[] notiValues = new String[]{
-				translate("repository.admin.notification")
-		};
-
-		boolean statusChangedNotificationEnabled = repositoryModule.isRepoStatusChangedNotificationEnabledDefault();
-		notificationEl = uifactory.addCheckboxesVertical("repository.admin.notification.label", notificationCont, notiKeys, notiValues, 1);
-		notificationEl.addActionListener(FormEvent.ONCHANGE);
-		notificationEl.select(NOTIFICATION_REPOSITORY_STATUS_CHANGED, statusChangedNotificationEnabled);
-
-		// TODO Darstellung inaktiver abos
-
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		notificationCont.add(buttonsCont);
-		buttonsCont.setRootForm(mainForm);
-		uifactory.addStaticTextElement("maintButtonLabel", getTranslator().translate("repository.admin.subscribers"), buttonsCont);
-		enableAllSubscribersLink = uifactory.addFormLink("repository.admin.enable.all.subscribers", buttonsCont, Link.BUTTON);
-		disableAllSubscribersLink = uifactory.addFormLink("repository.admin.disable.all.subscribers", buttonsCont, Link.BUTTON);
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(myCourseSearchEl == source) {
-			boolean on = !myCourseSearchEl.getSelectedKeys().isEmpty();
-			repositoryModule.setMyCoursesSearchEnabled(on);
-			getWindowControl().setInfo("saved");
-		} else if(commentEl == source) {
-			boolean on = !commentEl.getSelectedKeys().isEmpty();
-			repositoryModule.setCommentEnabled(on);
-			getWindowControl().setInfo("saved");
-		} else if(ratingEl == source) {
-			boolean on = !ratingEl.getSelectedKeys().isEmpty();
-			repositoryModule.setRatingEnabled(on);
-			getWindowControl().setInfo("saved");
-		} else if(membershipEl == source) {
-			boolean on = !membershipEl.getSelectedKeys().isEmpty();
-			repositoryModule.setRequestMembershipEnabled(on);
-			getWindowControl().setInfo("saved");
-		} else if (notificationEl == source) {
-			repositoryModule.setRepoStatusChangedNotificationEnabledDefault(notificationEl.isKeySelected(NOTIFICATION_REPOSITORY_STATUS_CHANGED));
-			getWindowControl().setInfo("saved");
-		} else if (taxonomyEl == source) {
-			List<TaxonomyRef> taxonomyRefs = taxonomyEl.getSelectedKeys().stream()
-					.map(Long::valueOf)
-					.map(TaxonomyRefImpl::new).
-					collect(Collectors.toList());
-			repositoryModule.setTaxonomyRefs(taxonomyRefs);
-			getWindowControl().setInfo("saved");
-		} else if(leaveEl == source) {
-			String selectedOption = leaveEl.getSelectedKey();
-			RepositoryEntryAllowToLeaveOptions option = RepositoryEntryAllowToLeaveOptions.valueOf(selectedOption);
-			repositoryModule.setAllowToLeaveDefaultOption(option);
-			getWindowControl().setInfo("saved");
-		} else if (enableAllSubscribersLink == source
-				|| disableAllSubscribersLink == source) {
-			SubscriptionContext subContext = repositoryService.getSubscriptionContext();
-			PublisherData publisherData = repositoryService.getPublisherData();
-			Publisher publisher = notificationsManager.getOrCreatePublisher(subContext, publisherData);
-			notificationsManager.updateAllSubscribers(publisher, enableAllSubscribersLink == source);
-			getWindowControl().setInfo("saved");
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == configurationLink) {
+					doOpenSettings(ureq);
+				} else if (clickedLink == accessLink){
+					doOpenAccess(ureq);
+				}
+			}
 		}
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//lifecycleAdminCtrl.formOK(ureq);
+	
+	private void doOpenSettings(UserRequest ureq) {
+		if(configurationCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Configuration"), null);
+			configurationCtrl = new RepositoryAdminConfigurationController(ureq, bwControl);
+			listenTo(configurationCtrl);
+		}
+		addToHistory(ureq, configurationCtrl);
+		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
+	}
+	
+	private void doOpenAccess(UserRequest ureq) {
+		if(accessCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Access"), null);
+			accessCtrl = new RepositoryAdminAccessController(ureq, bwControl);
+			listenTo(accessCtrl);
+		}
+		addToHistory(ureq, accessCtrl);
+		mainVC.put("segmentCmp", accessCtrl.getInitialComponent());
 	}
 }

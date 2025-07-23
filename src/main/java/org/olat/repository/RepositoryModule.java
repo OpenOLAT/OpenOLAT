@@ -70,6 +70,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String CATALOG_ADD_CATEGORY_POSITION = "catalog.add.catalog.position";
 	private static final String MYCOURSES_SEARCH_ENABLED = "mycourses.search.enabled";
 	private static final String MYCOURSES_ALL_RESOURCES_ENABLED = "mycourses.all.resources.enabled";
+	private static final String MYCOURSES_PARTICIPANTS_ONLY = "repo.my.courses.participant.only";
+	private static final String MYCOURSES_COACHING_TOOL_HINT = "repo.my.courses.coaching.tool.hint";
 	
 	private static final String COMMENT_ENABLED = "repo.comment.enabled";
 	private static final String RATING_ENABLED = "repo.rating.enabled";
@@ -115,6 +117,11 @@ public class RepositoryModule extends AbstractSpringModule {
 	private boolean requestMembershipEnabled;
 	@Value("${repo.status.changed.notification.enabled.default}")
 	private boolean repoStatusChangedNotificationEnabledDefault;
+
+	@Value("${repo.my.courses.participant.only:true}")
+	private boolean myCoursesParticipantsOnly;
+	@Value("${repo.my.courses.coaching.tool.hint:false}")
+	private boolean myCoursesCoachingToolHint;
 
 	@Value("${repo.lifecycle.auto.close:}")
 	private String lifecycleAutoClose;
@@ -215,6 +222,16 @@ public class RepositoryModule extends AbstractSpringModule {
 		String myCoursesAllResources = getStringPropertyValue(MYCOURSES_ALL_RESOURCES_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(myCoursesAllResources)) {
 			listAllResourceTypes = "true".equals(myCoursesAllResources);
+		}
+		
+		String myCoursesParticipantsOnlyObj = getStringPropertyValue(MYCOURSES_PARTICIPANTS_ONLY, true);
+		if(StringHelper.containsNonWhitespace(myCoursesParticipantsOnlyObj)) {
+			myCoursesParticipantsOnly = "true".equals(myCoursesParticipantsOnlyObj);
+		}
+		
+		String myCoursesCoachingToolHintObj = getStringPropertyValue(MYCOURSES_COACHING_TOOL_HINT, true);
+		if(StringHelper.containsNonWhitespace(myCoursesCoachingToolHintObj)) {
+			myCoursesCoachingToolHint = "true".equals(myCoursesCoachingToolHintObj);
 		}
 		
 		String comment = getStringPropertyValue(COMMENT_ENABLED, true);
@@ -376,6 +393,24 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setMyCoursesSearchEnabled(boolean enabled) {
 		myCoursesSearchEnabled = enabled;
 		setStringProperty(MYCOURSES_SEARCH_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isMyCoursesParticipantsOnly() {
+		return myCoursesParticipantsOnly;
+	}
+
+	public void setMyCoursesParticipantsOnly(boolean participantsOnly) {
+		this.myCoursesParticipantsOnly = participantsOnly;
+		setStringProperty(MYCOURSES_PARTICIPANTS_ONLY, Boolean.toString(participantsOnly), true);
+	}
+
+	public boolean isMyCoursesCoachingToolHint() {
+		return myCoursesCoachingToolHint;
+	}
+
+	public void setMyCoursesCoachingToolHint(boolean hint) {
+		this.myCoursesCoachingToolHint = hint;
+		setStringProperty(MYCOURSES_COACHING_TOOL_HINT, Boolean.toString(hint), true);
 	}
 
 	public boolean isCommentEnabled() {

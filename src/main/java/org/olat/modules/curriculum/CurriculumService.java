@@ -676,7 +676,9 @@ public interface CurriculumService {
 	 * @param runtimeTypes Runtime types for the repository entries.   
 	 * @return A list of views
 	 */
-	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status, RepositoryEntryRuntimeType[] runtimeTypes);
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
+			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status,
+			RepositoryEntryRuntimeType[] runtimeTypes, boolean participantsOnly);
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 

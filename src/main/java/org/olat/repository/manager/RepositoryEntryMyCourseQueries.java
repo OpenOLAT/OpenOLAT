@@ -254,7 +254,7 @@ public class RepositoryEntryMyCourseQueries {
 		sb.append(" where ");
 		boolean membershipMandatory = params.isMembershipMandatory() || params.isMembershipOnly();
 		AddParams addParams = appendMyViewAccessSubSelect(sb, roles, params.getFilters(),
-				membershipMandatory, params.getOfferValidAt(), params.getOfferOrganisations(),
+				membershipMandatory, params.isParticipantsOnly(), params.getOfferValidAt(), params.getOfferOrganisations(),
 				params.getEntryStatus());
 		// Permissions on the status of the entries is unsolvable, abort search
 		if(addParams.isVeto()) {
@@ -450,7 +450,8 @@ public class RepositoryEntryMyCourseQueries {
 	}
 	
 	private AddParams appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters,
-			boolean membershipMandatory, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
+			boolean membershipMandatory, boolean participantsOnly,
+			Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
 			RepositoryEntryStatusEnum[] entryStatus) {
 		if(roles.isGuestOnly()) {
 			RepositoryEntryStatusEnum[] activeGuestStatus = subSetOf(ACService.RESTATUS_ACTIVE_GUEST, entryStatus);
@@ -465,24 +466,29 @@ public class RepositoryEntryMyCourseQueries {
 			return new AddParams(false, false, false, activeGuestStatus.length == 0);
 		}
 
+		boolean emptyRoles = false;
 		List<GroupRoles> inRoles = new ArrayList<>();
-		if(filters != null && !filters.isEmpty()) {
-			for(Filter filter: filters) {
-				if(Filter.asAuthor.equals(filter)) {
-					inRoles.add(GroupRoles.owner);
-				} else if(Filter.asCoach.equals(filter)) {
-					inRoles.add(GroupRoles.coach);
-				} else if (Filter.asParticipant.equals(filter)) {
-					inRoles.add(GroupRoles.participant);
+		if(participantsOnly) {
+			inRoles.add(GroupRoles.participant);	
+		} else {
+			if(filters != null && !filters.isEmpty()) {
+				for(Filter filter: filters) {
+					if(Filter.asAuthor.equals(filter)) {
+						inRoles.add(GroupRoles.owner);
+					} else if(Filter.asCoach.equals(filter)) {
+						inRoles.add(GroupRoles.coach);
+					} else if (Filter.asParticipant.equals(filter)) {
+						inRoles.add(GroupRoles.participant);
+					}
 				}
 			}
-		}
-		//+ membership
-		boolean emptyRoles = inRoles.isEmpty();
-		if(emptyRoles) {
-			inRoles.add(GroupRoles.owner);
-			inRoles.add(GroupRoles.coach);
-			inRoles.add(GroupRoles.participant);
+			//+ membership
+			emptyRoles = inRoles.isEmpty();
+			if(emptyRoles) {
+				inRoles.add(GroupRoles.owner);
+				inRoles.add(GroupRoles.coach);
+				inRoles.add(GroupRoles.participant);
+			}
 		}
 		
 		int numOfStatus = 0;

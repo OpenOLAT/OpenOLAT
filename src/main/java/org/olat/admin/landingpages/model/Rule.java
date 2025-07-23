@@ -19,12 +19,18 @@
  */
 package org.olat.admin.landingpages.model;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.modules.coach.CoachingService;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -82,12 +88,20 @@ public class Rule {
 		
 		//match the role?
 		if(!"none".equals(role) && StringHelper.containsNonWhitespace(role)) {
-			Roles roles = userSession.getRoles();
 			RoleToRule roleToRule = RoleToRule.valueOfConfiguration(role);
-			if(roleToRule != null) {
-				match &= roles.hasRole(roleToRule.role());
-			} else {
-				log.warn("Landing page rule with an unkown role: " + role);
+			if(OrganisationRoles.isValue(role)) {
+				Roles roles = userSession.getRoles();
+				if(roleToRule != null) {
+					match &= roles.hasRole(roleToRule.role());
+				} else {
+					log.warn("Landing page rule with an unkown role: {}", role);
+				}
+			} else if(GroupRoles.owner.name().equals(roleToRule.roleName()) || GroupRoles.coach.name().equals(roleToRule.roleName())) {
+				match &= CoreSpringFactory.getImpl(RepositoryService.class)
+						.hasRoleExpanded(userSession.getIdentity(), roleToRule.roleName());
+			} else if(CurriculumRoles.mastercoach.name().equals(roleToRule.roleName())) {
+				match &= CoreSpringFactory.getImpl(CoachingService.class)
+						.isMasterCoach(userSession.getIdentity());
 			}
 		}
 		

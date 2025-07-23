@@ -19,7 +19,9 @@
  */
 package org.olat.admin.landingpages.model;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -41,27 +43,69 @@ public enum RoleToRule {
 	EDUCATION_MGR(OrganisationRoles.educationmanager),
 	PRINCIPAL(OrganisationRoles.principal),
 	ADMIN("olatAdmin", OrganisationRoles.administrator),
-	SYS_ADMIN( OrganisationRoles.sysadmin);
+	CRRICULUMMANAGER(OrganisationRoles.curriculummanager),
+	COURSEOWNER(GroupRoles.owner),
+	COURSECOACH(GroupRoles.coach),
+	MASTERCOACH(CurriculumRoles.mastercoach)
+	;
 	
 	private final String roleName;
+	private final GroupRoles courseRole;
 	private final OrganisationRoles role;
+	private final CurriculumRoles curriculumRole;
 	
 	private RoleToRule(OrganisationRoles role) {
 		this.roleName = role.name();
 		this.role = role;
+		courseRole = null;
+		curriculumRole = null;
 	}
 	
 	private RoleToRule(String roleName, OrganisationRoles role) {
 		this.roleName = roleName;
 		this.role = role;
+		courseRole = null;
+		curriculumRole = null;
+	}
+	
+	private RoleToRule(GroupRoles role) {
+		this.roleName = null;
+		this.role = null;
+		courseRole = role;
+		curriculumRole = null;
+	}
+	
+	private RoleToRule(CurriculumRoles role) {
+		this.roleName = null;
+		this.role = null;
+		courseRole = null;
+		curriculumRole = role;
 	}
 	
 	public final String ruleName() {
 		return roleName;
 	}
 	
+	public final String roleName() {
+		if(courseRole != null) {
+			return courseRole.name();
+		}
+		if(curriculumRole != null) {
+			return curriculumRole.name();
+		}
+		return role.name();
+	}
+	
 	public final OrganisationRoles role() {
 		return role;
+	}
+	
+	public final GroupRoles courseRole() {
+		return courseRole;
+	}
+	
+	public final CurriculumRoles curriculumRole() {
+		return curriculumRole;
 	}
 	
 	public static RoleToRule valueOfConfiguration(String string) {

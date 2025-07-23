@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -73,10 +74,8 @@ public class LandingPagesAdminController extends FormBasicController {
 	private RulesDataModel model;
 	private FlexiTableElement tableEl;
 	
-	private String[] roleKeys;
-	private String[] roleValues;
-	private final String[] attrKeys;
-	private final String[] attrValues;
+	private final SelectionValues rolePK;
+	private final SelectionValues attrPK;
 
 	private FormSubmit saveButton;
 	private ChooserController chooserCtrl;
@@ -96,28 +95,20 @@ public class LandingPagesAdminController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		
 		RoleToRule[] roles = RoleToRule.values();
-		roleKeys = new String[roles.length + 1];
-		roleValues = new String[roles.length + 1];
-		roleKeys[0] = "none";
-		roleValues[0] = translate("none");
+		rolePK = new SelectionValues();
+		rolePK.add(SelectionValues.entry("none", translate("none")));
 		for(int i=0; i<roles.length; i++) {
-			roleKeys[i + 1] = roles[i].name();
-			roleValues[i + 1] = translate("roles." + roles[i].role() + "s");
+			rolePK.add(SelectionValues.entry(roles[i].name(), translate("roles." + roles[i].roleName() + "s")));
 		}
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		List<UserPropertyHandler> userPropertyHandlers = userManager
 				.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
-		int numOfProperties = userPropertyHandlers.size();
-		attrKeys = new String[numOfProperties + 1];
-		attrValues = new String[numOfProperties + 1];
-		attrKeys[0] = "";
-		attrValues[0] = "-";
-		for(int i=0; i<numOfProperties; i++) {
-			UserPropertyHandler handler = userPropertyHandlers.get(i);
-			attrKeys[i+1] = handler.getName();
-			attrValues[i+1] = translate(handler.i18nFormElementLabelKey());
+		attrPK = new SelectionValues();
+		attrPK.add(SelectionValues.entry("", "-"));
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			attrPK.add(SelectionValues.entry(handler.getName(), translate(handler.i18nFormElementLabelKey())));
 		}
 		
 		initForm(ureq);
@@ -175,21 +166,17 @@ public class LandingPagesAdminController extends FormBasicController {
 		RuleWrapper wrapper = new RuleWrapper(rule);
 		wrapper.setPosition(pos);
 		
-		SingleSelection roleEl = uifactory.addDropdownSingleselect("role-" + i, null, formLayout, roleKeys, roleValues, null);
+		SingleSelection roleEl = uifactory.addDropdownSingleselect("role-" + i, null, formLayout, rolePK.keys(), rolePK.values(), null);
 		String role = rule.getRole();
-		for(int j=roleKeys.length; j-->0; ) {
-			if(roleKeys[j].equals(role)) {
-				roleEl.select(roleKeys[j], true);
-			}
+		if(rolePK.containsKey(role)) {
+			roleEl.select(role, true);
 		}
 		wrapper.setRoleEl(roleEl);
 		
-		SingleSelection attrNameEl = uifactory.addDropdownSingleselect("attr-key-" + i, null, formLayout, attrKeys, attrValues, null);
+		SingleSelection attrNameEl = uifactory.addDropdownSingleselect("attr-key-" + i, null, formLayout, attrPK.keys(), attrPK.values(), null);
 		String userAttributeKey = rule.getUserAttributeKey();
-		for(int j=attrKeys.length; j-->0; ) {
-			if(attrKeys[j].equals(userAttributeKey)) {
-				attrNameEl.select(attrKeys[j], true);
-			}
+		if(attrPK.containsKey(userAttributeKey)) {
+			attrNameEl.select(userAttributeKey, true);
 		}
 		wrapper.setAttrNameEl(attrNameEl);
 		
