@@ -169,7 +169,9 @@ public class CourseListController extends FormBasicController implements Activat
 		DefaultFlexiColumnModel technicalTypeCol = new DefaultFlexiColumnModel(false, Columns.technicalType);
 		technicalTypeCol.setCellRenderer(new TechnicalTypeRenderer());
 		columnsModel.addFlexiColumnModel(technicalTypeCol);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, CMD_SELECT));
+		DefaultFlexiColumnModel nameCol = new DefaultFlexiColumnModel(Columns.name, CMD_SELECT);
+		nameCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(nameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.externalId, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.externalRef, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleStart,
@@ -219,7 +221,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.2");
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.3");
 		
 		initFilters();
 		initFiltersPresets(ureq);
@@ -314,7 +316,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tabs.add(finishedTab);
 
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, relevantTab);
     }
 
 	private void loadModel() {
