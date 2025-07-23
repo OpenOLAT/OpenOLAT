@@ -113,9 +113,9 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	
 	private boolean accept(String searchValue, CourseStatEntryRow entry) {
 		if(searchValue == null) return true;
-		return accept(searchValue, entry.getRepoDisplayName())
-				|| accept(searchValue, entry.getRepoExternalRef())
-				|| accept(searchValue, entry.getRepoExternalId());
+		return accept(searchValue, entry.getDisplayName())
+				|| accept(searchValue, entry.getExternalRef())
+				|| accept(searchValue, entry.getExternalId());
 	}
 	
 	private boolean accept(String searchValue, String val) {
@@ -125,7 +125,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	private boolean acceptStatus(List<String> refs, CourseStatEntryRow entry) {
 		if(refs == null || refs.isEmpty()) return true;
 		return refs.stream()
-				.anyMatch(ref -> entry.getRepoStatus() != null && ref.equals(entry.getRepoStatus().name()));
+				.anyMatch(ref -> entry.getStatus() != null && ref.equals(entry.getStatus().name()));
 	}
 	
 	private boolean acceptAssessment(List<String> refs, CourseStatEntryRow entry) {
@@ -247,14 +247,14 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		if(begin == null && end == null) return true;
 		
 		if(begin != null && end != null) {
-			return row.getLifecycleStartDate() != null && begin.compareTo(row.getLifecycleStartDate()) <= 0
-					&& row.getLifecycleEndDate() != null && end.compareTo(row.getLifecycleEndDate()) >= 0;
+			return row.getLifecycleStart() != null && begin.compareTo(row.getLifecycleStart()) <= 0
+					&& row.getLifecycleEnd() != null && end.compareTo(row.getLifecycleEnd()) >= 0;
 		}
 		if(begin != null) {
-			return row.getLifecycleStartDate() != null && begin.compareTo(row.getLifecycleStartDate()) <= 0;
+			return row.getLifecycleStart() != null && begin.compareTo(row.getLifecycleStart()) <= 0;
 		}
 		if( end != null) {
-			return row.getLifecycleEndDate() != null && end.compareTo(row.getLifecycleEndDate()) >= 0;
+			return row.getLifecycleEnd() != null && end.compareTo(row.getLifecycleEnd()) >= 0;
 		}
 		return false;
 	}
@@ -276,15 +276,15 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	@Override
 	public Object getValueAt(CourseStatEntryRow row, int col) {
 		return switch(COLS[col]) {
-			case key -> row.getRepoKey();
+			case key -> row.getKey();
 			case mark -> row.getMarkLink();
-			case technicalType -> row.getRepoTechnicalType();
-			case name -> row.getRepoDisplayName();
-			case externalId -> row.getRepoExternalId();
-			case externalRef -> row.getRepoExternalRef();
-			case lifecycleStart -> row.getLifecycleStartDate();
-			case lifecycleEnd -> row.getLifecycleEndDate();
-			case access -> row.getRepoStatus();
+			case technicalType -> row.getTechnicalType();
+			case name -> row.getDisplayName();
+			case externalId -> row.getExternalId();
+			case externalRef -> row.getExternalRef();
+			case lifecycleStart -> row.getLifecycleStart();
+			case lifecycleEnd -> row.getLifecycleEnd();
+			case access -> row.getStatus();
 			case participants -> row.getParticipants();
 			case participantsVisited -> row.getParticipantsVisited();
 			case participantsNotVisited -> row.getParticipantsNotVisited();

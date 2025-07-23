@@ -80,7 +80,7 @@ public class CoursesTableSortDelegate extends SortableFlexiTableModelDelegate<Co
 			}
 			
 			if(c == 0) {
-				c = compareString(o1.getRepoDisplayName(), o2.getRepoDisplayName());
+				c = compareString(o1.getDisplayName(), o2.getDisplayName());
 			}
 			return c;
 		}
@@ -111,7 +111,7 @@ public class CoursesTableSortDelegate extends SortableFlexiTableModelDelegate<Co
 			}
 			
 			if(c == 0) {
-				c = compareString(o1.getRepoDisplayName(), o2.getRepoDisplayName());
+				c = compareString(o1.getDisplayName(), o2.getDisplayName());
 			}
 			return c;
 		}
