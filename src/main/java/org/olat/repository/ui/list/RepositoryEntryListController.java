@@ -401,12 +401,10 @@ public class RepositoryEntryListController extends FormBasicController
 				FilterButton.MARKED.name(), markedKeyValue, true));
 		
 		// my resources
-		if(!searchParams.isParticipantsOnly()) {
-			SelectionValues myResourcesKeyValue = new SelectionValues();
-			myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-			filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
-					FilterButton.OWNED.name(), myResourcesKeyValue, true));
-		}
+		SelectionValues myResourcesKeyValue = new SelectionValues();
+		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("cif.owned.resources.only"),
+				FilterButton.OWNED.name(), myResourcesKeyValue, true));
 
 		SelectionValues coursesValues = new SelectionValues();
 		coursesValues.add(SelectionValues.entry(Filter.currentCourses.name(), translate("filter.execution.period.current")));
