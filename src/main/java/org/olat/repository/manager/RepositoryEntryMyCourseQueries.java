@@ -466,29 +466,26 @@ public class RepositoryEntryMyCourseQueries {
 			return new AddParams(false, false, false, activeGuestStatus.length == 0);
 		}
 
-		boolean emptyRoles = false;
 		List<GroupRoles> inRoles = new ArrayList<>();
-		if(participantsOnly) {
-			inRoles.add(GroupRoles.participant);	
-		} else {
-			if(filters != null && !filters.isEmpty()) {
-				for(Filter filter: filters) {
-					if(Filter.asAuthor.equals(filter)) {
-						inRoles.add(GroupRoles.owner);
-					} else if(Filter.asCoach.equals(filter)) {
-						inRoles.add(GroupRoles.coach);
-					} else if (Filter.asParticipant.equals(filter)) {
-						inRoles.add(GroupRoles.participant);
-					}
+		if(filters != null && !filters.isEmpty()) {
+			for(Filter filter: filters) {
+				if(Filter.asAuthor.equals(filter)) {
+					inRoles.add(GroupRoles.owner);
+				} else if(Filter.asCoach.equals(filter)) {
+					inRoles.add(GroupRoles.coach);
+				} else if (Filter.asParticipant.equals(filter)) {
+					inRoles.add(GroupRoles.participant);
 				}
 			}
-			//+ membership
-			emptyRoles = inRoles.isEmpty();
-			if(emptyRoles) {
+		}
+		//+ membership
+		boolean emptyRoles = inRoles.isEmpty();
+		if(emptyRoles) {
+			if(!participantsOnly) {	
 				inRoles.add(GroupRoles.owner);
-				inRoles.add(GroupRoles.coach);
-				inRoles.add(GroupRoles.participant);
+				inRoles.add(GroupRoles.coach);	
 			}
+			inRoles.add(GroupRoles.participant);
 		}
 		
 		int numOfStatus = 0;
