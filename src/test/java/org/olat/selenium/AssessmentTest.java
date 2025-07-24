@@ -198,8 +198,8 @@ public class AssessmentTest extends Deployments {
 		
 		//author take the lead and check the assessment tool
 		navBar
-			.openMyCourses()
-			.select(courseTitle);
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);
 		
 		//open the assessment tool
 		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
@@ -501,8 +501,8 @@ public class AssessmentTest extends Deployments {
 		
 		//Author check if they pass the test
 		navBar
-			.openMyCourses()
-			.select(courseTitle);	
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);	
 		//open the assessment tool
 		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
 			.assessmentTool();		
@@ -635,8 +635,8 @@ public class AssessmentTest extends Deployments {
 		
 		// Author check if they pass the test
 		navBar
-			.openMyCourses()
-			.select(courseTitle);	
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);
 		// Open the assessment tool
 		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
 			.assessmentTool();		

@@ -78,11 +78,15 @@
 		<div class="o_flex_block_one_line_left">
 			<div class="o_performance o_flex_item_max">
 				#if($r.isNotEmpty(${row.averageCompletionInPercents}))
+					#if($r.isNotNull($row.averageCompletionInPercents) && $row.averageCompletionInPercents == "100")
+					<i class="o_icon o_icon_circle_color"> </i>
+					#else
 					<span class="o_progress">
 						<span class="progress o_progress-sm" style="width:100px;">
 							<span class="progress-bar" style="width:${row.averageCompletionInPercents}px" title="${row.averageCompletionInPercents}%"></span>
 						</span>
 					</span>
+					#end
 					&#8960; ${row.averageCompletionInPercents}&#37;
 					<span class="o_spacer">&middot;</span>
 				#end

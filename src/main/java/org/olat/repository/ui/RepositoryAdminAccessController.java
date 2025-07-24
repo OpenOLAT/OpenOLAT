@@ -109,6 +109,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 		}
 		
 		hintEl = uifactory.addToggleButton("admin.coaching.hint", "admin.coaching.hint", translate("on"), translate("off"), formLayout);
+		hintEl.setHelpTextKey("admin.coaching.hint.help", null);
 		hintEl.toggle(repositoryModule.isMyCoursesCoachingToolHint());
 		
 		String overviewPage = velocity_root + "/repository_admin_overview.html";
@@ -121,7 +122,6 @@ public class RepositoryAdminAccessController extends FormBasicController {
 		
 		sitesButton = uifactory.addFormLink("admin.coaching.sites", overviewCont, Link.BUTTON);
 		sitesButton.setGhost(true);
-		
 	}
 	
 	private void updateUI() {
@@ -145,7 +145,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	
 	private String getOverview(SiteDefinition siteDef) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(siteDef.isEnabled() ? translate("enabled") : translate("disabled"));
+		sb.append(siteDef.isEnabled() ? translate("admin.access.enabled") : translate("admin.access.disabled"));
 		
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {

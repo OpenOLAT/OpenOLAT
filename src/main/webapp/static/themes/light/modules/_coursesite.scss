@@ -212,8 +212,18 @@
 				}	
 			}
 			
-			.o_performance .o_progress > .progress {
-				vertical-align: middle;
+			.o_performance {
+				.o_progress > .progress {
+					vertical-align: middle;
+				}
+				
+				.o_icon_circle_color {
+					color: $progress-bar-bg;
+				}
+				
+				@media (max-width: $screen-sm-max) { 
+					display: none;
+				}
 			}
 			
 			.o_access {
