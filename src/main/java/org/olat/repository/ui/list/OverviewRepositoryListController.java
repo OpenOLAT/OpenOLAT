@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.InfoPanel;
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.scope.ScopeSelection;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,6 +52,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.site.CoachSite;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
@@ -108,6 +111,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private InPreparationQueries inPreparationQueries;
 	@Autowired
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
@@ -127,7 +132,7 @@ public class OverviewRepositoryListController extends BasicController implements
 
 		scopes = new ArrayList<>();
 		loadScopes();
-		if(participantsOnly && repositoryModule.isMyCoursesCoachingToolHint()) {
+		if(showCoachingToolHint()) {
 			loadCoachingToolHint(ureq);
 		}
 
@@ -152,6 +157,15 @@ public class OverviewRepositoryListController extends BasicController implements
 		panel.setInformations(informations.toString());
 		panel.setPersistedStatusId(ureq, "my-courses-coaching-tool-hint-v1");
 		mainVC.put("coachingToolHint", panel);
+	}
+		
+	private boolean showCoachingToolHint() {
+		if(participantsOnly && repositoryModule.isMyCoursesCoachingToolHint()) {
+			ChiefController ctrl = getWindowControl().getWindowBackOffice().getChiefController();
+			return ctrl != null && ctrl.hasStaticSite(CoachSite.class)
+					&& repositoryService.hasRoleExpanded(getIdentity(), GroupRoles.coach.name(), GroupRoles.owner.name());
+		}
+		return false;
 	}
 	
 	private void loadScopes() {
