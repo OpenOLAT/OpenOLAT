@@ -440,6 +440,7 @@ public class AssessmentTest extends Deployments {
 		
 		// prepare and start an assessment
 		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MINUTE, 2);
 		Date begin = cal.getTime();
 		cal.add(Calendar.MINUTE, 5);
 		Date end = cal.getTime();
@@ -594,6 +595,7 @@ public class AssessmentTest extends Deployments {
 		
 		// prepare and start an assessment
 		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MINUTE, 2);
 		Date begin = cal.getTime();
 		cal.add(Calendar.MINUTE, 5);
 		Date end = cal.getTime();
@@ -744,6 +746,7 @@ public class AssessmentTest extends Deployments {
 		
 		// prepare and start an assessment
 		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MINUTE, 2);
 		Date begin = cal.getTime();
 		cal.add(Calendar.MINUTE, 5);
 		Date end = cal.getTime();
@@ -787,8 +790,9 @@ public class AssessmentTest extends Deployments {
 		
 		// Author prepare and start a second assessment
 		cal = Calendar.getInstance();
+		cal.add(Calendar.MINUTE, 3);
 		Date beginAgain = cal.getTime();
-		cal.add(Calendar.MINUTE, 5);
+		cal.add(Calendar.MINUTE, 6);
 		Date endAgain = cal.getTime();
 		String assessmentSecondName = "Second mode " + UUID.randomUUID();
 		courseRuntime
