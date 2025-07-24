@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.coaching;
 
+import org.olat.core.util.Formatter;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI21CorrectionPage;
 import org.openqa.selenium.By;
@@ -62,6 +63,28 @@ public class CoachingPage {
 		OOGraphene.waitElement(gradingBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return new QTI21CorrectionPage(browser);
+	}
+	
+	public CoachingPage openCourses() {
+		By assessmentBy = By.cssSelector(".o_coaching_overview a.o_button_mega.o_sel_coaching_courses");
+		OOGraphene.waitElement(assessmentBy, browser).click();
+		OOGraphene.waitElement(By.className("o_coaching_course_list"), browser);
+		return this;
+	}
+	
+	public CoachingPage filterAllCourses() {
+		By allBy = By.xpath("//div[@class='o_coaching_course_list']//div[@class='o_table_tabs']//a[contains(@href,'tab')][contains(@href,'All')]");
+		OOGraphene.waitElement(allBy, browser).click();
+		By allActiveBy = By.xpath("//div[@class='o_coaching_course_list']//div[@class='o_table_tabs']//a[contains(@class,'btn-primary')][contains(@href,'tab')][contains(@href,'All')]");
+		OOGraphene.waitElement(allActiveBy, browser);
+		return this;
+	}
+
+	public void openCourse(String title) {
+		title = Formatter.truncateOnly(title, 55);
+		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+		OOGraphene.waitElement(titleBy, browser).click();
+		OOGraphene.waitBusy(browser);
 	}
 
 }
