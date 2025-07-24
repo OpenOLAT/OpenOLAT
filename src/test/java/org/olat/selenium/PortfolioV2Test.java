@@ -777,8 +777,8 @@ public class PortfolioV2Test extends Deployments {
 		//than go to the course and check the results in the assessment tool
 		//author take the lead and check the assessment tool
 		navBar
-			.openMyCourses()
-			.select(courseTitle);
+			.openAuthoringEnvironment()
+			.openResource(courseTitle);
 		//open the assessment tool
 		AssessmentToolPage assessmentTool = new CoursePageFragment(browser)
 			.assessmentTool();
