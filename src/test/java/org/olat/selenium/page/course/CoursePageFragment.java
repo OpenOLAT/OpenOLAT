@@ -79,6 +79,11 @@ public class CoursePageFragment {
 		return new CoursePageFragment(browser);
 	}
 	
+	/**
+	 * The informations page with details about the learn resource.
+	 * 
+	 * @return Itself
+	 */
 	public CoursePageFragment assertOnCourseStartPage() {
 		By startBy = By.cssSelector(".o_repo_details a.btn.o_start");
 		OOGraphene.waitElement(startBy, browser);

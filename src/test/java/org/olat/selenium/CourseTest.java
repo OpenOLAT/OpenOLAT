@@ -1970,6 +1970,7 @@ public class CourseTest extends Deployments {
 			.assertInIFrame(By.xpath("//h2[text()[contains(.,'Lorem Ipsum')]]"));
 	}
 	
+	
 	/**
 	 * Add an owner to a course directly from the author's list, and after
 	 * remove itself as an owner of the course.
@@ -1993,6 +1994,11 @@ public class CourseTest extends Deployments {
 			// Create course
 			.createCourse(title, true)
 			.clickToolbarBack();
+
+		// Coaching limits access for coach/owner
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		course
+			.changeStatus(RepositoryEntryStatusEnum.coachpublished);
 		
 		AuthoringEnvPage authoringEnv = navBar
 			.openAuthoringEnvironment();
@@ -2017,26 +2023,26 @@ public class CourseTest extends Deployments {
 			.nextReview()
 			.finish();
 
-		//Participant log in
+		// Participant log in
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
 			.loginAs(user.getLogin(), user.getPassword());
 		
-		// My course -> In preparation
+		// Coaching tool
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
-			.openMyCourses()
-			.openInPreparation()
-			.select(title);
+			.openCoaching()
+			.openCourses()
+			.filterAllCourses()
+			.openCourse(title);
 
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
-			.assertOnCourseStartPage()
-			.startCourse()
 			.assertOnCoursePage()
 			.edit()
 			.assertOnEditor();
 	}
+	
 	
 	/**
 	 * Modify the status of a course directly in the author's list.
