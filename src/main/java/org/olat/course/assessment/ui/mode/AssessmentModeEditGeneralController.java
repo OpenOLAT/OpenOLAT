@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
@@ -258,6 +259,8 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 			allOk &= false;
 		} else if(!validateFormItem(ureq, beginEl)) {
 			allOk &= false;
+		} else if(!validateFutureDate(ureq, beginEl)) {
+			allOk &= false;
 		}
 		if(endEl.getDate() == null) {
 			endEl.setErrorKey("form.legende.mandatory");
@@ -265,11 +268,27 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		} else if(!validateFormItem(ureq, endEl)) {
 			allOk &= false;
 		}
+		
 		if(beginEl.getDate() != null && endEl.getDate() != null
 				&& beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
 			beginEl.setErrorKey("error.begin.after.end");
 			endEl.setErrorKey("error.begin.after.end");
 			allOk &= false;
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateFutureDate(UserRequest ureq, DateChooser el) {
+		boolean allOk = true;
+		
+		if(el.getDate() != null) {
+			Date d = DateUtils.roundToMinute(el.getDate());
+			Date u = DateUtils.roundToMinute(ureq.getRequestTimestamp());
+			if(d.compareTo(u) <= 0) {
+				el.setErrorKey("error.future.date");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;

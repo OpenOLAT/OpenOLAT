@@ -226,6 +226,15 @@
 				}
 			}
 			
+			@media (max-width: $screen-md-min) { 
+				.o_social_actions .o_repo_rating,
+				.o_social_actions .o_repo_comments,
+				.o_social_actions .o_repo_taxonomy,
+				.o_social_actions .o_spacer {
+					display: none !important;
+				}
+			}
+			
 			.o_access {
 				height: $o-coursesite-rowelem-height-md;	
 				width: $o-coursesite-rowelem-width-md;

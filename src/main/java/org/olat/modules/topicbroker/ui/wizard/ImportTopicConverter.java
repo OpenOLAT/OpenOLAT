@@ -189,7 +189,7 @@ public class ImportTopicConverter {
 		if (!definitions.isEmpty()) {
 			for (int i = 0; i < definitions.size(); i++) {
 				TBCustomFieldDefinition definition = definitions.get(i);
-				int column = 6 + i;
+				int column = 8 + i;
 				String customFieldValue = line.length > column? line[column]: null;
 				if (customFieldValue != null && customFieldValue.isBlank()) {
 					customFieldValue = null;

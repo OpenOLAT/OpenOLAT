@@ -118,15 +118,19 @@
 	<div class="o_access">
 		<div class="o_social_actions">
 			#if($r.isNotEmpty($row.ratingFormItemName))
-				$r.render($row.ratingFormItemName)<div class="o_spacer">&#124;</div>
+			<div class="o_repo_rating">
+				$r.render($row.ratingFormItemName)
+			</div><div class="o_spacer">&#124;</div>
 			#end
 			#if($r.isNotEmpty($row.commentsLinkName))
-				$r.render($row.commentsLinkName)<div class="o_spacer">&#124;</div>
+			<div class="o_repo_comments">
+				$r.render($row.commentsLinkName)
+			</div><div class="o_spacer">&#124;</div>
 			#end
 			#if($row.numOfTaxonomyLevels == 1)
-				<div><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div><div class="o_spacer">&#124;</div>
+				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div><div class="o_spacer">&#124;</div>
 			#elseif($row.numOfTaxonomyLevels > 1)
-				<div><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
+				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
 				<div class="o_spacer">&#124;</div>
 			#end
 			$r.render($row.markLinkName)
