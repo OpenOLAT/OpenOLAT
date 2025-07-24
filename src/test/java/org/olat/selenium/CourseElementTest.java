@@ -2652,8 +2652,10 @@ public class CourseElementTest extends Deployments {
 		
 		NavigationPage coachNavBar = NavigationPage.load(browser);
 		coachNavBar
-			.openMyCourses()
-			.select(courseTitle);
+			.openCoaching()
+			.openCourses()
+			.filterAllCourses()
+			.openCourse(courseTitle);
 
 		// Go to the course element and check the 
 		CoursePageFragment coachCourse = new CoursePageFragment(browser);
