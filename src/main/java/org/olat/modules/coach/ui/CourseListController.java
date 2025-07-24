@@ -481,14 +481,20 @@ public class CourseListController extends FormBasicController implements Activat
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 		
-		FormLink infosLink = uifactory.addFormLink("infos_".concat(count), CMD_INFOS, "learn.more", tableEl, Link.BUTTON);
-		infosLink.setUserObject(row);
-		infosLink.setGhost(true);
-		row.setInfosLink(infosLink);
+		FormLink detailsLink = uifactory.addFormLink("infos_".concat(count), CMD_INFOS, "learn.more", tableEl, Link.BUTTON);
+		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details o_button_ghost");
+		detailsLink.setIconRightCSS("o_icon o_icon_details");
+		detailsLink.setUserObject(row);
+		detailsLink.setGhost(true);
+		row.setInfosLink(detailsLink);
 		
 		FormLink openLink = uifactory.addFormLink("open_".concat(count), CMD_SELECT, "open", tableEl, Link.BUTTON);
+		openLink.setCustomEnabledLinkCSS("btn btn-sm btn-primary o_start");
+		openLink.setIconRightCSS("o_icon o_icon_start");
+		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+		openLink.setUrl(BusinessControlFactory.getInstance()
+				.getAuthenticatedURLFromBusinessPathString(businessPath));
 		openLink.setUserObject(row);
-		openLink.setElementCssClass("btn btn-primary");
 		row.setOpenLink(openLink);
 	}
 	
