@@ -214,6 +214,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 		SelectionValues criteriaSV = new SelectionValues();
 		criteriaSV.add(entry(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED, translate("config.enrollment.criteria.overlapping.not.allowed")));
 		criteriaEl = uifactory.addCheckboxesVertical("config.enrollment.criteria", enrollmentCont, criteriaSV.keys(), criteriaSV.values(), 1);
+		criteriaEl.setEscapeHtml(false);
 		criteriaEl.addActionListener(FormEvent.ONCHANGE);
 		criteriaEl.select(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED,
 				!moduleConfig.getBooleanSafe(TopicBrokerCourseNode.CONFIG_KEY_OVERLAPPING_PERIOD_ALLOWED));
