@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.mark.Mark;
@@ -66,6 +67,9 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
+import org.olat.core.gui.components.scope.FormScopeSelection;
+import org.olat.core.gui.components.scope.Scope;
+import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -114,10 +118,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <P>
  * Initial Date:  8 févr. 2012 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
-
+	
 	protected static final String FILTER_MARKED = "Marked";
 	protected static final String FILTER_PERIOD = "Period";
 	protected static final String FILTER_STATUS = "status";
@@ -155,6 +159,8 @@ public class CourseListController extends FormBasicController implements Activat
 	private FlexiFiltersTab allTab;
 	private FlexiTableElement tableEl;
 	private CoursesTableDataModel tableModel;
+	private List<Scope> scopes;
+	private FormScopeSelection scopeEl;
 
 	private int counter = 0;
 	private final MapperKey mapperThumbnailKey;
@@ -188,11 +194,24 @@ public class CourseListController extends FormBasicController implements Activat
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		
 		initForm(ureq);
-		loadModel();
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		initScopes(formLayout);
+		initForm(formLayout, ureq);
+	}
+	
+	private void initScopes(FormItemContainer formLayout) {
+		// As coach / course owner
+		scopes = new ArrayList<>(4);
+		scopes.add(ScopeFactory.createScope(GroupRoles.coach.name(), translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
+		scopes.add(ScopeFactory.createScope(GroupRoles.owner.name(), translate("lectures.owner.menu.title"), null, "o_icon o_icon_coaching_tool"));
+		scopeEl = uifactory.addScopeSelection("scopes", null, formLayout, scopes);
+		scopeEl.setSelectedKey(GroupRoles.coach.name());
+	}
+	
+	private void initForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(Columns.mark);
@@ -387,7 +406,8 @@ public class CourseListController extends FormBasicController implements Activat
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
 		
-		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity());
+		GroupRoles role = GroupRoles.valueOf(scopeEl.getSelectedKey());
+		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(), role);
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
 				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey())))
 				.collect(Collectors.toList());
@@ -531,6 +551,8 @@ public class CourseListController extends FormBasicController implements Activat
 		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent
 				&& ratingItem.getUserObject() instanceof CourseStatEntryRow row) {
 			doRating(row, ratingEvent.getRating());
+		} else if(scopeEl == source) {
+			loadModel();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				if(CMD_SELECT.equals(se.getCommand())) {
@@ -593,7 +615,8 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		// Load only on activation
+		loadModel();
 	}
 	
 	private void doOpenCourse(UserRequest ureq, CourseStatEntryRow courseStat) {

@@ -125,9 +125,6 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean coachingEnabled = accessEl.isOneSelected() && COACHING_KEY.equals(accessEl.getSelectedKey());
-		hintEl.setVisible(coachingEnabled);
-		
 		SiteConfiguration coachingToolConfig = siteDefinitions.getConfigurationSite(coachingToolSiteDef);
 		if(!coachingToolSiteDef.getDefaultSiteSecurityCallbackBeanId().equals(coachingToolConfig.getSecurityCallbackBeanId())) {
 			String defaultId = coachingToolSiteDef.getDefaultSiteSecurityCallbackBeanId();
@@ -144,10 +141,11 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	}
 	
 	private String getOverview(SiteDefinition siteDef) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(siteDef.isEnabled() ? translate("admin.access.enabled") : translate("admin.access.disabled"));
-		
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
+		boolean enabled = siteDef.isEnabled() && config.isEnabled();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(enabled ? translate("admin.access.enabled") : translate("admin.access.disabled"));
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			sb.append(" | ").append(translate(config.getSecurityCallbackBeanId()));
 		}
@@ -156,10 +154,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(accessEl == source) {
-			updateUI();
-			doSaveSettings();
-		} else if(hintEl == source) {
+		if(accessEl == source || hintEl == source) {
 			doSaveSettings();
 		} else if(sitesButton == source) {
 			doOpenSitesSettings(ureq);
@@ -175,8 +170,7 @@ public class RepositoryAdminAccessController extends FormBasicController {
 	private void doSaveSettings() {
 		boolean participantsOnly = accessEl.isOneSelected() && COACHING_KEY.equals(accessEl.getSelectedKey());
 		repositoryModule.setMyCoursesParticipantsOnly(participantsOnly);
-		boolean showHint = participantsOnly && hintEl.isVisible() && hintEl.isOn();
-		repositoryModule.setMyCoursesCoachingToolHint(showHint);
+		repositoryModule.setMyCoursesCoachingToolHint(hintEl.isOn());
 		
 		if(participantsOnly) {
 			SiteConfiguration coachingToolConfig = siteDefinitions.getConfigurationSite(coachingToolSiteDef);

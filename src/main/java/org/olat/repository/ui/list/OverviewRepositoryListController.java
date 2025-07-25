@@ -150,7 +150,12 @@ public class OverviewRepositoryListController extends BasicController implements
 		String coachingToolUrl = BusinessControlFactory.getInstance().getAsAuthURIString(ceList, true);
 		
 		StringBuilder informations = new StringBuilder();
-		informations.append(translate("coaching.tool.hint"))
+		
+		String hintI18nKey = repositoryModule.isMyCoursesParticipantsOnly()
+				? "coaching.tool.hint.participants.only"
+				: "coaching.tool.hint";
+		
+		informations.append(translate(hintI18nKey))
 			.append(" <a href='").append(coachingToolUrl).append("'>")
 			.append(translate("coaching.tool.hint.link")).append("</a>");
 		
@@ -160,7 +165,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 		
 	private boolean showCoachingToolHint() {
-		if(participantsOnly && repositoryModule.isMyCoursesCoachingToolHint()) {
+		if(repositoryModule.isMyCoursesCoachingToolHint()) {
 			ChiefController ctrl = getWindowControl().getWindowBackOffice().getChiefController();
 			return ctrl != null && ctrl.hasStaticSite(CoachSite.class)
 					&& repositoryService.hasRoleExpanded(getIdentity(), GroupRoles.coach.name(), GroupRoles.owner.name());

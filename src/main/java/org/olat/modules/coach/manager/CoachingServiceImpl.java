@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
@@ -42,6 +43,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSItem;
@@ -80,6 +82,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CoachingServiceImpl implements CoachingService {
+	
+	private static final Logger log = Tracing.createLoggerFor(CoachingServiceImpl.class);
 
 	@Autowired
 	private CoachingDAO coachingDao;
@@ -187,8 +191,12 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<CourseStatEntry> getCoursesStatistics(Identity coach) {
-		return coachingDao.getCoursesStatistics(coach);
+	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role) {
+		if(role != GroupRoles.coach & role != GroupRoles.owner) {
+			log.warn("Search courses in course with illegal role: {}", role);
+			return new ArrayList<>();
+		}
+		return coachingDao.getCoursesStatistics(coach, role);
 	}
 
 	@Override

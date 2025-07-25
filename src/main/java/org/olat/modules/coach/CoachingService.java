@@ -22,6 +22,7 @@ package org.olat.modules.coach;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
@@ -69,7 +70,12 @@ public interface CoachingService {
 	
 	public List<RepositoryEntry> getUserCourses(Identity student);
 
-	public List<CourseStatEntry> getCoursesStatistics(Identity coach);
+	/**
+	 * @param identity The user
+	 * @param role The role to search for, coach or owner only
+	 * @return A list of courses statistics
+	 */
+	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role);
 	
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach);
 	
