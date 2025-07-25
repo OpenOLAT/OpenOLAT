@@ -40,7 +40,7 @@ public class ExpirationComponent extends FormBaseComponentImpl {
 		setTranslator(formItem.getTranslator());
 		this.formItem = formItem;
 	}
-	
+
 	@Override
 	public ExpirationFormItem getFormItem() {
 		return formItem;

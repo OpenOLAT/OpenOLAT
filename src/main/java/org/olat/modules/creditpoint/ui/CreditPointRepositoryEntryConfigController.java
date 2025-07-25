@@ -132,7 +132,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		} else {
 			overrideExpirationEl.select(DEFAULT_KEY, true);
 		}
-		expirationEl = new ExpirationFormItem("options.creditpoint.expiration", getTranslator());
+		expirationEl = new ExpirationFormItem("options.creditpoint.expiration", true, getTranslator());
 		expirationEl.setEnabled(editable && !managedCP);
 		expirationEl.setLabel("options.creditpoint.expiration", null);
 		expirationEl.setValue(exp);

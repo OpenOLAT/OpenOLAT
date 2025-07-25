@@ -21,9 +21,12 @@ package org.olat.modules.creditpoint.ui;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,6 +48,7 @@ public class CreditPointSystemEditController extends FormBasicController {
 	
 	private TextElement nameEl;
 	private TextElement labelEl;
+	private FormToggle expirationEl;
 	private ExpirationFormItem defaultExpirationEl;
 	
 	private CreditPointSystem creditPointSystem;
@@ -69,13 +73,17 @@ public class CreditPointSystemEditController extends FormBasicController {
 		String label = creditPointSystem == null ? null : creditPointSystem.getLabel();
 		labelEl = uifactory.addTextElement("system.label", 16, label, formLayout);
 		labelEl.setMandatory(true);
+		
+		expirationEl = uifactory.addToggleButton("validity.period", "validity.period", translate("on"), translate("off"), formLayout);
+		expirationEl.toggle(creditPointSystem.getDefaultExpiration() != null && creditPointSystem.getDefaultExpirationUnit() != null);
 
-		defaultExpirationEl = new ExpirationFormItem("system.default.expiration", getTranslator());
+		defaultExpirationEl = new ExpirationFormItem("system.default.expiration", false, getTranslator());
 		defaultExpirationEl.setLabel("system.default.expiration", null);
 		if(creditPointSystem != null && creditPointSystem.getDefaultExpiration() != null) {
 			defaultExpirationEl.setValue(creditPointSystem.getDefaultExpiration().toString());
 			defaultExpirationEl.setType(creditPointSystem.getDefaultExpirationUnit());
 		}
+		defaultExpirationEl.setVisible(expirationEl.isOn());
 		formLayout.add(defaultExpirationEl);
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
@@ -100,11 +108,16 @@ public class CreditPointSystemEditController extends FormBasicController {
 		}
 		
 		defaultExpirationEl.clearError();
-		if(defaultExpirationEl.getValue() != null) {
-			int val = defaultExpirationEl.getValue().intValue();
-			if(val <= 0) {
-				defaultExpirationEl.setErrorKey("form.error.positive.integer");
+		if(expirationEl.isOn()) {
+			if(defaultExpirationEl.isEmpty()) {
+				defaultExpirationEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
+			} else if(defaultExpirationEl.getValue() != null) {
+				int val = defaultExpirationEl.getValue().intValue();
+				if(val <= 0) {
+					defaultExpirationEl.setErrorKey("form.error.positive.integer");
+					allOk &= false;
+				}
 			}
 		}
 		
@@ -112,11 +125,21 @@ public class CreditPointSystemEditController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(expirationEl != null) {
+			defaultExpirationEl.setVisible(expirationEl.isOn());
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		String name = nameEl.getValue();
 		String label = labelEl.getValue();
-		Integer defaultExpiration = defaultExpirationEl.getValue();
-		CreditPointExpirationType defaultExpirationType = defaultExpirationEl.getType();
+		
+		boolean expiration = expirationEl.isOn();
+		Integer defaultExpiration = expiration ? defaultExpirationEl.getValue() : null;
+		CreditPointExpirationType defaultExpirationType = expiration ? defaultExpirationEl.getType() : null;
 		
 		if(creditPointSystem == null) {
 			creditPointSystem = creditPointService.createCreditPointSystem(name, label,

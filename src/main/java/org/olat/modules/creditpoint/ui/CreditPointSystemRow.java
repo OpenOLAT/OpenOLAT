@@ -19,9 +19,12 @@
  */
 package org.olat.modules.creditpoint.ui;
 
+import java.util.Date;
+
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
+import org.olat.modules.creditpoint.model.CreditPointExpiration;
 
 /**
  * 
@@ -47,6 +50,17 @@ public class CreditPointSystemRow {
 	
 	public String getName() {
 		return system.system().getName();
+	}
+	
+	public Date getCreationDate() {
+		return system.system().getCreationDate();
+	}
+	
+	public CreditPointExpiration getExpiration() {
+		if(system.system().getDefaultExpiration() != null && system.system().getDefaultExpirationUnit() != null) {
+			return new CreditPointExpiration(system.system().getDefaultExpiration(), system.system().getDefaultExpirationUnit());
+		}
+		return null;
 	}
 
 	public String getLabel() {

@@ -47,13 +47,12 @@ public class ExpirationFormItem extends FormItemImpl implements FormItemCollecti
 	
 	private static final Logger log = Tracing.createLoggerFor(ExpirationFormItem.class);
 	
-	
 	private final TextElement valueEl;
 	private final SingleSelection typeEl;
 	
 	private ExpirationComponent component;
 	
-	public ExpirationFormItem(String name, Translator translator) {
+	public ExpirationFormItem(String name, boolean withDefault, Translator translator) {
 		super(name);
 		setTranslator(translator);
 		
@@ -69,7 +68,9 @@ public class ExpirationFormItem extends FormItemImpl implements FormItemCollecti
 		typeEl.setDomReplacementWrapperRequired(false);
 		
 		SelectionValues unitPK = new SelectionValues();
-		unitPK.add(SelectionValues.entry(CreditPointExpirationType.DEFAULT.name(), translator.translate("expiration.type.default")));
+		if(withDefault) {
+			unitPK.add(SelectionValues.entry(CreditPointExpirationType.DEFAULT.name(), translator.translate("expiration.type.default")));
+		}
 		unitPK.add(SelectionValues.entry(CreditPointExpirationType.DAY.name(), translator.translate("expiration.unit.day")));
 		unitPK.add(SelectionValues.entry(CreditPointExpirationType.MONTH.name(), translator.translate("expiration.unit.month")));
 		unitPK.add(SelectionValues.entry(CreditPointExpirationType.YEAR.name(), translator.translate("expiration.unit.year")));
@@ -86,6 +87,11 @@ public class ExpirationFormItem extends FormItemImpl implements FormItemCollecti
 	@Override
 	public void reset() {
 		//
+	}
+	
+	public boolean isEmpty() {
+		return !StringHelper.containsNonWhitespace(valueEl.getValue())
+				|| !typeEl.isOneSelected();
 	}
 	
 	public Integer getValue() {

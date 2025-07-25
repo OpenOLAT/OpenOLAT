@@ -67,8 +67,10 @@ implements SortableFlexiTableDataModel<CreditPointSystemRow> {
 			case id -> row.getKey();
 			case name -> row.getName();
 			case label -> row.getLabel();
+			case expiration -> row.getExpiration();
 			case usage -> Long.valueOf(row.getUsage());
 			case status -> row.getStatus();
+			case creationDate -> row.getCreationDate();
 			case tools -> Boolean.TRUE;
 			default -> "ERROR";
 		};
@@ -78,8 +80,10 @@ implements SortableFlexiTableDataModel<CreditPointSystemRow> {
 		id("table.header.id"),
 		name("table.header.name"),
 		label("table.header.label"),
+		expiration("table.header.validity"),
 		usage("table.header.usage"),
 		status("table.header.status"),
+		creationDate("table.header.creation.date"),
 		tools("action.more");
 		
 		private final String i18nKey;
