@@ -170,7 +170,8 @@ public class CoachMainRootController extends BasicController implements Activate
 		} else if("Groups".equalsIgnoreCase(type)) {
 			doBusinessGroups(ureq);
 		} else if("Courses".equalsIgnoreCase(type)) {
-			doCourses(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doCourses(ureq).activate(ureq, subEntries, null);
 		} else if("Orders".equalsIgnoreCase(type)) {
 			doAssignmentOrders(ureq);
 		} else if("OrdersAdmin".equalsIgnoreCase(type)) {
@@ -189,7 +190,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		} else if(ordersButton == source) {
 			doAssignmentOrders(ureq);
 		} else if(coursesButton == source) {
-			doCourses(ureq);
+			doCourses(ureq).activate(ureq, List.of(), null);
 		} else if(reportsButton == source) {
 			doReport(ureq);
 		} else if(ordersAdminButton == source) {
@@ -273,7 +274,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		content.pushController(translate("groups.menu.title"), groupListCtrl);
 	}
 	
-	private void doCourses(UserRequest ureq) {
+	private CourseListController doCourses(UserRequest ureq) {
 		content.popUpToController(this);
 		cleanUp();
 		
@@ -283,6 +284,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		courseListCtrl = new CourseListController(ureq, bwControl);
 		listenTo(courseListCtrl);
 		content.pushController(translate("courses.menu.title"), courseListCtrl);
+		return courseListCtrl;
 	}
 	
 	private LecturesMainController doLectures(UserRequest ureq) {

@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * It check if the rights courses are seen, but not details of the
  * statistics.
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CoachingLargeTest extends OlatTestCase {
 	
@@ -285,7 +285,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getCoursesStatistics() {
-		List<CourseStatEntry> courseStatEntries = coachingService.getCoursesStatistics(coach10);
+		List<CourseStatEntry> courseStatEntries = coachingService.getCoursesStatistics(coach10, GroupRoles.coach);
 		Assert.assertNotNull(courseStatEntries);
 		List<Long> coachedCourses = coachToCourseMap.get(coach10.getKey());
 		Assert.assertNotNull(coachedCourses);

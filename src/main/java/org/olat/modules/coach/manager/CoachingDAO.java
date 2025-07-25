@@ -449,17 +449,17 @@ public class CoachingDAO {
 		return !rawList.isEmpty();
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatistics(Identity coach) {
-		Map<Long,CourseStatEntry> map = getCourses(coach);
+	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role) {
+		Map<Long,CourseStatEntry> map = getCourses(identity, role);
 		if(!map.isEmpty()) {
-			loadCoursesStatistics(coach, map);
-			loadCoursesStatisticsStatements(coach, map);
-			loadCoursesCompletions(coach, map);
+			loadCoursesStatistics(identity, role, map);
+			loadCoursesStatisticsStatements(identity, role, map);
+			loadCoursesCompletions(identity, role, map);
 		}
 		return new ArrayList<>(map.values());
 	}
 	
-	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach) {
+	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach, GroupRoles role) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
 		  .append("  v.teaser, v.location, v.authors, res.resId, lifecycle.validFrom, lifecycle.validTo,")
@@ -474,15 +474,18 @@ public class CoachingDAO {
 		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		
 		sb
-		  .and()
-		  .append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
-		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-		  .append(") or ")
-		  .append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-		  .append("  where owner.identity.key=:coachKey")
-		  .append("))");
-
+		  .and();
+		if(role == GroupRoles.owner) {
+			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(")");
+		} else {
+			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(")");
+		}
+		
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
@@ -514,7 +517,7 @@ public class CoachingDAO {
 		return map;
 	}
 	
-	private void loadCoursesStatistics(IdentityRef coach, Map<Long,CourseStatEntry> map) {
+	private void loadCoursesStatistics(IdentityRef coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key,")
 		  .append("  count(distinct participantMembers.identity.key) as numOfParticipants,")
@@ -534,17 +537,18 @@ public class CoachingDAO {
 		  .where()
 		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		  
-		sb
-		  .and()
-		  .append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
-		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-		  .append(") or ")
-		  .append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-		  .append("  where owner.identity.key=:coachKey")
-		  .append("))");
-		
-		sb.append("group by v.key, lifecycle.key");
+		sb.and();
+		if(role == GroupRoles.owner) {
+			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(")");
+		} else {
+			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(")");
+		}
+		sb.append(" group by v.key, lifecycle.key");
 		
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -572,7 +576,7 @@ public class CoachingDAO {
 		}
 	}
 	
-	private void loadCoursesStatisticsStatements(Identity coach, Map<Long,CourseStatEntry> map) {
+	private void loadCoursesStatisticsStatements(Identity coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  ae.repositoryEntry.key,")
@@ -588,16 +592,19 @@ public class CoachingDAO {
 		  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key)")
 		  .append("  inner join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae2.subIdent)")
 		  .where()
-		  .append("  ae2.entryRoot=true and rootElement.passedMode<>'none' and re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .and();
+		  .append("  ae2.entryRoot=true and rootElement.passedMode<>'none' and re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		
-		sb.append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
-		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-		  .append(" ) or re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-		  .append("  where owner.identity.key=:coachKey")
-		  .append(" ))");
-		
+		sb.and();
+		if(role == GroupRoles.owner) {
+			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(" )");
+		} else {
+			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(")");
+		}
 		sb.append(" )")
 		  .append(" group by ae.repositoryEntry.key");
 		
@@ -621,7 +628,7 @@ public class CoachingDAO {
 		}
 	}
 	
-	private void loadCoursesCompletions(Identity coach, Map<Long,CourseStatEntry> map) {
+	private void loadCoursesCompletions(Identity coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  ae.repositoryEntry.key,")
@@ -635,13 +642,17 @@ public class CoachingDAO {
 		  .where()
 		  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and();
-
-		sb.append("(participantGroup.key in (select coach.group.key from bgroupmember as coach")
-		  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-		  .append(" ) or re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-		  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-		  .append("  where owner.identity.key=:coachKey")
-		  .append(" ))");
+		
+		if(role == GroupRoles.owner) {
+			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(")");
+		} else {
+			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(" )");
+		}
 		
 		sb.append(" )")
 		  .append(" group by ae.repositoryEntry.key");

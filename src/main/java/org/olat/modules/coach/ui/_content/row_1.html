@@ -127,9 +127,9 @@
 				$r.render($row.commentsLinkName)
 			</div><div class="o_spacer">&#124;</div>
 			#end
-			#if($row.numOfTaxonomyLevels == 1)
+			#if($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels == 1)
 				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div><div class="o_spacer">&#124;</div>
-			#elseif($row.numOfTaxonomyLevels > 1)
+			#elseif($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels > 1)
 				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
 				<div class="o_spacer">&#124;</div>
 			#end
