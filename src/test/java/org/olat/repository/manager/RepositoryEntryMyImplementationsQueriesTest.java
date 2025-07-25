@@ -132,15 +132,15 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 	public void searchSingleCourseImplementations() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
 		
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-impl-1", "Curriculum for implementation", "Curriculum", false,
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-impl-3", "Curriculum for implementation", "Curriculum", false,
 				JunitTestHelper.getDefaultOrganisation());
-		CurriculumElementType structuredType = curriculumElementTypeDao.createCurriculumElementType("typ-single-cur-el-1", "Single course implementation", "", "");
+		CurriculumElementType structuredType = curriculumElementTypeDao.createCurriculumElementType("typ-single-cur-el-3", "Single course implementation", "", "");
 		structuredType.setAllowedAsRootElement(true);
 		structuredType.setMaxRepositoryEntryRelations(1);
 		structuredType.setSingleElement(true);
 		structuredType = curriculumElementTypeDao.update(structuredType);
 			
-		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-3", "3. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
@@ -151,6 +151,25 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 			.isEmpty();
 	}
 	
-	
-	
+	@Test
+	public void hasImplementations() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-4");
+		
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-impl-4", "Curriculum for implementation", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType multipleCoursesType = curriculumElementTypeDao.createCurriculumElementType("typ-multiple-cur-el-4", "Type for multiple courses", "", "");
+		multipleCoursesType.setAllowedAsRootElement(true);
+		multipleCoursesType.setMaxRepositoryEntryRelations(-1);
+		multipleCoursesType.setSingleElement(true);
+		multipleCoursesType = curriculumElementTypeDao.update(multipleCoursesType);
+			
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-4", "4. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, multipleCoursesType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		boolean hasOneImplementation = myImplementationsQueries.hasImplementations(participant, true);
+		Assert.assertTrue(hasOneImplementation);
+	}
 }

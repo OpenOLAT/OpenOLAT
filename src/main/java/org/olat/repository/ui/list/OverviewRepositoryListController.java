@@ -182,9 +182,10 @@ public class OverviewRepositoryListController extends BasicController implements
 					scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
 						name, hint, "o_icon o_icon-fw o_icon_curriculum"));
 				}
-				
-				scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.implementations.list"),
-						null, "o_icon o_icon-fw o_icon_curriculum"));
+				if(!implementations.isEmpty() || myImplementationsQueries.hasImplementations(getIdentity(), participantsOnly)) {
+					scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATIONS_LIST, translate("search.implementations.list"),
+							null, "o_icon o_icon-fw o_icon_curriculum"));
+				}
 			}
 			
 			if(inPreparationQueries.hasInPreparation(getIdentity(), participantsOnly)) {

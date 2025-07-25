@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.TypedQuery;
+
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -54,39 +56,14 @@ public class RepositoryEntryMyImplementationsQueries {
 	private MarkManager markManager;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
+	
+	public boolean hasImplementations(IdentityRef identity, boolean participantsOnly) {
+		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, participantsOnly);
+		return elements != null && !elements.isEmpty() && elements.get(0) != null;
+	}
 
 	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly, boolean participantsOnly) {
-		String query = """
-			select el from curriculumelement el
-			left join el.type curElementType
-			where el.status in (:status)
-			and (
-			  el.parent.key is not null
-			 or
-			  curElementType.maxRepositoryEntryRelations=-1
-			 or
-			  curElementType.singleElement=false
-			) and (
-			  exists (select membership.key from bgroupmember as membership
-			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
-			  and membership.role in (:roles)
-			 )
-			 or exists (select reservation.key from resourcereservation as reservation
-			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
-			))""";
-		
-		List<String> status = VISIBLE_STATUS.stream()
-				.map(CurriculumElementStatus::name)
-				.toList();
-		List<String> roles = participantsOnly
-				? List.of(GroupRoles.participant.name())
-				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name());
-		
-		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
-				.setParameter("status", status)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", roles)
-				.getResultList();
+		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, participantsOnly);
 
 		List<CurriculumElement> implementations;
 		if(elements.isEmpty()) {
@@ -115,5 +92,43 @@ public class RepositoryEntryMyImplementationsQueries {
 		}
 		return implementations;
 	}
-
+	
+	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults, boolean participantsOnly) {
+		String query = """
+			select el from curriculumelement el
+			left join el.type curElementType
+			where el.status in (:status)
+			and (
+			  el.parent.key is not null
+			 or
+			  curElementType.maxRepositoryEntryRelations=-1
+			 or
+			  curElementType.singleElement=false
+			) and (
+			  exists (select membership.key from bgroupmember as membership
+			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
+			  and membership.role in (:roles)
+			 )
+			 or exists (select reservation.key from resourcereservation as reservation
+			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
+			))""";
+		
+		List<String> status = VISIBLE_STATUS.stream()
+				.map(CurriculumElementStatus::name)
+				.toList();
+		List<String> roles = participantsOnly
+				? List.of(GroupRoles.participant.name())
+				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name());
+		
+		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
+				.setParameter("status", status)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roles);
+		if(maxResults > 0) {
+			elements = elements
+					.setFirstResult(firstResult)
+					.setMaxResults(maxResults);
+		}
+		return elements.getResultList();
+	}
 }
