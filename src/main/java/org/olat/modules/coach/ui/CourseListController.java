@@ -114,7 +114,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <P>
  * Initial Date:  8 févr. 2012 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
