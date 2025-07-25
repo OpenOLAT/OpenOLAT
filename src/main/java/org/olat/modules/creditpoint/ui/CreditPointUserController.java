@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.CreditPointWallet;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,8 +75,10 @@ public class CreditPointUserController extends BasicController {
 		
 		List<Scope> systemScopes = new ArrayList<>();
 		for(CreditPointSystem system:systems) {
-			systemScopes.add(ScopeFactory.createScope(SYSTEM_PREFIX + system.getKey(),
+			if(system.getStatus() == CreditPointSystemStatus.active) {
+				systemScopes.add(ScopeFactory.createScope(SYSTEM_PREFIX + system.getKey(),
 					StringHelper.escapeHtml(system.getName()), StringHelper.escapeHtml(system.getLabel())));
+			}
 		}
 
 		mainVC = createVelocityContainer("user_systems");

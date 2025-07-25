@@ -54,6 +54,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
@@ -214,14 +215,19 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			
 			SelectionValues benefitsPK = new SelectionValues();
 			benefitsPK.add(SelectionValues.entry(CERTIFICATE_KEY, translate("curriculum.element.show.benefits.certificate")));
-			benefitsPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("curriculum.element.show.benefits.creditpoints")));
+			if(creditPointModule.isEnabled()) {
+				benefitsPK.add(SelectionValues.entry(CREDIT_POINTS_KEY, translate("curriculum.element.show.benefits.creditpoints")));
+			}
 			showBenefitsEl = uifactory.addCheckboxesVertical("show.benefits", "curriculum.element.show.benefits", formLayout,
 					benefitsPK.keys(), benefitsPK.values(), 1);
+			showBenefitsEl.addActionListener(FormEvent.ONCLICK);
 			showBenefitsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.all));
 			boolean showCertificate = element !=null && element.isShowCertificateBenefit();
 			showBenefitsEl.select(CERTIFICATE_KEY, showCertificate);
 			boolean showCreditPoints = element != null && element.isShowCreditPointsBenefit();
-			showBenefitsEl.select(CREDIT_POINTS_KEY, showCreditPoints);
+			if(creditPointModule.isEnabled()) {
+				showBenefitsEl.select(CREDIT_POINTS_KEY, showCreditPoints);
+			}
 			
 			// Credit points
 			creditPointCont = uifactory.addInlineFormLayout("curriculum.element.credit.points", "curriculum.element.credit.points", formLayout);
@@ -231,16 +237,18 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			creditPointsEl = uifactory.addTextElement("credit.points", null, 6, points, creditPointCont);
 			
 			SelectionValues systemPK = new SelectionValues();
+			CreditPointSystem selectedSystem = creditPointConfig == null ? null : creditPointConfig.getCreditPointSystem();
 			for(CreditPointSystem system:systems) {
-				systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName() + " " + system.getLabel()));
+				if(system.getStatus() == CreditPointSystemStatus.active || system.equals(selectedSystem)) {
+					systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName() + " " + system.getLabel()));
+				}
 			}
 			creditPointSystemEl = uifactory.addDropdownSingleselect("credit.point.system", null, creditPointCont,
 					systemPK.keys(), systemPK.values());
-			if(creditPointConfig != null && creditPointConfig.getCreditPointSystem() != null
-					&& systemPK.containsKey(creditPointConfig.getCreditPointSystem().getKey().toString())) {
+			if(selectedSystem != null && systemPK.containsKey(creditPointConfig.getCreditPointSystem().getKey().toString())) {
 				creditPointSystemEl.select(creditPointConfig.getCreditPointSystem().getKey().toString(), true);
 			}
-			creditPointCont.setVisible(creditPointModule.isEnabled());
+			creditPointCont.setVisible(creditPointModule.isEnabled() && showCreditPoints);
 			
 			uifactory.addSpacerElement("spacer2", formLayout, false);
 			
@@ -306,7 +314,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		allOk &= CurriculumHelper.validateTextElement(creditsEl, false, 2000);
 		
 		if(creditPointCont.isVisible()) {
-			allOk &= CurriculumHelper.validateIntegerElement(creditPointsEl, false);
+			allOk &= CurriculumHelper.validateIntegerElement(creditPointsEl, true);
 			allOk &= CurriculumHelper.validateElement(creditPointSystemEl);
 		}
 		
@@ -315,7 +323,9 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == imageEl) {
+		if(showBenefitsEl == source) {
+			creditPointCont.setVisible(showBenefitsEl.getSelectedKeys().contains(CREDIT_POINTS_KEY));
+		} else if (source == imageEl) {
 			if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 				if (DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 					imageEl.setInitialFile(null);
@@ -369,9 +379,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element = curriculumService.updateCurriculumElement(element);
 		}
 		
-		if(creditPointCont.isVisible()) {
-			commitCreditPointConfiguration();
-		}
+		commitCreditPointConfiguration();
 		
 		if (imageEl.getUploadFile() != null) {
 			curriculumService.storeCurriculumElemenFile(element, CurriculumElementFileType.teaserImage, imageEl.getUploadFile(), imageEl.getUploadFileName(), getIdentity());
@@ -393,7 +401,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	
 	private void commitCreditPointConfiguration() {
 		creditPointConfig = creditPointService.getConfiguration(element);
-		if(StringHelper.containsNonWhitespace(creditPointsEl.getValue()) && creditPointSystemEl.isOneSelected()) {
+		if(creditPointCont.isVisible() && StringHelper.containsNonWhitespace(creditPointsEl.getValue()) && creditPointSystemEl.isOneSelected()) {
 			creditPointConfig.setEnabled(true);
 			creditPointConfig.setCreditPoints(new BigDecimal(creditPointsEl.getValue()));
 			CreditPointSystem system = getSelectedCreditPointSystem();
