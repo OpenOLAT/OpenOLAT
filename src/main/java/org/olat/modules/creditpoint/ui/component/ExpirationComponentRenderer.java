@@ -54,7 +54,7 @@ public class ExpirationComponentRenderer extends DefaultComponentRenderer {
 		SingleSelection typeEl = item.getTypeElement();
 		Component typeCmp = typeEl.getComponent();
 		typeCmp.getHTMLRendererSingleton().render(renderer, sb, typeCmp, ubu, translator, renderResult, new String[] { "form" });
-
+		
 		sb.append("</div>");
 		
 		valueCmp.setDirty(false);
