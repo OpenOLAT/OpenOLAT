@@ -21,6 +21,7 @@ package org.olat.modules.creditpoint.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -47,12 +49,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
 import org.olat.modules.creditpoint.ui.CreditPointSystemTableModel.SystemCols;
+import org.olat.modules.creditpoint.ui.component.CreditPointExpirationCellRenderer;
 import org.olat.modules.creditpoint.ui.component.CreditPointSystemStatusRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -112,11 +116,17 @@ public class CreditPointAdminConfigController extends FormBasicController {
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SystemCols.id));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.name));
+		DefaultFlexiColumnModel nameCol = new DefaultFlexiColumnModel(SystemCols.name);
+		nameCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(nameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.label));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.expiration,
+				new CreditPointExpirationCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.usage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.status,
 				new CreditPointSystemStatusRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SystemCols.creationDate,
+				new DateTimeFlexiCellRenderer(getLocale())));
 		
         ActionsColumnModel actionsCol = new ActionsColumnModel(SystemCols.tools);
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
@@ -129,6 +139,10 @@ public class CreditPointAdminConfigController extends FormBasicController {
 	
 	private void loadModel() {
 		List<CreditPointSystemInfos> systems = creditPointService.getCreditPointSystemsWithInfos();
+		systems = systems.stream()
+				.filter(sys -> sys.system().getStatus() != CreditPointSystemStatus.deleted)
+				.collect(Collectors.toList());
+		
 		List<CreditPointSystemRow> rows = new ArrayList<>(systems.size());
 		for(CreditPointSystemInfos system:systems) {
 			rows.add(new CreditPointSystemRow(system));
@@ -232,8 +246,14 @@ public class CreditPointAdminConfigController extends FormBasicController {
 	private void doUpdateStatus(CreditPointSystemRow row, CreditPointSystemStatus newStatus) {
 		CreditPointSystem system = creditPointService.loadCreditPointSystem(row.getSystem());
 		if(system != null) {
-			system.setStatus(newStatus);
-			creditPointService.updateCreditPointSystem(system);
+			if(newStatus == CreditPointSystemStatus.deleted && row.getUsage() > 0) {
+				showWarning("warning.system.in.user", new String[] {
+						StringHelper.escapeHtml(row.getName()), Long.toString(row.getUsage())
+					});
+			} else {
+				system.setStatus(newStatus);
+				creditPointService.updateCreditPointSystem(system);
+			}
 		}
 		loadModel();
 	}
@@ -262,13 +282,13 @@ public class CreditPointAdminConfigController extends FormBasicController {
 			
 			CreditPointSystemStatus status = creditPointSystem.getStatus();
 			if(status == CreditPointSystemStatus.inactive) {
-				reactivateLink = LinkFactory.createLink("inactivate", "inactivate", getTranslator(), mainVC, this, Link.LINK);
-				reactivateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				reactivateLink = LinkFactory.createLink("activate", "activate", getTranslator(), mainVC, this, Link.LINK);
+				reactivateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check");
 			}
 
 			if(status == CreditPointSystemStatus.active) {
 				inactivateLink = LinkFactory.createLink("inactivate", "inactivate", getTranslator(), mainVC, this, Link.LINK);
-				inactivateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_identity_inactive");
+				inactivateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check_disabled");
 			}
 			
 			if(status == CreditPointSystemStatus.active || status == CreditPointSystemStatus.inactive) {

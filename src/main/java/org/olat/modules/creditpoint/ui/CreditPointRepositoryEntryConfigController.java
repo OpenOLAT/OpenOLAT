@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.creditpoint.ui.component.ExpirationFormItem;
 import org.olat.repository.RepositoryEntry;
@@ -96,15 +97,17 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		enabledEl.toggle(creditPointConfig.isEnabled());
 		
 		// System
+		CreditPointSystem selectedSystem = creditPointConfig == null ? null : creditPointConfig.getCreditPointSystem();
 		SelectionValues systemPK = new SelectionValues();
 		for(CreditPointSystem system:systems) {
-			systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName()));
+			if(system.getStatus() == CreditPointSystemStatus.active || system.equals(selectedSystem)) {
+				systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName()));
+			}
 		}
 		
 		systemEl = uifactory.addDropdownSingleselect("options.creditpoint.system", formLayout, systemPK.keys(), systemPK.values());
-		if(creditPointConfig != null && creditPointConfig.getCreditPointSystem() != null
-				&& systemPK.containsKey(creditPointConfig.getCreditPointSystem().getKey().toString())) {
-			systemEl.select(creditPointConfig.getCreditPointSystem().getKey().toString(), true);
+		if(selectedSystem != null && systemPK.containsKey(creditPointConfig.getCreditPointSystem().getKey().toString())) {
+			systemEl.select(selectedSystem.getKey().toString(), true);
 		}
 		systemEl.setEnabled(editable && !managedCP);
 		systemEl.setMandatory(true);
@@ -115,11 +118,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		creditPointEl.setMandatory(true);
 
 		// Override + Expiration
-		SelectionValues overridePK = new SelectionValues();
-		String defaultVal = "-";
-		String defaultValUnit = "";
-		overridePK.add(SelectionValues.entry(DEFAULT_KEY, translate("options.creditpoint.override.default", defaultVal, defaultValUnit)));
-		overridePK.add(SelectionValues.entry(OVERRIDE_KEY, translate("options.creditpoint.override.overwrite")));
+		SelectionValues overridePK = getOverrideExpirationPK(selectedSystem);
 		overrideExpirationEl = uifactory.addRadiosHorizontal("options.creditpoint.override.expiration", "options.creditpoint.override.expiration",
 				formLayout, overridePK.keys(), overridePK.values());
 		overrideExpirationEl.addActionListener(FormEvent.ONCLICK);
@@ -132,7 +131,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		} else {
 			overrideExpirationEl.select(DEFAULT_KEY, true);
 		}
-		expirationEl = new ExpirationFormItem("options.creditpoint.expiration", getTranslator());
+		expirationEl = new ExpirationFormItem("options.creditpoint.expiration", false, getTranslator());
 		expirationEl.setEnabled(editable && !managedCP);
 		expirationEl.setLabel("options.creditpoint.expiration", null);
 		expirationEl.setValue(exp);

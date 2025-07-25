@@ -76,7 +76,7 @@ public class AddTransactionController extends FormBasicController {
 		amountEl = uifactory.addTextElement("credit.point.amount", 4, "", formLayout);
 		amountEl.setMandatory(true);
 		
-		expirationEl = new ExpirationFormItem("credit.point.validity", getTranslator());
+		expirationEl = new ExpirationFormItem("credit.point.validity", true, getTranslator());
 		expirationEl.setLabel("credit.point.validity", null);
 		formLayout.add(expirationEl);
 		

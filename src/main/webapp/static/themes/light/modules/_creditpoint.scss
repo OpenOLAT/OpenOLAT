@@ -14,3 +14,14 @@
 		max-width: 50%;
 	}
 }
+
+.o_labeled_light {
+	&.o_cp_status_active {
+		font-weight: normal;
+		@extend %o_labeled_light_green;
+	}
+	&.o_cp_status_inactive {
+		font-weight: normal;
+		@extend %o_labeled_light_grey;
+	}
+}

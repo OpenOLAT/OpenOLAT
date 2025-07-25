@@ -35,12 +35,10 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class CreditPointUserToolController extends BasicController {
 	
-	private final CreditPointUserController creditPointUserCtrl;
-	
 	public CreditPointUserToolController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		creditPointUserCtrl = new CreditPointUserController(ureq, wControl);
+		CreditPointUserController creditPointUserCtrl = new CreditPointUserController(ureq, wControl);
 		listenTo(creditPointUserCtrl);
 		
 		VelocityContainer mainVC = createVelocityContainer("user_tool");

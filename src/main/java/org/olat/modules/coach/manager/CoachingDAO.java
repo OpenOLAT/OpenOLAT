@@ -471,10 +471,10 @@ public class CoachingDAO {
 		  .append(" left join v.lifecycle as lifecycle")
 		  .append(" left join v.statistics as stats")
 		  .where()
-		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
-		
-		sb
+		  .append(" res.resName='CourseModule' and v.status ").in(role == GroupRoles.owner
+		  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and();
+		
 		if(role == GroupRoles.owner) {
 			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
 			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
@@ -535,9 +535,10 @@ public class CoachingDAO {
 		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key)")
 		  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)")
 		  .where()
-		  .append(" res.resName='CourseModule' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
-		  
-		sb.and();
+		  .append(" res.resName='CourseModule' and v.status ").in(role == GroupRoles.owner
+			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and();
+		
 		if(role == GroupRoles.owner) {
 			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
 			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
@@ -592,9 +593,10 @@ public class CoachingDAO {
 		  .append("  inner join assessmententry as ae2 on (participant.identity.key=ae2.identity.key and ae2.repositoryEntry.key=re.key)")
 		  .append("  inner join courseelement rootElement on (rootElement.repositoryEntry.key=re.key and rootElement.subIdent=ae2.subIdent)")
 		  .where()
-		  .append("  ae2.entryRoot=true and rootElement.passedMode<>'none' and re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		  .append("  ae2.entryRoot=true and rootElement.passedMode<>'none' and re.status").in(role == GroupRoles.owner
+			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and();
 		
-		sb.and();
 		if(role == GroupRoles.owner) {
 			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
 			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
@@ -640,7 +642,8 @@ public class CoachingDAO {
 		  .append("  inner join bgroupmember as participant on (participant.role='participant' and participant.group.key=participantGroup.key)")
 		  .append("  inner join assessmententry as ae2 on (ae2.repositoryEntry.key=re.key and participant.identity.key=ae2.identity.key and ae2.entryRoot=true)")
 		  .where()
-		  .append("  re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .append("  re.status").in(role == GroupRoles.owner
+			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .and();
 		
 		if(role == GroupRoles.owner) {

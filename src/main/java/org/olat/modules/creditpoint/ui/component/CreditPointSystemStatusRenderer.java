@@ -44,9 +44,15 @@ public class CreditPointSystemStatusRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
-		
 		if(cellValue instanceof CreditPointSystemStatus status) {
-			target.append("<span>")
+			String iconCssClass = "";
+			if(status == CreditPointSystemStatus.active) {
+				iconCssClass = "o_icon_check";
+			} else if(status == CreditPointSystemStatus.inactive) {
+				iconCssClass = "o_icon_check_disabled";
+			}
+			target.append("<span class='o_labeled_light o_cp_status_").append(status.name()).append("'>")
+			      .append("<i class='o_icon ").append(iconCssClass).append("'> </i> ")
 			      .append(translator.translate("status." + status.name()))
 			      .append("</span>");
 		}
