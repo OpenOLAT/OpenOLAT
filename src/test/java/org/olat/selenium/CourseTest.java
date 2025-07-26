@@ -2033,6 +2033,7 @@ public class CourseTest extends Deployments {
 		userNavBar
 			.openCoaching()
 			.openCourses()
+			.scopeOwner()
 			.filterAllCourses()
 			.openCourse(title);
 
