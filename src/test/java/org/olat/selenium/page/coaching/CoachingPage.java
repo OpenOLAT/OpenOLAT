@@ -72,6 +72,15 @@ public class CoachingPage {
 		return this;
 	}
 	
+
+	public CoachingPage scopeOwner() {
+		By ownerBy = By.xpath("//div[@class='o_coaching_course_list']//ul/li[2]/button[contains(@class,'o_scope_toggle')]");
+		OOGraphene.waitElement(ownerBy, browser).click();
+		By ownerOnBy = By.xpath("//div[@class='o_coaching_course_list']//ul/li[2]/button[contains(@class,'o_toggle_on')]");
+		OOGraphene.waitElement(ownerOnBy, browser);
+		return this;
+	}
+	
 	public CoachingPage filterAllCourses() {
 		By allBy = By.xpath("//div[@class='o_coaching_course_list']//div[@class='o_table_tabs']//a[contains(@href,'tab')][contains(@href,'All')]");
 		OOGraphene.waitElement(allBy, browser).click();
