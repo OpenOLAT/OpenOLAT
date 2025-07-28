@@ -89,6 +89,9 @@ ul.sessionControl {
 .uploadInteraction>label {
 	margin-top: 10px;
 }
+.uploadInteraction.o_block {
+	clear: both;
+}
 
 /* Graphic gap match */
 .o_gap_item {
