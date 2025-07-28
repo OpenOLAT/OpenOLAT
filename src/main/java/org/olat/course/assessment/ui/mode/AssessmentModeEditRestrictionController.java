@@ -70,6 +70,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 
 	private StaticTextElement startElementEl;
 	private FormLink chooseStartElementButton;
+	private FormLink removeStartElementButton;
 	private FormLink chooseElementsButton;
 
 	private FormLayoutContainer chooseElementsCont;
@@ -178,10 +179,19 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		if(StringHelper.containsNonWhitespace(startElementKey)) {
 			startElementName = getCourseNodeName(startElementKey, treeModel);
 		}
-		startElementEl = uifactory.addStaticTextElement("mode.start.element", "mode.start.element", StringHelper.escapeHtml(startElementName), formLayout);
+		FormLayoutContainer startCont = uifactory.addInlineFormLayout("start", "mode.start.element", formLayout);
+		startElementEl = uifactory.addStaticTextElement("mode.start.element", null, StringHelper.escapeHtml(startElementName), startCont);
+		
 		chooseStartElementButton = uifactory.addFormLink("choose.start.element", formLayout, Link.BUTTON);
 		chooseStartElementButton.setEnabled(status != Status.end
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.startElements));
+		
+		removeStartElementButton = uifactory.addFormLink("choose.remove.element", "", null, startCont, Link.NONTRANSLATED);
+		removeStartElementButton.setTitle("choose.remove.element");
+		removeStartElementButton.setIconLeftCSS("o_icon o_icon_remove");
+		removeStartElementButton.setEnabled(status != Status.end
+				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.startElements));
+		removeStartElementButton.setVisible(startElementKey != null);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
@@ -216,6 +226,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				startElementKey = chooseStartElementCtrl.getSelectedKey();
 				String elementName = chooseStartElementCtrl.getSelectedName();
 				startElementEl.setValue(elementName);
+				removeStartElementButton.setVisible(true);
 				markDirty();
 			}
 			cmc.deactivate();
@@ -335,6 +346,8 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 			doChooseElements(ureq);
 		} else if(chooseStartElementButton == source) {
 			doChooseStartElement(ureq);
+		} else if(removeStartElementButton == source) {
+			doRemoveStartElement();
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -369,5 +382,11 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				true, translate("popup.choosestartelement"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doRemoveStartElement() {
+		startElementKey = null;
+		startElementEl.setValue("");
+		removeStartElementButton.setVisible(false);
 	}
 }
