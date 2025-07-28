@@ -57,6 +57,8 @@ public interface CatalogEntry {
 	String getMainLanguage();
 	
 	String getLocation();
+	
+	String getTechnicalType();
 
 	RepositoryEntryEducationalType getEducationalType();
 
@@ -76,9 +78,9 @@ public interface CatalogEntry {
 
 	boolean isPublicVisible();
 	
-	public Long getCurriculumKey();
+	Long getCurriculumKey();
 	
-	public String getCurriculumElementTypeName();
+	String getCurriculumElementTypeName();
 	
 	OLATResource getOlatResource();
 	
@@ -96,9 +98,9 @@ public interface CatalogEntry {
 	
 	boolean isGuestAccess();
 	
-	public Long getMaxParticipants();
+	Long getMaxParticipants();
 	
-	public Long getNumParticipants();
+	Long getNumParticipants();
 	
 	List<OLATResourceAccess> getResourceAccess();
 	
@@ -106,8 +108,16 @@ public interface CatalogEntry {
 	
 	boolean isSingleCourseImplementation();
 	
-	public Long getSingleCourseEntryKey();
+	Long getSingleCourseEntryKey();
 	
-	public RepositoryEntryStatusEnum getSingleCourseEntryStartus();
+	RepositoryEntryStatusEnum getSingleCourseEntryStartus();
+	
+	Integer getMyRating();
+	
+	Double getAverageRating();
+
+	Long getNumOfRatings();
+
+	Long getNumOfComments();
 	
 }

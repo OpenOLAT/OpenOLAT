@@ -60,7 +60,7 @@ public class RepositoryCatalogInfoFactory {
 			sb.append("<span class=\"o_tag o_taxonomy\" title=\"");
 			sb.append(StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash()));
 			sb.append("\">");
-			sb.append(taxonomyLevel.getDisplayName());
+			sb.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
 			sb.append("</span>");
 		}
 		sb.append("</div>");

@@ -52,6 +52,7 @@ public class InPreparationRow {
 	private final String authors;
 	private final String teaser;
 	private final RepositoryEntryStatusEnum entryStatus;
+	private String translatedTechnicalType;
 	
 	private String lifecycleLabel;
 	private String lifecycleSoftKey;
@@ -215,6 +216,18 @@ public class InPreparationRow {
 	
 	public String getEducationalTypei18nKey() {
 		return RepositoyUIFactory.getI18nKey(educationalType);
+	}
+	
+	public String getTranslatedTechnicalType() {
+		return translatedTechnicalType;
+	}
+
+	public void setTranslatedTechnicalType(String translatedTechnicalType) {
+		this.translatedTechnicalType = translatedTechnicalType;
+	}
+	
+	public int getNumOfTaxonomyLevels() {
+		return taxonomyLevels == null ? 0 : taxonomyLevels.size();
 	}
 	
 	public List<TaxonomyLevelNamePath> getTaxonomyLevels() {

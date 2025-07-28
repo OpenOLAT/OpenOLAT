@@ -21,7 +21,7 @@
 					<span class="o_spacer">&middot;</span>
 				#end
 			#end
-			#if($r.isNotEmpty($row.translatedTechnicalType))
+			#if($r.isNotEmpty($row.technicalType))
 				$r.escapeHtml($row.translatedTechnicalType)
 			#end
 		</div>
@@ -75,7 +75,7 @@
 			#end
 		#end
 		
-		<div class="o_flex_block_one_line_left">
+		<div class="o_flex_block_one_line_left o_flex_block_last">
 			<div class="o_performance o_flex_item_max">
 				#if($r.isNotEmpty(${row.averageCompletionInPercents}))
 					#if($r.isNotNull($row.averageCompletionInPercents) && $row.averageCompletionInPercents == "100")
@@ -118,22 +118,29 @@
 	<div class="o_access">
 		<div class="o_social_actions">
 			#if($r.isNotEmpty($row.ratingFormItemName))
+			<div class="o_spacer">&#124;</div>
 			<div class="o_repo_rating">
 				$r.render($row.ratingFormItemName)
-			</div><div class="o_spacer">&#124;</div>
+			</div>
 			#end
 			#if($r.isNotEmpty($row.commentsLinkName))
+			<div class="o_spacer">&#124;</div>
 			<div class="o_repo_comments">
 				$r.render($row.commentsLinkName)
-			</div><div class="o_spacer">&#124;</div>
+			</div>
 			#end
 			#if($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels == 1)
-				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div><div class="o_spacer">&#124;</div>
-			#elseif($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels > 1)
-				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
 				<div class="o_spacer">&#124;</div>
+				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div>
+			#elseif($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels > 1)
+				<div class="o_spacer">&#124;</div>
+				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
+				
 			#end
-			$r.render($row.markLinkName)
+			#if($r.isNotEmpty($row.markLinkName))
+				<div class="o_spacer">&#124;</div>
+				$r.render($row.markLinkName)
+			#end
 		</div>
 		<div class="o_actions">
 			$r.render($row.getInfosLinkName())

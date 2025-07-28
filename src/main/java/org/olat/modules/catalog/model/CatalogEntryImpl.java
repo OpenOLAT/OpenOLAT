@@ -30,6 +30,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 
@@ -51,6 +52,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private final String authors;
 	private final String mainLanguage;
 	private final String location;
+	private final String technicalType;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	
@@ -79,11 +81,16 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private final boolean singleCourseImplementation;
 	private Long singleCourseEntryKey;
 	private RepositoryEntryStatusEnum singleCourseEntryStartus;
+
+	private Integer myRating;
+	private final Double averageRating;
+	private final Long numOfRatings;
+	private final Long numOfComments;
 	
 	private boolean hasCertificate;
 	private String creditPointAmount;
 
-	public CatalogEntryImpl(RepositoryEntry re) {
+	public CatalogEntryImpl(RepositoryEntry re, RepositoryEntryStatistics statistics) {
 		repositotyEntryKey = re.getKey();
 		curriculumElementKey = null;
 		externalId = re.getExternalId();
@@ -96,6 +103,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
+		technicalType = re.getTechnicalType();
 		
 		if(re.getLifecycle() != null) {
 			lifecycleStart = re.getLifecycle().getValidFrom();
@@ -109,6 +117,16 @@ public class CatalogEntryImpl implements CatalogEntry {
 		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
 		maxParticipants = null;
+		
+		if(statistics != null) {
+			averageRating = statistics.getRating();
+			numOfRatings = statistics.getNumOfRatings();
+			numOfComments = statistics.getNumOfComments();
+		} else {
+			averageRating = null;
+			numOfRatings = Long.valueOf(0l);
+			numOfComments = Long.valueOf(0l);
+		}
 		
 		curriculumKey = null;
 		curriculumElementTypeName = null;
@@ -130,6 +148,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		authors = element.getAuthors();
 		mainLanguage = element.getMainLanguage();
 		location = element.getLocation();
+		technicalType = null;
 		educationalType = element.getEducationalType();
 		expenditureOfWork = element.getExpenditureOfWork();
 		lifecycleStart = element.getBeginDate();
@@ -138,6 +157,10 @@ public class CatalogEntryImpl implements CatalogEntry {
 		publishedDate = null;
 		publicVisible = true;
 		maxParticipants = element.getMaxParticipants();
+		
+		averageRating = null;
+		numOfRatings = null;
+		numOfComments = null;
 		
 		curriculumKey = element.getCurriculum().getKey();
 		curriculumElementTypeName = element.getType().getDisplayName();
@@ -194,6 +217,11 @@ public class CatalogEntryImpl implements CatalogEntry {
 	@Override
 	public String getLocation() {
 		return location;
+	}
+
+	@Override
+	public String getTechnicalType() {
+		return technicalType;
 	}
 
 	@Override
@@ -333,6 +361,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		this.license = license;
 	}
 
+	@Override
 	public boolean isHasCertificate() {
 		return hasCertificate;
 	}
@@ -341,6 +370,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		this.hasCertificate = hasCertificate;
 	}
 
+	@Override
 	public String getCreditPointAmount() {
 		return creditPointAmount;
 	}
@@ -370,5 +400,28 @@ public class CatalogEntryImpl implements CatalogEntry {
 			singleCourseEntryStartus = singleCourse.getEntryStatus();
 		}
 	}
-	
+
+	@Override
+	public Double getAverageRating() {
+		return averageRating;
+	}
+
+	@Override
+	public Long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	@Override
+	public Long getNumOfComments() {
+		return numOfComments;
+	}
+
+	@Override
+	public Integer getMyRating() {
+		return myRating;
+	}
+
+	public void setMyRating(Integer myRating) {
+		this.myRating = myRating;
+	}
 }

@@ -69,6 +69,10 @@ public class RatingFormItem extends FormItemImpl {
 		component.setCssClass(cssClass);
 	}
 
+	public void setLargeIcon(boolean largeIcon) {
+		component.setLargeIcon(largeIcon);
+	}
+
 	@Override
 	protected RatingComponent getFormItemComponent() {
 		return component;

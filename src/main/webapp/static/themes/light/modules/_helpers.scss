@@ -140,6 +140,9 @@
 	justify-content: left;
 	width: 100%;
 }
+.o_flex_block_last {
+	margin-top: auto;
+}
 .o_flex_item_fix, %o_flex_item_fix {
 	flex-grow: 0;
 	flex-shrink: 0;

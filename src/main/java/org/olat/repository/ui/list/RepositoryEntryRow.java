@@ -56,6 +56,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private final String authors;
 	private final String location;
 	private final String teaser;
+	private String translatedTechnicalType;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private String thumbnailRelPath;
@@ -401,6 +402,18 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public void setTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
 		this.taxonomyLevels = taxonomyLevels;
 	}
+	
+	public int getNumOfTaxonomyLevels() {
+		return taxonomyLevels == null ? 0 : taxonomyLevels.size();
+	}
+
+	public String getTranslatedTechnicalType() {
+		return translatedTechnicalType;
+	}
+
+	public void setTranslatedTechnicalType(String translatedTechnicalType) {
+		this.translatedTechnicalType = translatedTechnicalType;
+	}
 
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailRelPath);
@@ -440,6 +453,15 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public Double getCompletion() {
 		return completion;
+	}
+	
+	public String getCompletionInPercents() {
+		Double val = getCompletion();
+		if(val != null && val.doubleValue() >= 0.0d) {
+			long roundedVal = Math.round(val.doubleValue() * 100.0d);
+			return Long.toString(roundedVal);
+		}
+		return "";
 	}
 
 	@Override

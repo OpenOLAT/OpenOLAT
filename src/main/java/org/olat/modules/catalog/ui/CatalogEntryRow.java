@@ -25,7 +25,10 @@ import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
@@ -52,6 +55,7 @@ public class CatalogEntryRow {
 	private final String mainLanguage;
 	private final String location;
 	private final String teaser;
+	private String translatedTechnicalType;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private final RepositoryEntryStatusEnum status;
@@ -74,6 +78,7 @@ public class CatalogEntryRow {
 	private Set<String> accessMethodTypes;
 	private boolean autoBooking;
 	private String accessInfo;
+	private String accessInfoIconCssClass;
 	private String accessWarning;
 	private String accessError;
 	private final Long maxParticipants;
@@ -89,8 +94,14 @@ public class CatalogEntryRow {
 	private boolean certificate;
 	private String creditPointAmount;
 	
+	private final Double averageRating;
+	private final Long numOfRatings;
+	private final Long numOfComments;
+	
 	private String thumbnailRelPath;
 	private FormItem startLink;
+	private FormLink commentsLink;
+	private FormItem ratingFormItem;
 	
 	public CatalogEntryRow(CatalogEntry catalogEntry) {
 		repositotyEntryKey = catalogEntry.getRepositoryEntryKey();
@@ -123,6 +134,10 @@ public class CatalogEntryRow {
 		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
 		singleCourseEntryStartus = catalogEntry.getSingleCourseEntryStartus();
 		
+		averageRating = catalogEntry.getAverageRating();
+		numOfRatings = catalogEntry.getNumOfRatings();
+		numOfComments = catalogEntry.getNumOfComments();
+		
 		curriculumKey = catalogEntry.getCurriculumKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
 		
@@ -132,6 +147,12 @@ public class CatalogEntryRow {
 
 	public Long getRepositotyEntryKey() {
 		return repositotyEntryKey;
+	}
+	
+	public OLATResourceable getRepositoryEntryResourceable() {
+		return repositotyEntryKey != null
+				? OresHelper.createOLATResourceableInstance("RepositoryEntry", getRepositotyEntryKey())
+				: null;
 	}
 
 	public Long getCurriculumElementKey() {
@@ -238,6 +259,14 @@ public class CatalogEntryRow {
 		this.accessInfo = accessInfo;
 	}
 
+	public String getAccessInfoIconCssClass() {
+		return accessInfoIconCssClass;
+	}
+
+	public void setAccessInfoIconCssClass(String accessInfoIconCssClass) {
+		this.accessInfoIconCssClass = accessInfoIconCssClass;
+	}
+
 	public boolean isAutoBooking() {
 		return autoBooking;
 	}
@@ -276,6 +305,14 @@ public class CatalogEntryRow {
 	
 	public String getLocation() {
 		return location;
+	}
+
+	public String getTranslatedTechnicalType() {
+		return translatedTechnicalType;
+	}
+
+	public void setTranslatedTechnicalType(String translatedTechnicalType) {
+		this.translatedTechnicalType = translatedTechnicalType;
 	}
 
 	public RepositoryEntryEducationalType getEducationalType() {
@@ -353,6 +390,30 @@ public class CatalogEntryRow {
 	public void setStartLink(FormItem startLink) {
 		this.startLink = startLink;
 	}
+	
+	public FormLink getCommentsLink() {
+		return commentsLink;
+	}
+	
+	public String getCommentsLinkName() {
+		return commentsLink == null ? null : commentsLink.getComponent().getComponentName();
+	}
+
+	public void setCommentsLink(FormLink commentsLink) {
+		this.commentsLink = commentsLink;
+	}
+	
+	public String getRatingFormItemName() {
+		return ratingFormItem == null ? null : ratingFormItem.getComponent().getComponentName();
+	}
+
+	public FormItem getRatingFormItem() {
+		return ratingFormItem;
+	}
+
+	public void setRatingFormItem(FormItem ratingFormItem) {
+		this.ratingFormItem = ratingFormItem;
+	}
 
 	public boolean isSingleCourseImplementation() {
 		return singleCourseImplementation;
@@ -371,5 +432,16 @@ public class CatalogEntryRow {
 				&& (	singleCourseEntryStartus == null 
 					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStartus, RepositoryEntryStatusEnum.publishedAndClosed()));
 	}
-	
+
+	public Double getAverageRating() {
+		return averageRating;
+	}
+
+	public Long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	public Long getNumOfComments() {
+		return numOfComments;
+	}
 }

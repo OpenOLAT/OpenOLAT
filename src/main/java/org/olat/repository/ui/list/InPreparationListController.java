@@ -68,6 +68,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryInfosController;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -137,6 +139,8 @@ public class InPreparationListController extends FormBasicController implements 
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private NodeAccessService nodeAccessService;
+	@Autowired
 	private InPreparationQueries inPreparationQueries;
 	@Autowired
 	private LifecycleModule lifecycleModule;
@@ -147,7 +151,7 @@ public class InPreparationListController extends FormBasicController implements 
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
-		repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
 		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
 		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
 				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
@@ -277,6 +281,12 @@ public class InPreparationListController extends FormBasicController implements 
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);
+		
+		
+		if(StringHelper.containsNonWhitespace(entry.entry().getTechnicalType())) {
+			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.entry().getTechnicalType()), getLocale());
+			row.setTranslatedTechnicalType(translatedType);
+		}
 		
 		List<TaxonomyLevelNamePath> taxonomyLevels = (entry.levels() != null) 
 				? TaxonomyUIFactory.getNamePaths(getTranslator(), entry.levels())

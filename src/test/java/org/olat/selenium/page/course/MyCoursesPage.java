@@ -19,8 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.olat.core.util.Formatter;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -58,7 +56,7 @@ public class MyCoursesPage {
 	 */
 	public MyCoursesPage assertOnCurriculumElementInList(String title) {
 		title = Formatter.truncateOnly(title, 55);
-		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+		By titleBy = By.xpath("//h3[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
 		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}
@@ -115,7 +113,7 @@ public class MyCoursesPage {
 	 */
 	public MyCoursesPage select(String title) {
 		title = Formatter.truncateOnly(title, 55);
-		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+		By titleBy = By.xpath("//h3[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
 		OOGraphene.waitElement(titleBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -129,7 +127,7 @@ public class MyCoursesPage {
 	 */
 	public MyCoursesPage more(String title) {
 		title = Formatter.truncateOnly(title, 55);
-		By titleBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h4/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_details')][i[contains(@class,'o_icon_details')]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h3/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_details')][i[contains(@class,'o_icon_details')]]");
 		OOGraphene.waitElement(titleBy, browser).click();
 		return this;
 	}
@@ -141,19 +139,8 @@ public class MyCoursesPage {
 	 * @param title
 	 */
 	public void book(String title) {
-		By bookingBy = By.cssSelector("a.o_book");
-		By rowBy = By.cssSelector("div.o_table_row");
-		By titleLinkBy = By.cssSelector("h4.o_title a");
-		WebElement linkToBook = null;
-		List<WebElement> rows = browser.findElements(rowBy);
-		for(WebElement row:rows) {
-			WebElement titleLink = row.findElement(titleLinkBy);
-			if(titleLink.getText().contains(title)) {
-				linkToBook = row.findElement(bookingBy);
-			}
-		}
-		Assert.assertNotNull(linkToBook);
-		linkToBook.click();
+		By bookBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h3/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_book')]");
+		OOGraphene.waitElement(bookBy, browser).click();
 		OOGraphene.waitBusy(browser);
 	}
 	

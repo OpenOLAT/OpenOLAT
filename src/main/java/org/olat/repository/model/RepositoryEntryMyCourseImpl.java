@@ -52,6 +52,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String teaser;
 	private final String authors;
 	private final String location;
+	private final String technicalType;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	private final RepositoryEntryStatusEnum status;
@@ -89,6 +90,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		teaser = re.getTeaser();
 		authors = re.getAuthors();
 		location = re.getLocation();
+		technicalType = re.getTechnicalType();
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
 		status = re.getEntryStatus();
@@ -188,6 +190,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public String getLocation() {
 		return location;
+	}
+
+	@Override
+	public String getTechnicalType() {
+		return technicalType;
 	}
 
 	@Override

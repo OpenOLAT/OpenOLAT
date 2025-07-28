@@ -32,17 +32,20 @@
 
 
 .o_coursetable {
-	&.o_rendertype_custom {	
-		 .o_table_row {
-			margin-bottom: math.floor(math.div($line-height-computed,2));
+	&.o_rendertype_custom {
+		.o_table_row:last-child .o_repo_entry_list_item {
+			border-bottom: 1px solid $o-coursesite-rowelem-border;
+		}
+		
+		.o_table_row {
+			margin-bottom: 0;
 			
-			 .o_repo_entry_list_item {
+			.o_repo_entry_list_item {
 				display: flex;
 				position: relative;
 				height: $o-coursesite-rowelem-height-md + (2 * $o-coursesite-rowelem-space-md);	
-				padding: $o-coursesite-rowelem-space-md;
-				border: 1px solid $o-coursesite-rowelem-border;
-				border-radius: $o-coursesite-rowelem-border-radius;	
+				padding: $o-coursesite-rowelem-space-md 0;
+				border-top: 1px solid $o-coursesite-rowelem-border;
 				background: $o-coursesite-rowelem-bg;			
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
@@ -70,6 +73,8 @@
 				flex: 1 1 auto;
 				position: relative;
 				padding: 0  $o-coursesite-rowelem-space-md;
+				display: flex;
+				flex-direction: column;
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					padding: 0  $o-coursesite-rowelem-space-sm;
@@ -94,6 +99,8 @@
 					margin: 0.2em 0 0.1em 0; /* box moves down otherwise, replaced with padding */
 					position: relative;
 					line-height: 1.2;
+					font-size: 21px;
+
 					a {
 						@extend %o_undecorated;
 						@include text-overflow();
@@ -104,14 +111,7 @@
 						}				
 					}
 				}
-				.o_educational_type {
-					font-size: 70%;
-				}
-				.o_teaser {
-					font-size: 85%;
-				}
 				.o_author{
-					font-size: 85%;
 					color: $o-coursesite-meta-author-color;
 				}
 				.o_closed {
@@ -119,7 +119,6 @@
 				}
 				.o_lifecycle {
 					margin: 0.5em 0;
-					font-size: 85%;
 					line-height: normal;
 					color: $text-muted;
 					&:not(.o_active) .o_lifecycle_date {
@@ -137,11 +136,10 @@
 				}
 				
 				.o_taxonomy_levels {
-					position: absolute;
-					bottom: 0;
 					color: $text-muted;
-					font-size: 85%;
 					vertical-align: text-bottom;
+					margin-top: auto;
+					margin-bottom: -3px;
 
 					@include text-overflow();					
 					width: 98%;
@@ -151,7 +149,6 @@
 					}					
 					
 					.o_taxonomy {
-						font-size: 82%;
 						display: inline-block;
 					}
 					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
@@ -213,6 +210,9 @@
 			}
 			
 			.o_performance {
+				.o_spacer:first-child {
+					display:none,
+				}
 				.o_progress > .progress {
 					vertical-align: middle;
 				}
@@ -237,7 +237,7 @@
 			
 			.o_access {
 				height: $o-coursesite-rowelem-height-md;	
-				width: $o-coursesite-rowelem-width-md;
+				width: $o-coursesite-rowelem-width-md + 15px;
 				position: relative;
 				overflow: hidden;
 				
@@ -282,19 +282,18 @@
 				}
 				
 				.o_access_info {
-					padding-top: 20px;
+					padding-top: 5px;
+					text-align: right;
 					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-						padding-top: 0px;
+						padding-top: 1px;
 					}
 				}
 				
 				.o_social_actions {
-					position: absolute;
 					display: flex;
 					flex-direction: row;
+					justify-content: flex-end;
 					gap: 5px;
-					top: 0;
-					right: 0;
 					
 					.o_rating {
 						.o_rating_title, o_rating_legend, .o_rating_explanation { 
@@ -304,13 +303,18 @@
 					.o_comments {
 						@extend %o_undecorated;
 					}
+					
+					.o_spacer:first-child {
+						display: none;
+					}
 				}
-				
+
 				.o_actions {
 					position: absolute;
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 					gap: 5px;
+					width: 100%;
 					bottom: 0;
 					right: 0;
 					
@@ -341,7 +345,7 @@
 					padding-left: 3em;
 					padding-right: 3em;
 					grid-column: span 2;
-					width: calc($o-coursesite-rowelem-width-md - 5px);
+					width: calc($o-coursesite-rowelem-width-md + 10px);// + 15 - 5
 				}
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
@@ -429,6 +433,10 @@
 			}
 		}
 		
+		h3.o_title, h4.o_title {
+			font-size: 21px;
+		}
+		
 		.o_meta {
 			display: flex;
 			flex-direction: column;
@@ -500,10 +508,8 @@
 	display: inline-block;
 	border-color: $o-entry-benefit-border-color;
 	color: $o-entry-benefit-color;
-	font-size: 70%; 
 	margin-right: 5px;
 }
-
 
 /* the course catalog */
 .o_catalog {
@@ -621,7 +627,7 @@
 					display: none;
 				}
 				
-				h4.o_title>a {
+				h3.o_title > a, h4.o_title > a {
 					//override o_icon styles, hide the icon
 					font-family: inherit;
 					font-weight: inherit;

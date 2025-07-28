@@ -23,6 +23,7 @@ import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.resource.OLATResource;
 
 /**
@@ -32,6 +33,7 @@ import org.olat.resource.OLATResource;
  *
  */
 public record RepositoryEntryInfos(RepositoryEntry entry,
+		RepositoryEntryStatistics statistics,
 		RepositoryEntryCertificateConfiguration certificateConfiguration,
 		RepositoryEntryCreditPointConfiguration creditPointConfiguration) implements RepositoryEntryRef {
 

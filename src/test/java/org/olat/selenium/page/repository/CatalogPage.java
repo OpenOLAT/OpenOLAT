@@ -19,13 +19,9 @@
  */
 package org.olat.selenium.page.repository;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Drive the catalog tab.
@@ -44,10 +40,7 @@ public class CatalogPage {
 	
 	public CatalogPage selectCatalogEntry(String title, String shortTitle) {
 		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div/h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + shortTitle + "')]]]");
-		List<WebElement> titleLinks = browser.findElements(titleBy);
-		Assert.assertFalse(titleLinks.isEmpty());
-		titleLinks.get(0).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(titleBy, browser).click();
 		
 		By pageTitleBy = By.xpath("//h2[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(pageTitleBy, browser);
@@ -56,14 +49,13 @@ public class CatalogPage {
 	
 	public CatalogPage selectCatalogEntry(String shortTitle) {
 		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div[contains(@class,'o_meta')]/h4/a[span[contains(.,'" + shortTitle + "')]]");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).click();
+		OOGraphene.waitElement(titleBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public CatalogPage select(String title) {
-		By titleLinkBy = By.xpath("//h4[contains(@class,'o_title')]//a[span[text()[contains(.,'" + title + "')]]]");
+		By titleLinkBy = By.xpath("//h3[contains(@class,'o_title')]//a[span[text()[contains(.,'" + title + "')]]]");
 		browser.findElement(titleLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -71,8 +63,7 @@ public class CatalogPage {
 	
 	public void start() {
 		By startBy = By.className("o_start");
-		WebElement startLink = browser.findElement(startBy);
-		startLink.click();
+		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
 	}
 

@@ -13,12 +13,20 @@
 			<i class=" o_icon o_icon-fw o_icon_start o_icon-lg"></i>
 		</div>
 
-		#if ($row.getExternalRef())
+		#if ($r.isNotEmpty($row.externalRef) || $r.isNotEmpty($row.translatedTechnicalType))
 		<div class="o_ext_ref">
-			$r.escapeHtml($row.getExternalRef())
+			#if($r.isNotEmpty($row.externalRef))
+				$r.escapeHtml($row.externalRef)
+				#if($r.isNotEmpty($row.translatedTechnicalType))
+					<span class="o_spacer">&middot;</span>
+				#end
+			#end
+			#if($r.isNotEmpty($row.translatedTechnicalType))
+				$r.escapeHtml($row.translatedTechnicalType)
+			#end
 		</div>
 		#end
-		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())</h4>
+		<h3 class="o_title">$r.render($row.getSelectLinkName())</h3>
 
 		#if($r.isNotEmpty($row.teaser))
 		<div class="o_flex_block_one_line_left">
@@ -32,7 +40,7 @@
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
 		</span>
 		#end
-		#if($row.authors && !$row.authors.empty)
+		#if($r.isNotEmpty($row.authors))
 			<div class="o_author o_flex_item_max"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
 		#end
 		</div>
@@ -58,7 +66,7 @@
 					#if($row.location  && !${row.location.isEmpty()})
 						<div class="o_lifecycle_location o_flex_item_max">
 							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-								<span class="o_spacer">•</span>
+								<span class="o_spacer">&middot;</span>
 							#else
 								<i class="o_icon o_icon-fw o_icon_location"> </i> 
 							#end
@@ -68,51 +76,75 @@
 				</div>
 			#end
 		#end
-			
-		#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
-		<div class="o_taxonomy_levels">	
-			<i class="o_icon o_icon-fw o_icon_tags"> </i>
-			#foreach($taxonomy in $row.taxonomyLevels)			
-			<span class="o_tag o_taxonomy" title="$r.escapeForHtmlAttribute($taxonomy.materializedPathIdentifiersWithoutSlash)">
-				$r.escapeHtml($taxonomy.displayName)
-			</span>
-			#end
-		</div>
-		#end
 		
-		#if($row.markLinkName)
-		<div class="o_bookmark">$r.render($row.markLinkName)</div>
-		#end
-	</div>
-	
-	<div class="o_access">
-		#if($row)
-			#if($row.completionItemName)
-				<div class="o_completion">
-					$r.render($row.getCompletionItemName())
-				</div>
-			#else
+		<div class="o_flex_block_one_line_left o_flex_block_last">
+			<div class="o_performance o_flex_item_max">
+				#if($r.isNotEmpty($row.completionInPercents))
+					<span class="o_spacer">&middot;</span>
+					<span>
+					#if($r.isNotEmpty($row.completionInPercents) && $row.completionInPercents == "100")
+					<i class="o_icon o_icon_circle_color"> </i>
+					#else
+					<span class="o_progress">
+						<span class="progress o_progress-sm" style="width:100px;">
+							<span class="progress-bar" style="width:${row.completionInPercents}px" title="${row.completionInPercents}%"></span>
+						</span>
+					</span>
+					#end
+					${row.completionInPercents}&#37;</span>
+				#end
+				
 				#if($row.passed || $row.failed)
-				<div class="o_passed">
+				<span class="o_spacer">&middot;</span>
+				<span class="o_passed">
 					#if($row.passed)
 						<span class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.true")</span>
 					#elseif($row.failed)
 						<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.false")</span>
 					#end
-				</div>
+				</span>
 				#end
-			
-				#if($row.score) 
-				<div class="o_score">
-					$row.score 
+				
+				#if($row.score)
+				<span class="o_spacer">&middot;</span>
+				<span class="o_score">
+					<i class="o_icon o_icon_score"> </i> $row.score 
 					<span class="o_label">
 						$r.translate("details.label.score")
 					</span>
-				</div> 
-				#end			
+				</span> 
+				#end
+			</div>
+		</div>
+	</div>
+	
+	<div class="o_access">
+		<div class="o_social_actions">
+			#if($r.isNotEmpty($row.ratingFormItemName))
+			<div class="o_spacer">&#124;</div>
+			<div class="o_repo_rating">
+				$r.render($row.ratingFormItemName)
+			</div>
 			#end
-		#end
-		
+			#if($r.isNotEmpty($row.commentsLinkName))
+			<div class="o_spacer">&#124;</div>
+			<div class="o_repo_comments">
+				$r.render($row.commentsLinkName)
+			</div>
+			#end
+			#if($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels == 1)
+				<div class="o_spacer">&#124;</div>
+				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div>
+			#elseif($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels > 1)
+				<div class="o_spacer">&#124;</div>
+				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
+			#end
+			#if($r.isNotEmpty($row.markLinkName))
+				<div class="o_spacer">&#124;</div>
+				$r.render($row.markLinkName)
+			#end
+		</div>
+
 		#if($r.isNotEmpty($row.getAccessInfo()))
 			<div class="o_access_info">
 				$row.getAccessInfo()

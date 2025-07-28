@@ -35,6 +35,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -60,6 +61,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.rating.RatingFormEvent;
+import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -90,6 +94,8 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.login.LoginModule;
 import org.olat.login.LoginProcessEvent;
 import org.olat.modules.catalog.CatalogEntry;
@@ -219,6 +225,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	@Autowired
 	private AutoAccessManager autoAccessManager;
 	@Autowired
+	private NodeAccessService nodeAccessService;
+	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
 	@Autowired
 	private CreditPointModule creditPointModule;
@@ -228,6 +236,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private I18nModule i18nModule;
 	@Autowired
 	private LifecycleModule lifecycleModule;
+	@Autowired
+	private UserRatingsDAO userRatingsDao;
 
 	public CatalogEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
 			CatalogEntrySearchParams searchParams, CatalogEntryListParams listParams) {
@@ -516,6 +526,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 			updateAccessInfo(row, catalogEntry);
 		}
 		
+		if(StringHelper.containsNonWhitespace(catalogEntry.getTechnicalType())) {
+			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(catalogEntry.getTechnicalType()), getLocale());
+			row.setTranslatedTechnicalType(translatedType);
+		}
+		
 		row.setInfoUrl(CatalogBCFactory.get(searchParams.isWebPublish()).getOfferUrl(row.getOlatResource()));
 		row.setStartUrl(getStartUrl(row, searchParams.isWebPublish() && row.isGuestAccess()));
 		
@@ -529,6 +544,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		if (row.getAccessMethodTypes() != null && row.getAccessMethodTypes().size() > 1) {
 			row.setAccessInfo(translate("access.info.several.types"));
+			row.setAccessInfoIconCssClass("o_icon_tags");
 			return;
 		}
 		
@@ -536,6 +552,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
 				if (bundle.getMethod().getType().equals(FreeAccessHandler.METHOD_TYPE)) {
 					row.setAccessInfo(translate("access.info.freely.available"));
+					row.setAccessInfoIconCssClass("o_ac_free_icon");
 					return;
 				}
 			}
@@ -545,6 +562,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
 				if (bundle.getMethod().getType().equals(TokenAccessHandler.METHOD_TYPE)) {
 					row.setAccessInfo(translate("access.info.token"));
+					row.setAccessInfoIconCssClass("o_ac_token_icon");
 					return;
 				}
 			}
@@ -571,6 +589,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				lowestPrice = translate("book.price.from", lowestPrice);
 			}
 			row.setAccessInfo(lowestPrice);
+			row.setAccessInfoIconCssClass("o_ac_invoice_icon");
 		}
 	}
 
@@ -606,6 +625,50 @@ public class CatalogEntryListController extends FormBasicController implements A
 		updateAccessMaxParticipants(row);
 		forgeStartLink(row);
 		forgeThumbnail(row);
+		forgeRatings(row);
+		forgeComments(row);
+	}
+	
+	private void forgeRatings(CatalogEntryRow row) {
+		if(repositoryModule.isRatingEnabled() && row.getRepositotyEntryKey() != null) {
+			if(searchParams.isGuestOnly() || searchParams.getMember() == null) {
+				Double averageRating = row.getAverageRating();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getRepositotyEntryKey(), null,  averageRatingValue, 5, false, null);
+				ratingEl.setLargeIcon(false);
+				row.setRatingFormItem(ratingEl);
+				ratingEl.setUserObject(row);
+				ratingEl.setTranslator(getTranslator());
+			} else {
+				Integer myRating = null; //row.getMyRating();
+				Double averageRating = row.getAverageRating();
+				long numOfRatings = row.getNumOfRatings();
+		
+				float ratingValue = myRating == null ? 0f : myRating.floatValue();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				RatingWithAverageFormItem ratingEl
+					= new RatingWithAverageFormItem("rat_" + row.getRepositotyEntryKey(), ratingValue, averageRatingValue, 5, numOfRatings);
+				ratingEl.setLargeIcon(false);
+				row.setRatingFormItem(ratingEl);
+				ratingEl.setUserObject(row);
+				ratingEl.setTranslator(getTranslator());
+			}
+			
+			flc.add(row.getRatingFormItem());
+		}
+	}
+
+	private void forgeComments(CatalogEntryRow row) {
+		if(repositoryModule.isCommentEnabled() && row.getRepositotyEntryKey() != null) {
+			long numOfComments = row.getNumOfComments();
+			String title = "(" + numOfComments + ")";
+			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getRepositotyEntryKey(), "comments", title, null, flc, Link.NONTRANSLATED);
+			commentsLink.setUserObject(row);
+			String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
+			commentsLink.setCustomEnabledLinkCSS("o_comments");
+			commentsLink.setIconLeftCSS(css);
+			row.setCommentsLink(commentsLink);
+		}
 	}
 
 	private void forgeStartLink(CatalogEntryRow row) {
@@ -670,9 +733,20 @@ public class CatalogEntryListController extends FormBasicController implements A
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		if (rowObject instanceof CatalogEntryRow catalogRow) {
+			List<Component> cmps = new ArrayList<>(3);
 			if (catalogRow.getStartLink() != null) {
-				List.of(catalogRow.getStartLink().getComponent());
+				cmps.add(catalogRow.getStartLink().getComponent());
 			}
+			if (catalogRow.getRatingFormItem() != null) {
+				if(catalogRow.getRatingFormItem() != null && catalogRow.getRatingFormItem().getRootForm() != mainForm) {
+					catalogRow.getRatingFormItem().setRootForm(mainForm);
+				}
+				cmps.add(catalogRow.getRatingFormItem().getComponent());
+			}
+			if (catalogRow.getCommentsLink() != null) {
+				cmps.add(catalogRow.getCommentsLink().getComponent());
+			}
+			return cmps;
 		}
 		return null;
 	}
@@ -807,7 +881,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl) {
+		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent) {
+			CatalogEntryRow row = (CatalogEntryRow)ratingItem.getUserObject();
+			doRating(row, ratingEvent.getRating());
+		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				CatalogEntryRow row = dataModel.getObject(se.getIndex());
@@ -836,6 +913,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 						key,
 						searchParams.getLauncherEducationalTypeKeys(),
 						searchParams.getLauncherResourceTypes()));
+			} else if ("comments".equals(cmd)){
+				CatalogEntryRow row = (CatalogEntryRow)link.getUserObject();
+				doOpenDetails(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -1072,6 +1152,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 		} else if (curriculumElement != null) {
 			doOpenDetails(ureq, curriculumElement);
 		}
+	}
+	
+	protected void doRating(CatalogEntryRow row, float rating) {
+		OLATResourceable ores = row.getRepositoryEntryResourceable();
+		userRatingsDao.updateRating(getIdentity(), ores, null, Math.round(rating));
 	}
 	
 	public static final class TaxonomyItem {
