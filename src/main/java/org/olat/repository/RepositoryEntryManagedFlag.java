@@ -65,6 +65,7 @@ public enum RepositoryEntryManagedFlag {
       efficencystatement(settings,all),
       calendar(settings,all),
       glossary(settings,all),
+      creditpoints(settings,all),
     lecture(all),
       lectureconfig(lecture, all),
       lecturemanagement(lecture, all),
