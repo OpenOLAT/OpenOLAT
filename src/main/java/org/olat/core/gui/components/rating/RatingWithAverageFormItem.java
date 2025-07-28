@@ -96,6 +96,11 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 		averageComponent.setCurrentRating(averageRating);
 		component.setDirty(true);
 	}
+	
+	public void setLargeIcon(boolean largeIcon) {
+		userComponent.setLargeIcon(largeIcon);
+		averageComponent.setLargeIcon(largeIcon);
+	}
 
 	@Override
 	public Iterable<FormItem> getFormItems() {

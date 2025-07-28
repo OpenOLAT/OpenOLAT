@@ -54,6 +54,7 @@ public class RatingComponent extends AbstractComponent {
 	private boolean translateExplanation;
 	private boolean showRatingAsText;
 	private boolean allowUserInput;
+	private boolean largeIcon = true;
 	private String cssClass;
 	private float currentRating;
 	private final int maxRating;
@@ -237,6 +238,14 @@ public class RatingComponent extends AbstractComponent {
 
 	public int getRatingSteps() {
 		return ratingLabels.size();
+	}
+
+	public boolean isLargeIcon() {
+		return largeIcon;
+	}
+
+	public void setLargeIcon(boolean largeIcon) {
+		this.largeIcon = largeIcon;
 	}
 
 	public String getCssClass() {

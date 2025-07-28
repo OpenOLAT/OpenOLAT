@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
@@ -36,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryMyView;
@@ -57,11 +60,12 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 28.01.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
@@ -69,24 +73,26 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 	private RepositoryEntryStatusEnum[] baseEntryStatus;
-	
-	private final ACService acService;
-	private final AccessControlModule acModule;
-	private final RepositoryService repositoryService;
-	private final RepositoryManager repositoryManager;
-	
+
 	private Integer count;
 	
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private NodeAccessService nodeAccessService;
+
 	public DefaultRepositoryEntryDataSource(SearchMyRepositoryEntryViewParams searchParams,
 			RepositoryEntryDataSourceUIFactory uifactory) {
+		CoreSpringFactory.autowireObject(this);
 		this.uifactory = uifactory;
 		this.searchParams = searchParams;
 		baseEntryStatus = searchParams.getEntryStatus();
-		
-		acService = CoreSpringFactory.getImpl(ACService.class);
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 	
 	public void setFilters(List<Filter> filters) {
@@ -271,6 +277,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, searchParams.getOfferOrganisations());
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 		
+		final Locale locale = uifactory.getTranslator().getLocale();
+		
 		List<RepositoryEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
@@ -278,6 +286,11 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if(image != null) {
 				row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(uifactory.getMapperThumbnailUrl() , image));
+			}
+			
+			if(StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
+				String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getTechnicalType()), locale);
+				row.setTranslatedTechnicalType(translatedType);
 			}
 			
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(uifactory.getTranslator(), entry.getTaxonomyLevels());
@@ -295,7 +308,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 							String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
 							String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
 							AccessMethodHandler amh = acModule.getAccessMethodHandler(bundle.getMethod().getType());
-							String displayName = amh.getMethodName(uifactory.getTranslator().getLocale());
+							String displayName = amh.getMethodName(locale);
 							types.add(new PriceMethod(price, type, displayName));
 						}
 					}

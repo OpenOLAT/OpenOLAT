@@ -175,7 +175,7 @@ public class RepositoryEntryListController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(OpenAccessOfferController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
 		this.name = name;
 		this.config = config;
 		this.stackPanel = stackPanel;
@@ -223,7 +223,7 @@ public class RepositoryEntryListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		if(!guestOnly) {
 			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
-			markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+			markColModel.setIconHeader("o_icon o_icon_bookmark_header");
 			columnsModel.addFlexiColumnModel(markColModel);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
@@ -534,7 +534,7 @@ public class RepositoryEntryListController extends FormBasicController
 			if("mark".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				boolean marked = doMark(ureq, row);
-				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
+				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark" : "o_icon o_icon_bookmark_add");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
@@ -653,7 +653,7 @@ public class RepositoryEntryListController extends FormBasicController
 				RepositoryEntryRow row = (RepositoryEntryRow)commentsCtrl.getUserObject();
 				long numOfComments = commentsCtrl.getCommentsCount();
 				
-				String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+				String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
 				row.getCommentsLink().setCustomEnabledLinkCSS("o_comments");
 				row.getCommentsLink().setIconLeftCSS(css);
 				String title = "(" + numOfComments + ")";
@@ -801,7 +801,7 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeMarkLink(RepositoryEntryRow row) {
 		if(!guestOnly) {
 			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
-			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
 			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 			markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 			markLink.setUserObject(row);
@@ -891,9 +891,10 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public void forgeDetails(RepositoryEntryRow row) {
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "learn.more", null, null, Link.LINK);
-		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
+		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details o_button_ghost");
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
 		detailsLink.setTitle("learn.more");
+		detailsLink.setGhost(true);
 		detailsLink.setUserObject(row);
 		if (row.isMember()) {
 			String businessPath = "[RepositoryEntry:" + row.getKey() + "][Infos:0]";
@@ -914,9 +915,10 @@ public class RepositoryEntryListController extends FormBasicController
 			if(guestOnly) {
 				Double averageRating = row.getAverageRating();
 				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingFormItem ratingCmp = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
-				row.setRatingFormItem(ratingCmp);
-				ratingCmp.setUserObject(row);
+				RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
+				ratingEl.setLargeIcon(false);
+				row.setRatingFormItem(ratingEl);
+				ratingEl.setUserObject(row);
 			} else {
 				Integer myRating = row.getMyRating();
 				Double averageRating = row.getAverageRating();
@@ -924,10 +926,11 @@ public class RepositoryEntryListController extends FormBasicController
 		
 				float ratingValue = myRating == null ? 0f : myRating.floatValue();
 				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingWithAverageFormItem ratingCmp
+				RatingWithAverageFormItem ratingEl
 					= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
-				row.setRatingFormItem(ratingCmp);
-				ratingCmp.setUserObject(row);
+				ratingEl.setLargeIcon(false);
+				row.setRatingFormItem(ratingEl);
+				ratingEl.setUserObject(row);
 			}
 		}
 	}
@@ -939,7 +942,7 @@ public class RepositoryEntryListController extends FormBasicController
 			String title = "(" + numOfComments + ")";
 			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
 			commentsLink.setUserObject(row);
-			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+			String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
 			commentsLink.setCustomEnabledLinkCSS("o_comments");
 			commentsLink.setIconLeftCSS(css);
 			row.setCommentsLink(commentsLink);

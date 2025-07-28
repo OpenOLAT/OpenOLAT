@@ -306,9 +306,9 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			formLayout.add("buttonContainer", buttonContainer);
 			buttonContainer.setElementCssClass("o_sel_repo_save_details");
 			buttonContainer.setVisible(!readOnly);
-			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 			FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
 			submit.setVisible(!managed && !readOnly);
+			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		}
 	}
 	

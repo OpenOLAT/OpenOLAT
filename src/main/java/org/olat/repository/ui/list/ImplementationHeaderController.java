@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.List;
+
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +43,8 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
@@ -92,6 +96,12 @@ public class ImplementationHeaderController extends FormBasicController {
 			if (imageUrl != null) {
 				row.setThumbnailRelPath(imageUrl);
 			}
+			
+			List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
+			List<TaxonomyLevelNamePath> taxonomyLevels = (levels != null) 
+					? TaxonomyUIFactory.getNamePaths(getTranslator(), levels)
+					: List.of();
+			row.setTaxonomyLevels(taxonomyLevels);
 			
 			String displayName = StringHelper.escapeHtml(row.getDisplayName());
 			selectLink = uifactory.addFormLink("select_" + row.getOlatResource().getKey(), displayName, null, layoutCont, Link.NONTRANSLATED);

@@ -145,7 +145,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		renderAction(sb, rating, val, ubu);
 		// Add title
 		renderTitle(sb, rating, label, translator);
-		sb.append("><i class=\"o_icon o_icon-lg o_icon_rating_").append(val).append("_off", "_on", selected)
+		sb.append("><i class=\"o_icon").append(" o_icon-lg", rating.isLargeIcon()).append(" o_icon_rating_").append(val).append("_off", "_on", selected)
 		  .append("\"> </i> ");
 		if (label != null) {
 			if (rating.isTranslateRatingLabels()) {
@@ -161,7 +161,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderYesOrNo(StringOutput sb, RatingComponent rating, String label, String val, boolean selected, URLBuilder ubu, Translator translator) {
-		sb.append("<a class='o_icon o_icon-lg o_icon_rating_")
+		sb.append("<a class='o_icon ").append(" o_icon-lg", rating.isLargeIcon()).append(" o_icon_rating_")
 		  .append(val).append("_on", "_off", selected).append("'");
 		// Add onclick
 		renderAction(sb, rating, val, ubu);
@@ -173,11 +173,11 @@ public class RatingRenderer extends DefaultComponentRenderer {
 	private void renderStars(StringOutput sb, RatingComponent rating, List<String> labels, URLBuilder ubu, Translator translator) {
 		for (int i = 0; i < labels.size(); i++) {
 			// Add css class
-			sb.append("<a class='o_icon o_icon-lg ");
+			sb.append("<a class='o_icon").append(" o_icon-lg", rating.isLargeIcon());
 			if (rating.getCurrentRating() >= i+1) {
-				sb.append("o_icon_rating_on");			
+				sb.append(" o_icon_rating_on");			
 			} else {
-				sb.append("o_icon_rating_off");
+				sb.append(" o_icon_rating_off");
 			}								
 			sb.append("'");
 			renderAction(sb, rating, Integer.toString(i+1), ubu);

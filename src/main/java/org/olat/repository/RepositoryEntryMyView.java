@@ -53,6 +53,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public String getLocation();
 	
+	public String getTechnicalType();
+	
 	public RepositoryEntryEducationalType getEducationalType();
 	
 	public String getExpenditureOfWork();

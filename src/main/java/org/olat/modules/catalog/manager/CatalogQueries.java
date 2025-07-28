@@ -55,9 +55,10 @@ public class CatalogQueries {
 
 	public List<RepositoryEntryInfos> loadRepositoryEntries(CatalogEntrySearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select new org.olat.modules.catalog.model.RepositoryEntryInfos(v, cerconfig, cpconfig)")
+		sb.append("select new org.olat.modules.catalog.model.RepositoryEntryInfos(v, stats, cerconfig, cpconfig)")
 		  .append(" from repositoryentry as v")
 		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch v.statistics as stats")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join fetch v.educationalType as educationalType")
 		  .append(" left join certificateentryconfig as cerconfig on (cerconfig.entry.key=v.key)")

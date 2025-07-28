@@ -13,13 +13,21 @@
 			<i class=" o_icon o_icon-fw o_icon_start o_icon-lg"></i>
 		</div>
 		
-		#if ($row.getExternalRef())
+		#if ($r.isNotEmpty($row.externalRef) || $r.isNotEmpty($row.translatedTechnicalType))
 		<div class="o_ext_ref">
-			$r.escapeHtml($row.getExternalRef())
+			#if($r.isNotEmpty($row.externalRef))
+				$r.escapeHtml($row.externalRef)
+				#if($r.isNotEmpty($row.translatedTechnicalType))
+					<span class="o_spacer">&middot;</span>
+				#end
+			#end
+			#if($r.isNotEmpty($row.translatedTechnicalType))
+				$r.escapeHtml($row.translatedTechnicalType)
+			#end
 		</div>
 		#end
 		<a href="$row.getInfoUrl()" "onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link">
-			<h4 class="o_title">$r.escapeHtml($row.title)</h4>
+			<h3 class="o_title">$r.escapeHtml($row.title)</h3>
 		</a>
 		#if($r.isNotEmpty($row.teaser))
 		<div class="o_flex_block_one_line_left">
@@ -67,11 +75,9 @@
 					#if($row.location  && !${row.location.isEmpty()})
 						<div class="o_lifecycle_location o_flex_item_max">
 							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-								<span class="o_spacer">•</span>
-							#else
-								<i class="o_icon o_icon-fw o_icon_location"> </i> 
+								<span class="o_spacer">&middot;</span>
 							#end
-							$r.escapeHtml($row.location)
+							<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($row.location)
 						</div>
 					#end
 				</div>
@@ -91,8 +97,26 @@
 	</div>
 	
 	<div class="o_access">
+		<div class="o_social_actions">
+			#if($r.isNotEmpty($row.ratingFormItemName))
+			<div class="o_spacer">&#124;</div>
+			<div class="o_repo_rating">
+				$r.render($row.ratingFormItemName)
+			</div>
+			#end
+			#if($r.isNotEmpty($row.commentsLinkName))
+			<div class="o_spacer">&#124;</div>
+			<div class="o_repo_comments">
+				$r.render($row.commentsLinkName)
+			</div>
+			#end
+		</div>
+		
 		<div class="o_access_info o_nowrap">
 			#if($r.isNotEmpty($row.getAccessInfo()))
+				#if($r.isNotEmpty($row.getAccessInfoIconCssClass()))
+				<i class="o_icon ${row.getAccessInfoIconCssClass()}"> </i>
+				#end
 				$row.getAccessInfo()
 			#end
 		</div>

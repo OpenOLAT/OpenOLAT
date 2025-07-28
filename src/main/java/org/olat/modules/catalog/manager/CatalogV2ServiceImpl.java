@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 
 import org.olat.basesecurity.OrganisationDataDeletable;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
+import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -69,6 +71,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -107,6 +110,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	private AccessControlModule acModule;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private UserRatingsDAO userRatingsDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
@@ -167,6 +172,13 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		
 		List<Long> reMembershipKeys = loadRepositoryEntryMembershipKeys(repositoryEntriesInfos, searchParams.getMember());
 		
+		List<UserRating> ratings = searchParams.getMember() == null || !repositoryModule.isRatingEnabled()
+				? List.of()
+				: userRatingsDao.getAllRatings(searchParams.getMember());
+		Map<Long,Integer> ratingsMap = ratings.stream()
+				.filter(rating -> "RepositoryEntry".equals(rating.getResName()))
+				.collect(Collectors.toMap(UserRating::getResId, UserRating::getRating, (u, v) -> u));
+		
 		Map<Resourceable, ResourceLicense> licenses = null;
 		if (licenseModule.isEnabled(repositoryEntryLicenseHandler)) {
 			licenses = loadLicenses(repositoryEntriesInfos);
@@ -176,9 +188,10 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repositoryEntriesInfos.size());
 		for (RepositoryEntryInfos repositoryEntryInfos : repositoryEntriesInfos) {
 			RepositoryEntry repositoryEntry = repositoryEntryInfos.entry();
-			CatalogEntryImpl catalogEntry = new CatalogEntryImpl(repositoryEntry);
+			RepositoryEntryStatistics statistics = repositoryEntryInfos.statistics();
+			CatalogEntryImpl catalogEntry = new CatalogEntryImpl(repositoryEntry, statistics);
 			
-			List<TaxonomyLevel> levels = reToTaxonomyLevels.get(repositoryEntry);
+			List<TaxonomyLevel> levels = reToTaxonomyLevels.get(repositoryEntryInfos);
 			catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
 			
 			catalogEntry.setMember(reMembershipKeys.contains(catalogEntry.getRepositoryEntryKey()));
@@ -193,6 +206,9 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			if (repositoryEntry.isPublicVisible()) {
 				resourcesWithAC.add(repositoryEntry.getOlatResource());
 			}
+			
+			Integer rating = ratingsMap.get(repositoryEntry.getKey());
+			catalogEntry.setMyRating(rating);
 			
 			boolean hasCertificate = repositoryEntryInfos.certificateConfiguration() != null
 					&& repositoryEntryInfos.certificateConfiguration().isCertificateEnabled();

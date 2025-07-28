@@ -190,7 +190,7 @@ public class CourseListController extends FormBasicController implements Activat
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		
 		initForm(ureq);
@@ -215,7 +215,7 @@ public class CourseListController extends FormBasicController implements Activat
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(Columns.mark);
-		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+		markColumn.setIconHeader("o_icon o_icon_bookmark_header");
 		markColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(markColumn);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.key));
@@ -469,6 +469,7 @@ public class CourseListController extends FormBasicController implements Activat
 		String id = "rat_" + row.getKey();
 		RatingWithAverageFormItem ratingEl = new RatingWithAverageFormItem(id, ratingValue, averageRatingValue, 5, numOfRatings);
 		ratingEl.setShowRatingAsText(false);
+		ratingEl.setLargeIcon(false);
 		row.setRatingFormItem(ratingEl);
 		ratingEl.setUserObject(row);
 		flc.add(id, ratingEl);
@@ -481,7 +482,7 @@ public class CourseListController extends FormBasicController implements Activat
 		String title = "(" + numOfComments + ")";
 		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), CMD_INFOS, title, tableEl, Link.NONTRANSLATED);
 		commentsLink.setUserObject(row);
-		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+		String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
 		commentsLink.setCustomEnabledLinkCSS("o_comments");
 		commentsLink.setIconLeftCSS(css);
 		row.setCommentsLink(commentsLink);
@@ -491,7 +492,7 @@ public class CourseListController extends FormBasicController implements Activat
 		//mark
 		String count = Integer.toString(++counter);
 		FormLink markLink = uifactory.addFormLink("mark_".concat(count), "mark", "", tableEl, Link.NONTRANSLATED);
-		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
 		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
@@ -577,7 +578,7 @@ public class CourseListController extends FormBasicController implements Activat
 			String cmd = link.getCmd();
 			if ("mark".equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
 				boolean marked = doMark(ureq, row);
-				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
+				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark" : "o_icon o_icon_bookmark_add");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
