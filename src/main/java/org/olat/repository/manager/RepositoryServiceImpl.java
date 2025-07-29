@@ -757,8 +757,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		Group defaultGroup = reToGroupDao.getDefaultGroup(reloadedEntry);
 		if(defaultGroup != null) {
 			groupDao.removeMemberships(defaultGroup);
+			groupMembershipHistoryDao.deleteMembershipHistory(defaultGroup);
 		}
-		groupMembershipHistoryDao.deleteMembershipHistory(defaultGroup);
 		List<BusinessGroup> internalGroups = curriculumService.deleteInternalGroupMembershipsAndInvitations(reloadedEntry);
 		reToGroupDao.removeRelations(reloadedEntry);
 		templateToGroupDao.deleteRelations(reloadedEntry);
