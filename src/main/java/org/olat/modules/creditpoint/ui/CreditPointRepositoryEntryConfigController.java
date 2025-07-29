@@ -108,7 +108,10 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		systemEl = uifactory.addDropdownSingleselect("options.creditpoint.system", formLayout, systemPK.keys(), systemPK.values());
 		if(selectedSystem != null && systemPK.containsKey(creditPointConfig.getCreditPointSystem().getKey().toString())) {
 			systemEl.select(selectedSystem.getKey().toString(), true);
+		} else if(!systemPK.isEmpty()) {
+			systemEl.select(systemPK.keys()[0], true);
 		}
+		systemEl.addActionListener(FormEvent.ONCHANGE);
 		systemEl.setEnabled(editable && !managedCP);
 		systemEl.setMandatory(true);
 		
@@ -231,7 +234,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source) {
 			updateUI();
-		} else if(overrideExpirationEl == source) {
+		} else if(overrideExpirationEl == source || systemEl == source) {
 			updateOverrideExpirationUI();
 		} 
 		super.formInnerEvent(ureq, source, event);
