@@ -132,8 +132,10 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		
 		if (hasDetails()) {
 			detailsCtrl = createDetailsController(ureq, wControl);
-			listenTo(detailsCtrl);
-			mainVC.put("details", detailsCtrl.getInitialComponent());
+			if(detailsCtrl != null) {
+				listenTo(detailsCtrl);
+				mainVC.put("details", detailsCtrl.getInitialComponent());
+			}
 		}
 		
 		putInitialPanel(mainVC);
