@@ -75,7 +75,7 @@ public class CreditPointSystemEditController extends FormBasicController {
 		labelEl.setMandatory(true);
 		
 		expirationEl = uifactory.addToggleButton("validity.period", "validity.period", translate("on"), translate("off"), formLayout);
-		expirationEl.toggle(creditPointSystem.getDefaultExpiration() != null && creditPointSystem.getDefaultExpirationUnit() != null);
+		expirationEl.toggle(creditPointSystem != null && creditPointSystem.getDefaultExpiration() != null && creditPointSystem.getDefaultExpirationUnit() != null);
 
 		defaultExpirationEl = new ExpirationFormItem("system.default.expiration", false, getTranslator());
 		defaultExpirationEl.setLabel("system.default.expiration", null);

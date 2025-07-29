@@ -231,6 +231,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			
 			// Credit points
 			creditPointCont = uifactory.addInlineFormLayout("curriculum.element.credit.points", "curriculum.element.credit.points", formLayout);
+			creditPointCont.setMandatory(true);
 			String points = creditPointConfig == null || creditPointConfig.getCreditPoints() == null
 					? null
 					: creditPointConfig.getCreditPoints().toString();
