@@ -329,7 +329,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				new CertificateEnabledRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.availability, new ParticipantsAvailabilityRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.detailsSmall,
-				new StaticFlexiCellRenderer(translate("learn.more"), CMD_DETAILS, "btn btn-xs btn-default o_details tablecell", null, null)));
+				new StaticFlexiCellRenderer(translate("learn.more"), CMD_DETAILS, "btn btn-xs btn-default o_details tablecell o_button_ghost", null, null)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.startSmall));
 
 		dataModel = new CatalogEntryDataModel(columnsModel, getLocale());
@@ -640,7 +640,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				ratingEl.setUserObject(row);
 				ratingEl.setTranslator(getTranslator());
 			} else {
-				Integer myRating = null; //row.getMyRating();
+				Integer myRating = row.getMyRating();
 				Double averageRating = row.getAverageRating();
 				long numOfRatings = row.getNumOfRatings();
 		

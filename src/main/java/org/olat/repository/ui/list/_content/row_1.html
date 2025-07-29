@@ -67,10 +67,8 @@
 						<div class="o_lifecycle_location o_flex_item_max">
 							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
 								<span class="o_spacer">&middot;</span>
-							#else
-								<i class="o_icon o_icon-fw o_icon_location"> </i> 
 							#end
-							$r.escapeHtml($row.location)
+							<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($row.location)
 						</div>
 					#end
 				</div>
