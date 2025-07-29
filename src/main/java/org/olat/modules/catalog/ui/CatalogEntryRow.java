@@ -94,6 +94,8 @@ public class CatalogEntryRow {
 	private boolean certificate;
 	private String creditPointAmount;
 	
+	
+	private final Integer myRating;
 	private final Double averageRating;
 	private final Long numOfRatings;
 	private final Long numOfComments;
@@ -134,6 +136,7 @@ public class CatalogEntryRow {
 		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
 		singleCourseEntryStartus = catalogEntry.getSingleCourseEntryStartus();
 		
+		myRating = catalogEntry.getMyRating();
 		averageRating = catalogEntry.getAverageRating();
 		numOfRatings = catalogEntry.getNumOfRatings();
 		numOfComments = catalogEntry.getNumOfComments();
@@ -431,6 +434,10 @@ public class CatalogEntryRow {
 		return isSingleCourseImplementation() 
 				&& (	singleCourseEntryStartus == null 
 					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStartus, RepositoryEntryStatusEnum.publishedAndClosed()));
+	}
+	
+	public Integer getMyRating() {
+		return myRating;
 	}
 
 	public Double getAverageRating() {

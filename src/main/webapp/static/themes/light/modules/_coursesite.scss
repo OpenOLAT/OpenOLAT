@@ -965,6 +965,7 @@
 			}
 			.o_table_row {
 				.o_access {
+					flex: 0 0 auto;
 					display: flex;
 					flex-direction: column;
 					gap: 5px;

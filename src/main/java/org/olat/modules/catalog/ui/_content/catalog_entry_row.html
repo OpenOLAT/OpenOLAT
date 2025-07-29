@@ -132,7 +132,7 @@
 		#end
 	
 		<div class="o_actions">
-			<a href="$row.getInfoUrl()" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link" class="btn btn-sm btn-default o_details">
+			<a href="$row.getInfoUrl()" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("details","$row.getOlatResource().getKey()")}; return false;" role="link" class="btn btn-sm btn-default o_details o_button_ghost">
 				<span>$r.translate("learn.more")</span> <i class="o_icon o_icon_details" aria-hidden="true"></i>
 			</a>
 			#if($row.getStartLinkName())
