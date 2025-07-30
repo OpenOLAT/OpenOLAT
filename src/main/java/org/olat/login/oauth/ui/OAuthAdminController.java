@@ -967,6 +967,7 @@ public class OAuthAdminController extends FormBasicController {
 		
 		private SingleSelection responseTypeEl;
 		private TextElement scopesEl;
+		private MultipleSelectionElement scopeOnlyInAuthorizationUrlEl;
 		
 		private TextElement issuerEl;
 		private TextElement authorizationEndPointEl;
@@ -1028,6 +1029,12 @@ public class OAuthAdminController extends FormBasicController {
 			
 			String scopes = spi.getScopes();
 			scopesEl = uifactory.addTextElement("gen.oauth.scopes." + counter, "scopes", 64, scopes, layoutCont);
+			
+			SelectionValues scopeOnlyPK = new SelectionValues();
+			scopeOnlyPK.add(SelectionValues.entry("only", ""));
+			scopeOnlyInAuthorizationUrlEl = uifactory.addCheckboxesHorizontal("scopes.only", "scopes.only.authorization.url", layoutCont, scopeOnlyPK.keys(), scopeOnlyPK.values());
+			scopeOnlyInAuthorizationUrlEl.setHelpTextKey("scopes.only.authorization.url.hint", null);
+			scopeOnlyInAuthorizationUrlEl.select(scopeOnlyPK.keys()[0], spi.hasScopesInAuthorizationUrlOnly());
 			
 			String issuer = spi.getIssuer();
 			issuerEl = uifactory.addTextElement("gen.oauth.issuer." + counter, "openidconnectif.issuer", 256, issuer, layoutCont);
@@ -1093,13 +1100,14 @@ public class OAuthAdminController extends FormBasicController {
 				String issuer = issuerEl.getValue();
 				String responseType = responseTypeEl.getSelectedKey();
 				String scopes = scopesEl.getValue();
+				boolean scopesInAuthorizationUrlOnly = scopeOnlyInAuthorizationUrlEl.isAtLeastSelected(1);
 				String authorizationEndPoint = authorizationEndPointEl.getValue();
 				String tokenEndPoint = tokenEndPointEl.getValue();
 				String userInfoEndPoint = userInfoEndPointEl.getValue();
 				
 				String name = getProvider().getName();				
 				oauthModule.setGenericOAuth(name, displayName, rootEnabled, issuer, authorizationEndPoint, tokenEndPoint, userInfoEndPoint,
-						responseType, scopes, apiKey, apiSecret);
+						responseType, scopes, scopesInAuthorizationUrlOnly, apiKey, apiSecret);
 			}
 		}
 	}

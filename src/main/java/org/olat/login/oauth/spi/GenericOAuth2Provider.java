@@ -66,6 +66,7 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 	private final String scopes;
 	private final String issuer;
 	private final String authorizationEndPoint;
+	private final boolean scopesInAuthorizationUrlOnly;
 	private final String tokenEndPoint;
 	private final String userInfosEndPoint;
 	
@@ -77,8 +78,8 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 	private final OAuthLoginModule oauthModule;
 	
 	public GenericOAuth2Provider(String name, String displayName, String providerName,
-			String appKey, String appSecret, String responseType, String scopes, String issuer,
-			String authorizationEndPoint, String tokenEndPoint, String userInfosEndPoint,
+			String appKey, String appSecret, String responseType, String scopes, boolean scopesInAuthorizationUrlOnly,
+			String issuer, String authorizationEndPoint, String tokenEndPoint, String userInfosEndPoint,
 			OAuthAttributesMapping attributesMapping, boolean rootEnabled, OAuthLoginModule oauthModule) {
 		this.name = name;
 		this.displayName = displayName;
@@ -89,6 +90,7 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 		this.scopes = scopes;
 		this.issuer = issuer;
 		this.authorizationEndPoint = authorizationEndPoint;
+		this.scopesInAuthorizationUrlOnly = scopesInAuthorizationUrlOnly;
 		this.tokenEndPoint = tokenEndPoint;
 		this.userInfosEndPoint = userInfosEndPoint;
 		this.attributesMapping = attributesMapping;
@@ -125,7 +127,7 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 		ServiceBuilder sb = new ServiceBuilder(appKey)
                 .apiSecret(appSecret)
                 .callback(oauthModule.getCallbackUrl());
-		if(StringHelper.containsNonWhitespace(scopes)) {
+		if(StringHelper.containsNonWhitespace(scopes) && !scopesInAuthorizationUrlOnly) {
 			sb.defaultScope(scopes);
 		}
         return sb        
@@ -164,6 +166,10 @@ public class GenericOAuth2Provider implements OAuthSPI, OAuthDisplayName, OAuthM
 		
 	public String getAuthorizationBaseUrl() {
 		return authorizationEndPoint;
+	}
+	
+	public boolean hasScopesInAuthorizationUrlOnly() {
+		return scopesInAuthorizationUrlOnly;
 	}
 	
 	public String getTokenBaseUrl() {

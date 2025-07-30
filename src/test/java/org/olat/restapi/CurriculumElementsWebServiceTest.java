@@ -252,6 +252,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		vo.setDisplayName("REST Curriculum element");
 		vo.setExternalId("REST-CEL-1");
 		vo.setIdentifier("REST-ID-CEL-1");
+		vo.setLocation("REST location");
 		vo.setManagedFlagsString("delete");
 		vo.setCurriculumKey(curriculum.getKey());
 		vo.setParentElementKey(element.getKey());
@@ -272,6 +273,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("REST Curriculum element", savedVo.getDisplayName());
 		Assert.assertEquals("REST-CEL-1", savedVo.getExternalId());
 		Assert.assertEquals("REST-ID-CEL-1", savedVo.getIdentifier());
+		Assert.assertEquals("REST location", savedVo.getLocation());
 		Assert.assertEquals("delete", savedVo.getManagedFlagsString());
 		Assert.assertEquals(element.getKey(), savedVo.getParentElementKey());
 		Assert.assertEquals(curriculum.getKey(), savedVo.getCurriculumKey());
