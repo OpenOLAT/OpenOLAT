@@ -295,6 +295,7 @@ public class CurriculumElementsWebService {
 		}
 		
 		elementToSave.setDescription(curriculumElement.getDescription());
+		elementToSave.setLocation(curriculumElement.getLocation());
 		elementToSave.setExternalId(curriculumElement.getExternalId());
 		elementToSave.setManagedFlags(CurriculumElementManagedFlag.toEnum(curriculumElement.getManagedFlagsString()));
 		if(StringHelper.containsNonWhitespace(curriculumElement.getStatus())) {

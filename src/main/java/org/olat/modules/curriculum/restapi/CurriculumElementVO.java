@@ -44,6 +44,7 @@ public class CurriculumElementVO {
 	private String identifier;
 	private String displayName;
 	private String description;
+	private String location;
 	
 	private String status;
 	private Date beginDate;
@@ -84,6 +85,7 @@ public class CurriculumElementVO {
 		vo.setIdentifier(element.getIdentifier());
 		vo.setDisplayName(element.getDisplayName());
 		vo.setDescription(element.getDescription());
+		vo.setLocation(element.getLocation());
 		if(element.getElementStatus() != null) {
 			vo.setStatus(element.getElementStatus().name());
 		}
@@ -132,6 +134,14 @@ public class CurriculumElementVO {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getStatus() {
