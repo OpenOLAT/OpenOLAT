@@ -59,7 +59,10 @@ public class GenericOAuth2Api extends DefaultApi20 {
     	StringBuilder authorizeUrl = new StringBuilder();
     	authorizeUrl
     		.append(provider.getAuthorizationBaseUrl())
-    		.append("?&nonce=").append(UUID.randomUUID().toString());		
+    		.append("?&nonce=").append(UUID.randomUUID().toString());
+    	if(provider.hasScopesInAuthorizationUrlOnly()) {
+    		authorizeUrl.append("&scope=").append(provider.getScopes().replace(" ", "+"));
+    	}
     	return authorizeUrl.toString();
     }
 }

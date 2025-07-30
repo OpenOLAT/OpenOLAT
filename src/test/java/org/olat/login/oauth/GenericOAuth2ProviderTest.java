@@ -46,7 +46,7 @@ public class GenericOAuth2ProviderTest extends OlatTestCase {
 		OAuthUser user = new OAuthUser();
 		OAuthAttributesMapping attributesMapping = new OAuthAttributesMapping();
 		GenericOAuth2Provider genericOAuth2Provider = new GenericOAuth2Provider("PORTAL", "Unit", "PORTAL",
-				null, null, null, null, null, null, null, null, attributesMapping, false, oauthModule);
+				null, null, null, null, false, null, null, null, null, attributesMapping, false, oauthModule);
 		
 		String json = "{\"sub\":\"3489\",\"email_verified\":true,\"role\":[\"participant\"],\"address\":null,\"iss\":\"https://myopenolat.ch/\",\"name\":\"Jacques Dupont\",\"preferred_username\":\"jacques@openolat.ch\",\"exp\":\"1701893961\",\"given_name\":\"Jacques\",\"iat\":\"1701850761\",\"family_name\":\"Dupont\",\"email\":\"jacques@openolat.ch\"}";
 		genericOAuth2Provider.parseIdTokenInfos(user, json);
@@ -58,7 +58,7 @@ public class GenericOAuth2ProviderTest extends OlatTestCase {
 		OAuthUser user = new OAuthUser();
 		OAuthAttributesMapping attributesMapping = new OAuthAttributesMapping();
 		GenericOAuth2Provider genericOAuth2Provider = new GenericOAuth2Provider("PORTAL", "Unit", "PORTAL",
-				null, null, null, null, null, null, null, null, attributesMapping, false, oauthModule);
+				null, null, null, null, false, null, null, null, null, attributesMapping, false, oauthModule);
 		
 		genericOAuth2Provider.parseIdTokenInfos(user, "{\"sub\":[\"3489\",\"3489\"],\"oi_au_id\":\"9c34e94e-0211-430f-a489-5175c1567ae5\",\"azp\":\"frentix\",\"nonce\":\"9c1b-9031699b157b\",\"at_hash\":\"998xyxqHh3lXIwtEpPazXE\",\"oi_tkn_id\":\"b620ff3a-0ff8-4491-bbdb-ba5327a550\",\"aud\":\"frentix\",\"exp\":1701851961,\"iss\":\"https://myopenolat.ch/\",\"iat\":1701850761}");
 		Assert.assertEquals("3489", user.getId());
@@ -74,7 +74,7 @@ public class GenericOAuth2ProviderTest extends OlatTestCase {
 		List<OAuthAttributeMapping> mappings = List.of(new OAuthAttributeMapping("address", "id"), new OAuthAttributeMapping("email", "email"));
 		OAuthAttributesMapping attributesMapping = new OAuthAttributesMapping(mappings);
 		GenericOAuth2Provider genericOAuth2Provider = new GenericOAuth2Provider("PORTAL", "Unit", "PORTAL",
-				null, null, null, null, null, null, null, null, attributesMapping, false, oauthModule);
+				null, null, null, null, false, null, null, null, null, attributesMapping, false, oauthModule);
 		
 		String json = "{\"sub\":\"3489\",\"email_verified\":true,\"role\":[\"participant\"],\"address\":null,\"iss\":\"https://myopenolat.ch/\",\"name\":\"Jacques Dupont\",\"preferred_username\":\"jacques@openolat.ch\",\"exp\":\"1701893961\",\"given_name\":\"Jacques\",\"iat\":\"1701850761\",\"family_name\":\"Dupont\",\"email\":\"jacques@openolat.ch\"}";
 		genericOAuth2Provider.parseIdTokenInfos(user, json);

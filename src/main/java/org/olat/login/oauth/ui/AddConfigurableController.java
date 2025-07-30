@@ -208,7 +208,7 @@ public class AddConfigurableController extends FormBasicController {
 		String userInfoEndPoint = userInfoEndPointEl.getValue();
 		oauthModule.setGenericOAuth(providerName, displayName, false, issuer,
 				authorizationEndPoint, tokenEndPoint, userInfoEndPoint,
-				responseType, scopes, apiKey, apiSecret);
+				responseType, scopes, false, apiKey, apiSecret);
 	
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

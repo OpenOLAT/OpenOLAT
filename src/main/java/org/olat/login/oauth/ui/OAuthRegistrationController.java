@@ -179,7 +179,7 @@ public class OAuthRegistrationController extends FormBasicController {
 
 		submitBtn = uifactory.addFormSubmitButton("save", formLayout);
 		submitBtn.setVisible(mailValidationCtrl == null && orgSelection == null);
-		submitBtn.setFormLayout("default");
+		submitBtn.setFormLayout("3_9");
 
 		if (mailEl != null) {
 			initValidationSelection(ureq, mailEl);

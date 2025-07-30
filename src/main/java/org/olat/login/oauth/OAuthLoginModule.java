@@ -168,6 +168,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String genericResponseType;
 	@Value("${oauth.generic.scope}")
 	private String genericScope;
+	@Value("${oauth.generic.scope.only.authorization.url:false}")
+	private String genericScopeOnlyInAuthorizationUrl;
 	@Value("${oauth.generic.issuer}")
 	private String genericIssuer;
 	@Value("${oauth.generic.authorizationEndPoint}")
@@ -331,8 +333,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 			
 			OAuthAttributesMapping genericMapping = new OAuthAttributesMapping(attributes);
 			GenericOAuth2Provider genericProvider = new GenericOAuth2Provider(genericProviderName, genericDisplayName, genericProviderName,
-					genericApiKey, genericApiSecret, genericResponseType, genericScope, genericIssuer,
-					genericAuthorizationEndPoint, genericTokenEndpoint, genericUserInfoEndPoint,
+					genericApiKey, genericApiSecret, genericResponseType, genericScope, "true".equals(genericScopeOnlyInAuthorizationUrl),
+					genericIssuer, genericAuthorizationEndPoint, genericTokenEndpoint, genericUserInfoEndPoint,
 					genericMapping, genericRootEnabled, this);
 			// prevent the config form from beeing edited in the UI, this provider can only be configured via olat.local.properties
 			genericProvider.setEditable(false);
@@ -369,6 +371,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		String apiSecret = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".ApiSecret", true);
 		String responseType = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".ResponseType", true);
 		String scope = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".Scope", true);
+		String scopeOnlyInAuthorizationUrl = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".ScopeOnlyInAuthorizationUrl", "false");
 		String issuer = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".Issuer", true);
 		String displayName = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".DisplayName", true);
 		String authorizationEndPoint = getStringPropertyValue(GENERIC_OAUTH_START_MARKER + providerName + ".AuthorizationEndPoint", true);
@@ -377,9 +380,9 @@ public class OAuthLoginModule extends AbstractSpringModule {
 
 		String prefix = GENERIC_OAUTH_START_MARKER + providerName + ".attr.";
 		OAuthAttributesMapping mapping = getMappings(prefix);
-		return  new GenericOAuth2Provider(providerName, displayName, providerName,
-				apiKey, apiSecret, responseType, scope, issuer,
-				authorizationEndPoint, tokenEndpoint, userInfoEndPoint,
+		return new GenericOAuth2Provider(providerName, displayName, providerName,
+				apiKey, apiSecret, responseType, scope, "true".equals(scopeOnlyInAuthorizationUrl),
+				issuer, authorizationEndPoint, tokenEndpoint, userInfoEndPoint,
 				mapping, rootEnabled, this);
 	}
 	
@@ -929,7 +932,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	
 	public void setGenericOAuth(String providerName, String displayName, boolean rootEnabled,
 			String issuer, String authorizationEndPoint, String tokenEndPoint, String userInfoEndPoint,
-			String responseType, String scope, String apiKey, String apiSecret) {
+			String responseType, String scope, boolean scopeOnlyInAuthorizationUrl, String apiKey, String apiSecret) {
 		if (genericEnabled && StringHelper.containsNonWhitespace(genericProviderName) && genericProviderName.equals(providerName)) {
 			// Special case: this generic provider was initialized from the
 			// olat.local.properties. We do not allow overwrite the values here, they are
@@ -942,6 +945,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		setSecretStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ApiSecret", apiSecret, true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ResponseType", responseType, true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".Scope", scope, true);
+		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".ScopeOnlyInAuthorizationUrl", scopeOnlyInAuthorizationUrl ? "true" : "false", true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".Issuer", issuer, true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".DisplayName", displayName, true);
 		setStringProperty(GENERIC_OAUTH_START_MARKER + providerName + ".AuthorizationEndPoint", authorizationEndPoint, true);
