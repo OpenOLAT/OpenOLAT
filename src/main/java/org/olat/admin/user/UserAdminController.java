@@ -67,6 +67,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallback;
 import org.olat.modules.creditpoint.ui.CreditPointSecurityCallbackFactory;
 import org.olat.modules.creditpoint.ui.CreditPointUserController;
@@ -207,6 +208,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private GradingModule gradingModule;
+	@Autowired
+	private CreditPointModule creditPointModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -608,7 +611,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 		
-		if (isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf) {
+		if (creditPointModule.isEnabled() && (isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_CREDITPOINT), uureq -> {
 				CreditPointSecurityCallback secCallback = CreditPointSecurityCallbackFactory.createSecurityCallback(managerRoles);
 				Controller creditPointCtr = new CreditPointUserController(uureq, getWindowControl(), identity, secCallback);

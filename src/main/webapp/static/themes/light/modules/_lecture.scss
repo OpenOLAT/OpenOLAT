@@ -176,7 +176,7 @@
 
 .o_lecture_resources {
 	display: grid;
-	grid-template-columns: 33% 33% 33%;
+	grid-template-columns: calc(33% - 10px) calc(33% - 10px) calc(34% - 20px);
 	column-gap: 20px;
 	row-gap: 10px;
 	justify-items: stretch;
@@ -447,7 +447,7 @@
 
 @container o-lecture-details (max-width: 820px) {
 	.o_lecture_resources {
-		grid-template-columns: 50% 50%;
+		grid-template-columns: calc(50% - 10px) calc(50% - 10px);
 	}
 }
 
