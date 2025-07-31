@@ -60,10 +60,6 @@ public class CatalogAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("catalog.config");
 
-		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", formLayout, new String[]{"xx"}, new String[]{""});
-		enableBrowsingEl.select("xx", repositoryModule.isCatalogBrowsingEnabled());
-		enableBrowsingEl.addActionListener(FormEvent.ONCLICK);
-
 		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", formLayout, new String[]{"xx"}, new String[]{""});
 		siteEl.select("xx", repositoryModule.isCatalogSiteEnabled());
 		siteEl.addActionListener(FormEvent.ONCLICK);
