@@ -412,6 +412,7 @@ public class OOGraphene {
 			log.warn("", e);
 			waitingALittleBit();
 			browser.findElement(by).clear();
+			waitingALittleBit();
 			browser.findElement(by).sendKeys(text);
 		}
 	}
