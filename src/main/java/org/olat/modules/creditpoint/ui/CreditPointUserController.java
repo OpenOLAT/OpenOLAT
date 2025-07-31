@@ -24,6 +24,9 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeEvent;
 import org.olat.core.gui.components.scope.ScopeFactory;
@@ -91,7 +94,9 @@ public class CreditPointUserController extends BasicController {
 		systemsSelection = ScopeFactory.createScopeSelection("systemsSelection", mainVC, this, systemScopes);
 		putInitialPanel(mainVC);
 		
-		if(!systems.isEmpty()) {
+		if(systems.isEmpty()) {
+			initEmptyState();
+		} else {
 			doSelect(ureq, systems.get(0));
 		}
 	}
@@ -103,6 +108,16 @@ public class CreditPointUserController extends BasicController {
 				doSelect(ureq, se.getSelectedKey());
 			}
 		}
+	}
+	
+	private void initEmptyState() {
+		EmptyStateConfig emptyState = EmptyStateConfig.builder()
+				.withIconCss("o_icon_coins")
+				.withMessageI18nKey("error.no.credit.point.system")
+				.build();
+		EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+		emptyStateCmp.setTranslator(getTranslator());
+		mainVC.put("transactions", emptyStateCmp);
 	}
 	
 	private void doSelect(UserRequest ureq, String key) {
