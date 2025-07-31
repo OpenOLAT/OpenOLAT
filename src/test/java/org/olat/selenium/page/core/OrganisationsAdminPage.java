@@ -44,6 +44,8 @@ public class OrganisationsAdminPage {
 	}
 	
 	public OrganisationsAdminPage openOrganisationsList() {
+		OOGraphene.waitBusyAndScrollTop(browser);
+		
 		By organisationsListBy = By.cssSelector("div.o_segments a.o_sel_org_organisations_list");
 		OOGraphene.waitElement(organisationsListBy, browser).click();
 		
@@ -59,6 +61,9 @@ public class OrganisationsAdminPage {
 		
 		By editBy = By.xpath("//dialog//ul[contains(@class,'o_dropdown')]//a[contains(@onclick,'edit')][i[contains(@class,'o_icon_edit')]]");
 		OOGraphene.waitElement(editBy, browser).click();
+		
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_organisation_metadata_form"), browser);
+		OOGraphene.waitTinymce(browser);
 		
 		return new OrganisationPage(browser).assertOnMetadata();
 	}
