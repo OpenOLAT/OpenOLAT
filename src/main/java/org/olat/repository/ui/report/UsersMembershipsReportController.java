@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryService;
 
@@ -152,7 +153,13 @@ public class UsersMembershipsReportController extends FormBasicController {
 				.map(GroupRoles::valueOf)
 				.toList();
 		
-		UsersMembershipsReport export = new UsersMembershipsReport("Memberships_", from, to, roles, getTranslator());
+		UsersMembershipsReport export = new UsersMembershipsReport(getReportLabel(from, to), from, to, roles, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
+	}
+	
+	private String getReportLabel(Date from, Date to) {
+		String fromString = Formatter.formatDateFilesystemSave(from);
+		String toString = Formatter.formatDateFilesystemSave(to);
+		return translate("report.memberships.label", fromString, toString);
 	}
 }
