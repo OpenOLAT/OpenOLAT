@@ -2399,6 +2399,7 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyGender" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
