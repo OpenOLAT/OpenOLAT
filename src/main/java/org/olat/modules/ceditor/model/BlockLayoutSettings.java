@@ -32,6 +32,13 @@ public class BlockLayoutSettings implements Cloneable {
 	private BlockLayoutSpacing customTopSpacing, customRightSpacing, customBottomSpacing, customLeftSpacing;
 
 	private BlockLayoutSpacing spacing;
+	
+	public static BlockLayoutSettings clone(BlockLayoutSettings settings) {
+		if (settings == null) {
+			return null;
+		}
+		return settings.clone();
+	}
 
 	public BlockLayoutSettings clone() {
 		try {

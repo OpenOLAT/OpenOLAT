@@ -35,6 +35,13 @@ public class AlertBoxSettings implements Cloneable{
 	private boolean collapsible;
 	private AlertBoxIcon icon;
 	private String color;
+	
+	public static AlertBoxSettings clone(AlertBoxSettings settings) {
+		if (settings == null) {
+			return null;
+		}
+		return settings.clone();
+	}
 
 	public AlertBoxSettings clone() {
 		try {

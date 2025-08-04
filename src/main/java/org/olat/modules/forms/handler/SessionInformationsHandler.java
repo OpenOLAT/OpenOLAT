@@ -34,6 +34,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 import org.olat.modules.forms.ui.SessionInfoInspectorController;
@@ -127,14 +129,15 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof SessionInformations) {
-			SessionInformations sessionInformations = (SessionInformations)element;
+		if (element instanceof SessionInformations sessionInformations) {
 			SessionInformations clone = new SessionInformations();
 			clone.setId(UUID.randomUUID().toString());
 			if (sessionInformations.getInformationTypes() != null) {
 				clone.setInformationTypes(new ArrayList<>(sessionInformations.getInformationTypes()));
 			}
 			clone.setObligation(sessionInformations.getObligation());
+			clone.setLayoutSettings(BlockLayoutSettings.clone(sessionInformations.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(sessionInformations.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;
