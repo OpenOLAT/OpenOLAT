@@ -26,7 +26,7 @@ import java.beans.Transient;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class AlertBoxSettings {
+public class AlertBoxSettings implements Cloneable{
 
 	private boolean showAlertBox;
 	private AlertBoxType type;
@@ -35,6 +35,21 @@ public class AlertBoxSettings {
 	private boolean collapsible;
 	private AlertBoxIcon icon;
 	private String color;
+	
+	public static AlertBoxSettings clone(AlertBoxSettings settings) {
+		if (settings == null) {
+			return null;
+		}
+		return settings.clone();
+	}
+
+	public AlertBoxSettings clone() {
+		try {
+			return (AlertBoxSettings) super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 
 	public boolean isShowAlertBox() {
 		return showAlertBox;

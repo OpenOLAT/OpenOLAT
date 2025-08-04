@@ -35,6 +35,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.ui.DisclaimerController;
 import org.olat.modules.forms.ui.DisclaimerEditorController;
@@ -132,12 +134,13 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof Disclaimer) {
-			Disclaimer disclaimer = (Disclaimer)element;
+		if (element instanceof Disclaimer disclaimer) {
 			Disclaimer clone = new Disclaimer();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setAgreement(disclaimer.getAgreement());
 			clone.setText(disclaimer.getText());
+			clone.setLayoutSettings(BlockLayoutSettings.clone(disclaimer.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(disclaimer.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;

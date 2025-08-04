@@ -26,12 +26,27 @@ import java.beans.Transient;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BlockLayoutSettings {
+public class BlockLayoutSettings implements Cloneable {
 
 
 	private BlockLayoutSpacing customTopSpacing, customRightSpacing, customBottomSpacing, customLeftSpacing;
 
 	private BlockLayoutSpacing spacing;
+	
+	public static BlockLayoutSettings clone(BlockLayoutSettings settings) {
+		if (settings == null) {
+			return null;
+		}
+		return settings.clone();
+	}
+
+	public BlockLayoutSettings clone() {
+		try {
+			return (BlockLayoutSettings) super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 
 	public BlockLayoutSpacing getSpacing() {
 		return spacing;
