@@ -38,6 +38,8 @@ public class UsersMembershipsEntry extends UserPropertiesRow {
 	
 	private final Long repositoryEntryKey;
 	private final String repositoryEntryDisplayname;
+	private final String repositoryEntryInitialAuthorName;
+	private final String repositoryEntryInitialAuthorEmail;
 	private final String repositoryEntryExternalId;
 	private final String repositoryEntryExternalRef;
 	private final RepositoryEntryStatusEnum repositoryEntryStatus;
@@ -54,12 +56,15 @@ public class UsersMembershipsEntry extends UserPropertiesRow {
 	
 	public UsersMembershipsEntry(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale,
 			int identityStatus, Date identityCreationDate, Date identityLastLogin,
-			Long repositoryEntryKey, String repositoryEntryDisplayname, String repositoryEntryExternalId, String repositoryEntryExternalRef,
+			Long repositoryEntryKey, String repositoryEntryDisplayname, String repositoryEntryInitialAuthorName,
+			String repositoryEntryInitialAuthorEmail, String repositoryEntryExternalId, String repositoryEntryExternalRef,
 			RepositoryEntryStatusEnum repositoryEntryStatus, Boolean repositoryEntryPublicVisible, Date lifecycleFrom, Date lifecycleTo,
 			GroupRoles role, Date registrationDate) {
 		super(identityKey, userPropertyHandlers, identityProps, locale);
 		this.repositoryEntryKey = repositoryEntryKey;
 		this.repositoryEntryDisplayname = repositoryEntryDisplayname;
+		this.repositoryEntryInitialAuthorName = repositoryEntryInitialAuthorName;
+		this.repositoryEntryInitialAuthorEmail = repositoryEntryInitialAuthorEmail;
 		this.repositoryEntryExternalId = repositoryEntryExternalId;
 		this.repositoryEntryExternalRef = repositoryEntryExternalRef;
 		this.repositoryEntryStatus = repositoryEntryStatus;
@@ -79,6 +84,14 @@ public class UsersMembershipsEntry extends UserPropertiesRow {
 
 	public String getRepositoryEntryDisplayname() {
 		return repositoryEntryDisplayname;
+	}
+
+	public String getRepositoryEntryInitialAuthorName() {
+		return repositoryEntryInitialAuthorName;
+	}
+
+	public String getRepositoryEntryInitialAuthorEmail() {
+		return repositoryEntryInitialAuthorEmail;
 	}
 
 	public String getRepositoryEntryExternalId() {
