@@ -29,6 +29,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TopicBrokerService;
@@ -73,7 +74,7 @@ public class TBParticipantController extends UserInfoController {
 		boostSV.add(SelectionValues.entry("0", translate("participant.boost.0")));
 		boostSV.add(SelectionValues.entry("1", translate("participant.boost.1")));
 		boostSV.add(SelectionValues.entry("2", translate("participant.boost.2")));
-		String boostElName = "boost_" + participant.getKey();
+		String boostElName = "boost_" + CodeHelper.getRAMUniqueID();
 		boostEl = uifactory.addDropdownSingleselect(boostElName, boostElName, "participant.boost", itemsCont,
 				boostSV.keys(), boostSV.values(), null);
 		boostEl.setMandatory(true);
@@ -97,7 +98,7 @@ public class TBParticipantController extends UserInfoController {
 					participant.getRequiredEnrollments()),
 					String.valueOf(participant.getRequiredEnrollments())));
 		}
-		String enrollemntsElName = "enrollments_" + participant.getKey();
+		String enrollemntsElName = "enrollments_" + CodeHelper.getRAMUniqueID();
 		requiredEnrollmentsEl = uifactory.addDropdownSingleselect(enrollemntsElName, enrollemntsElName, "participant.max.enrollments",
 				itemsCont, requiredEnrollmentsSV.keys(), requiredEnrollmentsSV.values(), null);
 		requiredEnrollmentsEl.setMandatory(true);
