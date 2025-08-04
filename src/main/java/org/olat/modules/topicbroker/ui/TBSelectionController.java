@@ -846,7 +846,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		String selectionWarning = "";
-		if (periodEvaluator.isBeforeSelectionPeriod() || periodEvaluator.isSelectionPeriod()) {
+		if (periodEvaluator.isSelectionPeriod()) {
 			if (!allSelected) {
 				int numPossibleSelections = broker.getMaxSelections() - selectionsSize;
 				String messageI18nKey = numPossibleSelections < 2

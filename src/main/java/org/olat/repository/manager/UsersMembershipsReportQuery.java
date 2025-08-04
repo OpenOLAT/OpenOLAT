@@ -69,7 +69,7 @@ public class UsersMembershipsReportQuery {
 		sb.append("select v.key, v.displayname, v.externalId, v.externalRef,")
 		  .append(" v.status, v.publicVisible, lifecycle.validFrom, lifecycle.validTo,")
 		  .append(" reMember.key, reMember.role, reMember.creationDate,")
-		  .append(" ident.key, ident.creationDate, ident.lastLogin, ident.status");
+		  .append(" ident.key, ident.creationDate, ident.lastLogin, ident.status, authorUser.nickName, authorUser.email");
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			sb.append(", identUser.").append(userPropertyHandler.getName());
 		}
@@ -80,7 +80,9 @@ public class UsersMembershipsReportQuery {
 		  .append(" inner join rel.group as bGroup")
 		  .append(" inner join bGroup.members as reMember")
 		  .append(" inner join reMember.identity as ident")
-		  .append(" inner join ident.user as identUser");
+		  .append(" inner join ident.user as identUser")
+		  .append(" left join bidentity as initialAuthor on initialAuthor.name = v.initialAuthor")
+		  .append(" left join initialAuthor.user as authorUser");
 		
 		sb.where().append("reMember.creationDate >= :from and reMember.creationDate <= :to")
 		  .and().append("reMember.role in (:roles)")
@@ -128,13 +130,24 @@ public class UsersMembershipsReportQuery {
 			Date identityCreationDate = (Date)objects[pos++];
 			Date identityLastLogin = (Date)objects[pos++];
 			int identityStatus = PersistenceHelper.extractPrimitiveInt(objects, pos++);
+
+			String repositoryEntryInitialAuthorName = null;
+			if (objects[pos++] instanceof String initialAuthorName) {
+				repositoryEntryInitialAuthorName = initialAuthorName;
+			}
+
+			String repositoryEntryInitialAuthorEmail = null;
+			if (objects[pos++] instanceof String initialAuthorEmail) {
+				repositoryEntryInitialAuthorEmail = initialAuthorEmail;
+			}
 			
 			String[] identityProps = new String[userPropertyHandlers.size()];
 			System.arraycopy(objects, pos, identityProps, 0, userPropertyHandlers.size());
 			
 			UsersMembershipsEntry entry = new UsersMembershipsEntry(identityKey, userPropertyHandlers, identityProps, locale,
 					identityStatus, identityCreationDate, identityLastLogin,
-					repositoryEntryKey, repositoryEntryDisplayname, repositoryEntryExternalId, repositoryEntryExternalRef,
+					repositoryEntryKey, repositoryEntryDisplayname, repositoryEntryInitialAuthorName, 
+					repositoryEntryInitialAuthorEmail, repositoryEntryExternalId, repositoryEntryExternalRef,
 					repositoryEntryStatus, repositoryEntryPublicVisible, lifecycleFrom, lifecycleTo, role, registrationDate);
 			identityKeys.add(identityKey);
 			repositoryEntryKeys.add(repositoryEntryKey);

@@ -110,6 +110,7 @@ public class UsersMembershipsReport extends OpenXMLWorkbookResource {
 		headerRow.addCell(pos++, translator.translate("table.header.lifecycle.start"));
 		headerRow.addCell(pos++, translator.translate("table.header.lifecycle.end"));
 		headerRow.addCell(pos++, translator.translate("table.header.access"));
+		headerRow.addCell(pos++, translator.translate("table.header.created.by"));
 		headerRow.addCell(pos++, translator.translate("report.share.header"));
 		headerRow.addCell(pos++, translator.translate("table.header.taxonomy.levels"));
 		
@@ -143,6 +144,8 @@ public class UsersMembershipsReport extends OpenXMLWorkbookResource {
 		row.addCell(pos++, entry.getLifecycleFrom(), workbook.getStyles().getDateStyle());
 		row.addCell(pos++, entry.getLifecycleTo(), workbook.getStyles().getDateStyle());
 		row.addCell(pos++, translator.translate("table.status." + entry.getRepositoryEntryStatus()));
+		row.addCell(pos++, translator.translate("table.initial.author", entry.getRepositoryEntryInitialAuthorName(), 
+				entry.getRepositoryEntryInitialAuthorEmail()));
 		row.addCell(pos++, toPrivatePublic(entry));
 		row.addCell(pos++, listToString(entry.getTaxonomyLevels()));
 		
