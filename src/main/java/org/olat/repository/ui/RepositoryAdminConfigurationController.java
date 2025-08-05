@@ -21,6 +21,8 @@ package org.olat.repository.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,17 +31,29 @@ import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.updown.UpDown;
+import org.olat.core.gui.components.updown.UpDownEvent;
+import org.olat.core.gui.components.updown.UpDownEvent.Direction;
+import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -48,6 +62,7 @@ import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,6 +90,10 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 	private MultipleSelectionElement myCourseSearchEl;
 	private MultipleSelectionElement taxonomyEl;
 	private MultipleSelectionElement notificationEl;
+	private FlexiTableElement tableEl;
+	private RoleDataModel dataModel;
+	
+	private int counter = 0;
 
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -176,6 +195,62 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 		uifactory.addStaticTextElement("maintButtonLabel", getTranslator().translate("repository.admin.subscribers"), buttonsCont);
 		enableAllSubscribersLink = uifactory.addFormLink("repository.admin.enable.all.subscribers", buttonsCont, Link.BUTTON);
 		disableAllSubscribersLink = uifactory.addFormLink("repository.admin.disable.all.subscribers", buttonsCont, Link.BUTTON);
+		
+		// Default role order
+		FormLayoutContainer rolesCont = FormLayoutContainer.createVerticalFormLayout("roles", getTranslator());
+		rolesCont.setFormTitle(translate("repository.admin.default.roles.title"));
+		rolesCont.setFormInfo(translate("repository.admin.default.roles.info"));
+		formLayout.add(rolesCont);
+		rolesCont.setRootForm(mainForm);
+		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoleCols.position));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RoleCols.priority));
+		DefaultFlexiColumnModel roleColumn = new DefaultFlexiColumnModel(RoleCols.role);
+		roleColumn.setColumnCssClass("o_cell_stretch");
+		columnsModel.addFlexiColumnModel(roleColumn);
+		
+		dataModel = new RoleDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setCustomizeColumns(false);
+		loadRoleModel();
+	}
+	
+	private void loadRoleModel() {
+		List<RoleRow> rows = new ArrayList<>(3);
+		for (Role role : repositoryModule.getDefaultRoles()) {
+			RoleRow row = new RoleRow(role, translate(role.getI18nKey()));
+			UpDown upDown = UpDownFactory.createUpDown("up_down_" + counter++, UpDown.Layout.LINK_HORIZONTAL, flc.getFormItemComponent(), this);
+			upDown.setUserObject(row);
+			row.setUpDown(upDown);
+			rows.add(row);
+		}
+		dataModel.setObjects(rows);
+		tableEl.reset(false, false, true);
+		updateRolesUI();
+	}
+	
+	private void updateRolesUI() {
+		for (int i = 0; i < dataModel.getObjects().size(); i++) {
+			RoleRow roleRow = dataModel.getObjects().get(i);
+			roleRow.setPriority(Integer.valueOf(i + 1));
+			roleRow.getUpDown().setTopmost(i == 0);
+			roleRow.getUpDown().setLowermost(i == 2);
+		}
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof UpDownEvent && source instanceof UpDown) {
+			UpDownEvent ude = (UpDownEvent) event;
+			UpDown upDown = (UpDown)source;
+			Object userObject = upDown.getUserObject();
+			if (userObject instanceof RoleRow row) {
+				doMoveRole(row, ude.getDirection());
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -220,9 +295,99 @@ public class RepositoryAdminConfigurationController extends FormBasicController 
 			getWindowControl().setInfo("saved");
 		}
 	}
+	
+	private void doMoveRole(RoleRow row, Direction direction) {
+		List<RoleRow> rows = new ArrayList<>(dataModel.getObjects());
+		
+		int swapIndex = Direction.UP == direction? row.getPriority() - 2: row.getPriority();
+		Collections.swap(rows, row.getPriority() - 1, swapIndex);
+		
+		List<Role> defaultRoles = rows.stream().map(RoleRow::getRole).toList();
+		repositoryModule.setDefaultRoles(defaultRoles);
+		
+		dataModel.setObjects(rows);
+		tableEl.reset(false, false, true);
+		updateRolesUI();
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//lifecycleAdminCtrl.formOK(ureq);
+		//
 	}
+	
+	private final static class RoleDataModel extends DefaultFlexiTableDataModel<RoleRow> {
+		
+		private static final RoleCols[] COLS = RoleCols.values();
+		
+		public RoleDataModel(FlexiTableColumnModel columnsModel) {
+			super(columnsModel);
+		}
+		
+		@Override
+		public Object getValueAt(int row, int col) {
+			RoleRow rolwRow = getObject(row);
+			return switch(COLS[col]) {
+			case priority -> rolwRow.getPriority();
+			case role -> rolwRow.getTranslatedRole();
+			case position -> rolwRow.getUpDown();
+			default -> null;
+			};
+		}
+	}
+	
+	private enum RoleCols implements FlexiColumnDef {
+		priority("repository.admin.default.roles.priority"),
+		role("repository.admin.default.roles.role"),
+		position("repository.admin.default.roles.position");
+		
+		private final String i18nKey;
+		
+		private RoleCols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+	}
+	
+	final static class RoleRow {
+		
+		private final Role role;
+		private final String translatedRole;
+		private Integer priority;
+		private UpDown upDown;
+		
+		public RoleRow(Role role, String translatedRole) {
+			this.role = role;
+			this.translatedRole = translatedRole;
+		}
+
+		public Role getRole() {
+			return role;
+		}
+		
+		public String getTranslatedRole() {
+			return translatedRole;
+		}
+		
+		public Integer getPriority() {
+			return priority;
+		}
+		
+		public void setPriority(Integer priority) {
+			this.priority = priority;
+		}
+		
+		public UpDown getUpDown() {
+			return upDown;
+		}
+		
+		public void setUpDown(UpDown upDown) {
+			this.upDown = upDown;
+		}
+		
+	}
+		
 }

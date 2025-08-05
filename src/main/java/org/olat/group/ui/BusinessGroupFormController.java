@@ -303,6 +303,8 @@ public class BusinessGroupFormController extends FormBasicController {
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
+		businessGroupName.clearError();
+
 		// 1) Check valid group names
 		if (!StringHelper.containsNonWhitespace(businessGroupName.getValue())) {
 			businessGroupName.setErrorKey("form.legende.mandatory", new String[] {});

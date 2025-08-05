@@ -64,20 +64,24 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	private Role currentRole;
 	private Role previousRole;
 	private RepositoryEntrySecurity wrappedSecurity;
+	private final List<Role> defaultRoles;
 	
-	public SingleRoleRepositoryEntrySecurity(RepositoryEntrySecurity wrappedSecurity) {
+	public SingleRoleRepositoryEntrySecurity(RepositoryEntrySecurity wrappedSecurity, List<Role> defaultRoles) {
 		this.wrappedSecurity = wrappedSecurity;
+		this.defaultRoles = defaultRoles;
 		this.currentRole = getDefaultRole();
 	}
 
 	private Role getDefaultRole() {
-		if (wrappedSecurity.isOwner()) {
-			return Role.owner;
-		} else if (wrappedSecurity.isCoach()) {
-			return Role.coach;
-		} else if (wrappedSecurity.isParticipant()) {
-			return Role.participant;
-		} else if (wrappedSecurity.isPrincipal()) {
+		for (Role defaultRole : defaultRoles) {
+			if (	   (Role.owner == defaultRole && wrappedSecurity.isOwner())
+					|| (Role.coach == defaultRole && wrappedSecurity.isCoach())
+					|| (Role.participant == defaultRole && wrappedSecurity.isParticipant())) {
+				return defaultRole;
+			}
+		}
+		
+		if (wrappedSecurity.isPrincipal()) {
 			return Role.principal;
 		} else if (wrappedSecurity.isLearnResourceManager()) {
 			return Role.learningResourceManager;

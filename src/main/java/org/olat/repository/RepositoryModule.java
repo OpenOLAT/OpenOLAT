@@ -19,6 +19,7 @@
  */
 package org.olat.repository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.modules.catalog.site.CatalogContextEntryControllerCreator;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.site.CatalogAdminSite;
 import org.olat.repository.site.MyCoursesSite;
 import org.olat.repository.site.RepositorySite;
@@ -60,6 +62,9 @@ import org.springframework.stereotype.Service;
 public class RepositoryModule extends AbstractSpringModule {
 	
 	private static final Logger log = Tracing.createLoggerFor(RepositoryModule.class);
+	
+	private static List<Role> DEFAULT_ROLES_FALLBACK = List.of(Role.owner, Role.coach, Role.participant);
+	private static List<String> VALID_DEFAULT_ROLES = DEFAULT_ROLES_FALLBACK.stream().map(Role::name).toList();
 
 	private static final String MANAGED_REPOENTRY_ENABLED = "managedRepositoryEntries";
 	private static final String CATALOG_SITE_ENABLED = "site.catalog.enable";
@@ -87,6 +92,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	private static final String WIZARD_TYPES_ENABLED = "wizard.types.enabled";
 	private static final String EDUCATIONAL_DEFAULT_TYPES_ENABLED = "educational.default.types.enabled";
+	private static final String REPO_DEFAULT_ROLES = "repo.default.roles";
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
 
 	@Value("${site.catalog.enable:true}")
@@ -142,6 +148,10 @@ public class RepositoryModule extends AbstractSpringModule {
 	@Value("${educational.default.types.enabled}")
 	private String educationalDefaultTypesConfig;
 	private Set<String> educationalDefaultTypesEnabled;
+	
+	@Value("${repo.default.roles}")
+	private String defaultRolesConfig;
+	private List<Role> defaultRoles;
 	
 	private String taxonomyTreeKey;
 	private List<TaxonomyRef> taxonomyRefs;
@@ -292,6 +302,12 @@ public class RepositoryModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(educationalDefaultTypesEnabledObj)) {
 			educationalDefaultTypesConfig = educationalDefaultTypesEnabledObj;
 			educationalDefaultTypesEnabled = null;
+		}
+		
+		String defaultRolesObj = getStringPropertyValue(REPO_DEFAULT_ROLES, true);
+		if(StringHelper.containsNonWhitespace(defaultRolesObj)) {
+			defaultRolesConfig = defaultRolesObj;
+			defaultRoles = null;
 		}
 
 		// 0 -> Alphabetical
@@ -578,6 +594,31 @@ public class RepositoryModule extends AbstractSpringModule {
 		this.educationalDefaultTypesConfig = types.stream().collect(Collectors.joining(","));
 		this.educationalDefaultTypesEnabled = null;
 		setStringProperty(EDUCATIONAL_DEFAULT_TYPES_ENABLED, wizardTypesEnabledConfig, true);
+	}
+
+	public List<Role> getDefaultRoles() {
+		if (defaultRoles == null) {
+			if (StringHelper.containsNonWhitespace(defaultRolesConfig)) {
+				defaultRoles = Arrays.stream(defaultRolesConfig.replace(" ", "").split(","))
+						.filter(roleName -> VALID_DEFAULT_ROLES.contains(roleName))
+						.map(Role::valueOf)
+						.collect(Collectors.toList());
+			} else {
+				defaultRoles = new ArrayList<>(3);
+			}
+			for (Role role : DEFAULT_ROLES_FALLBACK) {
+				if (!defaultRoles.contains(role)) {
+					defaultRoles.add(role);
+				}
+			}
+		}
+		return defaultRoles;
+	}
+
+	public void setDefaultRoles(List<Role> defaultRoles) {
+		this.defaultRolesConfig = defaultRoles.stream().map(Role::name).collect(Collectors.joining(","));
+		this.defaultRoles = null;
+		setStringProperty(REPO_DEFAULT_ROLES, defaultRolesConfig, true);
 	}
 
 }
