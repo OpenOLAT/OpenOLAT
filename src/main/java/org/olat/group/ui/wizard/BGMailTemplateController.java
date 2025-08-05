@@ -62,6 +62,7 @@ public class BGMailTemplateController extends FormBasicController {
 
 	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	private static final String DEFAULT_MAIL_TEMPLATE = "default";
+	private static final int MAX_SUBJECT_LENGTH = 256;
 
 	private TextElement subjectElem;
 	private RichTextElement bodyElem;
@@ -148,9 +149,15 @@ public class BGMailTemplateController extends FormBasicController {
 			bodyElem.clearError();
 		}
 		if (mandatoryEmail || sendMail.isOn()) {
-			if(subjectElem != null && !StringHelper.containsNonWhitespace(subjectElem.getValue())) {
-				subjectElem.setErrorKey("mailtemplateform.error.emptyfield");
-				allOk &= false;
+			if (subjectElem != null) {
+				if (!StringHelper.containsNonWhitespace(subjectElem.getValue())) {
+					subjectElem.setErrorKey("mailtemplateform.error.emptyfield");
+					allOk &= false;
+				}
+				if (subjectElem.getValue().length() > subjectElem.getMaxLength()) {
+					subjectElem.setErrorKey("mailtemplateform.error.too.long", Integer.toString(subjectElem.getMaxLength()));
+					allOk &= false;
+				}
 			}
 			
 			if(bodyElem != null && !StringHelper.containsNonWhitespace(bodyElem.getValue())) {
@@ -186,7 +193,7 @@ public class BGMailTemplateController extends FormBasicController {
 		MailContent mailContent = mailManager.evaluateTemplate(template);
 		if(customizingAvailable) {
 			String subject = StringHelper.unescapeHtml(mailContent.getSubject());
-			subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", 128, subject, formLayout);
+			subjectElem = uifactory.addTextElement("subjectElem", "mailtemplateform.subject", MAX_SUBJECT_LENGTH, subject, formLayout);
 			subjectElem.setDisplaySize(60);
 			subjectElem.setMandatory(true);
 
