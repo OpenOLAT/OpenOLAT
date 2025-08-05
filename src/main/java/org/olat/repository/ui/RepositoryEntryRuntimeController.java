@@ -246,7 +246,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		roles = session.getRoles();
 		isGuestOnly = roles.isGuestOnly();
 		isAuthor = reSecurity.isAuthor();
-		this.reSecurity = new SingleRoleRepositoryEntrySecurity(reSecurity);
+		this.reSecurity = new SingleRoleRepositoryEntrySecurity(reSecurity, repositoryModule.getDefaultRoles());
 		
 		assessmentLock = isAssessmentLock(ureq, re, this.reSecurity);
 		

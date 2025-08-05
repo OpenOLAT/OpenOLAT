@@ -406,6 +406,10 @@ table.table.o_table_nowrap>tbody>tr>td {
 		@extend %o_nowrap;
 	}
 }
+// Add this class to the cells of a column which should fill out the remaining space.
+.o_cell_stretch {
+	width: 100%;
+}
 
 .o_table_tabs {
 	display: flex;
