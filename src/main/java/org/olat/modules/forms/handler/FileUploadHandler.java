@@ -35,6 +35,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
@@ -115,13 +117,14 @@ public class FileUploadHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof FileUpload) {
-			FileUpload fileUpload = (FileUpload)element;
+		if (element instanceof FileUpload fileUpload) {
 			FileUpload clone = new FileUpload();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setMandatory(fileUpload.isMandatory());
 			clone.setMaxUploadSizeKB(fileUpload.getMaxUploadSizeKB());
 			clone.setMimeTypeSetKey(fileUpload.getMimeTypeSetKey());
+			clone.setLayoutSettings(BlockLayoutSettings.clone(fileUpload.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(fileUpload.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;

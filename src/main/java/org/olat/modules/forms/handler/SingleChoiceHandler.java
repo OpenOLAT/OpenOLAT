@@ -35,6 +35,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
 import org.olat.modules.forms.model.xml.SingleChoice;
@@ -141,6 +143,8 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 				clonedChoice.setValue(choice.getValue());
 				clone.getChoices().addNotPresent(clonedChoice);
 			}
+			clone.setLayoutSettings(BlockLayoutSettings.clone(singleChoice.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(singleChoice.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;

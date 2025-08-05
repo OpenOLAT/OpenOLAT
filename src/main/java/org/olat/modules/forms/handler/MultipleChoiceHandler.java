@@ -35,6 +35,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Choices;
 import org.olat.modules.forms.model.xml.MultipleChoice;
@@ -142,6 +144,8 @@ public class MultipleChoiceHandler  implements EvaluationFormElementHandler, Sim
 				clonedChoice.setValue(choice.getValue());
 				clone.getChoices().addNotPresent(clonedChoice);
 			}
+			clone.setLayoutSettings(BlockLayoutSettings.clone(multipleChoice.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(multipleChoice.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;

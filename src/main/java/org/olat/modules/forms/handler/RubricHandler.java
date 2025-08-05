@@ -35,6 +35,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
@@ -130,8 +132,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 	}
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof Rubric) {
-			Rubric rubric = (Rubric)element;
+		if (element instanceof Rubric rubric) {
 			Rubric clone = new Rubric();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setMandatory(rubric.isMandatory());
@@ -185,6 +186,8 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 					}
 				}
 			}
+			clone.setLayoutSettings(BlockLayoutSettings.clone(rubric.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(rubric.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;

@@ -34,6 +34,8 @@ import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.AlertBoxSettings;
+import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.TextInputController;
@@ -113,8 +115,7 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof TextInput) {
-			TextInput textInput = (TextInput)element;
+		if (element instanceof TextInput textInput) {
 			TextInput clone = new TextInput();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setDate(textInput.isDate());
@@ -124,6 +125,8 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 			clone.setNumericMin(textInput.getNumericMin());
 			clone.setRows(textInput.getRows());
 			clone.setSingleRow(textInput.isSingleRow());
+			clone.setLayoutSettings(BlockLayoutSettings.clone(textInput.getLayoutSettings()));
+			clone.setAlertBoxSettings(AlertBoxSettings.clone(textInput.getAlertBoxSettings()));
 			return clone;
 		}
 		return null;
