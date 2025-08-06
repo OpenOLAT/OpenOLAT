@@ -799,7 +799,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				src += "/";
 			}
 			src += data;
-			dataMovie = dataMovie.replace(data, src);
+			if (dataMovie != null) {
+				dataMovie = dataMovie.replace(data, src);
+			} else {
+				// fallback to show a broken movie
+				dataMovie = "'" + src + "','" + id + "',320,240,0,0,'video',undefined,false,false,true,undefined";
+			}
 		}
 		
 		String height = getAttributeFromList(object.getAttributes(), "height", "240");
