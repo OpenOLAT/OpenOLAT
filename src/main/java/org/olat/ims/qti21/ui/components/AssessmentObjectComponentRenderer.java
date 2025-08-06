@@ -787,7 +787,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		if(data != null) {
 			data = data.replace("&#61;", "=");
 		}
-		
+
+		String height = getAttributeFromList(object.getAttributes(), "height", "240");
+		String width = getAttributeFromList(object.getAttributes(), "width", "320");
+
 		if(data != null && !data.startsWith("http://") && !data.startsWith("https://")) {
 			String relativePath = component.relativePathTo(resolvedAssessmentItem);
 			String src = Settings.createServerURI() + component.getMapperUri();
@@ -799,11 +802,14 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				src += "/";
 			}
 			src += data;
-			dataMovie = dataMovie.replace(data, src);
+			if (dataMovie != null) {
+				dataMovie = dataMovie.replace(data, src);
+			} else {
+				// fallback to show a broken movie
+				dataMovie = "'" + src + "','" + id + "'," + width + "," + height + ",0,0,'video',undefined,false,false,true,undefined";
+			}
 		}
 		
-		String height = getAttributeFromList(object.getAttributes(), "height", "240");
-		String width = getAttributeFromList(object.getAttributes(), "width", "320");
 		//try to guess the height and width
 		if(dataMovie != null) {
 			String[] dataMovieParts = dataMovie.split(",");
