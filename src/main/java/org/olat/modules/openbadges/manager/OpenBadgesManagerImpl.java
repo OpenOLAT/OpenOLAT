@@ -1560,7 +1560,15 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			currentAssessmentEntries[0].add(assessmentEntry);
 		});
 
-		if (!currentAssessmentEntries[0].isEmpty() && assessedIdentities.contains(currentParticipant[0])) {
+		if (currentAssessmentEntries[0] == null || currentAssessmentEntries[0].isEmpty()) {
+			return;
+		}
+		
+		if (currentParticipant[0] == null) {
+			return;
+		}
+
+		if (assessedIdentities.contains(currentParticipant[0])) {
 			assessmentEntriesHandler.handleAssessmentEntries(currentParticipant[0], currentAssessmentEntries[0]);
 		}
 	}
