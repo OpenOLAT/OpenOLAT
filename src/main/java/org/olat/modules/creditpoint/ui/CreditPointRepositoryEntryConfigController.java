@@ -179,7 +179,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		String defaultVal;
 		if(system != null && system.getDefaultExpiration() != null) {
 			Integer val = system.getDefaultExpiration();
-			String unit = system.getDefaultExpirationUnit() == null
+			String unit = system.getDefaultExpirationUnit() == null || system.getDefaultExpirationUnit().i18n(val) == null
 					? ""
 					: translate(system.getDefaultExpirationUnit().i18n(val));
 			defaultVal = translate("options.creditpoint.override.default", val.toString(), unit);
