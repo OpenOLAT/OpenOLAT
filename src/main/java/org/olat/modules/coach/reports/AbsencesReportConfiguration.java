@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -91,7 +93,9 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		
 		pos = generateUserHeaderColumns(header, pos, userPropertyHandlers, translator);
 
-		header.addCell(pos++, translator.translate("export.header.absences"));
+		header.addCell(pos++, translator.translate("export.header.units"));
+		header.addCell(pos++, translator.translate("export.header.attended"));
+		header.addCell(pos++, translator.translate("export.header.attendance.rate"));
 	}
 	
 	private void generateSummaryData(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers,
@@ -104,21 +108,46 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			params.setEndDate(getDurationTimeUnit().toDate(new Date()));
 		}
 		List<LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
+		Map<Long, List<LectureBlockIdentityStatistics>> identityToStatistics = new HashMap<>();
 		for (LectureBlockIdentityStatistics stats : statistics) {
+			Long identityKey = stats.getIdentityKey();
+			identityToStatistics.computeIfAbsent(identityKey, k -> new ArrayList<>()).add(stats);
+		}
+		List<AbsencesReportSummaryRow> summaryRows = new ArrayList<>();
+		for (Long identityKey : identityToStatistics.keySet()) {
+			List<LectureBlockIdentityStatistics> statisticsForIdentity = identityToStatistics.get(identityKey);
+			String[] identityProps = null;
+			long units = 0;
+			long attended = 0;
+			for (LectureBlockIdentityStatistics stats : statisticsForIdentity) {
+				if (identityProps == null) {
+					identityProps = stats.getIdentityProps();
+				}
+				units += stats.getTotalPersonalPlannedLectures();
+				attended += stats.getTotalAttendedLectures();
+			}
+			
+			double attendanceRate = units == 0 ? 0 : (double) attended / (double) units;
+			summaryRows.add(new AbsencesReportSummaryRow(identityProps, units, attended, attendanceRate));
+		}
+		
+		for (AbsencesReportSummaryRow summaryRow : summaryRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
 
-			generateSummaryDataRow(row, pos, userPropertyHandlers, stats);
+			generateSummaryDataRow(row, pos, userPropertyHandlers, summaryRow);
 		}
 	}
 
-	private void generateSummaryDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers, 
-										LectureBlockIdentityStatistics stats) {
+	private void generateSummaryDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers,
+										AbsencesReportSummaryRow summaryRow) {
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			row.addCell(pos, stats.getIdentityProp(pos));
+			row.addCell(pos, summaryRow.getIdentityProp(pos));
 			pos++;
 		}
-		row.addCell(pos++, "" + stats.getTotalAbsentLectures());
+		row.addCell(pos++, "" + summaryRow.units());
+		row.addCell(pos++, "" + summaryRow.attended());
+		row.addCell(pos++, "" + summaryRow.attendanceRate());
 	}
 
 	private void generateCoursesHeader(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers, 
