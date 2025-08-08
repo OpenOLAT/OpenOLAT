@@ -122,7 +122,7 @@ public class TBAuditLogDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct auditLog.doer");
 		sb.append("  from topicbrokerauditlog auditLog");
-		if (searchParams.isFetchDoer()) {
+		if (searchParams.isFetchAll()) {
 			sb.append(" inner join auditLog.doer doer");
 			sb.append(" inner join fetch doer.user user");
 		}
@@ -142,9 +142,16 @@ public class TBAuditLogDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select auditLog");
 		sb.append("  from topicbrokerauditlog auditLog");
-		if (searchParams.isFetchDoer()) {
-			sb.append(" inner join fetch auditLog.doer doer");
-			sb.append(" inner join fetch doer.user user");
+		if (searchParams.isFetchAll()) {
+			sb.append(" left join fetch auditLog.doer doer");
+			sb.append(" left join fetch doer.user doerUser");
+			sb.append(" left join fetch auditLog.broker broker");
+			sb.append(" left join fetch auditLog.participant participant");
+			sb.append(" left join fetch participant.identity participantIdentity");
+			sb.append(" left join fetch participantIdentity.user participantUser");
+			sb.append(" left join fetch auditLog.topic topic");
+			sb.append(" left join fetch auditLog.definition definition");
+			sb.append(" left join fetch auditLog.selection selection");
 		}
 		appendQuery(searchParams, sb);
 		if (searchParams.getOrderAsc() != null) {

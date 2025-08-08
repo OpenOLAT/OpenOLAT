@@ -38,7 +38,7 @@ public class TBAuditLogSearchParams {
 	private Collection<Long> brokerKeys;
 	private Collection<Long> topicKeys;
 	private Boolean orderAsc;
-	private boolean fetchDoer;
+	private boolean fetchAll;
 
 	public Collection<Action> getActions() {
 		return actions;
@@ -68,7 +68,7 @@ public class TBAuditLogSearchParams {
 		return brokerKeys;
 	}
 	
-	public void setBroker(TBBroker broker) {
+	public void setBroker(TBBrokerRef broker) {
 		brokerKeys = broker != null? List.of(broker.getKey()): null;
 	}
 
@@ -96,12 +96,12 @@ public class TBAuditLogSearchParams {
 		this.orderAsc = orderAsc;
 	}
 
-	public boolean isFetchDoer() {
-		return fetchDoer;
+	public boolean isFetchAll() {
+		return fetchAll;
 	}
 
-	public void setFetchDoer(boolean fetchDoer) {
-		this.fetchDoer = fetchDoer;
+	public void setFetchAll(boolean fetchAll) {
+		this.fetchAll = fetchAll;
 	}
 
 }

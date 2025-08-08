@@ -228,7 +228,7 @@ public class TBAuditLogDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoad_fetch_doer() {
+	public void shouldLoad_fetch_all() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		TBTopic topic = createRandomTopic();
 		sut.create(TBAuditLog.Action.topicUpdateContent, null, null, doer, topic);
@@ -236,7 +236,7 @@ public class TBAuditLogDAOTest extends OlatTestCase {
 		
 		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
 		searchParams.setDoer(doer);
-		searchParams.setFetchDoer(true);
+		searchParams.setFetchAll(true);
 		sut.loadAuditLogs(searchParams, 0, -1);
 		
 		// Just a syntax check

@@ -209,7 +209,7 @@ class ImportStep01 extends BasicStep {
 	private static class UserNewOldCustomFlexiCellRenderer extends AbstractCSSIconFlexiCellRenderer {
 
 		@Override
-		protected String getCellValue(Object cellValue) {
+		protected String getCellValue(Object cellValue, Translator translator) {
 			return "";
 		}
 

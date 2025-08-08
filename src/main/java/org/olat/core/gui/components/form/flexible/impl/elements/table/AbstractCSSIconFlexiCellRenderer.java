@@ -52,7 +52,7 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		target.append("<span><i class=\"o_icon ")
+		target.append("<span class=\"o_nowrap\"><i class=\"o_icon ")
 		     .append(getCssClass(cellValue));
 		String hoverText = getHoverText(cellValue, translator);
 		if (StringHelper.containsNonWhitespace(hoverText)) {
@@ -61,7 +61,7 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 		}
 		target.append("\"> </i>");
 		if(delegate == null) {
-			target.append(getCellValue(cellValue));
+			target.append(getCellValue(cellValue, translator));
 		} else {
 			delegate.render(null, target, cellValue, row, source, ubu, translator);
 		}
@@ -70,7 +70,7 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 		
 	protected abstract String getCssClass(Object val);
 	
-	protected abstract String getCellValue(Object val);
+	protected abstract String getCellValue(Object val, Translator translator);
 	
 	protected abstract String getHoverText(Object val, Translator translator);
 }

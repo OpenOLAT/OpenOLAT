@@ -21,6 +21,8 @@ package org.olat.modules.topicbroker.manager;
 
 
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.topicbroker.TBAuditLog.TBFileAuditLog;
 import org.olat.modules.topicbroker.TBCustomFieldType;
@@ -57,6 +59,7 @@ public class TopicBrokerXStream {
 				TBCustomFieldType.class,
 				TBCustomFieldImpl.class,
 				TBParticipantImpl.class,
+				IdentityImpl.class,
 				TBTopicImpl.class,
 				TBSelectionImpl.class,
 				TBProcessInfos.class,
@@ -65,7 +68,8 @@ public class TopicBrokerXStream {
 				TBProcessSelection.class,
 				TBEnrollmentStrategyConfigImpl.class,
 				TBCustomFieldDefinitionsExport.class,
-				TBCustomFieldDefinitionExport.class
+				TBCustomFieldDefinitionExport.class,
+				VFSMetadataImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		
@@ -107,6 +111,8 @@ public class TopicBrokerXStream {
 		xstream.omitField(IdentityImpl.class, "lastLogin");
 		xstream.omitField(IdentityImpl.class, "status");
 		xstream.omitField(IdentityImpl.class, "user");
+		
+		xstream.omitField(VFSMetadataImpl.class, "parent");
 	}
 	
 	public static String toXml(Object obj) {
@@ -115,8 +121,11 @@ public class TopicBrokerXStream {
 	
 	@SuppressWarnings("unchecked")
 	public static <U> U fromXml(String xml, @SuppressWarnings("unused") Class<U> cl) {
-		Object obj = xstream.fromXML(xml);
-		return (U)obj;
+		if (StringHelper.containsNonWhitespace(xml)) {
+			Object obj = xstream.fromXML(xml);
+			return (U)obj;
+		}
+		return null;
 	}
 	
 }

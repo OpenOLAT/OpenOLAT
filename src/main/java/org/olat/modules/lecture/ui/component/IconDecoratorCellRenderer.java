@@ -47,7 +47,7 @@ public class IconDecoratorCellRenderer extends AbstractCSSIconFlexiCellRenderer 
 	}
 	
 	@Override
-	protected String getCellValue(Object val) {
+	protected String getCellValue(Object val, Translator translator) {
 		if(val instanceof String str) {
 			return StringHelper.escapeHtml(str);
 		}

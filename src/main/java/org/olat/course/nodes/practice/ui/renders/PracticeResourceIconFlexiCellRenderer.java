@@ -66,7 +66,7 @@ public class PracticeResourceIconFlexiCellRenderer extends AbstractCSSIconFlexiC
 	}
 
 	@Override
-	protected String getCellValue(Object val) {
+	protected String getCellValue(Object val, Translator translator) {
 		return "";
 	}
 

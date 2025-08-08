@@ -47,6 +47,7 @@ import org.olat.modules.topicbroker.TBGroupRestrictionCandidates;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TopicBrokerService;
+import org.olat.modules.topicbroker.ui.TBActivityLogController;
 import org.olat.modules.topicbroker.ui.TBParticipantListController;
 import org.olat.modules.topicbroker.ui.TBTopicListController;
 import org.olat.modules.topicbroker.ui.TBTopicSelectionsController;
@@ -64,14 +65,17 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_TOPICS = "Topics";
+	private static final String ORES_TYPE_ACTIVITY_LOG = "ActivityLog";
 	
 	private TBParticipantListController participantsCtrl;
 	private TBTopicListController topicsCtrl;
+	private TBActivityLogController activityLogCtrl;
 	
 	private final VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	private Link participantsLink;
 	private Link topicsLink;
+	private Link activityLogLink;
 
 	private final TBBroker broker;
 	private final TBSecurityCallback secCallback;
@@ -106,6 +110,9 @@ public class TBRunCoachController extends BasicController implements Activateabl
 		topicsLink = LinkFactory.createLink("topics.title", mainVC, this);
 		segmentView.addSegment(topicsLink, false);
 		
+		activityLogLink = LinkFactory.createLink("activity.log.title", mainVC, this);
+		segmentView.addSegment(activityLogLink, false);
+		
 		doOpenParticipants(ureq);
 	}
 	
@@ -118,6 +125,8 @@ public class TBRunCoachController extends BasicController implements Activateabl
 			doOpenParticipants(ureq);
 		} else if (ORES_TYPE_TOPICS.equalsIgnoreCase(type)) {
 			doOpenTopics(ureq);
+		} else if (ORES_TYPE_ACTIVITY_LOG.equalsIgnoreCase(type)) {
+			doOpenActivityLog(ureq);
 		}
 	}
 
@@ -132,6 +141,8 @@ public class TBRunCoachController extends BasicController implements Activateabl
 					doOpenParticipants(ureq);
 				} else if (clickedLink == topicsLink) {
 					doOpenTopics(ureq);
+				} else if (clickedLink == activityLogLink) {
+					doOpenActivityLog(ureq);
 				}
 			}
 		} 
@@ -159,6 +170,18 @@ public class TBRunCoachController extends BasicController implements Activateabl
 		}
 		mainVC.put("segmentCmp", topicsCtrl.getInitialComponent());
 		segmentView.select(topicsLink);
+	}
+	
+	private void doOpenActivityLog(UserRequest ureq) {
+		if (activityLogCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ACTIVITY_LOG), null);
+			activityLogCtrl = new TBActivityLogController(ureq, bwControl, broker, participantCandidates);
+			listenTo(activityLogCtrl);
+		} else {
+			activityLogCtrl.reload();
+		}
+		mainVC.put("segmentCmp", activityLogCtrl.getInitialComponent());
+		segmentView.select(activityLogLink);
 	}
 
 }
