@@ -33,6 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -69,20 +70,32 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		worksheetNames.add(translator.translate("export.worksheet.summary"));
 		worksheetNames.add(translator.translate("export.worksheet.courses"));
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
+		List<LectureBlockIdentityStatistics> statistics = getLecturesStatistics(userPropertyHandlers, coach);
 
 		try (OutputStream out = new FileOutputStream(output.getBasefile());
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, worksheetNames.size(), worksheetNames)) {
 
 			OpenXMLWorksheet summaryWorksheet = workbook.nextWorksheet();
 			generateSummaryHeader(summaryWorksheet, userPropertyHandlers, translator);
-			generateSummaryData(summaryWorksheet, userPropertyHandlers, formatter, translator, coach);
+			generateSummaryData(summaryWorksheet, userPropertyHandlers, statistics);
 			
 			OpenXMLWorksheet coursesWorksheet = workbook.nextWorksheet();
 			generateCoursesHeader(coursesWorksheet, userPropertyHandlers, translator);
-			generateCoursesData(coursesWorksheet, userPropertyHandlers, formatter, translator);
+			generateCoursesData(coursesWorksheet, userPropertyHandlers, formatter, translator, statistics);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 		}
+	}
+
+	private List<LectureBlockIdentityStatistics> getLecturesStatistics(List<UserPropertyHandler> userPropertyHandlers, Identity coach) {
+		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+		if (getDurationTimeUnit() != null) {
+			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
+			params.setStartDate(getDurationTimeUnit().fromDate(new Date(), duration));
+			params.setEndDate(getDurationTimeUnit().toDate(new Date()));
+		}
+		return lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
 	}
 	
 	private void generateSummaryHeader(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers,  
@@ -99,20 +112,13 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	}
 	
 	private void generateSummaryData(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers,
-									 Formatter formatter, Translator translator, Identity coach) {
-		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
-		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
-		if (getDurationTimeUnit() != null) {
-			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
-			params.setStartDate(getDurationTimeUnit().fromDate(new Date(), duration));
-			params.setEndDate(getDurationTimeUnit().toDate(new Date()));
-		}
-		List<LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
+									 List<LectureBlockIdentityStatistics> statistics) {
 		Map<Long, List<LectureBlockIdentityStatistics>> identityToStatistics = new HashMap<>();
 		for (LectureBlockIdentityStatistics stats : statistics) {
 			Long identityKey = stats.getIdentityKey();
 			identityToStatistics.computeIfAbsent(identityKey, k -> new ArrayList<>()).add(stats);
 		}
+
 		List<AbsencesReportSummaryRow> summaryRows = new ArrayList<>();
 		for (Long identityKey : identityToStatistics.keySet()) {
 			List<LectureBlockIdentityStatistics> statisticsForIdentity = identityToStatistics.get(identityKey);
@@ -147,7 +153,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		}
 		row.addCell(pos++, "" + summaryRow.units());
 		row.addCell(pos++, "" + summaryRow.attended());
-		row.addCell(pos++, "" + summaryRow.attendanceRate());
+		row.addCell(pos++, String.format("%.5f", summaryRow.attendanceRate()));
 	}
 
 	private void generateCoursesHeader(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers, 
@@ -157,11 +163,84 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		int pos = 0;
 
 		pos = generateUserHeaderColumns(header, pos, userPropertyHandlers, translator);
+		
+		header.addCell(pos++, translator.translate("export.header.course.title"));
+		header.addCell(pos++, translator.translate("export.header.externalReference"));
+		header.addCell(pos++, translator.translate("export.header.units"));
+		header.addCell(pos++, translator.translate("export.header.attended"));
+		header.addCell(pos++, translator.translate("export.header.authorized"));
+		header.addCell(pos++, translator.translate("export.header.not.authorized"));
+		header.addCell(pos++, translator.translate("export.header.dispensed"));
+		header.addCell(pos++, translator.translate("export.header.attendance.rate"));
 	}
 
-	private void generateCoursesData(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers, 
-									 Formatter formatter, Translator translator) {
-		//
+	private void generateCoursesData(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers,
+									 Formatter formatter, Translator translator, List<LectureBlockIdentityStatistics> statistics) {
+		
+		Map<UserCourseKey, List<LectureBlockIdentityStatistics>> statisticsMap = new HashMap<>();
+		for (LectureBlockIdentityStatistics stats : statistics) {
+			Long identityKey = stats.getIdentityKey();
+			Long courseKey = stats.getRepoKey();
+			if (identityKey == null || courseKey == null) {
+				continue;
+			}
+			UserCourseKey userCourseKey = new UserCourseKey(identityKey, courseKey);
+			statisticsMap.computeIfAbsent(userCourseKey, k -> new ArrayList<>()).add(stats);	
+		}
+		
+		List<AbsencesReportCourseRow> userCourseRows = new ArrayList<>();
+		for (UserCourseKey userCourseKey : statisticsMap.keySet()) {
+			List<LectureBlockIdentityStatistics> statisticsForKey = statisticsMap.get(userCourseKey);
+			String[] identityProps = null;
+			String courseTitle = null;
+			String externalReference = null;
+			long units = 0;
+			long attended = 0;
+			long authorized = 0;
+			long dispensed = 0;
+			for (LectureBlockIdentityStatistics stats : statisticsForKey) {
+				if (identityProps == null) {
+					identityProps = stats.getIdentityProps();
+				}
+				if (courseTitle == null && StringHelper.containsNonWhitespace(stats.getDisplayName())) {
+					courseTitle = stats.getDisplayName();
+				}
+				if (externalReference == null && StringHelper.containsNonWhitespace(stats.getExternalRef())) {
+					externalReference = stats.getExternalRef();
+				}
+				units += stats.getTotalPersonalPlannedLectures();
+				attended += stats.getTotalAttendedLectures();
+				authorized = stats.getTotalAuthorizedAbsentLectures();
+				stats.getTotalDispensationLectures();
+			}
+			long notAuthorized = units - attended - authorized - dispensed;
+			double attendanceRate = units == 0 ? 0 : (double) attended / (double) units;
+			userCourseRows.add(new AbsencesReportCourseRow(identityProps, courseTitle, externalReference, units, 
+					attended, authorized, notAuthorized, dispensed, attendanceRate));
+		}
+		
+		for (AbsencesReportCourseRow userCourseRow : userCourseRows) {
+			Row row = worksheet.newRow();
+			int pos = 0;
+			
+			generateCourseDataRow(row, pos, userPropertyHandlers, userCourseRow);
+		}
+	}
+
+	private void generateCourseDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers, 
+									   AbsencesReportCourseRow userCourseRow) {
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			row.addCell(pos, userCourseRow.getIdentityProp(pos));
+			pos++;
+		}
+		row.addCell(pos++, userCourseRow.courseTitle());
+		row.addCell(pos++, userCourseRow.externalReference());
+		row.addCell(pos++, "" + userCourseRow.units());
+		row.addCell(pos++, "" + userCourseRow.attended());
+		row.addCell(pos++, "" + userCourseRow.authorized());
+		row.addCell(pos++, "" + userCourseRow.notAuthorized());
+		row.addCell(pos++, "" + userCourseRow.dispensed());
+		row.addCell(pos++, String.format("%.5f",  userCourseRow.attendanceRate()));
 	}
 
 	@Override
