@@ -222,10 +222,10 @@ public class TBActivityLogController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TBActivityLogCols.valueNew));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TBActivityLogCols.user));
 		
-		dataModel = new TBActivityLogTableModel(columnsModel, null, getLocale());
+		dataModel = new TBActivityLogTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
-//		tableEl.setExportEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setSortSettings(options);
 
 		initFilters();

@@ -31,16 +31,13 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -50,19 +47,16 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class TBActivityLogTableModel extends DefaultFlexiTableDataModel<TBActivityLogRow>
-	implements SortableFlexiTableDataModel<TBActivityLogRow>, FilterableFlexiTableModel, ExportableFlexiTableDataModel {
+	implements SortableFlexiTableDataModel<TBActivityLogRow>, FilterableFlexiTableModel {
 		
 		private static final TBActivityLogCols[] COLS = TBActivityLogCols.values();
 
 		private final Locale locale;
 		private List<TBActivityLogRow> backups;
-		private final ExportableFlexiTableDataModel exportDelegate;
 		
-		public TBActivityLogTableModel(FlexiTableColumnModel columnModel, ExportableFlexiTableDataModel exportDelegate,
-				Locale locale) {
+		public TBActivityLogTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 			super(columnModel);
 			this.locale = locale;
-			this.exportDelegate = exportDelegate;
 		}
 		
 		@Override
@@ -215,11 +209,6 @@ public class TBActivityLogTableModel extends DefaultFlexiTableDataModel<TBActivi
 		public void setObjects(List<TBActivityLogRow> objects) {
 			backups = new ArrayList<>(objects);
 			super.setObjects(objects);
-		}
-			
-		@Override
-		public MediaResource export(FlexiTableComponent ftC) {
-			return this.exportDelegate.export(ftC);
 		}
 
 		public enum TBActivityLogCols implements FlexiSortableColumnDef {
