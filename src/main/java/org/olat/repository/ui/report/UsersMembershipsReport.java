@@ -22,11 +22,15 @@ package org.olat.repository.ui.report;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -130,7 +134,8 @@ public class UsersMembershipsReport extends OpenXMLWorkbookResource {
 	}
 	
 
-	private void addContent(UsersMembershipsEntry entry, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+	private void addContent(UsersMembershipsEntry entry, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook, 
+							Map<String, String> cachedNames) {
 		Row row = exportSheet.newRow();
 		
 		int pos = 0;
@@ -144,8 +149,7 @@ public class UsersMembershipsReport extends OpenXMLWorkbookResource {
 		row.addCell(pos++, entry.getLifecycleFrom(), workbook.getStyles().getDateStyle());
 		row.addCell(pos++, entry.getLifecycleTo(), workbook.getStyles().getDateStyle());
 		row.addCell(pos++, translator.translate("table.status." + entry.getRepositoryEntryStatus()));
-		row.addCell(pos++, translator.translate("table.initial.author", entry.getRepositoryEntryInitialAuthorName(), 
-				entry.getRepositoryEntryInitialAuthorEmail()));
+		row.addCell(pos++, cachedNames.getOrDefault(entry.getRepositoryEntryInitialAuthor(), ""));
 		row.addCell(pos++, toPrivatePublic(entry));
 		row.addCell(pos++, listToString(entry.getTaxonomyLevels()));
 		
@@ -209,9 +213,19 @@ public class UsersMembershipsReport extends OpenXMLWorkbookResource {
 		do {
 			entries = reportQuery.search(from, to, roles, userPropertyHandlers, translator.getLocale(), firstResult, BATCH_SIZE);
 			firstResult += entries.size();
+			Map<String, String> cachedNames = getCachedNames(entries);
 			for(UsersMembershipsEntry entry:entries) {
-				addContent(entry, exportSheet, workbook);
+				addContent(entry, exportSheet, workbook, cachedNames);
 			}
 		} while(entries.size() == BATCH_SIZE);	
+	}
+
+	private Map<String, String> getCachedNames(List<UsersMembershipsEntry> entries) {
+		Set<String> userNames = new HashSet<>();
+		for (UsersMembershipsEntry entry : entries) {
+			userNames.add(entry.getRepositoryEntryInitialAuthor());
+		}
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		return userManager.getUserDisplayNamesByUserName(userNames);
 	}
 }
