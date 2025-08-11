@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBAuditLog;
 import org.olat.modules.topicbroker.TBAuditLogSearchParams;
 import org.olat.modules.topicbroker.TBBroker;
+import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -48,6 +49,8 @@ public class TBAuditLogDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private TBBrokerDAO brokerDao;
+	@Autowired
+	private TBParticipantDAO participantDao;
 	@Autowired
 	private TBTopicDAO topicDAO;
 	
@@ -212,6 +215,24 @@ public class TBAuditLogDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_participants() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		TBParticipant participant1 = createRandomParticipant();
+		TBParticipant participant2 = createRandomParticipant();
+		TBParticipant participant3 = createRandomParticipant();
+		TBAuditLog activity1 = sut.create(TBAuditLog.Action.selectionCreate, null, null, doer, participant1);
+		TBAuditLog activity2 = sut.create(TBAuditLog.Action.selectionCreate, null, null, doer, participant2);
+		sut.create(TBAuditLog.Action.selectionCreate, null, null, doer, participant3);
+		dbInstance.commitAndCloseSession();
+		
+		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
+		searchParams.setParticipants(List.of(participant1, participant2));
+		List<TBAuditLog> activities = sut.loadAuditLogs(searchParams, 0, -1);
+		
+		assertThat(activities).containsExactlyInAnyOrder(activity1, activity2);
+	}
+	
+	@Test
 	public void shouldLoad_orderAcs() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		TBTopic topic = createRandomTopic();
@@ -228,7 +249,7 @@ public class TBAuditLogDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoad_fetch_doer() {
+	public void shouldLoad_fetch_all() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		TBTopic topic = createRandomTopic();
 		sut.create(TBAuditLog.Action.topicUpdateContent, null, null, doer, topic);
@@ -236,12 +257,17 @@ public class TBAuditLogDAOTest extends OlatTestCase {
 		
 		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
 		searchParams.setDoer(doer);
-		searchParams.setFetchDoer(true);
+		searchParams.setFetchAll(true);
 		sut.loadAuditLogs(searchParams, 0, -1);
 		
 		// Just a syntax check
 	}
-
+	
+	private TBParticipant createRandomParticipant() {
+		TBBroker broker = createRandomBroker();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		return participantDao.createParticipant(broker, identity);
+	}
 	
 	private TBTopic createRandomTopic() {
 		TBBroker broker = createRandomBroker();

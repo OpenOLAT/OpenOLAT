@@ -884,7 +884,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		TBCustomField customField = customFieldDao.createCustomField(reloadedDefinition, reloadedTopic);
 		String after = TopicBrokerXStream.toXml(customField);
 		
-		auditLogDao.create(TBAuditLog.Action.customFieldUpdateContent, null, after, doer,
+		auditLogDao.create(TBAuditLog.Action.customFieldCreate, null, after, doer,
 				reloadedDefinition, reloadedTopic);
 		
 		return customField;
@@ -988,6 +988,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		searchParams.setFetchDefinition(true);
 		searchParams.setFetchTopic(true);
 		searchParams.setFetchIdentities(true);
+		searchParams.setFetchVfsMetadata(true);
 		List<TBCustomField> customFields = getCustomFields(searchParams);
 		
 		return !customFields.isEmpty()? customFields.get(0): null;

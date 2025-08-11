@@ -1236,6 +1236,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_priority { @include o-add-icon('scale-balanced');}
 .o_icon_tb_run { @include o-add-icon('rotate-right');}
 .o_icon_tb_run_start { @include o-add-icon('play');}
+.o_icon_tb_configuration { @include o-add-icon('gear');}
 
 /* Course node selection course node */
 .o_icon_cns { @include o-add-icon('arrows-turn-right'); transform: scaleY(-1);}

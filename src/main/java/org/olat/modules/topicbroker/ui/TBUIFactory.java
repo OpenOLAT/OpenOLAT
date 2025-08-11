@@ -532,6 +532,32 @@ public class TBUIFactory {
 		return translator.translate("enrollment.strategy.function.priority", String.valueOf(breakPoint));
 	}
 	
+	public static String getLogContextIconCss(TBActivityLogContext context) {
+		if (context != null) {
+			return switch (context) {
+			case configuration -> "o_icon_tb_configuration";
+			case topic -> "o_icon_tb_topics";
+			case participant -> "o_icon_user";
+			case enrollmentProcess -> "o_icon_tb_enroll";
+			default -> null;
+			};
+		}
+		return null;
+	}
+	
+	public static String getTranslatedLogContext(Translator translator, TBActivityLogContext context) {
+		if (context != null) {
+			return switch (context) {
+			case configuration -> translator.translate("activity.log.context.configuration");
+			case topic -> translator.translate("activity.log.context.topic");
+			case participant -> translator.translate("activity.log.context.participant");
+			case enrollmentProcess -> translator.translate("activity.log.context.enrollment.process");
+			default -> null;
+			};
+		}
+		return null;
+	}
+	
 	public static int intOrZero(Integer integer) {
 		return integer != null? integer.intValue(): 0;
 	}

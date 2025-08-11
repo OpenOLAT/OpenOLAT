@@ -37,8 +37,9 @@ public class TBAuditLogSearchParams {
 	private Collection<Long> doerKeys;
 	private Collection<Long> brokerKeys;
 	private Collection<Long> topicKeys;
+	private Collection<Long> participantKeys;
 	private Boolean orderAsc;
-	private boolean fetchDoer;
+	private boolean fetchAll;
 
 	public Collection<Action> getActions() {
 		return actions;
@@ -68,7 +69,7 @@ public class TBAuditLogSearchParams {
 		return brokerKeys;
 	}
 	
-	public void setBroker(TBBroker broker) {
+	public void setBroker(TBBrokerRef broker) {
 		brokerKeys = broker != null? List.of(broker.getKey()): null;
 	}
 
@@ -87,6 +88,18 @@ public class TBAuditLogSearchParams {
 	public void setTopics(Collection<? extends TBTopicRef> topics) {
 		topicKeys = topics != null? topics.stream().map(TBTopicRef::getKey).toList(): null;
 	}
+	
+	public Collection<Long> getParticipantKeys() {
+		return participantKeys;
+	}
+	
+	public void setParticipant(TBParticipantRef participant) {
+		participantKeys = participant != null? List.of(participant.getKey()): null;
+	}
+
+	public void setParticipants(Collection<? extends TBParticipantRef> participants) {
+		participantKeys = participants != null? participants.stream().map(TBParticipantRef::getKey).toList(): null;
+	}
 
 	public Boolean getOrderAsc() {
 		return orderAsc;
@@ -96,12 +109,12 @@ public class TBAuditLogSearchParams {
 		this.orderAsc = orderAsc;
 	}
 
-	public boolean isFetchDoer() {
-		return fetchDoer;
+	public boolean isFetchAll() {
+		return fetchAll;
 	}
 
-	public void setFetchDoer(boolean fetchDoer) {
-		this.fetchDoer = fetchDoer;
+	public void setFetchAll(boolean fetchAll) {
+		this.fetchAll = fetchAll;
 	}
 
 }

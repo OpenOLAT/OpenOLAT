@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -62,6 +63,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.InfoPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -69,6 +71,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
@@ -124,6 +128,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private static final String TAB_ID_ENROLLED_PARTIALLY = "PartiallyEnrolled";
 	private static final String TAB_ID_ENROLLED_FULLY = "FullyEnrolled";
 	private static final String CMD_DETAILS = "details";
+	private static final String CMD_ACTIVITY_LOG = "activity.log";
 	
 	private InfoPanel configPanel;
 	private FlexiFiltersTab tabAll;
@@ -149,7 +154,10 @@ public class TBParticipantListController extends FormBasicController implements 
 	private ContactFormController contactCtrl;
 	private ConfirmationController notificationConfirmationCtrl;
 	private ConfirmationController withdrawEnrollmentsConfirmationCtrl;
-	private ConfirmationController resetSelectionConfirmationCtrl;
+	private ConfirmationController resetSelectionConfirmationCtrl;	private TBActivityLogController activityLogCtrl;
+	private LayoutMain3ColsBackController activityLogLayoutCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ToolsController toolsCtrl;
 
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
@@ -322,6 +330,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(selectedColumn);
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TBParticipantCols.priority, new TBSelectionsRenderer()));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TBParticipantCols.tools));
 		
 		dataModel = new TBParticipantDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -406,6 +415,7 @@ public class TBParticipantListController extends FormBasicController implements 
 				row.setBoost(participant.getBoost());
 			}
 			forgeEnrolled(row, participant);
+			forgeToolsLink(row);
 			
 			rows.add(row);
 		}
@@ -517,6 +527,12 @@ public class TBParticipantListController extends FormBasicController implements 
 		} else {
 			row.setWaitingList(row.getSelections().size() - row.getNumEnrollments());
 		}
+	}
+	
+	private void forgeToolsLink(TBParticipantRow row) {
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
 	}
 	
 	private void doShowDetails(UserRequest ureq, TBParticipantRow row) {
@@ -640,8 +656,19 @@ public class TBParticipantListController extends FormBasicController implements 
 			}
 		} else if (source == enrollmentLayoutCtr && event == Event.BACK_EVENT) {
 			cleanUp();
+		} else if (source == activityLogLayoutCtrl && event == Event.BACK_EVENT) {
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
+		} else if (toolsCalloutCtrl == source) {
+			cleanUp();
+		} else if (toolsCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -654,6 +681,10 @@ public class TBParticipantListController extends FormBasicController implements 
 		removeAsListenerAndDispose(withdrawEnrollmentsConfirmationCtrl);
 		removeAsListenerAndDispose(resetSelectionConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(activityLogLayoutCtrl);
+		removeAsListenerAndDispose(activityLogCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		enrollmentManualCtrl = null;
 		enrollmentLayoutCtr = null;
 		contactCtrl = null;
@@ -661,6 +692,10 @@ public class TBParticipantListController extends FormBasicController implements 
 		withdrawEnrollmentsConfirmationCtrl = null;
 		resetSelectionConfirmationCtrl = null;
 		cmc = null;
+		activityLogLayoutCtrl = null;
+		activityLogCtrl = null;
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
 	}
 
 	@Override
@@ -708,6 +743,10 @@ public class TBParticipantListController extends FormBasicController implements 
 				loadModel(ureq);
 			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq);
+			}
+		} else if (source instanceof FormLink link) {
+			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof TBParticipantRow row) {
+				doOpenTools(ureq, row, link);
 			}
 		}
 		
@@ -956,6 +995,83 @@ public class TBParticipantListController extends FormBasicController implements 
 		}
 		
 		loadModel(ureq);
+	}
+	
+	private void doOpenActivityLog(UserRequest ureq, TBParticipant participant) {
+		activityLogCtrl = new TBActivityLogController(ureq, getWindowControl(), broker, participantCandidates, null, participant);
+		listenTo(activityLogCtrl);
+		
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(getIdentity());
+		identityEnv.setRoles(ureq.getUserSession().getRoles());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		
+		CourseNode courseNode = course.getRunStructure().getNode(broker.getSubIdent());
+		
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), activityLogCtrl, userCourseEnv, courseNode, "o_icon_topicbroker");
+		
+		activityLogLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, ctrl.getInitialComponent(), null);
+		activityLogLayoutCtrl.addDisposableChildController(activityLogCtrl);
+		activityLogLayoutCtrl.activate();
+		listenTo(activityLogLayoutCtrl);
+	}
+	
+	private void doOpenTools(UserRequest ureq, TBParticipantRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final VelocityContainer mainVC;
+		
+		private final TBParticipant participant;
+		private final List<String> names = new ArrayList<>(5);
+
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, TBParticipantRow row) {
+			super(ureq, wControl);
+			
+			participant = row.getParticipant();
+			
+			mainVC = createVelocityContainer("tools");
+			putInitialPanel(mainVC);
+			
+			addLink("activity.log.title", CMD_ACTIVITY_LOG, "o_icon o_icon-fw o_icon_log");
+			mainVC.contextPut("names", names);
+		}
+		
+		private void addLink(String name, String cmd, String iconCSS) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if (iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			names.add(name);
+		}
+		
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				String cmd = link.getCommand();
+				if (CMD_ACTIVITY_LOG.equals(cmd)) {
+					doOpenActivityLog(ureq, participant);
+				}
+			}
+		}
 	}
 
 }

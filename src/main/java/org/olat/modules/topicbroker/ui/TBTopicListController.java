@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
@@ -91,12 +92,19 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.modules.topicbroker.TBBroker;
@@ -122,6 +130,8 @@ import org.olat.modules.topicbroker.ui.events.TBTopicEditEvent;
 import org.olat.modules.topicbroker.ui.wizard.ImportContext;
 import org.olat.modules.topicbroker.ui.wizard.ImportInputStep;
 import org.olat.modules.topicbroker.ui.wizard.ImportTopicCallback;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -144,6 +154,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
 	private static final String CMD_EDIT_ENROLLMENTS = "edit.enrollments";
+	private static final String CMD_ACTIVITY_LOG = "activity.log";
 	private static final String CMD_DELETE = "delete";
 	private static final String CMD_DETAILS = "details";
 	private static final String CMD_OPEN_GROUP = "open.group";
@@ -172,6 +183,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private Controller docEditorCtrl;
 	private StepsMainRunController wizard;
 	private ConfirmationController deleteConfirmationCtrl;
+	private TBActivityLogController activityLogCtrl;
+	private LayoutMain3ColsBackController activityLogLayoutCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
 	
@@ -193,6 +206,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 	private DocEditorService docEditorService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -838,6 +853,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			cleanUp();
 		} else if (docEditorCtrl == source) {
 			cleanUp();
+		} else if (source == activityLogLayoutCtrl && event == Event.BACK_EVENT) {
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
@@ -860,6 +877,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(selectionsEditCtrl);
 		removeAsListenerAndDispose(docEditorCtrl);
+		removeAsListenerAndDispose(activityLogCtrl);
+		removeAsListenerAndDispose(activityLogLayoutCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -869,6 +888,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		deleteConfirmationCtrl = null;
 		selectionsEditCtrl = null;
 		docEditorCtrl = null;
+		activityLogCtrl = null;
+		activityLogLayoutCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -1148,6 +1169,28 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());
 	}
 	
+	private void doOpenActivityLog(UserRequest ureq, TBTopic topic) {
+		activityLogCtrl = new TBActivityLogController(ureq, getWindowControl(), broker, participantCandidates, topic, null);
+		listenTo(activityLogCtrl);
+		
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(getIdentity());
+		identityEnv.setRoles(ureq.getUserSession().getRoles());
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		
+		CourseNode courseNode = course.getRunStructure().getNode(broker.getSubIdent());
+		
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), activityLogCtrl, userCourseEnv, courseNode, "o_icon_topicbroker");
+		
+		activityLogLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, ctrl.getInitialComponent(), null);
+		activityLogLayoutCtrl.addDisposableChildController(activityLogCtrl);
+		activityLogLayoutCtrl.activate();
+		listenTo(activityLogLayoutCtrl);
+	}
+	
 	private void doOpenTools(UserRequest ureq, TBTopicRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -1166,6 +1209,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		private final VelocityContainer mainVC;
 		
 		private final TBTopicRow row;
+		private final TBTopic topic;
 		private final List<String> names = new ArrayList<>(5);
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, TBTopicRow row) {
@@ -1175,7 +1219,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			mainVC = createVelocityContainer("tools");
 			putInitialPanel(mainVC);
 			
-			TBTopic topic = topicBrokerService.getTopic(row);
+			topic = topicBrokerService.getTopic(row);
 			if (topic != null) {
 				addLink("edit", CMD_EDIT, "o_icon o_icon-fw o_icon_edit");
 				if (row.getUpDown() != null) {
@@ -1191,6 +1235,8 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					names.add("divider");
 					addLink("enrollments.edit", CMD_EDIT_ENROLLMENTS, "o_icon o_icon-fw o_icon_tb_edit_enrollments");
 				}
+				names.add("divider");
+				addLink("activity.log.title", CMD_ACTIVITY_LOG, "o_icon o_icon-fw o_icon_log");
 				names.add("divider");
 				addLink("delete", CMD_DELETE, "o_icon o_icon-fw o_icon_delete_item");
 			}
@@ -1220,6 +1266,10 @@ public abstract class TBTopicListController extends FormBasicController implemen
 					doMoveTopic(ureq, row, Direction.DOWN);
 				} else if (CMD_EDIT_ENROLLMENTS.equals(cmd)) {
 					doEditSelections(ureq, row);
+				} else if (CMD_EDIT_ENROLLMENTS.equals(cmd)) {
+					doEditSelections(ureq, row);
+				} else if (CMD_ACTIVITY_LOG.equals(cmd)) {
+					doOpenActivityLog(ureq, topic);
 				} else if (CMD_DELETE.equals(cmd)) {
 					doConfirmDelete(ureq, row);
 				}
