@@ -37,6 +37,7 @@ public class TBAuditLogSearchParams {
 	private Collection<Long> doerKeys;
 	private Collection<Long> brokerKeys;
 	private Collection<Long> topicKeys;
+	private Collection<Long> participantKeys;
 	private Boolean orderAsc;
 	private boolean fetchAll;
 
@@ -86,6 +87,18 @@ public class TBAuditLogSearchParams {
 	
 	public void setTopics(Collection<? extends TBTopicRef> topics) {
 		topicKeys = topics != null? topics.stream().map(TBTopicRef::getKey).toList(): null;
+	}
+	
+	public Collection<Long> getParticipantKeys() {
+		return participantKeys;
+	}
+	
+	public void setParticipant(TBParticipantRef participant) {
+		participantKeys = participant != null? List.of(participant.getKey()): null;
+	}
+
+	public void setParticipants(Collection<? extends TBParticipantRef> participants) {
+		participantKeys = participants != null? participants.stream().map(TBParticipantRef::getKey).toList(): null;
 	}
 
 	public Boolean getOrderAsc() {

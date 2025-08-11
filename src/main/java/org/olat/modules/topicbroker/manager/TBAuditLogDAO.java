@@ -182,6 +182,9 @@ public class TBAuditLogDAO {
 		if (searchParams.getTopicKeys() != null && !searchParams.getTopicKeys().isEmpty()) {
 			sb.and().append("auditLog.topic.key in :topicKeys");
 		}
+		if (searchParams.getParticipantKeys() != null && !searchParams.getParticipantKeys().isEmpty()) {
+			sb.and().append("auditLog.participant.key in :participantKeys");
+		}
 	}
 
 	private void addParameters(TypedQuery<?> query, TBAuditLogSearchParams searchParams) {
@@ -196,6 +199,9 @@ public class TBAuditLogDAO {
 		}
 		if (searchParams.getTopicKeys() != null && !searchParams.getTopicKeys().isEmpty()) {
 			query.setParameter("topicKeys", searchParams.getTopicKeys());
+		}
+		if (searchParams.getParticipantKeys() != null && !searchParams.getParticipantKeys().isEmpty()) {
+			query.setParameter("participantKeys", searchParams.getParticipantKeys());
 		}
 	}
 

@@ -22,6 +22,7 @@ package org.olat.modules.topicbroker.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
@@ -49,6 +50,7 @@ public class TBParticipantRow  extends UserPropertiesRow {
 	private List<TBSelection> selections;
 	private String detailsComponentName;
 	private boolean anonym = false;
+	private FormLink toolsLink;
 
 	public TBParticipantRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -152,6 +154,14 @@ public class TBParticipantRow  extends UserPropertiesRow {
 
 	public void setAnonym(boolean anonym) {
 		this.anonym = anonym;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 
 }

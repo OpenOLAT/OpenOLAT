@@ -175,7 +175,7 @@ public class TBRunCoachController extends BasicController implements Activateabl
 	private void doOpenActivityLog(UserRequest ureq) {
 		if (activityLogCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ACTIVITY_LOG), null);
-			activityLogCtrl = new TBActivityLogController(ureq, bwControl, broker, participantCandidates);
+			activityLogCtrl = new TBActivityLogController(ureq, bwControl, broker, participantCandidates, null, null);
 			listenTo(activityLogCtrl);
 		} else {
 			activityLogCtrl.reload();

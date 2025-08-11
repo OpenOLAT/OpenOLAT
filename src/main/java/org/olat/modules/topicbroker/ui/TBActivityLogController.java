@@ -20,7 +20,6 @@
 package org.olat.modules.topicbroker.ui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -105,7 +104,7 @@ public class TBActivityLogController extends FormBasicController {
 	private static final String TAB_ID_LAST_4_WEEKS = "Last4Weeks";
 	private static final String TAB_ID_LAST_12_MONTH = "Last12Month";
 	private static final String TAB_ID_ALL = "All";
-	private static final Collection<Action> ACTIONS = List.of(
+	private static final Collection<Action> ACTIONS_ALL = Set.of(
 			Action.brokerUpdateContent,
 			Action.brokerEnrollmentDone,
 			Action.brokerEnrollmentStrategy,
@@ -128,12 +127,44 @@ public class TBActivityLogController extends FormBasicController {
 			Action.selectionWithdrawProcessAuto,
 			Action.selectionDelete
 			);
+	private static final Collection<Action> ACTIONS_TOPIC = Set.of(
+			Action.topicUpdateContent,
+			Action.topicUpdateSortOrder,
+			Action.topicUpdateFile,
+			Action.topicDeleteFile,
+			Action.customFieldUpdateContent,
+			Action.customFieldDeletePermanently,
+			Action.selectionCreate,
+			Action.selectionUpdateSortOrder,
+			Action.selectionEnrollManually,
+			Action.selectionEnrollProcessMan,
+			Action.selectionEnrollProcessAuto,
+			Action.selectionWithdrawManually,
+			Action.selectionWithdrawProcessMan,
+			Action.selectionWithdrawProcessAuto,
+			Action.selectionDelete
+			);
+	private static final Collection<Action> ACTIONS_PARTICIPANT = Set.of(
+			Action.participantUpdateContent,
+			Action.selectionCreate,
+			Action.selectionUpdateSortOrder,
+			Action.selectionEnrollManually,
+			Action.selectionEnrollProcessMan,
+			Action.selectionEnrollProcessAuto,
+			Action.selectionWithdrawManually,
+			Action.selectionWithdrawProcessMan,
+			Action.selectionWithdrawProcessAuto,
+			Action.selectionDelete
+			);
 
 	private TBActivityLogTableModel dataModel;
 	private FlexiTableElement tableEl;
 
 	private final TBBrokerRef broker;
 	private final TBParticipantCandidates participantCandidates;
+	private final TBTopic topic;
+	private final TBParticipant participant;
+	private final Collection<Action> actions;
 	private final Formatter formatter;
 	private final List<TBCustomFieldDefinition> customFieldDefinitions;
 	private final Map<Long, String> topicKeyToTitle;
@@ -146,18 +177,27 @@ public class TBActivityLogController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	public TBActivityLogController(UserRequest ureq, WindowControl wControl, TBBrokerRef broker, TBParticipantCandidates participantCandidates) {
+	public TBActivityLogController(UserRequest ureq, WindowControl wControl, TBBrokerRef broker,
+			TBParticipantCandidates participantCandidates, TBTopic topic, TBParticipant participant) {
 		super(ureq, wControl, "audit_log");
 		setTranslator(Util.createPackageTranslator(ActivityLogController.class, getLocale(), getTranslator()));
 		this.broker = broker;
 		this.participantCandidates = participantCandidates;
+		this.topic = topic;
+		this.participant = participant;
+		if (participant != null) {
+			actions = ACTIONS_PARTICIPANT;
+		} else if (topic != null) {
+			actions = ACTIONS_TOPIC;
+		} else {
+			actions = ACTIONS_ALL;
+		}
 		formatter = Formatter.getInstance(getLocale());
 		
 		TBTopicSearchParams topicSearchParams = new TBTopicSearchParams();
 		topicSearchParams.setBroker(broker);
 		topicKeyToTitle = topicBrokeService.getTopics(topicSearchParams).stream()
 			.collect(Collectors.toMap(TBTopic::getKey, TBTopic::getTitle));
-		
 		
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
@@ -235,25 +275,33 @@ public class TBActivityLogController extends FormBasicController {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(3);
 		
 		SelectionValues contextSV = new SelectionValues();
-		Arrays.stream(TBActivityLogContext.values()).forEach(context -> contextSV.add(
-				SelectionValues.entry(context.name(), TBUIFactory.getTranslatedLogContext(getTranslator(), context))));
+		if (topic == null && participant == null) {
+			addContext(contextSV, TBActivityLogContext.configuration);
+		}
+		addContext(contextSV, TBActivityLogContext.topic);
+		addContext(contextSV, TBActivityLogContext.participant);
+		if (topic == null && participant == null) {
+			addContext(contextSV, TBActivityLogContext.enrollmentProcess);
+		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.context"), FILTER_CONTEXT,
 				contextSV, true));
 		
 		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.activity"), FILTER_ACTIVITY,
 				getActivityFilterValues(), true));
 		
-		SelectionValues identityValues = new SelectionValues();
-		List<Identity> filterIdentities = participantCandidates.getVisibleIdentities();
-		if (filterIdentities != null && !filterIdentities.isEmpty()) {
-			filterIdentities.stream().forEach(identity -> identityValues.add(
-					SelectionValues.entry(
-							identity.getKey().toString(),
-							StringHelper.escapeHtml(userManager.getUserDisplayName(identity.getKey())))));
-			identityValues.sort(SelectionValues.VALUE_ASC);
-			if (!identityValues.isEmpty()) {
-				filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.user"), FILTER_IDENTITY,
-						identityValues, true));
+		if (participant == null) {
+			SelectionValues identityValues = new SelectionValues();
+			List<Identity> filterIdentities = participantCandidates.getVisibleIdentities();
+			if (filterIdentities != null && !filterIdentities.isEmpty()) {
+				filterIdentities.stream().forEach(identity -> identityValues.add(
+						SelectionValues.entry(
+								identity.getKey().toString(),
+								StringHelper.escapeHtml(userManager.getUserDisplayName(identity.getKey())))));
+				identityValues.sort(SelectionValues.VALUE_ASC);
+				if (!identityValues.isEmpty()) {
+					filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.user"), FILTER_IDENTITY,
+							identityValues, true));
+				}
 			}
 		}
 		
@@ -262,6 +310,10 @@ public class TBActivityLogController extends FormBasicController {
 		filters.add(dateFilter);
 		
 		tableEl.setFilters(true, filters, false, false);
+	}
+
+	private void addContext(SelectionValues contextSV, TBActivityLogContext context) {
+		contextSV.add(SelectionValues.entry(context.name(), TBUIFactory.getTranslatedLogContext(getTranslator(), TBActivityLogContext.topic)));
 	}
 	
 	public void reload() {
@@ -273,7 +325,9 @@ public class TBActivityLogController extends FormBasicController {
 	private void loadModel(boolean reset) {
 		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
 		searchParams.setBroker(broker);
-		searchParams.setActions(ACTIONS);
+		searchParams.setTopic(topic);
+		searchParams.setParticipant(participant);
+		searchParams.setActions(actions);
 		searchParams.setFetchAll(true);
 		
 		List<TBAuditLog> auditLogs = topicBrokeService.getAuditLog(searchParams, 0, -1);
@@ -281,9 +335,13 @@ public class TBActivityLogController extends FormBasicController {
 		
 		for (TBAuditLog auditLog : auditLogs) {
 			try {
-				List<TBActivityLogRow> logRows = toRows(auditLog);
-				if (logRows != null && !logRows.isEmpty()) {
-					rows.addAll(logRows);
+				if (auditLog.getParticipant() == null
+						|| participantCandidates.isAllIdentitiesVisible()
+						|| participantCandidates.getVisibleIdentities().contains(auditLog.getParticipant().getIdentity())) {
+					List<TBActivityLogRow> logRows = toRows(auditLog);
+					if (logRows != null && !logRows.isEmpty()) {
+						rows.addAll(logRows);
+					}
 				}
 			} catch (com.thoughtworks.xstream.security.ForbiddenClassException fce) {
 				// Probably a org.hibernate.proxy.pojo.bytebuddy.SerializableProxy: ignore it.
@@ -322,59 +380,76 @@ public class TBActivityLogController extends FormBasicController {
 	private SelectionValues getActivityFilterValues() {
 		SelectionValues filterSV = new SelectionValues();
 		
-		// brokerUpdateContent
-		addSelectionValue(filterSV, translate("activity.configuration.change.max.selection"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.selection.period.begin"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.selection.period.end"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.required.enrollments"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.participant.can.reduce.enrollments"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.participant.can.withdraw"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.withdraw.end"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.enrollment.auto"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.auto.enrollment.strategy"));
-		addSelectionValue(filterSV, translate("activity.configuration.change.overlapping.not.allowed"));
-		// brokerEnrollmentDone
-		addSelectionValue(filterSV, translate("activity.enrollment.done"));
-		// brokerEnrollmentStrategy
-		addSelectionValue(filterSV, translate("activity.enrollment.strategy"));
-		// brokerEnrollmentStrategyValue
-		addSelectionValue(filterSV, translate("activity.enrollment.stats"));
-		// brokerEnrollmentReset
-		addSelectionValue(filterSV, translate("activity.enrollment.reset"));
-		// participantUpdateContent
-		addSelectionValue(filterSV, translate("activity.participant.change.max.boost"));
-		addSelectionValue(filterSV, translate("activity.participant.change.required.enrollments"));
-		// topicUpdateContent
-		addSelectionValue(filterSV, translate("activity.topic.change.title"));
-		addSelectionValue(filterSV, translate("activity.topic.change.description"));
-		addSelectionValue(filterSV, translate("activity.topic.change.begin.date"));
-		addSelectionValue(filterSV, translate("activity.topic.change.end.date"));
-		addSelectionValue(filterSV, translate("activity.topic.change.min.participants"));
-		addSelectionValue(filterSV, translate("activity.topic.change.max.participants"));
-		addSelectionValue(filterSV, translate("activity.topic.change.group.restriction"));
-		// topicUpdateSortOrder
-		addSelectionValue(filterSV, translate("activity.topic.change.sort.order"));
-		// topicUpdateFile, topicDeleteFile
-		addSelectionValue(filterSV, translate("activity.topic.file.updated.teaserimage"));
-		addSelectionValue(filterSV, translate("activity.topic.file.updated.teaservideo"));
-		// customFieldUpdateContent
-		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
-			addSelectionValue(filterSV, translate("activity.topic.change.custom", StringHelper.escapeHtml(customFieldDefinition.getName())));
+		if (actions.contains(Action.brokerUpdateContent)) {
+			addSelectionValue(filterSV, translate("activity.configuration.change.max.selection"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.selection.period.begin"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.selection.period.end"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.required.enrollments"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.participant.can.reduce.enrollments"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.participant.can.withdraw"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.withdraw.end"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.enrollment.auto"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.auto.enrollment.strategy"));
+			addSelectionValue(filterSV, translate("activity.configuration.change.overlapping.not.allowed"));
 		}
-		// selectionCreate
-		addSelectionValue(filterSV, translate("activity.selection.selected"));
-		// selectionUpdateSortOrder
-		addSelectionValue(filterSV, translate("activity.selection.change.order"));
-		// selectionEnrollManually
-		addSelectionValue(filterSV, translate("activity.selection.enrolled.manually"));
-		// selectionEnrollProcessMan, selectionEnrollProcessAuto
-		addSelectionValue(filterSV, translate("activity.selection.enrolled"));
-		// selectionWithdrawManually
-		addSelectionValue(filterSV, translate("activity.selection.withdraw.manually"));
-		// selectionWithdrawProcessMan, selectionWithdrawProcessAuto
-		addSelectionValue(filterSV, translate("activity.selection.withdraw"));
-		// selectionDelete
-		addSelectionValue(filterSV, translate("activity.selection.unselected"));
+		if (actions.contains(Action.brokerEnrollmentDone)) {
+			addSelectionValue(filterSV, translate("activity.enrollment.done"));
+		}
+		if (actions.contains(Action.brokerEnrollmentStrategy)) {
+			addSelectionValue(filterSV, translate("activity.enrollment.strategy"));
+		}
+		if (actions.contains(Action.brokerEnrollmentStrategyValue)) {
+			addSelectionValue(filterSV, translate("activity.enrollment.stats"));
+		}
+		if (actions.contains(Action.brokerEnrollmentReset)) {
+			addSelectionValue(filterSV, translate("activity.enrollment.reset"));
+		}
+		if (actions.contains(Action.participantUpdateContent)) {
+			addSelectionValue(filterSV, translate("activity.participant.change.max.boost"));
+			addSelectionValue(filterSV, translate("activity.participant.change.required.enrollments"));
+		}
+		if (actions.contains(Action.topicUpdateContent)) {
+			addSelectionValue(filterSV, translate("activity.topic.change.title"));
+			addSelectionValue(filterSV, translate("activity.topic.change.description"));
+			addSelectionValue(filterSV, translate("activity.topic.change.begin.date"));
+			addSelectionValue(filterSV, translate("activity.topic.change.end.date"));
+			addSelectionValue(filterSV, translate("activity.topic.change.min.participants"));
+			addSelectionValue(filterSV, translate("activity.topic.change.max.participants"));
+			addSelectionValue(filterSV, translate("activity.topic.change.group.restriction"));
+		}
+		if (actions.contains(Action.topicUpdateSortOrder)) {
+			addSelectionValue(filterSV, translate("activity.topic.change.sort.order"));
+		}
+		if (actions.contains(Action.topicUpdateFile) || actions.contains(Action.topicDeleteFile)) {
+			addSelectionValue(filterSV, translate("activity.topic.file.updated.teaserimage"));
+			addSelectionValue(filterSV, translate("activity.topic.file.updated.teaservideo"));
+		}
+		if (actions.contains(Action.customFieldUpdateContent)) {
+			for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
+				addSelectionValue(filterSV, translate("activity.topic.change.custom", StringHelper.escapeHtml(customFieldDefinition.getName())));
+			}
+		}
+		if (actions.contains(Action.selectionCreate)) {
+			addSelectionValue(filterSV, translate("activity.selection.selected"));
+		}
+		if (actions.contains(Action.selectionUpdateSortOrder)) {
+			addSelectionValue(filterSV, translate("activity.selection.change.order"));
+		}
+		if (actions.contains(Action.selectionEnrollManually)) {
+			addSelectionValue(filterSV, translate("activity.selection.enrolled.manually"));
+		}
+		if (actions.contains(Action.selectionEnrollProcessMan) || actions.contains(Action.selectionEnrollProcessAuto)) {
+			addSelectionValue(filterSV, translate("activity.selection.enrolled"));
+		}
+		if (actions.contains(Action.selectionWithdrawManually)) {
+			addSelectionValue(filterSV, translate("activity.selection.withdraw.manually"));
+		}
+		if (actions.contains(Action.selectionWithdrawProcessMan) || actions.contains(Action.selectionWithdrawProcessAuto)) {
+			addSelectionValue(filterSV, translate("activity.selection.withdraw"));
+		}
+		if (actions.contains(Action.selectionDelete)) {
+			addSelectionValue(filterSV, translate("activity.selection.unselected"));
+		}
 		
 		filterSV.sort(SelectionValues.VALUE_ASC);
 		return filterSV;
@@ -661,8 +736,6 @@ public class TBActivityLogController extends FormBasicController {
 			return List.of(createRow(auditLog, TBActivityLogContext.participant, getParticipantObject(auditLog), "activity.selection.unselected", valueOriginal, null));
 		}
 		
-		//TODO uh statistics
-			
 		default:
 			//
 		}

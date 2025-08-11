@@ -83,6 +83,7 @@ public class TBParticipantDataModel extends DefaultFlexiTableDataModel<TBPartici
 				case priority: return row;
 				case enroll: return Boolean.valueOf(row.isAnonym());
 				case withdraw: return Boolean.valueOf(row.isAnonym());
+				case tools: return row.getToolsLink();
 				default: return "ERROR";
 			}
 		}
@@ -102,7 +103,8 @@ public class TBParticipantDataModel extends DefaultFlexiTableDataModel<TBPartici
 		selected("selection.status.selected"),
 		priority("selection.priority"),
 		enroll("enroll"),
-		withdraw("withdraw");
+		withdraw("withdraw"),
+		tools("action.more");
 		
 		private final String i18nKey;
 
