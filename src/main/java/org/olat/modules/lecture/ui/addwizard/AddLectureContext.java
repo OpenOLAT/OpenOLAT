@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui.addwizard;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -50,7 +51,8 @@ public class AddLectureContext {
 
 	private TeamsMeeting teamsMeeting;
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
-	
+	private Set<Long> taxonomyLevelKeys;
+
 	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement) {
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
@@ -130,5 +132,13 @@ public class AddLectureContext {
 
 	public void setBigBlueButtonMeeting(BigBlueButtonMeeting bigBlueButtonMeeting) {
 		this.bigBlueButtonMeeting = bigBlueButtonMeeting;
+	}
+
+	public void setTaxonomyLevelKeys(Set<Long> taxonomyLevelKeys) {
+		this.taxonomyLevelKeys = taxonomyLevelKeys;
+	}
+
+	public Set<Long> getTaxonomyLevelKeys() {
+		return taxonomyLevelKeys;
 	}
 }

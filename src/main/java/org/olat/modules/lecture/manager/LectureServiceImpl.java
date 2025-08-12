@@ -131,6 +131,7 @@ import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.teams.manager.TeamsMeetingDAO;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.repository.RepositoryEntry;
@@ -206,8 +207,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private RepositoryEntryLectureConfigurationDAO lectureConfigurationDao;
 	@Autowired
 	private AbsenceNoticeToRepositoryEntryDAO absenceNoticeToRepositoryEntryDao;
-	
-	
+	@Autowired
+	private TaxonomyService taxonomyService;
+
+
 	@Override
 	public RepositoryEntryLectureConfiguration getRepositoryEntryLectureConfiguration(RepositoryEntry entry) {
 		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(entry);
@@ -1684,6 +1687,43 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		return lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
 	}
 
+	@Override
+	public void updateTaxonomyLevels(LectureBlock lectureBlock, Set<Long> taxonomyLevelKeys) {
+		if (lectureBlock == null || lectureBlock.getKey() == null) {
+			return;
+		}
+		
+		if (taxonomyLevelKeys == null) {
+			return;
+		}
+
+		List<TaxonomyLevel> currentTaxonomyLevels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
+		Set<Long> currentTaxonomyLevelKeys = currentTaxonomyLevels.stream().map(TaxonomyLevel::getKey).collect(Collectors.toSet());
+		
+		Set<Long> keysToAdd = new HashSet<>(taxonomyLevelKeys);
+		keysToAdd.removeAll(currentTaxonomyLevelKeys);
+		
+		Set<Long> keysToRemove = new HashSet<>(currentTaxonomyLevelKeys);
+		keysToRemove.removeAll(taxonomyLevelKeys);
+
+		List<TaxonomyLevel> levelsToAdd = taxonomyService.getTaxonomyLevelsByKeys(keysToAdd);
+		List<TaxonomyLevel> levelsToRemove = taxonomyService.getTaxonomyLevelsByKeys(keysToRemove);
+
+		for (TaxonomyLevel level : levelsToAdd) {
+			if (currentTaxonomyLevels.contains(level)) {
+				continue;
+			}
+			lectureBlockToTaxonomyLevelDao.createRelation(lectureBlock, level);
+		}
+
+		for (TaxonomyLevel level : levelsToRemove) {
+			if (!currentTaxonomyLevels.contains(level)) {
+				continue;
+			}
+			lectureBlockToTaxonomyLevelDao.deleteRelation(lectureBlock, level);
+		}
+	}
+	
 	@Override
 	public List<LectureBlock> getLectureBlocks(TaxonomyLevelRef level) {
 		return lectureBlockToTaxonomyLevelDao.getLectureBlocks(level);
