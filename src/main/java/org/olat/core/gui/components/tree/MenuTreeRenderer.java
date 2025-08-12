@@ -60,20 +60,11 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 
 /**
- * enclosing_type Description: <br>
  * 
  * @author Felix Jost, Florian Gnaegi
  */
 public class MenuTreeRenderer extends DefaultComponentRenderer {
 	private static final Logger log = Tracing.createLoggerFor(MenuTreeRenderer.class);
-
-	/**
-	 * Constructor for TableRenderer. Singleton and must be reentrant There must
-	 * be an empty contructor for the Class.forName() call
-	 */
-	public MenuTreeRenderer() {
-		super();
-	}
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
@@ -126,7 +117,8 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
 			target.append(" ").append(tree.getElementCssClass());
 		}
-		target.append("' role='navigation'><ul class=\"o_tree_l0\">");
+		target.append("'>");
+		target.append("<ul  role='tree' class=\"o_tree_l0\">");
 		if(tree.isRootVisible()) {
 			renderLevel(renderer, target, 0, root, selPath, openNodeIds, elements, ubu, flags, tree, true);
 		} else {
@@ -181,9 +173,19 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			target.append(" children_visible");	
 		}
 		String ident = curRoot.getIdent();
-		target.append("' data-nodeid='").append(ident).append("'");			
-		if (tree.isHighlightSelection() && selected) {
-			target.append(" aria-current='true'");
+		target.append("' data-nodeid='").append(ident).append("'");
+		
+		// see https://www.w3.org/WAI/ARIA/apg/patterns/treeview/
+		target.append(" role='treeitem'");
+		if (renderChildren) {
+			target.append(" aria-expanded='true'");
+		} else if (hasChildren) {
+			target.append(" aria-expanded='false'");
+		}
+		if (selected) {
+			target.append(" aria-selected='true'");
+		} else {
+			target.append(" aria-selected='false'");
 		}
 		target.append(">");
 
@@ -303,16 +305,18 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 
 			String openCloseCss = renderChildren ? "close" : "open";
 			String openCloseTitle = null;
+			String openCloseScreenReader = "";
 			if (tree.getTranslator() == null) {
 				openCloseTitle = "ERR:missing translator";
 				if (Settings.isDebuging()) {
 					log.warn("A11y issue: missing translator in MenuTreeRenderer, please fix your code for link:: " + tree.getComponentName() + " currRoot::" + curRoot.getTitle());
 				}
 			} else {
-				openCloseTitle = tree.getTranslator().translate("level." + openCloseCss);			
+				openCloseTitle = tree.getTranslator().translate("level." + openCloseCss);
+				openCloseScreenReader = tree.getTranslator().translate("level." + openCloseCss + ".screenreader", StringHelper.escapeHtml(curRoot.getTitle()));
 			}
 			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree' title=\"")
-				.appendHtmlAttributeEscaped(openCloseTitle).append("\") aria-hidden='true'></i><span class='sr-only'>").append(openCloseTitle).append("</span></a>");
+				.appendHtmlAttributeEscaped(openCloseTitle).append("\")></i><span class='sr-only'>").append(openCloseScreenReader).append("</span></a>");
 		} else if (level != 0 && chdCnt == 0) {
 			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
 		}
@@ -456,7 +460,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			List<DndElement> dndElements, URLBuilder ubu, AJAXFlags flags, MenuTree tree, boolean parentIsLastNode) {
 		int chdCnt = curRoot.getChildCount();
 		// render children as new level
-		target.append("\n<ul class=\"");
+		target.append("<ul role=\"group\" class=\"");
 		// add css class to identify level
 		target.append(" o_tree_l").append(level + 1)
 		      .append("\">");
