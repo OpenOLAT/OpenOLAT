@@ -177,6 +177,8 @@ public interface TopicBrokerService {
 	public void log(TBAuditLog.Action action, String before, String after, Identity doer, TBBroker broker,
 			TBParticipant participant, TBTopic topic, TBSelection selection);
 	
+	public List<Identity> getAuditLogDoers(TBAuditLogSearchParams searchParams);
+	
 	public List<TBAuditLog> getAuditLog(TBAuditLogSearchParams searchParams, int firstResult, int maxResults);
 
 }

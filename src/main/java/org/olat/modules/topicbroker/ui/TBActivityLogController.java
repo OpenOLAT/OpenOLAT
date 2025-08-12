@@ -98,6 +98,8 @@ public class TBActivityLogController extends FormBasicController {
 	
 	static final String FILTER_CONTEXT = "context";
 	static final String FILTER_ACTIVITY = "activity";
+	static final String FILTER_PARTICIPANT = "participant";
+	static final String FILTER_TOPIC = "topic";
 	static final String FILTER_IDENTITY = "user";
 	static final String FILTER_DATE = "date";
 	private static final String TAB_ID_LAST_7_DAYS = "Last7Days";
@@ -160,7 +162,6 @@ public class TBActivityLogController extends FormBasicController {
 	private TBActivityLogTableModel dataModel;
 	private FlexiTableElement tableEl;
 
-	private final TBBrokerRef broker;
 	private final TBParticipantCandidates participantCandidates;
 	private final TBTopic topic;
 	private final TBParticipant participant;
@@ -169,6 +170,7 @@ public class TBActivityLogController extends FormBasicController {
 	private final List<TBCustomFieldDefinition> customFieldDefinitions;
 	private final Map<Long, String> topicKeyToTitle;
 	private final Map<Long, String> groupKeyToName = new HashMap<>(1);
+	private final TBAuditLogSearchParams auditLogSearchParams;
 	
 	@Autowired
 	private TopicBrokerService topicBrokeService;
@@ -181,7 +183,6 @@ public class TBActivityLogController extends FormBasicController {
 			TBParticipantCandidates participantCandidates, TBTopic topic, TBParticipant participant) {
 		super(ureq, wControl, "audit_log");
 		setTranslator(Util.createPackageTranslator(ActivityLogController.class, getLocale(), getTranslator()));
-		this.broker = broker;
 		this.participantCandidates = participantCandidates;
 		this.topic = topic;
 		this.participant = participant;
@@ -202,6 +203,13 @@ public class TBActivityLogController extends FormBasicController {
 		TBCustomFieldDefinitionSearchParams definitionSearchParams = new TBCustomFieldDefinitionSearchParams();
 		definitionSearchParams.setBroker(broker);
 		customFieldDefinitions = topicBrokeService.getCustomFieldDefinitions(definitionSearchParams);
+		
+		auditLogSearchParams = new TBAuditLogSearchParams();
+		auditLogSearchParams.setBroker(broker);
+		auditLogSearchParams.setTopic(topic);
+		auditLogSearchParams.setParticipant(participant);
+		auditLogSearchParams.setActions(actions);
+		auditLogSearchParams.setFetchAll(true);
 		
 		initForm(ureq);
 	}
@@ -299,9 +307,36 @@ public class TBActivityLogController extends FormBasicController {
 								StringHelper.escapeHtml(userManager.getUserDisplayName(identity.getKey())))));
 				identityValues.sort(SelectionValues.VALUE_ASC);
 				if (!identityValues.isEmpty()) {
-					filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.user"), FILTER_IDENTITY,
+					filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.participant"), FILTER_PARTICIPANT,
 							identityValues, true));
 				}
+			}
+		}
+		
+		if (topic == null && topicKeyToTitle != null && !topicKeyToTitle.isEmpty()) {
+			SelectionValues topicValues = new SelectionValues();
+			topicKeyToTitle.entrySet().forEach(keyToTitle -> topicValues.add(
+						SelectionValues.entry(
+								keyToTitle.getKey().toString(),
+								StringHelper.escapeHtml(keyToTitle.getValue()))));
+				topicValues.sort(SelectionValues.VALUE_ASC);
+				if (!topicValues.isEmpty()) {
+					filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.topic"), FILTER_TOPIC,
+							topicValues, true));
+				}
+		}
+		
+		List<Identity> doers = topicBrokeService.getAuditLogDoers(auditLogSearchParams);
+		if (doers != null && !doers.isEmpty()) {
+			SelectionValues identityValues = new SelectionValues();
+			doers.forEach(identity -> identityValues.add(
+					SelectionValues.entry(
+							identity.getKey().toString(),
+							StringHelper.escapeHtml(userManager.getUserDisplayName(identity.getKey())))));
+			identityValues.sort(SelectionValues.VALUE_ASC);
+			if (!identityValues.isEmpty()) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.user"), FILTER_IDENTITY,
+						identityValues, true));
 			}
 		}
 		
@@ -313,7 +348,7 @@ public class TBActivityLogController extends FormBasicController {
 	}
 
 	private void addContext(SelectionValues contextSV, TBActivityLogContext context) {
-		contextSV.add(SelectionValues.entry(context.name(), TBUIFactory.getTranslatedLogContext(getTranslator(), TBActivityLogContext.topic)));
+		contextSV.add(SelectionValues.entry(context.name(), TBUIFactory.getTranslatedLogContext(getTranslator(), context)));
 	}
 	
 	public void reload() {
@@ -323,14 +358,7 @@ public class TBActivityLogController extends FormBasicController {
 	}
 	
 	private void loadModel(boolean reset) {
-		TBAuditLogSearchParams searchParams = new TBAuditLogSearchParams();
-		searchParams.setBroker(broker);
-		searchParams.setTopic(topic);
-		searchParams.setParticipant(participant);
-		searchParams.setActions(actions);
-		searchParams.setFetchAll(true);
-		
-		List<TBAuditLog> auditLogs = topicBrokeService.getAuditLog(searchParams, 0, -1);
+		List<TBAuditLog> auditLogs = topicBrokeService.getAuditLog(auditLogSearchParams, 0, -1);
 		List<TBActivityLogRow> rows = new ArrayList<>();
 		
 		for (TBAuditLog auditLog : auditLogs) {
@@ -766,7 +794,13 @@ public class TBActivityLogController extends FormBasicController {
 		row.setDate(auditLog.getCreationDate());
 		row.setDoerDisplayName(userManager.getUserDisplayName(auditLog.getDoer()));
 		if (auditLog.getParticipant() != null && auditLog.getParticipant().getIdentity() != null) {
-			row.setIdentityKey(auditLog.getParticipant().getIdentity().getKey());
+			row.setParticipantKey(auditLog.getParticipant().getIdentity().getKey());
+		}
+		if (auditLog.getTopic() != null) {
+			row.setTopicKey(auditLog.getTopic().getKey());
+		}
+		if (auditLog.getDoer() != null && auditLog.getDoer() != null) {
+			row.setIdentityKey(auditLog.getDoer().getKey());
 		}
 		return row;
 	}

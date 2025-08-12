@@ -1300,6 +1300,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	}
 	
 	@Override
+	public List<Identity> getAuditLogDoers(TBAuditLogSearchParams searchParams) {
+		return auditLogDao.loadAuditLogDoers(searchParams);
+	}
+	
+	@Override
 	public List<TBAuditLog> getAuditLog(TBAuditLogSearchParams searchParams, int firstResult, int maxResults) {
 		return auditLogDao.loadAuditLogs(searchParams, firstResult, maxResults);
 	}
