@@ -62,6 +62,9 @@ public class RobotsDispatcher implements Dispatcher {
 			List<String> allows = robotsService.getRobotsAllows();
 			for (String allow : allows) {
 				writer.write("\nAllow: " + allow);
+				// Disallow indexing the ajax responses
+				writer.write("\nDisallow: " + allow + "1:");
+				writer.write("\nDisallow: " + allow + "1%3A1");
 			}
 			
 			String sitemapIndexPath = robotsService.getSitemapIndexPath();
