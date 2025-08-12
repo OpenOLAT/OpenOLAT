@@ -1055,7 +1055,7 @@ public class GroupAssessmentController extends FormBasicController {
 		removeAsListenerAndDispose(assessmentDocsCalloutCtrl);
 		
 		OLATResource courseOres = courseEntry.getOlatResource();
-		editAssessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, false);
+		editAssessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, false, false);
 		listenTo(editAssessmentDocsCtrl);
 		assessmentDocsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				editAssessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsEditLink().getFormDispatchId(),

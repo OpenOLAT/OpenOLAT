@@ -77,6 +77,7 @@ public class EditAssessmentDocumentController extends FormBasicController {
 	private final AssessmentRow row;
 	private final ICourse course;
 	private final boolean readOnly;
+	private final boolean sendCloseEvents;
 	private final UserCourseEnvironment userCourseEnv;
 	private final File assessmentDocsTmpDir;
 	private final List<DocumentWrapper> documents = new ArrayList<>();
@@ -94,11 +95,12 @@ public class EditAssessmentDocumentController extends FormBasicController {
 	private CourseAssessmentService courseAssessmentService;
 
 	public EditAssessmentDocumentController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres,
-			GTACourseNode gtaNode, AssessmentRow row, boolean readOnly) {
+			GTACourseNode gtaNode, AssessmentRow row, boolean sendCloseEvents, boolean readOnly) {
 		super(ureq, wControl, "edit_assessment_docs");
 		this.gtaNode = gtaNode;
 		this.row = row;
 		this.readOnly = readOnly;
+		this.sendCloseEvents = sendCloseEvents;
 		roles = ureq.getUserSession().getRoles();
 		course = CourseFactory.loadCourse(courseOres);
 		userCourseEnv = row.getUserCourseEnvironment(course);
@@ -162,6 +164,9 @@ public class EditAssessmentDocumentController extends FormBasicController {
 						: new DownloadeableMediaResource(wrapper.getTempDocument());
 				ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 			} else if("open".equals(link.getCmd())) {
+				if(sendCloseEvents) {
+					fireEvent(ureq, Event.CLOSE_EVENT);
+				}
 				doOpenDocument(ureq, wrapper);
 			}
 		}
