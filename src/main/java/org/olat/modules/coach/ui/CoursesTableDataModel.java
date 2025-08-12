@@ -298,6 +298,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case certificates -> row.getCertificates().numOfCoursesWithCertificates() > 0
 					? row.getCertificates().numOfCertificates() : "";
 			case tools -> Boolean.TRUE;
+			case taxonomyLevels -> row.getTaxonomyLevelsLink();
 			default -> "ERROR";
 		};
 	}
@@ -331,7 +332,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		certificates("table.header.certificates"),
 		assessmentTool("table.header.assessment.tool"),
 		infos("table.header.infos"),
-		tools("action.more");
+		tools("action.more"),
+		taxonomyLevels("table.header.num.of.levels");
 		
 		private final String i18nKey;
 		

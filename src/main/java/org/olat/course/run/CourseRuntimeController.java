@@ -1825,7 +1825,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					doEdit(ureq);
 				}
 			} else if("Infos".equalsIgnoreCase(type)) {
-				doDetails(ureq);
+				activateSubEntries(ureq, doDetails(ureq), entries);
 			} else if("LearningPath".equalsIgnoreCase(type)) {
 				if (learningPathLink != null && learningPathLink.isVisible()) {
 					doLearningPath(ureq);

@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,7 +48,6 @@ import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumRef;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
@@ -157,9 +156,9 @@ public class RepositoryEntryMyCourseQueries {
 			repoKeys.add(re.getKey());
 		}
 		
-		Map<Long,List<TaxonomyLevel>> levelsMap;
+		Map<Long, AtomicLong> levelsMap;
 		if(!viewImpls.isEmpty() && taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty()) {
-			levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevelsByEntryKeys(repoKeys);
+			levelsMap = repositoryEntryToTaxonomyLevelDao.getNumOfTaxonomyLevelsByEntryKeys(repoKeys);
 		} else {
 			levelsMap = Collections.emptyMap();
 		}
@@ -177,12 +176,9 @@ public class RepositoryEntryMyCourseQueries {
 				view.setCompletion(assessmentEntry.getCompletion());
 			}
 			
-			List<TaxonomyLevel> levels = levelsMap.get(view.getKey());
-			if(levels == null) {
-				view.setTaxonomyLevels(Set.of());
-			} else {
-				view.setTaxonomyLevels(Set.copyOf(levels));
-			}
+			AtomicLong levels = levelsMap.get(view.getKey());
+			long numOfLevels = levels == null ? 0l : levels.get();
+			view.setNumOfTaxonomyLevels(numOfLevels);
 			views.add(view);
 		}
 

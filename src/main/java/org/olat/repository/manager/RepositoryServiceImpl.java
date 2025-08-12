@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
@@ -1117,6 +1118,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<? extends RepositoryEntryRef> entries, boolean fetchParents) {
 		if(entries == null || entries.isEmpty()) return Collections.emptyMap();
 		return repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entries, fetchParents);
+	}
+	
+	@Override
+	public Map<RepositoryEntryRef, AtomicLong> getNumOfTaxonomyLevels(List<? extends RepositoryEntryRef> entries) {
+		if(entries == null || entries.isEmpty()) return Collections.emptyMap();
+		return repositoryEntryToTaxonomyLevelDao.getNumOfTaxonomyLevels(entries);
 	}
 
 	@Override

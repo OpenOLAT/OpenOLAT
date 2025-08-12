@@ -94,6 +94,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.login.LoginModule;
@@ -527,7 +528,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 		
 		if(StringHelper.containsNonWhitespace(catalogEntry.getTechnicalType())) {
-			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(catalogEntry.getTechnicalType()), getLocale());
+			NodeAccessType type = NodeAccessType.of(catalogEntry.getTechnicalType());
+			String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
+					? translate("CourseModule")
+					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 			row.setTranslatedTechnicalType(translatedType);
 		}
 		
@@ -661,7 +665,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private void forgeComments(CatalogEntryRow row) {
 		if(repositoryModule.isCommentEnabled() && row.getRepositotyEntryKey() != null) {
 			long numOfComments = row.getNumOfComments();
-			String title = "(" + numOfComments + ")";
+			String title = Long.toString(numOfComments);
 			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getRepositotyEntryKey(), "comments", title, null, flc, Link.NONTRANSLATED);
 			commentsLink.setUserObject(row);
 			String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";

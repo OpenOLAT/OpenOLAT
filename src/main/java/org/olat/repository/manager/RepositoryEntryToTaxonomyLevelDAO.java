@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -99,6 +100,60 @@ public class RepositoryEntryToTaxonomyLevelDAO {
 					List<TaxonomyLevel> levels = levelsMap
 							.computeIfAbsent(entryRef, ref -> new ArrayList<>());
 					levels.add(entryToLevel.getTaxonomyLevel());
+				}
+		}
+		return levelsMap;
+	}
+	
+	public Map<Long,AtomicLong> getNumOfTaxonomyLevelsByEntryKeys(List<Long> entryKeys) {
+		String query = """
+			select rel from repositoryentrytotaxonomylevel rel
+			inner join rel.entry v
+			inner join rel.taxonomyLevel as level
+			where v.key in (:entryKeys)""";
+
+		TypedQuery<RepositoryEntryToTaxonomyLevel> entryToLevelsQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(query, RepositoryEntryToTaxonomyLevel.class);
+
+		Map<Long, AtomicLong> levelsMap = new HashMap<>();
+		for (List<Long> chunkOfIds : PersistenceHelper.collectionOfChunks(new ArrayList<>(entryKeys), 1)) {
+				List<RepositoryEntryToTaxonomyLevel> entryToLevels = entryToLevelsQuery
+						.setParameter("entryKeys", chunkOfIds)
+						.getResultList();
+				for(RepositoryEntryToTaxonomyLevel entryToLevel:entryToLevels) {
+					AtomicLong levels = levelsMap
+							.computeIfAbsent(entryToLevel.getEntry().getKey(), ref -> new AtomicLong(0l));
+					levels.incrementAndGet();
+				}
+		}
+		return levelsMap;
+	}
+	
+	public Map<RepositoryEntryRef,AtomicLong> getNumOfTaxonomyLevels(List<? extends RepositoryEntryRef> entries) {
+		String sb = """
+				select rel from repositoryentrytotaxonomylevel rel
+				inner join rel.entry v
+				inner join rel.taxonomyLevel as level
+				where v.key in (:entryKeys)""";
+		
+		List<Long> entryKeys = entries.stream()
+				.map(RepositoryEntryRef::getKey)
+				.collect(Collectors.toList());
+		Map<Long,RepositoryEntryRef> entryMap = entries.stream()
+				.collect(Collectors.toMap(RepositoryEntryRef::getKey, Function.identity(), (u, v) -> u));
+		TypedQuery<RepositoryEntryToTaxonomyLevel> entryToLevelsQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, RepositoryEntryToTaxonomyLevel.class);
+
+		Map<RepositoryEntryRef, AtomicLong> levelsMap = new HashMap<>();
+		for (List<Long> chunkOfIds : PersistenceHelper.collectionOfChunks(new ArrayList<>(entryKeys), 1)) {
+				List<RepositoryEntryToTaxonomyLevel> entryToLevels = entryToLevelsQuery
+						.setParameter("entryKeys", chunkOfIds)
+						.getResultList();
+				for(RepositoryEntryToTaxonomyLevel entryToLevel:entryToLevels) {
+					RepositoryEntryRef entryRef = entryMap.get(entryToLevel.getEntry().getKey());
+					AtomicLong levels = levelsMap
+							.computeIfAbsent(entryRef, ref -> new AtomicLong(0l));
+					levels.incrementAndGet();
 				}
 		}
 		return levelsMap;

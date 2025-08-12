@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
@@ -412,6 +413,9 @@ public interface RepositoryService {
 	 * @return A map entries to taxonomy level
 	 */
 	public Map<RepositoryEntryRef,List<TaxonomyLevel>> getTaxonomy(List<? extends RepositoryEntryRef> entries, boolean fetchParents);
+	
+	public Map<RepositoryEntryRef,AtomicLong> getNumOfTaxonomyLevels(List<? extends RepositoryEntryRef> entries);
+	
 	
 	/**
 	 * Add a link between a taxonomy level and the specified repository entry.

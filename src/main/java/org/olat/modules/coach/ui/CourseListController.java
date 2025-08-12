@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -86,6 +87,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -96,7 +98,6 @@ import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -150,6 +151,8 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ASSESSMENT = "assessment";
 	private static final String CMD_INFOS = "infos";
+	private static final String CMD_LEVELS = "levels";
+	private static final String CMD_COMMENTS = "comments";
 	
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
@@ -384,7 +387,7 @@ public class CourseListController extends FormBasicController implements Activat
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> list = null;
 		if(rowObject instanceof CourseStatEntryRow entryRow) {
-			list = new ArrayList<>(7);
+			list = new ArrayList<>(8);
 			list.add(entryRow.getSelectLink().getComponent());
 			list.add(entryRow.getMarkLink().getComponent());
 			list.add(entryRow.getInfosLink().getComponent());
@@ -394,6 +397,9 @@ public class CourseListController extends FormBasicController implements Activat
 			}
 			if(entryRow.getCommentsLink() != null) {
 				list.add(entryRow.getCommentsLink().getComponent());
+			}
+			if(entryRow.getTaxonomyLevelsLink() != null) {
+				list.add(entryRow.getTaxonomyLevelsLink().getComponent());
 			}
 		}
 		return list;
@@ -419,11 +425,12 @@ public class CourseListController extends FormBasicController implements Activat
 	}
 	
 	private void loadTaxonomy(List<CourseStatEntryRow> rows) {
-		Map<RepositoryEntryRef,List<TaxonomyLevel>> taxonomy = repositoryService.getTaxonomy(rows, false);
+		Map<RepositoryEntryRef, AtomicLong> taxonomy = repositoryService.getNumOfTaxonomyLevels(rows);
 		for(CourseStatEntryRow row:rows) {
-			List<TaxonomyLevel> levels = taxonomy.get(row);
-			int numOfLevels = levels == null ? 0 : levels.size();
+			AtomicLong levels = taxonomy.get(row);
+			long numOfLevels = levels == null ? 0 : levels.get();
 			row.setNumOfTaxonomyLevels(numOfLevels);
+			forgeTaxonomyLevels(row);
 		}
 	}
 	
@@ -442,7 +449,10 @@ public class CourseListController extends FormBasicController implements Activat
 		}
 		
 		if(StringHelper.containsNonWhitespace(entry.getRepoTechnicalType())) {
-			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getRepoTechnicalType()), getLocale());
+			NodeAccessType type = NodeAccessType.of(entry.getRepoTechnicalType());
+			String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
+					? translate("CourseModule")
+					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 			row.setTranslatedTechnicalType(translatedType);
 		}
 		
@@ -479,13 +489,26 @@ public class CourseListController extends FormBasicController implements Activat
 		if(!repositoryModule.isCommentEnabled()) return;
 		
 		long numOfComments = entry.getNumOfComments();
-		String title = "(" + numOfComments + ")";
-		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), CMD_INFOS, title, tableEl, Link.NONTRANSLATED);
+		String title = Long.toString(numOfComments);
+		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), CMD_COMMENTS, title, tableEl, Link.NONTRANSLATED);
 		commentsLink.setUserObject(row);
 		String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
 		commentsLink.setCustomEnabledLinkCSS("o_comments");
 		commentsLink.setIconLeftCSS(css);
 		row.setCommentsLink(commentsLink);
+	}
+	
+	private void forgeTaxonomyLevels(CourseStatEntryRow row) {
+		if(row.getNumOfTaxonomyLevels() <= 0) return;
+		
+		long numOfLevels = row.getNumOfTaxonomyLevels();
+		String title = Long.toString(numOfLevels);
+		FormLink levelsLink = uifactory.addFormLink("levels_" + row.getKey(), CMD_LEVELS, title, tableEl, Link.NONTRANSLATED);
+		levelsLink.setUserObject(row);
+		String css = numOfLevels > 1 ? "o_icon o_icon_tags" : "o_icon o_icon_tag";
+		levelsLink.setCustomEnabledLinkCSS("o_taxonomy_levels");
+		levelsLink.setIconLeftCSS(css);
+		row.setTaxonomyLevelsLink(levelsLink);
 	}
 	
 	private void forgeActionsLinks(CourseStatEntryRow row) {
@@ -564,7 +587,13 @@ public class CourseListController extends FormBasicController implements Activat
 					doOpenAssessmentTool(ureq, courseStat);
 				} else if(CMD_INFOS.equals(se.getCommand())) {
 					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
-					doOpenCourseInfos(ureq, courseStat);
+					doOpenCourseInfos(ureq, courseStat, null);
+				} else if(CMD_COMMENTS.equals(se.getCommand())) {
+					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
+					doOpenCourseInfos(ureq, courseStat, "[Comments:0]");
+				} else if(CMD_LEVELS.equals(se.getCommand())) {
+					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
+					doOpenCourseInfos(ureq, courseStat, "[Taxonomy:0]");
 				} else if(ActionsCellRenderer.CMD_ACTIONS.equals(se.getCommand())) {
 					String targetId = ActionsCellRenderer.getId(se.getIndex());
 					CourseStatEntryRow selectedRow = tableModel.getObject(se.getIndex());
@@ -585,7 +614,11 @@ public class CourseListController extends FormBasicController implements Activat
 			} else if(CMD_SELECT.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
 				doOpenCourse(ureq, row);
 			} else if(CMD_INFOS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
-				doOpenCourseInfos(ureq, row);
+				doOpenCourseInfos(ureq, row, null);
+			} else if(CMD_COMMENTS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
+				doOpenCourseInfos(ureq, row, "[Comments:0]");
+			} else if(CMD_LEVELS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
+				doOpenCourseInfos(ureq, row, "[Taxonomy:0]");
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -630,8 +663,11 @@ public class CourseListController extends FormBasicController implements Activat
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doOpenCourseInfos(UserRequest ureq, CourseStatEntryRow courseStat) {
+	private void doOpenCourseInfos(UserRequest ureq, CourseStatEntryRow courseStat, String additionalBusinessPath) {
 		String businessPath = "[RepositoryEntry:" + courseStat.getKey() +"][Infos:0]";
+		if(StringHelper.containsNonWhitespace(additionalBusinessPath)) {
+			businessPath += additionalBusinessPath;
+		}
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
@@ -709,7 +745,7 @@ public class CourseListController extends FormBasicController implements Activat
 				doOpenAssessmentTool(ureq, row);
 			} else if(infosLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doOpenCourseInfos(ureq, row);
+				doOpenCourseInfos(ureq, row, null);
 			}
 		}
 	}

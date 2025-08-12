@@ -47,7 +47,7 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	private String thumbnailRelPath;
 	private String translatedTechnicalType;
 	
-	private int numOfTaxonomyLevels;
+	private long numOfTaxonomyLevels;
 	private final RepositoryEntryEducationalType educationalType;
 	
 	private FormLink markLink;
@@ -56,6 +56,7 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	private FormLink infosLink;
 	private FormItem ratingFormItem;
 	private FormLink commentsLink;
+	private FormLink taxonomyLevelsLink;
 	
 	public CourseStatEntryRow(CourseStatEntry entry, RepositoryEntryEducationalType educationalType) {
 		this.entry = entry;
@@ -95,11 +96,11 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 		return RepositoyUIFactory.getI18nKey(educationalType);
 	}
 
-	public int getNumOfTaxonomyLevels() {
+	public long getNumOfTaxonomyLevels() {
 		return numOfTaxonomyLevels;
 	}
 
-	public void setNumOfTaxonomyLevels(int numOfTaxonomyLevels) {
+	public void setNumOfTaxonomyLevels(long numOfTaxonomyLevels) {
 		this.numOfTaxonomyLevels = numOfTaxonomyLevels;
 	}
 
@@ -152,6 +153,10 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 			}
 		}
 		return isCurrent;
+	}
+	
+	public boolean isClosed() {
+		return entry.getRepoStatus() == null ? true : entry.getRepoStatus().decommissioned();
 	}
 
 	public Date getLifecycleStart() {
@@ -349,4 +354,15 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 		this.commentsLink = commentsLink;
 	}
 	
+	public FormLink getTaxonomyLevelsLink() {
+		return taxonomyLevelsLink;
+	}
+	
+	public String getTaxonomyLevelsLinkName() {
+		return taxonomyLevelsLink == null ? null : taxonomyLevelsLink.getComponent().getComponentName();
+	}
+
+	public void setTaxonomyLevelsLink(FormLink taxonomyLevelsLink) {
+		this.taxonomyLevelsLink = taxonomyLevelsLink;
+	}
 }

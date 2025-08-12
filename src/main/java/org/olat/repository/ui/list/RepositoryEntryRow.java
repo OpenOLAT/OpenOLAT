@@ -29,7 +29,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -62,10 +61,11 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private String thumbnailRelPath;
 	private final RepositoryEntryStatusEnum status;
 	private final boolean publicVisible;
+	private long numOfTaxonomyLevels;
 	
-	private final String score;
-	private final Boolean passed;
-	private final Double completion;
+	private String score;
+	private Boolean passed;
+	private Double completion;
 	private ProgressBarItem completionItem;
 	
 	private boolean member;
@@ -83,13 +83,13 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	private List<PriceMethod> accessTypes;
 	private String accessInfo;
-	private List<TaxonomyLevelNamePath> taxonomyLevels;
 	
 	private FormLink markLink;
 	private FormLink selectLink;
 	private FormLink startLink;
 	private FormLink detailsLink;
 	private FormLink commentsLink;
+	private FormLink taxonomyLevelsLink;
 	
 	private OLATResourceable olatResource;
 	private FormItem ratingFormItem;
@@ -113,12 +113,13 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		//bookmark
 		setMarked(entry.isMarked());
 		
-		//efficiency statement
-		passed = entry.getPassed();
-		score = AssessmentHelper.getRoundedScore(entry.getScore());
-		
-		// Assessment entry
-		completion = entry.getCompletion();
+		if(RepositoryEntryStatusEnum.isInArray(status, RepositoryEntryStatusEnum.publishedAndClosed())) {
+			// Efficiency statement
+			passed = entry.getPassed();
+			score = AssessmentHelper.getRoundedScore(entry.getScore());
+			// Assessment entry
+			completion = entry.getCompletion();
+		}
 		
 		//rating
 		myRating = entry.getMyRating();
@@ -289,6 +290,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	}
 	
 	public FormLink getStartLink() {
+		startLink.setDomReplacementWrapperRequired(false);
 		return startLink;
 	}
 
@@ -346,6 +348,18 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public void setCommentsLink(FormLink commentsLink) {
 		this.commentsLink = commentsLink;
 	}
+	
+	public FormLink getTaxonomyLevelsLink() {
+		return taxonomyLevelsLink;
+	}
+	
+	public String getTaxonomyLevelsLinkName() {
+		return taxonomyLevelsLink == null ? null : taxonomyLevelsLink.getComponent().getComponentName();
+	}
+
+	public void setTaxonomyLevelsLink(FormLink taxonomyLevelsLink) {
+		this.taxonomyLevelsLink = taxonomyLevelsLink;
+	}
 
 	public OLATResourceable getRepositoryEntryResourceable() {
 		return OresHelper.createOLATResourceableInstance("RepositoryEntry", getKey());
@@ -395,16 +409,12 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return thumbnailRelPath;
 	}
 	
-	public List<TaxonomyLevelNamePath> getTaxonomyLevels() {
-		return taxonomyLevels;
+	public long getNumOfTaxonomyLevels() {
+		return numOfTaxonomyLevels;
 	}
 	
-	public void setTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
-		this.taxonomyLevels = taxonomyLevels;
-	}
-	
-	public int getNumOfTaxonomyLevels() {
-		return taxonomyLevels == null ? 0 : taxonomyLevels.size();
+	public void setNumOfTaxonomyLevels(long numOfTaxonomyLevels) {
+		this.numOfTaxonomyLevels = numOfTaxonomyLevels;
 	}
 
 	public String getTranslatedTechnicalType() {

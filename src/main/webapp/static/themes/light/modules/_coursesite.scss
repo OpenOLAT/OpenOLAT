@@ -50,11 +50,11 @@
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					height: $o-coursesite-rowelem-height-sm + (2 * $o-coursesite-rowelem-space-sm);	
-					padding: $o-coursesite-rowelem-space-sm;
+					padding: $o-coursesite-rowelem-space-sm 0;
 				}
 				@media (max-width: $screen-xs-max) { 
 					height: $o-coursesite-rowelem-height-xs + (2 * $o-coursesite-rowelem-space-xs) + 2px;	
-					padding: $o-coursesite-rowelem-space-xs;
+					padding: $o-coursesite-rowelem-space-xs 0;
 				}	
 			}
 									
@@ -96,7 +96,7 @@
 				}
 	
 				.o_title {
-					margin: 0.2em 0 0.1em 0; /* box moves down otherwise, replaced with padding */
+					margin: 0 0 0.1em 0; /* box moves down otherwise, replaced with padding */
 					position: relative;
 					line-height: 1.2;
 					font-size: 21px;
@@ -111,19 +111,32 @@
 						}				
 					}
 				}
+				.o_educational_type {
+					font-size: 70%;
+				}
+				.o_with_certificate, .o_with_creditpoint {
+					font-size: 70%;
+					margin-top: auto;
+				}
+				.o_teaser {
+					margin-top: -5px;	
+				}
 				.o_author{
 					color: $o-coursesite-meta-author-color;
 				}
 				.o_closed {
 					display: inline-block;
 				}
+				.o_education {
+					margin-top: 0.5em;
+				}
+				.o_education + .o_lifecycle {
+					margin-top: 4px;
+				}
 				.o_lifecycle {
 					margin: 0.5em 0;
 					line-height: normal;
 					color: $text-muted;
-					&:not(.o_active) .o_lifecycle_date {
-						color: $state-danger-text;
-					}
 					.o_lifecycle_date, .o_lifecycle_location {
 						display: inline;
 					}
@@ -175,6 +188,7 @@
 				@media (max-width: $screen-xs-max) { 
 					.o_title {
 						line-height: $o-coursesite-rowelem-height-xs;
+						font-size: 18px;
 						margin-top: 0;
 						a {
 							border-right:math.floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
@@ -210,6 +224,9 @@
 			}
 			
 			.o_performance {
+				.o_spacer {
+					margin: 0 0.4em;
+				}
 				.o_spacer:first-child {
 					display:none,
 				}
@@ -332,6 +349,14 @@
 							}
 							.o_icon_details {
 								display: inline;
+							}		
+							&.o_in_preparation {
+								> span {
+									display: inline;
+								}
+								.o_icon_details {
+									display: none;
+								}	
 							}
 						}
 					}
@@ -355,6 +380,11 @@
 					}					
 					.o_details {
 						right: floor($o-coursesite-rowelem-width-sm * 0.5);
+					}		
+					.o_details.o_in_preparation {
+						width: auto;
+						padding-left: $padding-small-horizontal;
+						padding-right: $padding-small-horizontal;
 					}
 				}
 				@media (max-width: $screen-xs-max) { 

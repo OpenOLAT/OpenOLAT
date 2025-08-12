@@ -699,7 +699,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doSettings(ureq, subEntries);
 			} else if("Infos".equalsIgnoreCase(type)) {
-				doDetails(ureq);	
+				Activateable2 activateable = doDetails(ureq);
+				if(activateable != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					activateable.activate(ureq, subEntries, state);
+				}
 			}
 		}
 
@@ -1096,7 +1100,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void doDetails(UserRequest ureq) {
+	protected Activateable2 doDetails(UserRequest ureq) {
 		WindowControl bwControl = getSubWindowControl("Infos");
 		
 		RepositoryEntry entry = loadRepositoryEntry();
@@ -1110,6 +1114,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;
+		return detailsCtrl instanceof Activateable2 activateable ? activateable : null;
 	}
 	
 	// Perhaps check 

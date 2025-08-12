@@ -86,7 +86,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			case "inputgroupaddon":
 				renderInputGroupAddonLayout(renderer, sb, source, ubu, translator, renderResult, args);
 				break;
-			default:
+			default:// nolayout
 				renderNoLayout(renderer, sb, source, ubu, translator, renderResult, args);
 				break;
 		}

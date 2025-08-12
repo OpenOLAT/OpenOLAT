@@ -34,7 +34,7 @@
 		</div>
 		#end
 
-		<div class="o_flex_block_one_line_left">
+		<div class="o_flex_block_one_line_left o_education">
 		#if($row.getEducationalType())
 		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
@@ -46,7 +46,9 @@
 		</div>
 		
 		#if($row.closed)
-			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
+			<div class="o_flex_block_one_line_left">
+				<span class="o_warning o_closed">$r.translate("close.ressource.warning")</span>
+			</div>
 		#else
 			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
 				<div class="o_lifecycle #if ($row.isActive()) o_active #end o_flex_block_one_line_left">
@@ -64,11 +66,11 @@
 						#end</div>
 					#end
 					#if($row.location  && !${row.location.isEmpty()})
+						#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+							<span class="o_spacer">&middot;</span>
+						#end
 						<div class="o_lifecycle_location o_flex_item_max">
-							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-								<span class="o_spacer">&middot;</span>
-							#end
-							<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($row.location)
+							<i class="o_icon o_icon_location"> </i> $r.escapeHtml($row.location)
 						</div>
 					#end
 				</div>
@@ -130,12 +132,11 @@
 				$r.render($row.commentsLinkName)
 			</div>
 			#end
-			#if($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels == 1)
+			#if($r.isNotNull($row.taxonomyLevelsLinkName))
 				<div class="o_spacer">&#124;</div>
-				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tag"> </i> $row.numOfTaxonomyLevels</div>
-			#elseif($r.isNotNull($row.numOfTaxonomyLevels) && $row.numOfTaxonomyLevels > 1)
-				<div class="o_spacer">&#124;</div>
-				<div class="o_repo_taxonomy"><i class="o_icon o_icon_tags"> </i> $row.numOfTaxonomyLevels</div>
+				<div class="o_repo_taxonomy">
+					$r.render($row.taxonomyLevelsLinkName)
+				</div>
 			#end
 			#if($r.isNotEmpty($row.markLinkName))
 				<div class="o_spacer">&#124;</div>
@@ -152,7 +153,7 @@
 		<div class="o_actions">
 			$r.render($row.getDetailsLinkName())
 			#if($row.getStartLinkName())
-				$r.render($row.getStartLinkName())
+				$r.render($row.getStartLinkName(), "nolayout")
 			#end
 		</div>
 	</div>	
