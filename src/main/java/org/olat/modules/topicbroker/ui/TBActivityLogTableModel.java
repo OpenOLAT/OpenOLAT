@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -74,7 +75,9 @@ public class TBActivityLogTableModel extends DefaultFlexiTableDataModel<TBActivi
 				DateRange range = getRange(filters);
 				Set<TBActivityLogContext> contexts = getContexts(filters);
 				Set<String> activities = getActivities(filters);
-				Set<Long> identityKeys = getIdentitiyKeys(filters);
+				Set<Long> participantKeys = getKeys(filters, TBActivityLogController.FILTER_PARTICIPANT);
+				Set<Long> topicKeys = getKeys(filters, TBActivityLogController.FILTER_TOPIC);
+				Set<Long> identityKeys = getKeys(filters, TBActivityLogController.FILTER_IDENTITY);
 				
 				List<TBActivityLogRow> filteredRows = new ArrayList<>(backups.size());
 				for (TBActivityLogRow row:backups) {
@@ -82,7 +85,9 @@ public class TBActivityLogTableModel extends DefaultFlexiTableDataModel<TBActivi
 							&& acceptDateRange(row, range)
 							&& acceptContext(row, contexts)
 							&& acceptActivities(row, activities)
-							&& acceptIdentities(row, identityKeys) ;
+							&& acceptKeys(row, participantKeys, TBActivityLogRow::getParticipantKey)
+							&& acceptKeys(row, topicKeys, TBActivityLogRow::getTopicKey)
+							&& acceptKeys(row, identityKeys, TBActivityLogRow::getIdentityKey);
 					if (accept) {
 						filteredRows.add(row);
 					}
@@ -97,7 +102,7 @@ public class TBActivityLogTableModel extends DefaultFlexiTableDataModel<TBActivi
 			if(!StringHelper.containsNonWhitespace(searchString)) {
 				return true;
 			}
-			return row.getDoerDisplayName() != null && row.getDoerDisplayName().toLowerCase().contains(searchString);
+			return row.getObject() != null && row.getObject().toLowerCase().contains(searchString);
 		}
 		
 		private boolean acceptDateRange(TBActivityLogRow row, DateRange range) {
@@ -158,21 +163,22 @@ public class TBActivityLogTableModel extends DefaultFlexiTableDataModel<TBActivi
 			return null;
 		}
 		
-		private boolean acceptIdentities(TBActivityLogRow row, Set<Long> identityKeys) {
-			if (identityKeys == null || identityKeys.isEmpty()) {
+		private <T> boolean acceptKeys(T row, Set<Long> keys, Function<T, Long> keyExtractor) {
+			if (keys == null || keys.isEmpty()) {
 				return true;
 			}
-			if (row.getIdentityKey() == null) {
+			Long key = keyExtractor.apply(row);
+			if (key == null) {
 				return false;
 			}
-			return identityKeys.contains(row.getIdentityKey());
+			return keys.contains(key);
 		}
 		
-		private Set<Long> getIdentitiyKeys(List<FlexiTableFilter> filters) {
-			FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, TBActivityLogController.FILTER_IDENTITY);
-			if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+		private Set<Long> getKeys(List<FlexiTableFilter> filters, String filterKey) {
+			FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterKey);
+			if (filter instanceof FlexiTableExtendedFilter extendedFilter) {
 				List<String> values = extendedFilter.getValues();
-				if(values != null && !values.isEmpty()) {
+				if (values != null && !values.isEmpty()) {
 					return values.stream()
 							.map(Long::valueOf)
 							.collect(Collectors.toSet());

@@ -198,9 +198,10 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	@Override
-	protected void doDetails(UserRequest ureq) {
-		super.doDetails(ureq);
+	protected Activateable2 doDetails(UserRequest ureq) {
+		Activateable2 ctrl = super.doDetails(ureq);
 		enableRuntimeNavBar(false);
+		return ctrl;
 	}
 
 	@Override

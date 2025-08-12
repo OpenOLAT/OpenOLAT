@@ -35,7 +35,7 @@
 		</div>
 		#end
 		
-		<div class="o_flex_block_one_line_left">
+		<div class="o_flex_block_one_line_left o_education">
 		#if($row.getEducationalType())
 		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
@@ -72,12 +72,12 @@
 							#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
 						#end</div>
 					#end
-					#if($row.location  && !${row.location.isEmpty()})
+					#if($r.isNotEmpty($row.location))
+						#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+							<span class="o_spacer">&middot;</span>
+						#end
 						<div class="o_lifecycle_location o_flex_item_max">
-							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-								<span class="o_spacer">&middot;</span>
-							#end
-							<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($row.location)
+							<i class="o_icon o_icon_location"> </i> $r.escapeHtml($row.location)
 						</div>
 					#end
 				</div>

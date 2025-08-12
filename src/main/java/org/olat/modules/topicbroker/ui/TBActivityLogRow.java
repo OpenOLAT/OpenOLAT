@@ -36,6 +36,8 @@ public class TBActivityLogRow {
 	private String valueOriginal;
 	private String valueNew;
 	private String doerDisplayName;
+	private Long participantKey;
+	private Long topicKey;
 	private Long identityKey;
 	
 	public Date getDate() {
@@ -92,6 +94,22 @@ public class TBActivityLogRow {
 	
 	public void setDoerDisplayName(String doerDisplayName) {
 		this.doerDisplayName = doerDisplayName;
+	}
+
+	public Long getParticipantKey() {
+		return participantKey;
+	}
+
+	public void setParticipantKey(Long participantKey) {
+		this.participantKey = participantKey;
+	}
+
+	public Long getTopicKey() {
+		return topicKey;
+	}
+
+	public void setTopicKey(Long topicKey) {
+		this.topicKey = topicKey;
 	}
 
 	public Long getIdentityKey() {

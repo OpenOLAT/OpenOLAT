@@ -33,9 +33,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
@@ -58,7 +62,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  * 
  */
-public abstract class RepositoryEntryDetailsController extends BasicController {
+public abstract class RepositoryEntryDetailsController extends BasicController implements Activateable2 {
 
 	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryDetailsController.class);
 	
@@ -69,9 +73,11 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 	private RepositoryEntryDetailsBenefitsController benefitsCtrl;
+	private UserCommentsAndRatingsController userCommentsCtrl;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
+	private final boolean guestOnly;
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -86,6 +92,9 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		UserSession usess = ureq.getUserSession();
+		guestOnly = usess.getRoles() == null || usess.getRoles().isGuestOnly();
+		
 		List<String> memberRoles = getIdentity() != null? repositoryService.getRoles(getIdentity(), entry): List.of();
 		boolean isOwner = memberRoles.contains(GroupRoles.owner.name());
 		boolean isParticipant = memberRoles.contains(GroupRoles.participant.name());
@@ -103,7 +112,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, closeTabOnLeave);
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
-			boolean guestOnly = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, guestOnly);
 		}
 		
@@ -124,7 +132,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		mainVC.put("link", linkCtrl.getInitialComponent());
 
 		if (repositoryModule.isCommentEnabled()) {
-			UserCommentsAndRatingsController userCommentsCtrl = initCommentsCtrl(ureq);
+			userCommentsCtrl = initCommentsCtrl(ureq);
 			mainVC.put("comments", userCommentsCtrl.getInitialComponent());
 		}
 
@@ -159,13 +167,21 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	}
 
 	private UserCommentsAndRatingsController initCommentsCtrl(UserRequest ureq) {
-		boolean anonym = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
-		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
+		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, guestOnly);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
 		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), true, true);
-
 		listenTo(commentsCtrl);
 		return commentsCtrl;
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Comments".equalsIgnoreCase(type) && userCommentsCtrl != null) {
+			userCommentsCtrl.scrollToCommentsArea();
+		}
 	}
 
 	@Override

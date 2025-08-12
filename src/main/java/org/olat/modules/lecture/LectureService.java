@@ -22,6 +22,7 @@ package org.olat.modules.lecture;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
@@ -718,6 +719,8 @@ public interface LectureService {
 	
 	public List<TaxonomyLevel> getTaxonomy(LectureBlockRef lectureBlock);
 	
+	public void updateTaxonomyLevels(LectureBlock lectureBlock, Set<Long> taxonomyLevelKeys);
+
 	/**
 	 * 
 	 * @param level The taxonomy level to search for

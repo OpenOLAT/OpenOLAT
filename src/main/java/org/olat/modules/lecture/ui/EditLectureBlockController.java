@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
@@ -91,11 +92,13 @@ import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -103,7 +106,12 @@ import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
@@ -138,6 +146,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private FormLink editOnlineMeetingButton;
 	private SingleSelection onlineMeetingEl;
 	private FormToggle enabledOnlineMeetingEl;
+	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
 	private TextElement onlineMeetingProviderUrlEl;
@@ -192,6 +201,12 @@ public class EditLectureBlockController extends FormBasicController {
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
@@ -386,6 +401,21 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		updateOnlineMeetingUI();
 		
+		// Subjects
+		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
+		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
+			Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
+			Set<TaxonomyLevel> taxonomyLevels = lectureBlock == null ? Set.of() : lectureBlock.getTaxonomyLevels()
+					.stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toSet());
+			
+			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", "lecture.subjects", 
+					formLayout, getWindowControl(), allTaxonomyLevels);
+			taxonomyLevelEl.setDisplayNameHeader(translate("lecture.subjects"));
+			taxonomyLevelEl.setSelection(taxonomyLevels);
+			taxonomyLevelEl.setEnabled(!readOnly && !lectureManagementManaged && 
+					!LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.subjects));
+		}
+		
 		// Teachers
 		possibleTeachersList = loadTeachers();
 		SelectionValues teachersPK = new SelectionValues();
@@ -415,16 +445,6 @@ public class EditLectureBlockController extends FormBasicController {
 		} 
 		if(!found && !teachersPK.isEmpty() && (lectureBlock == null || lectureBlock.getKey() == null)) {
 			teacherEl.selectAll();
-		}
-		
-		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);
-		if(!levels.isEmpty()) {
-			StringBuilder sb = new StringBuilder();
-			for(TaxonomyLevel level:levels) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
-			}
-			uifactory.addStaticTextElement("lecture.taxonomy", sb.toString(), formLayout);
 		}
 
 		String description = lectureBlock == null ? "" : lectureBlock.getDescription();
@@ -765,6 +785,7 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
 		
 		if(addLectureCtxt != null) {
+			addLectureCtxt.setTaxonomyLevelKeys(getSelectedTaxonomyLevelKeys());
 			addLectureCtxt.setTeachers(getSelectedTeachers());
 			addLectureCtxt.setLectureBlock(lectureBlock);
 			boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn();
@@ -772,6 +793,7 @@ public class EditLectureBlockController extends FormBasicController {
 			addLectureCtxt.setWithTeamsMeeting(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
 		} else {
 			updateOnlineMeetings();
+			lectureService.updateTaxonomyLevels(lectureBlock, getSelectedTaxonomyLevelKeys());
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 			
 			synchronizeTeachers(audit);
@@ -847,6 +869,13 @@ public class EditLectureBlockController extends FormBasicController {
 			lectureBlock.setMeetingTitle(null);
 			lectureBlock.setMeetingUrl(null);
 		}
+	}
+	
+	private Set<Long> getSelectedTaxonomyLevelKeys() {
+		if (taxonomyLevelEl == null) {
+			return null;
+		}
+		return taxonomyLevelEl.getSelection().stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toSet());
 	}
 	
 	private void synchronizeTeachers(StringBuilder audit) {

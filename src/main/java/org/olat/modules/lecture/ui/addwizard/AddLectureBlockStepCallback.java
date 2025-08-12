@@ -94,6 +94,8 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 		updateOnlineMeetings(lectureBlock);
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
+		lectureService.updateTaxonomyLevels(lectureBlock, addLectureCtxt.getTaxonomyLevelKeys());
+
 		List<Identity> selectedTeachers = addLectureCtxt.getTeachers();
 		for(Identity teacher:selectedTeachers) {
 			lectureService.addTeacher(lectureBlock, teacher);

@@ -37,10 +37,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -288,14 +287,17 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(uifactory.getMapperThumbnailUrl() , image));
 			}
 			
+			String translatedType;
 			if(StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
-				String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.getTechnicalType()), locale);
-				row.setTranslatedTechnicalType(translatedType);
+				NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
+				translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
+						? uifactory.getTranslator().translate("CourseModule")
+						: nodeAccessService.getNodeAccessTypeName(type, locale);
+			} else {
+				translatedType = uifactory.getTranslator().translate(row.getOLATResourceable().getResourceableTypeName());
 			}
-			
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(uifactory.getTranslator(), entry.getTaxonomyLevels());
-			row.setTaxonomyLevels(taxonomyLevels);
-
+			row.setTranslatedTechnicalType(translatedType);
+			row.setNumOfTaxonomyLevels(entry.getNumOfTaxonomyLevels());
 			row.setMember(repoKeys.contains(entry.getKey()));
 			
 			List<PriceMethod> types = new ArrayList<>(3);
@@ -329,6 +331,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			uifactory.forgeDetails(row);
 			uifactory.forgeRatings(row);
 			uifactory.forgeComments(row);
+			uifactory.forgeTaxonomyLevels(row);
 			
 			items.add(row);
 		}

@@ -48,6 +48,8 @@ public interface RepositoryEntryDataSourceUIFactory {
 	
 	public void forgeComments(RepositoryEntryRow row);
 	
+	public void forgeTaxonomyLevels(RepositoryEntryRow row);
+	
 	public Translator getTranslator();
 
 }

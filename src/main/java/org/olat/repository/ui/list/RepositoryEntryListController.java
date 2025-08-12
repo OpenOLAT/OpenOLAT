@@ -26,8 +26,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
@@ -71,7 +69,6 @@ import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
-import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -268,6 +265,10 @@ public class RepositoryEntryListController extends FormBasicController
 		if(repositoryModule.isCommentEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 		}
+		
+		DefaultFlexiColumnModel levelsCol = new DefaultFlexiColumnModel(Cols.taxonomyLevels.i18nKey(), Cols.taxonomyLevels.ordinal());
+		levelsCol.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(levelsCol);
 		
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
@@ -525,9 +526,9 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
-		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent) {
+		if(source instanceof RatingWithAverageFormItem ratingItem) {
 			RepositoryEntryRow row = (RepositoryEntryRow)ratingItem.getUserObject();
-			doRating(row, ratingEvent.getRating());
+			doOpenDetails(ureq, row, "[Ratings:0]");
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			
@@ -543,18 +544,20 @@ public class RepositoryEntryListController extends FormBasicController
 				doOpen(ureq, row, null);
 			} else if ("details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row, null);
 			} else if ("select".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				if (row.isMember()) {
 					doOpen(ureq, row, null);					
 				} else {
-					doOpenDetails(ureq, row);
+					doOpenDetails(ureq, row, null);
 				}
 			} else if ("comments".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row);
-				doOpenComments(ureq, row);
+				doOpenDetails(ureq, row, "[Comments:0]");
+			} else if ("levels".equals(cmd)){
+				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
+				doOpenDetails(ureq, row, "[Taxonomy:0]");
 			}
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
@@ -564,7 +567,7 @@ public class RepositoryEntryListController extends FormBasicController
 					if (row.isMember()) {
 						doOpen(ureq, row, null);					
 					} else {
-						doOpenDetails(ureq, row);
+						doOpenDetails(ureq, row, null);
 					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
@@ -613,7 +616,7 @@ public class RepositoryEntryListController extends FormBasicController
 								if (row.isMember()) {
 									doOpen(ureq, row, null);					
 								} else {
-									doOpenDetails(ureq, row);
+									doOpenDetails(ureq, row, null);
 								}
 							}
 						}
@@ -737,10 +740,14 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 	}
 	
-	protected void doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {
+	protected void doOpenDetails(UserRequest ureq, RepositoryEntryRow row, String additionalBusinessPath) {
 		// to be more consistent: course members see info page within the course, non-course members see it outside the course
 		if (row.isMember()) {
-			doOpen(ureq, row, "[Infos:0]");
+			String path = "[Infos:0]";
+			if(StringHelper.containsNonWhitespace(additionalBusinessPath)) {
+				path += additionalBusinessPath;
+			}
+			doOpen(ureq, row, path);
 		} else {
 			removeAsListenerAndDispose(detailsCtrl);
 			
@@ -767,16 +774,6 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		stackPanel.popUpToController(this);
 		reloadRows();
-	}
-	
-	protected void doOpenComments(UserRequest ureq, RepositoryEntryRow row) {
-		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
-		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, null, secCallback);
-		commentsCtrl.setUserObject(row);
-		listenTo(commentsCtrl);
-
-		commentsCtrl.scrollToCommentsArea();
 	}
 	
 	protected boolean doMark(UserRequest ureq, RepositoryEntryRow row) {
@@ -939,13 +936,27 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeComments(RepositoryEntryRow row) {
 		if(repositoryModule.isCommentEnabled()) {
 			long numOfComments = row.getNumOfComments();
-			String title = "(" + numOfComments + ")";
+			String title = Long.toString(numOfComments);
 			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
 			commentsLink.setUserObject(row);
 			String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
 			commentsLink.setCustomEnabledLinkCSS("o_comments");
 			commentsLink.setIconLeftCSS(css);
 			row.setCommentsLink(commentsLink);
+		}
+	}
+	
+	@Override
+	public void forgeTaxonomyLevels(RepositoryEntryRow row) {
+		if(row.getNumOfTaxonomyLevels() >= 0) {
+			long numOfLevels = row.getNumOfTaxonomyLevels();
+			String title = Long.toString(numOfLevels);
+			FormLink levelsLink = uifactory.addFormLink("tlevels_" + row.getKey(), "levels", title, null, null, Link.NONTRANSLATED);
+			levelsLink.setUserObject(row);
+			String css = numOfLevels == 1 ? "o_icon o_icon_tag" : "o_icon o_icon_tags";
+			levelsLink.setCustomEnabledLinkCSS("o_taxonomy_levels");
+			levelsLink.setIconLeftCSS(css);
+			row.setTaxonomyLevelsLink(levelsLink);
 		}
 	}
 
