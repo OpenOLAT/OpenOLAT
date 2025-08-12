@@ -172,7 +172,7 @@ public interface CertificatesManager {
 	 */
 	public List<CertificateLight> getLastCertificates(BusinessGroup businessGroup);
 	
-	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date lastNews);
+	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date creationDateAfter);
 
 	public List<Certificate> getCertificates(OLATResource resource);
 	
