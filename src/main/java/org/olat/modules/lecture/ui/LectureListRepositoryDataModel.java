@@ -140,7 +140,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case onlineMeeting -> row.getOpenOnlineMeetingSmallButton();
 			case leadTime -> getTime(row.getLeadTime());
 			case followUptime -> getTime(row.getFollowupTime());
-			default -> null;
+			case subjects -> row.getSubjects();
+			case subjectPaths -> row.getSubjects();
 		};
 	}
 	
@@ -190,7 +191,9 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		entry("table.header.entry"),
 		rollCall("details"),
 		leadTime("table.header.lead.time"),
-		followUptime("table.header.followup.time");
+		followUptime("table.header.followup.time"),
+		subjects("lecture.subjects"),
+		subjectPaths("lecture.subject.paths"),;
 		
 		private final String i18nKey;
 		

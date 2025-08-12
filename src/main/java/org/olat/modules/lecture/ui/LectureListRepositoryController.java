@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.TransformerException;
 
@@ -129,6 +130,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -142,6 +144,7 @@ import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureBlockToTaxonomyLevel;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -174,6 +177,8 @@ import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
 import org.olat.modules.lecture.ui.teacher.ManageTeachersController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
@@ -183,6 +188,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.author.TaxonomyLevelRenderer;
+import org.olat.repository.ui.author.TaxonomyPathsRenderer;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -275,6 +282,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final Curriculum curriculum;
 	private final boolean lectureManagementManaged;
 	private final boolean authorizedAbsenceEnabled;
+	private final boolean taxonomyEnabled;
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
 	private final LectureListRepositoryConfig config;
@@ -308,6 +316,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
 	private LifecycleModule lifecycleModule;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
@@ -322,6 +334,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		initForm(ureq);
 		updateUI();
@@ -341,6 +354,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		initForm(ureq);
 		updateUI();
@@ -360,6 +374,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		initForm(ureq);
 		updateUI();
@@ -379,6 +394,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		taxonomyEnabled = taxonomyModule.isEnabled() && !curriculumModule.getTaxonomyRefs().isEmpty();
 		
 		initForm(ureq);
 		updateUI();
@@ -517,6 +533,18 @@ public class LectureListRepositoryController extends FormBasicController impleme
 					new YesNoCellRenderer());
 			compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
 			columnsModel.addFlexiColumnModel(compulsoryColumn);
+		}
+		
+		if (taxonomyEnabled) {
+			DefaultFlexiColumnModel subjectsColumnModel = new DefaultFlexiColumnModel(false, BlockCols.subjects.i18nHeaderKey(),
+					BlockCols.subjects.ordinal(), false, null);
+			subjectsColumnModel.setCellRenderer(new TaxonomyLevelRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(subjectsColumnModel);
+
+			DefaultFlexiColumnModel subjectPathsColumnModel = new DefaultFlexiColumnModel(false, BlockCols.subjectPaths.i18nHeaderKey(),
+					BlockCols.subjectPaths.ordinal(), false, null);
+			subjectPathsColumnModel.setCellRenderer(new TaxonomyPathsRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(subjectPathsColumnModel);
 		}
 		
 		if(config.withOnlineMeeting() != Visibility.NO) {
@@ -944,6 +972,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				block.getNumOfParticipants(), block.getLeadTime(), block.getFollowupTime(),
 				block.isAssessmentMode(), rollCallEnabled, getTranslator());
 		row.setTeachersList(teachersList);
+		row.setSubjects(block.getLectureBlock().getTaxonomyLevels().stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toList()));
+		for (TaxonomyLevel taxonomyLevel : row.getSubjects()) {
+			taxonomyLevel.getIdentifier(); // fetch taxonomy levels now to avoid reloading them later
+		}
 		
 		if(config.withOnlineMeeting() != Visibility.NO) {
 			if((b.getBBBMeeting() != null || b.getTeamsMeeting() != null)) {

@@ -37,6 +37,7 @@ import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.ui.LectureListDetailsController;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -74,7 +75,8 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	private final String entryUrl;
 	private final ZonedDateTime date;
 	private final Translator translator;
-	
+	private List<TaxonomyLevel> subjects;
+
 	public LectureBlockRow(LectureBlock lectureBlock, ZonedDateTime date,
 			String entryDisplayname, String externalRef,
 			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
@@ -346,5 +348,13 @@ public class LectureBlockRow implements LectureBlockRef, FlexiTableTimeLineRow {
 	
 	public void setDetailsController(LectureListDetailsController detailsCtrl) {
 		this.detailsCtrl = detailsCtrl;
+	}
+
+	public List<TaxonomyLevel> getSubjects() {
+		return subjects;
+	}
+
+	public void setSubjects(List<TaxonomyLevel> subjects) {
+		this.subjects = subjects;
 	}
 }
