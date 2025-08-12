@@ -218,9 +218,15 @@ public abstract class GTAAbstractController extends BasicController implements G
 	}
 
 	private void doDownloadLog(UserRequest ureq) {
-		String nodeLog = courseAssessmentService.getAuditLog(gtaNode, userCourseEnv);
-		String fileTitle = gtaNode.getShortTitle() + "-" + assessedIdentity.getKey();
-
+		String nodeLog = assessedIdentity != null
+				? courseAssessmentService.getAuditLog(gtaNode, userCourseEnv)
+				: courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedGroup);
+		String fileTitle = gtaNode.getShortTitle() + "-";
+		if(assessedIdentity != null) {
+			fileTitle += assessedIdentity.getKey().toString();
+		} else if(assessedGroup != null) {
+			fileTitle += assessedGroup.getKey().toString();
+		}
 		StringMediaResource resource = createLogMediaResource(nodeLog, fileTitle);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
