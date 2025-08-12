@@ -106,12 +106,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private VideoManager videoManager;
 
 	public ImportURLRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
-		
-		initForm(ureq);
+		this(ureq, wControl, null);
 	}
 	
 	public ImportURLRepositoryEntryController(UserRequest ureq, WindowControl wControl, String[] limitTypes) {

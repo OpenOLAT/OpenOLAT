@@ -148,7 +148,7 @@ public class FeedNodeConfigsController extends BasicController implements Refere
 			// remove post/create items right configuration if the feed is external
 			if (feedEntry != null) {
 				Feed feed = feedManager.loadFeed(feedEntry.getOlatResource());
-				if (feed.isExternal()) {
+				if (feed != null && feed.isExternal()) {
 					nodeRightTypes.remove(AbstractFeedCourseNode.NODE_RIGHT_TYPES.stream().filter(r -> r.getIdentifier().equals("post")).findFirst().orElse(null));
 				}
 			} else {
