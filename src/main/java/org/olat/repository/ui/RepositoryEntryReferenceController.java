@@ -502,7 +502,13 @@ public class RepositoryEntryReferenceController extends BasicController {
 		Confirm confirmation = referenceProvider.confirmCanReplace(ureq);
 		if(confirmation.canReplace()) {
 			removeAsListenerAndDispose(importCtrl);
-			importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl());
+			
+			String[] resourceTypes = null;
+			List<String> resourceTypesList = referenceProvider.getResourceTypes();
+			if(resourceTypesList != null && !resourceTypesList.isEmpty()) {
+				resourceTypes = resourceTypesList.toArray(new String[resourceTypesList.size()]);
+			}
+			importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl(), resourceTypes);
 			listenTo(importUrlCtrl);
 			
 			removeAsListenerAndDispose(cmc);
