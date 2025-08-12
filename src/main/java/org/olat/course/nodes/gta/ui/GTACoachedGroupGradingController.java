@@ -339,16 +339,23 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(assessmentDocsCtrl == source) {
+			// Do nothing
+			assessmentDocsCalloutCtrl.deactivate();
+		} else if(cmc == source || assessmentDocsCalloutCtrl == source) {
 			cleanUp();
-		}
+		} 
 		
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(assessmentDocsCalloutCtrl);
+		removeAsListenerAndDispose(assessmentDocsCtrl);
 		removeAsListenerAndDispose(assessmentCtrl);
 		removeAsListenerAndDispose(cmc);
+		assessmentDocsCalloutCtrl = null;
+		assessmentDocsCtrl = null;
 		assessmentCtrl = null;
 		cmc = null;
 	}
@@ -408,7 +415,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		removeAsListenerAndDispose(assessmentDocsCtrl);
 		
 		OLATResource courseOres = courseEnv.getCourseGroupManager().getCourseResource();
-		assessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, true);
+		assessmentDocsCtrl = new EditAssessmentDocumentController(ureq, getWindowControl(), courseOres, gtaNode, row, true, true);
 		listenTo(assessmentDocsCtrl);
 		assessmentDocsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				assessmentDocsCtrl.getInitialComponent(), row.getAssessmentDocsTooltipLink().getFormDispatchId(),
