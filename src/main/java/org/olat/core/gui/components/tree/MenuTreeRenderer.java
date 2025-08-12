@@ -368,7 +368,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		
 		// Add menu item title as alt hoover text
 		String alt = curRoot.getAltText();
-		if (alt != null) {
+		if (StringHelper.containsNonWhitespace(alt) && StringHelper.containsNonWhitespace(curRoot.getTitle()) && !alt.equalsIgnoreCase(curRoot.getTitle())) {
 			target.append(" title=\"")
 			      .appendHtmlEscaped(alt)
 			      .append("\"");
