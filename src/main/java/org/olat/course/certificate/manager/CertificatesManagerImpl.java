@@ -153,7 +153,6 @@ import org.olat.user.UserManager;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.propertyhandlers.DatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -523,7 +522,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date lastNews) {
+	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date creationDateAfter) {
 		Roles roles = securityManager.getRoles(identity);
 		RepositoryEntrySecurity security = repositoryManager.isAllowed(identity, roles, entry);
 		if(!security.isEntryAdmin() && !security.isCoach() && !security.isParticipant()) {
@@ -534,6 +533,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.append("select cer from certificate cer")
 		  .append(" inner join fetch cer.identity ident")
 		  .append(" where cer.olatResource.key=:resourceKey and cer.last=true ");
+		if (creationDateAfter != null) {
+			sb.append(" and cer.creationDate >= :creationDateAfter");
+		}
 		//must be some kind of restrictions
 		boolean securityCheck = false;
 		if(!security.isEntryAdmin()) {
@@ -565,6 +567,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		TypedQuery<Certificate> certificates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
 				.setParameter("resourceKey", entry.getOlatResource().getKey());
+ 		if (creationDateAfter != null) {
+				certificates.setParameter("creationDateAfter", creationDateAfter);
+ 		}
 		if(!security.isEntryAdmin()) {
 			if(security.isCoach()) {
 				certificates.setParameter("repoEntryKey", entry.getKey());
@@ -719,7 +724,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return getCertificateIdentityConfigs(identity, userPropertyHandlers, from, to, sb);
 	}
 
-	@NotNull
 	private List<CertificateIdentityConfig> getCertificateIdentityConfigs(Identity identity, 
 																		  List<UserPropertyHandler> userPropertyHandlers, 
 																		  Date from, Date to, QueryBuilder sb) {
