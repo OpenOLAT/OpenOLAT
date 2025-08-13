@@ -3,8 +3,8 @@
 	#if($r.isNotNull($filename))
 		<div class="o_clearfix o_evaluation_fileupload">
 			#if($r.isNotNull($thumbUri))
-				<div class="o_evaluation_thumb" aria-hidden="true">
-					<img src="$thumbUri/$filename"/>
+				<div class="o_evaluation_thumb">
+					<img src="$thumbUri/$filename" alt=""/>
 				</div>
 			#end
 			<div class="o_evaluation_filename">
