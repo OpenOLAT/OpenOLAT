@@ -12,7 +12,7 @@
 	#end
 	#if($image)
 		<div #if($height) style='height:${height}px'#end>
-			<img src="$mediaUrl/$filename" alt="$r.escapeHtml("$title")"/>
+			<img src="$mediaUrl/$filename" alt="#if($r.isNotNull($title))$r.escapeHtml("$title")#end"/>
 		</div>
 	#elseif($r.available("audio"))
 		<div class="clearfix">

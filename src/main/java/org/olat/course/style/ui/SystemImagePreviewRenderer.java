@@ -41,14 +41,14 @@ public class SystemImagePreviewRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof SystemImageRow) {
 			SystemImageRow systemImageRow = (SystemImageRow)cellValue;
 			
-			target.append("<div class=\"o_cn_styled o_system_image\" aria-hidden=\"true\">");
+			target.append("<div class=\"o_cn_styled o_system_image\">");
 			target.append("<div class=\"o_top\">");
 			target.append("<div class=\"o_image\">");
 			target.append("<img src=\"").append(systemImageRow.getMapperUrl()).append("\"");
 			if (systemImageRow.isTransparent()) {
 				target.append(" class=\"").append(ColorCategory.CSS_NO_COLOR).append("\"");
 			}
-			target.append(">");
+			target.append(" alt=\"\">");
 			target.append("</div>");
 			target.append("</div>");
 			target.append("</div>");

@@ -17,9 +17,9 @@
 
 	#if($r.isNull($showFeedImage) || $showFeedImage)
 		#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "" && $!r.available($feed.getExternalImageURL()))
-			<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" aria-hidden="true" />
+			<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121${suppressCache}" alt=""/>
 		#elseif($helper.getImageUrl($feed))
-			<img class="o_media" style="max-width: 180px; max-height: 121px" src="$helper.getImageUrl($feed)" aria-hidden="true" />
+			<img class="o_media" style="max-width: 180px; max-height: 121px" src="$helper.getImageUrl($feed)" alt=""/>
 		#end
 	#end
 	<div class="o_block">
