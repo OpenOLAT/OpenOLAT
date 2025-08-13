@@ -59,14 +59,14 @@ public class CPPage {
 	}
 	
 	public CPPage assertPageDeleted(String title) {
-		By pageBy = By.xpath("//a[@title='" + title + "']");
+		By pageBy = By.xpath("//a[span[text()[contains(.,'" + title + "')]]]");
 		List<WebElement> pageEls = browser.findElements(pageBy);
 		Assert.assertTrue(pageEls.isEmpty());
 		return this;
 	}
 	
 	public CPPage selectPage(String title) {
-		By pageBy = By.xpath("//a[@title='" + title + "']/i");
+		By pageBy = By.xpath("//a[span[text()[contains(.,'" + title + "')]]]/i");
 		browser.findElement(pageBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

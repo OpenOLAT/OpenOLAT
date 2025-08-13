@@ -44,8 +44,11 @@ import org.olat.core.logging.Tracing;
  * @author gnaegi
  */
 public class RatingComponent extends AbstractComponent {
+	
 	private static final Logger log = Tracing.createLoggerFor(RatingComponent.class);
 	private static final ComponentRenderer RENDERER = new RatingRenderer();
+	protected static final String CMD_CLICK = "cmdclick";
+	
 	private List<String> ratingLabels;
 	private boolean translateRatingLabels;
 	private String title;
@@ -109,32 +112,36 @@ public class RatingComponent extends AbstractComponent {
 
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
-		try {
-			float rating;
-			if(type == RatingType.stars) {
-				rating = Float.parseFloat(cmd);
-			} else if(type == RatingType.yesNo) {
-				if("yes".equals(cmd)) {
-					rating = maxRating;
-				} else if("no".equals(cmd)) {
-					rating = -maxRating;
+		if(CMD_CLICK.equals(cmd)) {
+			fireEvent(ureq, new RatingClickEvent());
+		} else {
+			setDirty(true);
+			try {
+				float rating;
+				if(type == RatingType.stars) {
+					rating = Float.parseFloat(cmd);
+				} else if(type == RatingType.yesNo) {
+					if("yes".equals(cmd)) {
+						rating = maxRating;
+					} else if("no".equals(cmd)) {
+						rating = -maxRating;
+					} else {
+						rating = 0;
+					}
 				} else {
-					rating = 0;
+					return;
 				}
-			} else {
-				return;
+	
+				// update GUI
+				setCurrentRating(rating);
+				// notify listeners
+				Event event = new RatingEvent(rating);
+				fireEvent(ureq, event);
+			} catch (NumberFormatException e) {
+				log.error("Error while parsing rating value::{}", cmd);
 			}
-
-			// update GUI
-			setCurrentRating(rating);
-			// notify listeners
-			Event event = new RatingEvent(rating);
-			fireEvent(ureq, event);
-		} catch (NumberFormatException e) {
-			log.error("Error while parsing rating value::{}", cmd);
-		}		
+		}
 	}
 
 	@Override

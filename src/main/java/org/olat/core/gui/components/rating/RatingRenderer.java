@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -200,6 +201,11 @@ public class RatingRenderer extends DefaultComponentRenderer {
 				  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
 				  .append("\"");
 			}
+		} else if(rfi != null && rfi.getAction() == FormEvent.ONCLICK) {
+			NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, RatingComponent.CMD_CLICK);
+			sb.append(" href=\"javascript:;\" onclick=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
+			  .append("\"");
 		} else {
 			// Disabled link
 			sb.append(" href=\"javascript:;\" onclick=\"javascript:return false;\"");

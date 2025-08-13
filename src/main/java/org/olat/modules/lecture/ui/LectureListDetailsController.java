@@ -21,7 +21,9 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.Group;
@@ -67,6 +69,7 @@ import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -82,6 +85,10 @@ import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCell
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -118,6 +125,7 @@ public class LectureListDetailsController extends FormBasicController {
 	private final boolean allowRepositoryEntry;
 	private final RepositoryEntry repositoryEntry;
 	private final boolean lectureManagementManaged;
+	private final boolean taxonomyEnabled;
 	private final LectureListRepositoryConfig config;
 	private final LecturesSecurityCallback secCallback;
 	
@@ -140,14 +148,20 @@ public class LectureListDetailsController extends FormBasicController {
 	private UserPortraitService userPortraitService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged, boolean inRepoEntry) {
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged, 
+										boolean inRepoEntry, boolean taxonomyEnabled) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
 		this.config = config;
 		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
+		this.taxonomyEnabled = taxonomyEnabled;
 		profileConfig = userPortraitService.createProfileConfig();
 		
 		repositoryEntry = row.getEntry() != null ? repositoryService.loadByKey(row.getEntry().key()) : null;
@@ -203,6 +217,7 @@ public class LectureListDetailsController extends FormBasicController {
 			if(allowRepositoryEntry) {
 				initFormReferencedCourses(layoutCont);
 			}
+			initFormSubjects(formLayout);
 			initFormTeachers(layoutCont, ureq);
 			initFormMetadata(formLayout);
 			initFormParticipantsGroupTable(formLayout);
@@ -254,6 +269,28 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private String getRepositoryEntryPath() {
 		return "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+	}
+
+	private void initFormSubjects(FormItemContainer formLayout) {
+		if (!taxonomyEnabled) {
+			return;
+		}
+
+		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
+		if (taxonomyRefs.isEmpty()) {
+			return;
+		}
+
+		Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
+
+		if (row.getLectureBlock().getTaxonomyLevels() == null || row.getLectureBlock().getTaxonomyLevels().isEmpty()) {
+			return;
+		}
+
+		TaxonomyLevelSelection taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("lecture.subjects", 
+				"lecture.subjects", formLayout, getWindowControl(), allTaxonomyLevels);
+		taxonomyLevelEl.setSelection(row.getSubjects());
+		taxonomyLevelEl.setEnabled(false);
 	}
 	
 	private void initFormTeachers(FormLayoutContainer formLayout, UserRequest ureq) {

@@ -1,5 +1,5 @@
 /**
- * <a href="https://www.openolat.org">
+ * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,19 +14,25 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, https://www.frentix.com
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.creditpoint.model;
+package org.olat.core.gui.components.rating;
 
-import org.olat.modules.creditpoint.CreditPointExpirationType;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 25 juil. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Initial date: 13 août 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CreditPointExpiration(Integer value, CreditPointExpirationType unit) {
-	//
+public class RatingClickEvent extends Event {
+
+	private static final long serialVersionUID = 310665253587672758L;
+	private static final String RATING_EVENT = "ratingClickEvent";
+
+	public RatingClickEvent() {
+		super(RATING_EVENT);
+	}
 }

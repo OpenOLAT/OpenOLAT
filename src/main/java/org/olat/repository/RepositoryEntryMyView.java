@@ -86,11 +86,6 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	public boolean isMarked();
 	
 	/**
-	 * @return The rating made by the user or null if the user has never rated the entry
-	 */
-	public Integer getMyRating();
-	
-	/**
 	 * @return The average rating of this entry, or null if the entry was never rated
 	 */
 	public Double getAverageRating();

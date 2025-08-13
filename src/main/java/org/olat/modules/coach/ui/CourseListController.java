@@ -501,13 +501,11 @@ public class CourseListController extends FormBasicController implements Activat
 	private void forgeTaxonomyLevels(CourseStatEntryRow row) {
 		if(row.getNumOfTaxonomyLevels() <= 0) return;
 		
-		long numOfLevels = row.getNumOfTaxonomyLevels();
-		String title = Long.toString(numOfLevels);
+		String title = Long.toString(row.getNumOfTaxonomyLevels());
 		FormLink levelsLink = uifactory.addFormLink("levels_" + row.getKey(), CMD_LEVELS, title, tableEl, Link.NONTRANSLATED);
 		levelsLink.setUserObject(row);
-		String css = numOfLevels > 1 ? "o_icon o_icon_tags" : "o_icon o_icon_tag";
 		levelsLink.setCustomEnabledLinkCSS("o_taxonomy_levels");
-		levelsLink.setIconLeftCSS(css);
+		levelsLink.setIconLeftCSS("o_icon o_icon_tags");
 		row.setTaxonomyLevelsLink(levelsLink);
 	}
 	

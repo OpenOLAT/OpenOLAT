@@ -65,8 +65,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 	private final boolean marked;
 	
-	private final Integer myRating;
-	
 	private final Double averageRating;
 	private final long numOfRatings;
 	private final long numOfComments;
@@ -77,7 +75,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private long numOfTaxonomyLevels;
 	
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
-			boolean marked, long offersAvailable, Integer myRating) {
+			boolean marked, long offersAvailable) {
 		key = re.getKey();
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
@@ -98,7 +96,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		lifecycle = re.getLifecycle();
 
 		this.marked = marked;
-		this.myRating = myRating;
 
 		if(stats != null) {
 			averageRating = stats.getRating();
@@ -250,11 +247,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public boolean isMarked() {
 		return marked;
-	}
-
-	@Override
-	public Integer getMyRating() {
-		return myRating;
 	}
 
 	@Override

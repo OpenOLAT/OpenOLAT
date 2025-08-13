@@ -121,6 +121,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private final VelocityContainer detailsVC;
 
 	private final CoachList teachers;
+	private final boolean taxonomyEnabled;
 	private final RepositoryEntry entry;
 	private final List<LectureBlockRow> lectureBlocksRows;
 	private final LecturesSecurityCallback secCallback;
@@ -144,8 +145,8 @@ public class ManageTeachersController extends FormBasicController implements Fle
 	private RepositoryService repositoryService;
 	
 	public ManageTeachersController(UserRequest ureq, WindowControl wControl, List<LectureBlockRow> lectureBlocksRows,
-			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback,
-			RepositoryEntry entry) {
+									LectureListRepositoryConfig config, LecturesSecurityCallback secCallback,
+									RepositoryEntry entry, boolean taxonomyEnabled) {
 		super(ureq, wControl, "manage_teachers", Util
 				.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale()));
 		this.entry = entry;
@@ -153,6 +154,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		this.secCallback = secCallback;
 		this.lectureBlocksRows = new ArrayList<>(lectureBlocksRows);
 		teachers = loadTeacherList(lectureBlocksRows);
+		this.taxonomyEnabled = taxonomyEnabled;
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
@@ -574,7 +576,7 @@ public class ManageTeachersController extends FormBasicController implements Fle
 		}
 
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row.getLectureBlockRow(),
-				mainForm, config, secCallback, true, entry != null);
+				mainForm, config, secCallback, true, entry != null, taxonomyEnabled);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

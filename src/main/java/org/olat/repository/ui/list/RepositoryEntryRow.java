@@ -70,7 +70,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	private boolean member;
 	
-	private final Integer myRating;
 	private final Double averageRating;
 	private final long numOfRatings;
 	private final long numOfComments;
@@ -122,7 +121,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		}
 		
 		//rating
-		myRating = entry.getMyRating();
 		averageRating = entry.getAverageRating();
 		numOfRatings = entry.getNumOfRatings();
 		numOfComments = entry.getNumOfComments();
@@ -182,10 +180,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public void setMember(boolean member) {
 		this.member = member;
-	}
-
-	public Integer getMyRating() {
-		return myRating;
 	}
 
 	public Double getAverageRating() {

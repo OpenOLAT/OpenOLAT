@@ -70,7 +70,6 @@ import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
-import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -526,7 +525,7 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
-		if(source instanceof RatingWithAverageFormItem ratingItem) {
+		if(source instanceof RatingFormItem ratingItem) {
 			RepositoryEntryRow row = (RepositoryEntryRow)ratingItem.getUserObject();
 			doOpenDetails(ureq, row, "[Ratings:0]");
 		} else if(source instanceof FormLink link) {
@@ -908,56 +907,41 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void forgeRatings(RepositoryEntryRow row) {
-		if(repositoryModule.isRatingEnabled()) {
-			if(guestOnly) {
-				Double averageRating = row.getAverageRating();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
-				ratingEl.setLargeIcon(false);
-				row.setRatingFormItem(ratingEl);
-				ratingEl.setUserObject(row);
-			} else {
-				Integer myRating = row.getMyRating();
-				Double averageRating = row.getAverageRating();
-				long numOfRatings = row.getNumOfRatings();
+		if(!repositoryModule.isRatingEnabled()) return;
 		
-				float ratingValue = myRating == null ? 0f : myRating.floatValue();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingWithAverageFormItem ratingEl
-					= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
-				ratingEl.setLargeIcon(false);
-				row.setRatingFormItem(ratingEl);
-				ratingEl.setUserObject(row);
-			}
-		}
+		Double averageRating = row.getAverageRating();
+		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+		RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
+		ratingEl.addActionListener(FormEvent.ONCLICK);
+		ratingEl.setLargeIcon(false);
+		row.setRatingFormItem(ratingEl);
+		ratingEl.setUserObject(row);
 	}
 
 	@Override
 	public void forgeComments(RepositoryEntryRow row) {
-		if(repositoryModule.isCommentEnabled()) {
-			long numOfComments = row.getNumOfComments();
-			String title = Long.toString(numOfComments);
-			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
-			commentsLink.setUserObject(row);
-			String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
-			commentsLink.setCustomEnabledLinkCSS("o_comments");
-			commentsLink.setIconLeftCSS(css);
-			row.setCommentsLink(commentsLink);
-		}
+		if(!repositoryModule.isCommentEnabled()) return;
+		
+		long numOfComments = row.getNumOfComments();
+		String title = Long.toString(numOfComments);
+		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
+		commentsLink.setUserObject(row);
+		String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
+		commentsLink.setCustomEnabledLinkCSS("o_comments");
+		commentsLink.setIconLeftCSS(css);
+		row.setCommentsLink(commentsLink);
 	}
 	
 	@Override
 	public void forgeTaxonomyLevels(RepositoryEntryRow row) {
-		if(row.getNumOfTaxonomyLevels() >= 0) {
-			long numOfLevels = row.getNumOfTaxonomyLevels();
-			String title = Long.toString(numOfLevels);
-			FormLink levelsLink = uifactory.addFormLink("tlevels_" + row.getKey(), "levels", title, null, null, Link.NONTRANSLATED);
-			levelsLink.setUserObject(row);
-			String css = numOfLevels == 1 ? "o_icon o_icon_tag" : "o_icon o_icon_tags";
-			levelsLink.setCustomEnabledLinkCSS("o_taxonomy_levels");
-			levelsLink.setIconLeftCSS(css);
-			row.setTaxonomyLevelsLink(levelsLink);
-		}
+		if(row.getNumOfTaxonomyLevels() <= 0) return;
+		
+		String title = Long.toString(row.getNumOfTaxonomyLevels());
+		FormLink levelsLink = uifactory.addFormLink("tlevels_" + row.getKey(), "levels", title, null, null, Link.NONTRANSLATED);
+		levelsLink.setUserObject(row);
+		levelsLink.setCustomEnabledLinkCSS("o_taxonomy_levels");
+		levelsLink.setIconLeftCSS("o_icon o_icon_tags");
+		row.setTaxonomyLevelsLink(levelsLink);
 	}
 
 	@Override

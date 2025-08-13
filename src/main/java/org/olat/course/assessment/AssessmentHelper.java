@@ -452,6 +452,7 @@ public class AssessmentHelper {
 						}
 					}
 					// score
+					assessmentNodeData.setScoreMode(assessmentConfig.getScoreMode());
 					if (Mode.none != assessmentConfig.getScoreMode()) {
 						hasDisplayableValuesConfigured = true;
 						Float score = scoreEvaluation.getScore();

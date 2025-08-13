@@ -31,6 +31,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -62,7 +63,8 @@ public class LecturesBlockSearchParameters {
 	private boolean inSomeCurriculum = false;
 	
 	private boolean configuredEntry = true;
-	
+	private List<TaxonomyLevelRef> taxonomyLevels;
+
 	public LecturesBlockSearchParameters() {
 		//
 	}
@@ -254,5 +256,13 @@ public class LecturesBlockSearchParameters {
 
 	public void setLectureBlocks(List<? extends LectureBlockRef> lectureBlocks) {
 		this.lectureBlocks = new ArrayList<>(lectureBlocks);
+	}
+
+	public void setTaxonomyLevels(List<TaxonomyLevelRef> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
+	}
+
+	public List<TaxonomyLevelRef> getTaxonomyLevels() {
+		return taxonomyLevels;
 	}
 }

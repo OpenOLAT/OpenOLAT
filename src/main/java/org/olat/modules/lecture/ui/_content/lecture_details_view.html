@@ -35,7 +35,13 @@
 			<div class="o_actions">$r.render("edit")</div>
 		#end
 	</div>
-	
+
+	#if($r.available("lecture.subjects"))
+	<div class="o_lecture_subjects">
+		$r.render("lecture.subjects", "vertical")
+	</div>
+	#end
+
 	<div class="o_lecture_resources">
 		<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
 		#if($r.isNotEmpty($profilesIds))
