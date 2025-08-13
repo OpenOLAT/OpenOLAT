@@ -103,6 +103,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -117,6 +118,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
@@ -178,7 +180,12 @@ import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
 import org.olat.modules.lecture.ui.teacher.ManageTeachersController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
@@ -188,6 +195,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.TaxonomyLevelRenderer;
 import org.olat.repository.ui.author.TaxonomyPathsRenderer;
 import org.olat.user.UserManager;
@@ -216,6 +224,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String FILTER_CURRICULUM = "Curriculum";
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
 	private static final String FILTER_VIRTUAL_STATUS = "VirtualStatus";
+	private static final String FILTER_SUBJECT_PATHS = "SubjectPaths";
 	
 	private static final String NO_TEACHER = "noteacher";
 	
@@ -320,6 +329,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
@@ -691,8 +702,27 @@ public class LectureListRepositoryController extends FormBasicController impleme
 					FILTER_ROLL_CALL_STATUS, rollCallStatusValues, true);
 			filters.add(rollCallStatusFilter);
 		}
+		
+		if (taxonomyEnabled) {
+			SelectionValues taxonomyValues = getTaxonomyLevels();
+			if (taxonomyValues != null) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("filter.subject.paths"), 
+						FILTER_SUBJECT_PATHS, taxonomyValues, true));
+			}
+		}
 
 		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private SelectionValues getTaxonomyLevels() {
+		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
+		if (taxonomyRefs.isEmpty()) {
+			return null;
+		}
+
+		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRefs);
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
+		return RepositoyUIFactory.createTaxonomyLevelKV(taxonomyTranslator, allTaxonomyLevels);
 	}
 	
 	private boolean scopeInFuture() {
@@ -1142,6 +1172,17 @@ public class LectureListRepositoryController extends FormBasicController impleme
 					searchParams.setWithTeachers(Boolean.FALSE);
 				}
 			}
+		}
+		
+		FlexiTableFilter sFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_SUBJECT_PATHS);
+		if (sFilter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter) {
+			List<TaxonomyLevelRef> taxonomyLevels = null;
+			List<String> filterValues = multiSelectionFilter.getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				taxonomyLevels = filterValues.stream().filter(StringHelper::isLong).map(Long::valueOf)
+						.map(TaxonomyLevelRefImpl::new).collect(Collectors.toList());				
+			}
+			searchParams.setTaxonomyLevels(taxonomyLevels);
 		}
 		
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();

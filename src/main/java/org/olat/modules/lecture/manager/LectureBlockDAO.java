@@ -70,6 +70,7 @@ import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer.LectureBlockVirtualStatus;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -601,7 +602,6 @@ public class LectureBlockDAO {
 	 * The method doesn't fill the configuration.
 	 * 
 	 * @param entry The course (mandatory)
-	 * @param teacher The teacher (optional)
 	 * @return
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry, RepositoryEntryLectureConfiguration config) {
@@ -993,6 +993,14 @@ public class LectureBlockDAO {
 			
 			sb.append(")"); 
 		}
+
+		if (searchParams.getTaxonomyLevels() != null && !searchParams.getTaxonomyLevels().isEmpty()) {
+			sb.and().append(" exists (")
+					.append(" select bToTax.key from lectureblocktotaxonomylevel as bToTax")
+					.append(" where bToTax.lectureBlock.key = block.key")
+					.append(" and bToTax.taxonomyLevel.key in (:taxonomyLevelKeys)")
+					.append(")");
+		}
 	}
 	
 	private void addSearchVirtualStatusToQuery(QueryBuilder sb, LectureBlockVirtualStatus status) {
@@ -1078,6 +1086,11 @@ public class LectureBlockDAO {
 			List<Long> teachersKeys = searchParams.getTeachersList().stream()
 					.map(IdentityRef::getKey).toList();
 			query.setParameter("teachersList", teachersKeys);
+		}
+		if (searchParams.getTaxonomyLevels() != null && !searchParams.getTaxonomyLevels().isEmpty()) {
+			List<Long> taxonomyLevelKeys = searchParams.getTaxonomyLevels().stream().map(TaxonomyLevelRef::getKey)
+					.collect(Collectors.toList());
+			query.setParameter("taxonomyLevelKeys", taxonomyLevelKeys);
 		}
 	}
 
