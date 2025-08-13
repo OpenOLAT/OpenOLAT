@@ -89,7 +89,7 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 					// the assessment tool will have full access to user tests
 					
 					RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-					List<Certificate> certificates = certificatesManager.getCertificatesForNotifications(identity, entry, latestNews);
+					List<Certificate> certificates = certificatesManager.getCertificatesForNotifications(identity, entry, compareDate);
 					for(Certificate certificate:certificates) {
 						Date modDate = certificate.getCreationDate();
 						Identity assessedIdentity = certificate.getIdentity();

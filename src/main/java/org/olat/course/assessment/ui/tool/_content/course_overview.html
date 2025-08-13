@@ -40,18 +40,18 @@
 </div>
 <div class="row">
 	#if($r.available("assessmentSubscription") || $r.available("certificationSubscription"))
-	<div class="col-sm-6">
-		<h4>$r.translate("index.notifications.title")</h4>
+	<div class="col-sm-6 o_assessment_tool_notifications">
+		<h4>$r.translate("notifications")</h4>
 		<table class="table">
 			#if($r.available("assessmentSubscription"))
 			<tr>
-				<th>$r.translate("index.notifications.assessment")</th>
+				<th>$r.translate("notifications.new.test.results")</th>
 				<td>$r.render("assessmentSubscription")</td>
 			</tr>
 			#end
 			#if($r.available("certificationSubscription"))
 			<tr>
-				<th>$r.translate("index.notifications.certificate")</th>
+				<th>$r.translate("notifications.new.certificates")</th>
 				<td>$r.render("certificationSubscription")</td>
 			</tr>
 			#end
