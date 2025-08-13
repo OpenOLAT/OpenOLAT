@@ -255,6 +255,7 @@ public class MemberViewQueries {
 		searchAs(sb, params);
 		searchByIdentity(sb, params);
 		searchTestRunningSessions(sb, params);
+		searchInCurriculumElementAndBusinessGroups(sb, params);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
@@ -262,6 +263,7 @@ public class MemberViewQueries {
 		searchAs(query, params);
 		searchByIdentity(query, params);
 		searchTestRunningSessions(query, params);
+		searchInCurriculumElementAndBusinessGroups(query, params);
 		
 		// lazy load them
 		Map<Group,CurriculumElement> groupToCurriculumElement = null;
@@ -455,6 +457,31 @@ public class MemberViewQueries {
 		for(ResourceReservation reservation: query.getResultList()) {
 			MemberView m = views.computeIfAbsent(reservation.getIdentity(), id -> new MemberView(id, userPropertyHandlers, locale));
 			m.getMemberShip().setResourceReservation(reservation);
+		}
+	}
+	
+	private void searchInCurriculumElementAndBusinessGroups(QueryBuilder sb, SearchMembersParams params) {
+		if(params.getBusinessGroupKeys() != null && !params.getBusinessGroupKeys().isEmpty()) {
+			sb.and().append(" mGroup.key in (select businessGroup.baseGroup.key from businessgroup as businessGroup")
+			  .append(" where businessGroup.key in (:businessGroupKeys)")
+			  .append(")");
+		}
+		
+		if(params.getCurriculumElementKeys() != null && !params.getCurriculumElementKeys().isEmpty()) {
+			sb.and().append(" mGroup.key in (select reGroup.group.key from repoentrytogroup reGroup ")
+			  .append(" inner join curriculumelement as curEl on (curEl.group.key=reGroup.group.key)")
+			  .append(" where curEl.key in (:curriculumElementKeys)")
+			  .append(")");
+		}
+	}
+	
+	private void searchInCurriculumElementAndBusinessGroups(TypedQuery<?> query, SearchMembersParams params) {
+		if(params.getBusinessGroupKeys() != null && !params.getBusinessGroupKeys().isEmpty()) {
+			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
+		}
+		
+		if(params.getCurriculumElementKeys() != null && !params.getCurriculumElementKeys().isEmpty()) {
+			query.setParameter("curriculumElementKeys", params.getCurriculumElementKeys());
 		}
 	}
 

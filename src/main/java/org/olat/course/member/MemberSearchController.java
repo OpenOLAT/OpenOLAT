@@ -60,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,15 +68,27 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.member.MemberSearchTableModel.MembersCols;
 import org.olat.course.member.component.MemberOriginCellRenderer;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.CourseRoleCellRenderer;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.group.ui.main.SearchMembersParams.UserType;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.PortraitSize;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
@@ -107,6 +120,8 @@ public class MemberSearchController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private MemberSearchTableModel tableModel;
 	
+	private final boolean coach;
+	private final boolean owner;
 	private final MemberSearchConfig config;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -120,19 +135,30 @@ public class MemberSearchController extends FormBasicController {
 	@Autowired
 	private MemberViewQueries memberQueries;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
 	private UserPortraitService userPortraitService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public MemberSearchController(UserRequest ureq, WindowControl wControl, Form rootForm, MemberSearchConfig config) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_search", rootForm);
-		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(userManager.getPropertyHandlerTranslator(Util
+				.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		rootForm.setHideDirtyMarkingMessage(true);
 		this.config = config;
 
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, config.repositoryEntry());
+		coach = reSecurity.isCoach();
+		owner = reSecurity.isEntryAdmin();
 		
 		initForm(ureq);
 		loadModel();
@@ -147,6 +173,10 @@ public class MemberSearchController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, config.repositoryEntry());
+		coach = reSecurity.isCoach();
+		owner = reSecurity.isEntryAdmin();
 		
 		initForm(ureq);
 		mainForm.setHideDirtyMarkingMessage(true);
@@ -243,13 +273,13 @@ public class MemberSearchController extends FormBasicController {
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		if(config.withOwners()) {
+		if(config.withOwners() && owner) {
 			FlexiFiltersTab ownersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(GroupRoles.owner.name(), translate("role.repo.owner"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, List.of(GroupRoles.owner.name()))));
 			ownersTab.setFiltersExpanded(true);
 			tabs.add(ownersTab);
 		}
-		if(config.withCoaches()) {
+		if(config.withCoaches() && (owner || coach)) {
 			FlexiFiltersTab coachesTab = FlexiFiltersTabFactory.tabWithImplicitFilters(GroupRoles.coach.name(), translate("role.repo.tutor"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, List.of(GroupRoles.coach.name()))));
 			coachesTab.setFiltersExpanded(true);
@@ -270,16 +300,16 @@ public class MemberSearchController extends FormBasicController {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		SelectionValues rolesValues = new SelectionValues();
-		if(config.withOwners()) {
+		if(config.withOwners() && owner) {
 			rolesValues.add(SelectionValues.entry(GroupRoles.owner.name(), translate("role.repo.owner")));
 		}
-		if(config.withCoaches()) {
+		if(config.withCoaches() && (owner || coach)) {
 			rolesValues.add(SelectionValues.entry(GroupRoles.coach.name(), translate("role.repo.tutor")));
 		}
 		if(config.withParticipants()) {
 			rolesValues.add(SelectionValues.entry(GroupRoles.participant.name(), translate("role.repo.participant")));
 		}
-		if(config.withWaiting()) {
+		if(config.withWaiting() && (owner || coach)) {
 			rolesValues.add(SelectionValues.entry(GroupRoles.waiting.name(), translate("role.group.waiting")));
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.role"),
@@ -299,6 +329,45 @@ public class MemberSearchController extends FormBasicController {
 		typeValues.add(SelectionValues.entry(UserType.invitee.name(), translate("filter.user.type.invitee")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.user.type"),
 				FILTER_TYPE, typeValues, true));
+		
+		// groups
+		SelectionValues groupValues = new SelectionValues();
+		if(owner || coach) {
+			SearchBusinessGroupParams params;
+			if(owner) {
+				params = new SearchBusinessGroupParams();
+			} else {
+				params = new SearchBusinessGroupParams(getIdentity(), true, false);
+			}
+			List<BusinessGroup> coachedGroups = businessGroupService.findBusinessGroups(params, config.repositoryEntry(), 0, -1);
+			if(coachedGroups != null && !coachedGroups.isEmpty()) {
+				for(BusinessGroup coachedGroup:coachedGroups) {
+					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+					groupValues.add(new SelectionValue("businessgroup-" + coachedGroup.getKey(), groupName, null,
+							"o_icon o_icon_group", null, true));
+				}
+			}
+			
+			List<CurriculumElement> coachedCurriculumElements;
+			if(owner) {
+				coachedCurriculumElements = curriculumService.getCurriculumElements(config.repositoryEntry());
+			} else {
+				coachedCurriculumElements = curriculumService.getCurriculumElements(config.repositoryEntry(), getIdentity(), List.of(CurriculumRoles.coach));
+			}
+			
+			if(!coachedCurriculumElements.isEmpty()) {
+				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
+					String name = StringHelper.escapeHtml(CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator()));
+					groupValues.add(new SelectionValue("curriculumelement-" + coachedCurriculumElement.getKey(), name, null,
+							"o_icon o_icon_curriculum_element", null, true));
+				}
+			}
+		}
+		
+		if(!groupValues.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
+					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
+		}
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -406,6 +475,31 @@ public class MemberSearchController extends FormBasicController {
 				params.setUserTypes(EnumSet.copyOf(roles));
 			}
 		}
+		
+		List<Long> businessGroupKeys = null;
+		List<Long> curriculumElementKeys = null;
+		FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_GROUPS);
+		if(groupsFilter != null && groupsFilter.isSelected()) {
+			businessGroupKeys = new ArrayList<>();
+			curriculumElementKeys = new ArrayList<>();
+			List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+			if(filterValues != null) {
+				for(String filterValue:filterValues) {
+					int index = filterValue.indexOf('-');
+					if(index > 0) {
+						Long key = Long.valueOf(filterValue.substring(index + 1));
+						if(filterValue.startsWith("businessgroup-")) {
+							businessGroupKeys.add(key);
+						} else if(filterValue.startsWith("curriculumelement-")) {
+							curriculumElementKeys.add(key);
+						}
+					}
+				}
+			}
+		}
+		
+		params.setBusinessGroupKeys(businessGroupKeys);
+		params.setCurriculumElementKeys(curriculumElementKeys);
 		
 		String searchString = tableEl.getQuickSearchString();
 		if(StringHelper.containsNonWhitespace(searchString)) {

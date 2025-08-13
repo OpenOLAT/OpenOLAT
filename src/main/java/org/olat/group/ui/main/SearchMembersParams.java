@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,6 +39,8 @@ public class SearchMembersParams extends Event {
 	
 	private Set<Origin> origins;
 	private Set<UserType> userTypes;
+	private List<Long> businessGroupKeys;
+	private List<Long> curriculumElementKeys;
 	
 	private String login;
 	private Map<String, String> userPropertiesSearch;
@@ -158,6 +161,22 @@ public class SearchMembersParams extends Event {
 
 	public void setRunningTestSessionsSubIdent(String runningTestSessionsSubIdent) {
 		this.runningTestSessionsSubIdent = runningTestSessionsSubIdent;
+	}
+
+	public List<Long> getBusinessGroupKeys() {
+		return businessGroupKeys;
+	}
+
+	public void setBusinessGroupKeys(List<Long> businessGroupKeys) {
+		this.businessGroupKeys = businessGroupKeys;
+	}
+
+	public List<Long> getCurriculumElementKeys() {
+		return curriculumElementKeys;
+	}
+
+	public void setCurriculumElementKeys(List<Long> curriculumElementKeys) {
+		this.curriculumElementKeys = curriculumElementKeys;
 	}
 
 
