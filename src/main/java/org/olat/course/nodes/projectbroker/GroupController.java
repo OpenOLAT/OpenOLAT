@@ -39,10 +39,10 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesOfGroupTableDataModel;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardStep00;
-import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -89,6 +89,8 @@ import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.course.member.MemberSearchConfig;
+import org.olat.course.member.MemberSearchController;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.MembersByNameContext;
 import org.olat.group.ui.main.OnlineIconRenderer;
@@ -97,6 +99,7 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.Presence;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -130,15 +133,17 @@ public class GroupController extends BasicController {
 	protected static final String COMMAND_VCARD = "show.vcard";
 	protected static final String COMMAND_SELECTUSER = "select.user";
 
-	private final String role;
 	private final Group group;
+	private final GroupRoles role;
+	private final GroupRoles searchAsRole;
+	private final RepositoryEntry courseEntry;
 	private VelocityContainer groupmemberview;
 
 	private IdentitiesOfGroupTableDataModel identitiesTableModel;
 
 	private List<Identity> toAdd, toRemove;
 
-	private UserSearchController usc;
+	private MemberSearchController usc;
 	private MailNotificationEditController addUserMailCtr, removeUserMailCtr;
 	private StepsMainRunController userToGroupWizard;
 	private DialogBoxController confirmDelete;
@@ -177,10 +182,12 @@ public class GroupController extends BasicController {
 	 */	 
 	public GroupController(UserRequest ureq, WindowControl wControl, 
 			boolean mayModifyMembers, boolean keepAtLeastOne, boolean enableTablePreferences, boolean enableUserSelection,
-			boolean allowDownload, boolean mandatoryEmail, Group group, String role) {
+			boolean allowDownload, boolean mandatoryEmail, Group group,  GroupRoles role, RepositoryEntry courseEntry, GroupRoles searchAsRole) {
 		super(ureq, wControl);
 		this.group = group;
 		this.role = role;
+		this.courseEntry = courseEntry;
+		this.searchAsRole = searchAsRole;
 		this.mayModifyMembers = mayModifyMembers;
 		this.keepAtLeastOne = keepAtLeastOne;
 		this.mandatoryEmail = mandatoryEmail;
@@ -377,7 +384,7 @@ public class GroupController extends BasicController {
 				
 				if (toAdd.size() == 1) {
 					//check if already in group [makes only sense for a single choosen identity]
-					if (groupDao.hasRole(group, toAdd.get(0), role)) {
+					if (groupDao.hasRole(group, toAdd.get(0), role.name())) {
 						String fullName = userManager.getUserDisplayName(toAdd.get(0));
 						getWindowControl().setInfo(translate("msg.subjectalreadyingroup", StringHelper.escapeHtml(fullName)));
 						return;
@@ -386,7 +393,7 @@ public class GroupController extends BasicController {
 					//check if already in group
 					List<Identity> alreadyInGroup = new ArrayList<>();
 					for (int i = 0; i < toAdd.size(); i++) {
-						if (groupDao.hasRole(group, toAdd.get(i), role)) {
+						if (groupDao.hasRole(group, toAdd.get(i), role.name())) {
 							tableCtr.setMultiSelectSelectedAt(i, false);
 							alreadyInGroup.add(toAdd.get(i));
 						}
@@ -464,7 +471,10 @@ public class GroupController extends BasicController {
 	
 	private void doAddUsers(UserRequest ureq) {
 		removeAsListenerAndDispose(usc);
-		usc = new UserSearchController(ureq, getWindowControl(), true, true, true);			
+		
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, searchAsRole, "project-broker-identitity-v1.0")
+				.showSelectButton(false);
+		usc = new MemberSearchController(ureq, getWindowControl(), config);			
 		listenTo(usc);
 		
 		Component usersearchview = usc.getInitialComponent();
@@ -651,7 +661,7 @@ public class GroupController extends BasicController {
 
 	public void reloadData() {
 		// refresh view		
-		List<GroupMembership> combo = groupDao.getMemberships(group, role, true);
+		List<GroupMembership> combo = groupDao.getMemberships(group, role.name(), true);
 		List<GroupMemberView> views = new ArrayList<>(combo.size());
 		Map<Long,GroupMemberView> idToViews = new HashMap<>();
 

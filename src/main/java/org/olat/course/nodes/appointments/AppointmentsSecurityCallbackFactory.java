@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -232,6 +233,16 @@ public class AppointmentsSecurityCallbackFactory {
 		public boolean isParticipantCanComment() {
 			return participantCanComment;
 		}
-	}
 
+		@Override
+		public GroupRoles searchMemberAs() {
+			if(admin) {
+				return GroupRoles.owner;
+			}
+			if(coach) {
+				return GroupRoles.coach;
+			}
+			return GroupRoles.participant;
+		}
+	}
 }

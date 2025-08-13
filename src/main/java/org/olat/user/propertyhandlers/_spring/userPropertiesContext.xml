@@ -293,6 +293,41 @@
 
 				<entry key="org.olat.course.member.MemberListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Lists of members in course and groups" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</set>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
+				<entry key="org.olat.course.member.MemberSearchController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Search members in course context" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />

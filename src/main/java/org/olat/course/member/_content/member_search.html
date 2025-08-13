@@ -1,0 +1,15 @@
+<div class="o_sel_members_search">
+	$r.render("table")
+	$r.render("table", "error")
+	
+	#if($r.available("select") || $r.available("cancel"))
+	<div class="o_button_group">
+		#if($r.available("select"))
+			$r.render("select")
+		#end
+		#if($r.available("cancel"))
+			$r.render("cancel")
+		#end
+	</div>
+	#end
+</div>

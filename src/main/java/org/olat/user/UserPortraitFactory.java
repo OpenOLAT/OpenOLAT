@@ -22,6 +22,7 @@ package org.olat.user;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 
 /**
@@ -40,6 +41,14 @@ public class UserPortraitFactory {
 		return usersPortraitsComponent;
 	}
 	
+	public static UserPortraitComponent createUserPortrait(String name, FlexiTableElement table, Locale locale) {
+		UserPortraitComponent usersPortraitsComponent = new UserPortraitComponent(name, locale);
+		if (table != null) {
+			table.getComponent().put(usersPortraitsComponent.getComponentName(), usersPortraitsComponent);
+		}
+		return usersPortraitsComponent;
+	}
+	
 	public static UsersPortraitsComponent createUsersPortraits(UserRequest ureq, String name, VelocityContainer vc) {
 		UsersPortraitsComponent usersPortraitsComponent = new UsersPortraitsComponent(ureq, name);
 		if (vc != null) {
@@ -47,5 +56,7 @@ public class UserPortraitFactory {
 		}
 		return usersPortraitsComponent;
 	}
+	
+
 	
 }

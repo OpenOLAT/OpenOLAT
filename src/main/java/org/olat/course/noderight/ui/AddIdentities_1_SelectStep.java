@@ -27,6 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -37,10 +38,12 @@ import org.olat.core.util.Util;
 public class AddIdentities_1_SelectStep extends BasicStep {
 	
 	private final NodeRightWrapper wrapper;
+	private final RepositoryEntry courseEntry;
 
-	public AddIdentities_1_SelectStep(UserRequest ureq, NodeRightWrapper wrapper) {
+	public AddIdentities_1_SelectStep(UserRequest ureq, NodeRightWrapper wrapper, RepositoryEntry courseEntry) {
 		super(ureq);
 		this.wrapper = wrapper;
+		this.courseEntry = courseEntry;
 		setNextStep(new AddIdentities_2_ConfirmStep(ureq));
 		setTranslator(Util.createPackageTranslator(NodeRightsController.class, getLocale(), getTranslator()));
 		setI18nTitleAndDescr("add.identities.select.title", "add.identities.select.title");
@@ -57,6 +60,6 @@ public class AddIdentities_1_SelectStep extends BasicStep {
 			runContext.put("context", new AddIdentitiesContext(wrapper));
 		}
 		
-		return new AddIdentities_1_SearchController(ureq, wControl, form, runContext);
+		return new AddIdentities_1_SearchController(ureq, wControl, form, runContext, courseEntry);
 	}
 }

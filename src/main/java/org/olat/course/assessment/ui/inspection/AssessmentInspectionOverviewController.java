@@ -372,7 +372,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		AssessmentInspectionRow row = new AssessmentInspectionRow(portraitUser.getDisplayName(), inspectionEntry.inspection(),
 				inspectionEntry.assessmentStatus(), cNode.getShortTitle(), courseNodeConfig.getIconCSSClass());
 		
-		UserPortraitComponent portraitComp= UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), null, getLocale());
+		UserPortraitComponent portraitComp= UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), (VelocityContainer)null, getLocale());
 		portraitComp.setSize(PortraitSize.small);
 		portraitComp.setPortraitUser(portraitUser);
 		row.setPortraitComp(portraitComp);

@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.SortKey;
@@ -83,6 +82,8 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.member.MemberSearchConfig;
+import org.olat.course.member.MemberSearchController;
 import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.Appointment.Status;
 import org.olat.modules.appointments.AppointmentsSecurityCallback;
@@ -97,6 +98,8 @@ import org.olat.modules.appointments.ui.AppointmentCreateController.AppointmentI
 import org.olat.modules.appointments.ui.AppointmentDataModel.AppointmentCols;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -147,7 +150,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private FindingConfirmationController findingConfirmationCtrl;
 	private AppointmentEditController appointmentEditCtrl;
 	private AppointmentCreateController addAppointmentsCtrl;
-	private UserSearchController userSearchCtrl;
+	private MemberSearchController userSearchCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ParticipationRemoveController removeCtrl;
 	private AppointmentDeleteController appointmentDeleteCtrl;
@@ -156,10 +159,13 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected Topic topic;
 	protected final AppointmentsSecurityCallback secCallback;
 	protected final List<Organizer> organizers;
+	private final RepositoryEntry courseEntry;
 	private final Set<Appointment> showAllParticipations = new HashSet<>();
 	
 	@Autowired
 	protected AppointmentsService appointmentsService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	protected UserManager userManager;
 	
@@ -170,6 +176,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		this.topic = topic;
 		this.secCallback = secCallback;
 		this.organizers = appointmentsService.getOrganizers(topic);
+		this.courseEntry = topic.getEntry();
 		initForm(ureq);
 		updateModel();
 	}
@@ -969,7 +976,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	private void doSelectUser(UserRequest ureq, Appointment appointment) {
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
+		RepositoryEntry entry = repositoryService.loadBy(courseEntry);
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(entry, secCallback.searchMemberAs(),
+				"appointment-list-identitity-v1.0");
+		userSearchCtrl = new MemberSearchController(ureq, getWindowControl(), config);
 		userSearchCtrl.setUserObject(appointment);
 		listenTo(userSearchCtrl);
 		

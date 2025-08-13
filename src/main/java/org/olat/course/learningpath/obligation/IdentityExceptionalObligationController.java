@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -35,6 +35,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.member.MemberSearchConfig;
+import org.olat.course.member.MemberSearchController;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -45,13 +48,15 @@ import org.olat.core.id.Identity;
 public class IdentityExceptionalObligationController extends FormBasicController
 		implements ExceptionalObligationController {
 
-	private UserSearchFlexiController userSearchCtrl;
+	private MemberSearchController userSearchCtrl;
 	
 	private Set<Identity> selectedIdentity = new HashSet<>();
 	
-	public IdentityExceptionalObligationController(UserRequest ureq, WindowControl wControl) {
+	public IdentityExceptionalObligationController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		userSearchCtrl = new UserSearchFlexiController(ureq, getWindowControl(), mainForm, null, null, true, true);
+		
+		userSearchCtrl = new MemberSearchController(ureq, getWindowControl(), mainForm,
+				MemberSearchConfig.defaultConfig(courseEntry, GroupRoles.owner, "id-exceptional-obligation-v1.1"));
 		listenTo(userSearchCtrl);
 		initForm(ureq);
 	}
@@ -85,6 +90,8 @@ public class IdentityExceptionalObligationController extends FormBasicController
 			} else if (event instanceof MultiIdentityChosenEvent) {
 				selectedIdentity.addAll(userSearchCtrl.getSelectedIdentities());
 				fireEvent(ureq, Event.DONE_EVENT);
+			} else if (event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
 		super.event(ureq, source, event);

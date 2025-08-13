@@ -309,7 +309,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 				}
 			}
 			UserPortraitComponent portraitComp = UserPortraitFactory
-					.createUserPortrait("portrait_" + roster.getChannel(), null, getLocale());
+					.createUserPortrait("portrait_" + roster.getChannel(), (VelocityContainer)null, getLocale());
 			portraitComp.setSize(PortraitSize.small);
 			portraitComp.setPortraitUser(portraitUser);
 			row.setPortraitComp(portraitComp);

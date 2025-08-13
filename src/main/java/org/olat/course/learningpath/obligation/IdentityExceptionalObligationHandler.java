@@ -124,7 +124,7 @@ public class IdentityExceptionalObligationHandler implements ExceptionalObligati
 	@Override
 	public ExceptionalObligationController createCreationController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, CourseNode courseNode) {
-		return new IdentityExceptionalObligationController(ureq, wControl);
+		return new IdentityExceptionalObligationController(ureq, wControl, courseEntry);
 	}
 
 }

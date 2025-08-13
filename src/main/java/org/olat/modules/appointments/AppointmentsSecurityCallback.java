@@ -22,6 +22,8 @@ package org.olat.modules.appointments;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
+
 /**
  * 
  * Initial date: 13 Apr 2020<br>
@@ -41,6 +43,8 @@ public interface AppointmentsSecurityCallback {
 	public boolean canSelectAppointments();
 	
 	public boolean canJoinBBBMeeting(Appointment appointment, Collection<Organizer> organizers, Collection<Participation> participations);
+	
+	public GroupRoles searchMemberAs();
 
 	/**
 	 * check if user can join a meeting.

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
@@ -56,10 +55,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.id.Identity;
+import org.olat.course.member.MemberSearchConfig;
+import org.olat.course.member.MemberSearchController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.appointments.AppointmentsSecurityCallback;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicRef;
@@ -94,7 +96,7 @@ public class TopicGroupsController extends FormBasicController {
 	private FormLink removeUserButton;
 	
 	private CloseableModalController cmc;
-	private UserSearchController userSearchCtrl;
+	private MemberSearchController userSearchCtrl;
 	private DialogBoxController confirmRemoveCtrl;
 
 	private Topic topic;
@@ -102,6 +104,7 @@ public class TopicGroupsController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, Group> keyToBussinesGroups;
 	private Map<String, Group> keyToCurriculumElementGroup;
+	private final AppointmentsSecurityCallback secCallback;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -116,10 +119,12 @@ public class TopicGroupsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public TopicGroupsController(UserRequest ureq, WindowControl wControl, TopicRef topicRef) {
+	public TopicGroupsController(UserRequest ureq, WindowControl wControl, TopicRef topicRef,
+			AppointmentsSecurityCallback secCallback) {
 		super(ureq, wControl, "topic_groups");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
+		this.secCallback = secCallback;
 		topic = appointmentsService.getTopic(topicRef);
 		entry = topic.getEntry();
 		
@@ -341,7 +346,8 @@ public class TopicGroupsController extends FormBasicController {
 	}
 	
 	private void doSearchUser(UserRequest ureq) {
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(entry, secCallback.searchMemberAs(), "topic-groups-identities-v1.1");
+		userSearchCtrl = new MemberSearchController(ureq, getWindowControl(), config);
 		listenTo(userSearchCtrl);
 		
 		String title = translate("groups.users.add.title");
