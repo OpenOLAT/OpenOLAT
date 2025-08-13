@@ -143,7 +143,6 @@ public class RepositoryEntryMyCourseQueries {
 			boolean hasMarks = numOfMarks != null && numOfMarks.longValue() > 0;
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
-			Integer myRating = (Integer)object[3];
 			
 			RepositoryEntryStatistics stats;
 			if (needStats) {
@@ -151,7 +150,7 @@ public class RepositoryEntryMyCourseQueries {
 			} else {
 				stats = null;
 			}
-			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating);
+			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers);
 			viewImpls.add(view);
 			repoKeys.add(re.getKey());
 		}
@@ -214,20 +213,10 @@ public class RepositoryEntryMyCourseQueries {
 			if (acModule.isEnabled()) {
 				sb.append(" (select count(offer.key) from acoffer as offer ")
 				  .append("   where offer.resource=res and offer.valid=true and offer.openAccess=false and offer.guestAccess=false")
-				  .append(" ) as offers, ");
+				  .append(" ) as offers ");
 			} else {
-				sb.append(" 0 as offers,");
+				sb.append(" 0 as offers ");
 			}
-			if(repositoryModule.isRatingEnabled()) {
-				needIdentityKey = true;
-				sb.append(" (select rating.rating from userrating as rating")
-				  .append("   where rating.resId=v.key and rating.creator.key=:identityKey and rating.resName='RepositoryEntry'")
-				  .append(" ) as myrating");
-			} else {
-				sb.append(" 0 as myrating");
-			}
-			needIdentityKey = true;
-			
 			needIdentityKey |= appendOrderByInSelect(params, sb);
 			sb.append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res");

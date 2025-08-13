@@ -136,7 +136,7 @@
 				.o_lifecycle {
 					margin: 0.5em 0;
 					line-height: normal;
-					color: $text-muted;
+					color: $o-coursesite-meta-lifecycle-color;
 					.o_lifecycle_date, .o_lifecycle_location {
 						display: inline;
 					}
@@ -280,6 +280,10 @@
 					.o_label {
 						color: $text-muted;
 					}
+				}
+				
+				.o_repo_rating .o_rating_items > a {
+					cursor: revert;
 				}
 						
 				.o_social {
