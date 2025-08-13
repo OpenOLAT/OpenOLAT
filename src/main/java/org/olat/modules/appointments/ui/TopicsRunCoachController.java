@@ -725,7 +725,7 @@ public class TopicsRunCoachController extends FormBasicController {
 	private void doEditGroups(UserRequest ureq, Topic topic) {
 		removeAsListenerAndDispose(topicGroupsCtrl);
 		
-		topicGroupsCtrl = new TopicGroupsController(ureq, getWindowControl(), topic);
+		topicGroupsCtrl = new TopicGroupsController(ureq, getWindowControl(), topic, secCallback);
 		listenTo(topicGroupsCtrl);
 		
 		stackPanel.pushController(topic.getTitle(), topicGroupsCtrl);

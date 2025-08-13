@@ -70,6 +70,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -517,7 +518,9 @@ public class NodeRightsController extends FormBasicController {
 
 	private void doAddIdentities(UserRequest ureq, NodeRightWrapper wrapper) {
 		removeAsListenerAndDispose(wizard);
-		wizard = new StepsMainRunController(ureq, getWindowControl(), new AddIdentities_1_SelectStep(ureq, wrapper),
+		
+		RepositoryEntry courseEntry = courseGroupManager.getCourseEntry();
+		wizard = new StepsMainRunController(ureq, getWindowControl(), new AddIdentities_1_SelectStep(ureq, wrapper, courseEntry),
 				addSelectedIdentities(), null, translate("add.identities"), "");
 		listenTo(wizard);
 		getWindowControl().pushAsModalDialog(wizard.getInitialComponent());

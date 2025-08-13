@@ -482,7 +482,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			} else if (CMD_ADD_EXEPTIONAL_OBLIGATION.equals(cmd)){
 				ExceptionalObligationHandler handler = (ExceptionalObligationHandler)link.getUserObject();
 				doAddExceptionalObligations(ureq, handler);
-				markDirty();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

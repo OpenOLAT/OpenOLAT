@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -35,9 +35,12 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.member.MemberSearchConfig;
+import org.olat.course.member.MemberSearchController;
 import org.olat.course.todo.manager.CourseCollectionToDoTaskProvider;
 import org.olat.modules.todo.ToDoTask;
-import org.olat.user.UserManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,7 +55,8 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 	private static final String KEY_SELECTION = "selection";
 
 	private SingleSelection selectionEl;
-	private MultiSelectionFilterElement participantsEl;
+	private FormLayoutContainer membersCont;
+	private MemberSearchController memberSearchController;
 
 	private final ToDoTask toDoTaskCollection;
 	private final boolean coachOnly;
@@ -60,7 +64,7 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 	@Autowired
 	private CourseCollectionToDoTaskProvider courseCollectionToDoTaskProvider;
 	@Autowired
-	private UserManager userManager;
+	private RepositoryService repositoryService;
 
 	protected ToDoCollectionAddAssigneesController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTaskCollection, boolean coachOnly) {
 		super(ureq, wControl);
@@ -91,13 +95,20 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 		selectionEl.addActionListener(FormEvent.ONCHANGE);
 		selectionEl.select(KEY_ALL, true);
 		
-		SelectionValues participantSV = new SelectionValues();
-		participantsWithoutToDoTask
-				.forEach(participant -> participantSV.add(SelectionValues.entry(
-						participant.getKey().toString(),
-						userManager.getUserDisplayName(participant))));
-		participantsEl = uifactory.addCheckboxesFilterDropdown("participants",
-				"course.todo.collection.add.participants.participants", formLayout, getWindowControl(), participantSV);
+		membersCont = uifactory.addDefaultFormLayout("members", null, formLayout);
+		membersCont.setRootForm(mainForm);
+		membersCont.setFormLayout("0_12");
+		membersCont.setFormTitle(translate("course.todo.collection.add.participants.participants"));
+		
+		GroupRoles searchAs = coachOnly ? GroupRoles.coach : GroupRoles.owner;
+		RepositoryEntry courseEntry = repositoryService.loadByKey(toDoTaskCollection.getOriginId());
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, searchAs, "to-do-assignees-v1.0")
+				.showSelectButton(false)
+				.identitiesList(participantsWithoutToDoTask);
+		memberSearchController = new MemberSearchController(ureq, getWindowControl(), mainForm, config);
+		listenTo(memberSearchController);
+		memberSearchController.getInitialFormItem().setFormLayout("0_12");
+		membersCont.add(memberSearchController.getInitialFormItem());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -106,7 +117,7 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		participantsEl.setVisible(selectionEl.isKeySelected(KEY_SELECTION));
+		membersCont.setVisible(selectionEl.isKeySelected(KEY_SELECTION));
 	}
 
 	@Override
@@ -127,7 +138,8 @@ public class ToDoCollectionAddAssigneesController extends FormBasicController {
 		if (KEY_ALL.equals(selectionEl.getSelectedKey())) {
 			courseCollectionToDoTaskProvider.addRemainingAssignees(getIdentity(), toDoTaskCollection, coachOnly);
 		} else {
-			Collection<Long> identityKeys = participantsEl.getSelectedKeys().stream().map(Long::valueOf).toList();
+			Collection<Long> identityKeys = memberSearchController.getSelectedIdentities().stream()
+					.map(Identity::getKey).toList();
 			courseCollectionToDoTaskProvider.addRemainingAssignees(getIdentity(), toDoTaskCollection, identityKeys);
 		}
 		fireEvent(ureq, FormEvent.DONE_EVENT);

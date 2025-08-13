@@ -64,6 +64,7 @@ import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -147,21 +148,23 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     optionsFormVC.put("projectEventForm", projectEventForm.getInitialComponent());
 
 		// Account-Managment 		
-    accountManagementFormVC = this.createVelocityContainer("account_management");
-    String groupName = translate("account.manager.groupname", node.getShortTitle());
-    String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
-    accountManagerGroup = projectGroupManager.getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
-    if (accountManagerGroup != null) {
-    	Group group = businessGroupService.getGroup(accountManagerGroup);
-    	accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, group, GroupRoles.participant.name());
+		accountManagementFormVC = this.createVelocityContainer("account_management");
+		String groupName = translate("account.manager.groupname", node.getShortTitle());
+		String groupDescription = translate("account.manager.groupdescription", node.getShortTitle());
+		accountManagerGroup = projectGroupManager.getAccountManagerGroupFor(cpm, node, course, groupName, groupDescription, ureq.getIdentity());
+		if (accountManagerGroup != null) {
+    		Group group = businessGroupService.getGroup(accountManagerGroup);
+    		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+    		accountManagerGroupController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false,
+    			group, GroupRoles.participant, courseEntry, GroupRoles.owner);
 			listenTo(accountManagerGroupController);
 			// add mail templates used when adding and removing users
 			MailTemplate ownerAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(accountManagerGroup, ureq.getIdentity());
 			accountManagerGroupController.setAddUserMailTempl(ownerAddUserMailTempl,false);
 			MailTemplate ownerAremoveUserMailTempl = BGMailHelper.createRemoveParticipantMailTemplate(accountManagerGroup, ureq.getIdentity());
 			accountManagerGroupController.setRemoveUserMailTempl(ownerAremoveUserMailTempl,false);
-	    accountManagementFormVC.put("accountManagementController", accountManagerGroupController.getInitialComponent());
-    }
+			accountManagementFormVC.put("accountManagementController", accountManagerGroupController.getInitialComponent());
+		}
     
 		// Modules config		
 		editModules = createVelocityContainer("editModules");

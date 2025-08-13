@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -114,7 +115,7 @@ public class TimelineBuilder {
 		
 		Map<String, UserPortraitComponent> userIdToUserPortraitComp = new HashMap<>(portraitUsers.size());
 		for (PortraitUser portraitUser : portraitUsers) {
-			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("logEntryPortrait_" + portraitUser.getIdentityKey(), null, locale);
+			UserPortraitComponent userPortrait = UserPortraitFactory.createUserPortrait("logEntryPortrait_" + portraitUser.getIdentityKey(), (VelocityContainer)null, locale);
 			userPortrait.setSize(PortraitSize.small);
 			userPortrait.setPortraitUser(portraitUser);
 			userIdToUserPortraitComp.put(portraitUser.getIdentityKey().toString(), userPortrait);

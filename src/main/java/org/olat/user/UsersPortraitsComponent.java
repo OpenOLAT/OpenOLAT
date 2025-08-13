@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.util.CodeHelper;
 
 /**
@@ -110,7 +111,7 @@ public class UsersPortraitsComponent extends AbstractComponent {
 
 	private UserPortraitComponent createPortraitUserComponent(PortraitUser portraitUser) {
 		UserPortraitComponent userPortraitComp = UserPortraitFactory
-				.createUserPortrait("o_" + CodeHelper.getRAMUniqueID(), null, locale);
+				.createUserPortrait("o_" + CodeHelper.getRAMUniqueID(), (VelocityContainer)null, locale);
 		userPortraitComp.setPortraitUser(portraitUser);
 		userPortraitComp.setSize(size);
 		return userPortraitComp;

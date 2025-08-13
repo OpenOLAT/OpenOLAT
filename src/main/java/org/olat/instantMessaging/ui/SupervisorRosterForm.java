@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -263,7 +264,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 				portraitUser = userPortraitService.createUnknownPortraitUser(getLocale());
 			}
 		}
-		UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait_" + (++count), null, getLocale());
+		UserPortraitComponent portraitComp = UserPortraitFactory.createUserPortrait("portrait_" + (++count), (VelocityContainer)null, getLocale());
 		portraitComp.setSize(PortraitSize.xsmall);
 		portraitComp.setPortraitUser(portraitUser);
 		

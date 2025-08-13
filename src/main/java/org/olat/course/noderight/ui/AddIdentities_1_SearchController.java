@@ -22,7 +22,7 @@ package org.olat.course.noderight.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.admin.user.UserSearchFlexiController;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -35,6 +35,9 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.course.member.MemberSearchConfig;
+import org.olat.course.member.MemberSearchController;
+import org.olat.repository.RepositoryEntry;
 
 
 /**
@@ -45,15 +48,19 @@ import org.olat.core.id.Identity;
  */
 public class AddIdentities_1_SearchController extends StepFormBasicController {
 	
-	private UserSearchFlexiController searchController;
+	private MemberSearchController searchController;
 	
-	private final AddIdentitiesContext context; 
+	private final AddIdentitiesContext context;
 
-	public AddIdentities_1_SearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public AddIdentities_1_SearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, RepositoryEntry courseEntry) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 
 		context = (AddIdentitiesContext) getFromRunContext("context");
-		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
+		
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, GroupRoles.owner, "add-identitity-v1.0")
+				.showSelectButton(false);
+
+		searchController = new MemberSearchController(ureq, wControl, rootForm, config);
 		listenTo(searchController);
 		initForm(ureq);
 	}

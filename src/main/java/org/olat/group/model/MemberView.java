@@ -57,9 +57,16 @@ public class MemberView extends UserPropertiesRow {
 	private boolean managedMembersRepo;
 	private final CourseMembership membership = new CourseMembership();
 	
+	private Identity identity;
+	
 	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		identityStatus = identity == null ? null : identity.getStatus();
+		this.identity = identity;
+	}
+	
+	public Identity getIdentity() {
+		return identity;
 	}
 	
 	public Integer getIdentityStatus() {

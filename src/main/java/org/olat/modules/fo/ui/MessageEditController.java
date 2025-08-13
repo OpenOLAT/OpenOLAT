@@ -271,8 +271,8 @@ public class MessageEditController extends FormBasicController {
 		// save and cancel buttons
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormCancelButton("msg.cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("msg.save", buttonLayout);
+		uifactory.addFormCancelButton("msg.cancel", buttonLayout, ureq, getWindowControl());
 
 		// show message replying to, if in reply modus
 		if (editMode == EditMode.reply) {

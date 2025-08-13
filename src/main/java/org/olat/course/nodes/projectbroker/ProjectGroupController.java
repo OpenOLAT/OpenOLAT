@@ -61,6 +61,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -106,9 +107,13 @@ public class ProjectGroupController extends BasicController {
 		// Project Leader Management
 		BusinessGroup projectGroup = project.getProjectGroup();
 		Group group = businessGroupService.getGroup(projectGroup);
+		GroupRoles searchAsRoles = userCourseEnv.isAdmin()
+				? GroupRoles.owner : GroupRoles.coach;
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		boolean mayModifyMembers = !userCourseEnv.isCourseReadOnly();
-		projectLeaderController = new GroupController(ureq, getWindowControl(), mayModifyMembers, true, true, false, true, false, group, GroupRoles.coach.name());
+		projectLeaderController = new GroupController(ureq, getWindowControl(), mayModifyMembers, true, true, false, true, false,
+				group, GroupRoles.coach, courseEntry, searchAsRoles);
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 		MailTemplate leaderAddUserMailTempl = BGMailHelper.createAddParticipantMailTemplate(projectGroup, ureq.getIdentity());
@@ -117,13 +122,14 @@ public class ProjectGroupController extends BasicController {
 		projectLeaderController.setRemoveUserMailTempl(leaderAremoveUserMailTempl,false);
 
 		// Project Member Management
-		projectMemberController = new GroupController(ureq, getWindowControl(), mayModifyMembers, false, true, false, true, false, group, GroupRoles.participant.name());
+		projectMemberController = new GroupController(ureq, getWindowControl(), mayModifyMembers, false, true, false, true, false,
+				group, GroupRoles.participant, courseEntry, searchAsRoles);
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users
-		MailTemplate partAddUserMailTempl = projectBrokerMailer.createAddParticipantMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+		MailTemplate partAddUserMailTempl = projectBrokerMailer.createAddParticipantMailTemplate(project, ureq.getIdentity(), getTranslator());
 		projectMemberController.setAddUserMailTempl(partAddUserMailTempl,false);
-		MailTemplate partRemoveUserMailTempl = projectBrokerMailer.createRemoveParticipantMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+		MailTemplate partRemoveUserMailTempl = projectBrokerMailer.createRemoveParticipantMailTemplate(project, ureq.getIdentity(), getTranslator());
 		projectMemberController.setRemoveUserMailTempl(partRemoveUserMailTempl,false);
 
 		// Project Candidates Management
@@ -133,11 +139,11 @@ public class ProjectGroupController extends BasicController {
 			myContent.contextPut("isProjectCandidatesListEmpty", projectGroupManager.isCandidateListEmpty(project.getCandidateGroup()) );
 			myContent.put("projectCandidatesController", projectCandidatesController.getInitialComponent());
 			// add mail templates used when adding and removing users
-			MailTemplate waitAddUserMailTempl = projectBrokerMailer.createAddCandidateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+			MailTemplate waitAddUserMailTempl = projectBrokerMailer.createAddCandidateMailTemplate(project, ureq.getIdentity(), getTranslator());
 			projectCandidatesController.setAddUserMailTempl(waitAddUserMailTempl,false);
-			MailTemplate waitRemoveUserMailTempl = projectBrokerMailer.createRemoveAsCandiadateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+			MailTemplate waitRemoveUserMailTempl = projectBrokerMailer.createRemoveAsCandiadateMailTemplate(project, ureq.getIdentity(), getTranslator());
 			projectCandidatesController.setRemoveUserMailTempl(waitRemoveUserMailTempl,false);
-			MailTemplate waitTransferUserMailTempl = projectBrokerMailer.createAcceptCandiadateMailTemplate(project, ureq.getIdentity(), this.getTranslator());
+			MailTemplate waitTransferUserMailTempl = projectBrokerMailer.createAcceptCandiadateMailTemplate(project, ureq.getIdentity(), getTranslator());
 			projectCandidatesController.setTransferUserMailTempl(waitTransferUserMailTempl);
 		}
 		

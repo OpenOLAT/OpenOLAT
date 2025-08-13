@@ -79,14 +79,14 @@ public class MemberViewQueries {
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		if(businessGroup == null) return Collections.emptyList();
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership.key, membership.role, membership.creationDate, membership.lastModified, ident")
 		  .append(" from businessgroup as grp")
 		  .append(" inner join grp.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" inner join membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" where grp.key=:businessGroupKey");
+		  .where().append(" grp.key=:businessGroupKey");
 		searchByIdentity(sb, params);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -187,14 +187,14 @@ public class MemberViewQueries {
 	
 	private Map<Identity,MemberView> getMembersView(CurriculumElement element, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership")
 		  .append(" from curriculumelement as curEl")
 		  .append(" inner join curEl.group as mGroup")
 		  .append(" inner join mGroup.members as membership")
 		  .append(" inner join fetch membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" where curEl.key=:elementKey and membership.role in ('")
+		  .where().append(" curEl.key=:elementKey and membership.role in ('")
 		  	.append(GroupRoles.participant).append("','").append(GroupRoles.coach).append("','")
 		  	.append(GroupRoles.owner).append("','").append(GroupRoles.waiting).append("')");
 		searchByIdentity(sb, params);
@@ -240,7 +240,7 @@ public class MemberViewQueries {
 	
 	private Map<Identity,MemberView> getMembersView(RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership, relGroup.defaultGroup")
 		  .append(" from repositoryentry as v ")
 		  .append(" inner join v.groups as relGroup")
@@ -249,15 +249,19 @@ public class MemberViewQueries {
 		  .append(" inner join fetch membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
 		  .append(" inner join fetch membership.group as mGroup")
-		  .append(" where v.key=:repoEntryKey and membership.role in ('")
+		  .where().append("v.key=:repoEntryKey and membership.role in ('")
 		  	.append(GroupRoles.participant).append("','").append(GroupRoles.coach).append("','")
 		  	.append(GroupRoles.owner).append("','").append(GroupRoles.waiting).append("')");
+		searchAs(sb, params);
 		searchByIdentity(sb, params);
+		searchTestRunningSessions(sb, params);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("repoEntryKey", entry.getKey());
+		searchAs(query, params);
 		searchByIdentity(query, params);
+		searchTestRunningSessions(query, params);
 		
 		// lazy load them
 		Map<Group,CurriculumElement> groupToCurriculumElement = null;
@@ -347,11 +351,11 @@ public class MemberViewQueries {
 	
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident, reservation.resource, reservation from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" where (reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
+		  .where().append(" (reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
 		  .append(" or reservation.resource.key in (select grp.resource.key from businessgroup as grp")
 		  .append("   inner join repoentrytogroup as rel on (grp.baseGroup.key=rel.group.key)")
 		  .append("   where rel.entry.key=:repoEntryKey")
@@ -415,12 +419,12 @@ public class MemberViewQueries {
 	
 	private void getPending(Map<Identity,MemberView> views, BusinessGroup entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
 		  .append(" inner join businessgroup as grp on (reservation.resource.key = grp.resource.key)")
-		  .append(" where grp.key=:groupKey");
+		  .where().append(" grp.key=:groupKey");
 		searchByIdentity(sb, params);
 		
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
@@ -453,11 +457,47 @@ public class MemberViewQueries {
 			m.getMemberShip().setResourceReservation(reservation);
 		}
 	}
+
+	private void searchAs(QueryBuilder sb, SearchMembersParams params) {
+		GroupRoles searchAsRole = params.getSearchAsRole();
+		if(searchAsRole == null || searchAsRole == GroupRoles.owner) {
+			sb.and().append(" membership.role ").in(GroupRoles.participant, GroupRoles.coach, GroupRoles.owner, GroupRoles.waiting);
+		} else if(searchAsRole == GroupRoles.coach) {
+			sb.and().append(" mGroup.key in (select searcherMemberAs.group.key from bgroupmember as searcherMemberAs")
+			  .append(" where searcherMemberAs.group.key=mGroup.key and searcherMemberAs.identity.key=:searcherKey")
+			  .append(")");
+		}
+	}
 	
-	private void searchByIdentity(StringBuilder sb, SearchMembersParams params) {
+	private void searchAs(TypedQuery<?> query, SearchMembersParams params) {
+		if(params.getSearchAsRole() == GroupRoles.coach) {
+			query.setParameter("searcherKey", params.getSearchAs().getKey());
+		}
+	}
+	
+	private void searchTestRunningSessions(QueryBuilder sb, SearchMembersParams params) {
+		if(params.isOnlyRunningTestSessions()) {
+			sb.and().append(" ident.key in (select session.identity.key from qtiassessmenttestsession session")
+			  .append(" where session.repositoryEntry.key=:repoEntryKey and session.terminationTime is null");
+			if(StringHelper.containsNonWhitespace(params.getRunningTestSessionsSubIdent())) {
+				sb.and().append("session.subIdent=:subIdent");
+			} else {
+				sb.and().append("session.subIdent is null");
+			}
+			sb .append(")");
+		}
+	}
+	
+	private void searchTestRunningSessions(TypedQuery<?> query, SearchMembersParams params) {
+		if(params.isOnlyRunningTestSessions() && StringHelper.containsNonWhitespace(params.getRunningTestSessionsSubIdent())) {
+			query.setParameter("subIdent", params.getRunningTestSessionsSubIdent());
+		}
+	}
+	
+	private void searchByIdentity(QueryBuilder sb, SearchMembersParams params) {
 		if (params.getLogin() == null && (params.getUserPropertiesSearch() == null || params.getUserPropertiesSearch().isEmpty())) return;
 
-		sb.append(" and (");			
+		sb.and().append(" (");			
 
 		// append query for login
 		boolean appendOr = false;

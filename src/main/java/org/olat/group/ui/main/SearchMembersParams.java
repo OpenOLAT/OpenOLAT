@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.control.Event;
 
 /**
@@ -40,6 +41,12 @@ public class SearchMembersParams extends Event {
 	
 	private String login;
 	private Map<String, String> userPropertiesSearch;
+
+	private IdentityRef searchAs;
+	private GroupRoles searchAsRole;
+	
+	private boolean onlyRunningTestSessions;
+	private String runningTestSessionsSubIdent;
 	
 	public SearchMembersParams() {
 		super("search_members");
@@ -124,6 +131,38 @@ public class SearchMembersParams extends Event {
 		this.userPropertiesSearch = userPropertiesSearch;
 	}
 	
+	public IdentityRef getSearchAs() {
+		return searchAs;
+	}
+	
+	public GroupRoles getSearchAsRole() {
+		return searchAsRole;
+	}
+
+	public void setSearchAsRole(IdentityRef searchAs, GroupRoles searchAsRole) {
+		this.searchAs = searchAs;
+		this.searchAsRole = searchAsRole;
+	}
+
+	public boolean isOnlyRunningTestSessions() {
+		return onlyRunningTestSessions;
+	}
+
+	public void setOnlyRunningTestSessions(boolean onlyRunningTestSessions) {
+		this.onlyRunningTestSessions = onlyRunningTestSessions;
+	}
+
+	public String getRunningTestSessionsSubIdent() {
+		return runningTestSessionsSubIdent;
+	}
+
+	public void setRunningTestSessionsSubIdent(String runningTestSessionsSubIdent) {
+		this.runningTestSessionsSubIdent = runningTestSessionsSubIdent;
+	}
+
+
+
+
 	public enum Origin {
 		repositoryEntry,
 		businessGroup,

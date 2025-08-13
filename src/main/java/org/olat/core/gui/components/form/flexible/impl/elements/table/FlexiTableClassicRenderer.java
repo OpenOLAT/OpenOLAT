@@ -221,18 +221,18 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 
 			Form theForm = ftE.getRootForm();
 			if(asc == null) {
-				sb.append("<a class='o_orderby' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
+				sb.append("<a class='o_orderby' href=\"javascript:;\" onclick=\"")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
 				  .append("\" draggable=\"false\">");
 			} else if(asc.booleanValue()) {
-				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
+				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:;\" onclick=\"")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
 				  .append("\" draggable=\"false\">");
 			} else {
-				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
+				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:;\" onclick=\"")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
 				  .append("\" draggable=\"false\">");
 			}
