@@ -443,6 +443,14 @@
 .o_lecture_details {
 	container-type: inline-size;
 	container-name: o-lecture-details;
+
+	.o_lecture_subjects {
+		.o_tax_ls_button {
+			min-height: unset;
+			padding-top: 7px;
+			padding-bottom: 7px;
+		}
+	}
 }
 
 @container o-lecture-details (max-width: 820px) {
