@@ -87,6 +87,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private boolean ignoreInCourseAssessment;
 	private FormItem scoreDesc;
 	
+	private Mode scoreMode;
 	private Float maxScore;
 	private Float minScore;
 	private Float weightedMaxScore;
@@ -256,6 +257,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 
 	public void setScoreDesc(FormItem scoreDesc) {
 		this.scoreDesc = scoreDesc;
+	}
+
+	public Mode getScoreMode() {
+		return scoreMode;
+	}
+
+	public void setScoreMode(Mode scoreMode) {
+		this.scoreMode = scoreMode;
 	}
 
 	public Float getMaxScore() {

@@ -72,6 +72,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 import org.olat.course.assessment.ui.tool.component.IdentityAssessmentPassedCellRenderer;
@@ -130,16 +131,16 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CloseableCalloutWindowController ccwc;
 	private Controller scoreDescCtrl;
 
-	private boolean loadNodesFromCourse;
+	private final boolean loadNodesFromCourse;
 	private final boolean followUserResultsVisibility;
 	private CourseNode selectedCourseNode;
-	private List<AssessmentNodeData> preloadedNodesList;
-	private UserCourseEnvironment userCourseEnvironment;
+	private final List<AssessmentNodeData> preloadedNodesList;
+	private final UserCourseEnvironment userCourseEnvironment;
 	private final CourseEntryRef courseEntry;
-	private Boolean learningPath;
-	private boolean hasStatus;
-	private boolean hasGrade;
-	private boolean hasPassedOverridable;
+	private final Boolean learningPath;
+	private final boolean hasStatus;
+	private final boolean hasGrade;
+	private final boolean hasPassedOverridable;
 	private int counter = 0;
 	
 	@Autowired
@@ -173,6 +174,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.nodesSelectable = nodesSelectable;
 		this.discardEmptyNodes = discardEmptyNodes;
 		this.allowTableFiltering = allowTableFiltering;
+		this.preloadedNodesList = null;
 		this.userCourseEnvironment = userCourseEnvironment;
 		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType());
 		scoreScalingEnabled = ScoreScalingHelper.isEnabled(userCourseEnvironment.getCourseEnvironment());
@@ -248,6 +250,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		preloadedNodesList = assessmentCourseNodes;
 		hasStatus = false;
 		hasGrade = true;
+		hasPassedOverridable = false;
 	
 		initForm(ureq);
 		initMultiSelectionTools(false);
@@ -437,6 +440,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			// If the data are taken from the efficiency statement (else clause), only user visible data are present,
 			// but the information about the user visibility is always null.
 			nodesTableList.forEach(this::forgeScore);
+			forgeRootScore(nodesTableList);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = new ArrayList<>(preloadedNodesList);
@@ -456,6 +460,33 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
 			row.setScoreDesc(formLink);
+		}
+	}
+	
+	private void forgeRootScore(List<AssessmentNodeData> rows) {
+		if (!learningPath) {
+			return;
+		}
+		
+		String rootIdent = runStructure.getRootNode().getIdent();
+		AssessmentNodeData rootRow = null;
+		float rootUserNotVisibleScore = 0;
+		for (AssessmentNodeData row : rows) {
+			if (rootIdent.equals(row.getIdent())) {
+				rootRow = row;
+			} else if (!row.isIgnoreInCourseAssessment() && row.getScore() != null && Mode.setByNode == row.getScoreMode()) {
+				rootUserNotVisibleScore += row.getScore().floatValue();
+			}
+		}
+		
+		if (rootRow != null && (rootUserNotVisibleScore > 0 || (rootRow.getScore() != null && rootRow.getScore() < rootUserNotVisibleScore))) {
+			String linkText = rootRow.getScore() != null? AssessmentHelper.getRoundedScore(rootRow.getScore()): "0";
+			linkText += " ";
+			linkText += translate("score.not.summed", AssessmentHelper.getRoundedScore(rootUserNotVisibleScore));
+			linkText += " <i class='o_icon o_icon_info'> </i>";
+			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+			formLink.setUserObject(rootRow);
+			rootRow.setScoreDesc(formLink);
 		}
 	}
 	
@@ -603,6 +634,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			text = translate("score.not.summed.ignore");
 		} else if (nodeData.getUserVisibility() == null || !nodeData.getUserVisibility()) {
 			text = translate("score.not.summed.hidden");
+		} else {
+			text = translate("score.not.summed.root");
 		}
 		scoreDescCtrl = new SimpleMessageController(ureq, getWindowControl(), text, null);
 		listenTo(scoreDescCtrl);
