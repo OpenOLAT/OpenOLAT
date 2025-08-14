@@ -719,7 +719,7 @@ public interface LectureService {
 	
 	public List<TaxonomyLevel> getTaxonomy(LectureBlockRef lectureBlock);
 	
-	public void updateTaxonomyLevels(LectureBlock lectureBlock, Set<Long> taxonomyLevelKeys);
+	public LectureBlock updateTaxonomyLevels(LectureBlock lectureBlock, Set<Long> taxonomyLevelKeys);
 
 	/**
 	 * 
