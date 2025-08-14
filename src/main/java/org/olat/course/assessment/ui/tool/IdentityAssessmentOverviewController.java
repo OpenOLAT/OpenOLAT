@@ -460,6 +460,14 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
 			row.setScoreDesc(formLink);
+			
+			if (scoreScalingEnabled && StringHelper.containsNonWhitespace(row.getRoundedWeightedScore())) {
+				linkText = translate("score.not.summed", row.getRoundedWeightedScore());
+				linkText += " <i class='o_icon o_icon_info'> </i>";
+				formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+				formLink.setUserObject(row);
+				row.setWeightedScoreDesc(formLink);
+			}
 		}
 	}
 	
