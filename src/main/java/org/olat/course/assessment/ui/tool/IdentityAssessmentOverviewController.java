@@ -479,22 +479,37 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		String rootIdent = runStructure.getRootNode().getIdent();
 		AssessmentNodeData rootRow = null;
 		float rootUserNotVisibleScore = 0;
+		float rootUserNotVisibleScoreScaled = 0;
 		for (AssessmentNodeData row : rows) {
 			if (rootIdent.equals(row.getIdent())) {
 				rootRow = row;
 			} else if (!row.isIgnoreInCourseAssessment() && row.getScore() != null && Mode.setByNode == row.getScoreMode()) {
 				rootUserNotVisibleScore += row.getScore().floatValue();
+				
+				if (scoreScalingEnabled && row.getWeightedScore() != null) {
+					rootUserNotVisibleScoreScaled += row.getWeightedScore().floatValue();
+				}
 			}
 		}
 		
 		if (rootRow != null && (rootUserNotVisibleScore > 0 || (rootRow.getScore() != null && rootRow.getScore() < rootUserNotVisibleScore))) {
-			String linkText = rootRow.getScore() != null? AssessmentHelper.getRoundedScore(rootRow.getScore()): "0";
+			String linkText = rootRow.getScore() != null? rootRow.getRoundedScore(): "0";
 			linkText += " ";
 			linkText += translate("score.not.summed", AssessmentHelper.getRoundedScore(rootUserNotVisibleScore));
 			linkText += " <i class='o_icon o_icon_info'> </i>";
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(rootRow);
 			rootRow.setScoreDesc(formLink);
+			
+			if (scoreScalingEnabled) {
+				linkText = rootRow.getScore() != null? rootRow.getRoundedWeightedScore(): "0";
+				linkText += " ";
+				linkText += translate("score.not.summed", AssessmentHelper.getRoundedScore(rootUserNotVisibleScoreScaled));
+				linkText += " <i class='o_icon o_icon_info'> </i>";
+				formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+				formLink.setUserObject(rootRow);
+				rootRow.setWeightedScoreDesc(formLink);
+			}
 		}
 	}
 	
