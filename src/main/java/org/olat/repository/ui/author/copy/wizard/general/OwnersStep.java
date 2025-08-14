@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.admin.user.UserSearchFlexiTableModel;
 import org.olat.admin.user.UserTableDataModel;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -125,8 +124,6 @@ public class OwnersStep extends BasicStep {
 		private UserManager userManager;
 		@Autowired
 		private MemberViewQueries memberViewQueries;
-		@Autowired
-		private BaseSecurityManager securityManager;
 				
 		public OwnersStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -180,11 +177,9 @@ public class OwnersStep extends BasicStep {
 			if (context.getNewOwners() != null) {
 				reloadModel(context.getNewOwners());
 			} else {
-				List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 				SearchMembersParams params = new SearchMembersParams(GroupRoles.owner);
-				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getSourceRepositoryEntry(), params, userPropertyHandlers, getLocale());
-				List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
-				List<Identity> owners = securityManager.loadIdentityByKeys(identityKeys);
+				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getSourceRepositoryEntry(), params);
+				List<Identity> owners = memberViews.stream().map(MemberView::getIdentity).collect(Collectors.toList());
 				
 				if (owners.contains(getIdentity())) {
 					owners.remove(getIdentity());

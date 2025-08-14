@@ -50,13 +50,6 @@ public class MemberRow extends UserPropertiesRow {
 		this.membership = membership;
 		this.creationDate = creationDate;
 	}
-
-	public MemberRow(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, CourseMembership membership,
-			Date creationDate, Locale locale) {
-		super(identityKey, userPropertyHandlers, identityProps, locale);
-		this.membership = membership;
-		this.creationDate = creationDate;
-	}
 	
 	public Date getCreationDate() {
 		return creationDate;

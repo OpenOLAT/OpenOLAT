@@ -22,9 +22,10 @@ package org.olat.group.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityNames;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
@@ -34,16 +35,14 @@ import org.olat.modules.curriculum.CurriculumElementShort;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.resource.OLATResource;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * Initial date: 6 juin 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class MemberView extends UserPropertiesRow {
+public class MemberView implements IdentityRef, IdentityNames {
 	
 	private RepositoryEntry repositoryEntry;
 	private List<BusinessGroupShort> groups;
@@ -52,26 +51,43 @@ public class MemberView extends UserPropertiesRow {
 	private Date creationDate;
 	private Date lastModified;
 	
-	private final Integer identityStatus;
-	
 	private boolean managedMembersRepo;
+	
+	private final Identity identity;
 	private final CourseMembership membership = new CourseMembership();
 	
-	private Identity identity;
-	
-	public MemberView(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		super(identity, userPropertyHandlers, locale);
-		identityStatus = identity == null ? null : identity.getStatus();
+	public MemberView(Identity identity) {
 		this.identity = identity;
+	}
+	
+	@Override
+	public Long getKey() {
+		return identity.getKey();
+	}
+
+	public Integer getStatus() {
+		return identity.getStatus();
+	}
+
+	@Override
+	public String getName() {
+		return identity.getName();
+	}
+
+	@Override
+	public String getFirstName() {
+		return identity.getUser().getFirstName();
+	}
+
+	@Override
+	public String getLastName() {
+		return identity.getUser().getLastName();
 	}
 	
 	public Identity getIdentity() {
 		return identity;
 	}
 	
-	public Integer getIdentityStatus() {
-		return identityStatus;
-	}
 
 	public Date getCreationDate() {
 		return creationDate;

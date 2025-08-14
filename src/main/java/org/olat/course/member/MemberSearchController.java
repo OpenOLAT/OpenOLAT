@@ -388,12 +388,12 @@ public class MemberSearchController extends FormBasicController {
 	private void loadModel() {
 		RepositoryEntry entry = config.repositoryEntry();
 		SearchMembersParams params = getSearchParameters();
-		List<MemberView> members = memberQueries.getRepositoryEntryMembers(entry, params, userPropertyHandlers, getLocale());
+		List<MemberView> members = memberQueries.getRepositoryEntryMembers(entry, params);
 		if(config.identitiesList() != null) {
 			Set<Long> identitiesSet = config.identitiesList()
 					.stream().map(Identity::getKey).collect(Collectors.toSet());
 			members = members.stream()
-					.filter(member -> identitiesSet.contains(member.getIdentityKey()))
+					.filter(member -> identitiesSet.contains(member.getKey()))
 					.toList();
 		}
 		
@@ -409,7 +409,7 @@ public class MemberSearchController extends FormBasicController {
 	}
 	
 	private MemberRow forgeRow(MemberView member, Identity identity) {
-		MemberRow row = new MemberRow(member.getIdentityKey(), userPropertyHandlers, member.getIdentityProps(),
+		MemberRow row = new MemberRow(member.getIdentity(), userPropertyHandlers,
 				member.getMemberShip(), member.getCreationDate(), getLocale());
 		
 		String userPortraitId = "portrait_" + row.getIdentityKey();
