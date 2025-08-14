@@ -571,7 +571,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(settings.getCopyResources() == CopyResources.relation) {
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
 			for(RepositoryEntry entry:entries) {
-				repositoryEntryRelationDao.createRelation(clone.getGroup(), entry);
+				boolean hasDefaultElement = repositoryEntryRelationDao.hasDefaultElement(entry);
+				repositoryEntryRelationDao.createRelation(clone.getGroup(), entry, !hasDefaultElement);
 				fireRepositoryEntryAddedEvent(clone, entry);
 			}
 		} else if(settings.getCopyResources() == CopyResources.resource) {
@@ -599,7 +600,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					if(repositoryService.canCopy(entry, doer)) {
 						String externalRef = settings.evaluateIdentifier(entry.getExternalRef());
 						RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname(), externalRef);
-						repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
+						repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy, true);// First relation of new course
 						fireRepositoryEntryAddedEvent(clone, entryCopy);
 						
 						for(LectureBlock blockToCopy:allLectureBlocks) {
@@ -1585,13 +1586,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return curriculumRepositoryEntryRelationDao
 				.getRepositoryEntries(curriculum, null, RepositoryEntryStatusEnum.preparationToClosed(), true, identity, roles);
 	}
+	
+	@Override
+	public CurriculumElement getDefaultCurriculumElement(RepositoryEntryRef entry) {
+		return curriculumRepositoryEntryRelationDao.getDefaultCurriculumElement(entry);
+	}
 
 	@Override
 	public AddRepositoryEntry addRepositoryEntry(CurriculumElement curriculumElement, RepositoryEntry entry, boolean moveLectureBlocks) {
 		if(!hasRepositoryEntry(curriculumElement, entry)) {
 			boolean moved = false;
-			RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
-			repositoryEntryRelationDao.createRelation(curriculumElement.getGroup(), repoEntry);
+			RepositoryEntry repoEntry = repositoryEntryDao.loadReferenceByKey(entry.getKey());
+			boolean hasDefaultElement = repositoryEntryRelationDao.hasDefaultElement(repoEntry);
+			repositoryEntryRelationDao.createRelation(curriculumElement.getGroup(), repoEntry, !hasDefaultElement);
 			if(moveLectureBlocks) {
 				moved = moveLectureBlocks(curriculumElement, entry);
 			}
@@ -1604,7 +1611,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public boolean addRepositoryTemplate(CurriculumElement curriculumElement, RepositoryEntry template) {
 		if(!hasRepositoryTemplate(curriculumElement, template)) {
-			RepositoryEntry repoTemplate = repositoryEntryDao.loadByKey(template.getKey());
+			RepositoryEntry repoTemplate = repositoryEntryDao.loadReferenceByKey(template.getKey());
 			repositoryTemplateRelationDao.createRelation(curriculumElement.getGroup(), repoTemplate);
 			return true;
 		}

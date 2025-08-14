@@ -648,6 +648,7 @@ CREATE TABLE o_re_to_group (
    id number(20) not null,
    creationdate date not null,
    r_defgroup number default 0 not null,
+   r_defelement number default 0 not null,
    fk_group_id number(20) not null,
    fk_entry_id number(20) not null,
    PRIMARY KEY (id)

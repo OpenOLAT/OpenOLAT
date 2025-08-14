@@ -81,6 +81,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private static final String CMD_RIGHTS = "Rights";
 	private static final String CMD_CONSENTS = "Consents";
 	private static final String CMD_INVITATIONS = "Invitations";
+	private static final String CMD_CURRICULUM_ELEMENTS = "Elements";
 
 	private final MenuTree menuTree;
 	private final VelocityContainer mainVC;
@@ -92,6 +93,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private MembersOverviewController membersOverviewCtrl;
 	private GroupsAndRightsController rightsController;
 	private InvitationListController invitationListCtrl;
+	private CourseCurriculumElementListController curriculumElementsCtrl;
 	private CourseDisclaimerConsentOverviewController disclaimerController;
 	
 	private boolean membersDirty;
@@ -181,6 +183,13 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			GenericTreeNode node = new GenericTreeNode(translate("menu.groups"), CMD_GROUPS);
 			node.setAltText(translate("menu.groups.alt"));
 			node.setCssClass("o_sel_membersmgt_groups");
+			root.addChild(node);
+		}
+		
+		if(entryAdmin || principal) {
+			GenericTreeNode node = new GenericTreeNode(translate("menu.elements"), CMD_CURRICULUM_ELEMENTS);
+			node.setAltText(translate("menu.elements.alt"));
+			node.setCssClass("o_sel_membersmgt_elements");
 			root.addChild(node);
 		}
 
@@ -297,6 +306,16 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				}
 				groupsCtrl.reloadModel();
 				mainVC.put("content", groupsCtrl.getInitialComponent());
+				selectedCtrl = groupsCtrl;
+			}
+		} else if(CMD_CURRICULUM_ELEMENTS.equals(cmd)) {
+			if(entryAdmin ||  principal) {
+				if(curriculumElementsCtrl == null) {
+					curriculumElementsCtrl = new CourseCurriculumElementListController(ureq, bwControl, repoEntry);
+					listenTo(curriculumElementsCtrl);
+				}
+				curriculumElementsCtrl.loadModel();
+				mainVC.put("content", curriculumElementsCtrl.getInitialComponent());
 				selectedCtrl = groupsCtrl;
 			}
 		} else if(CMD_BOOKING.equals(cmd)) {

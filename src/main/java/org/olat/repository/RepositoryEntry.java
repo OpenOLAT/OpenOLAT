@@ -75,6 +75,7 @@ import org.olat.resource.OLATResourceImpl;
 @NamedQuery(name="getRepositoryEntryRoleAndDefaults", query="select membership.role, relGroup.defaultGroup from repositoryentry as v inner join v.groups as relGroup inner join relGroup.group as baseGroup inner join baseGroup.members as membership where v.key=:repoKey and membership.identity.key=:identityKey")
 @NamedQuery(name="filterRepositoryEntryMembership", query="select v.key, membership.identity.key from repositoryentry as v inner join v.groups as relGroup inner join relGroup.group as baseGroup inner join baseGroup.members as membership on membership.role in ('owner','coach','participant') where membership.identity.key=:identityKey and v.key in (:repositoryEntryKey)")
 @NamedQuery(name="loadRepositoryEntryByKey", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType where v.key  = :repoKey")
+@NamedQuery(name="loadRepositoryEntryReferenceByKey", query="select v from repositoryentry as v where v.key=:repoKey")
 @NamedQuery(name="loadRepositoryEntryBySoftKey", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType where v.softkey = :softKey")
 @NamedQuery(name="loadRepositoryEntriesByKeys", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType where v.key in (:repoKeys)")
 @NamedQuery(name="loadRepositoryEntriesForMetaData", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType left join fetch v.organisations left join fetch v.taxonomyLevels where v.status in (:repoStatus) and v.canIndexMetadata")
@@ -84,6 +85,7 @@ import org.olat.resource.OLATResourceImpl;
 @NamedQuery(name="getDisplayNameByResourceKey", query="select v.displayname from repositoryentry v where v.olatResource.key=:resKey")
 @NamedQuery(name="getDisplayNameByOlatResourceRedId", query="select v.displayname from repositoryentry v inner join v.olatResource as ores where ores.resId=:resid")
 @NamedQuery(name="getDisplayNameByRepositoryEntryKey", query="select v.displayname from repositoryentry v where v.key=:reKey")
+@NamedQuery(name="hasRepositoryEntryDefaultElement", query="select rel.key from repoentrytogroup as rel where rel.entry.key=:repoKey and rel.defaultElement=true")
 public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntryRef, ModifiedInfo, OLATResourceable {
 
 	private static final long serialVersionUID = 5319576295875289054L;

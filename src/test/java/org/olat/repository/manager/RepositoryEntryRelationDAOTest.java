@@ -684,7 +684,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(element);
 
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryEntryRelationDao.createRelation(element.getGroup(), re);
+		repositoryEntryRelationDao.createRelation(element.getGroup(), re, true);
 		dbInstance.commitAndCloseSession();
 		
 		// Has curriculum elements relations AND business groups
@@ -704,7 +704,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(element);
 
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		repositoryEntryRelationDao.createRelation(element.getGroup(), re);
+		repositoryEntryRelationDao.createRelation(element.getGroup(), re, true);
 		dbInstance.commitAndCloseSession();
 		
 		// Has curriculum elements relations AND business groups
@@ -1073,7 +1073,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	public void detectBrokenGroupDependencies() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Group group = groupDao.createGroup();
-		RepositoryEntryToGroupRelation relation = repositoryEntryRelationDao.createRelation(group, entry);
+		RepositoryEntryToGroupRelation relation = repositoryEntryRelationDao.createRelation(group, entry, false);
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> dependencies = repositoryEntryRelationDao.getBrokenGroupDependencies(0, 5000);

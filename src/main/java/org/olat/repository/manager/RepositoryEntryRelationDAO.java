@@ -656,10 +656,20 @@ public class RepositoryEntryRelationDAO {
 		return true;
 	}
 	
-	public RepositoryEntryToGroupRelation createRelation(Group group, RepositoryEntry re) {
+	public boolean hasDefaultElement(RepositoryEntryRef re) {
+		List<Long> defEls = dbInstance.getCurrentEntityManager().createNamedQuery("hasRepositoryEntryDefaultElement", Long.class)
+				.setParameter("repoKey", re.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return defEls != null && !defEls.isEmpty() && defEls.get(0) != null && defEls.get(0).longValue() > 0;
+	}
+	
+	public RepositoryEntryToGroupRelation createRelation(Group group, RepositoryEntry re, boolean defaultElement) {
 		RepositoryEntryToGroupRelation rel = new RepositoryEntryToGroupRelation();
 		rel.setCreationDate(new Date());
 		rel.setDefaultGroup(false);
+		rel.setDefaultElement(defaultElement);
 		rel.setGroup(group);
 		rel.setEntry(re);
 		dbInstance.getCurrentEntityManager().persist(rel);

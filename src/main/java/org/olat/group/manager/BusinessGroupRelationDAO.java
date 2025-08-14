@@ -75,7 +75,7 @@ public class BusinessGroupRelationDAO {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	public void addRelationToResource(BusinessGroup group, RepositoryEntry re) {
-		repositoryEntryRelationDao.createRelation(((BusinessGroupImpl)group).getBaseGroup(), re);
+		repositoryEntryRelationDao.createRelation(((BusinessGroupImpl)group).getBaseGroup(), re, false);
 	}
 	
 	public void addRole(Identity identity, BusinessGroup businessGroup, String role) {
