@@ -111,7 +111,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case attempts: return nodeData.getAttempts();
 			case userVisibility: return nodeData;
 			case score: return nodeData.getScoreDesc() != null? nodeData.getScoreDesc(): nodeData.getRoundedScore();
-			case weightedScore: return nodeData.getScoreDesc() != null? nodeData.getScoreDesc(): nodeData.getRoundedWeightedScore();
+			case weightedScore: return nodeData.getWeightedScoreDesc() != null? nodeData.getWeightedScoreDesc(): nodeData.getRoundedWeightedScore();
 			case grade: return nodeData;
 			case passedOverriden: return nodeData.getPassedOverridable() == null
 					? Boolean.FALSE
