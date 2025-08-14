@@ -478,12 +478,17 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		
 		String rootIdent = runStructure.getRootNode().getIdent();
 		AssessmentNodeData rootRow = null;
+		boolean hasNotVisibleScore = false;
 		float rootUserNotVisibleScore = 0;
 		float rootUserNotVisibleScoreScaled = 0;
 		for (AssessmentNodeData row : rows) {
 			if (rootIdent.equals(row.getIdent())) {
 				rootRow = row;
 			} else if (!row.isIgnoreInCourseAssessment() && row.getScore() != null && Mode.setByNode == row.getScoreMode()) {
+				if (row.getUserVisibility() == null || !row.getUserVisibility().booleanValue()) {
+					hasNotVisibleScore = true;
+				}
+				
 				rootUserNotVisibleScore += row.getScore().floatValue();
 				
 				if (scoreScalingEnabled && row.getWeightedScore() != null) {
@@ -492,7 +497,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			}
 		}
 		
-		if (rootRow != null && (rootUserNotVisibleScore > 0 || (rootRow.getScore() != null && rootRow.getScore() < rootUserNotVisibleScore))) {
+		if (rootRow != null && hasNotVisibleScore) {
 			String linkText = rootRow.getScore() != null? rootRow.getRoundedScore(): "0";
 			linkText += " ";
 			linkText += translate("score.not.summed", AssessmentHelper.getRoundedScore(rootUserNotVisibleScore));
