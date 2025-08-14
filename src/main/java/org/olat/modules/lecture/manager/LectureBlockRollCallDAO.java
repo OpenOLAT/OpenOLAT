@@ -808,10 +808,12 @@ public class LectureBlockRollCallDAO {
 	
 		// check access permission
 		if(identity != null && !params.isParticipant(identity)) {
-			if(params.getLimitToRole() == null) {
-				appendCheckAccess(sb);
-			} else {
+			if(params.getLimitToRole() != null) {
 				appendCheckAccess(sb, params.getLimitToRole());
+			} else if(params.getLimitToRoles() != null) {
+				appendCheckAccess(sb, params.getLimitToRoles());
+			} else {
+				appendCheckAccess(sb);
 			}
 		}
 
@@ -1035,7 +1037,15 @@ public class LectureBlockRollCallDAO {
 		  .append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append(" )");
 	}
-	
+
+	private void appendCheckAccess(QueryBuilder sb, List<OrganisationRoles> roles) {
+		sb.append(" and exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
+				.append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and membership.identity.key=:identityKey")
+				.append("     and membership.role").in(roles.toArray(new OrganisationRoles[roles.size()]))
+				.append("     and re.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+				.append(" )");
+	}
+
 	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams,
 			List<UserPropertyHandler> userPropertyHandlers, QueryBuilder sb) {
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
