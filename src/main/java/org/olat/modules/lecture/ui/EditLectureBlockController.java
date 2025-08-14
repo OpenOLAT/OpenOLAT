@@ -90,6 +90,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -157,6 +158,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private AddLectureContext addLectureCtxt;
 	private CurriculumElement curriculumElement;
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
+	private FormLink adoptFromElementButton;
 	
 	private List<MemberView> possibleTeachersList;
 
@@ -396,16 +398,23 @@ public class EditLectureBlockController extends FormBasicController {
 		// Subjects
 		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
+			boolean taxonomyEnabled = !readOnly && !lectureManagementManaged &&
+					!LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.subjects);
+			String subjectsLayoutPage = velocity_root + "/subjects.html";
+			FormLayoutContainer subjectsLayout = uifactory.addCustomFormLayout("lecture.subjects.layout", 
+					"lecture.subjects", subjectsLayoutPage, formLayout);
 			Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
 			Set<TaxonomyLevel> taxonomyLevels = lectureBlock == null ? Set.of() : lectureBlock.getTaxonomyLevels()
 					.stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toSet());
 			
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", "lecture.subjects", 
-					formLayout, getWindowControl(), allTaxonomyLevels);
+			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", null, subjectsLayout,
+					getWindowControl(), allTaxonomyLevels);
 			taxonomyLevelEl.setDisplayNameHeader(translate("lecture.subjects"));
 			taxonomyLevelEl.setSelection(taxonomyLevels);
-			taxonomyLevelEl.setEnabled(!readOnly && !lectureManagementManaged && 
-					!LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.subjects));
+			taxonomyLevelEl.setEnabled(taxonomyEnabled);
+			
+			adoptFromElementButton = uifactory.addFormLink("adopt.from.element", subjectsLayout, Link.BUTTON);
+			adoptFromElementButton.setEnabled(taxonomyEnabled);
 		}
 		
 		// Teachers
@@ -707,6 +716,8 @@ public class EditLectureBlockController extends FormBasicController {
 			} else if(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 				doEditTeamsMeeting(ureq);
 			}
+		} else if (adoptFromElementButton == source) {
+			doAdoptFromElement();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -784,7 +795,7 @@ public class EditLectureBlockController extends FormBasicController {
 			addLectureCtxt.setWithTeamsMeeting(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
 		} else {
 			updateOnlineMeetings();
-			lectureService.updateTaxonomyLevels(lectureBlock, getSelectedTaxonomyLevelKeys());
+			lectureBlock = lectureService.updateTaxonomyLevels(lectureBlock, getSelectedTaxonomyLevelKeys());
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 			
 			synchronizeTeachers(audit);
@@ -981,6 +992,17 @@ public class EditLectureBlockController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTeamsMeetingCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doAdoptFromElement() {
+		if (curriculumElement == null) {
+			return;
+		}
+		CurriculumElement reloadedCurriculumElement = curriculumService.getCurriculumElement(curriculumElement);
+		List<TaxonomyLevel> taxonomyLevels = reloadedCurriculumElement.getTaxonomyLevels().stream()
+				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
+				.collect(Collectors.toList());
+		taxonomyLevelEl.setSelection(taxonomyLevels);
 	}
 	
 	public static class GroupBox {

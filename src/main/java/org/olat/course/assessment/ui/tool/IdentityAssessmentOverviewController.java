@@ -460,6 +460,14 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(row);
 			row.setScoreDesc(formLink);
+			
+			if (scoreScalingEnabled && StringHelper.containsNonWhitespace(row.getRoundedWeightedScore())) {
+				linkText = translate("score.not.summed", row.getRoundedWeightedScore());
+				linkText += " <i class='o_icon o_icon_info'> </i>";
+				formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+				formLink.setUserObject(row);
+				row.setWeightedScoreDesc(formLink);
+			}
 		}
 	}
 	
@@ -470,23 +478,43 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		
 		String rootIdent = runStructure.getRootNode().getIdent();
 		AssessmentNodeData rootRow = null;
+		boolean hasNotVisibleScore = false;
 		float rootUserNotVisibleScore = 0;
+		float rootUserNotVisibleScoreScaled = 0;
 		for (AssessmentNodeData row : rows) {
 			if (rootIdent.equals(row.getIdent())) {
 				rootRow = row;
 			} else if (!row.isIgnoreInCourseAssessment() && row.getScore() != null && Mode.setByNode == row.getScoreMode()) {
+				if (row.getUserVisibility() == null || !row.getUserVisibility().booleanValue()) {
+					hasNotVisibleScore = true;
+				}
+				
 				rootUserNotVisibleScore += row.getScore().floatValue();
+				
+				if (scoreScalingEnabled && row.getWeightedScore() != null) {
+					rootUserNotVisibleScoreScaled += row.getWeightedScore().floatValue();
+				}
 			}
 		}
 		
-		if (rootRow != null && (rootUserNotVisibleScore > 0 || (rootRow.getScore() != null && rootRow.getScore() < rootUserNotVisibleScore))) {
-			String linkText = rootRow.getScore() != null? AssessmentHelper.getRoundedScore(rootRow.getScore()): "0";
+		if (rootRow != null && hasNotVisibleScore) {
+			String linkText = rootRow.getScore() != null? rootRow.getRoundedScore(): "0";
 			linkText += " ";
 			linkText += translate("score.not.summed", AssessmentHelper.getRoundedScore(rootUserNotVisibleScore));
 			linkText += " <i class='o_icon o_icon_info'> </i>";
 			FormLink formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
 			formLink.setUserObject(rootRow);
 			rootRow.setScoreDesc(formLink);
+			
+			if (scoreScalingEnabled) {
+				linkText = rootRow.getScore() != null? rootRow.getRoundedWeightedScore(): "0";
+				linkText += " ";
+				linkText += translate("score.not.summed", AssessmentHelper.getRoundedScore(rootUserNotVisibleScoreScaled));
+				linkText += " <i class='o_icon o_icon_info'> </i>";
+				formLink = uifactory.addFormLink("o_sd_" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+				formLink.setUserObject(rootRow);
+				rootRow.setWeightedScoreDesc(formLink);
+			}
 		}
 	}
 	
