@@ -24,7 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.selenium.page.core.UserSearchPage;
+import org.olat.selenium.page.core.MemberSearchPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -177,7 +177,7 @@ public class AppointmentPage {
 		return this;
 	}
 	
-	public UserSearchPage addUser(int day) {
+	public MemberSearchPage addUser(int day) {
 		String dayStr = dayToString(day);
 		By addDropMenuBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//button[contains(@class,'dropdown-toggle')]");
 		browser.findElement(addDropMenuBy).click();
@@ -185,7 +185,7 @@ public class AppointmentPage {
 		OOGraphene.waitElement(addUserBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		return new UserSearchPage(browser);
+		return new MemberSearchPage(browser);
 	}
 	
 	/**
@@ -193,14 +193,14 @@ public class AppointmentPage {
 	 * @param posInList The position in appointments list (start with  1)
 	 * @return Itself
 	 */
-	public UserSearchPage addUserToAppointment(int posInList) {
+	public MemberSearchPage addUserToAppointment(int posInList) {
 		By addDropMenuBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]//div[contains(@class,'o_main_cont')]//button[contains(@class,'dropdown-toggle')]");
 		browser.findElement(addDropMenuBy).click();
 		By addUserBy = By.xpath("//div[contains(@class,'o_appointments')]//ul[contains(@class,'dropdown-menu')]/li/a[i[contains(@class,'o_icon_add_member')]]");
 		OOGraphene.waitElement(addUserBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		return new UserSearchPage(browser);
+		return new MemberSearchPage(browser);
 	}
 
 	/**
