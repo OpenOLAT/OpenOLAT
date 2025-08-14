@@ -167,8 +167,7 @@ public class MembersTableController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == membersTable) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if ("vcard".equals(cmd)) {
 					MemberRow row = membersModel.getObject(se.getIndex());
@@ -178,8 +177,7 @@ public class MembersTableController extends FormBasicController {
 					doSendEmailToMember(row, ureq);
 				}
 			}	
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			MemberRow row = (MemberRow)link.getUserObject();
 			if ("im".equals(cmd)) {
@@ -219,7 +217,7 @@ public class MembersTableController extends FormBasicController {
 		}
 		List<MemberRow> memberList = new ArrayList<>();		
 		for (Identity identity : identities) {
-			MemberRow member = new MemberRow(new MemberView(identity, userPropertyHandlers, getLocale()));
+			MemberRow member = new MemberRow(new MemberView(identity), userPropertyHandlers, getLocale());
 			if (userLastTimeVisible) {
 				if (repoEntry == null) {
 					BusinessGroupMembership groupmembership = groupmemberships.get(identity.getKey());

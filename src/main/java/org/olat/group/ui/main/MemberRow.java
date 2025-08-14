@@ -21,32 +21,42 @@ package org.olat.group.ui.main;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.MemberView;
 import org.olat.modules.curriculum.CurriculumElementShort;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberRow {
+public class MemberRow extends UserPropertiesRow {
 	
 	private Date firstTime;
 	private Date lastTime;
 	
+	private final Integer identityStatus;
+	private final CourseMembership membership;
+	private final List<BusinessGroupShort> groups;
+	private final List<CurriculumElementShort> curriculumElements;
+	
 	private String onlineStatus;
 	private FormLink toolsLink;
 	private FormLink chatLink;
-	
-	private final MemberView view;
-	
-	public MemberRow(MemberView view) {
-		this.view = view;
+
+	public MemberRow(MemberView view, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(view.getIdentity(), userPropertyHandlers, locale);
 		firstTime = view.getCreationDate();
 		lastTime = view.getLastModified();
+		identityStatus = view.getStatus();
+		membership = view.getMemberShip();
+		groups = view.getGroups();
+		curriculumElements = view.getCurriculumElements();
 	}
 
 	public FormLink getToolsLink() {
@@ -73,25 +83,20 @@ public class MemberRow {
 		this.onlineStatus = onlineStatus;
 	}
 	
-	public MemberView getView() {
-		return view;
-	}
-	
-	public Long getIdentityKey() {
-		return view.getIdentityKey();
+	public Integer getIdentityStatus() {
+		return identityStatus;
 	}
 
 	public CourseMembership getMembership() {
-		return view.getMemberShip();
+		return membership;
 	}
 
 	public List<BusinessGroupShort> getGroups() {
-		return view.getGroups();
+		return groups;
 	}
 
-
 	public List<CurriculumElementShort> getCurriculumElements() {
-		return view.getCurriculumElements();
+		return curriculumElements;
 	}
 
 	public boolean isFullyManaged() {
@@ -101,8 +106,8 @@ public class MemberRow {
 			return false;
 		}
 
-		if(view.getGroups() != null) {
-			for(BusinessGroupShort group:view.getGroups()) {
+		if(groups != null) {
+			for(BusinessGroupShort group:groups) {
 				if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
 					return false;
 				}
@@ -136,7 +141,7 @@ public class MemberRow {
 
 	@Override
 	public int hashCode() {
-		return view.getIdentityKey() == null ? 2878 : view.getIdentityKey().hashCode();
+		return getIdentityKey() == null ? 2878 : getIdentityKey().hashCode();
 	}
 
 	@Override
@@ -144,9 +149,8 @@ public class MemberRow {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof MemberRow) {
-			MemberRow member = (MemberRow)obj;
-			return view.getIdentityKey() != null && view.getIdentityKey().equals(member.getView().getIdentityKey());
+		if(obj instanceof MemberRow member) {
+			return getIdentityKey() != null && getIdentityKey().equals(member.getIdentityKey());
 		}
 		return false;
 	}
@@ -154,7 +158,7 @@ public class MemberRow {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("memberView[identityKey=").append(view.getIdentityKey() == null ? "" : view.getIdentityKey()).append("]");
+		sb.append("memberView[identityKey=").append(getIdentityKey() == null ? "" : getIdentityKey()).append("]");
 		return sb.toString();
 	}
 }

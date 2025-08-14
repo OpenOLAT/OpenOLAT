@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.admin.user.UserTableDataModel;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -99,8 +97,6 @@ import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.ExecutionType;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -135,11 +131,7 @@ public class CopyCourseWizardController extends BasicController {
 	@Autowired
 	private ReminderModule reminderModule;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private MemberViewQueries memberViewQueries;
-	@Autowired
-	private BaseSecurityManager securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -459,12 +451,9 @@ public class CopyCourseWizardController extends BasicController {
 	}
 	
 	private boolean hasOwners(RepositoryEntry repositoryEntry) {
-		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(GroupRoles.owner);
-		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(repositoryEntry, params, userPropertyHandlers, getLocale());
-		List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
-		
+		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(repositoryEntry, params);
+		List<Long> identityKeys = memberViews.stream().map(MemberView::getKey).collect(Collectors.toList());
 		return !identityKeys.isEmpty();
 	}
 	
@@ -477,27 +466,18 @@ public class CopyCourseWizardController extends BasicController {
 	}
 	
 	private boolean hasCoaches() {
-		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(GroupRoles.coach);
 		params.setOrigins(EnumSet.of(Origin.repositoryEntry));
-		
-		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
-
+		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params);
 		return !memberViews.isEmpty();
 	}
 	
 	private List<Identity> getCoaches(RepositoryEntry sourceEntry) {
-		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(GroupRoles.coach);
 		params.setOrigins(EnumSet.of(Origin.repositoryEntry));
 		
-		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
-		List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
-		List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
-		
-		return coaches;
+		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params);
+		return memberViews.stream().map(MemberView::getIdentity).collect(Collectors.toList());
 	}
 	
 	private boolean hasDocuments(ICourse course) {

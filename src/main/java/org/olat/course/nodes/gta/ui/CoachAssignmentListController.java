@@ -135,7 +135,6 @@ public class CoachAssignmentListController extends FormBasicController {
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final List<UserPropertyHandler> coachPropertyHandlers;
 	
 	@Autowired
 	private DB dbInstance;
@@ -173,9 +172,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		SearchMembersParams params = new SearchMembersParams();
 		params.setPending(false);
 		params.setRoles(new GroupRoles[] { GroupRoles.participant });
-		coachPropertyHandlers = List.of(userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.FIRSTNAME),
-				userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.LASTNAME));
-		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
+		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params);
 		
 		initForm(ureq);
 		loadModel(this.assessedIdentities, Set.of());
@@ -281,14 +278,14 @@ public class CoachAssignmentListController extends FormBasicController {
 			params.setRoles(new GroupRoles[] { GroupRoles.coach });
 		}
 		
-		List<MemberView> coachesViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
-		Collections.sort(coachesViews, new MemberViewNamesComparator(coachPropertyHandlers, getLocale()));
+		List<MemberView> coachesViews = memberQueries.getRepositoryEntryMembers(repoEntry, params);
+		Collections.sort(coachesViews, new MemberViewNamesComparator(getLocale()));
 		
 		coachesColumns = new ArrayList<>();
 		
 		for(MemberView member:coachesViews) {
-			String coachKey = member.getIdentityKey().toString();
-			String fullName = userManager.getUserDisplayName(member, coachPropertyHandlers);
+			String coachKey = member.getKey().toString();
+			String fullName = userManager.getUserDisplayName(member.getIdentity());
 			coachesColumns.add(new CoachColumn(coachKey, fullName, member));
 			coachKeyValues.add(SelectionValues.entry(coachKey, fullName));
 		}
@@ -345,9 +342,9 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	private void loadModel(List<Identity> participants, Set<String> filteredCoachKeys) {
 		Map<Long,MemberView> participantsMap = participantsViews.stream()
-				.collect(Collectors.toMap(MemberView::getIdentityKey, view -> view, (u, v) -> u));
+				.collect(Collectors.toMap(MemberView::getKey, view -> view, (u, v) -> u));
 		Map<String,MemberView> coachesStringMap = coachesColumns.stream().map(CoachColumn::getMemberView)
-				.collect(Collectors.toMap(view -> view.getIdentityKey().toString(), view -> view, (u, v) -> u));
+				.collect(Collectors.toMap(view -> view.getKey().toString(), view -> view, (u, v) -> u));
 
 		RepositoryEntry entry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode, null);
@@ -546,7 +543,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		}
 		
 		Map<Long,MemberView> participantsMap = participantsViews.stream()
-				.collect(Collectors.toMap(MemberView::getIdentityKey, view -> view, (u, v) -> u));
+				.collect(Collectors.toMap(MemberView::getKey, view -> view, (u, v) -> u));
 
 		List<Identity> filteredIdentities;
 		if(StringHelper.containsNonWhitespace(search) || !identityKeys.isEmpty()

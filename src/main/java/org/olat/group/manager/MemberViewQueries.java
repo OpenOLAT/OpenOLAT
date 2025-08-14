@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,7 +54,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -75,8 +73,7 @@ public class MemberViewQueries {
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	
-	public List<MemberView> getBusinessGroupMembers(BusinessGroup businessGroup, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public List<MemberView> getBusinessGroupMembers(BusinessGroup businessGroup, SearchMembersParams params) {
 		if(businessGroup == null) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -103,18 +100,18 @@ public class MemberViewQueries {
 			Date lastModified = (Date)objects[pos++];
 			
 			Identity identity = (Identity)objects[pos++];
-			MemberView view = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
+			MemberView view = views.computeIfAbsent(identity, id -> new MemberView(id));
 			view.setCreationDate(creationDate);
 			view.setLastModified(lastModified);
 			view.addGroup(businessGroup);
 			view.getMemberShip().setBusinessGroupRole(role);
 		}
 
-		getPending(views, businessGroup, params, userPropertyHandlers, locale);
+		getPending(views, businessGroup, params);
 		// Pending create the membership object
 		getExternalUsers(views, businessGroup);
 
-		getResourceReservation(views, businessGroup, userPropertyHandlers, locale);
+		getResourceReservation(views, businessGroup);
 		
 		List<MemberView> members = new ArrayList<>(views.values());
 		filterByRoles(members, params);
@@ -151,7 +148,7 @@ public class MemberViewQueries {
 			BusinessGroup businessGroup = (BusinessGroup)rawObject[4];
 			
 			MemberView view = views.computeIfAbsent(entry, re -> {
-				MemberView v = new MemberView(identity, Collections.emptyList(), null);
+				MemberView v = new MemberView(identity);
 				v.setRepositoryEntry(entry);
 				return v;
 			});
@@ -171,11 +168,10 @@ public class MemberViewQueries {
 		return new ArrayList<>(views.values());
 	}
 	
-	public List<MemberView> getCurriculumElementMembers(CurriculumElement element, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public List<MemberView> getCurriculumElementMembers(CurriculumElement element, SearchMembersParams params) {
 		if(element == null) return Collections.emptyList();
 
-		Map<Identity,MemberView> views = getMembersView(element, params, userPropertyHandlers, locale);
+		Map<Identity,MemberView> views = getMembersView(element, params);
 		//TODO getPending(views, entry, params, userPropertyHandlers, locale);
 		
 		List<MemberView> members = new ArrayList<>(views.values());
@@ -185,8 +181,7 @@ public class MemberViewQueries {
 		return members;
 	}
 	
-	private Map<Identity,MemberView> getMembersView(CurriculumElement element, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	private Map<Identity,MemberView> getMembersView(CurriculumElement element, SearchMembersParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership")
 		  .append(" from curriculumelement as curEl")
@@ -212,7 +207,7 @@ public class MemberViewQueries {
 			Identity member = membership.getIdentity();
 			
 			MemberView view = views.computeIfAbsent(member, id
-					-> new MemberView(id, userPropertyHandlers, locale));
+					-> new MemberView(id));
 			
 			view.setCreationDate(membership.getCreationDate());
 			view.setLastModified(membership.getLastModified());
@@ -223,12 +218,11 @@ public class MemberViewQueries {
 		return views;
 	}
 	
-	public List<MemberView> getRepositoryEntryMembers(RepositoryEntry entry, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public List<MemberView> getRepositoryEntryMembers(RepositoryEntry entry, SearchMembersParams params) {
 		if(entry == null) return Collections.emptyList();
 
-		Map<Identity,MemberView> views = getMembersView(entry, params, userPropertyHandlers, locale);
-		getPending(views, entry, params, userPropertyHandlers, locale);
+		Map<Identity,MemberView> views = getMembersView(entry, params);
+		getPending(views, entry, params);
 		getExternalUsers(views, entry);
 		
 		List<MemberView> members = new ArrayList<>(views.values());
@@ -238,8 +232,7 @@ public class MemberViewQueries {
 		return members;
 	}
 	
-	private Map<Identity,MemberView> getMembersView(RepositoryEntry entry, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	private Map<Identity,MemberView> getMembersView(RepositoryEntry entry, SearchMembersParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership, relGroup.defaultGroup")
 		  .append(" from repositoryentry as v ")
@@ -277,7 +270,7 @@ public class MemberViewQueries {
 			Identity member = membership.getIdentity();
 			
 			MemberView view = views.computeIfAbsent(member, id
-					-> new MemberView(id, userPropertyHandlers, locale));
+					-> new MemberView(id));
 			
 			// Creation date: take the earliest date if user has multiple membership entries
 			if (view.getCreationDate() == null || membership.getCreationDate().before(view.getCreationDate())) {
@@ -351,8 +344,7 @@ public class MemberViewQueries {
 		}
 	}
 	
-	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident, reservation.resource, reservation from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
@@ -376,7 +368,7 @@ public class MemberViewQueries {
 			OLATResource resource = (OLATResource)rawObject[1];
 			ResourceReservation reservation = (ResourceReservation)rawObject[2];
 			
-			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
+			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id));
 			m.getMemberShip().setPending(true);
 			if(resource != null ) {
 				m.getMemberShip().setResourceReservation(reservation);
@@ -419,8 +411,7 @@ public class MemberViewQueries {
 		}
 	}
 	
-	private void getPending(Map<Identity,MemberView> views, BusinessGroup entry, SearchMembersParams params,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	private void getPending(Map<Identity,MemberView> views, BusinessGroup entry, SearchMembersParams params) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
@@ -436,14 +427,13 @@ public class MemberViewQueries {
 		
 		List<Identity> identities = query.getResultList();
 		for(Identity identity:identities) {
-			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
+			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id));
 			m.addGroup(entry);
 			m.getMemberShip().setPending(true);
 		}
 	}
 
-	private void getResourceReservation(Map<Identity,MemberView> views, BusinessGroup entry,
-										List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	private void getResourceReservation(Map<Identity,MemberView> views, BusinessGroup entry) {
 		QueryBuilder qb = new QueryBuilder();
 
 		qb.append("select reservation from resourcereservation as reservation")
@@ -455,7 +445,7 @@ public class MemberViewQueries {
 				.setParameter("groupKey", entry.getKey());
 
 		for(ResourceReservation reservation: query.getResultList()) {
-			MemberView m = views.computeIfAbsent(reservation.getIdentity(), id -> new MemberView(id, userPropertyHandlers, locale));
+			MemberView m = views.computeIfAbsent(reservation.getIdentity(), id -> new MemberView(id));
 			m.getMemberShip().setResourceReservation(reservation);
 		}
 	}

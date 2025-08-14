@@ -19,75 +19,66 @@
  */
 package org.olat.group.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Initial date: 14 sept. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 14 août 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class MemberViewQueriesTest {
+public class MemberViewQueriesTest extends OlatTestCase {
+	
+	@Autowired
+	private MemberViewQueries memberViewQueries;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Test
-	public void filterByRolesOneRoleOnly() {
-		MemberViewQueries viewQueries = new MemberViewQueries();
+	public void getRepositoryEntryMembers() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("member-1");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(author, re, GroupRoles.owner.name());
 
-		MemberView owner1 = new MemberView(null, List.of(), null);
-		owner1.getMemberShip().setRepositoryEntryOwner(true);
-		MemberView owner2 = new MemberView(null, List.of(), null);
-		owner2.getMemberShip().setRepositoryEntryOwner(true);
-		MemberView pending = new MemberView(null, List.of(), null);
-		pending.getMemberShip().setPending(true);
-		
-		List<MemberView> memberList = new ArrayList<>();
-		memberList.add(owner1);
-		memberList.add(owner2);
-		memberList.add(pending);
-		
 		SearchMembersParams params = new SearchMembersParams();
-		params.setPending(false);
-		params.setRole(GroupRoles.owner);
+		params.setSearchAsRole(author, GroupRoles.owner);
+		params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting});
+		params.setOnlyRunningTestSessions(false);
+		params.setUserPropertiesSearch(Map.of(UserConstants.FIRSTNAME, author.getUser().getFirstName()));
 		
-		viewQueries.filterByRoles(memberList, params);
-		
-		assertThat(memberList)
-			.containsExactlyInAnyOrder(owner1, owner2)
-			.doesNotContain(pending);
+		List<MemberView> views = memberViewQueries.getRepositoryEntryMembers(re, params);
+		Assertions.assertThat(views)
+			.hasSize(1).map(MemberView::getKey)
+			.containsExactly(author.getKey());
 	}
 	
 	@Test
-	public void filterByRolesOneRoleAndPending() {
-		MemberViewQueries viewQueries = new MemberViewQueries();
+	public void getRepositoryEntryMembersExcludeRoles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("member-1");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(author, re, GroupRoles.owner.name());
 
-		MemberView owner = new MemberView(null, List.of(), null);
-		owner.getMemberShip().setRepositoryEntryOwner(true);
-		MemberView coach = new MemberView(null, List.of(), null);
-		coach.getMemberShip().setBusinessGroupCoach(true);
-		MemberView pending = new MemberView(null, List.of(), null);
-		pending.getMemberShip().setPending(true);
-		
-		List<MemberView> memberList = new ArrayList<>();
-		memberList.add(owner);
-		memberList.add(coach);
-		memberList.add(pending);
-		
 		SearchMembersParams params = new SearchMembersParams();
-		params.setPending(true);
-		params.setRole(GroupRoles.coach);
+		params.setSearchAsRole(author, GroupRoles.owner);
+		params.setRoles(new GroupRoles[] { GroupRoles.coach});
+		params.setOnlyRunningTestSessions(false);
+		params.setUserPropertiesSearch(Map.of(UserConstants.FIRSTNAME, author.getUser().getFirstName()));
 		
-		viewQueries.filterByRoles(memberList, params);
-		
-		assertThat(memberList)
-			.containsExactlyInAnyOrder(coach, pending)
-			.doesNotContain(owner);
+		List<MemberView> views = memberViewQueries.getRepositoryEntryMembers(re, params);
+		Assertions.assertThat(views)
+			.isEmpty();
 	}
-
 }

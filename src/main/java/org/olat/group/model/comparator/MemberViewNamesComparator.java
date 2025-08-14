@@ -21,12 +21,9 @@ package org.olat.group.model.comparator;
 
 import java.text.Collator;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.id.UserConstants;
 import org.olat.group.model.MemberView;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -37,10 +34,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class MemberViewNamesComparator implements Comparator<MemberView> {
 	
 	private final Collator collator;
-	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public MemberViewNamesComparator(List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		this.userPropertyHandlers = userPropertyHandlers;
+	public MemberViewNamesComparator(Locale locale) {
 		collator = Collator.getInstance(locale);
 	}
 
@@ -50,17 +45,17 @@ public class MemberViewNamesComparator implements Comparator<MemberView> {
 			return compareNulls(o1, o2);
 		}
 		
-		String lastName1 = o1.getIdentityProp(UserConstants.LASTNAME, userPropertyHandlers);
-		String lastName2 = o2.getIdentityProp(UserConstants.LASTNAME, userPropertyHandlers);
+		String lastName1 = o1.getLastName();
+		String lastName2 = o2.getLastName();
 		int c = compareString(lastName1, lastName2);
 		if(c == 0) {
-			String firstName1 = o1.getIdentityProp(UserConstants.FIRSTNAME, userPropertyHandlers);
-			String firstName2 = o2.getIdentityProp(UserConstants.FIRSTNAME, userPropertyHandlers);
+			String firstName1 = o1.getFirstName();
+			String firstName2 = o2.getFirstName();
 			c = compareString(firstName1, firstName2);
 		}
 		
 		if(c == 0) {
-			c = o1.getIdentityKey().compareTo(o2.getIdentityKey());
+			c = o1.getKey().compareTo(o2.getKey());
 		}
 		return c;
 	}

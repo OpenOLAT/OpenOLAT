@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityNames;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -70,7 +69,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.MemberViewQueries;
@@ -120,7 +118,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -131,7 +128,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditLectureBlockController extends FormBasicController {
 
-	private static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
 	private static final String TEAMS_MEETING = "teams";
 	private static final String OTHER_MEETING = "other";
 	private static final String BIGBLUEBUTTON_MEETING = "bigbluebutton";
@@ -167,7 +163,6 @@ public class EditLectureBlockController extends FormBasicController {
 	private final List<Identity> teachers;
 	private final boolean lectureManagementManaged;
 	private final List<LocationHistory> locations;
-	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private CloseableModalController cmc;
 	private EditTeamsMeetingController editTeamsMeetingCtrl;
@@ -228,9 +223,7 @@ public class EditLectureBlockController extends FormBasicController {
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
-		
 		this.curriculumElement = curriculumElement;
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
 		locations = getLocations(ureq);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -262,7 +255,6 @@ public class EditLectureBlockController extends FormBasicController {
 		this.addLectureCtxt = addLecture;
 		this.stepsListener = stepsListener;
 		curriculumElement = addLecture.getCurriculumElement() != null ? addLecture.getCurriculumElement() : addLecture.getRootElement();
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
 		locations = getLocations(ureq);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -438,7 +430,7 @@ public class EditLectureBlockController extends FormBasicController {
 		if(possibleTeachersList != null && !possibleTeachersList.isEmpty()) {
 			for(MemberView teacher:possibleTeachersList) {
 				if(containsIdentity(teacher, teachers)) {
-					teacherEl.select(teacher.getIdentityKey().toString(), true);
+					teacherEl.select(teacher.getKey().toString(), true);
 					found = true;
 				}
 			}
@@ -475,18 +467,17 @@ public class EditLectureBlockController extends FormBasicController {
 	
 	private boolean containsIdentity(MemberView member, Collection<Identity> identities) {
 		return identities.stream()
-				.anyMatch(id -> id.getKey().equals(member.getIdentityKey()));
+				.anyMatch(id -> id.getKey().equals(member.getKey()));
 	}
 	
 	private boolean containsIdentity(Identity identity, Collection<MemberView> members) {
 		return members.stream()
-				.anyMatch(mem -> mem.getIdentityKey().equals(identity.getKey()));
+				.anyMatch(mem -> mem.getKey().equals(identity.getKey()));
 	}
 	
 	private SelectionValue teacherPK(MemberView teacher) {
-		String key = teacher.getIdentityKey().toString();
-		IdentityNames identityNames = teacher.getIdentityNames(userPropertyHandlers);
-		String displayName = userManager.getUserDisplayName(identityNames);
+		String key = teacher.getKey().toString();
+		String displayName = userManager.getUserDisplayName(teacher.getIdentity());
 		
 		try(StringOutput sb = new StringOutput()) {
 			sb.append(displayName);
@@ -514,13 +505,13 @@ public class EditLectureBlockController extends FormBasicController {
 			params.setRoles(new GroupRoles[] { GroupRoles.coach });
 			params.setOrigins(Set.of(Origin.curriculum));
 			params.setUserTypes(Set.of(UserType.user));
-			memberViews = memberQueries.getCurriculumElementMembers(curriculumElement, params, userPropertyHandlers, getLocale());
+			memberViews = memberQueries.getCurriculumElementMembers(curriculumElement, params);
 		} else {
 			SearchMembersParams params = new SearchMembersParams();
 			params.setRoles(new GroupRoles[] { GroupRoles.coach });
 			params.setOrigins(Set.of(Origin.repositoryEntry, Origin.curriculum));
 			params.setUserTypes(Set.of(UserType.user));
-			memberViews = memberQueries.getRepositoryEntryMembers(entry, params, userPropertyHandlers, getLocale());
+			memberViews = memberQueries.getRepositoryEntryMembers(entry, params);
 		}
 		
 		Set<MemberView> allPossibleTeachers = new HashSet<>();
@@ -528,12 +519,12 @@ public class EditLectureBlockController extends FormBasicController {
 		if(teachers != null && !teachers.isEmpty()) {// eventually external teachers
 			for(Identity teacher:teachers) {
 				if(!containsIdentity(teacher, allPossibleTeachers)) {
-					allPossibleTeachers.add(new MemberView(teacher, userPropertyHandlers, getLocale()));
+					allPossibleTeachers.add(new MemberView(teacher));
 				}
 			}
 		}
 		List<MemberView> views = new ArrayList<>(allPossibleTeachers);
-		Collections.sort(views, new MemberViewNamesComparator(userPropertyHandlers, getLocale()));
+		Collections.sort(views, new MemberViewNamesComparator(getLocale()));
 		return views;
 	}
 	
@@ -894,8 +885,8 @@ public class EditLectureBlockController extends FormBasicController {
 		// Add new one
 		for(String selectedTeacherKey:selectedTeacherKeys) {
 			for(MemberView teacherView:possibleTeachersList) {
-				if(selectedTeacherKey.equals(teacherView.getIdentityKey().toString())) {
-					Identity teacher = securityManager.loadIdentityByKey(teacherView.getIdentityKey());
+				if(selectedTeacherKey.equals(teacherView.getKey().toString())) {
+					Identity teacher = securityManager.loadIdentityByKey(teacherView.getKey());
 					lectureService.addTeacher(lectureBlock, teacher);
 					audit.append("add teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
 				}

@@ -1047,9 +1047,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 		List<MemberView> memberViews;
 		if(repoEntry != null) {
-			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, userPropertyHandlers, getLocale());
+			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params);
 		} else if(businessGroup != null) {
-			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params, userPropertyHandlers, getLocale());
+			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params);
 		} else {
 			memberViews = Collections.emptyList();
 		}
@@ -1060,8 +1060,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		Long me = getIdentity().getKey();
 		Set<Long> loadStatus = new HashSet<>();
 		for(MemberView memberView:memberViews) {
-			Long identityKey = memberView.getIdentityKey();
-			MemberRow member = new MemberRow(memberView);
+			Long identityKey = memberView.getKey();
+			MemberRow member = new MemberRow(memberView, userPropertyHandlers, getLocale());
 			if(chatEnabled) {
 				if(identityKey.equals(me)) {
 					member.setOnlineStatus("me");
@@ -1093,7 +1093,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		if(repoEntry != null && isLastVisitVisible) {
 			Map<Long,Date> lastLaunchDates = userInfosMgr.getRecentLaunchDates(repoEntry.getOlatResource());
 			for(MemberRow memberView:keyToMemberMap.values()) {
-				Long identityKey = memberView.getView().getIdentityKey();
+				Long identityKey = memberView.getIdentityKey();
 				Date date = lastLaunchDates.get(identityKey);
 				memberView.setLastTime(date);
 			}

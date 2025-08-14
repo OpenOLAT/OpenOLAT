@@ -72,7 +72,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 	public Object getValueAt(MemberRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
-				case identityStatus: return row.getView().getIdentityStatus();
+				case identityStatus: return row.getIdentityStatus();
 				case firstTime: return row.getFirstTime();
 				case lastTime: return row.getLastTime();
 				case role: return row.getMembership();
@@ -96,7 +96,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		}
 		
 		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
-		return row.getView().getIdentityProp(propPos);
+		return row.getIdentityProp(propPos);
 	}
 	
 	private FormLink getChatLink(MemberRow row) {

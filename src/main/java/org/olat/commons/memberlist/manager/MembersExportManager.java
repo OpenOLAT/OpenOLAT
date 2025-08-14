@@ -189,14 +189,14 @@ public class MembersExportManager {
 		SearchMembersParams params = new SearchMembersParams();
 		params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting});
 		if(repoEntry != null) {
-			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, userPropertyHandlers, translator.getLocale());
+			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params);
 		} else if(businessGroup != null) {
-			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params, userPropertyHandlers, translator.getLocale());
+			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params);
 		} else {
 			memberViews = Collections.emptyList();
 		}
 		Map<Long,MemberView> memberViewsMap = memberViews.stream()
-				.collect(Collectors.toMap(MemberView::getIdentityKey, m -> m, (u,v) -> u));
+				.collect(Collectors.toMap(MemberView::getKey, m -> m, (u,v) -> u));
 		
 		List<List<Identity>> roleMembers = new ArrayList<>();
 		if (showOwners) {

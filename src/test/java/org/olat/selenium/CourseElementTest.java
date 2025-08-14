@@ -3733,6 +3733,7 @@ public class CourseElementTest extends Deployments {
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -3754,9 +3755,22 @@ public class CourseElementTest extends Deployments {
 			.nodeTitle(nodeTitle)
 			.autoPublish();
 		
+		//add a participant to the course
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+		
 		course
 			.tree()
-			.assertWithTitle(nodeTitle);
+			.selectWithTitle(nodeTitle);
 		
 		String topicTitle = "Author topic";
 		Date topicDate = new Date();
@@ -3768,9 +3782,8 @@ public class CourseElementTest extends Deployments {
 			.saveTopic()
 			.assertOnTopic(topicTitle)
 			.addUser(day)
-			.searchUserByFirstName(author)
-			.selectAll()
-			.choose();
+			.selectByFirstName(author)
+			.select();
 		
 		appointment
 			.assertOnConfirmAppointmentByDay(day)
@@ -3852,9 +3865,8 @@ public class CourseElementTest extends Deployments {
 			.saveTopic()
 			.assertOnTopicMultipleMeetings(topicTitle, 3)
 			.addUserToAppointment(1)
-			.searchUserByFirstName(author)
-			.selectAll()
-			.choose();
+			.selectByFirstName(author)
+			.select();
 		
 		appointment
 			.assertOnConfirmAppointmentByPosition(1)
