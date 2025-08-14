@@ -87,7 +87,7 @@ public class BigBlueButtonUnitTestRecordingsHandler implements BigBlueButtonReco
 
 	@Override
 	public List<BigBlueButtonRecording> getRecordings(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors) {
-		return recordingsList;
+		return recordingsList == null ? List.of() : recordingsList;
 	}
 
 	@Override

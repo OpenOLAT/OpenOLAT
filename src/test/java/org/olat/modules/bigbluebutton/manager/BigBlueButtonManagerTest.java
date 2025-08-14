@@ -219,7 +219,7 @@ public class BigBlueButtonManagerTest extends OlatTestCase {
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "BBB Recording" + UUID.randomUUID(), "Delete recording or not", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording saved - 1", null, null, group, id);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		String meetingId = meeting.getMeetingId();
 
 		guiPrefs.putAndSave(BigBlueButtonMeetingController.class, meetingId, true);
