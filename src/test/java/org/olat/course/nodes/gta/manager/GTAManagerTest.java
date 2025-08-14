@@ -87,6 +87,8 @@ public class GTAManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private GTATaskDAO gtaTaskDao;
+	@Autowired
 	private GTAManagerImpl gtaManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
@@ -340,16 +342,11 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, assignedTasks.size());
 		
 		//reload and check
-		TaskList reloadedTasks = gtaManager.getTaskList(assignedTasks.get(0));
-		dbInstance.commitAndCloseSession();// entry nneed to be fetched
-		Assert.assertNotNull(reloadedTasks);
-		Assert.assertEquals(tasks, reloadedTasks);
-		Assert.assertTrue(reloadedTasks instanceof TaskListImpl);
-		TaskListImpl tasksImpl = (TaskListImpl)reloadedTasks;
-		Assert.assertNotNull(tasksImpl.getCreationDate());
-		Assert.assertNotNull(tasksImpl.getLastModified());
-		Assert.assertEquals(re, tasksImpl.getEntry());
-		Assert.assertEquals(node.getIdent(), tasksImpl.getCourseNodeIdent());
+		RepositoryEntry reloadedCourseEntry = gtaTaskDao.getEntry(assignedTasks.get(0));
+		dbInstance.commitAndCloseSession();// entry need to be fetched
+		Assert.assertNotNull(reloadedCourseEntry);
+		Assert.assertEquals(re, reloadedCourseEntry);
+		Assert.assertNotNull(reloadedCourseEntry.getOlatResource());
 		dbInstance.commit();
 	}
 	
@@ -1403,7 +1400,7 @@ public class GTAManagerTest extends OlatTestCase {
 						errors++;
 					}
 					DBFactory.getInstance().commitAndCloseSession();
-					log.info("Assigned: {} {}", response.getStatus(), participant);
+					log.info("Assigned: {} {}", (response == null ? "NULL" : response.getStatus()), participant);
 				}
 			} catch (Exception e) {
 				log.error("", e);
