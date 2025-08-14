@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -90,6 +91,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	private List<LectureBlockIdentityStatistics> getLecturesStatistics(List<UserPropertyHandler> userPropertyHandlers, Identity coach) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+		params.setLimitToRoles(List.of(OrganisationRoles.linemanager, OrganisationRoles.educationmanager));
 		if (getDurationTimeUnit() != null) {
 			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
 			params.setStartDate(getDurationTimeUnit().fromDate(new Date(), duration));

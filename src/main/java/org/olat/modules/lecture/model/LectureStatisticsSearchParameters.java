@@ -51,7 +51,8 @@ public class LectureStatisticsSearchParameters {
 	
 	private String curriculumSearchString;
 	private OrganisationRoles limitToRole;
-	
+	private List<OrganisationRoles> limitToRoles;
+
 	public String getLogin() {
 		return login;
 	}
@@ -165,5 +166,13 @@ public class LectureStatisticsSearchParameters {
 
 	public void setLimitToRole(OrganisationRoles limitToRole) {
 		this.limitToRole = limitToRole;
+	}
+
+	public void setLimitToRoles(List<OrganisationRoles> limitToRoles) {
+		this.limitToRoles = limitToRoles;
+	}
+
+	public List<OrganisationRoles> getLimitToRoles() {
+		return limitToRoles;
 	}
 }
