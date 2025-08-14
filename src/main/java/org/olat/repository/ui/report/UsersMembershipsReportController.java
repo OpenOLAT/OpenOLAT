@@ -96,7 +96,7 @@ public class UsersMembershipsReportController extends FormBasicController {
 			allOk &= false;
 		} else {
 			Date from = datesEl.getDate();
-			Date to = datesEl.getDate();
+			Date to = datesEl.getSecondDate();
 			if(DateUtils.countDays(from, to) > 365) {
 				datesEl.setErrorKey("error.max.one.year");
 				allOk &= false;
