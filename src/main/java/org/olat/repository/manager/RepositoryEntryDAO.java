@@ -54,6 +54,12 @@ public class RepositoryEntryDAO {
 	@Autowired
 	private DB dbInstance;
 
+	/**
+	 * Load the repository entry and fetch resource, statistics..
+	 * 
+	 * @param key The primary key
+	 * @return The repository entry
+	 */
 	public RepositoryEntry loadByKey(Long key) {
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadRepositoryEntryByKey", RepositoryEntry.class)
@@ -63,6 +69,22 @@ public class RepositoryEntryDAO {
 			return null;
 		}
 		return entries.get(0);
+	}
+	
+	/**
+	 * Load only the repository entry without fetching
+	 * 
+	 * @param key The primary key
+	 * @return The repository entry without resource, statistics...
+	 */
+	public RepositoryEntry loadReferenceByKey(Long key) {
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryReferenceByKey", RepositoryEntry.class)
+				.setParameter("repoKey", key)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return entries.isEmpty() ? null : entries.get(0);
 	}
 	
 	public RepositoryEntry loadBySoftKey(String softKey) {

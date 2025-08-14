@@ -64,16 +64,32 @@ public class CurriculumRepositoryEntryRelationDAO {
 	private DB dbInstance;
 	
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select el from curriculumelement as el")
-		  .append(" inner join fetch el.group as bGroup")
-		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
-		  .append(" where rel.entry.key=:repoKey");
+		String query = """
+				select el from curriculumelement as el
+				inner join fetch el.group as bGroup
+				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
+				where rel.entry.key=:repoKey""";
 
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), CurriculumElement.class)
+			.createQuery(query, CurriculumElement.class)
 			.setParameter("repoKey", entry.getKey())
 			.getResultList();
+	}
+	
+	public CurriculumElement getDefaultCurriculumElement(RepositoryEntryRef entry) {
+		String query = """
+				select el from curriculumelement as el
+				inner join fetch el.group as bGroup
+				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key and rel.defaultElement=true)
+				where rel.entry.key=:repoKey""";
+
+		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
+			.createQuery(query, CurriculumElement.class)
+			.setParameter("repoKey", entry.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return elements != null && !elements.isEmpty() ? elements.get(0) : null;
 	}
 	
 	public long countRepositoryEntries(CurriculumElementRef element) {

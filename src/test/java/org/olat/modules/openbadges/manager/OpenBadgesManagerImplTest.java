@@ -578,8 +578,8 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge C", "image.png", courseC);
 		
 		Group group = groupDAO.createGroup();
-		repositoryEntryRelationDAO.createRelation(group, courseA);
-		repositoryEntryRelationDAO.createRelation(group, courseB);
+		repositoryEntryRelationDAO.createRelation(group, courseA, false);
+		repositoryEntryRelationDAO.createRelation(group, courseB, false);
 		groupDAO.addMembershipOneWay(group, ownerAB, "owner");
 
 		makeAutomaticOnPass(badgeA);

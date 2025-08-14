@@ -616,6 +616,8 @@ public interface CurriculumService {
 	 */
 	public AddRepositoryEntry addRepositoryEntry(CurriculumElement element, RepositoryEntry entry, boolean moveLectureBlocks);
 	
+	public CurriculumElement getDefaultCurriculumElement(RepositoryEntryRef entry);
+	
 	public boolean addRepositoryTemplate(CurriculumElement element, RepositoryEntry template);
 	
 	public record AddRepositoryEntry(boolean entryAdded, boolean lectureBlockMoved) {

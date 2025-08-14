@@ -1590,7 +1590,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					}
 				}
 				if(!found) {
-					repositoryEntryRelationDao.createRelation(baseGroup, re);
+					repositoryEntryRelationDao.createRelation(baseGroup, re, false);
 					BusinessGroupRepositoryEntryEvent.fireEvents(BusinessGroupRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED, group, re);
 				}
 			}

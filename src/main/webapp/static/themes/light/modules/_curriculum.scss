@@ -801,7 +801,8 @@
 		@extend %o_labeled_light_yellow;
 	}
 	
-	&.o_curriculum_status_confirmed {
+	&.o_curriculum_status_confirmed,
+	&.o_curriculum_default_element {
 		font-weight: normal;
 		@extend %o_labeled_light_green;
 	}

@@ -360,7 +360,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		for(Organisation sourceOrganisation:sourceOrganisations) {
 			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, copyEntry, false);
 			copyEntry.getOrganisations().add(orgRelation);
-			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), copyEntry);
+			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), copyEntry, false);
 			copyEntry.getGroups().add(grpRelation);
 		}
 
@@ -1066,7 +1066,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public void addOrganisation(RepositoryEntry entry, Organisation organisation) {
 		repositoryEntryToOrganisationDao.createRelation(organisation, entry, false);
-		reToGroupDao.createRelation(organisation.getGroup(), entry);
+		reToGroupDao.createRelation(organisation.getGroup(), entry, false);
 	}
 	
 	@Override
@@ -1148,7 +1148,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			for(RepositoryEntry entry:entries) {
 				List<Organisation> currentOrganisationsByGroups = getOrganisations(entry);
 				if(!currentOrganisationsByGroups.contains(replacementOrganisation)) {
-					RepositoryEntryToGroupRelation relToGroup = reToGroupDao.createRelation(replacementOrganisation.getGroup(), entry);
+					RepositoryEntryToGroupRelation relToGroup = reToGroupDao.createRelation(replacementOrganisation.getGroup(), entry, false);
 					entry.getGroups().add(relToGroup);
 				}
 				

@@ -604,6 +604,7 @@ create table o_re_to_group (
    id bigint not null,
    creationdate datetime not null,
    r_defgroup boolean not null,
+   r_defelement boolean default false not null,
    fk_group_id bigint not null,
    fk_entry_id bigint not null,
    primary key (id)

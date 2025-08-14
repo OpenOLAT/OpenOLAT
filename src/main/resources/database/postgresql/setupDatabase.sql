@@ -596,6 +596,7 @@ create table o_re_to_group (
    id int8 not null,
    creationdate timestamp not null,
    r_defgroup boolean not null,
+   r_defelement boolean default false not null,
    fk_group_id int8 not null,
    fk_entry_id int8 not null,
    primary key (id)

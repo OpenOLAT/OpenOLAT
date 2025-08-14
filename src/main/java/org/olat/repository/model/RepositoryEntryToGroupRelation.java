@@ -75,6 +75,8 @@ public class RepositoryEntryToGroupRelation implements Persistable {
 
 	@Column(name="r_defgroup", nullable=false, insertable=true, updatable=false)
 	private boolean defaultGroup = false;
+	@Column(name="r_defelement", nullable=false, insertable=true, updatable=true)
+	private boolean defaultElement = false;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
@@ -83,6 +85,10 @@ public class RepositoryEntryToGroupRelation implements Persistable {
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry_id", nullable=false, insertable=true, updatable=false)
 	private RepositoryEntry entry;
+	
+	public RepositoryEntryToGroupRelation() {
+		//
+	}
 	
 	@Override
 	public Long getKey() {
@@ -107,6 +113,14 @@ public class RepositoryEntryToGroupRelation implements Persistable {
 
 	public void setDefaultGroup(boolean defaultGroup) {
 		this.defaultGroup = defaultGroup;
+	}
+
+	public boolean isDefaultElement() {
+		return defaultElement;
+	}
+
+	public void setDefaultElement(boolean defaultElement) {
+		this.defaultElement = defaultElement;
 	}
 
 	public Group getGroup() {

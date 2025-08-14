@@ -795,7 +795,7 @@ public class RepositoryManager {
 			}
 			for(Organisation organisation:organisations) {
 				if(!currentOrganisationsByGroups.contains(organisation)) {
-					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe);
+					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe, false);
 					reloadedRe.getGroups().add(relToGroup);
 				}
 			}
@@ -1117,7 +1117,7 @@ public class RepositoryManager {
 			}
 			for(Organisation organisation:organisations) {
 				if(!currentOrganisationsByGroups.contains(organisation)) {
-					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe);
+					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe, false);
 					reloadedRe.getGroups().add(relToGroup);
 				}
 			}
