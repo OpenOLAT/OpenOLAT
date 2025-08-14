@@ -47,7 +47,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -771,31 +770,6 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 		return tasks.isEmpty() ? null : tasks.get(0);
 	}
-	
-	/**
-	 * Load the task list with the underlying repository
-	 * entry (full).
-	 * 
-	 * @param task
-	 * @return
-	 */
-	public TaskList getTaskList(TaskRef task ) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select taskList from gtatask task")
-		  .append(" inner join task.taskList as taskList")
-		  .append(" inner join fetch taskList.entry as v")
-		  .append(" inner join fetch v.olatResource as ores")
-		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where task.key=:taskKey");
-		
-		List<TaskList> tasks = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), TaskList.class)
-			.setParameter("taskKey", task.getKey())
-			.getResultList();
-
-		return tasks.isEmpty() ? null : tasks.get(0);
-	}
 
 	@Override
 	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode) {
@@ -841,11 +815,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {
-		
-		List<Task> groupTasks = getTasks(group);
-		List<Long> taskKeys = groupTasks.stream()
-				.map(Task::getKey)
-				.collect(Collectors.toList());
+		List<Long> taskKeys = taskDao.getTasksKeys(group);
 		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("delete from gtataskrevisiondate as taskrev where taskrev.task.key in (:taskKeys)");
@@ -971,13 +941,6 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			.getResultList();
 
 		return tasks.isEmpty() ? null : tasks.get(0);
-	}
-	
-	public List<Task> getTasks(BusinessGroupRef businessGroup) {
-		String q = "select task from gtatask task where task.businessGroup.key=:businessGroupKey";
-		return dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
-			.setParameter("businessGroupKey", businessGroup.getKey())
-			.getResultList();
 	}
 
 	@Override
@@ -2026,8 +1989,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				&& cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)
 				&& (currentStatus == TaskProcess.submit || currentStatus == TaskProcess.revision)
 				&& cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER, true)) {
-			TaskList taskList = getTaskList(taskImpl);
-			RepositoryEntry courseRepoEntry = taskList.getEntry();
+			RepositoryEntry courseRepoEntry = taskDao.getEntry(taskImpl);
 			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
 			Identity assessedIdentity = task.getIdentity();
 			AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent());
@@ -2162,8 +2124,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			UserCourseEnvironment assessedUserCourseEnv, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return false;
 		
-		TaskList taskList = getTaskList(taskImpl);
-		RepositoryEntry courseRepoEntry = taskList.getEntry();
+		RepositoryEntry courseRepoEntry = taskDao.getEntry(taskImpl);
 		ICourse course = CourseFactory.loadCourse(courseRepoEntry);
 		AssessmentEntryStatus assessmentStatus = convertToAssessmentEntryStatus(taskImpl, cNode);
 		AssessmentEntryStatus currentAssessmentStatus = null;

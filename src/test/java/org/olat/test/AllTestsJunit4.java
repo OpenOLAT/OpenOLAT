@@ -224,6 +224,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.form.FormManagerTest.class,
 	org.olat.course.nodes.form.rule.FormParticipationRuleSPITest.class,
 	org.olat.course.nodes.gta.manager.GTAManagerTest.class,
+	org.olat.course.nodes.gta.manager.GTATaskDAOTest.class,
 	org.olat.course.nodes.gta.manager.GTATaskRevisionDAOTest.class,
 	org.olat.course.nodes.gta.manager.GTAIdentityMarkDAOTest.class,
 	org.olat.course.nodes.gta.manager.GTATaskRevisionDateDAOTest.class,

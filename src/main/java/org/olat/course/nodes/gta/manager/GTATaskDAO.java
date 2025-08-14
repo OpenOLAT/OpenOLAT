@@ -29,6 +29,8 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskRef;
 import org.olat.course.nodes.gta.model.TaskImpl;
+import org.olat.group.BusinessGroupRef;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +71,32 @@ public class GTATaskDAO {
 		return tasks.isEmpty() ? null : tasks.get(0);
 	}
 	
+	/**
+	 * Load the task list with the underlying repository
+	 * entry (full).
+	 * 
+	 * @param task
+	 * @return
+	 */
+	public RepositoryEntry getEntry(TaskRef task ) {
+		String query = """
+			select v from repositoryentry as v
+			inner join fetch v.olatResource as ores
+			inner join fetch v.statistics as statistics
+			left join fetch v.lifecycle as lifecycle
+			where v.key in (select tlist.entry.key from gtatasklist tlist
+			 inner join gtatask task on (task.taskList.key=tlist.key)
+			 where task.key=:taskKey
+			)""";
+		
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+			.createQuery(query, RepositoryEntry.class)
+			.setParameter("taskKey", task.getKey())
+			.getResultList();
+
+		return entries.isEmpty() ? null : entries.get(0);
+	}
+	
 	public List<Task> getTasks(TaskList taskList, GTACourseNode cNode) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select task from gtatask task")
@@ -83,6 +111,20 @@ public class GTATaskDAO {
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)
 				.setParameter("taskListKey", taskList.getKey())
 				.getResultList();
+	}
+	
+	public List<Task> getTasks(BusinessGroupRef businessGroup) {
+		String q = "select task from gtatask task where task.businessGroup.key=:businessGroupKey";
+		return dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
+			.setParameter("businessGroupKey", businessGroup.getKey())
+			.getResultList();
+	}
+	
+	public List<Long> getTasksKeys(BusinessGroupRef businessGroup) {
+		String q = "select task.key from gtatask task where task.businessGroup.key=:businessGroupKey";
+		return dbInstance.getCurrentEntityManager().createQuery(q, Long.class)
+			.setParameter("businessGroupKey", businessGroup.getKey())
+			.getResultList();
 	}
 	
 	public int deleteTask(TaskList taskList) {
