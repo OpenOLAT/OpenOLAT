@@ -33,12 +33,12 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -65,24 +65,28 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	@Override
 	public void generateReport(Identity coach, Locale locale, LocalFileImpl output) {
 		Translator translator = getTranslator(locale);
-		Formatter formatter = Formatter.getInstance(locale);
 
 		List<String> worksheetNames = new ArrayList<>();
 		worksheetNames.add(translator.translate("export.worksheet.summary"));
 		worksheetNames.add(translator.translate("export.worksheet.courses"));
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
 		List<LectureBlockIdentityStatistics> statistics = getLecturesStatistics(userPropertyHandlers, coach);
+		LectureModule lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
+		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
+		boolean countDispenseAsAttendant = lectureModule.isCountDispensationAsAttendant() && lectureModule.isAbsenceNoticeEnabled();
 
 		try (OutputStream out = new FileOutputStream(output.getBasefile());
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, worksheetNames.size(), worksheetNames)) {
 
 			OpenXMLWorksheet summaryWorksheet = workbook.nextWorksheet();
 			generateSummaryHeader(summaryWorksheet, userPropertyHandlers, translator);
-			generateSummaryData(summaryWorksheet, userPropertyHandlers, statistics);
+			generateSummaryData(summaryWorksheet, userPropertyHandlers, statistics, workbook,
+					countAuthorizedAbsenceAsAttendant, countDispenseAsAttendant);
 			
 			OpenXMLWorksheet coursesWorksheet = workbook.nextWorksheet();
 			generateCoursesHeader(coursesWorksheet, userPropertyHandlers, translator);
-			generateCoursesData(coursesWorksheet, userPropertyHandlers, formatter, translator, statistics);
+			generateCoursesData(coursesWorksheet, userPropertyHandlers, statistics, workbook,
+					countAuthorizedAbsenceAsAttendant, countDispenseAsAttendant);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 		}
@@ -114,7 +118,8 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	}
 	
 	private void generateSummaryData(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers,
-									 List<LectureBlockIdentityStatistics> statistics) {
+									 List<LectureBlockIdentityStatistics> statistics, OpenXMLWorkbook workbook, 
+									 boolean countAuthorizedAbsenceAsAttendant, boolean countDispenseAsAttendant) {
 		Map<Long, List<LectureBlockIdentityStatistics>> identityToStatistics = new HashMap<>();
 		for (LectureBlockIdentityStatistics stats : statistics) {
 			Long identityKey = stats.getIdentityKey();
@@ -127,35 +132,57 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			String[] identityProps = null;
 			long units = 0;
 			long attended = 0;
+			long absent = 0;
 			for (LectureBlockIdentityStatistics stats : statisticsForIdentity) {
 				if (identityProps == null) {
 					identityProps = stats.getIdentityProps();
 				}
 				units += stats.getTotalPersonalPlannedLectures();
 				attended += stats.getTotalAttendedLectures();
+				absent += stats.getTotalAbsentLectures();
+				if (countAuthorizedAbsenceAsAttendant) {
+					attended += stats.getTotalAuthorizedAbsentLectures();
+					attended += stats.getTotalDispensationLectures();
+				} else if (countDispenseAsAttendant) {
+					absent += stats.getTotalAuthorizedAbsentLectures();
+					attended += stats.getTotalDispensationLectures();
+				} else {
+					absent += stats.getTotalAuthorizedAbsentLectures();
+					absent += stats.getTotalDispensationLectures();
+				}
+			}
+
+			if (absent < 0) {
+				absent = 0;
 			}
 			
-			double attendanceRate = units == 0 ? 0 : (double) attended / (double) units;
-			summaryRows.add(new AbsencesReportSummaryRow(identityProps, units, attended, attendanceRate));
+			long total = attended + absent;
+			double rate;
+			if (total == 0 || attended == 0) {
+				rate = 0.0d;
+			} else {
+				rate = (double) attended / (double) total;
+			}
+			summaryRows.add(new AbsencesReportSummaryRow(identityProps, units, attended, rate));
 		}
 		
 		for (AbsencesReportSummaryRow summaryRow : summaryRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
 
-			generateSummaryDataRow(row, pos, userPropertyHandlers, summaryRow);
+			generateSummaryDataRow(row, pos, userPropertyHandlers, summaryRow, workbook);
 		}
 	}
 
 	private void generateSummaryDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers,
-										AbsencesReportSummaryRow summaryRow) {
+										AbsencesReportSummaryRow summaryRow, OpenXMLWorkbook workbook) {
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			row.addCell(pos, summaryRow.getIdentityProp(pos));
 			pos++;
 		}
 		row.addCell(pos++, "" + summaryRow.units());
 		row.addCell(pos++, "" + summaryRow.attended());
-		row.addCell(pos++, String.format("%.5f", summaryRow.attendanceRate()));
+		row.addCell(pos++, summaryRow.attendanceRate(), workbook.getStyles().getPercentStyle());
 	}
 
 	private void generateCoursesHeader(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers, 
@@ -177,7 +204,8 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	}
 
 	private void generateCoursesData(OpenXMLWorksheet worksheet, List<UserPropertyHandler> userPropertyHandlers,
-									 Formatter formatter, Translator translator, List<LectureBlockIdentityStatistics> statistics) {
+									 List<LectureBlockIdentityStatistics> statistics, OpenXMLWorkbook workbook, 
+									 boolean countAuthorizedAbsenceAsAttendant, boolean countDispenseAsAttendant) {
 		
 		Map<UserCourseKey, List<LectureBlockIdentityStatistics>> statisticsMap = new HashMap<>();
 		for (LectureBlockIdentityStatistics stats : statistics) {
@@ -198,6 +226,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			String externalReference = null;
 			long units = 0;
 			long attended = 0;
+			long absent = 0;
 			long authorized = 0;
 			long dispensed = 0;
 			for (LectureBlockIdentityStatistics stats : statisticsForKey) {
@@ -212,25 +241,47 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				}
 				units += stats.getTotalPersonalPlannedLectures();
 				attended += stats.getTotalAttendedLectures();
-				authorized = stats.getTotalAuthorizedAbsentLectures();
-				stats.getTotalDispensationLectures();
+				absent += stats.getTotalAbsentLectures();
+				authorized += stats.getTotalAuthorizedAbsentLectures();
+				dispensed += stats.getTotalDispensationLectures();
+				if (countAuthorizedAbsenceAsAttendant) {
+					attended += stats.getTotalAuthorizedAbsentLectures();
+					attended += stats.getTotalDispensationLectures();
+				} else if (countDispenseAsAttendant) {
+					absent += stats.getTotalAuthorizedAbsentLectures();
+					attended += stats.getTotalDispensationLectures();
+				} else {
+					absent += stats.getTotalAuthorizedAbsentLectures();
+					absent += stats.getTotalDispensationLectures();
+				}
 			}
+			
+			if (absent < 0) {
+				absent = 0;
+			}
+			
 			long notAuthorized = units - attended - authorized - dispensed;
-			double attendanceRate = units == 0 ? 0 : (double) attended / (double) units;
+			long total = attended + absent;
+			double rate;
+			if (total == 0 || attended == 0) {
+				rate = 0.0d;
+			} else {
+				rate = (double) attended / (double) total;
+			}
 			userCourseRows.add(new AbsencesReportCourseRow(identityProps, courseTitle, externalReference, units, 
-					attended, authorized, notAuthorized, dispensed, attendanceRate));
+					attended, authorized, notAuthorized, dispensed, rate));
 		}
 		
 		for (AbsencesReportCourseRow userCourseRow : userCourseRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
 			
-			generateCourseDataRow(row, pos, userPropertyHandlers, userCourseRow);
+			generateCourseDataRow(row, pos, userPropertyHandlers, userCourseRow, workbook);
 		}
 	}
 
-	private void generateCourseDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers, 
-									   AbsencesReportCourseRow userCourseRow) {
+	private void generateCourseDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers,
+									   AbsencesReportCourseRow userCourseRow, OpenXMLWorkbook workbook) {
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			row.addCell(pos, userCourseRow.getIdentityProp(pos));
 			pos++;
@@ -242,7 +293,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		row.addCell(pos++, "" + userCourseRow.authorized());
 		row.addCell(pos++, "" + userCourseRow.notAuthorized());
 		row.addCell(pos++, "" + userCourseRow.dispensed());
-		row.addCell(pos++, String.format("%.5f",  userCourseRow.attendanceRate()));
+		row.addCell(pos++, userCourseRow.attendanceRate(), workbook.getStyles().getPercentStyle());
 	}
 
 	@Override

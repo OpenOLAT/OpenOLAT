@@ -1611,6 +1611,14 @@ a.o_labeled_light {
 		margin: 1px;
 	}
 }
+/* Colored (status) icons */
+@mixin colored-icon-variant($color) {
+	color: $color;
+}
+
+.o_icon_green, %o_icon_green { @include colored-icon-variant($o-icon-green-color); }
+.o_icon_red, %o_icon_red { @include colored-icon-variant($o-icon-green-color); }
+
  
  /* Multiselect dropdown element */
  .o_ms_button {
