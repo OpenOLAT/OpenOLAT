@@ -216,8 +216,6 @@ public class TBActivityLogController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("activity.log.title");
-		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(ActivityLogCols.date.name(), false));
 
