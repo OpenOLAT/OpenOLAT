@@ -70,7 +70,7 @@ public class UserListController extends FormBasicController implements Activatea
 	private FlexiTableElement tableEl;
 	private StudentsTableDataModel model;
 	private final TooledStackedPanel stackPanel;
-	private StudentCoursesController studentCtrl;
+	private CoursesIdentityController studentCtrl;
 	
 	private boolean hasChanged;
 	private SearchCoachedIdentityParams searchParams;
@@ -243,10 +243,8 @@ public class UserListController extends FormBasicController implements Activatea
 		Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		
-		int index = model.getObjects().indexOf(studentStat);
 		String fullname = userManager.getUserDisplayName(student);
-		studentCtrl = new StudentCoursesController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), true);
+		studentCtrl = new CoursesIdentityController(ureq, bwControl, stackPanel, studentStat, student, model.getRowCount(), true);
 		
 		listenTo(studentCtrl);
 		stackPanel.popUpToController(this);

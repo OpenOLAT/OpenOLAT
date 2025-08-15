@@ -121,8 +121,8 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student) {
-		return coachingDao.getStudentsCourses(coach, student);
+	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, boolean fetch) {
+		return coachingDao.getStudentsCourses(coach, student, fetch);
 	}
 	
 	@Override
@@ -186,8 +186,8 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<RepositoryEntry> getUserCourses(Identity student) {
-		return coachingDao.getUserCourses(student);
+	public List<RepositoryEntry> getUserCourses(Identity student, boolean fetch) {
+		return coachingDao.getUserCourses(student, fetch);
 	}
 
 	@Override

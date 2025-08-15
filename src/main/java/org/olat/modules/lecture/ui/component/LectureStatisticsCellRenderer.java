@@ -34,11 +34,28 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
  *
  */
 public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
+	
+	private final boolean withNumbers;
+	
+	public LectureStatisticsCellRenderer() {
+		this(false);
+	}
+	
+	public LectureStatisticsCellRenderer(boolean withNumbers) {
+		this.withNumbers = withNumbers;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof LectureBlockStatistics) {
-			render(target, (LectureBlockStatistics)cellValue);
+		if(cellValue instanceof LectureBlockStatistics statistics) {
+			if(withNumbers) {
+				target.append("<div class='o_coaching_status'>");
+				render(target, statistics);
+				renderNumber(target, statistics);
+				target.append("</div>");
+			} else {
+				render(target, statistics);
+			}
 		}
 	}
 	
@@ -89,6 +106,10 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 	      .append("<span class='sr-only'>").append(absentPercent).append("%</span></div>");
 
 		target.append("</div>");
+		
+		if(withNumbers) {
+			
+		}
 	}
 	
 	private long max100Percent(long val, long... precedentVals) {
@@ -102,5 +123,14 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 			return val + diff;
 		}
 		return val;
+	}
+	
+	private void renderNumber(StringOutput target, LectureBlockStatistics stats) {
+		target.append("<div class='o_coaching_numbers'>")
+		      .append(stats.getTotalAttendedLectures()).append("\u202F&vert;\u202F")
+		      .append(stats.getTotalAuthorizedAbsentLectures()).append("\u202F&vert;\u202F")
+		      .append(stats.getTotalDispensationLectures()).append("\u202F&vert;\u202F")
+		      .append(stats.getTotalAbsentLectures())
+		      .append("</div>");
 	}
 }

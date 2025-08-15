@@ -61,11 +61,6 @@ public class UserChangePasswordController extends BasicController {
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param changeableUser
-	 */
 	public UserChangePasswordController(UserRequest ureq, WindowControl wControl, Identity changeableUser) {
 		super(ureq, wControl);
 
@@ -95,7 +90,7 @@ public class UserChangePasswordController extends BasicController {
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == chPwdForm && event.equals(Event.DONE_EVENT)) {
+		if (chPwdForm == source && event.equals(Event.DONE_EVENT)) {
 			if (olatAuthenticationSpi.changePassword(ureq.getIdentity(), identityToModify, chPwdForm.getNewPassword())) {
 				showInfo("changeuserpwd.successful");
 				logAudit("user password changed successfully of " + identityToModify.getKey());
@@ -103,6 +98,8 @@ public class UserChangePasswordController extends BasicController {
 				showError("changeuserpwd.failed");
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
+		} else if(tokenForm == source) {
+			fireEvent(ureq, event);
 		}
 	}
 }

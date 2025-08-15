@@ -334,7 +334,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getStudentsCourses() {
-		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, aStudent);
+		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, aStudent, false);
 		Assert.assertNotNull(courses);
 		
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
@@ -343,7 +343,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getUserCourses() {
-		List<RepositoryEntry> courses = coachingService.getUserCourses(aStudent);
+		List<RepositoryEntry> courses = coachingService.getUserCourses(aStudent, false);
 		Assert.assertNotNull(courses);
 		Assert.assertEquals(studentToCourseMap.get(aStudent).size(), courses.size());
 	}
