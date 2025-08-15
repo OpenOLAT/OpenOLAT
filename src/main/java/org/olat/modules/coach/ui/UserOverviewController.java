@@ -541,7 +541,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		}
 		
 		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
-			List<RepositoryEntry> courses = coachingService.getUserCourses(mentee);
+			List<RepositoryEntry> courses = coachingService.getUserCourses(mentee, false);
 			for (RepositoryEntry courseEntry : courses) {
 				configCalendar(ureq, calendarManager.getCourseCalendar(CourseFactory.loadCourse(courseEntry)), calendars);
 			}

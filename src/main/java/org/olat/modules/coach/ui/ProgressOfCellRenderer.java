@@ -37,13 +37,8 @@ public class ProgressOfCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof ProgressValue) {
-			ProgressValue progress = (ProgressValue) cellValue;
-			String assessments = translator.translate("progress.of", new String[] {
-					String.valueOf(progress.getGreen()),
-					String.valueOf(progress.getTotal())} );
-			target.append(assessments);
+		if (cellValue instanceof ProgressValue progress) {
+			target.append(progress.getGreen()).append("\u202F/\u202F").append(progress.getTotal());
 		}
 	}
-
 }

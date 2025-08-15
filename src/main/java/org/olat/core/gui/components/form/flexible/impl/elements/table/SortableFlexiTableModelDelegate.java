@@ -199,6 +199,15 @@ public class SortableFlexiTableModelDelegate<T> {
 		return ba? (bb? 0: -1):(bb? 1: 0);
 	}
 	
+	public final int compareNullObjectsLast(final Object a, final Object b) {
+		boolean ba = (a == null);
+		boolean bb = (b == null);
+		if(asc) {
+			return ba? (bb? 0: 1):(bb? -1: 0);
+		}
+		return ba? (bb? 0: -1):(bb? 1: 0);
+	}
+	
 	public class ReverseComparator implements Comparator<T> {
 		
 		private final Comparator<T> delegate;

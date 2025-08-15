@@ -73,8 +73,6 @@ public class CoachParticipantsListController extends AbstractParticipantsListCon
 		Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		
-		int index = tableModel.getObjects().indexOf(studentStat);
-		return new StudentCoursesController(ureq, bwControl, stackPanel, studentStat, student, index, tableModel.getRowCount(), false);
+		return new CoursesIdentityController(ureq, bwControl, stackPanel, studentStat, student, tableModel.getRowCount(), false);
 	}
 }

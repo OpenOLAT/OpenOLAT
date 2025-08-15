@@ -1,14 +1,41 @@
 <div class="o_header_with_buttons">
 	<h3><i class="o_icon o_icon_user"> </i> $studentName</h3>
-	<div class="o_button_group"><div class="btn-group">
-	#if($r.available("reset"))
-		$r.render("reset")
+	<div class="o_button_group">
+	#if($r.available("previous.student"))
+		$r.render("previous.student")
 	#end
-	#if($r.available("home"))
-		$r.render("home")
+	#if($r.available("next.student"))
+		$r.render("next.student")
 	#end
-	#if($r.available("contact"))
-		$r.render("contact")
-	#end</div></div>
+	</div>
 </div>
+
+<div class="o_block">
+	$r.render("portrait")
+</div>
+
+#if($r.available("cmds"))
+<div class="o_button_group o_button_group_right o_block_bottom">
+	$r.render("cmds")
+</div>
+#end
+
 $r.render("table")
+
+#if($r.isTrue($rollCallEnabled))
+<div class="o_block">
+	<h4>$r.translate("attendance.legend")</h4>
+	<ul class="list-unstyled">
+		<li><i class="o_icon o_lectures_attended"> </i> $r.translate("table.legend.attended")</li>
+		#if($r.isTrue($authorizedAbsenceEnabled))
+		<li><i class="o_icon o_lectures_authorized"> </i> $r.translate("table.legend.authorized")</li>
+		<li><i class="o_icon o_lectures_absent"> </i> $r.translate("table.legend.unauthorized")</li>
+			#if($r.isTrue($absenceNoticeEnabled))
+			<li><i class="o_icon o_lectures_dispensed"> </i> $r.translate("table.legend.dispensed")</li>
+			#end
+		#else
+		<li><i class="o_icon o_lectures_absent"> </i> $r.translate("table.legend.absent")</li>
+		#end
+	</ul>
+</div>
+#end

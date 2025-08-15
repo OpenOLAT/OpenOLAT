@@ -1,5 +1,9 @@
 <ul class="o_dropdown list-unstyled">
-	<li>$r.render("assessment.tool")</li>	
-	<li>$r.render("infos")</li>
+	#if($r.available("assessment.tool"))
+		<li>$r.render("assessment.tool")</li>	
+	#end
+	#if($r.available("infos"))
+		<li>$r.render("infos")</li>
+	#end
 	<li>$r.render("open.course")</li>
 </ul>

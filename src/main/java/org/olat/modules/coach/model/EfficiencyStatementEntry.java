@@ -94,6 +94,10 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 		return course;
 	}
 	
+	public Long getRepositoryEntryKey() {
+		return course == null ? null : course.getKey();
+	}
+	
 	public Long getUserEfficiencyStatementKey() {
 		return efficiencyStatementKey;
 	}

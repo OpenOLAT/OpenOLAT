@@ -56,8 +56,13 @@ public interface CoachingService {
 	
 	public boolean isMasterCoach(Identity identity);
 	
-
-	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
+	/**
+	 * @param coach The coach or owner
+	 * @param student The identity to assess
+	 * @param fetch true if you want statistics and life-cycle
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity participant, boolean fetch);
 	
 	public List<ParticipantStatisticsEntry> getParticipantsStatistics(SearchParticipantsStatisticsParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 	
@@ -68,8 +73,13 @@ public interface CoachingService {
 
 	public List<StudentStatEntry> getUsersByOrganization(List<UserPropertyHandler> userPropertyHandlers, Identity identity, List<Organisation> organisations, OrganisationRoles organisationRole, Locale locale);
 	
-	public List<RepositoryEntry> getUserCourses(Identity student);
-
+	/**
+	 * @param participant The identity to assess
+	 * @param fetch true if you want statistics and life-cycle
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getUserCourses(Identity participant, boolean fetch);
+	
 	/**
 	 * @param identity The user
 	 * @param role The role to search for, coach or owner only

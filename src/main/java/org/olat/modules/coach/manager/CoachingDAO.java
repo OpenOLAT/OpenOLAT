@@ -1490,16 +1490,19 @@ public class CoachingDAO {
 		return new ArrayList<>(new HashSet<>(identityKeys));
 	}
 
-	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student) {
+	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, boolean fetch) {
 		QueryBuilder sb = new QueryBuilder(1024);
-		sb.append("select re from ").append(RepositoryEntry.class.getName()).append(" as re ")
-		  .append(" inner join re.olatResource res on res.resName='CourseModule'")
+		sb.append("select re from repositoryentry as re")
+		  .append(" inner join fetch re.olatResource res")
+		  .append(" inner join fetch re.statistics as statistics", fetch)
+		  .append(" left join fetch re.lifecycle as lifecycle", fetch)
+		  .append(" left join fetch re.educationalType", fetch)
 		  .append(" inner join re.groups as relGroup ")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as coach on coach.role='coach'")
 		  .append(" inner join baseGroup.members as participant on participant.role='participant'")
 		  .append(" where coach.identity.key=:coachKey and participant.identity.key=:studentKey")
-		  .append(" and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		  .append(" and res.resName='CourseModule' and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 
 		List<RepositoryEntry> coachedEntries = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
@@ -1509,7 +1512,10 @@ public class CoachingDAO {
 		
 		QueryBuilder sc = new QueryBuilder(1024);
 		sc.append("select re from ").append(RepositoryEntry.class.getName()).append(" as re ")
-		  .append(" inner join re.olatResource res on res.resName='CourseModule'")
+		  .append(" inner join fetch re.olatResource res")
+		  .append(" inner join fetch re.statistics as statistics", fetch)
+		  .append(" left join fetch re.lifecycle as lifecycle", fetch)
+		  .append(" left join fetch re.educationalType", fetch)
 		  .append(" inner join re.groups as ownedRelGroup on ownedRelGroup.defaultGroup=true ")
 		  .append(" inner join ownedRelGroup.group as ownedGroup")
 		  .append(" inner join ownedGroup.members as owner on owner.role='owner'")
@@ -1517,7 +1523,7 @@ public class CoachingDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as participant on participant.role='participant'")
 		  .append(" where owner.identity.key=:coachKey and participant.identity.key=:studentKey")
-		  .append(" and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		  .append(" and res.resName='CourseModule' and re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 
 		List<RepositoryEntry> ownedEntries = dbInstance.getCurrentEntityManager()
 				.createQuery(sc.toString(), RepositoryEntry.class)
@@ -1530,10 +1536,13 @@ public class CoachingDAO {
 		return new ArrayList<>(uniqueRes);
 	}
 	
-	public List<RepositoryEntry> getUserCourses(IdentityRef student) {
+	public List<RepositoryEntry> getUserCourses(IdentityRef student, boolean fetch) {
 		QueryBuilder sb = new QueryBuilder(1024);
-		sb.append("select distinct(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		sb.append("select distinct(v) from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource res")
+		  .append(" inner join fetch v.statistics as statistics", fetch)
+		  .append(" left join fetch v.lifecycle as lifecycle", fetch)
+		  .append(" left join fetch v.educationalType", fetch)
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as participant on participant.role='participant'")

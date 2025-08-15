@@ -213,7 +213,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 	}
 	
 	private List<EfficiencyStatementEntry> loadModel() {
-		List<RepositoryEntry> courses = coachingService.getUserCourses(student);
+		List<RepositoryEntry> courses = coachingService.getUserCourses(student, false);
 		List<EfficiencyStatementEntry> statements = coachingService.getEfficencyStatements(student, courses, userPropertyHandlers, getLocale());
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(student);
