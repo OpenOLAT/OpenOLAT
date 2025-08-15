@@ -163,7 +163,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			} else {
 				rate = (double) attended / (double) total;
 			}
-			summaryRows.add(new AbsencesReportSummaryRow(identityProps, units, attended, rate));
+			summaryRows.add(new AbsencesReportSummaryRow(identityProps, positive(units), positive(attended), rate));
 		}
 		
 		for (AbsencesReportSummaryRow summaryRow : summaryRows) {
@@ -268,8 +268,9 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			} else {
 				rate = (double) attended / (double) total;
 			}
-			userCourseRows.add(new AbsencesReportCourseRow(identityProps, courseTitle, externalReference, units, 
-					attended, authorized, notAuthorized, dispensed, rate));
+			userCourseRows.add(new AbsencesReportCourseRow(identityProps, courseTitle, externalReference, 
+					positive(units), positive(attended), positive(authorized), positive(notAuthorized), 
+					positive(dispensed), rate));
 		}
 		
 		for (AbsencesReportCourseRow userCourseRow : userCourseRows) {
@@ -278,6 +279,10 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			
 			generateCourseDataRow(row, pos, userPropertyHandlers, userCourseRow, workbook);
 		}
+	}
+
+	private static long positive(long value) {
+		return value < 0 ? 0 : value;
 	}
 
 	private void generateCourseDataRow(Row row, int pos, List<UserPropertyHandler> userPropertyHandlers,
