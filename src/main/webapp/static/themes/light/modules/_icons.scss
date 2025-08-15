@@ -286,7 +286,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_logout { @include o-add-icon('sign-out');}
 .o_icon_lrm { @include o-add-icon('university');}
 .o_icon_magnifying_glass { @include o-add-icon('magnifying-glass');}
-.o_icon_mandatory { @include o-add-icon('asterisk'); color: #f0ad4e;}
+.o_icon_mandatory { @include o-add-icon('asterisk'); color: $o-icon-orange-color;}
 .o_icon_managed { @include o-add-icon('retweet'); color: $text-muted}
 .o_icon_manual { @include o-add-icon('book'); cursor: help;}
 .o_icon_mail { @include o-add-icon('envelope', false);}
