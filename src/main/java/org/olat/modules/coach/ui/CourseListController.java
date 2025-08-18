@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -66,8 +65,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.rating.RatingFormEvent;
-import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.scope.FormScopeSelection;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeFactory;
@@ -152,7 +150,6 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String CMD_ASSESSMENT = "assessment";
 	private static final String CMD_INFOS = "infos";
 	private static final String CMD_LEVELS = "levels";
-	private static final String CMD_COMMENTS = "comments";
 	
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
@@ -175,11 +172,9 @@ public class CourseListController extends FormBasicController implements Activat
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private MapperService mapperService;
-	@Autowired
 	private MarkManager markManager;
 	@Autowired
-	private UserRatingsDAO userRatingsDao;
+	private MapperService mapperService;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -280,7 +275,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.3");
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.4");
 		
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -395,9 +390,6 @@ public class CourseListController extends FormBasicController implements Activat
 			if(entryRow.getRatingFormItem() != null) {
 				list.add(entryRow.getRatingFormItem().getComponent());
 			}
-			if(entryRow.getCommentsLink() != null) {
-				list.add(entryRow.getCommentsLink().getComponent());
-			}
 			if(entryRow.getTaxonomyLevelsLink() != null) {
 				list.add(entryRow.getTaxonomyLevelsLink().getComponent());
 			}
@@ -440,7 +432,6 @@ public class CourseListController extends FormBasicController implements Activat
 		row.setMarked(marked);
 		
 		forgeActionsLinks(row);
-		forgeComments(entry, row);
 		forgeRatings(entry, row);
 		
 		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance("CourseModule", entry.getResourceId()));
@@ -469,33 +460,13 @@ public class CourseListController extends FormBasicController implements Activat
 	private void forgeRatings(CourseStatEntry entry, CourseStatEntryRow row) {
 		if(!repositoryModule.isRatingEnabled()) return;
 		
-		Integer myRating = entry.getMyRating();
 		Double averageRating = entry.getAverageRating();
-		long numOfRatings = entry.getNumOfRatings();
-
-		float ratingValue = myRating == null ? 0f : myRating.floatValue();
 		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-		
-		String id = "rat_" + row.getKey();
-		RatingWithAverageFormItem ratingEl = new RatingWithAverageFormItem(id, ratingValue, averageRatingValue, 5, numOfRatings);
-		ratingEl.setShowRatingAsText(false);
+		RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, flc);
+		ratingEl.addActionListener(FormEvent.ONCLICK);
 		ratingEl.setLargeIcon(false);
 		row.setRatingFormItem(ratingEl);
 		ratingEl.setUserObject(row);
-		flc.add(id, ratingEl);
-	}
-
-	private void forgeComments(CourseStatEntry entry, CourseStatEntryRow row) {
-		if(!repositoryModule.isCommentEnabled()) return;
-		
-		long numOfComments = entry.getNumOfComments();
-		String title = Long.toString(numOfComments);
-		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), CMD_COMMENTS, title, tableEl, Link.NONTRANSLATED);
-		commentsLink.setUserObject(row);
-		String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
-		commentsLink.setCustomEnabledLinkCSS("o_comments");
-		commentsLink.setIconLeftCSS(css);
-		row.setCommentsLink(commentsLink);
 	}
 	
 	private void forgeTaxonomyLevels(CourseStatEntryRow row) {
@@ -570,9 +541,9 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent
-				&& ratingItem.getUserObject() instanceof CourseStatEntryRow row) {
-			doRating(row, ratingEvent.getRating());
+		if(source instanceof RatingFormItem ratingItem
+				&& ratingItem.getUserObject() instanceof CourseStatEntryRow courseStat) {
+			doOpenCourseInfos(ureq, courseStat, "[Ratings:0]");
 		} else if(scopeEl == source) {
 			loadModel();
 		} else if(tableEl == source) {
@@ -586,9 +557,6 @@ public class CourseListController extends FormBasicController implements Activat
 				} else if(CMD_INFOS.equals(se.getCommand())) {
 					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
 					doOpenCourseInfos(ureq, courseStat, null);
-				} else if(CMD_COMMENTS.equals(se.getCommand())) {
-					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
-					doOpenCourseInfos(ureq, courseStat, "[Comments:0]");
 				} else if(CMD_LEVELS.equals(se.getCommand())) {
 					CourseStatEntryRow courseStat = tableModel.getObject(se.getIndex());
 					doOpenCourseInfos(ureq, courseStat, "[Taxonomy:0]");
@@ -613,8 +581,6 @@ public class CourseListController extends FormBasicController implements Activat
 				doOpenCourse(ureq, row);
 			} else if(CMD_INFOS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
 				doOpenCourseInfos(ureq, row, null);
-			} else if(CMD_COMMENTS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
-				doOpenCourseInfos(ureq, row, "[Comments:0]");
 			} else if(CMD_LEVELS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
 				doOpenCourseInfos(ureq, row, "[Taxonomy:0]");
 			}
@@ -687,11 +653,6 @@ public class CourseListController extends FormBasicController implements Activat
 		EntryChangedEvent e = new EntryChangedEvent(() -> row.getKey(), getIdentity(), Change.addBookmark, "coaching.courses");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 		return true;
-	}
-	
-	protected void doRating(CourseStatEntryRow row, float rating) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CourseModule", row.getResourceId());
-		userRatingsDao.updateRating(getIdentity(), ores, null, Math.round(rating));
 	}
 	
 	private void doOpenTools(UserRequest ureq, CourseStatEntryRow entry, String targetId) {

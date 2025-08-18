@@ -72,7 +72,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	private final Double averageRating;
 	private final long numOfRatings;
-	private final long numOfComments;
 	private final long launchCounter;
 
 	private String lifecycleLabel;
@@ -87,7 +86,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private FormLink selectLink;
 	private FormLink startLink;
 	private FormLink detailsLink;
-	private FormLink commentsLink;
 	private FormLink taxonomyLevelsLink;
 	
 	private OLATResourceable olatResource;
@@ -123,7 +121,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		//rating
 		averageRating = entry.getAverageRating();
 		numOfRatings = entry.getNumOfRatings();
-		numOfComments = entry.getNumOfComments();
 		
 		//lifecycle
 		RepositoryEntryLifecycle reLifecycle = entry.getLifecycle();
@@ -188,10 +185,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public long getNumOfRatings() {
 		return numOfRatings;
-	}
-
-	public long getNumOfComments() {
-		return numOfComments;
 	}
 
 	public String getLifecycleSoftKey() {
@@ -329,18 +322,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setRatingFormItem(FormItem ratingFormItem) {
 		this.ratingFormItem = ratingFormItem;
-	}
-	
-	public FormLink getCommentsLink() {
-		return commentsLink;
-	}
-	
-	public String getCommentsLinkName() {
-		return commentsLink == null ? null : commentsLink.getComponent().getComponentName();
-	}
-
-	public void setCommentsLink(FormLink commentsLink) {
-		this.commentsLink = commentsLink;
 	}
 	
 	public FormLink getTaxonomyLevelsLink() {

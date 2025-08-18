@@ -92,8 +92,6 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public long getNumOfRatings();
 	
-	public long getNumOfComments();
-	
 	public long getLaunchCounter();
 	
 	/**

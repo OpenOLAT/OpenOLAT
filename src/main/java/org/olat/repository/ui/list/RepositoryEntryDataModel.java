@@ -76,7 +76,6 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case completion: return item.getCompletionItem();
 			case details: return item.getDetailsLink();
 			case ratings: return item.getRatingFormItem();
-			case comments: return item.getCommentsLink();
 			case type: return item;
 			case taxonomyLevels: return item.getTaxonomyLevelsLink();
 		}
@@ -100,7 +99,6 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		start("table.header.start"),
 		mark("table.header.mark"),
 		ratings("ratings"),
-		comments("comments"),
 		type("table.header.typeimg"),
 		taxonomyLevels("table.header.num.of.levels");
 		

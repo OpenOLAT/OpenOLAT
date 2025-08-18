@@ -35,7 +35,6 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -61,9 +60,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingFormItem;
-import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -237,8 +234,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private I18nModule i18nModule;
 	@Autowired
 	private LifecycleModule lifecycleModule;
-	@Autowired
-	private UserRatingsDAO userRatingsDao;
 
 	public CatalogEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
 			CatalogEntrySearchParams searchParams, CatalogEntryListParams listParams) {
@@ -346,7 +341,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist-3");
+		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist-3.1");
 	}
 
 	private boolean shouldExcludeCatalogEntry(CatalogEntry catalogEntry) {
@@ -630,49 +625,19 @@ public class CatalogEntryListController extends FormBasicController implements A
 		forgeStartLink(row);
 		forgeThumbnail(row);
 		forgeRatings(row);
-		forgeComments(row);
 	}
 	
 	private void forgeRatings(CatalogEntryRow row) {
-		if(repositoryModule.isRatingEnabled() && row.getRepositotyEntryKey() != null) {
-			if(searchParams.isGuestOnly() || searchParams.getMember() == null) {
-				Double averageRating = row.getAverageRating();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getRepositotyEntryKey(), null,  averageRatingValue, 5, false, null);
-				ratingEl.setLargeIcon(false);
-				row.setRatingFormItem(ratingEl);
-				ratingEl.setUserObject(row);
-				ratingEl.setTranslator(getTranslator());
-			} else {
-				Integer myRating = row.getMyRating();
-				Double averageRating = row.getAverageRating();
-				long numOfRatings = row.getNumOfRatings();
+		if(!repositoryModule.isRatingEnabled() || row.getRepositotyEntryKey() == null) return;
 		
-				float ratingValue = myRating == null ? 0f : myRating.floatValue();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingWithAverageFormItem ratingEl
-					= new RatingWithAverageFormItem("rat_" + row.getRepositotyEntryKey(), ratingValue, averageRatingValue, 5, numOfRatings);
-				ratingEl.setLargeIcon(false);
-				row.setRatingFormItem(ratingEl);
-				ratingEl.setUserObject(row);
-				ratingEl.setTranslator(getTranslator());
-			}
-			
-			flc.add(row.getRatingFormItem());
-		}
-	}
-
-	private void forgeComments(CatalogEntryRow row) {
-		if(repositoryModule.isCommentEnabled() && row.getRepositotyEntryKey() != null) {
-			long numOfComments = row.getNumOfComments();
-			String title = Long.toString(numOfComments);
-			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getRepositotyEntryKey(), "comments", title, null, flc, Link.NONTRANSLATED);
-			commentsLink.setUserObject(row);
-			String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
-			commentsLink.setCustomEnabledLinkCSS("o_comments");
-			commentsLink.setIconLeftCSS(css);
-			row.setCommentsLink(commentsLink);
-		}
+		Double averageRating = row.getAverageRating();
+		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+		RatingFormItem ratingEl = uifactory.addRatingItem("rat_" + row.getRepositotyEntryKey(), null,  averageRatingValue, 5, false, flc);
+		ratingEl.addActionListener(FormEvent.ONCLICK);
+		ratingEl.setLargeIcon(false);
+		row.setRatingFormItem(ratingEl);
+		ratingEl.setUserObject(row);
+		ratingEl.setTranslator(getTranslator());
 	}
 
 	private void forgeStartLink(CatalogEntryRow row) {
@@ -746,9 +711,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 					catalogRow.getRatingFormItem().setRootForm(mainForm);
 				}
 				cmps.add(catalogRow.getRatingFormItem().getComponent());
-			}
-			if (catalogRow.getCommentsLink() != null) {
-				cmps.add(catalogRow.getCommentsLink().getComponent());
 			}
 			return cmps;
 		}
@@ -885,9 +847,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof RatingWithAverageFormItem ratingItem && event instanceof RatingFormEvent ratingEvent) {
-			CatalogEntryRow row = (CatalogEntryRow)ratingItem.getUserObject();
-			doRating(row, ratingEvent.getRating());
+		if(source instanceof RatingFormItem ratingItem
+				&& ratingItem.getUserObject() instanceof CatalogEntryRow row) {
+			doOpenDetails(ureq, row);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -1156,11 +1118,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 		} else if (curriculumElement != null) {
 			doOpenDetails(ureq, curriculumElement);
 		}
-	}
-	
-	protected void doRating(CatalogEntryRow row, float rating) {
-		OLATResourceable ores = row.getRepositoryEntryResourceable();
-		userRatingsDao.updateRating(getIdentity(), ores, null, Math.round(rating));
 	}
 	
 	public static final class TaxonomyItem {
