@@ -707,7 +707,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			SelectionValues taxonomyValues = getTaxonomyLevels();
 			if (taxonomyValues != null) {
 				filters.add(new FlexiTableMultiSelectionFilter(translate("filter.subject.paths"), 
-						FILTER_SUBJECT_PATHS, taxonomyValues, true));
+						FILTER_SUBJECT_PATHS, taxonomyValues, false));
 			}
 		}
 
