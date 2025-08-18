@@ -10,11 +10,10 @@
 </div>
 #if($alignRubricsTables)
 	<script>
-		/* <![CDATA[ */ 
-		jQuery(function() {
-			var tables = jQuery('.o_rubric_table table');
-			BFormatter.alignTableColumns(tables);
-		});
-		/* ]]> */
+	"use strict";
+	jQuery(function() {
+		const tables = jQuery('.o_rubric_table table');
+		BFormatter.alignTableColumns(tables);
+	});
 	</script>
 #end
