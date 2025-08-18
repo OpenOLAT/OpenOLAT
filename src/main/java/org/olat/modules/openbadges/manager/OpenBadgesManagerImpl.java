@@ -1371,7 +1371,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void issueBadgeManually(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy) {
+	public void issueBadgeManually(BadgeClass badgeClass, Collection<Identity> recipients, Identity awardedBy) {
 		if (recipients == null) {
 			return;
 		}

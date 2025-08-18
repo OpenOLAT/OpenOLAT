@@ -64,9 +64,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 	private TableModel tableModel;
 	private FlexiTableElement tableEl;
-	private FormLink addLink;
 	private CloseableModalController cmc;
-	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
 	private BadgeAssertionPublicController badgeAssertionPublicController;
 	private DialogBoxController confirmRevokeCtrl;
 	private DialogBoxController confirmDeleteCtrl;
@@ -104,8 +102,6 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 				false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "badge-assertions-global");
 
-		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
-		addLink.setElementCssClass("o_sel_openbadges_issue");
 		updateUI();
 	}
 
@@ -134,20 +130,14 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
 		removeAsListenerAndDispose(badgeAssertionPublicController);
 		cmc = null;
-		issueGlobalBadgeCtrl = null;
 		badgeAssertionPublicController = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == issueGlobalBadgeCtrl) {
-			cmc.deactivate();
-			cleanUp();
-			updateUI();
-		} else if (source == badgeAssertionPublicController) {
+		if (source == badgeAssertionPublicController) {
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == confirmRevokeCtrl) {
@@ -172,9 +162,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == addLink) {
-			doUpload(ureq);
-		} else if (source instanceof FormLink formLink) {
+		if (source instanceof FormLink formLink) {
 			if ("revoke".equals(formLink.getCmd())) {
 				BadgeAssertion badgeAssertion = (BadgeAssertion) formLink.getUserObject();
 				doConfirmRevoke(ureq, badgeAssertion);
@@ -196,23 +184,6 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		String title = translate("issuedGlobalBadge");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				badgeAssertionPublicController.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doUpload(UserRequest ureq) {
-		Long numberOfGlobalBadgeClasses = openBadgesManager.getNumberOfBadgeClasses(null);
-		if (numberOfGlobalBadgeClasses == 0) {
-			showWarning("warning.no.global.badges.available");
-			return;
-		}
-
-		issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), null);
-		listenTo(issueGlobalBadgeCtrl);
-
-		String title = translate("issueGlobalBadge");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				issueGlobalBadgeCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

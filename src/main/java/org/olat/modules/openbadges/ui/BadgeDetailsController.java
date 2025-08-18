@@ -45,6 +45,8 @@ import org.olat.course.ICourse;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.ui.CreateBadgeClassWizardContext.Mode;
+import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadge01Step;
+import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadgeFinish;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import jakarta.servlet.http.HttpServletRequest;
@@ -81,7 +83,7 @@ public class BadgeDetailsController extends BasicController {
 	private String mediaUrl;
 
 	private CloseableModalController cmc;
-	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
+	private StepsMainRunController issueGlobalBadgeWizard;
 	private IssueCourseBadgeController issueCourseBadgeCtrl;
 	private CreateBadgeClassWizardContext createBadgeClassContext;
 	private StepsMainRunController stepsController;
@@ -250,13 +252,15 @@ public class BadgeDetailsController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			cleanUp();
-		} else if (source == issueGlobalBadgeCtrl) {
-			cmc.deactivate();
-			cleanUp();
-			if (event == Event.DONE_EVENT) {
-				loadData(ureq, false);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if (source == issueGlobalBadgeWizard) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadData(ureq, false);
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			}
+			cleanUp();
 		} else if (source == issueCourseBadgeCtrl) {
 			cmc.deactivate();
 			cleanUp();
@@ -287,10 +291,10 @@ public class BadgeDetailsController extends BasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
+		removeAsListenerAndDispose(issueGlobalBadgeWizard);
 		removeAsListenerAndDispose(issueCourseBadgeCtrl);
 		cmc = null;
-		issueGlobalBadgeCtrl = null;
+		issueGlobalBadgeWizard = null;
 		issueCourseBadgeCtrl = null;
 	}
 
@@ -298,14 +302,12 @@ public class BadgeDetailsController extends BasicController {
 		BadgeClass badgeClass = openBadgesManager.getBadgeClassByKey(badgeClassKey);
 
 		if (badgeClass.getEntry() == null) {
-			issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), badgeClass);
-			listenTo(issueGlobalBadgeCtrl);
-
-			String title = translate("issueGlobalBadge");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					issueGlobalBadgeCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
+			Step start = new IssueGlobalBadge01Step(ureq);
+			IssueGlobalBadgeFinish finish = new IssueGlobalBadgeFinish(badgeClass.getRootId(), openBadgesManager, getIdentity());
+			String title = translate("award.global.badge", badgeClass.getNameWithScan());
+			issueGlobalBadgeWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, title, "o_sel_award_global_badge_manually_wizard");
+			listenTo(issueGlobalBadgeWizard);
+			getWindowControl().pushAsModalDialog(issueGlobalBadgeWizard.getInitialComponent());
 		} else {
 			issueCourseBadgeCtrl = new IssueCourseBadgeController(ureq, getWindowControl(), badgeClass);
 			listenTo(issueCourseBadgeCtrl);

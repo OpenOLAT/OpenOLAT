@@ -168,7 +168,7 @@ public interface OpenBadgesManager {
 
 	void issueBadgeManually(String uuid, BadgeClass badgeClass, Identity recipient, Identity awardedBy);
 
-	void issueBadgeManually(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy);
+	void issueBadgeManually(BadgeClass badgeClass, Collection<Identity> recipients, Identity awardedBy);
 
 	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry);
 
