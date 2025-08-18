@@ -25,4 +25,12 @@ package org.olat.modules.coach.reports;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public record UserCourseKey(Long identityKey, Long courseKey) {
+	
+	@Override
+	public String toString() {
+		return "UserCourseKey{" +
+				"identityKey=" + identityKey +
+				", courseKey=" + courseKey +
+				'}';
+	}
 }
