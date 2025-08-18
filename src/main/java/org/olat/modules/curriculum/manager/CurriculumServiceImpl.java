@@ -993,8 +993,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry) {
 		return curriculumElementDao.loadElements(entry);
+	}
+
+	@Override
+	public boolean hasCurriculumElements(RepositoryEntryRef entry) {
+		return curriculumElementDao.hasElements(entry);
 	}
 
 	@Override

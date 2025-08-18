@@ -613,6 +613,22 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public boolean hasElements(RepositoryEntryRef entry) {
+		String query = """
+				select el.key from curriculumelement el
+				inner join el.group bGroup
+				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
+				where rel.entry.key=:entryKey""";
+		List<Long> elementsKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return elementsKeys != null && !elementsKeys.isEmpty()
+				&& elementsKeys.get(0) != null && elementsKeys.get(0).longValue() > 0;
+	}
+	
 	public CurriculumElement loadElementByResource(OLATResource resource) {
 		String query = """
 				select el from curriculumelement el
