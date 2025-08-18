@@ -20,13 +20,18 @@
 package org.olat.modules.qpool.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FileElementInfos;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -40,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 26.02.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ImportController extends FormBasicController {
@@ -73,6 +78,8 @@ public class ImportController extends FormBasicController {
 			editableEl.select("no", true);
 		}
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "item", "import.item", formLayout);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.limitToMimeType(Set.of("application/zip"), null, null);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -80,9 +87,14 @@ public class ImportController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	public File getFile() {
-		return fileEl.getUploadFile();
+
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(fileEl == source) {
+			validateFormItem(ureq, fileEl);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -93,16 +105,31 @@ public class ImportController extends FormBasicController {
 		if(fileEl.getUploadFile() == null) {
 			fileEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
+		} else {
+			allOk &= validateFormItem(ureq, fileEl);
 		}
+		
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String filename = fileEl.getUploadFileName();
-		File file = fileEl.getUploadFile();
-		List<QuestionItem> importItems = qpoolService.importItems(getIdentity(), getLocale(), filename, file);
-		if(importItems == null || importItems.isEmpty()) {
+		
+		boolean importError = false;
+		List<QuestionItem> importItems = new ArrayList<>();
+		List<FileElementInfos> fileInfosList = fileEl.getUploadFilesInfos();
+		for(FileElementInfos fileInfos: fileInfosList) {
+			File file = fileInfos.file();
+			List<QuestionItem> partialImportItems = qpoolService.importItems(getIdentity(), getLocale(), filename, file);
+			if(partialImportItems != null) {
+				importItems.addAll(partialImportItems);
+			} else {
+				importError = true;
+			}
+		}
+
+		if(importError || importItems.isEmpty()) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			showWarning("import.failed");
 		} else {
