@@ -260,7 +260,7 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
 				true, OrderBy.rating.name()));
 		}
 		
@@ -268,7 +268,6 @@ public class RepositoryEntryListController extends FormBasicController
 		levelsCol.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(levelsCol);
 		
-
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
@@ -294,7 +293,7 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		initSorters(tableEl);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2-".concat(name));
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2.1-".concat(name));
 		
 		if (!config.withSavedSettings()) {
 			SortKey sortKey = new SortKey(OrderBy.custom.name(), true);
