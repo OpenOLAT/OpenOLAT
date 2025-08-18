@@ -261,7 +261,8 @@ public class ProfileFormController extends FormBasicController {
 			}
 			
 			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
-				boolean userViewReadOnly = userManager.isUserViewReadOnly(usageIdentifier, userPropertyHandler);
+				boolean userViewReadOnly = !isAdministrativeUser
+						&& userManager.isUserViewReadOnly(usageIdentifier, userPropertyHandler);
 				initEmailForm(formItem, groupContainer, userViewReadOnly);
 			}
 		}
@@ -343,7 +344,7 @@ public class ProfileFormController extends FormBasicController {
 		}
 	}
 	
-	private void initEmailForm(FormItem formItem, FormLayoutContainer groupContainer, Boolean isUserViewReadOnly) {
+	private void initEmailForm(FormItem formItem, FormLayoutContainer groupContainer, boolean isUserViewReadOnly) {
 		// special case for email field
 		emailEl = (TextElement)formItem;
 		emailEl.setElementCssClass("o_sel_user_mail");
@@ -354,7 +355,7 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.add(emailLayoutContainer);
 		emailLayoutContainer.setRootForm(mainForm);
 
-		if (Boolean.FALSE.equals(isUserViewReadOnly) &&
+		if (!isUserViewReadOnly &&
 				(identityToModify.getUser().getProperty("emailDisabled") == null
 				|| identityToModify.getUser().getProperty("emailDisabled").equals("false"))) {
 			changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
