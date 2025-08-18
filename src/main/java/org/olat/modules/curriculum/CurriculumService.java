@@ -354,7 +354,9 @@ public interface CurriculumService {
 	 * @param entry A repository entry
 	 * @return A list of curriculum elements 
 	 */
-	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry);
+	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry);
+	
+	public boolean hasCurriculumElements(RepositoryEntryRef entry);
 	
 	
 	public List<CurriculumElementWithParents> getOrderedCurriculumElementsTree(RepositoryEntryRef entry);

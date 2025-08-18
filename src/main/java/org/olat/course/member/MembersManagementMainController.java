@@ -53,6 +53,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.ui.InvitationListController;
@@ -121,6 +122,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private InvitationService invitationService;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin, boolean principal,
@@ -186,7 +189,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 		
-		if(entryAdmin || principal) {
+		if((entryAdmin || principal) && isCourseCurriculum()) {
 			GenericTreeNode node = new GenericTreeNode(translate("menu.elements"), CMD_CURRICULUM_ELEMENTS);
 			node.setAltText(translate("menu.elements.alt"));
 			node.setCssClass("o_sel_membersmgt_elements");
@@ -227,6 +230,16 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 		return gtm;
+	}
+	
+	private boolean isCourseCurriculum( ) {
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+		if(RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType())) {
+			return true;
+		}
+		return curriculumService.hasCurriculumElements(repoEntry);
 	}
 
 	private boolean isCourseManagedByCurriculum() {

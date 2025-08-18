@@ -493,6 +493,32 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasElements() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1h", "Curriculum for relation", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-has-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, true);
+		dbInstance.commit();
+		
+		boolean hasRelations = curriculumElementDao.hasElements(entry);
+		Assert.assertTrue(hasRelations);
+	}
+	
+	@Test
+	public void hasNotElements() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		
+		boolean hasRelations = curriculumElementDao.hasElements(entry);
+		Assert.assertFalse(hasRelations);
+	}
+	
+	@Test
 	public void loadElementsByCurriculums() {
 		Curriculum curriculum1 = curriculumDao.createAndPersist("Cur-for-load-1", "Curriculum to load 1", null, false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("El-load-1", "Element 1",
