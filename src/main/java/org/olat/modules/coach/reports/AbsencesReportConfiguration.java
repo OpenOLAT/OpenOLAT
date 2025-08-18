@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -114,6 +116,9 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 		header.addCell(pos++, translator.translate("export.header.units"));
 		header.addCell(pos++, translator.translate("export.header.attended"));
+		header.addCell(pos++, translator.translate("export.header.authorized"));
+		header.addCell(pos++, translator.translate("export.header.not.authorized"));
+		header.addCell(pos++, translator.translate("export.header.dispensed"));
 		header.addCell(pos++, translator.translate("export.header.attendance.rate"));
 	}
 	
@@ -127,12 +132,15 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		}
 
 		List<AbsencesReportSummaryRow> summaryRows = new ArrayList<>();
+		int lastNameIndex = findPropertyIndex(UserConstants.LASTNAME, userPropertyHandlers);
 		for (Long identityKey : identityToStatistics.keySet()) {
 			List<LectureBlockIdentityStatistics> statisticsForIdentity = identityToStatistics.get(identityKey);
 			String[] identityProps = null;
 			long units = 0;
 			long attended = 0;
 			long absent = 0;
+			long authorized = 0;
+			long dispensed = 0;
 			for (LectureBlockIdentityStatistics stats : statisticsForIdentity) {
 				if (identityProps == null) {
 					identityProps = stats.getIdentityProps();
@@ -140,6 +148,8 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				units += stats.getTotalPersonalPlannedLectures();
 				attended += stats.getTotalAttendedLectures();
 				absent += stats.getTotalAbsentLectures();
+				authorized += stats.getTotalAuthorizedAbsentLectures();
+				dispensed += stats.getTotalDispensationLectures();
 				if (countAuthorizedAbsenceAsAttendant) {
 					attended += stats.getTotalAuthorizedAbsentLectures();
 					attended += stats.getTotalDispensationLectures();
@@ -156,6 +166,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				absent = 0;
 			}
 			
+			long notAuthorized = units - attended - authorized - dispensed;
 			long total = attended + absent;
 			double rate;
 			if (total == 0 || attended == 0) {
@@ -163,9 +174,12 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			} else {
 				rate = (double) attended / (double) total;
 			}
-			summaryRows.add(new AbsencesReportSummaryRow(identityProps, positive(units), positive(attended), rate));
+			String lastName = getLastName(identityProps, lastNameIndex, Long.toString(identityKey));
+			summaryRows.add(new AbsencesReportSummaryRow(identityProps, lastName, positive(units), positive(attended),
+					positive(authorized), positive(notAuthorized), positive(dispensed), rate));
 		}
 		
+		summaryRows.sort(Comparator.comparing(AbsencesReportSummaryRow::lastName));
 		for (AbsencesReportSummaryRow summaryRow : summaryRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
@@ -182,6 +196,9 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		}
 		row.addCell(pos++, "" + summaryRow.units());
 		row.addCell(pos++, "" + summaryRow.attended());
+		row.addCell(pos++, "" + summaryRow.authorized());
+		row.addCell(pos++, "" + summaryRow.notAuthorized());
+		row.addCell(pos++, "" + summaryRow.dispensed());
 		row.addCell(pos++, summaryRow.attendanceRate(), workbook.getStyles().getPercentStyle());
 	}
 
@@ -219,6 +236,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		}
 		
 		List<AbsencesReportCourseRow> userCourseRows = new ArrayList<>();
+		int lastNameIndex = findPropertyIndex(UserConstants.LASTNAME, userPropertyHandlers);
 		for (UserCourseKey userCourseKey : statisticsMap.keySet()) {
 			List<LectureBlockIdentityStatistics> statisticsForKey = statisticsMap.get(userCourseKey);
 			String[] identityProps = null;
@@ -268,11 +286,13 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			} else {
 				rate = (double) attended / (double) total;
 			}
-			userCourseRows.add(new AbsencesReportCourseRow(identityProps, courseTitle, externalReference, 
+			String lastName = getLastName(identityProps, lastNameIndex, userCourseKey.toString());
+			userCourseRows.add(new AbsencesReportCourseRow(identityProps, lastName, courseTitle, externalReference, 
 					positive(units), positive(attended), positive(authorized), positive(notAuthorized), 
 					positive(dispensed), rate));
 		}
 		
+		userCourseRows.sort(Comparator.comparing(AbsencesReportCourseRow::lastName).thenComparing(AbsencesReportCourseRow::courseTitle));
 		for (AbsencesReportCourseRow userCourseRow : userCourseRows) {
 			Row row = worksheet.newRow();
 			int pos = 0;
@@ -317,5 +337,26 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	@Override
 	protected List<UserPropertyHandler> getUserPropertyHandlers() {
 		return CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false);
+	}
+	
+	private int findPropertyIndex(String propertyName, List<UserPropertyHandler> userPropertyHandlers) { 
+		int i = 0;
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (propertyName.equals(userPropertyHandler.getName())) {
+				return i;
+			}
+			i++;
+		}
+		return -1;
+	}
+
+	private String getLastName(String[] identityProps, int lastNameIndex, String dflt) {
+		if (identityProps == null) {
+			return dflt;
+		}
+		if (lastNameIndex < 0 || lastNameIndex >= identityProps.length) {
+			return dflt;
+		}
+		return identityProps[lastNameIndex];
 	}
 }

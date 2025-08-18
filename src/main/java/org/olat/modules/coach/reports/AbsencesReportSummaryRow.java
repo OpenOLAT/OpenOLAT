@@ -24,7 +24,8 @@ package org.olat.modules.coach.reports;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public record AbsencesReportSummaryRow(String[] identityProps, long units, long attended, double attendanceRate) {
+public record AbsencesReportSummaryRow(String[] identityProps, String lastName, long units, long attended, 
+									   long authorized, long notAuthorized, long dispensed, double attendanceRate) {
 
 	public String getIdentityProp(int pos) {
 		if(identityProps != null && pos >= 0 && pos < identityProps.length) {
