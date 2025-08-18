@@ -114,6 +114,9 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 		header.addCell(pos++, translator.translate("export.header.units"));
 		header.addCell(pos++, translator.translate("export.header.attended"));
+		header.addCell(pos++, translator.translate("export.header.authorized"));
+		header.addCell(pos++, translator.translate("export.header.not.authorized"));
+		header.addCell(pos++, translator.translate("export.header.dispensed"));
 		header.addCell(pos++, translator.translate("export.header.attendance.rate"));
 	}
 	
@@ -133,6 +136,8 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			long units = 0;
 			long attended = 0;
 			long absent = 0;
+			long authorized = 0;
+			long dispensed = 0;
 			for (LectureBlockIdentityStatistics stats : statisticsForIdentity) {
 				if (identityProps == null) {
 					identityProps = stats.getIdentityProps();
@@ -140,6 +145,8 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				units += stats.getTotalPersonalPlannedLectures();
 				attended += stats.getTotalAttendedLectures();
 				absent += stats.getTotalAbsentLectures();
+				authorized += stats.getTotalAuthorizedAbsentLectures();
+				dispensed += stats.getTotalDispensationLectures();
 				if (countAuthorizedAbsenceAsAttendant) {
 					attended += stats.getTotalAuthorizedAbsentLectures();
 					attended += stats.getTotalDispensationLectures();
@@ -156,6 +163,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 				absent = 0;
 			}
 			
+			long notAuthorized = units - attended - authorized - dispensed;
 			long total = attended + absent;
 			double rate;
 			if (total == 0 || attended == 0) {
@@ -163,7 +171,8 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			} else {
 				rate = (double) attended / (double) total;
 			}
-			summaryRows.add(new AbsencesReportSummaryRow(identityProps, positive(units), positive(attended), rate));
+			summaryRows.add(new AbsencesReportSummaryRow(identityProps, positive(units), positive(attended),
+					positive(authorized), positive(notAuthorized), positive(dispensed), rate));
 		}
 		
 		for (AbsencesReportSummaryRow summaryRow : summaryRows) {
@@ -182,6 +191,9 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		}
 		row.addCell(pos++, "" + summaryRow.units());
 		row.addCell(pos++, "" + summaryRow.attended());
+		row.addCell(pos++, "" + summaryRow.authorized());
+		row.addCell(pos++, "" + summaryRow.notAuthorized());
+		row.addCell(pos++, "" + summaryRow.dispensed());
 		row.addCell(pos++, summaryRow.attendanceRate(), workbook.getStyles().getPercentStyle());
 	}
 
