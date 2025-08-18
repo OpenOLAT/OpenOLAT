@@ -5,18 +5,12 @@
 	.o_badge_classes .o_image {
 		padding: 6px;
 	}
-	.o_badge_classes .o_button_group {
-		float: right;
-	}
 </style>
 <fieldset class="o_form o_badge_classes">
 	<legend>$r.translate("issuedGlobalBadges") $r.contextHelpWithWrapper("manual_admin/administration/e-Assessment_openBadges/")</legend>
 	#if($noGlobalBadgesAvailable)
 	<div class="o_warning_with_icon">$r.translate("warning.no.global.badges.available")</div>
 	#else
-	<div class="o_button_group">
-		$r.render("add")
-	</div>
 	$r.render("table")
 	#end
 </fieldset>

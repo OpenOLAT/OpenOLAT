@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -94,15 +93,10 @@ public class CatalogEntryRow {
 	private boolean certificate;
 	private String creditPointAmount;
 	
-	
-	private final Integer myRating;
 	private final Double averageRating;
-	private final Long numOfRatings;
-	private final Long numOfComments;
 	
 	private String thumbnailRelPath;
 	private FormItem startLink;
-	private FormLink commentsLink;
 	private FormItem ratingFormItem;
 	
 	public CatalogEntryRow(CatalogEntry catalogEntry) {
@@ -136,10 +130,7 @@ public class CatalogEntryRow {
 		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
 		singleCourseEntryStartus = catalogEntry.getSingleCourseEntryStartus();
 		
-		myRating = catalogEntry.getMyRating();
 		averageRating = catalogEntry.getAverageRating();
-		numOfRatings = catalogEntry.getNumOfRatings();
-		numOfComments = catalogEntry.getNumOfComments();
 		
 		curriculumKey = catalogEntry.getCurriculumKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
@@ -394,18 +385,6 @@ public class CatalogEntryRow {
 		this.startLink = startLink;
 	}
 	
-	public FormLink getCommentsLink() {
-		return commentsLink;
-	}
-	
-	public String getCommentsLinkName() {
-		return commentsLink == null ? null : commentsLink.getComponent().getComponentName();
-	}
-
-	public void setCommentsLink(FormLink commentsLink) {
-		this.commentsLink = commentsLink;
-	}
-	
 	public String getRatingFormItemName() {
 		return ratingFormItem == null ? null : ratingFormItem.getComponent().getComponentName();
 	}
@@ -435,20 +414,8 @@ public class CatalogEntryRow {
 				&& (	singleCourseEntryStartus == null 
 					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStartus, RepositoryEntryStatusEnum.publishedAndClosed()));
 	}
-	
-	public Integer getMyRating() {
-		return myRating;
-	}
 
 	public Double getAverageRating() {
 		return averageRating;
-	}
-
-	public Long getNumOfRatings() {
-		return numOfRatings;
-	}
-
-	public Long getNumOfComments() {
-		return numOfComments;
 	}
 }

@@ -67,7 +67,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	
 	private final Double averageRating;
 	private final long numOfRatings;
-	private final long numOfComments;
 	private final long launchCounter;
 
 	private final long offersAvailable;
@@ -100,12 +99,10 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		if(stats != null) {
 			averageRating = stats.getRating();
 			numOfRatings = stats.getNumOfRatings();
-			numOfComments = stats.getNumOfComments();
 			launchCounter = stats.getLaunchCounter();
 		} else {
 			averageRating = null;
 			numOfRatings = 0;
-			numOfComments = 0;
 			launchCounter = 0;
 		}
 		
@@ -257,11 +254,6 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public long getNumOfRatings() {
 		return numOfRatings;
-	}
-
-	@Override
-	public long getNumOfComments() {
-		return numOfComments;
 	}
 
 	@Override

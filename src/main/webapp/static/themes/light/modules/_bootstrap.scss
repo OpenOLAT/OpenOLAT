@@ -280,3 +280,8 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 	color: #000 !important;
 	background: #fff !important;
 }
+
+/* Progress bar neutral */
+.progress-bar-neutral {
+	@include progress-bar-variant($progress-bar-neutral-bg);
+}

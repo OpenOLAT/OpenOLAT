@@ -71,6 +71,8 @@ import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.ui.BadgeClassTableModel.BadgeClassCols;
 import org.olat.modules.openbadges.ui.CreateBadgeClassWizardContext.Mode;
+import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadge01Step;
+import org.olat.modules.openbadges.ui.wizard.IssueGlobalBadgeFinish;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +107,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private CloseableCalloutWindowController calloutCtrl;
 	private ToolsController toolsCtrl;
 	private VelocityContainer detailsVC;
-	private IssueGlobalBadgeController issueGlobalBadgeCtrl;
+	private StepsMainRunController issueGlobalBadgeWizard;
 	private IssueCourseBadgeController issueCourseBadgeCtrl;
 	private CloseableModalController cmc;
 
@@ -304,14 +306,12 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		BadgeClass reloadedBadgeClass = openBadgesManager.getBadgeClassByKey(row.badgeClassWithSizeAndCount().badgeClass().getKey());
 
 		if (reloadedBadgeClass.getEntry() == null) {
-			issueGlobalBadgeCtrl = new IssueGlobalBadgeController(ureq, getWindowControl(), reloadedBadgeClass);
-			listenTo(issueGlobalBadgeCtrl);
-
-			String title = translate("issueGlobalBadge");
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					issueGlobalBadgeCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
+			Step start = new IssueGlobalBadge01Step(ureq);
+			IssueGlobalBadgeFinish finish = new IssueGlobalBadgeFinish(reloadedBadgeClass.getRootId(), openBadgesManager, getIdentity());
+			String title = translate("award.global.badge", reloadedBadgeClass.getNameWithScan());
+			issueGlobalBadgeWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, title, "o_sel_award_global_badge_manually_wizard");
+			listenTo(issueGlobalBadgeWizard);
+			getWindowControl().pushAsModalDialog(issueGlobalBadgeWizard.getInitialComponent());
 		} else {
 			issueCourseBadgeCtrl = new IssueCourseBadgeController(ureq, getWindowControl(), reloadedBadgeClass);
 			listenTo(issueCourseBadgeCtrl);
@@ -560,12 +560,14 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			cleanUp();
-		} else if (source == issueGlobalBadgeCtrl) {
-			cmc.deactivate();
-			cleanUp();
-			if (event == Event.DONE_EVENT) {
-				loadModel(ureq);
+		} else if (source == issueGlobalBadgeWizard) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel(ureq);
+				}
 			}
+			cleanUp();
 		} else if (source == issueCourseBadgeCtrl) {
 			cmc.deactivate();
 			cleanUp();
@@ -629,13 +631,13 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	private void cleanUp() {
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
-		removeAsListenerAndDispose(issueGlobalBadgeCtrl);
+		removeAsListenerAndDispose(issueGlobalBadgeWizard);
 		removeAsListenerAndDispose(issueCourseBadgeCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		calloutCtrl = null;
 		toolsCtrl = null;
-		issueGlobalBadgeCtrl = null;
+		issueGlobalBadgeWizard = null;
 		issueCourseBadgeCtrl = null;
 		cmc = null;
 		confirmDeleteCtrl = null;

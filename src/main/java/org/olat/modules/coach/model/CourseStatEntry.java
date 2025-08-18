@@ -53,10 +53,7 @@ public class CourseStatEntry {
 	
 	private Long resourceId;
 	
-	private Integer myRating;
 	private Double averageRating;
-	private long numOfRatings;
-	private int numOfComments;
 	
 	private int participants;
 	private int participantsVisited;
@@ -263,14 +260,6 @@ public class CourseStatEntry {
 		}
 	}
 
-	public Integer getMyRating() {
-		return myRating;
-	}
-
-	public void setMyRating(Integer myRating) {
-		this.myRating = myRating;
-	}
-
 	public Double getAverageRating() {
 		return averageRating;
 	}
@@ -278,22 +267,4 @@ public class CourseStatEntry {
 	public void setAverageRating(Double averageRating) {
 		this.averageRating = averageRating;
 	}
-
-	public long getNumOfRatings() {
-		return numOfRatings;
-	}
-
-	public void setNumOfRatings(long numOfRatings) {
-		this.numOfRatings = numOfRatings;
-	}
-
-	public int getNumOfComments() {
-		return numOfComments;
-	}
-
-	public void setNumOfComments(int comments) {
-		this.numOfComments = comments;
-	}
-	
-	
 }

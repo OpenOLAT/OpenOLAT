@@ -330,7 +330,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			uifactory.forgeStartLink(row);
 			uifactory.forgeDetails(row);
 			uifactory.forgeRatings(row);
-			uifactory.forgeComments(row);
 			uifactory.forgeTaxonomyLevels(row);
 			
 			items.add(row);

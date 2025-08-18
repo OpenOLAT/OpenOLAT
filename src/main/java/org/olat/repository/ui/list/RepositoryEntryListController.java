@@ -1,4 +1,5 @@
 /**
+
  * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -27,7 +28,6 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
-import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -66,6 +66,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
@@ -76,7 +77,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
@@ -91,6 +91,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.LifecycleModule;
@@ -140,8 +141,6 @@ public class RepositoryEntryListController extends FormBasicController
 	private DefaultRepositoryEntryDataSource dataSource;
 	private SearchMyRepositoryEntryViewParams searchParams;
 	
-	private CloseableModalController cmc;
-	private UserCommentsController commentsCtrl;
 	private final BreadcrumbPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
 	
@@ -255,14 +254,14 @@ public class RepositoryEntryListController extends FormBasicController
 			DefaultFlexiColumnModel completionColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),
 					Cols.completion.ordinal(), true, OrderBy.completion.name());
 			columnsModel.addFlexiColumnModel(completionColumnModel);
+			DefaultFlexiColumnModel successStatusColumnModel = new DefaultFlexiColumnModel(false, Cols.successStatus.i18nKey(),
+					Cols.successStatus.ordinal(), true, OrderBy.passed.name(), FlexiColumnModel.ALIGNMENT_LEFT, new PassedCellRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(successStatusColumnModel);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
 				true, OrderBy.rating.name()));
-		}
-		if(repositoryModule.isCommentEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 		}
 		
 		DefaultFlexiColumnModel levelsCol = new DefaultFlexiColumnModel(Cols.taxonomyLevels.i18nKey(), Cols.taxonomyLevels.ordinal());
@@ -650,24 +649,6 @@ public class RepositoryEntryListController extends FormBasicController
 			if (event instanceof BookedEvent) {
 				doCloseDetails();
 			}
-		} else if (cmc == source) {
-			if(commentsCtrl != null) {
-				RepositoryEntryRow row = (RepositoryEntryRow)commentsCtrl.getUserObject();
-				long numOfComments = commentsCtrl.getCommentsCount();
-				
-				String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
-				row.getCommentsLink().setCustomEnabledLinkCSS("o_comments");
-				row.getCommentsLink().setIconLeftCSS(css);
-				String title = "(" + numOfComments + ")";
-				row.getCommentsLink().setI18nKey(title);
-				row.getCommentsLink().getComponent().setDirty(true);
-			}
-			cleanUp();
-		} else if(commentsCtrl == source) {
-			if(event == Event.CANCELLED_EVENT) {
-				cmc.deactivate();
-				cleanUp();
-			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -675,13 +656,6 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//do not update the 
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(commentsCtrl);
-		commentsCtrl = null;
-		cmc = null;
 	}
 	
 	private void doSearch(UserRequest ureq, SearchEvent se) {
@@ -811,13 +785,18 @@ public class RepositoryEntryListController extends FormBasicController
 			if (isConventionalUnpassedCourse(row)) {
 				return;
 			}
+			
+			float completion = row.getCompletion().floatValue();
 			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
-					row.getCompletion().floatValue(), Float.valueOf(1), null);
+					completion, Float.valueOf(1), null);
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
 			completionItem.setRenderSize(RenderSize.small);		
-			completionItem.setBarColor(BarColor.success);	
+			completionItem.setBarColor(BarColor.neutral);	
+			completionItem.setPercentagesEnabled(true);
+			completionItem.setRenderLabels(RenderLabels.always);
+			
 			// Inline rendering of status
 			if (row.isPassed()) {
 				completionItem.setCssClass("o_progress_passed");
@@ -916,20 +895,6 @@ public class RepositoryEntryListController extends FormBasicController
 		ratingEl.setLargeIcon(false);
 		row.setRatingFormItem(ratingEl);
 		ratingEl.setUserObject(row);
-	}
-
-	@Override
-	public void forgeComments(RepositoryEntryRow row) {
-		if(!repositoryModule.isCommentEnabled()) return;
-		
-		long numOfComments = row.getNumOfComments();
-		String title = Long.toString(numOfComments);
-		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
-		commentsLink.setUserObject(row);
-		String css = numOfComments > 0 ? "o_icon o_icon_comments" : "o_icon o_icon_comments_none";
-		commentsLink.setCustomEnabledLinkCSS("o_comments");
-		commentsLink.setIconLeftCSS(css);
-		row.setCommentsLink(commentsLink);
 	}
 	
 	@Override

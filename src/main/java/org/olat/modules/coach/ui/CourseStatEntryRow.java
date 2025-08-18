@@ -55,7 +55,6 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	private FormLink openLink;
 	private FormLink infosLink;
 	private FormItem ratingFormItem;
-	private FormLink commentsLink;
 	private FormLink taxonomyLevelsLink;
 	
 	public CourseStatEntryRow(CourseStatEntry entry, RepositoryEntryEducationalType educationalType) {
@@ -340,18 +339,6 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 
 	public void setRatingFormItem(FormItem ratingFormItem) {
 		this.ratingFormItem = ratingFormItem;
-	}
-	
-	public String getCommentsLinkName() {
-		return commentsLink == null ? null : commentsLink.getComponent().getComponentName();
-	}
-	
-	public FormLink getCommentsLink() {
-		return commentsLink;
-	}
-
-	public void setCommentsLink(FormLink commentsLink) {
-		this.commentsLink = commentsLink;
 	}
 	
 	public FormLink getTaxonomyLevelsLink() {

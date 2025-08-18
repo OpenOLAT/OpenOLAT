@@ -46,8 +46,6 @@ public interface RepositoryEntryDataSourceUIFactory {
 	
 	public void forgeRatings(RepositoryEntryRow row);
 	
-	public void forgeComments(RepositoryEntryRow row);
-	
 	public void forgeTaxonomyLevels(RepositoryEntryRow row);
 	
 	public Translator getTranslator();

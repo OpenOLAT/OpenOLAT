@@ -463,7 +463,7 @@ public class CoachingDAO {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
 		  .append("  v.teaser, v.location, v.authors, res.resId, lifecycle.validFrom, lifecycle.validTo,")
-		  .append("  stats.rating, stats.numOfRatings, stats.numOfComments, v.educationalType.key")
+		  .append("  stats.rating, v.educationalType.key")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
@@ -508,9 +508,7 @@ public class CoachingDAO {
 				entry.setLifecycleStartDate((Date)rawStat[11]);
 				entry.setLifecycleEndDate((Date)rawStat[12]);
 				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 13));
-				entry.setNumOfRatings(PersistenceHelper.extractPrimitiveLong(rawStat, 14));
-				entry.setNumOfComments(PersistenceHelper.extractPrimitiveInt(rawStat, 15));
-				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 16));
+				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 14));
 				return entry;
 			});
 		}
