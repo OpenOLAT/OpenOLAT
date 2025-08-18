@@ -255,6 +255,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public ProgressBarItem getCompletionItem() {
 		return completionItem;
 	}
+	
+	public Boolean getPassed() {
+		return passed;
+	}
 
 	public void setCompletionItem(ProgressBarItem completionItem) {
 		this.completionItem = completionItem;

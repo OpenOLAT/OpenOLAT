@@ -56,7 +56,12 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			ubar.setMax(callback.getMax());
 		}
 		
-		boolean renderLabels = (args == null);
+		boolean renderLabels = switch(ubar.getRenderLabels()) {
+			case always -> true;
+			case never -> false;
+			default -> (args == null);
+		};
+		
 		float percent = 100;
 		if (!ubar.getIsNoMax()) {
 			percent = 100 * ubar.getActual() / ubar.getMax();
@@ -217,6 +222,8 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			target.append(" radial-progress-warning");
 		} else if (ProgressBar.BarColor.danger.equals(ubar.getBarColor())) {
 			target.append(" radial-progress-danger");
+		} else if (ProgressBar.BarColor.neutral.equals(ubar.getBarColor())) {
+			target.append(" radial-progress-neutral");
 		}
 		// Current progress
 		target.append("' data-progress='").append((ubar.isProgressAnimationEnabled() ? Math.round(0): Math.round(percent))).append("'");
@@ -266,6 +273,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		// Animation is done via JS, no stripes supported 
 		if (ubar.isProgressAnimationEnabled()) {
 			target.append("<script>")
+				.append("\"use strict\";")
 				.append("setTimeout(function() {")
 				.append("	o_animateRadialProgress('#o_c").append(ubar.getDispatchID()).append(" .radial-progress', ").append(Math.round(percent)).append(");")
 				.append("});")

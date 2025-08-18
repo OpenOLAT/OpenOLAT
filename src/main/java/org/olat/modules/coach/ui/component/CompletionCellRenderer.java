@@ -38,7 +38,7 @@ public class CompletionCellRenderer extends ProgressRadialCellRenderer {
 	private final Translator translator;
 	
 	public CompletionCellRenderer(Translator translator) {
-		super(BarColor.success);
+		super(BarColor.neutral);
 		this.translator = translator;
 	}
 
@@ -55,5 +55,4 @@ public class CompletionCellRenderer extends ProgressRadialCellRenderer {
 			target.append(" <span>").append(valWithUnits).append("</span></div>");
 		}
 	}
-
 }

@@ -190,6 +190,14 @@ $o-radial-progress-percentage-font-size-inline		: $o-radial-progress-circle-size
 		color: $o-radial-progress-percentage-success-color;
 	}
 }
+.radial-progress-neutral {
+	.radial-bar {
+	  stroke: $o-radial-progress-circle-neutral-color;
+	}
+	&:not(.radial-progress-pie) .percentage .number {
+		color: $o-radial-progress-percentage-neutral-color;
+	}
+}
 .radial-progress-info {
 	.radial-bar {
 	  stroke: $o-radial-progress-circle-info-color;

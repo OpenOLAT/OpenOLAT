@@ -41,7 +41,8 @@ public class ProgressBar extends AbstractComponent {
 	public enum LabelAlignment {none, left, right}
 	public enum RenderStyle {horizontal, radial, pie}
 	public enum RenderSize {inline, small, medium, large}
-	public enum BarColor {primary, success, info, warning, danger, passed, failed}
+	public enum BarColor {primary, success, info, warning, danger, passed, failed, neutral }
+	public enum RenderLabels { always, never, defaultRendering }
 
 	private static final int DEFAULT_WIDTH = 200;
 
@@ -61,6 +62,8 @@ public class ProgressBar extends AbstractComponent {
 	private boolean labelMaxEnabled = true;
 	private String info;
 	private String cssClass;
+	
+	private RenderLabels renderLabels;
 	
 	private ProgressBarCallback progressCallback;
 	
@@ -161,9 +164,19 @@ public class ProgressBar extends AbstractComponent {
 		this.renderSize = renderSize;
 	}
 
-	
 	public RenderSize getRenderSize() {
 		return renderSize;
+	}
+
+	public RenderLabels getRenderLabels() {
+		return renderLabels == null ? RenderLabels.defaultRendering : renderLabels;
+	}
+
+	/**
+	 * @param renderLabels True, force rendering of labels, false, disable them, null use the default behaviour
+	 */
+	public void setRenderLabels(RenderLabels renderLabels) {
+		this.renderLabels = renderLabels;
 	}
 
 	/**

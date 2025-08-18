@@ -69,6 +69,8 @@ $brand-warning					: #F2AF40 !default; //#B89230 !default;
 $brand-danger					: #D6001C !default; //#8C1A11 !default;
 $brand-success					: #5cb85c !default; //#469C30 !default;
 
+$progress-bar-neutral-bg		: #146DCC !default;
+
 $o-color-info					: $brand-info !default;
 $o-color-info-text-bg			: #FCFCFC !default;
 $o-color-note					: #666666 !default;
@@ -1335,6 +1337,8 @@ $o-radial-progress-addon-color			: $text-muted !default;
 $o-radial-progress-margin 				: 10px !default;
 $o-radial-progress-circle-success-color		: $progress-bar-success-bg !default;
 $o-radial-progress-percentage-success-color	: $state-success-text !default;
+$o-radial-progress-circle-neutral-color		: $progress-bar-neutral-bg !default;
+$o-radial-progress-percentage-neutral-color	: $state-success-text !default;
 $o-radial-progress-circle-warning-color		: $progress-bar-warning-bg !default;
 $o-radial-progress-percentage-warning-color	: $state-warning-text !default;
 $o-radial-progress-circle-danger-color		: $progress-bar-danger-bg !default;

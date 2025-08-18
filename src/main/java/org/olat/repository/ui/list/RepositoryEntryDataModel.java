@@ -59,27 +59,27 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			return null;//don't break here
 		}
 		
-		switch(COLS[col]) {
-			case key: return item.getKey();
-			case displayName: return item.getDisplayName();
-			case externalId: return item.getExternalId();
-			case externalRef: return item.getExternalRef();
-			case lifecycleLabel: return item.getLifecycleLabel();
-			case lifecycleSoftkey: return item.getLifecycleSoftKey();
-			case lifecycleStart: return item.getLifecycleStart();
-			case lifecycleEnd: return item.getLifecycleEnd();
-			case mark: return item.getMarkLink();
-			case select: return item.getSelectLink();
-			case start: return item.getStartLink();
-			case location: return item.getLocation();
-			case educationalType: return item.getEducationalType();
-			case completion: return item.getCompletionItem();
-			case details: return item.getDetailsLink();
-			case ratings: return item.getRatingFormItem();
-			case type: return item;
-			case taxonomyLevels: return item.getTaxonomyLevelsLink();
-		}
-		return null;
+		return switch(COLS[col]) {
+			case key -> item.getKey();
+			case displayName -> item.getDisplayName();
+			case externalId -> item.getExternalId();
+			case externalRef -> item.getExternalRef();
+			case lifecycleLabel -> item.getLifecycleLabel();
+			case lifecycleSoftkey -> item.getLifecycleSoftKey();
+			case lifecycleStart -> item.getLifecycleStart();
+			case lifecycleEnd -> item.getLifecycleEnd();
+			case mark -> item.getMarkLink();
+			case select -> item.getSelectLink();
+			case start -> item.getStartLink();
+			case location -> item.getLocation();
+			case educationalType -> item.getEducationalType();
+			case completion -> item.getCompletionItem();
+			case successStatus -> item.getPassed();
+			case details -> item.getDetailsLink();
+			case ratings -> item.getRatingFormItem();
+			case type -> item;
+			case taxonomyLevels -> item.getTaxonomyLevelsLink();
+		};
 	}
 	
 	public enum Cols {
@@ -94,6 +94,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		location("table.header.location"),
 		educationalType("table.header.educational.type"),
 		completion("table.header.completion"),
+		successStatus("table.header.success.status"),
 		details("table.header.learn.more"),
 		select("table.header.learn.more"),
 		start("table.header.start"),

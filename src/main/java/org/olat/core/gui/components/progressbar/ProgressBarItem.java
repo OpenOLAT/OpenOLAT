@@ -24,6 +24,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 
@@ -83,6 +84,14 @@ public class ProgressBarItem extends FormItemImpl {
 	public void setRenderSize(RenderSize renderSize) {
 		component.setRenderSize(renderSize);
 	}
+	
+	/**
+	 * @param renderLabels always, force rendering of labels, never, disable them, last use the default behaviour
+	 */
+	public void setRenderLabels(RenderLabels renderLabels) {
+		component.setRenderLabels(renderLabels);
+	}
+	
 	
 	public void setBarColor(BarColor barColor) {
 		component.setBarColor(barColor);

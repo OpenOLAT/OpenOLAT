@@ -66,6 +66,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
@@ -90,6 +91,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.LifecycleModule;
@@ -252,6 +254,9 @@ public class RepositoryEntryListController extends FormBasicController
 			DefaultFlexiColumnModel completionColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),
 					Cols.completion.ordinal(), true, OrderBy.completion.name());
 			columnsModel.addFlexiColumnModel(completionColumnModel);
+			DefaultFlexiColumnModel successStatusColumnModel = new DefaultFlexiColumnModel(false, Cols.successStatus.i18nKey(),
+					Cols.successStatus.ordinal(), true, OrderBy.passed.name(), FlexiColumnModel.ALIGNMENT_LEFT, new PassedCellRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(successStatusColumnModel);
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
@@ -780,13 +785,18 @@ public class RepositoryEntryListController extends FormBasicController
 			if (isConventionalUnpassedCourse(row)) {
 				return;
 			}
+			
+			float completion = row.getCompletion().floatValue();
 			ProgressBarItem completionItem = new ProgressBarItem("completion_" + row.getKey(), 100,
-					row.getCompletion().floatValue(), Float.valueOf(1), null);
+					completion, Float.valueOf(1), null);
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
 			completionItem.setRenderSize(RenderSize.small);		
-			completionItem.setBarColor(BarColor.success);	
+			completionItem.setBarColor(BarColor.neutral);	
+			completionItem.setPercentagesEnabled(true);
+			completionItem.setRenderLabels(RenderLabels.always);
+			
 			// Inline rendering of status
 			if (row.isPassed()) {
 				completionItem.setCssClass("o_progress_passed");
