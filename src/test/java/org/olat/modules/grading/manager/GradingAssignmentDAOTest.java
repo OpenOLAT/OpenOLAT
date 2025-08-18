@@ -142,7 +142,7 @@ public class GradingAssignmentDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, new Date(), new Date());
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		GradingAssignment reloadedAssignment = gradingAssignmentDao.loadFullByKey(assignment.getKey());
 		dbInstance.commitAndCloseSession();

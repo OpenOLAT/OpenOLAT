@@ -291,13 +291,13 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
 		AssessmentMode savedMode = assessmentModeMgr.merge(mode, true, author);
-		dbInstance.commitAndCloseSession();
+		dbInstance.commit();
 		
 		BusinessGroup businessGroupForArea = businessGroupService.createBusinessGroup(author, "as_mode_1", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, null);
 		BGArea area = areaMgr.createAndPersistBGArea("little area", "My little secret area", entry.getOlatResource());
 		areaMgr.addBGToBGArea(businessGroupForArea, area);
-		dbInstance.commitAndCloseSession();
+		dbInstance.commit();
 		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(savedMode, area);
 		savedMode.getAreas().add(modeToArea);
 		savedMode = assessmentModeMgr.merge(savedMode, true, author);

@@ -165,7 +165,7 @@ public class ForumManagerTest extends OlatTestCase {
 		thread2.setTitle("More on get forum threads");
 		thread2.setBody("More on get forum threads");
 		forumManager.addTopMessage(thread2);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<ForumThread> forumThreads = forumManager.getForumThreads(forum, id1);
 		Assert.assertNotNull(forumThreads);
