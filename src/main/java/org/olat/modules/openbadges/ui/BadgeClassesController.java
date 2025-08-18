@@ -336,6 +336,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 	private class ToolsController extends BasicController {
 
+		private Link awardManuallyLink;
 		private Link createNewVersionLink;
 		private Link editLink;
 		private final Link deleteLink;
@@ -361,6 +362,17 @@ public class BadgeClassesController extends FormBasicController implements Activ
 						Link.LINK);
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				mainVC.put("edit", editLink);
+			}
+			
+			switch (badgeClass.getStatus()) {
+				case preparation:
+				case active:
+					awardManuallyLink = LinkFactory.createLink("award.manually", "awardManually", getTranslator(), mainVC, this, Link.LINK);
+					awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
+					mainVC.put("awardManually",  awardManuallyLink);
+					break;
+				default:
+					break;
 			}
 
 			deleteLink = LinkFactory.createLink("table.delete.text", "delete", getTranslator(), mainVC,
@@ -397,6 +409,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				doConfirmRevoke(ureq, row);
 			} else if (source == copyLink) {
 				doCopy(ureq, row);
+			} else if (source == awardManuallyLink) {
+				doAwardManually(ureq, row);
 			}
 		}
 	}

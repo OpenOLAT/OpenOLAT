@@ -232,9 +232,9 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 		ScoreEvaluation userEval = new ScoreEvaluation(3.0f, 3.0f, new BigDecimal("1"), null, null, null, Boolean.FALSE,
 				AssessmentEntryStatus.inProgress, Boolean.FALSE, new Date(), 50.0d, AssessmentRunStatus.running, null);
 		courseAssessmentService.updateScoreEvaluation(courseNode, userEval, assessedUserCourseEnv, coach, true, Role.user);
+		dbInstance.commitAndCloseSession();
 		
 		// Attempts user
-		
 		URI uri = getCourseURI(course).path(GTA_NODE_IDENT).path("users").path(participant.getKey().toString()).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(get);

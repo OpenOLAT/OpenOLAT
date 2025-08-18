@@ -92,7 +92,8 @@ public class FormManagerTest extends OlatTestCase {
 		
 		// Participation 1 finished
 		EvaluationFormSession session1 = evaluationFormManager.createSession(participation1);
-		evaluationFormManager.finishSession(session1);
+		session1 = evaluationFormManager.finishSession(session1);
+		dbInstance.commitAndCloseSession();
 		
 		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
 		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
@@ -119,7 +120,8 @@ public class FormManagerTest extends OlatTestCase {
 		
 		// Participation 2 finished
 		EvaluationFormSession session2 = evaluationFormManager.createSession(participation2);
-		evaluationFormManager.finishSession(session2);
+		session2 = evaluationFormManager.finishSession(session2);
+		dbInstance.commitAndCloseSession();
 		
 		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
 		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();

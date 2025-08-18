@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -47,13 +48,15 @@ public class ShareItemOptionController extends FormBasicController {
 	private final String[] keys = {"yes","no"};
 	private SingleSelection editableEl;
 	
-	@Autowired
-	private QPoolService qpoolService;
-	
 	private final boolean canEditable;
 	private final List<Pool> pools;
 	private final List<BusinessGroup> groups;
 	private final List<QuestionItemShort> items;
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public ShareItemOptionController(UserRequest ureq, WindowControl wControl,
 			List<QuestionItemShort> items, List<BusinessGroup> groups, List<Pool> pools) {	
@@ -139,6 +142,8 @@ public class ShareItemOptionController extends FormBasicController {
 		if(pools != null && !pools.isEmpty()) {
 			qpoolService.addItemsInPools(items, pools, editable);
 		}
+		
+		dbInstance.commitAndCloseSession();
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
 	}
 

@@ -1073,7 +1073,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public void removeOrganisation(RepositoryEntry entry, Organisation organisation) {
 		Group group = organisation.getGroup();
 		reToGroupDao.removeRelation(group, entry);
+		dbInstance.commitAndCloseSession();
 		repositoryEntryToOrganisationDao.delete(entry, organisation);
+		dbInstance.commitAndCloseSession();
 	}
 
 	@Override

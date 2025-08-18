@@ -220,7 +220,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
 		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
-		dbInstance.commit();//check if it's alright
+		dbInstance.commitAndCloseSession();//check if it's alright
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setCollection(coll);
@@ -249,7 +249,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3c", id);
 		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
-		dbInstance.commit();//check if it's alright
+		dbInstance.commitAndCloseSession();//check if it's alright
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setCollection(coll);
@@ -436,6 +436,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		resources.add(group1.getResource());
 		resources.add(group2.getResource());
 		questionDao.share(item, resources, false);
+		dbInstance.commitAndCloseSession();
 		
 		//retrieve them
 		SearchQuestionItemParams params1 = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
@@ -498,6 +499,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//share them
 		questionDao.share(item1, group.getResource());
 		questionDao.share(item2, group.getResource());
+		
+		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setResource(group.getResource());

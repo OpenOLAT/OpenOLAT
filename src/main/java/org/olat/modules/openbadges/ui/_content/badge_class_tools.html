@@ -1,4 +1,8 @@
 <ul class="o_dropdown list-unstyled">
+	#if($r.available("awardManually"))
+	<li>$r.render("awardManually")</li>
+	<li class="divider"></li>
+	#end
 	#if($r.available("copy"))
 	<li>$r.render("copy")</li>
 	<li class="divider"></li>
