@@ -37,6 +37,9 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.manager.IdentityDAO;
+import org.olat.basesecurity.model.FindNamedIdentity;
+import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -68,6 +71,8 @@ public class MemberViewQueries {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private IdentityDAO identityDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
@@ -216,6 +221,25 @@ public class MemberViewQueries {
 			view.getMemberShip().setCurriculumElementRole(membership.getRole());
 		}
 		return views;
+	}
+	
+	public FindNamedIdentityCollection findNamedRepositoryEntryMembers(List<String> names, RepositoryEntry entry, SearchMembersParams params) {
+		List<FindNamedIdentity> identities = identityDao.findByNames(names, null);
+		List<MemberView> members = getRepositoryEntryMembers(entry, params);
+		Set<Identity> membersSet = members.stream()
+				.map(MemberView::getIdentity)
+				.collect(Collectors.toSet());
+		List<FindNamedIdentity> namedMembers = identities.stream()
+				.filter(identity -> membersSet.contains(identity.getIdentity()))
+				.toList();
+		
+		return identityDao.findNamedIdentityCollection(names, namedMembers, List.of(), Identity.STATUS_VISIBLE_LIMIT);
+	}
+
+	public FindNamedIdentity getNames(MemberView view, Set<String> names) {
+		FindNamedIdentity namedIdentity = new FindNamedIdentity(view.getIdentity());
+		identityDao.appendName(namedIdentity, null, names);
+		return namedIdentity;
 	}
 	
 	public List<MemberView> getRepositoryEntryMembers(RepositoryEntry entry, SearchMembersParams params) {

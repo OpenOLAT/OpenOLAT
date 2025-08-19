@@ -38,7 +38,6 @@ import org.olat.admin.securitygroup.gui.GroupMemberView;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesOfGroupTableDataModel;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
-import org.olat.admin.securitygroup.gui.multi.UsersToGroupWizardStep00;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
@@ -103,6 +102,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
@@ -162,12 +162,18 @@ public class GroupController extends BasicController {
 	private final boolean mandatoryEmail;
 	private boolean chatEnabled;
 
-	private final UserManager userManager;
-	private final InstantMessagingModule imModule;
-	private final InstantMessagingService imService;
-	private final UserSessionManager sessionManager;
-	private final MailManager mailManager;
-	private final GroupDAO groupDao;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private InstantMessagingModule imModule;
+	@Autowired
+	private InstantMessagingService imService;
+	@Autowired
+	private UserSessionManager sessionManager;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private GroupDAO groupDao;
 	
 	private Object userObject;
 
@@ -192,12 +198,6 @@ public class GroupController extends BasicController {
 		this.keepAtLeastOne = keepAtLeastOne;
 		this.mandatoryEmail = mandatoryEmail;
 		
-		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
-		groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
 		init(ureq, mayModifyMembers, enableTablePreferences, enableUserSelection, allowDownload);
 	}
 
@@ -471,9 +471,9 @@ public class GroupController extends BasicController {
 	
 	private void doAddUsers(UserRequest ureq) {
 		removeAsListenerAndDispose(usc);
+		removeAsListenerAndDispose(cmc);
 		
-		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, searchAsRole, "project-broker-identitity-v1.0")
-				.showSelectButton(false);
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, searchAsRole, "project-broker-identitity-v1.0");
 		usc = new MemberSearchController(ureq, getWindowControl(), config);			
 		listenTo(usc);
 		
@@ -488,7 +488,8 @@ public class GroupController extends BasicController {
 	private void doImportUsers(final UserRequest ureq) {
 		removeAsListenerAndDispose(userToGroupWizard);
 
-		Step start = new UsersToGroupWizardStep00(ureq, addUserMailDefaultTempl, mandatoryEmail);
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(courseEntry, searchAsRole, "project-broker-import-identitity-v1.0");
+		Step start = new MembersToGroupWizardStep00(ureq, addUserMailDefaultTempl, config, mandatoryEmail);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			Set<Identity> choosenIdentities = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
 			MailTemplate customTemplate = (MailTemplate)runContext.get("mailTemplate");

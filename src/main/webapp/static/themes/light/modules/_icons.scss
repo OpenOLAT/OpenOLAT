@@ -286,7 +286,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_logout { @include o-add-icon('sign-out');}
 .o_icon_lrm { @include o-add-icon('university');}
 .o_icon_magnifying_glass { @include o-add-icon('magnifying-glass');}
-.o_icon_mandatory { @include o-add-icon('asterisk'); color: $o-icon-orange-color;}
+.o_icon_mandatory { @include o-add-icon('asterisk'); color: $o-base-orange-color;}
 .o_icon_managed { @include o-add-icon('retweet'); color: $text-muted}
 .o_icon_manual { @include o-add-icon('book'); cursor: help;}
 .o_icon_mail { @include o-add-icon('envelope', false);}
@@ -844,8 +844,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_as_mode_stop { @include o-add-icon('stop');}
 
 .o_icon_qti_notPresented { @include o-add-icon('circle', false); color: $o-qti-status-notPresented-color;}
-.o_icon_qti_notAnswered { @include o-add-icon('play-circle'); color: $o-qti-status-notAnswered-color;}
-.o_icon_qti_answered { @include o-add-icon('check-circle'); color: $o-qti-status-answered-color;}
+.o_icon_qti_notAnswered { @include o-add-icon('play-circle'); }
+.o_icon_qti_answered { @include o-add-icon('check-circle'); }
 .o_icon_qti_correct { @include o-add-icon('face-smile-beam'); color: $o-qti-status-correct-color;}
 .o_icon_qti_ended { @include o-add-icon('ban'); color: $o-qti-status-ended-color;}
 .o_icon_qti_incorrect { @include o-add-icon('face-frown-open'); color: $o-qti-status-incorrect-color;}

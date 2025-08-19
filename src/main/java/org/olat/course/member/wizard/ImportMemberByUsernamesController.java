@@ -84,7 +84,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	protected BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -220,8 +220,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	 */
 	private boolean processInput(String inp) {
 		List<String> identList = getLines(inp);
-		
-		FindNamedIdentityCollection identityCollection = securityManager.findAndCollectIdentitiesBy(identList, Identity.STATUS_VISIBLE_LIMIT, searchableOrganisations);
+		FindNamedIdentityCollection identityCollection = findNamedIdentityCollection(identList);
 		
 		identitiesList = identityCollection.getUnique();
 		notFoundNames = identityCollection.getNotFoundNames();
@@ -248,6 +247,10 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 			return true;
 		}
 		return false;
+	}
+	
+	protected FindNamedIdentityCollection findNamedIdentityCollection(List<String> identList) {
+		return securityManager.findAndCollectIdentitiesBy(identList, Identity.STATUS_VISIBLE_LIMIT, searchableOrganisations);
 	}
 	
 	private List<String> getLines(String inp) {

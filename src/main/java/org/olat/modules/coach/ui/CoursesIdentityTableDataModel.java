@@ -279,7 +279,7 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 			case lifecycleEnd -> row.getLifecycleValidTo();
 			case access -> row.getRepositoryEntryStatus();
 			case lastVisit -> row.getLastVisit();
-			case completion -> row.getCompletionPassed();
+			case completion -> row.getAssessmentEntryCompletion();
 			case score -> row.getStatementEntry().getScore();
 			case passed -> row.getAssessmentEntryPassed();
 			case numberAssessments -> row.getNumberAssessment();
@@ -291,7 +291,8 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 			case authorizedAbsenceLectures ->  row.getTotalAuthorizedAbsentLectures();
 			case dispensedLectures ->  row.getTotalDispensationLectures();
 			case rateWarning, lecturesProgress -> row.getLectureBlockStatistics();
-			case rate -> row.getLecturesRequiredRate();
+			case rate -> row.isLecturesCalculateRate() && row.getLecturesTotalEffectiveLectures() > 0
+					? row.getLecturesAttendanceRate() : null;
 			case lastModification -> row.getStatementEntry().getLastModified();
 			case lastUserModified -> row.getStatementEntry().getLastUserModified();
 			case lastCoachModified -> row.getStatementEntry().getLastCoachModified();

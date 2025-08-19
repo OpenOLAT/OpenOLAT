@@ -432,7 +432,6 @@ public class MemberSearchController extends FormBasicController {
 	
 	private SearchMembersParams getSearchParameters() {
 		SearchMembersParams params = new SearchMembersParams();
-		params.setPending(false);
 		params.setSearchAsRole(getIdentity(), config.searchAsRole());
 		if(config.runningTestSession()) {
 			params.setOnlyRunningTestSessions(true);
@@ -451,7 +450,10 @@ public class MemberSearchController extends FormBasicController {
 			}
 		}
 		if(params.getRoles() == null) {
-			params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach, GroupRoles.participant } );	
+			params.setPending(true);
+			params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting } );
+		} else {
+			params.setPending(false);
 		}
 		
 		FlexiTableFilter originFilter = FlexiTableFilter.getFilter(filters, FILTER_ORIGIN);
