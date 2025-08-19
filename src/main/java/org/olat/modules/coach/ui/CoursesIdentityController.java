@@ -398,7 +398,7 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("status.closed")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.course.access"),
 				FILTER_STATUS, statusPK, false));
 		
 		SelectionValues certificatesPK = new SelectionValues();

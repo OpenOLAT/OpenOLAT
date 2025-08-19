@@ -181,6 +181,18 @@ public class CourseIdentityRow {
 	public Double getLecturesRequiredRate() {
 		return lectureBlockStatistics == null ? null : lectureBlockStatistics.getRequiredRate();
 	}
+	
+	public Double getLecturesAttendanceRate() {
+		return lectureBlockStatistics == null ? null : lectureBlockStatistics.getAttendanceRate();
+	}
+	
+	public long getLecturesTotalEffectiveLectures() {
+		return lectureBlockStatistics == null ? 0l : lectureBlockStatistics.getTotalEffectiveLectures();
+	}
+	
+	public boolean isLecturesCalculateRate() {
+		return lectureBlockStatistics == null ? false : lectureBlockStatistics.isCalculateRate();
+	}
 
 	public boolean isMarked() {
 		return marked;

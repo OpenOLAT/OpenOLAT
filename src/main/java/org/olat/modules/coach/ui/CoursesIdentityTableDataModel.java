@@ -291,7 +291,8 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 			case authorizedAbsenceLectures ->  row.getTotalAuthorizedAbsentLectures();
 			case dispensedLectures ->  row.getTotalDispensationLectures();
 			case rateWarning, lecturesProgress -> row.getLectureBlockStatistics();
-			case rate -> row.getLecturesRequiredRate();
+			case rate -> row.isLecturesCalculateRate() && row.getLecturesTotalEffectiveLectures() > 0
+					? row.getLecturesAttendanceRate() : null;
 			case lastModification -> row.getStatementEntry().getLastModified();
 			case lastUserModified -> row.getStatementEntry().getLastUserModified();
 			case lastCoachModified -> row.getStatementEntry().getLastCoachModified();
