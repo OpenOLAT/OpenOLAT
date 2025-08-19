@@ -835,10 +835,10 @@ body>li.o_assessmentitem_order_item  {
 		  background-color: $o-qti-status-invalid-color;
 		}
 		&.answered {
-		  background-color: $o-qti-status-answered-color;
+		  @extend %o_labeled_blue;
 		}
 		&.notAnswered {
-		  background-color: $o-qti-status-notAnswered-color;
+		  @extend %o_labeled_orange;
 		}
 		&.notPresented {
 			background-color: $o-qti-status-notPresented-color;
@@ -853,9 +853,10 @@ body>li.o_assessmentitem_order_item  {
 			background-color: $o-qti-status-review-color;
 			opacity: 0.7;
 		}
-		
-		i:before {
-			color: #fff;
+		&:not(.answered):not(.notAnswered) {
+			i:before {
+				color: #fff;
+			}
 		}
 	}
 }
@@ -1651,6 +1652,30 @@ table.o_qti_item_kprim {
 			span {
 				/* hide status description */
 				display: none;
+			}
+			&.correct {
+				background-color: $o-qti-status-correct-color;
+			}
+			&.ended {
+			  background-color: $o-qti-status-ended-color;
+			}
+			&.incorrect {
+				background-color: $o-qti-status-incorrect-color;
+			}
+			&.invalid {
+			  background-color: $o-qti-status-invalid-color;
+			}
+			&.answered {
+			  @extend %o_base_blue;
+			}
+			&.notAnswered {
+			  @extend %o_base_orange;
+			}
+			&.notPresented {
+				background-color: $o-qti-status-notPresented-color;
+			}
+			&.review {
+				background-color: $o-qti-status-review-color;
 			}
 		}
 

@@ -1514,6 +1514,17 @@ ul.o_assessment_docs>li:last-child {
 	padding-bottom: floor($grid-gutter-width * 0.5);
 }
 
+
+/* Colored icons */
+@mixin colored-base-variant($color) {
+	color: $color;
+}
+
+.o_base_blue, %o_base_blue { @include colored-base-variant($o-base-blue-color); }
+.o_base_green, %o_base_green { @include colored-base-variant($o-base-green-color); }
+.o_base_orange, %o_base_orange { @include colored-base-variant($o-base-orange-color); }
+
+
 /* label */
 
 // inspired by button-variant
@@ -1530,15 +1541,15 @@ ul.o_assessment_docs>li:last-child {
 	}
 }
 
+%o_labeled_blue { @include labeled-variant($o-labeled-blue-color, $o-labeled-blue-bg-color, $o-labeled-blue-border-color); }
+%o_labeled_light_blue { @include labeled-variant($o-labeled-blue-light-color, $o-labeled-blue-light-bg-color,$o-labeled-blue-light-border-color); }
+%o_labeled_mega_blue { @include labeled-variant($o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color,$o-labeled-blue-mega-border-color); }
 %o_labeled_green { @include labeled-variant($o-labeled-green-color, $o-labeled-green-bg-color, $o-labeled-green-border-color); }
 %o_labeled_light_green { @include labeled-variant($o-labeled-green-light-color, $o-labeled-green-light-bg-color,$o-labeled-green-light-border-color); }
 %o_labeled_mega_green { @include labeled-variant($o-labeled-green-mega-color, $o-labeled-green-mega-bg-color,$o-labeled-green-mega-border-color); }
 %o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
 %o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
 %o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
-%o_labeled_blue { @include labeled-variant($o-labeled-blue-color, $o-labeled-blue-bg-color, $o-labeled-blue-border-color); }
-%o_labeled_light_blue { @include labeled-variant($o-labeled-blue-light-color, $o-labeled-blue-light-bg-color,$o-labeled-blue-light-border-color); }
-%o_labeled_mega_blue { @include labeled-variant($o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color,$o-labeled-blue-mega-border-color); }
 %o_labeled_orange { @include labeled-variant($o-labeled-orange-color, $o-labeled-orange-bg-color, $o-labeled-orange-border-color); }
 %o_labeled_light_orange { @include labeled-variant($o-labeled-orange-light-color, $o-labeled-orange-light-bg-color,$o-labeled-orange-light-border-color); }
 %o_labeled_mega_orange { @include labeled-variant($o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color,$o-labeled-orange-mega-border-color); }
@@ -1611,13 +1622,6 @@ a.o_labeled_light {
 		margin: 1px;
 	}
 }
-/* Colored (status) icons */
-@mixin colored-icon-variant($color) {
-	color: $color;
-}
-
-.o_icon_green, %o_icon_green { @include colored-icon-variant($o-icon-green-color); }
-.o_icon_red, %o_icon_red { @include colored-icon-variant($o-icon-green-color); }
 
  
  /* Multiselect dropdown element */
