@@ -90,7 +90,8 @@ public class ToDoCollectionCreateAssigneeController extends StepFormBasicControl
 		membersCont.setFormTitle(translate("course.todo.search.members"));
 		
 		GroupRoles searchAs = context.isCoach() ? GroupRoles.coach : GroupRoles.owner;
-		MemberSearchConfig config = MemberSearchConfig.defaultConfig(context.getRepositoryEntry(), searchAs, "to-do-assignees-v1.0");
+		MemberSearchConfig config = MemberSearchConfig.defaultConfig(context.getRepositoryEntry(), searchAs, "to-do-assignees-v1.0")
+				.showSelectButton(false);
 		if (context.getAssigneeKeys() != null) {
 			config = config.preselectedIdentitiesKeys(context.getAssigneeKeys());
 		}

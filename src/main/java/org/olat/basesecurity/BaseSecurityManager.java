@@ -496,57 +496,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		final Integer validStatusLimit = Integer.valueOf(statusLimit);
 		final List<Identity> anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
 		List<FindNamedIdentity> identities = identityDao.findByNames(names, organisations);
-		identities = identities.stream()
-				.filter(namedIdentity -> validIdentity(namedIdentity.getIdentity(), validStatusLimit, anonymousUsers))
-				.toList();
-		
-		Set<String> identListLowercase = names.stream()
-				.map(String::toLowerCase)
-				.collect(Collectors.toSet());
-		
-		Set<Identity> okSet = new HashSet<>();
-		Map<String, Set<Identity>> nameToIdentities = new HashMap<>();
-		List<String> notFoundNames = new ArrayList<>();
-		
-		for(FindNamedIdentity identity:identities) {
-			identListLowercase.removeAll(identity.getNamesLowerCase());
-			if(!validIdentity(identity.getIdentity(), validStatusLimit, anonymousUsers)) {
-				notFoundNames.add(identity.getFirstFoundName());
-			} else if (!okSet.contains(identity.getIdentity())) {
-				okSet.add(identity.getIdentity());
-			}
-			
-			for(String name:identity.getNamesLowerCase()) {
-				Set<Identity> ids = nameToIdentities.computeIfAbsent(name, n -> new HashSet<>());
-				ids.add(identity.getIdentity());
-			}
-		}
-		
-		notFoundNames.addAll(identListLowercase);
-		
-		Set<String> ambiguousNames = new HashSet<>();
-		Set<Identity> ambiguous = new HashSet<>();
-		for(Map.Entry<String,Set<Identity>> entry:nameToIdentities.entrySet()) {
-			if(entry.getValue().size() > 1) {
-				ambiguousNames.add(entry.getKey());
-				ambiguous.addAll(entry.getValue());
-			}
-		}
-		okSet.removeAll(ambiguous);
-		
-		FindNamedIdentityCollection collection = new FindNamedIdentityCollection();
-		collection.setNameToIdentities(nameToIdentities);
-		collection.setUnique(okSet);
-		collection.setAmbiguous(ambiguous);
-		collection.setAmbiguousNames(ambiguousNames);
-		collection.setNotFoundNames(notFoundNames);
-		return collection;
-	}
-	
-	private boolean validIdentity(Identity ident, Integer statusLimit, List<Identity> anonymousUsers) {
-		return ident != null
-				&& ident.getStatus().compareTo(statusLimit) <= 0
-				&& !anonymousUsers.contains(ident);
+		return identityDao.findNamedIdentityCollection(names, identities, anonymousUsers, validStatusLimit);
 	}
 	
 	@Override

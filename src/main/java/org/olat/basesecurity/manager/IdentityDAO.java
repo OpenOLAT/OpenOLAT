@@ -37,6 +37,7 @@ import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.FindNamedIdentity;
+import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -209,7 +210,7 @@ public class IdentityDAO {
 		return new ArrayList<>(namedIdentities.values());
 	}
 	
-	private void appendName(FindNamedIdentity namedIdentity, Authentication authentication, Set<String> names) {
+	public void appendName(FindNamedIdentity namedIdentity, Authentication authentication, Set<String> names) {
 		if(authentication != null) {
 			String authUsername = authentication.getAuthusername().toLowerCase();
 			if(names.contains(authUsername)) {
@@ -256,6 +257,60 @@ public class IdentityDAO {
 				&& names.contains(user.getProperty(UserConstants.NICKNAME, null).toLowerCase())) {
 			namedIdentity.addName(user.getProperty(UserConstants.NICKNAME, null));
 		}
+	}
+	
+	public FindNamedIdentityCollection findNamedIdentityCollection(Collection<String> names, List<FindNamedIdentity> identities, List<Identity> anonymousUsers, Integer validStatusLimit) {
+		identities = identities.stream()
+				.filter(namedIdentity -> validIdentity(namedIdentity.getIdentity(), validStatusLimit, anonymousUsers))
+				.toList();
+		
+		Set<String> identListLowercase = names.stream()
+				.map(String::toLowerCase)
+				.collect(Collectors.toSet());
+		
+		Set<Identity> okSet = new HashSet<>();
+		Map<String, Set<Identity>> nameToIdentities = new HashMap<>();
+		List<String> notFoundNames = new ArrayList<>();
+		
+		for(FindNamedIdentity identity:identities) {
+			identListLowercase.removeAll(identity.getNamesLowerCase());
+			if(!validIdentity(identity.getIdentity(), validStatusLimit, anonymousUsers)) {
+				notFoundNames.add(identity.getFirstFoundName());
+			} else if (!okSet.contains(identity.getIdentity())) {
+				okSet.add(identity.getIdentity());
+			}
+			
+			for(String name:identity.getNamesLowerCase()) {
+				Set<Identity> ids = nameToIdentities.computeIfAbsent(name, n -> new HashSet<>());
+				ids.add(identity.getIdentity());
+			}
+		}
+		
+		notFoundNames.addAll(identListLowercase);
+		
+		Set<String> ambiguousNames = new HashSet<>();
+		Set<Identity> ambiguous = new HashSet<>();
+		for(Map.Entry<String,Set<Identity>> entry:nameToIdentities.entrySet()) {
+			if(entry.getValue().size() > 1) {
+				ambiguousNames.add(entry.getKey());
+				ambiguous.addAll(entry.getValue());
+			}
+		}
+		okSet.removeAll(ambiguous);
+		
+		FindNamedIdentityCollection collection = new FindNamedIdentityCollection();
+		collection.setNameToIdentities(nameToIdentities);
+		collection.setUnique(okSet);
+		collection.setAmbiguous(ambiguous);
+		collection.setAmbiguousNames(ambiguousNames);
+		collection.setNotFoundNames(notFoundNames);
+		return collection;
+	}
+	
+	private boolean validIdentity(Identity ident, Integer statusLimit, List<Identity> anonymousUsers) {
+		return ident != null
+				&& ident.getStatus().compareTo(statusLimit) <= 0
+				&& !anonymousUsers.contains(ident);
 	}
 	
 	public void setIdentityLastLogin(IdentityRef identity, Date lastLogin, Date plannedInactivationDate, Date plannedDeletionDate) {

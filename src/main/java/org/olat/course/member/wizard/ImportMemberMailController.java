@@ -79,7 +79,7 @@ public class ImportMemberMailController extends StepFormBasicController {
 			mailTemplate = RepositoryMailing.getDefaultTemplate(defaultRepoType, repoEntry, getIdentity());
 		} else if(hasCourseRights(e)) {
 			mailTemplate = RepositoryMailing.createAddParticipantMailTemplate(repoEntry, getIdentity());
-		} else if(hasCurriculumRights(e)) {
+		} else if(e != null && hasCurriculumRights(e)) {
 			CurriculumElement curriculumElement = e.getRootCurriculumElement();
 			Curriculum curriculum = curriculumElement.getCurriculum();
 			mailTemplate = CurriculumMailing.getDefaultMailTemplate(curriculum, curriculumElement, getIdentity());
