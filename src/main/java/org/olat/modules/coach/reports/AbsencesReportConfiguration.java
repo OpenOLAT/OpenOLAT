@@ -350,13 +350,16 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 		return -1;
 	}
 
-	private String getLastName(String[] identityProps, int lastNameIndex, String dflt) {
+	private String getLastName(String[] identityProps, int lastNameIndex, String defaultValue) {
 		if (identityProps == null) {
-			return dflt;
+			return defaultValue;
 		}
 		if (lastNameIndex < 0 || lastNameIndex >= identityProps.length) {
-			return dflt;
+			return defaultValue;
 		}
-		return identityProps[lastNameIndex];
+		if (!StringHelper.containsNonWhitespace(identityProps[lastNameIndex])) {
+			return defaultValue;
+		}
+		return identityProps[lastNameIndex].toLowerCase();
 	}
 }
