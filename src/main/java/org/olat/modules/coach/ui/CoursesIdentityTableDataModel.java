@@ -279,7 +279,7 @@ implements SortableFlexiTableDataModel<CourseIdentityRow>, FilterableFlexiTableM
 			case lifecycleEnd -> row.getLifecycleValidTo();
 			case access -> row.getRepositoryEntryStatus();
 			case lastVisit -> row.getLastVisit();
-			case completion -> row.getCompletionPassed();
+			case completion -> row.getAssessmentEntryCompletion();
 			case score -> row.getStatementEntry().getScore();
 			case passed -> row.getAssessmentEntryPassed();
 			case numberAssessments -> row.getNumberAssessment();

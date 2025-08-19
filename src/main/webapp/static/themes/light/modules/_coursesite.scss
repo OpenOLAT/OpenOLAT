@@ -419,10 +419,6 @@
 	.o_start, .o_book {
 		@include text-overflow();
 	}
-	
-	.o_passed, .o_failed, .o_noinfo {
-		font-weight: normal;
-	}
 }
 
 .o_entry_cards {

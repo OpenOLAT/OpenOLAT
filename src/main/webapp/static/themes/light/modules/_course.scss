@@ -558,7 +558,6 @@
 /* score info status classes */
 .o_passed {
 	color: $o-course-state-passed-color;
-	font-weight: bold;
 	a:hover {
 	    color: darken($o-course-state-passed-color, 10%);
 	}					
@@ -568,7 +567,6 @@
 }
 .o_failed {
 	color: $o-course-state-failed-color;
-	font-weight: bold;
 	a:hover {
 	    color: darken($o-course-state-failed-color, 10%);
 	}				
@@ -578,7 +576,6 @@
 }
 .o_unknown {
 	color: $state-warning-text;
-	font-weight: bold;
 	a:hover {
 	    color: darken($o-course-state-unknown-color, 10%);
 	}				

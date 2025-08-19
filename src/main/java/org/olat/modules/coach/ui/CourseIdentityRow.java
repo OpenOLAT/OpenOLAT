@@ -24,9 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.assessment.AssessmentEntryScoring;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer.CompletionPassed;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.coach.ui.CoursesIdentityTableDataModel.CompletionPassedImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -50,7 +48,6 @@ public class CourseIdentityRow {
 	private final AssessmentEntryScoring assessmentEntryScoring;
 	
 	private final ProgressValue numberAssessment;
-	private final CompletionPassed completionPassed;
 
 	private FormLink markLink;
 	
@@ -65,8 +62,6 @@ public class CourseIdentityRow {
 		this.lectureBlockStatistics = lectureBlockStatistics;
 		this.repositoryEntryLifecycle = courseEntry.getLifecycle();
 		this.assessmentEntryScoring = assessmentEntryScoring;
-		
-		completionPassed = new CompletionPassedImpl(getAssessmentEntryCompletion(), getAssessmentEntryPassed());
 		
 		Integer totalNodes = getStatementEntry().getTotalNodes();
 		if (totalNodes != null && totalNodes.intValue() > 0) {
@@ -185,10 +180,6 @@ public class CourseIdentityRow {
 	
 	public Double getLecturesRequiredRate() {
 		return lectureBlockStatistics == null ? null : lectureBlockStatistics.getRequiredRate();
-	}
-	
-	public CompletionPassed getCompletionPassed() {
-		return completionPassed;
 	}
 
 	public boolean isMarked() {

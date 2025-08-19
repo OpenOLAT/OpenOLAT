@@ -93,7 +93,6 @@ import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.coach.CoachingModule;
 import org.olat.modules.coach.CoachingService;
@@ -101,6 +100,7 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.ui.AbstractParticipantsListController.NextPreviousController;
 import org.olat.modules.coach.ui.CoursesIdentityTableDataModel.Columns;
 import org.olat.modules.coach.ui.UserDetailsController.Segment;
+import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -311,7 +311,7 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 				new LastVisitCellRenderer(getTranslator())));
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion,
-				new LearningProgressCompletionCellRenderer()));
+				new CompletionCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed,
 				new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score,
@@ -358,6 +358,7 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 		
 		tableModel = new CoursesIdentityTableDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_coached_identity_courses");
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
