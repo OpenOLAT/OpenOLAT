@@ -362,6 +362,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
+		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.addResourceTypes("CourseModule");
