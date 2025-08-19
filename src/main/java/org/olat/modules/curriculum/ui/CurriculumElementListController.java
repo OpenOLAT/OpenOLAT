@@ -226,6 +226,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(assessedIdentity.equals(getIdentity())) {
+			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ElementViewCols.mark);
+			markColModel.setIconHeader("o_icon o_icon_bookmark_header");
+			columnsModel.addFlexiColumnModel(markColModel);
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, treeNodeRenderer));
@@ -237,9 +242,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.endDate,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
-		if(assessedIdentity.equals(getIdentity())) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
-		}
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
