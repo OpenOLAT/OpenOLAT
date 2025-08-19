@@ -61,6 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
@@ -226,6 +227,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(assessedIdentity.equals(getIdentity())) {
+			DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ElementViewCols.mark);
+			markColModel.setIconHeader("o_icon o_icon_bookmark_header");
+			columnsModel.addFlexiColumnModel(markColModel);
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, treeNodeRenderer));
@@ -237,11 +243,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.endDate,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
-		if(assessedIdentity.equals(getIdentity())) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
-		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
@@ -252,7 +257,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v5-"
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v5.1-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
 		
 		initFilterPresets();
@@ -565,8 +570,21 @@ public class CurriculumElementListController extends FormBasicController impleme
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
-			completionItem.setRenderSize(RenderSize.inline);
-			completionItem.setBarColor(BarColor.success);	
+			completionItem.setRenderSize(RenderSize.small);		
+			completionItem.setBarColor(BarColor.neutral);	
+			completionItem.setPercentagesEnabled(true);
+			completionItem.setRenderLabels(RenderLabels.always);
+			
+			// Inline rendering of status
+			if (row.isPassed()) {
+				completionItem.setCssClass("o_progress_passed");
+			} else if (row.isFailed()) {					
+				completionItem.setCssClass("o_progress_failed");
+			}
+			// Inline rendering of score
+			if (StringHelper.containsNonWhitespace(row.getScore())) {				
+				completionItem.setInfo(row.getScore() + "pt");
+			}
 			row.setCompletionItem(completionItem);
 		}
 	}

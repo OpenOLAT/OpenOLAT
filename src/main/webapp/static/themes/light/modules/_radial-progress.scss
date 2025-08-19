@@ -273,7 +273,8 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 
 @media (max-width: $screen-sm-max) { 
 	.o_toolbar .o_tool .o_progress,
-	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
+	.o_coursetable.o_rendertype_custom .o_completion .o_progress,
+	.o_curriculumtable.o_rendertype_custom .o_completion .o_progress {
 		width: $o-toolbar-height-sm;
 		height: $o-toolbar-height-sm - 4px;		
 		.radial-progress {
@@ -292,7 +293,8 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 		}
 	}
 	/* fix positioning in course listing */
-	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
+	.o_coursetable.o_rendertype_custom .o_completion .o_progress,
+	.o_curriculumtable.o_rendertype_custom .o_completion .o_progress {
 		display: inline-block;
 		.radial-progress {
 			position: relative;
@@ -306,7 +308,8 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 
 @media (max-width: $screen-xs-max) { 
 	.o_toolbar .o_tool .o_progress,
-	.o_coursetable.o_rendertype_custom .o_completion .o_progress {
+	.o_coursetable.o_rendertype_custom .o_completion .o_progress,
+	.o_curriculumtable.o_rendertype_custom .o_completion .o_progress {
 		width: $o-toolbar-height-xs;
 		height: $o-toolbar-height-xs;
 		.radial-progress {
@@ -325,7 +328,8 @@ $o-radial-progress-percentage-font-size-toolbar		: $o-toolbar-size-text-md !defa
 }
 
 /* special rendering in course list table */
-.o_coursetable.o_rendertype_classic .o_progress .radial-progress {
+.o_coursetable.o_rendertype_classic .o_progress .radial-progress,
+.o_curriculumtable.o_rendertype_classic .o_progress .radial-progress {
 	width: $o-radial-progress-circle-size-inline;
 	height: $o-radial-progress-circle-size-inline;
 	font-size: $o-radial-progress-percentage-font-size-inline;

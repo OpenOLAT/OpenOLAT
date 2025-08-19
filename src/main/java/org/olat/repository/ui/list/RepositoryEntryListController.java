@@ -93,6 +93,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.catalog.ui.BookedEvent;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
@@ -160,6 +161,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private LifecycleModule lifecycleModule;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
 	
 	private final boolean guestOnly;
 	
@@ -242,6 +245,12 @@ public class RepositoryEntryListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
 					true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		}
+		
+		if(taxonomyModule.isEnabled()) {
+			DefaultFlexiColumnModel levelsCol = new DefaultFlexiColumnModel(Cols.taxonomyLevels.i18nKey(), Cols.taxonomyLevels.ordinal());
+			levelsCol.setDefaultVisible(false);
+			columnsModel.addFlexiColumnModel(levelsCol);
+		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
@@ -258,15 +267,11 @@ public class RepositoryEntryListController extends FormBasicController
 					Cols.successStatus.ordinal(), true, OrderBy.passed.name(), FlexiColumnModel.ALIGNMENT_LEFT, new PassedCellRenderer(getLocale()));
 			columnsModel.addFlexiColumnModel(successStatusColumnModel);
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
 				true, OrderBy.rating.name()));
 		}
-		
-		DefaultFlexiColumnModel levelsCol = new DefaultFlexiColumnModel(Cols.taxonomyLevels.i18nKey(), Cols.taxonomyLevels.ordinal());
-		levelsCol.setDefaultVisible(false);
-		columnsModel.addFlexiColumnModel(levelsCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.open.i18nKey(), Cols.open.ordinal()));
 		
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -293,7 +298,7 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		initSorters(tableEl);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2.1-".concat(name));
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2.2-".concat(name));
 		
 		if (!config.withSavedSettings()) {
 			SortKey sortKey = new SortKey(OrderBy.custom.name(), true);
@@ -799,14 +804,13 @@ public class RepositoryEntryListController extends FormBasicController
 			// Inline rendering of status
 			if (row.isPassed()) {
 				completionItem.setCssClass("o_progress_passed");
-			} else if (row.isFailed()) {
-				completionItem.setBarColor(BarColor.danger);					
+			} else if (row.isFailed()) {					
 				completionItem.setCssClass("o_progress_failed");
 			}
 			// Inline rendering of score
 			if (StringHelper.containsNonWhitespace(row.getScore())) {				
 				completionItem.setInfo(row.getScore() + "pt");
-			}					
+			}
 			row.setCompletionItem(completionItem);
 		}
 	}
@@ -898,7 +902,7 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	@Override
 	public void forgeTaxonomyLevels(RepositoryEntryRow row) {
-		if(row.getNumOfTaxonomyLevels() <= 0) return;
+		if(row.getNumOfTaxonomyLevels() <= 0 || !taxonomyModule.isEnabled()) return;
 		
 		String title = Long.toString(row.getNumOfTaxonomyLevels());
 		FormLink levelsLink = uifactory.addFormLink("tlevels_" + row.getKey(), "levels", title, null, null, Link.NONTRANSLATED);
