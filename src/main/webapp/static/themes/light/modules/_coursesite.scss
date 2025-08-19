@@ -233,9 +233,6 @@
 				.o_progress > .progress {
 					vertical-align: middle;
 				}
-				.o_passed, .o_failed, .o_noinfo {
-					font-weight: normal;
-				}
 				
 				.o_icon_circle_color {
 					color: $progress-bar-neutral-bg;
@@ -277,12 +274,6 @@
 					line-height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
 					position: relative;
 					@include text-overflow();
-				}	
-					
-				.o_score, o_passed {
-					.o_label {
-						color: $text-muted;
-					}
 				}
 				
 				.o_repo_rating .o_rating_items > a {
@@ -424,6 +415,10 @@
 	
 	.o_start, .o_book {
 		@include text-overflow();
+	}
+	
+	.o_passed, .o_failed, .o_noinfo {
+		font-weight: normal;
 	}
 }
 

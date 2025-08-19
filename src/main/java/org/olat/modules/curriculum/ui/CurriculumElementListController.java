@@ -61,6 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.components.progressbar.ProgressBar.RenderLabels;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
@@ -243,8 +244,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
@@ -255,7 +257,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v5-"
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v5.1-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
 		
 		initFilterPresets();
@@ -568,8 +570,21 @@ public class CurriculumElementListController extends FormBasicController impleme
 			completionItem.setWidthInPercent(true);
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
-			completionItem.setRenderSize(RenderSize.inline);
-			completionItem.setBarColor(BarColor.success);	
+			completionItem.setRenderSize(RenderSize.small);		
+			completionItem.setBarColor(BarColor.neutral);	
+			completionItem.setPercentagesEnabled(true);
+			completionItem.setRenderLabels(RenderLabels.always);
+			
+			// Inline rendering of status
+			if (row.isPassed()) {
+				completionItem.setCssClass("o_progress_passed");
+			} else if (row.isFailed()) {					
+				completionItem.setCssClass("o_progress_failed");
+			}
+			// Inline rendering of score
+			if (StringHelper.containsNonWhitespace(row.getScore())) {				
+				completionItem.setInfo(row.getScore() + "pt");
+			}
 			row.setCompletionItem(completionItem);
 		}
 	}

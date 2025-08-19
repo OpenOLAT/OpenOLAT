@@ -804,14 +804,13 @@ public class RepositoryEntryListController extends FormBasicController
 			// Inline rendering of status
 			if (row.isPassed()) {
 				completionItem.setCssClass("o_progress_passed");
-			} else if (row.isFailed()) {
-				completionItem.setBarColor(BarColor.danger);					
+			} else if (row.isFailed()) {					
 				completionItem.setCssClass("o_progress_failed");
 			}
 			// Inline rendering of score
 			if (StringHelper.containsNonWhitespace(row.getScore())) {				
 				completionItem.setInfo(row.getScore() + "pt");
-			}					
+			}
 			row.setCompletionItem(completionItem);
 		}
 	}
