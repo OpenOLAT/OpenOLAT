@@ -856,6 +856,7 @@ public class RepositoryEntryListController extends FormBasicController
 			iconCss = "btn btn-sm btn-primary o_start";
 		}
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
+		startLink.getComponent().setDomReplacementWrapperRequired(false);
 		startLink.setUserObject(row);
 		startLink.setCustomEnabledLinkCSS(iconCss);
 		startLink.setIconRightCSS("o_icon o_icon_start");
