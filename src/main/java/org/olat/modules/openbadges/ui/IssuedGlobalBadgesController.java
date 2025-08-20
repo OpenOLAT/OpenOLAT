@@ -85,6 +85,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.id));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name, CMD_SELECT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedBy));
@@ -215,6 +216,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	}
 
 	enum Cols implements FlexiSortableColumnDef {
+		id("form.identifier", true),
 		name("form.name", true),
 		recipient("form.recipient", true),
 		awardedBy("form.awarded.by", true),
@@ -278,6 +280,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		public Object getValueAt(Row row, int col) {
 			BadgeAssertion badgeAssertion = row.badgeAssertionWithSize.badgeAssertion();
 			return switch (Cols.values()[col]) {
+				case id -> badgeAssertion.getUuid();
 				case name -> badgeAssertion.getBadgeClass().getName();
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> badgeAssertion;

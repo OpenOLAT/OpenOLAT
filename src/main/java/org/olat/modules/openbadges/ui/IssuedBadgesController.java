@@ -134,6 +134,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IssuedBadgeCols.id));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.image,
 				(renderer, sb, val, row, source, ubu, translator) -> {
 					Size targetSize = tableModel.getObject(row).fitIn(60, 60);

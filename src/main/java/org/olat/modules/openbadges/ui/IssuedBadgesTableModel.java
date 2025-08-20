@@ -61,6 +61,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 	@Override
 	public Object getValueAt(IssuedBadgeRow row, int col) {
 		return switch (COLS[col]) {
+			case id -> row.getBadgeAssertion().getUuid();
 			case image -> row.getBadgeAssertion().getBakedImage();
 			case title -> row.getName();
 			case status -> row.getBadgeAssertion();
@@ -82,6 +83,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 	}
 
 	public enum IssuedBadgeCols implements FlexiSortableColumnDef {
+		id("form.identifier"),
 		image("form.image"),
 		title("form.name"),
 		status("form.status"),
