@@ -1588,7 +1588,6 @@ public class AssessmentTest extends Deployments {
 	}
 	
 	
-
 	/**
 	 * An administrator creates a global badge, awards the badge
 	 * to a recipient and the participant log in and goes
@@ -1638,11 +1637,13 @@ public class AssessmentTest extends Deployments {
 			.assertOnTable(badgeClassName);
 		
 		adminPage
+			.awardNewBadge(badgeFullName)
+			.searchRecipient(participant)
+			.nextConfirmation()
+			.finish();
+		
+		adminPage
 			.openIssuedBadges()
-			.awardNewBadge()
-			.selectClass(badgeFullName)
-			.addRecipient(participant)
-			.award()
 			.assertIssuedBadge(badgeFullName, participant);
 		
 		// Participant login

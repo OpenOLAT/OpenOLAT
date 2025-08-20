@@ -20,6 +20,7 @@
 package org.olat.selenium.page.course;
 
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -64,12 +65,20 @@ public class BadgesAdminPage {
 		return new BadgeClassesPage(browser).createBadgeClass();
 	}
 	
-	public BadgeIssuePage awardNewBadge() {
-		By awardBadgeBy = By.cssSelector("a.o_sel_openbadges_issue");
+	public BadgeIssueWizardPage awardNewBadge(String badgeName) {
+		By badgeClassBy = By.xpath("//div[contains(@class,'o_sel_badge_classes_list')]//table//tr[td/a[text()[contains(.,'" + badgeName + "')]]]/td[contains(@class,'o_col_action')]/div/a[i[contains(@class,'o_icon_actions')]]"); 
+		OOGraphene.waitElement(badgeClassBy, browser).click();
+		OOGraphene.waitCallout(browser, " a.o_sel_badges_issue");
+		
+		By awardBadgeBy = By.cssSelector("ul.o_dropdown > li > a.o_sel_badges_issue");
 		OOGraphene.waitElement(awardBadgeBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
-		return new BadgeIssuePage(browser);
+		return new BadgeIssueWizardPage(browser);
 	}
-
-
+	
+	public BadgesAdminPage assertIssuedBadge(String className, UserVO user) {
+		By badgeBy = By.xpath("//table//tr[td[text()[contains(.,'" + user.getFirstName() + "')]]]/td/a[text()[contains(.,'" + className + "')]]");
+		OOGraphene.waitElement(badgeBy, browser);
+		return this;
+	}
 }
