@@ -91,8 +91,8 @@ import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.coach.RoleSecurityCallback;
+import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -327,9 +327,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion,
+				new CompletionCellRenderer(getTranslator())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed,
+				new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.certificateExternalId));

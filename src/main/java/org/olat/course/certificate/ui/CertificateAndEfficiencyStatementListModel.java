@@ -90,7 +90,7 @@ public class CertificateAndEfficiencyStatementListModel
 			case passed:
 				return statement.getPassed();
 			case completion:
-				return statement;
+				return statement.getCompletion();
 			case lastModified:
 				return statement.getLastModified();
 			case lastUserUpdate:

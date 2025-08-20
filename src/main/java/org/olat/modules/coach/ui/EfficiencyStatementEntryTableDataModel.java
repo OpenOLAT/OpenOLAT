@@ -84,7 +84,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 				case repoName: return entry.getCourse().getDisplayname();
 				case repoExternalId: return entry.getCourse().getExternalId();
 				case repoExternalRef: return entry.getCourse().getExternalRef();
-				case completion: return createCompletionPassed(entry);
+				case completion: return getCompletion(entry);
 				case score: return entry.getScore();
 				case grade: return entry;
 				case passed: return entry.getPassed();
