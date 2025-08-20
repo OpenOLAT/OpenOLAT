@@ -58,6 +58,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
 	private final String formTitle;
+	private final String formWarning;
 	private MembersByNameContext membersByNameContext;
 	private boolean isAdministrativeUser;
 	private final List<Identity> anonymousUsers;
@@ -70,9 +71,15 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	private OrganisationService organisationService;
 
 	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			StepsRunContext runContext, String runContextKey, String formTitle) {
+													StepsRunContext runContext, String runContextKey, String formTitle) {
+		this(ureq, wControl, rootForm, runContext, runContextKey, formTitle, null);
+	}
+
+	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, String runContextKey, String formTitle, String formWarning) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.formTitle = formTitle;
+		this.formWarning = formWarning;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		anonymousUsers = organisationService.getIdentitiesWithRole(OrganisationRoles.guest);
 		anonymousUsers.addAll(organisationService.getIdentitiesWithRole(OrganisationRoles.invitee));
@@ -91,6 +98,9 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		
 		if (StringHelper.containsNonWhitespace(formTitle)) {
 			setFormTranslatedTitle(formTitle);
+		}
+		if (StringHelper.containsNonWhitespace(formWarning)) {
+			setFormTranslatedWarning(formWarning);
 		}
 
 		if(!membersByNameContext.getNotFoundNames().isEmpty()) {
