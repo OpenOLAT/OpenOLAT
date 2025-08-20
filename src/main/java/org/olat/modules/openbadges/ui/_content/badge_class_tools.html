@@ -7,15 +7,7 @@
 	<li>$r.render("revoke")</li>
 	#end
 
-	#if($r.available("copy") && ($r.available("awardManually") || $r.available("revoke")))
-	<li class="divider"></li>
-	#end
-
-	#if($r.available("copy"))
-	<li>$r.render("copy")</li>
-	#end
-
-	#if($r.available("edit") || $r.available("createNewVersion"))
+	#if($r.available("awardManually") || $r.available("revoke"))
 	<li class="divider"></li>
 	#end
 
@@ -27,7 +19,13 @@
 	<li>$r.render("createNewVersion")</li>
 	#end
 
+	#if($r.available("copy"))
+	<li>$r.render("copy")</li>
+	#end
+
+	#if($r.available("edit") || $r.available("createNewVersion") || $r.available("copy"))
 	<li class="divider"></li>
+	#end
 
 	#if($r.available("delete"))
 	<li>$r.render("delete")</li>
