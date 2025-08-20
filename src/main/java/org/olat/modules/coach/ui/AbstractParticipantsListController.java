@@ -57,8 +57,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
-import org.olat.core.gui.components.progressbar.ProgressRadialCellRenderer;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -90,6 +88,7 @@ import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CertificatesCellRenderer;
+import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.OrganisationWithParentsNameComparator;
 import org.olat.modules.coach.ui.component.SearchStateEntry;
@@ -237,7 +236,7 @@ public abstract class AbstractParticipantsListController extends FormBasicContro
 
         if (withProgressAndStatus) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.completion,
-            		new ProgressRadialCellRenderer(BarColor.success)));
+            		new CompletionCellRenderer(getTranslator())));
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.successStatus,
             		new SuccessStatusCellRenderer()));
         }

@@ -183,7 +183,7 @@ public class UserQuotaController extends FormBasicController {
 		}
 		currentlyUsedBar.setActual(actual);
 		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-				? ProgressBar.BarColor.primary
+				? ProgressBar.BarColor.neutral
 				: ProgressBar.BarColor.danger;
 		currentlyUsedBar.setBarColor(barColor);
 		return currentlyUsedBar;

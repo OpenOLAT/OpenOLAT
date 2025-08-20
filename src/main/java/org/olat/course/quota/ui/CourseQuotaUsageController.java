@@ -153,7 +153,7 @@ public class CourseQuotaUsageController extends FormBasicController
 		currentlyUsedBar.setMax(100);
 		currentlyUsedBar.setActual((float) participantBoxRow.getTotalUsedSize() / (float) quota.getQuotaKB() * 100);
 		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-				? ProgressBar.BarColor.primary
+				? ProgressBar.BarColor.neutral
 				: ProgressBar.BarColor.danger;
 		currentlyUsedBar.setBarColor(barColor);
 		return currentlyUsedBar;
@@ -361,7 +361,7 @@ public class CourseQuotaUsageController extends FormBasicController
 		currentlyUsedBar.setMax(100);
 		currentlyUsedBar.setActual((float) (folderQuota.getQuotaKB() - folderQuota.getRemainingSpace()) / (float) (folderQuota.getQuotaKB()) * 100);
 		ProgressBar.BarColor barColor = currentlyUsedBar.getActual() < 80
-				? ProgressBar.BarColor.primary
+				? ProgressBar.BarColor.neutral
 				: ProgressBar.BarColor.danger;
 		currentlyUsedBar.setBarColor(barColor);
 

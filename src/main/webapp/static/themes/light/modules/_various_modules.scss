@@ -1505,6 +1505,11 @@ ul.o_assessment_docs>li:last-child {
 			background-color: $o-course-state-failed-color;
 		}
 	}
+	.o_progress-bar-neutral {
+		&.progress-bar {
+			background-color: $progress-bar-neutral-bg;
+		}
+	}
 }
 
 

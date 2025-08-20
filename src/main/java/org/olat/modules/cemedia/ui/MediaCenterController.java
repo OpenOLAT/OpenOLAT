@@ -652,7 +652,7 @@ public class MediaCenterController extends FormBasicController
 			}
 			quotaBar.setActual(actual);
 			ProgressBar.BarColor barColor = actual < 80.0f
-					? ProgressBar.BarColor.primary
+					? ProgressBar.BarColor.neutral
 					: ProgressBar.BarColor.danger;
 			quotaBar.setBarColor(barColor);
 			

@@ -174,6 +174,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "badge-classes");
+		tableEl.setElementCssClass("o_sel_badge_classes_list");
 
 		if (owner) {
 			tableEl.setEmptyTableSettings("empty.badges.table.owner", null,
@@ -369,6 +370,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				case active:
 					awardManuallyLink = LinkFactory.createLink("award.manually", "awardManually", getTranslator(), mainVC, this, Link.LINK);
 					awardManuallyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_badge");
+					awardManuallyLink.setElementCssClass("o_sel_badges_issue");
 					mainVC.put("awardManually",  awardManuallyLink);
 					break;
 				default:

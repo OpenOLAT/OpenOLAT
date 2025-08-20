@@ -291,6 +291,12 @@ public class MemberSearchController extends FormBasicController {
 			participantsTab.setFiltersExpanded(true);
 			tabs.add(participantsTab);
 		}
+		if(config.withWaiting() && (owner || coach)) {
+			FlexiFiltersTab coachesTab = FlexiFiltersTabFactory.tabWithImplicitFilters(GroupRoles.waiting.name(), translate("role.group.waiting"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE, List.of(GroupRoles.waiting.name()))));
+			coachesTab.setFiltersExpanded(true);
+			tabs.add(coachesTab);
+		}
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, allTab);

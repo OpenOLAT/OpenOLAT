@@ -360,7 +360,7 @@ public class IdentityAssessmentFiguresController extends BasicController {
 			if (passed == null) {
 				passedWidget.setValue(translate("passed.nopassed"));
 				passedWidget.setValueCssClass("o_noinfo");
-				scoreProgress.setBarColor(BarColor.primary);
+				scoreProgress.setBarColor(BarColor.neutral);
 			} else if (passed) {
 				passedWidget.setValue(translate("passed.yes"));
 				passedWidget.setValueCssClass("o_state o_passed");

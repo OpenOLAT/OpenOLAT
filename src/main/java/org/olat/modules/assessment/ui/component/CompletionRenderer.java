@@ -54,7 +54,7 @@ public class CompletionRenderer extends DefaultComponentRenderer {
 		if(ccp.isEnded()) {
 			sb.append(" class='o_sel_ended'>").append(ccp.getCompletionTranslator().translate("run.ended"));
 		} else {
-			sb.append(" class='progress' style=\"width:100%;\"><div class='progress-bar' style=\"width:")
+			sb.append(" class='progress' style=\"width:100%;\"><div class='progress-bar progress-bar-neutral' style=\"width:")
 				.append(Math.round(percentCompletion))
 				.append("%\" title=\"")
 				.append(Math.round(percentCompletion))

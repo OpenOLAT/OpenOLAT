@@ -58,7 +58,6 @@ import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
@@ -68,6 +67,7 @@ import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.UserDetailsController.Segment;
+import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
@@ -148,7 +148,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.repoExternalRef, "select"));
 		if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new CompletionCellRenderer(getTranslator())));
 		}
 		if (roleSecurityCallback.canViewEfficiencyStatements()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));

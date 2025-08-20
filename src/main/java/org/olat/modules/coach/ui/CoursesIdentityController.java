@@ -341,9 +341,9 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.absentLectures));
 			}
 			
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.rateWarning,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.rateWarning,
 					new RateWarningCellRenderer(getTranslator())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.rate,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.rate,
 					new PercentCellRenderer()));
 		}
 		
@@ -362,7 +362,7 @@ public class CoursesIdentityController extends FormBasicController implements Ne
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v3.1");
+		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentCourseListController-v3.2");
 		
 		initFilters();
 		initFiltersPresets(ureq);

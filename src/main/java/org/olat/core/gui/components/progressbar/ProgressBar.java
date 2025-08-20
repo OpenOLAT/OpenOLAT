@@ -54,7 +54,7 @@ public class ProgressBar extends AbstractComponent {
 	private LabelAlignment labelAlignment = LabelAlignment.left;
 	private RenderStyle renderStyle = RenderStyle.horizontal;
 	private RenderSize renderSize = RenderSize.medium;
-	private BarColor barColor = BarColor.primary;
+	private BarColor barColor = BarColor.neutral;
 
 	private boolean progressAnimationEnabled = false;
 	private String unitLabel;

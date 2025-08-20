@@ -19,14 +19,11 @@
  */
 package org.olat.course.certificate.ui;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 
 /**
  * 
@@ -40,15 +37,4 @@ public class CertificateAndEfficiencyStatementSortDelegate extends SortableFlexi
 			SortableFlexiTableDataModel<CertificateAndEfficiencyStatementRow> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
-	
-	@Override
-	protected void sort(List<CertificateAndEfficiencyStatementRow> rows) {
-		int columnIndex = getColumnIndex();
-		CertificateAndEfficiencyStatementListModel.Cols column = CertificateAndEfficiencyStatementListModel.COLS[columnIndex];
-		switch(column) {
-			case completion: Collections.sort(rows, LearningProgressCompletionCellRenderer.createComparator()); break;
-			default: super.sort(rows); break;
-		}
-	}
-
 }
