@@ -1653,29 +1653,11 @@ table.o_qti_item_kprim {
 				/* hide status description */
 				display: none;
 			}
-			&.correct {
-				background-color: $o-qti-status-correct-color;
-			}
-			&.ended {
-			  background-color: $o-qti-status-ended-color;
-			}
-			&.incorrect {
-				background-color: $o-qti-status-incorrect-color;
-			}
-			&.invalid {
-			  background-color: $o-qti-status-invalid-color;
-			}
 			&.answered {
-			  @extend %o_base_blue;
+				@extend %o_base_blue;
 			}
 			&.notAnswered {
-			  @extend %o_base_orange;
-			}
-			&.notPresented {
-				background-color: $o-qti-status-notPresented-color;
-			}
-			&.review {
-				background-color: $o-qti-status-review-color;
+				@extend %o_base_orange;
 			}
 		}
 
