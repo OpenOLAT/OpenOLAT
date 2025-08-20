@@ -467,7 +467,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			completionItem.setLabelAlignment(LabelAlignment.none);
 			completionItem.setRenderStyle(RenderStyle.radial);
 			completionItem.setRenderSize(RenderSize.inline);
-			completionItem.setBarColor(BarColor.primary);
+			completionItem.setBarColor(BarColor.neutral);
 			row.setCompletionItem(completionItem);
 			row.setCompletion(completion);
 		}

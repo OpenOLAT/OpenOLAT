@@ -127,6 +127,8 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			target.append(" o_progress-bar-passed");
 		} else if (ProgressBar.BarColor.failed.equals(ubar.getBarColor())) {
 			target.append(" o_progress-bar-failed");
+		} else if (ProgressBar.BarColor.neutral.equals(ubar.getBarColor())) {
+			target.append(" o_progress-bar-neutral");
 		}
 		// animation works only with striped bars. 
 		if (ubar.isProgressAnimationEnabled()) {

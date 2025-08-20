@@ -42,7 +42,7 @@ public class ProgressRadialCellRenderer implements FlexiCellRenderer {
 	private final BarColor barColor;
 	
 	public ProgressRadialCellRenderer() {
-		this(BarColor.primary);
+		this(BarColor.neutral);
 	}
 
 	public ProgressRadialCellRenderer(BarColor barColor) {
