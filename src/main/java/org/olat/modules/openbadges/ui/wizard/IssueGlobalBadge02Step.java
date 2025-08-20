@@ -28,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.member.wizard.ImportMemberByUsernamesController;
 import org.olat.course.member.wizard.ImportMemberOverviewIdentitiesController;
+import org.olat.course.member.wizard.MembersByNameContext;
 
 /**
  * Initial date: 2025-08-18<br>
@@ -49,6 +50,12 @@ public class IssueGlobalBadge02Step extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new ImportMemberOverviewIdentitiesController(ureq, wControl, form, runContext, ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
+		String warning = null;
+		if (runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY) instanceof MembersByNameContext membersByNameContext) {
+			if (membersByNameContext.getIdentities().size() > 2) {
+				warning = getTranslator().translate("review.warning", Integer.toString(membersByNameContext.getIdentities().size()));
+			}
+		}
+		return new ImportMemberOverviewIdentitiesController(ureq, wControl, form, runContext, ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null, warning);
 	}
 }
