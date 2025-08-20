@@ -458,6 +458,8 @@ public class MemberSearchController extends FormBasicController {
 		if(params.getRoles() == null) {
 			params.setPending(true);
 			params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting } );
+		} else if(params.isRole(GroupRoles.waiting)) {
+			params.setPending(true);
 		} else {
 			params.setPending(false);
 		}

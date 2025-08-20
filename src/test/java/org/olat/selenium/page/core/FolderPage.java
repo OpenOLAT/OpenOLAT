@@ -191,6 +191,7 @@ public class FolderPage {
 
 		By unzippedFolderBy = By.xpath("//dialog//div[contains(@class,'popover-content')]//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'unzip')][i[contains(@class,'o_filetype_zip')]]");
 		OOGraphene.waitElement(unzippedFolderBy, browser).click();
+		OOGraphene.waitCalloutDisappears(browser, " li > a > i.o_filetype_zip");
 		
 		String directoryName = filename.replace(".zip", "");
 		return assertOnDirectory(directoryName);

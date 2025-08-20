@@ -1,23 +1,35 @@
 <ul class="o_dropdown list-unstyled">
 	#if($r.available("awardManually"))
 	<li>$r.render("awardManually")</li>
-	<li class="divider"></li>
 	#end
-	#if($r.available("copy"))
-	<li>$r.render("copy")</li>
-	<li class="divider"></li>
-	#end
-	#if($r.available("createNewVersion"))
-	<li>$r.render("createNewVersion")</li>
-	#end
-	#if($r.available("edit"))
-	<li>$r.render("edit")</li>
-	#end
+
 	#if($r.available("revoke"))
 	<li>$r.render("revoke")</li>
 	#end
-	#if($r.available("createNewVersion") || $r.available("edit") || $r.available("revoke"))
+
+	#if($r.available("copy") && ($r.available("awardManually") || $r.available("revoke")))
 	<li class="divider"></li>
 	#end
+
+	#if($r.available("copy"))
+	<li>$r.render("copy")</li>
+	#end
+
+	#if($r.available("edit") || $r.available("createNewVersion"))
+	<li class="divider"></li>
+	#end
+
+	#if($r.available("edit"))
+	<li>$r.render("edit")</li>
+	#end
+
+	#if($r.available("createNewVersion"))
+	<li>$r.render("createNewVersion")</li>
+	#end
+
+	<li class="divider"></li>
+
+	#if($r.available("delete"))
 	<li>$r.render("delete")</li>
+	#end
 </ul>
