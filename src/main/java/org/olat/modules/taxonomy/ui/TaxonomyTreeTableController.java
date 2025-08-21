@@ -445,8 +445,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				loadModel(false, false);
 				if(createTaxonomyLevelCtrl.getParentLevel() != null) {
 					int openIndex = model.indexOf(createTaxonomyLevelCtrl.getParentLevel());
-					model.open(openIndex);
-					tableEl.reset(false, false, true);
+					if (openIndex >= 0) {
+						model.open(openIndex);
+						tableEl.reset(false, false, true);
+					}
 				}
 			}
 			cmc.deactivate();
