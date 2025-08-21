@@ -9,7 +9,7 @@ A sophisticated modular toolkit provides course authors with a wide range of did
 Visit the [OpenOlat project homepage](https://www.openolat.com) and the [OpenOlat documentation](https://docs.openolat.org) for more information.
 
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/openolat/OpenOlat) [![Twitter Follow](https://img.shields.io/twitter/follow/openolat?style=social)](https://twitter.com/openolat) [![Mastodon Follow](https://img.shields.io/mastodon/follow/108248790140395927?style=social)](https://mastodon.social/@openolat)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/openolat/OpenOlat) [![X Follow](https://img.shields.io/twitter/follow/openolat?style=social)](https://x.com/openolat) [![Mastodon Follow](https://img.shields.io/mastodon/follow/108248790140395927?style=social)](https://mastodon.social/@openolat)
 
 ## Table of Contents
 
@@ -48,7 +48,7 @@ The documentation can be found at [https://docs.openolat.org](https://docs.openo
 ### Other ressources 
 
 * [Mailing list](https://groups.google.com/forum/#!forum/openolat)
-* [Issue management in Jira](https://jira.openolat.org/)
+* [Issue management in YouTrack](https://track.frentix.com/)
 * [OpenOlat for the community](https://community.openolat.org) An OpenOlat instance dedicated to the community
 
 ***
