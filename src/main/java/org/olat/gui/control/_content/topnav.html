@@ -25,8 +25,8 @@
 		#end
 	#end
 	#if (!$isGuest)
-		<li id="o_navbar_my_menu" class="o_portrait" aria-expanded="false">
-			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" onclick="OPOL.navbar.toggleRight(); return false;" title="$r.escapeForHtmlAttribute("$myMenuLabel") – $r.translateInAttribute("topnav.my.menu.tools")">
+		<li id="o_navbar_my_menu" class="o_portrait">
+			<a id="o_sel_navbar_my_menu_caret" href="javascript:;" aria-expanded="false" onclick="OPOL.navbar.toggleRight(); return false;" title="$r.escapeForHtmlAttribute("$myMenuLabel") – $r.translateInAttribute("topnav.my.menu.tools")">
 				$r.render("portrait")
 				<b class="caret"> </b>
 			</a>
