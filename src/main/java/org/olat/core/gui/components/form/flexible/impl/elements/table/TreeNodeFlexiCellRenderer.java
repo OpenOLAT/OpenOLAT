@@ -167,7 +167,10 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			}
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
 			
-			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false\"><i class='o_icon o_icon-fw ");
+			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false\"");
+			target.append(" role=\"button\"");
+			target.append(FormJSHelper.triggerClickOnKeyDown(true));
+			target.append("><i class='o_icon o_icon-fw ");
 			String translatedCommand = "";
 			if(open) {
 				target.append("o_icon_close_tree");
@@ -190,7 +193,9 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 				target.append("<b>");
 			}
 			
-			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
+			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
+			target.append(FormJSHelper.triggerClickOnKeyDown(false));
+			target.append(">");
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 			target.append("</a>");
 			

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -240,7 +241,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
 		
 		gradeScaleButtonsCont = uifactory.addButtonsFormLayout("gradeButtons", null, formLayout);
-		gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+		gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
 		gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
 		
 		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);

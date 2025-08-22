@@ -619,14 +619,20 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append(dispatchId).append("_toa' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 						  new NameValuePair("tt-openclose", "openall")))
-				  .append("\" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_close_tree'> </i> <span>").append(translator.translate("form.openall"))
+				  .append("\"")
+				  .append(" role=\"button\"")
+				  .append(FormJSHelper.triggerClickOnKeyDown(true))
+				  .append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_close_tree'> </i> <span>").append(translator.translate("form.openall"))
 				  .append("</span></a>");
 
 				sb.append("<a id='")
 				  .append(dispatchId).append("_tca' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 						  new NameValuePair("tt-openclose", "closeall")))
-				  .append("\" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_open_tree'> </i> <span>").append(translator.translate("form.closeall"))
+				  .append("\"")
+				  .append(" role=\"button\"")
+				  .append(FormJSHelper.triggerClickOnKeyDown(true))
+				  .append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_open_tree'> </i> <span>").append(translator.translate("form.closeall"))
 				  .append("</span></a>");
 				
 				sb.append("</div></div>");

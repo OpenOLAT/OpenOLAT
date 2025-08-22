@@ -81,6 +81,7 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 		shibLink.setAjaxEnabled(false);
 		shibLink.setIconRightCSS("o_icon o_icon_start");
 		shibLink.setPrimary(true);
+		shibLink.setAriaRole(null);
 		
 		putInitialPanel(loginComp);
 	}

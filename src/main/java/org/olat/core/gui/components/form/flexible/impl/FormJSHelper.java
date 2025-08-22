@@ -152,6 +152,18 @@ public class FormJSHelper {
 		  .append("; }\"");
 	}
 	
+	public static String triggerClickOnKeyDown(boolean button) {
+		StringBuilder sb = new StringBuilder(128);
+		triggerClickOnKeyDown(sb, button);
+		return sb.toString();
+	}
+	
+	public static void triggerClickOnKeyDown(StringBuilder sb, boolean button) {
+		sb.append(" onkeydown=\"triggerClick(event, true, ")
+		  .append(button? "true": "false")
+		  .append(");\"");
+	}
+	
 	/**
 	 * Build the JavaScript method to send a flexi form event.
 	 * 

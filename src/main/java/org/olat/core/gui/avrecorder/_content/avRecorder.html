@@ -53,8 +53,7 @@
 				<div class="o_file_size" id="file-size"></div>
 			</div>
 			<div class="col-xs-12 col-sm-2 o_one_button_container">
-				<button id="one-button" class="btn btn-default" type="button" role="button" tabindex="0"
-						aria-label="Record, play, stop">
+				<button id="one-button" class="btn btn-default" type="button">
 					<svg class="o_one_button_icon" viewBox="0 0 80 80">
 						<circle cx="40" cy="40" r="30" stroke-width="5" class="decoration"/>
 						<circle id="start-recording-symbol" cx="40" cy="40" r="15" class="strong-symbol"/>
@@ -75,8 +74,7 @@
 			<div class="col-xs-12 col-sm-5 o_button_container">
 				<div class="o_button">
 					<div>
-						<button id="retry-button" type="button" name="retry-button" class="btn btn-default"
-								role="button" tabindex="0" aria-label="Retry">
+						<button id="retry-button" type="button" name="retry-button" class="btn btn-default">
 							<span>$r.translate("retryButton")</span>
 						</button>
 					</div>
@@ -104,8 +102,8 @@
 					<p>$r.translate("dialog.retry.text")</p>
 				</div>
 				<div class="modal-footer">
-					<a id="yes-button" class="btn btn-default" role="button" tabindex="0" aria-label="Yes">$r.translate("yes")</a>
-					<a id="no-button" class="btn btn-default" role="button" tabindex="0" aria-label="No">$r.translate("no")</a>
+					<button id="yes-button" class="btn btn-default">$r.translate("yes")</button>
+					<button id="no-button" class="btn btn-default">$r.translate("no")</button>
 				</div>
 			</div>
 		</div>

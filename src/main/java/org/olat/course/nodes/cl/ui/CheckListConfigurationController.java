@@ -252,7 +252,7 @@ public class CheckListConfigurationController extends FormBasicController {
 			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
-			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "config.passed", "", formLayout);
 		}

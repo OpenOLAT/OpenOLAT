@@ -47,8 +47,6 @@ import org.olat.core.util.StringHelper;
  */
 public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 	
-
-
 	private FlexiCellRenderer labelDelegate = new TextFlexiCellRenderer();
 	
 	private boolean flatBySearchAndFilter;
@@ -158,7 +156,10 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 				pair = new NameValuePair("tt-open", Integer.toString(row));
 			}
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
-			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false\"><i class='o_icon o_icon-fw ");
+			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false;\"");
+			target.append(" role=\"button\"");
+			target.append(FormJSHelper.triggerClickOnKeyDown(true));
+			target.append("><i class='o_icon o_icon-fw ");
 			if(open) {
 				target.append("o_icon_close_tree");
 			} else {

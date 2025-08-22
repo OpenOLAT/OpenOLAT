@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -183,6 +184,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		
 		
 		chooseGroupCoachesLink = uifactory.addFormLink("groupCoachesChoose", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
+		chooseAreasCoachesLink.setAriaLabel(Link.ARIA_ROLE_BUTTON);
 		chooseGroupCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupCoachesLink.setVisible(false);
 		chooseGroupCoachesLink.setLabel("form.message.group", null);

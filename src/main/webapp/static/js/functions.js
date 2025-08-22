@@ -2856,6 +2856,22 @@ function o_ffSetFocus(type, formId, formItemId) {
 	return focused;
 }
 
+/*
+* a11y: Firefox triggers click usually only by cmd + enter
+* Trigger action by space if it is a button (not enter only)
+* Trigger action by enter if it is in a form (not cmd + enter only)* 
+*/
+function triggerClick(event, enter, space) {
+	if (enter && (event.which == 13 || event.key === 'Enter')) {
+		// Enter on a link in the form must not submit the form.
+		event.preventDefault();
+		event.currentTarget.click();
+	} else if (space && (event.code === 'Space' || event.key === ' ')) {
+		event.preventDefault();
+		event.currentTarget.click();
+	}
+}
+
 function dismissInfoBox(uuid) {
 	jQuery('#' + uuid).remove();
 	return true;

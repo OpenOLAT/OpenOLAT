@@ -184,6 +184,10 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		this.i18n = i18n;
 		this.presentation = presentation;
 		this.presentationBeforeCustomCSS = presentation;
+		if (isButton()) {
+			// Initialisation only. Can be changed later if desired.
+			setAriaRole(ARIA_ROLE_BUTTON);
+		}
 		
 		if(log.isDebugEnabled()) {
 			log.debug("***LINK_CREATED*** name: {} component: {} dispatchId: {}",
@@ -193,6 +197,17 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 		// to be set manually
 		setSpanAsDomReplaceable(true);
 		setDomReplacementWrapperRequired(false);
+	}
+
+	private boolean isButton() {
+		int guiPresentation = presentation;
+		if ((guiPresentation - Link.FLEXIBLEFORMLNK) >= 0) {
+			guiPresentation = guiPresentation - Link.FLEXIBLEFORMLNK;
+		}
+		if ((guiPresentation - Link.NONTRANSLATED) >= 0) {
+			guiPresentation = guiPresentation - Link.NONTRANSLATED;
+		}
+		return guiPresentation >= BUTTON_XSMALL && guiPresentation <= BUTTON_LARGE;
 	}
 
 	@Override
@@ -517,6 +532,9 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	}
 
 	/**
+	 * This method does not change the aria-role which was initialized in the constructor.
+	 * You can/have to take care of it yourself.
+	 * 
 	 * @param customEnabledLinkCSS the custom CSS class used for a enabled link
 	 */
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {

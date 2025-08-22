@@ -26,7 +26,7 @@
 
 		#if($r.visible("logs"))
 		<fieldset>
-			<legend><h4 onclick="jQuery('#collapse_logs_${r.getCId()}').collapse('toggle')">
+			<legend><h4 onclick="jQuery('#collapse_logs_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 				<i id="collapse_logs_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($logsOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("logs.open.close")
 			</h4></legend>
 			<div id="collapse_logs_${r.getCId()}" class="collapse #if($logsOpen) in #end">

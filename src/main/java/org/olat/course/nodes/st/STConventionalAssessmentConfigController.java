@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -318,7 +319,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
 		gradeScaleButtonsCont.setRootForm(mainForm);
 		gradeCont.add(gradeScaleButtonsCont);
-		gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+		gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
 		gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
 		
 		gradeMinMaxEl = uifactory.addStaticTextElement("score.min.max", "score.min.max", "", gradeCont);

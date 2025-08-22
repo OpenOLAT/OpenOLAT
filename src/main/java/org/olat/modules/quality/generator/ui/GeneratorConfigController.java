@@ -133,10 +133,9 @@ public class GeneratorConfigController extends FormBasicController {
 		FormLayoutContainer formCont = FormLayoutContainer.createButtonLayout("form", getTranslator());
 		formCont.setRootForm(mainForm);
 		formLayout.add(formCont);
-		evaFormSelectLink = uifactory.addFormLink("generator.form.select", formCont, "btn btn-default o_xsmall");
-		evaFormReplaceLink = uifactory.addFormLink("generator.form.replace", formCont,
-				"btn btn-default o_xsmall");
-		evaFormEditLink = uifactory.addFormLink("generator.form.edit", formCont, "btn btn-default o_xsmall");
+		evaFormSelectLink = uifactory.addFormLink("generator.form.select", formCont, Link.BUTTON_XSMALL);
+		evaFormReplaceLink = uifactory.addFormLink("generator.form.replace", formCont, Link.BUTTON_XSMALL);
+		evaFormEditLink = uifactory.addFormLink("generator.form.edit", formCont, Link.BUTTON_XSMALL);
 		
 		updateUI();
 	}

@@ -104,8 +104,8 @@ public class EdusharingConfigController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		selectLink = uifactory.addFormLink("edit.select", buttonsCont, "btn btn-default o_xsmall");
-		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
+		selectLink = uifactory.addFormLink("edit.select", buttonsCont, Link.BUTTON_XSMALL);
+		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, Link.BUTTON_XSMALL);
 		
 		SelectionValues versionKV = new SelectionValues();
 		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_CURRENT, translate("edit.version.current"), translate("edit.version.current.desc"), null, null, true));

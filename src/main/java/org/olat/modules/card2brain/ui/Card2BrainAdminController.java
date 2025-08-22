@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -98,7 +99,7 @@ public class Card2BrainAdminController extends FormBasicController {
 		enterpriseSecretEl = uifactory.addTextElement("admin.enterpriseSecret", "admin.enterpriseSecret", 128, enterpriseSecret, formLayout);
 		enterpriseSecretEl.setMandatory(true);
 		
-		checkLoginButton = uifactory.addFormLink("admin.verifyKeySecret.button", formLayout, "btn btn-default");
+		checkLoginButton = uifactory.addFormLink("admin.verifyKeySecret.button", formLayout, Link.BUTTON);
 		
 		uifactory.addSpacerElement("Spacer", formLayout, false);
 
