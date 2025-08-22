@@ -243,7 +243,7 @@ public class MSEditFormController extends FormBasicController {
 			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
-			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);

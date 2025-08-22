@@ -208,9 +208,9 @@ public class MSConfigController extends FormBasicController {
 		evaluationFormLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		chooseLink = uifactory.addFormLink("form.evaluation.choose", buttonsCont, "btn btn-default o_xsmall");
-		replaceLink = uifactory.addFormLink("form.evaluation.replace", buttonsCont, "btn btn-default o_xsmall");
-		editLink = uifactory.addFormLink("form.evaluation.edit", buttonsCont, "btn btn-default o_xsmall");
+		chooseLink = uifactory.addFormLink("form.evaluation.choose", buttonsCont, Link.BUTTON_XSMALL);
+		replaceLink = uifactory.addFormLink("form.evaluation.replace", buttonsCont, Link.BUTTON_XSMALL);
+		editLink = uifactory.addFormLink("form.evaluation.edit", buttonsCont, Link.BUTTON_XSMALL);
 		
 		uifactory.addSpacerElement("spacerone", formLayout, false);
 		
@@ -276,7 +276,7 @@ public class MSConfigController extends FormBasicController {
 			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
-			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, Link.BUTTON);
 			gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);

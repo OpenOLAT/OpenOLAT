@@ -225,6 +225,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 					String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, dirtyCheck, true, push,
 							pair, new NameValuePair("oo-opennewwindow-oo", "true"));
 					target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
+					target.append(FormJSHelper.triggerClickOnKeyDown(false));
 				} else {
 					renderOpenTab(target, ftE, pair, ubu);
 				}
@@ -238,6 +239,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 					
 				}
 				target.append(" href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
+				target.append(FormJSHelper.triggerClickOnKeyDown(false));
 			}
 			
 			// Same a11y proof HTML syntax like the LinkRenderer.

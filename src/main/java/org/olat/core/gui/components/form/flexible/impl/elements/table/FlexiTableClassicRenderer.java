@@ -122,6 +122,8 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 					new NameValuePair("select", "uncheckall")))
 			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
+			.append(" role=\"button\"")
+			.append(FormJSHelper.triggerClickOnKeyDown(true))
 			.append(" style='display:none'", (numOfChecked < numOfRows || numOfChecked == 0))
 			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i>")
 			.append("<span class='sr-only'>").append(translator.translate("form.uncheckall")).append("</span></a>");
@@ -132,6 +134,8 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 					new NameValuePair("select", "uncheckall")))
 			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
+			.append(" role=\"button\"")
+			.append(FormJSHelper.triggerClickOnKeyDown(true))
 			.append(" style='display:none'", (numOfChecked == numOfRows || numOfChecked == 0))
 			.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_mixed' aria-hidden='true'> </i>")
 			.append("<span class='sr-only'>").append(translator.translate("form.uncheckall")).append("</span></a>");
@@ -145,11 +149,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 						new NameValuePair("select", "checkall")))
 				.append("; return false;\" title=\"")
 				.appendHtmlAttributeEscaped(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("\"")
+				.append(" role=\"button\"")
+				.append(FormJSHelper.triggerClickOnKeyDown(true))
 				.append(" style='display:none'", numOfChecked > 0)
 				.append(" draggable=\"false\"><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i>")
 				.append("<span class='sr-only'>").append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("</span></a>");
-								
-		} else {					
+		} else {
 			// Show menu to opt for all or just current page check
 			target.append("<div id='").append(dispatchId).append("_sm' style='position: relative; ")
 				.append("display:none;", numOfChecked > 0)
@@ -359,7 +364,10 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				target.append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 						new NameValuePair("tt-details", Integer.toString(row))));
 				target.append(";");
-				target.append(" return false;\" role='button' draggable=\"false\">");
+				target.append(" return false;\"");
+				target.append(" role=\"button\"");
+				target.append(FormJSHelper.triggerClickOnKeyDown(true));
+				target.append(" draggable=\"false\">");
 				target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
 				target.append("<span class='sr-only'>").append(collapseText).append("</span>");
 				target.append("</a>");

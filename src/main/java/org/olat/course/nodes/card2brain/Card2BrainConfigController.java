@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -85,7 +86,7 @@ public class Card2BrainConfigController extends FormBasicController {
 		flashcardAliasEl.setMandatory(true);
 		flashcardAliasEl.setHelpTextKey("edit.FlashcardHelpText", null);
 
-		previewButton = uifactory.addFormLink("edit.preview", formLayout, "btn btn-default o_xsmall");
+		previewButton = uifactory.addFormLink("edit.preview", formLayout, Link.BUTTON_XSMALL);
 		previewButton.setIconLeftCSS("o_icon o_icon_preview");
 
 		privateLoginSpacer = uifactory.addSpacerElement("Spacer", formLayout, false);

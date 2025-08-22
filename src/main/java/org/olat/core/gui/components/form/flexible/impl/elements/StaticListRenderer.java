@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
@@ -85,6 +86,7 @@ public class StaticListRenderer extends DefaultComponentRenderer {
 			sb.append("<a role=\"button\" ");
 			ubu.buildHrefAndOnclick(sb, null, true, false, true,
 					new NameValuePair(VelocityContainer.COMMAND_ID, StaticListComponent.CMD_SHOW_ALL));
+			sb.append(FormJSHelper.triggerClickOnKeyDown(true));
 			sb.append(">");
 			String showAllText;
 			if (StringHelper.containsNonWhitespace(comp.getShowAllI18nKey())) {

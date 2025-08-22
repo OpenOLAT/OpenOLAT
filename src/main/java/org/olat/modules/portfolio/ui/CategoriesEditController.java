@@ -91,6 +91,7 @@ public class CategoriesEditController extends FormBasicController {
 		
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
 		editLink.setCustomEnabledLinkCSS("o_button_textstyle");
+		editLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		
 		saveButton = uifactory.addFormSubmitButton("save", formLayout);
 		saveButton.setVisible(false);
