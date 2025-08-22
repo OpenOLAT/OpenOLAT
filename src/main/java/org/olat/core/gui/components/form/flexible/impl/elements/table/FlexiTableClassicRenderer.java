@@ -229,17 +229,26 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				sb.append("<a class='o_orderby' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-				  .append("\" draggable=\"false\">");
+				  .append("\"")
+				  .append(" role=\"button\"")
+				  .append(FormJSHelper.triggerClickOnKeyDown(true))
+				  .append(" draggable=\"false\">");
 			} else if(asc.booleanValue()) {
 				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
-				  .append("\" draggable=\"false\">");
+				  .append("\"")
+				  .append(" role=\"button\"")
+				  .append(FormJSHelper.triggerClickOnKeyDown(true))
+				  .append(" draggable=\"false\">");
 			} else {
 				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-				  .append("\" draggable=\"false\">");
+				  .append("\"")
+				  .append(" role=\"button\"")
+				  .append(FormJSHelper.triggerClickOnKeyDown(true))
+				  .append(" draggable=\"false\">");
 			}
 			renderHeaderText(fcm, translator, sb);
 			sb.append("</a>");

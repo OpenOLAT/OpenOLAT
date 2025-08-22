@@ -195,7 +195,9 @@ public class ForumMessageListController extends FormBasicController {
 			boolean marked = mark != null;
 			FormLink markLink = uifactory.addFormLink("mark_" + view.getKey(), "mark", "", null, null,
 					Link.NONTRANSLATED);
+			markLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink.setTitle(marked? translate("favorit.remove"): translate("favorit.add"));
 
 			MessageLightViewRow row = new MessageLightViewRow(view, mark, markLink);
 			markLink.setUserObject(row);
