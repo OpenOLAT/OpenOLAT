@@ -184,7 +184,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		
 		
 		chooseGroupCoachesLink = uifactory.addFormLink("groupCoachesChoose", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
-		chooseAreasCoachesLink.setAriaLabel(Link.ARIA_ROLE_BUTTON);
+		chooseGroupCoachesLink.setAriaLabel(Link.ARIA_ROLE_BUTTON);
 		chooseGroupCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupCoachesLink.setVisible(false);
 		chooseGroupCoachesLink.setLabel("form.message.group", null);
