@@ -1634,6 +1634,9 @@ table.o_qti_item_kprim {
 	
 	li.o_assessmentitem {
 		padding: 0.1em 0;
+		
+		display: flex;
+		
 	    a {
 	    	color : $o-qti-menu-link-color;
 			overflow-wrap: break-word;
@@ -1654,15 +1657,9 @@ table.o_qti_item_kprim {
 				overflow-wrap: break-word;
 			}
 		}
-		
-		span {
-			vertical-align: middle;
-		}
 
 		.o_assessmentitem_status {
-			display: inline;
-			position: relative;
-			left: -0.3em;
+			margin-right: 0.3em;
 			background: transparent;
 			border: 0;
 			span {
@@ -1670,10 +1667,12 @@ table.o_qti_item_kprim {
 				display: none;
 			}
 		}
-
+		
+		.o_assessmentitem_title {
+			flex-grow: 2;
+		}
+		
 		.o_assessmentitem_attempts {
-			float: right;
-			display: block;
 			padding: 0.3em;
 			border-radius: 2px;
 			background-color: #fafafa;
@@ -1689,18 +1688,13 @@ table.o_qti_item_kprim {
 		}
 
 		.o_assessmentitem_marks {
-			float: right;
-			display: inline-block;
 			font-size: 0.8em;
-			position: relative;
-			top: 0.3em;
-			right: -0.5em;
+			margin-top: 0.3em;
+			margin-left: 0.5em;
 		}
 		
 		/* old badge style rendering
 		.o_assessmentitem_status {
-			float: right;
-			display: block;
 			padding: 0.3em;
 			border-radius: 0.3em;
 			border-width: 1px;

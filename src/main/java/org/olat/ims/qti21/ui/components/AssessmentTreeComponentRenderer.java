@@ -115,8 +115,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
 		if(currentTestPartNode != null) {
 			sb.append("<ul class='o_testpartnavigation list-unstyled'>");
-			currentTestPartNode.getChildren().forEach((node)
-				-> renderNavigation(renderer, sb, component, node, ubu, translator, options));
+			currentTestPartNode.getChildren().forEach(node -> renderNavigation(renderer, sb, component, node, ubu, translator, options));
 			sb.append("</ul>");
 		}
 		sb.append("</div>");
@@ -163,10 +162,10 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		
 		sb.append("<li class='o_assessmentitem").append(" active", active).append("'>");
 		try {
-			renderAssessmentItemMark(sb, component, itemNode, translator);
-			renderAssessmentItemAttempts(sb, component, itemNode, translator);
 			renderItemStatus(renderer, sb, component, itemNode, translator, options);
 			renderAssessmentItemLink(sb, component, itemNode, translator);
+			renderAssessmentItemAttempts(sb, component, itemNode, translator);
+			renderAssessmentItemMark(sb, component, itemNode, translator);
 		} catch(IllegalStateException ex) {
 			log.error("", ex);
 			sb.append("<span class='o_danger'>ERROR</span>");
@@ -213,7 +212,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("<a href='javascript:;' ")
 			  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
-			  .append(" class='o_sel_assessmentitem'>");
+			  .append(" class='o_assessmentitem_title o_sel_assessmentitem'>");
 		}
 		String title = getTitle(component, itemNode, translator);
 		sb.append("<span class='questionTitle'>").append(title).append("</span>");
