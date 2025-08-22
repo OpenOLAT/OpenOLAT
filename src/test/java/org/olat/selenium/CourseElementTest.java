@@ -469,7 +469,7 @@ public class CourseElementTest extends Deployments {
 			.createCourse(courseTitle, true)
 			.clickToolbarBack();
 
-		//Create a course element of type video
+		//Create a course element of type video task
 		String videoNodeTitle = "Video task 1.0";
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		CourseEditorPageFragment courseEditor = course
