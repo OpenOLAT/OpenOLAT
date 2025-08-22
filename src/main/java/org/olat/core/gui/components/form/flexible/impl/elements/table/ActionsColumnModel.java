@@ -54,6 +54,7 @@ public class ActionsColumnModel extends StickyActionColumnModel {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), cmd, "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		toolsLink.setTitle(translator.translate("action.more"));
+		toolsLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		return toolsLink;
 	}
 

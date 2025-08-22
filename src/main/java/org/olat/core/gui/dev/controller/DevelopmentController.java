@@ -93,11 +93,6 @@ public class DevelopmentController extends BasicController {
 	private Controller bandwithController;
 	private Link devToolLink;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param navElem
-	 */
 	public DevelopmentController(UserRequest ureq, WindowControl wControl, WindowBackOfficeImpl wboImpl) {
 		super(ureq, wControl);
 		this.wboImpl = wboImpl;
@@ -140,6 +135,7 @@ public class DevelopmentController extends BasicController {
 		mainpanel = new Panel("developermainpanel");
 		
 		devToolLink = LinkFactory.createCustomLink("devTool", "devTool", "", Link.NONTRANSLATED, myContent, this);
+		devToolLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		devToolLink.setIconLeftCSS("o_icon o_icon_dev o_icon-fw");
 		devToolLink.setCustomEnabledLinkCSS("o_dev hidden-print");
 		devToolLink.setTitle(translate("devTool"));
@@ -174,10 +170,7 @@ public class DevelopmentController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == devToolLink) {
 			removeAsListenerAndDispose(floatCtr);

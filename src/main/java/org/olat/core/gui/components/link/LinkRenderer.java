@@ -176,6 +176,13 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				renderHrefAndOnclickLink(renderer, sb, link, ubu);
 			}
 			
+			// a11y: Firefox triggers click usually only by cmd + enter
+			// Trigger action by enter if it is in a form (not cmd + enter only)
+			// Trigger action by space if it is a button (not enter only)
+			if (flexiformlink || Link.ARIA_ROLE_BUTTON.equals(link.getAriaRole())) {
+				sb.append(" onkeydown=\"triggerClick(event, true, ").append(Link.ARIA_ROLE_BUTTON.equals(link.getAriaRole())? "true": "false").append(");\"");
+			}
+			
 			sb.append(" draggable=\"false\"");
 			
 			// title / tooltips, but only if not redundant with link text
@@ -186,20 +193,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(ariaLabel != null && !ariaLabel.equals(linkText) && !ariaLabel.equals(title)) {
 				sb.append(" aria-label=\"").appendHtmlAttributeEscaped(ariaLabel).append("\"");
 			}
-			// A11y: Override the linke role for links that are actually buttons
 			if(link.getAriaRole() != null) {
 				sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\"");
-			} else {
-				int linkStyle = presentation;
-				if ((linkStyle - Link.FLEXIBLEFORMLNK) >= 0) {
-					linkStyle = linkStyle - Link.FLEXIBLEFORMLNK;
-				}
-				if ((linkStyle - Link.NONTRANSLATED) >= 0) {
-					linkStyle = linkStyle - Link.NONTRANSLATED;
-				}
-				if (linkStyle >= Link.BUTTON_XSMALL && linkStyle <= Link.BUTTON_LARGE) {
-					sb.append(" role=\"").appendHtmlEscaped(Link.ARIA_ROLE_BUTTON).append("\"");
-				}
 			}
 			sb.append(">");
 			
@@ -256,7 +251,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(link.getBadge() != null) {
 				renderer.render(link.getBadge(), sb, args);
 			}
-						
+			
 			sb.append("</a>").append("</p>", inForm);
 			
 			//on click() is part of prototype.js

@@ -180,9 +180,8 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		FormLayoutContainer formCont = FormLayoutContainer.createButtonLayout("form", getTranslator());
 		formCont.setRootForm(mainForm);
 		formLayout.add(formCont);
-		evaFormReplaceLink = uifactory.addFormLink("data.collection.form.replace", formCont,
-				"btn btn-default o_xsmall");
-		evaFormEditLink = uifactory.addFormLink("data.collection.form.edit", formCont, "btn btn-default o_xsmall");
+		evaFormReplaceLink = uifactory.addFormLink("data.collection.form.replace", formCont, Link.BUTTON_XSMALL);
+		evaFormEditLink = uifactory.addFormLink("data.collection.form.edit", formCont, Link.BUTTON_XSMALL);
 		
 		SelectionValues organisationSV = QualityUIFactory.getOrganisationSV(ureq.getUserSession(), currentOrganisations);
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("data.collection.organisations",
@@ -205,8 +204,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				dataCollection.getTopicCustom(), formLayout);
 		// topic identity
 		topicIdentityNameEl = uifactory.addStaticTextElement("data.collection.topic.identity.name", null, formLayout);
-		topicIdentitySelectLink = uifactory.addFormLink("data.collection.topic.identity.select", formLayout,
-				"btn btn-default o_xsmall");
+		topicIdentitySelectLink = uifactory.addFormLink("data.collection.topic.identity.select", formLayout, Link.BUTTON_XSMALL);
 		// topic organisation
 		topicOrganisationEl = uifactory.addDropdownSingleselect("data.collection.topic.organisation", formLayout, emptyArray(), emptyArray());
 		// topic curriculum
@@ -217,8 +215,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		topicCurriculumElementEl.setAllowNoSelection(true);
 		// topic repository
 		topicRepositoryNameEl = uifactory.addStaticTextElement("data.collection.topic.repository.name", null, formLayout);
-		topicRepositorySelectLink = uifactory.addFormLink("data.collection.topic.repository.select", formLayout,
-				"btn btn-default o_xsmall");
+		topicRepositorySelectLink = uifactory.addFormLink("data.collection.topic.repository.select", formLayout, Link.BUTTON_XSMALL);
 
 		buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);

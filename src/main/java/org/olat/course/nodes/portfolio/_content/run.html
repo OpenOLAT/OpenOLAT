@@ -42,7 +42,7 @@ $r.render("assessmentInfos")
 #if ($accessRights)
 	<fieldset class="o_block_top o_start_info_box">
 		<legend>$r.translate("portfolio.review")</legend>
-		<h4 onclick="jQuery('#collapse_sharedby_${r.getCId()}').collapse('toggle')">
+		<h4 onclick="jQuery('#collapse_sharedby_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 			<i id="collapse_sharedby_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($sharedByOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>$r.translate("shared.by.me")
 		</h4>
 		<div id="collapse_sharedby_${r.getCId()}" class="o_portfolio_publication collapse #if($sharedByOpen) in #end">
@@ -122,7 +122,7 @@ $r.render("assessmentInfos")
 		#if ($r.available("shareBinder"))
 			#if ($shareBinderSize.size() > 0)
 				<br>
-				<h4 onclick="jQuery('#collapse_sharedme_${r.getCId()}').collapse('toggle')">
+				<h4 onclick="jQuery('#collapse_sharedme_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 					<i id="collapse_sharedme_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($sharedMeOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>$r.translate("shared.with.me")
 				</h4>
 				<div id="collapse_sharedme_${r.getCId()}" class="collapse #if($sharedMeOpen) in #end">

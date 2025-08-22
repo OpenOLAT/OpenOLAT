@@ -77,9 +77,11 @@ public class ToggleBoxController extends BasicController {
 		mainVC = createVelocityContainer("togglebox");
 		toggleButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED, mainVC, this);
 		toggleButton.setIconLeftCSS("o_icon o_icon-fw");
+		toggleButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 
 		hideButton = LinkFactory.createLink("hide", mainVC, this);	
 		hideButton.setCustomEnabledLinkCSS("o_hide");
+		hideButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		reload(ureq);
 
 		putInitialPanel(mainVC);

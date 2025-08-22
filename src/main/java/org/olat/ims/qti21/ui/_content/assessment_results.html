@@ -507,7 +507,7 @@
 			#end
 			#if($r.isNotNull($itemResult.interactionResults.solutionFormItem.name))
 				<div id="o_c$itemResult.interactionResults.solutionFormItem.component.dispatchID" class="o_qti21_solution">
-					<h4 onclick="jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').collapse('toggle')">
+					<h4 onclick="jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 						#if($toggleSolution)<i id="collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>#end $r.translate("solution")</h4>
 					<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="#if($toggleSolution) collapse #end o_qti21_collapsable_solution">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
 				</div>

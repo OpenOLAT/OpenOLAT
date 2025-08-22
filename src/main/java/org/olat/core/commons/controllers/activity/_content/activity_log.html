@@ -1,4 +1,4 @@
-<h4 onclick="jQuery('#collapse_log_${r.getCId()}').collapse('toggle')">
+<h4 onclick="jQuery('#collapse_log_${r.getCId()}').collapse('toggle')" onkeydown="triggerClick(event, true, true);" tabindex="0" role="button">
 	<i id="collapse_log_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($logOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("activity.log.title")
 </h4>
 <div id="collapse_log_${r.getCId()}" class="collapse #if($logOpen) in #end">$r.render("table")</div>

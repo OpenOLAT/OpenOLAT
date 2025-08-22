@@ -52,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -249,10 +250,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		formLayout.add("buttonLayout",buttonLayout);
 		
 		chooseGroupsLink = uifactory.addFormLink("chooseGroup", buttonLayout, "btn btn-default o_xsmall o_form_groupchooser");
+		chooseGroupsLink.setAriaLabel(Link.ARIA_ROLE_BUTTON);
 		chooseGroupsLink.setI18nKey("choose");
 		chooseGroupsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 
 		createGroupLink = uifactory.addFormLink("createGroup", buttonLayout, "btn btn-default o_xsmall o_form_groupcreate");
+		createGroupLink.setAriaLabel(Link.ARIA_ROLE_BUTTON);
 		createGroupLink.setI18nKey("create");
 		createGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		

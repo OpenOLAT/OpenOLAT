@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -88,8 +89,8 @@ public class DocumentSelectionController extends FormBasicController {
 		selectCont.setLabel("config.select.existing", null);
 		selectCont.setRootForm(mainForm);
 		formLayout.add(selectCont);
-		selectCourseFolderLink = uifactory.addFormLink("config.select.course.folder", selectCont, "btn btn-default");
-		selectRepositoryEntryLink = uifactory.addFormLink("config.select.repo.entry", selectCont, "btn btn-default");
+		selectCourseFolderLink = uifactory.addFormLink("config.select.course.folder", selectCont, Link.BUTTON);
+		selectRepositoryEntryLink = uifactory.addFormLink("config.select.repo.entry", selectCont, Link.BUTTON);
 		selectRepositoryEntryLink.setElementCssClass("o_sel_doc_select_repository_entry");
 		
 		// Create
@@ -100,7 +101,7 @@ public class DocumentSelectionController extends FormBasicController {
 			createCont.setRootForm(mainForm);
 			formLayout.add(createCont);
 			
-			createLink = uifactory.addFormLink("config.create", createCont, "btn btn-default");
+			createLink = uifactory.addFormLink("config.create", createCont, Link.BUTTON);
 		}
 	}
 

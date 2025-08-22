@@ -81,6 +81,7 @@ public class YearNavigationController extends BasicController {
 		Year year = model.getCurrentYear();
 		if (year != null) {
 			yearLink = LinkFactory.createLink("yearLink", mainVC, this);
+			yearLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 			yearLink.setCustomEnabledLinkCSS("o_year");
 			yearLink.setCustomDisplayText(year.getName());
 			yearLink.setUserObject(year);
@@ -90,6 +91,7 @@ public class YearNavigationController extends BasicController {
 			monthLinks = new ArrayList<>();
 			for (Month month : year.getMonths()) {
 				Link monthLink = LinkFactory.createLink("month_" + month.getName(), mainVC, this);
+				monthLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 				monthLink.setCustomDisplayText(model.getMonthName(month));
 				monthLink.setUserObject(month);
 				if (currentMonth == month.getMonth()) {
@@ -172,10 +174,12 @@ public class YearNavigationController extends BasicController {
 		// links in the velcity page.
 		mainVC = createVelocityContainer("yearnavigation");
 		next = LinkFactory.createCustomLink("navi.forward", "navi.forward", null, Link.NONTRANSLATED, mainVC, this);
+		next.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		next.setTitle(translate(translate("navi.forward")));
 		next.setIconLeftCSS("o_icon o_icon_next_page");
 		//
 		previous = LinkFactory.createCustomLink("navi.backward", "navi.backward", null, Link.NONTRANSLATED, mainVC, this);
+		previous.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		previous.setTitle(translate("navi.backward"));
 		previous.setIconLeftCSS("o_icon o_icon_previous_page");
 		//
@@ -187,7 +191,7 @@ public class YearNavigationController extends BasicController {
 			mainPanel.setContent(mainVC);
 		}
 		// Create new model model
-		Year currentYear = model != null? model.getCurrentYear(): null;;
+		Year currentYear = model != null? model.getCurrentYear(): null;
 		model = new YearNavigationModel(datedObjects, getLocale(), currentYear);
 		allObjects = datedObjects;
 		showAll = true;
