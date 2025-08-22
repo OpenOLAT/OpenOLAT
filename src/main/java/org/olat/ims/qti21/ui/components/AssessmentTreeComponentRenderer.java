@@ -273,8 +273,9 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		  .append("; o_toggleMark(this); return false; }\" ")
 		  .append(" class='o_assessmentitem_marks'><i class='o_icon ")
 		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)
-		  .append("' aria-label='").appendHtmlAttributeEscaped(ariaLabel)
-		  .append("' title='").append(StringHelper.escapeHtml(translator.translate("assessment.item.mark"))).append("'>&nbsp;</i></a>");
+		  .append("' title='").append(StringHelper.escapeHtml(translator.translate("assessment.item.mark"))).append("'>&nbsp;</i>")
+		  .append("<span class='sr-only'>").appendHtmlEscaped(ariaLabel).append("</span>")
+		  .append("</a>");
 	}
 	
 	private void renderAssessmentItemAttempts(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
