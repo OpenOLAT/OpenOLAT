@@ -795,8 +795,8 @@ public class EditLectureBlockController extends FormBasicController {
 			addLectureCtxt.setWithTeamsMeeting(enableOnlineMeeting && TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey()));
 		} else {
 			updateOnlineMeetings();
-			lectureBlock = lectureService.updateTaxonomyLevels(lectureBlock, getSelectedTaxonomyLevelKeys());
 			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
+			lectureService.updateTaxonomyLevels(lectureBlock, getSelectedTaxonomyLevelKeys());
 			
 			synchronizeTeachers(audit);
 	
@@ -814,6 +814,7 @@ public class EditLectureBlockController extends FormBasicController {
 				assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
 				assessmentModeMgr.merge(assessmentMode, false, getIdentity());
 			}
+			dbInstance.commitAndCloseSession();
 			fireEvent(ureq, Event.DONE_EVENT);
 	
 			if(create) {

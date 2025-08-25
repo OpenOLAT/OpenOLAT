@@ -1688,13 +1688,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public LectureBlock updateTaxonomyLevels(LectureBlock lectureBlock, Set<Long> taxonomyLevelKeys) {
+	public void updateTaxonomyLevels(LectureBlock lectureBlock, Set<Long> taxonomyLevelKeys) {
 		if (lectureBlock == null || lectureBlock.getKey() == null) {
-			return lectureBlock;
+			return;
 		}
 		
 		if (taxonomyLevelKeys == null) {
-			return lectureBlock;
+			return;
 		}
 
 		List<TaxonomyLevel> currentTaxonomyLevels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
@@ -1722,8 +1722,6 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			}
 			lectureBlockToTaxonomyLevelDao.deleteRelation(lectureBlock, level);
 		}
-		dbInstance.commitAndCloseSession();
-		return getLectureBlock(lectureBlock);
 	}
 	
 	@Override
