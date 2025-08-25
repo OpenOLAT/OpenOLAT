@@ -38,7 +38,7 @@ public class CourseInfoPage {
 	}
 	
 	public CourseInfoPage assertOnTitle(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_repo_details')]//div[contains(@class,'o_repo_header')]//div[@class='o_meta']/h2[text()[contains(.,'" + title + "')]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_repo_details')]//div[contains(@class,'o_repo_header')]//div[@class='o_meta']/div/h2[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}
