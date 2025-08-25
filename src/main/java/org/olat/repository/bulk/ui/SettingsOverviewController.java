@@ -138,7 +138,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(context.getEducationalTypeKey());
 				String text = educationalType == null
 						? translate("settings.bulk.overview.educational.type.none")
-						: translate("settings.bulk.overview.educational.type", translate(RepositoyUIFactory.getI18nKey(educationalType)));
+						: translate("settings.bulk.overview.educational.type", StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(educationalType))));
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.educationalType);
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));

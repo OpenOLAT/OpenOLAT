@@ -22,7 +22,7 @@
 			
 			#if($educationalType)
 				<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
-					<span>$educationalType</span>
+					<span>$r.escapeHtml($educationalType)</span>
 				</span>
 			#end
 			
