@@ -118,7 +118,7 @@ public class RandomHandler implements CatalogLauncherHandler {
 		if (config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
 			String educationalTypes = repositoryManager.getAllEducationalTypes().stream()
 					.filter(type -> config.getEducationalTypeKeys().contains(type.getKey()))
-					.map(type -> repositoyTranslator.translate(RepositoyUIFactory.getI18nKey(type)))
+					.map(type -> StringHelper.escapeHtml(repositoyTranslator.translate(RepositoyUIFactory.getI18nKey(type))))
 					.sorted()
 					.collect(Collectors.joining(", "));
 			if (StringHelper.containsNonWhitespace(educationalTypes)) {

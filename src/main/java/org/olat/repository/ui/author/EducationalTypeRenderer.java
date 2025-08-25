@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.ui.RepositoyUIFactory;
 
@@ -41,7 +42,7 @@ public class EducationalTypeRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof RepositoryEntryEducationalType type) {
 			String i18nKey = RepositoyUIFactory.getI18nKey(type);
-			target.append(translator.translate(i18nKey));
+			target.append(StringHelper.escapeHtml(translator.translate(i18nKey)));
 		}
 
 	}

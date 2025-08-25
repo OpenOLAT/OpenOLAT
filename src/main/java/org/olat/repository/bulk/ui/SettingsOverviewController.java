@@ -138,7 +138,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 				RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(context.getEducationalTypeKey());
 				String text = educationalType == null
 						? translate("settings.bulk.overview.educational.type.none")
-						: translate("settings.bulk.overview.educational.type", translate(RepositoyUIFactory.getI18nKey(educationalType)));
+						: translate("settings.bulk.overview.educational.type", StringHelper.escapeHtml(translate(RepositoyUIFactory.getI18nKey(educationalType))));
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.educationalType);
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
@@ -467,7 +467,11 @@ public class SettingsOverviewController extends StepFormBasicController {
 		
 		VelocityContainer usageVC = createVelocityContainer("repository_entry_name");
 		
-		List<String> entryNames = changes.stream().map(RepositoryEntry::getDisplayname).sorted().collect(Collectors.toList());
+		List<String> entryNames = changes.stream()
+				.map(RepositoryEntry::getDisplayname)
+				.map(StringHelper::escapeHtml)
+				.sorted()
+				.toList();
 		usageVC.contextPut("entryNames", entryNames);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), usageVC, link.getFormDispatchId(), "", true, "");
