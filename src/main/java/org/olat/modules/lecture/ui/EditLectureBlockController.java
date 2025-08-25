@@ -158,7 +158,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private AddLectureContext addLectureCtxt;
 	private CurriculumElement curriculumElement;
 	private BigBlueButtonMeeting bigBlueButtonMeeting;
-	private FormLink adoptFromElementButton;
+	private FormLink adoptButton;
 	
 	private List<MemberView> possibleTeachersList;
 
@@ -413,8 +413,8 @@ public class EditLectureBlockController extends FormBasicController {
 			taxonomyLevelEl.setSelection(taxonomyLevels);
 			taxonomyLevelEl.setEnabled(taxonomyEnabled);
 			
-			adoptFromElementButton = uifactory.addFormLink("adopt.from.element", subjectsLayout, Link.BUTTON);
-			adoptFromElementButton.setEnabled(taxonomyEnabled);
+			adoptButton = uifactory.addFormLink("adopt", subjectsLayout, Link.BUTTON);
+			adoptButton.setEnabled(taxonomyEnabled);
 		}
 		
 		// Teachers
@@ -716,8 +716,8 @@ public class EditLectureBlockController extends FormBasicController {
 			} else if(TEAMS_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
 				doEditTeamsMeeting(ureq);
 			}
-		} else if (adoptFromElementButton == source) {
-			doAdoptFromElement();
+		} else if (adoptButton == source) {
+			doAdopt();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -994,15 +994,16 @@ public class EditLectureBlockController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doAdoptFromElement() {
+	private void doAdopt() {
 		if (curriculumElement == null) {
 			return;
 		}
 		CurriculumElement reloadedCurriculumElement = curriculumService.getCurriculumElement(curriculumElement);
 		List<TaxonomyLevel> taxonomyLevels = reloadedCurriculumElement.getTaxonomyLevels().stream()
-				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-				.collect(Collectors.toList());
-		taxonomyLevelEl.setSelection(taxonomyLevels);
+				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel).toList();
+		Set<TaxonomyLevelRef> selection = new HashSet<>(taxonomyLevelEl.getSelection());
+		selection.addAll(taxonomyLevels);
+		taxonomyLevelEl.setSelection(selection);
 	}
 	
 	public static class GroupBox {

@@ -38,7 +38,7 @@
 		<div class="o_flex_block_one_line_left o_education">
 		#if($row.getEducationalType())
 		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
-			<span>$r.translate($row.getEducationalTypei18nKey())</span>
+			<span>$r.escapeHtml($r.translate($row.getEducationalTypei18nKey()))</span>
 		</span>
 		#end
 		#if(${row.isCertificate()})

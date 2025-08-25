@@ -149,8 +149,8 @@ public interface DateChooser extends TextElement {
 	public DateChooser getDefaultValue();
 	
 	/**
-	 * Set an other date chooser as default value for this
-	 * chooser.
+	 * Set an other date chooser as default value for this chooser. Eventually
+	 * the same date chooser if you have a second date.
 	 * 
 	 * @param dateChooser A date chooser
 	 */
