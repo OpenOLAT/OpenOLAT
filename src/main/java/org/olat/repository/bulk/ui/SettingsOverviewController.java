@@ -467,7 +467,11 @@ public class SettingsOverviewController extends StepFormBasicController {
 		
 		VelocityContainer usageVC = createVelocityContainer("repository_entry_name");
 		
-		List<String> entryNames = changes.stream().map(RepositoryEntry::getDisplayname).sorted().collect(Collectors.toList());
+		List<String> entryNames = changes.stream()
+				.map(RepositoryEntry::getDisplayname)
+				.map(StringHelper::escapeHtml)
+				.sorted()
+				.toList();
 		usageVC.contextPut("entryNames", entryNames);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), usageVC, link.getFormDispatchId(), "", true, "");
