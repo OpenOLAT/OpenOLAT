@@ -1000,9 +1000,10 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		CurriculumElement reloadedCurriculumElement = curriculumService.getCurriculumElement(curriculumElement);
 		List<TaxonomyLevel> taxonomyLevels = reloadedCurriculumElement.getTaxonomyLevels().stream()
-				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-				.collect(Collectors.toList());
-		taxonomyLevelEl.setSelection(taxonomyLevels);
+				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel).toList();
+		Set<TaxonomyLevelRef> selection = new HashSet<>(taxonomyLevelEl.getSelection());
+		selection.addAll(taxonomyLevels);
+		taxonomyLevelEl.setSelection(selection);
 	}
 	
 	public static class GroupBox {
