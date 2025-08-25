@@ -93,6 +93,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
@@ -117,6 +118,8 @@ import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.EditTeamsMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryToTaxonomyLevel;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -204,6 +207,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
@@ -396,7 +401,7 @@ public class EditLectureBlockController extends FormBasicController {
 		updateOnlineMeetingUI();
 		
 		// Subjects
-		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
+		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
 			boolean taxonomyEnabled = !readOnly && !lectureManagementManaged &&
 					!LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.subjects);
@@ -406,6 +411,7 @@ public class EditLectureBlockController extends FormBasicController {
 			Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
 			Set<TaxonomyLevel> taxonomyLevels = lectureBlock == null ? Set.of() : lectureBlock.getTaxonomyLevels()
 					.stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toSet());
+			allTaxonomyLevels.addAll(taxonomyLevels);
 			
 			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", null, subjectsLayout,
 					getWindowControl(), allTaxonomyLevels);
@@ -474,6 +480,17 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 	}
 	
+	private Collection<TaxonomyRef> getTaxonomyRefs() {
+		if (curriculumElement != null) {
+			return curriculumModule.getTaxonomyRefs();
+		} else {
+			if (lectureBlock != null && lectureBlock.getCurriculumElement() != null) {
+				return curriculumModule.getTaxonomyRefs();
+			}
+		}
+		return repositoryModule.getTaxonomyRefs();
+	}
+
 	private boolean containsIdentity(MemberView member, Collection<Identity> identities) {
 		return identities.stream()
 				.anyMatch(id -> id.getKey().equals(member.getKey()));
@@ -996,12 +1013,35 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private void doAdopt() {
-		if (curriculumElement == null) {
+		if (curriculumElement != null) {
+			doAdoptFromCurriculumElement(curriculumElement.getKey());
 			return;
+		} else {
+			if (lectureBlock != null && lectureBlock.getCurriculumElement() != null) {
+				doAdoptFromCurriculumElement(lectureBlock.getCurriculumElement().getKey());
+				return;
+			}
 		}
-		CurriculumElement reloadedCurriculumElement = curriculumService.getCurriculumElement(curriculumElement);
-		List<TaxonomyLevel> taxonomyLevels = reloadedCurriculumElement.getTaxonomyLevels().stream()
-				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel).toList();
+		if (entry != null) {
+			doAdoptFromEntry(entry.getKey());
+		}
+	}
+	
+	private void doAdoptFromCurriculumElement(Long key) {
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(key));
+		Set<TaxonomyLevel> taxonomyLevels = curriculumElement.getTaxonomyLevels().stream()
+				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toSet());
+		updateTaxonomyLevelSelection(taxonomyLevels);
+	}
+	
+	private void doAdoptFromEntry(Long key) {
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(key);
+		Set<TaxonomyLevel> taxonomyLevels = repositoryEntry.getTaxonomyLevels().stream()
+				.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toSet());
+		updateTaxonomyLevelSelection(taxonomyLevels);
+	}
+	
+	private void updateTaxonomyLevelSelection(Set<TaxonomyLevel> taxonomyLevels) {
 		Set<TaxonomyLevelRef> selection = new HashSet<>(taxonomyLevelEl.getSelection());
 		selection.addAll(taxonomyLevels);
 		taxonomyLevelEl.setSelection(selection);
