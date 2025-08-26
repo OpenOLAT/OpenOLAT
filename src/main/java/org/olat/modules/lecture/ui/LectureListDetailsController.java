@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -93,6 +94,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.user.PortraitUser;
@@ -152,6 +154,8 @@ public class LectureListDetailsController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback, boolean lectureManagementManaged, 
@@ -276,7 +280,7 @@ public class LectureListDetailsController extends FormBasicController {
 			return;
 		}
 
-		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
+		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
 		if (taxonomyRefs.isEmpty()) {
 			return;
 		}
@@ -286,13 +290,25 @@ public class LectureListDetailsController extends FormBasicController {
 		if (row.getLectureBlock().getTaxonomyLevels() == null || row.getLectureBlock().getTaxonomyLevels().isEmpty()) {
 			return;
 		}
+		allTaxonomyLevels.addAll(row.getSubjects());
 
 		TaxonomyLevelSelection taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("lecture.subjects", 
 				"lecture.subjects", formLayout, getWindowControl(), allTaxonomyLevels);
 		taxonomyLevelEl.setSelection(row.getSubjects());
 		taxonomyLevelEl.setEnabled(false);
 	}
-	
+
+	private Collection<TaxonomyRef> getTaxonomyRefs() {
+		if (curriculumElement != null) {
+			return curriculumModule.getTaxonomyRefs();
+		} else {
+			if (row.getLectureBlock() != null && row.getLectureBlock().getCurriculumElement() != null) {
+				return curriculumModule.getTaxonomyRefs();
+			}
+		}
+		return repositoryModule.getTaxonomyRefs();
+	}
+
 	private void initFormTeachers(FormLayoutContainer formLayout, UserRequest ureq) {
 		List<String> profilesIds = new ArrayList<>();
 		if(row.getTeachersList() == null || row.getTeachersList().isEmpty()) {
