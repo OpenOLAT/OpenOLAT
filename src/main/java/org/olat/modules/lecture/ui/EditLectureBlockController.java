@@ -478,14 +478,22 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private Collection<TaxonomyRef> getTaxonomyRefs() {
+		Set<TaxonomyRef> taxonomyRefs = new HashSet<>();
 		if (curriculumElement != null) {
-			return curriculumModule.getTaxonomyRefs();
+			taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
 		} else {
 			if (lectureBlock != null && lectureBlock.getCurriculumElement() != null) {
-				return curriculumModule.getTaxonomyRefs();
+				taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
 			}
 		}
-		return repositoryModule.getTaxonomyRefs();
+		if (entry != null) {
+			taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
+		} else {
+			if (lectureBlock != null && lectureBlock.getEntry() != null) {
+				taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
+			}
+		}
+		return taxonomyRefs;
 	}
 
 	private boolean containsIdentity(MemberView member, Collection<Identity> identities) {
@@ -1010,11 +1018,9 @@ public class EditLectureBlockController extends FormBasicController {
 	private void doAdopt() {
 		if (curriculumElement != null) {
 			doAdoptFromCurriculumElement(curriculumElement.getKey());
-			return;
 		} else {
 			if (lectureBlock != null && lectureBlock.getCurriculumElement() != null) {
 				doAdoptFromCurriculumElement(lectureBlock.getCurriculumElement().getKey());
-				return;
 			}
 		}
 		if (entry != null) {
