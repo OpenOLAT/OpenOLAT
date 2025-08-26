@@ -36,7 +36,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
@@ -140,7 +139,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement externalRefEl;
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
-	private AutoCompleter locationEl;
+	private TextElement locationEl;
 	private DateChooser dateEl;
 	private FormToggle compulsoryEl;
 	private FormLink editOnlineMeetingButton;
@@ -351,12 +350,10 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		// Location
 		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
-		locationEl = uifactory.addTextElementWithAutoCompleter("location", "lecture.location", 128, location, formLayout);
+		locationEl = uifactory.addTextElement("location", "lecture.location", 128, location, formLayout);
 		locationEl.setElementCssClass("o_sel_repo_lecture_location");
 		locationEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
-		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
-		locationEl.setMinLength(1);
-		
+	
 		// Online meeting
 		String onlineMeetingUrl = lectureBlock == null ? null : lectureBlock.getMeetingUrl();
 		SelectionValues meetingPK = new SelectionValues();
@@ -794,9 +791,7 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureBlock.setCompulsory(compulsoryEl.isOn());
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
-		if(locationEl.isEnabled()) {// autocompleter don't collect value if disabled
-			lectureBlock.setLocation(locationEl.getValue());
-		}
+		lectureBlock.setLocation(locationEl.getValue());
 		lectureBlock.setStartDate(dateEl.getDate());
 		lectureBlock.setEndDate(dateEl.getSecondDate());
 		
