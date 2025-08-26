@@ -299,14 +299,16 @@ public class LectureListDetailsController extends FormBasicController {
 	}
 
 	private Collection<TaxonomyRef> getTaxonomyRefs() {
+		Set<TaxonomyRef> taxonomyRefs = new HashSet<>();
 		if (curriculumElement != null) {
-			return curriculumModule.getTaxonomyRefs();
+			taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
 		} else {
 			if (row.getLectureBlock() != null && row.getLectureBlock().getCurriculumElement() != null) {
-				return curriculumModule.getTaxonomyRefs();
+				taxonomyRefs.addAll(curriculumModule.getTaxonomyRefs());
 			}
 		}
-		return repositoryModule.getTaxonomyRefs();
+		taxonomyRefs.addAll(repositoryModule.getTaxonomyRefs());
+		return taxonomyRefs;
 	}
 
 	private void initFormTeachers(FormLayoutContainer formLayout, UserRequest ureq) {
