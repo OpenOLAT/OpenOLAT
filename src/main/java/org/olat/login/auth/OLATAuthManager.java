@@ -221,6 +221,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		}
 		
 		// find OLAT authentication provider
+		dbInstance.commit();// some encoder can be slow (Argon2id), free the DB connection
 		if (securityManager.checkCredentials(authentication, password))	{
 			Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
 			Algorithm defAlgorithm = loginModule.getDefaultHashAlgorithm();

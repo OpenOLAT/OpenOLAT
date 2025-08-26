@@ -50,6 +50,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
@@ -238,6 +239,7 @@ public class ServletUtil {
 					}
 					httpResp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
 
+					DBFactory.getInstance().commit();
 					int bufferSize = httpResp.getBufferSize();
 					copy(out, in, range, bufferSize);
 				} else {
