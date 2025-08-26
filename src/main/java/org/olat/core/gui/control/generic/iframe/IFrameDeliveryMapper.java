@@ -457,7 +457,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			// jsMath brute force approach to render latex formulas: add library if
 			// a jsmath class is found in the code and the library is not already in
 			// the header of the page
-			if ((page.indexOf("<math") > -1 || page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
+			if ((page.indexOf("<math") > -1 || page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1)
+					&& (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)
+					&& StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
 				sb.appendJsMath();		
 			}
 			

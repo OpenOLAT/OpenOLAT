@@ -376,18 +376,28 @@ public class VelocityRenderDecorator implements Closeable {
 	
 	public StringOutput mathJaxCdn() {
 		StringOutput sb = new StringOutput(100);
-		sb.append(WebappHelper.getMathJaxCdn());
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
+			sb.append(WebappHelper.getMathJaxCdn());
+		} else {
+			sb.append("/");
+		}
 		return sb;
 	}
 	
 	public StringOutput mathJaxCdnFullUrl() {
 		StringOutput sb = new StringOutput(100);
-		if(WebappHelper.getMathJaxCdn().startsWith("http")) {
-			sb.append(WebappHelper.getMathJaxCdn());
-		} else {
-			sb.append("https:").append(WebappHelper.getMathJaxCdn());
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
+			if(WebappHelper.getMathJaxCdn().startsWith("http")) {
+				sb.append(WebappHelper.getMathJaxCdn());
+			} else {
+				sb.append("https:").append(WebappHelper.getMathJaxCdn());
+			}
 		}
 		return sb;
+	}
+	
+	public boolean isMathJaxEnabled() {
+		return StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn());
 	}
 
 	public StringOutput mathJaxConfig() {

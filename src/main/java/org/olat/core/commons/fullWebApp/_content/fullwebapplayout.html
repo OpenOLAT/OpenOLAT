@@ -72,6 +72,7 @@ try{
 } catch(e) { }
 </script>
 
+#if(${r.isMathJaxEnabled()})
 #if($r.isTrue($forPrint))
 <script>
 $r.mathJaxJavascriptConfig();
@@ -97,6 +98,7 @@ function o_mathjax(fct_success) {
 }
 </script>
 #end
+#end ##enabled
 
 ## jQuery libraries
 <script src='$r.staticLink("js/jquery/jquery-3.7.1.min.js")'></script>
