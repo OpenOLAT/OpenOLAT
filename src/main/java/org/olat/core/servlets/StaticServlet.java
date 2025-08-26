@@ -77,6 +77,12 @@ public class StaticServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 		final String pathInfo = request.getPathInfo();
+		try {
+			log.debug("Static dispatcher: {}", pathInfo);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
 		if (pathInfo == null) {
 			// huh? What's this, send not found, don't know what to do here
 			DispatcherModule.sendNotFound(response);
