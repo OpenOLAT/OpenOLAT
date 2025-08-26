@@ -697,7 +697,11 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			q.and().append(" (pub.subidentifier='' or pub.subidentifier is null)");
 		}
 		if(data != null) {
-			q.and().append(" pub.type=:type and pub.data=:data");
+			if(data.getData() == null) {
+				q.and().append(" pub.type=:type and (pub.data='' or pub.data is null)");
+			} else {
+				q.and().append(" pub.type=:type and pub.data=:data");
+			}
 		}
 		
 		TypedQuery<Publisher> query = dbInstance.getCurrentEntityManager()
@@ -709,8 +713,10 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			query.setParameter("subidentifier", subsContext.getSubidentifier());
 		}
 		if(data != null) {
-			query.setParameter("type", data.getType())
-			     .setParameter("data", data.getData());
+			query.setParameter("type", data.getType());
+			if(data.getData() != null) {
+				query.setParameter("data", data.getData());
+			}
 		}
 		List<Publisher> res = query.getResultList();
 		if (res.isEmpty()) return null;

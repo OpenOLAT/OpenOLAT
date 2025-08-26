@@ -44,7 +44,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherChannel;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -73,7 +72,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private NotificationsManager notificationManager;
+	private NotificationsManagerImpl notificationManager;
 
 	@Test
 	public void getUserIntervalOrDefault() {
@@ -109,6 +108,36 @@ public class NotificationsManagerTest extends OlatTestCase {
 		
 		//check if exists
 		Publisher reloadedPublisher = notificationManager.getPublisher(context);
+		Assert.assertNotNull(reloadedPublisher);
+		Assert.assertEquals(publisher, reloadedPublisher);
+	}
+	
+	@Test
+	public void getPublisher() {
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("PS", Long.valueOf(123), identifier);
+		PublisherData publisherData = new PublisherData("testPublisherSubscriber", "e.g. forumdata=keyofforum", null);
+		
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher);
+		
+		Publisher reloadedPublisher = notificationManager.getPublisher(context, publisherData);
+		Assert.assertNotNull(reloadedPublisher);
+		Assert.assertEquals(publisher, reloadedPublisher);
+	}
+	
+	@Test
+	public void getPublisherWithNoData() {
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("NODATA", Long.valueOf(123), identifier);
+		PublisherData publisherData = new PublisherData("testPublisherWithNoData", null, null);
+		
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(publisher);
+		
+		Publisher reloadedPublisher = notificationManager.getPublisher(context, publisherData);
 		Assert.assertNotNull(reloadedPublisher);
 		Assert.assertEquals(publisher, reloadedPublisher);
 	}
