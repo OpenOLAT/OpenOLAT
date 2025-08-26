@@ -1169,9 +1169,16 @@ public class RichTextConfiguration implements Disposable {
 			.append("elementpath: false,\n")
 			.append("element_format: 'xhtml',\n") // it's not the default
 			.append("deprecation_warnings: ").append(!Settings.isDebuging()).append(",\n")
-			.append("browser_spellcheck: true,\n")
+			.append("browser_spellcheck: true,\n");
 			// classic
-			.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
+		
+		String plugins = tinyConfig.getPlugins();
+		if(!StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
+			plugins = plugins.replace("olatmatheditor", "");
+		}
+		
+		tinyMenuSb
+			.append("plugins: '").append(plugins).append("',\n")
 			.append("image_advtab:true,\n")
 			.append("image_caption:").append(figCaption).append(",\n")
 			.append("image_title:true,\n")
