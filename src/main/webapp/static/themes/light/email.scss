@@ -40,6 +40,10 @@
 		strong {
 			color: $o-email-content-strong-color;
 		}
+		
+		a:not(.o_email_button) {
+			color: $o-email-content-link-color	;
+		}
 	}
 	.o_email_footer {
 		font-size: smaller;

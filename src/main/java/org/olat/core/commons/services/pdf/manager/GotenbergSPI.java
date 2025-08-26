@@ -143,6 +143,7 @@ public class GotenbergSPI extends AbstractPdfSPI {
 			}
 			post.setEntity(entityBuilder.build());
 
+			log.debug("Send url: {} for rendering ({})", url, sb);
 			executeRequest(httpclient, post, out);
 		} catch(Exception e) {
 			log.error("", e);

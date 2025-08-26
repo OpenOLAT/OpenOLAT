@@ -137,6 +137,11 @@ public class OpenOLATServlet extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			log.debug("Request {} with URI: {}", req.getMethod(), req.getRequestURI());
+		} catch (Exception e) {
+			log.error("", e);
+		}
 
 		Tracing.setHttpRequest(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
