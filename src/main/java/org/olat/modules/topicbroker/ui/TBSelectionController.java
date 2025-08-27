@@ -283,7 +283,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
-			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
 			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}
@@ -361,7 +361,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		int columnIndex = TBSelectionDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
-			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
 			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			selectionColumnsModel.addFlexiColumnModel(columnModel);
 		}

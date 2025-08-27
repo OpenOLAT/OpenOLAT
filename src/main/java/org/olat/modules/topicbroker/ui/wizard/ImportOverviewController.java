@@ -119,7 +119,7 @@ public class ImportOverviewController extends StepFormBasicController {
 		int columnIndex = TBTopicDataModel.CUSTOM_FIELD_OFFSET;
 		for (TBCustomFieldDefinition customFieldDefinition : definitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
-			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		

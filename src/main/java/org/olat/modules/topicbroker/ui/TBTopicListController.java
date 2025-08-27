@@ -373,7 +373,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		for (TBCustomFieldDefinition customFieldDefinition : customFieldDefinitions) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(null, columnIndex++);
 			columnModel.setColumnKey(customFieldDefinition.getIdentifier());
-			columnModel.setHeaderLabel(StringHelper.escapeHtml(customFieldDefinition.getName()));
+			columnModel.setHeaderLabel(customFieldDefinition.getName());
 			columnModel.setDefaultVisible(customFieldDefinition.isDisplayInTable());
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
