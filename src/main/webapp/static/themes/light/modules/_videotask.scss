@@ -109,6 +109,7 @@
 
 .o_videotask_tooltip {
 	.tooltip-inner {
+		min-width: unset;
 		border: 1px solid darken($o-video-color,10%);
 	}
 	
