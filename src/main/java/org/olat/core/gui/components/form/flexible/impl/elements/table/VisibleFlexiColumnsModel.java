@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.olat.core.gui.components.choice.ChoiceModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -59,7 +60,7 @@ public class VisibleFlexiColumnsModel implements ChoiceModel<FlexiColumnModel> {
 	public String getLabel(int row) {
 		FlexiColumnModel cd = getObject(row);
 		return cd.getHeaderLabel() == null ?
-				translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
+				translator.translate(cd.getHeaderKey()) : StringHelper.escapeHtml(cd.getHeaderLabel());
 	}
 
 	@Override
