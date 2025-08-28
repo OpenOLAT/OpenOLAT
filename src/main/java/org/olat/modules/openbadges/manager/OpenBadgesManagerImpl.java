@@ -1143,6 +1143,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
 			recreateBadgeAssertionIfNeeded(recipient, badgeClass, issuedOn, awardedBy);
 			return null;
+		} else if (log.isDebugEnabled()) {
+			log.debug("createBadgeAssertion for recipient '{}' and badge '{}'.", recipient.getKey(), badgeClass.getName());
 		}
 
 		String verification = createVerificationObject(badgeClass);
@@ -1180,6 +1182,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (!mailerResult.isSuccessful()) {
 			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
 					badgeAssertion.getRecipient().getKey());
+		} else if (log.isDebugEnabled()) {
+			log.debug("createBadgeAssertion: sent badge email for badge '{}' to recipient '{}'.", 
+					badgeAssertion.getBadgeClass().getName(), badgeAssertion.getRecipient().getKey());
 		}
 
 		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.active) {
@@ -1366,6 +1371,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgeManually(String uuid, BadgeClass badgeClass, Identity recipient, Identity awardedBy) {
+		if (log.isDebugEnabled()) {
+			log.debug("issueBadgeManually of badge '{}' and recipient '{}'", badgeClass.getKey(), recipient.getKey());
+		}
 		createBadgeAssertion(uuid, badgeClass, new Date(), recipient, awardedBy);
 		issueBadgesAutomatically(recipient, awardedBy, badgeClass.getEntry());
 	}
@@ -1385,15 +1393,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry) {
 		if (log.isDebugEnabled()) {
 			if (courseEntry != null) {
-				log.debug("issueBadgesAutomatically for recipient {} and entry '{}' ({})", recipient.getKey(),
+				log.debug("issueBadgesAutomatically for recipient '{}' and entry '{}' ({})", recipient.getKey(),
 						courseEntry.getDisplayname(), courseEntry.getKey());
 			} else {
-				log.debug("issueBadgesAutomatically for recipient {}", recipient.getKey());
+				log.debug("issueBadgesAutomatically for recipient '{}'", recipient.getKey());
 			}
 		}
 		RepositoryEntry reloadedCourseEntry = courseEntry != null ? repositoryEntryDao.loadByKey(courseEntry.getKey()) : null;
 
 		if (reloadedCourseEntry != null && reloadedCourseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
+			if (log.isDebugEnabled()) {
+				log.debug("issueBadgesAutomatically: doing nothing for unpublished course.");
+			}
 			return;
 		}
 		if (!isEnabled()) {
@@ -1409,6 +1420,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		List<AssessmentEntry> assessmentEntries = reloadedCourseEntry != null ? assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, reloadedCourseEntry) : null;
 		issueAllBadges(recipient, awardedBy, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
+		
+		if (log.isDebugEnabled()) {
+			log.debug("issueBadgesAutomatically completed for recipient '{}' and context of {} badges.", recipient.getKey(), badgeIssuingContext.badgeClassesAndCriteria.size());
+		}
 	}
 	
 	private UserCourseEnvironment loadUserCourseEnvironment(RepositoryEntry entry, Identity recipient) {
@@ -1496,8 +1511,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private void issueAllBadges(Identity recipient, Identity awardedBy, UserCourseEnvironment uce,
 								List<BadgeClassAndCriteria> badgeClassesAndCriteria, List<AssessmentEntry> assessmentEntries) {
 		if (log.isDebugEnabled()) {
+			int nbAssessmentEntries = assessmentEntries != null ? assessmentEntries.size() : 0;
 			log.debug("issueAllBadges() for recipient {}, {} badges, {} assessment entries.", recipient.getKey(), 
-					badgeClassesAndCriteria.size(), assessmentEntries.size());
+					badgeClassesAndCriteria.size(), nbAssessmentEntries);
 		}
 		Date issuedOn = new Date();
 		Set<Long> issuedBadgeIds = new HashSet<>();
