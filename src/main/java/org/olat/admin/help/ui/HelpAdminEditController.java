@@ -64,7 +64,8 @@ public class HelpAdminEditController extends FormBasicController {
 	private String[] displayValues = new String[displayKeys.length];
 	private String[] onValues = new String[onKeys.length];
 
-	private String helpPlugin;
+	private final boolean newPlugin;
+	private final String helpPlugin;
 
 	@Autowired
 	private HelpModule helpModule;
@@ -75,7 +76,8 @@ public class HelpAdminEditController extends FormBasicController {
 
 	public HelpAdminEditController(UserRequest ureq, WindowControl wControl, String helpPluginToAdd) {
 		super(ureq, wControl);
-		this.helpPlugin = helpPluginToAdd;
+		this.newPlugin = true;
+		helpPlugin = helpPluginToAdd;
 
 		init();
 		initForm(ureq);
@@ -85,7 +87,8 @@ public class HelpAdminEditController extends FormBasicController {
 
 	public HelpAdminEditController(UserRequest ureq, WindowControl wControl, HelpAdminTableContentRow row) {
 		super(ureq, wControl);
-		this.helpPlugin = row.getHelpPlugin();
+		this.newPlugin = false;
+		helpPlugin = row.getHelpPlugin();
 		
 		init();
 		initForm(ureq);
@@ -192,9 +195,6 @@ public class HelpAdminEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		buttonLayout.setRootForm(mainForm);
-
 		String type = translate("help.admin." + helpPlugin);
 		uifactory.addStaticTextElement("help.admin.type", type, formLayout);
 
@@ -222,9 +222,9 @@ public class HelpAdminEditController extends FormBasicController {
 		
 		displayEl = uifactory.addCheckboxesVertical("help.admin.display", formLayout, displayKeys, displayValues, 1);
 
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttonLayout", null, formLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
-		formLayout.add(buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
 	private void setTranslatedValue(TextElement localeEl, Locale locale) {
@@ -259,7 +259,7 @@ public class HelpAdminEditController extends FormBasicController {
 				displayEl.getSelectedKeys().contains("help.admin.display.usertool"), 
 				displayEl.getSelectedKeys().contains("help.admin.display.authorsite"), 
 				displayEl.getSelectedKeys().contains("help.admin.display.login"),
-				newWindowEl.getSelectedKeys().contains(onKeys[0]));
+				newWindowEl.getSelectedKeys().contains(onKeys[0]), newPlugin);
 		
 		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
 		String i18nKey = getPluginI18nKey();
