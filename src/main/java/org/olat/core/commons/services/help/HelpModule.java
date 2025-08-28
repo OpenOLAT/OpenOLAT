@@ -402,66 +402,69 @@ public class HelpModule extends AbstractSpringModule {
 	}
 
 	public void saveHelpPlugin(String plugin, String icon, String input,
-			boolean usertool, boolean authorsite, boolean login, boolean newWindow) {
+			boolean usertool, boolean authorsite, boolean login, boolean newWindow, boolean addAtLastPosition) {
 		switch (plugin) {
-		case ACADEMY:
-			academyLink = setStringProperty("help.academy.link", input, true);
-			academyIcon = setStringProperty("help.academy.icon", icon, true);
-			academyEnabled = setStringProperty("help.academy.enabled", generateEnabledString(usertool, authorsite, login), true);
-			addToHelpPlugins(ACADEMY_KEY);
-			break;
-		case OOTEACH:
-			ooTeachLink = setStringProperty("help.ooteach.link", input, true);
-			ooTeachIcon = setStringProperty("help.ooteach.icon", icon, true);
-			ooTeachEnabled = setStringProperty("help.ooteach.enabled", generateEnabledString(usertool, authorsite, login), true);
-			addToHelpPlugins(OOTEACH_KEY);
-			break;
-		case OODOCS:
-			ooDocsEnabled = setStringProperty("help.ooDocs.enabled", generateEnabledString(usertool, authorsite, login), true);
-			ooDocsIcon = setStringProperty("help.ooDocs.icon", icon, true);
-			addToHelpPlugins(OODOCS_KEY);
-			break;
-		case COURSE:
-			courseSoftkey = setStringProperty("help.course.softkey", input, true);
-			courseEnabled = setStringProperty("help.course.enabled", generateEnabledString(usertool, authorsite, login), true);
-			courseIcon = setStringProperty("help.course.icon", icon, true);
-			addToHelpPlugins(COURSE_KEY);
-			break;
-		case CUSTOM_1:
-			custom1Link = setStringProperty("help.custom1.link", input, true);
-			custom1NewWindow = newWindow; 
-			setBooleanProperty("help.custom1.new.window", newWindow, true);
-			custom1Enabled = setStringProperty("help.custom1.enabled", generateEnabledString(usertool, authorsite, login), true);
-			custom1Icon = setStringProperty("help.custom1.icon", icon, true);
-			addToHelpPlugins(CUSTOM_1_KEY);
-			break;
-		case CUSTOM_2:
-			custom2Link = setStringProperty("help.custom2.link", input, true);
-			custom2NewWindow = newWindow;
-			setBooleanProperty("help.custom2.new.window", newWindow, true);
-			custom2Enabled = setStringProperty("help.custom2.enabled", generateEnabledString(usertool, authorsite, login), true);
-			custom2Icon = setStringProperty("help.custom2.icon", icon, true);
-			addToHelpPlugins(CUSTOM_2_KEY);
-			break;
-		case CUSTOM_3:
-			custom3Link = setStringProperty("help.custom3.link", input, true);
-			custom3NewWindow = newWindow;
-			setBooleanProperty("help.custom3.new.window", newWindow, true);
-			custom3Enabled = setStringProperty("help.custom3.enabled", generateEnabledString(usertool, authorsite, login), true);
-			custom3Icon = setStringProperty("help.custom3.icon", icon, true);
-			addToHelpPlugins(CUSTOM_3_KEY);
-			break;
-		case SUPPORT:
-			supportEmail = setStringProperty("help.support.email", input, true);
-			supportEnabled = setStringProperty("help.support.enabled", generateEnabledString(usertool, authorsite, login), true);
-			supportIcon = setStringProperty("help.support.icon", icon, true);
-			addToHelpPlugins(SUPPORT_KEY);
-			break;
-		default:
-			break;
+			case ACADEMY:
+				academyLink = setStringProperty("help.academy.link", input, true);
+				academyIcon = setStringProperty("help.academy.icon", icon, true);
+				academyEnabled = setStringProperty("help.academy.enabled", generateEnabledString(usertool, authorsite, login), true);
+				addToHelpPlugins(ACADEMY_KEY);
+				break;
+			case OOTEACH:
+				ooTeachLink = setStringProperty("help.ooteach.link", input, true);
+				ooTeachIcon = setStringProperty("help.ooteach.icon", icon, true);
+				ooTeachEnabled = setStringProperty("help.ooteach.enabled", generateEnabledString(usertool, authorsite, login), true);
+				addToHelpPlugins(OOTEACH_KEY);
+				break;
+			case OODOCS:
+				ooDocsEnabled = setStringProperty("help.ooDocs.enabled", generateEnabledString(usertool, authorsite, login), true);
+				ooDocsIcon = setStringProperty("help.ooDocs.icon", icon, true);
+				addToHelpPlugins(OODOCS_KEY);
+				break;
+			case COURSE:
+				courseSoftkey = setStringProperty("help.course.softkey", input, true);
+				courseEnabled = setStringProperty("help.course.enabled", generateEnabledString(usertool, authorsite, login), true);
+				courseIcon = setStringProperty("help.course.icon", icon, true);
+				addToHelpPlugins(COURSE_KEY);
+				break;
+			case CUSTOM_1:
+				custom1Link = setStringProperty("help.custom1.link", input, true);
+				custom1NewWindow = newWindow; 
+				setBooleanProperty("help.custom1.new.window", newWindow, true);
+				custom1Enabled = setStringProperty("help.custom1.enabled", generateEnabledString(usertool, authorsite, login), true);
+				custom1Icon = setStringProperty("help.custom1.icon", icon, true);
+				addToHelpPlugins(CUSTOM_1_KEY);
+				break;
+			case CUSTOM_2:
+				custom2Link = setStringProperty("help.custom2.link", input, true);
+				custom2NewWindow = newWindow;
+				setBooleanProperty("help.custom2.new.window", newWindow, true);
+				custom2Enabled = setStringProperty("help.custom2.enabled", generateEnabledString(usertool, authorsite, login), true);
+				custom2Icon = setStringProperty("help.custom2.icon", icon, true);
+				addToHelpPlugins(CUSTOM_2_KEY);
+				break;
+			case CUSTOM_3:
+				custom3Link = setStringProperty("help.custom3.link", input, true);
+				custom3NewWindow = newWindow;
+				setBooleanProperty("help.custom3.new.window", newWindow, true);
+				custom3Enabled = setStringProperty("help.custom3.enabled", generateEnabledString(usertool, authorsite, login), true);
+				custom3Icon = setStringProperty("help.custom3.icon", icon, true);
+				addToHelpPlugins(CUSTOM_3_KEY);
+				break;
+			case SUPPORT:
+				supportEmail = setStringProperty("help.support.email", input, true);
+				supportEnabled = setStringProperty("help.support.enabled", generateEnabledString(usertool, authorsite, login), true);
+				supportIcon = setStringProperty("help.support.icon", icon, true);
+				addToHelpPlugins(SUPPORT_KEY);
+				break;
+			default:
+				break;
+		}
+		
+		if(addAtLastPosition) {
+			setPosition(plugin, listWrapper.getHelpPluginList().size());
 		}
 
-		setPosition(plugin, listWrapper.getHelpPluginList().size());
 		loadListWrapper(true);
 	}
 
