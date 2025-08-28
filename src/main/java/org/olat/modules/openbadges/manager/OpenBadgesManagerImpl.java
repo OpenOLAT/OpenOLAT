@@ -1439,8 +1439,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				.toList();
 		
 		if (log.isDebugEnabled()) {
-			log.debug("Badge issuing context for entry '{}' ({}) with {} badges:", courseEntry.getKey(), 
-					courseEntry.getDisplayname(), badgeClassesAndCriteria.size());
+			if (courseEntry != null) {
+				log.debug("Badge issuing context for entry '{}' ({}) with {} badges:", courseEntry.getKey(),
+						courseEntry.getDisplayname(), badgeClassesAndCriteria.size());
+			} else {
+				log.debug("Global badge issuing context created with {} badges:", badgeClassesAndCriteria.size());
+			}
 			for (BadgeClassAndCriteria bcc : badgeClassesAndCriteria) {
 				log.debug("Badge '{}' (key = {}, uuid = {}, global = {}, entry = {})",
 						bcc.badgeClass.getName(), bcc.badgeClass.getKey(), bcc.badgeClass.getUuid(), 
