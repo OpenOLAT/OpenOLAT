@@ -33,6 +33,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Event;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: Jun 26, 2024
@@ -60,7 +61,7 @@ public class TagComponent extends AbstractComponent implements ComponentCollecti
 
 		this.tagLinks = new ArrayList<>(tagInfos.size());
 		for (TagInfo tagInfo : tagInfos) {
-			String tagDisplayName = tagInfo.getDisplayName() + " " + tagInfo.getCount();
+			String tagDisplayName = StringHelper.escapeHtml(tagInfo.getDisplayName()) + " " + tagInfo.getCount();
 			Link tagLink = LinkFactory.createLink(null, "tag_" + tagInfo.getKey(), "toggle", tagDisplayName, getTranslator(), null, this, Link.NONTRANSLATED);
 			tagLink.setElementCssClass(TAG_NOT_SELECTED_CSS);
 			tagLink.setDomReplacementWrapperRequired(false);
