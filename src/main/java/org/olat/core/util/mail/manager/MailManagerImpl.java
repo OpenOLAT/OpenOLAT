@@ -717,6 +717,16 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			log.error("Queue full, email lost", e);
 		} catch (Exception e) {
 			log.error("", e);
+		} finally {
+			if (log.isDebugEnabled()) {
+				if (bundles != null) {
+					for (MailBundle bundle : bundles) {
+						if (bundle.getContent() != null && StringHelper.containsNonWhitespace(bundle.getContent().getSubject())) {
+							log.debug("Sent mail bundle with subject {}.", bundle.getContent().getSubject());
+						}
+					}
+				}
+			}
 		}
 	}
 
