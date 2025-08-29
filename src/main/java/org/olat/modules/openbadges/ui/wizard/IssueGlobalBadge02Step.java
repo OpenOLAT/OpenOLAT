@@ -37,6 +37,8 @@ import org.olat.course.member.wizard.MembersByNameContext;
  */
 public class IssueGlobalBadge02Step extends BasicStep {
 	
+	private static final int WARNING_MIN_SIZE = 10;
+	
 	public IssueGlobalBadge02Step(UserRequest ureq) {
 		super(ureq);
 		setNextStep(NOSTEP);
@@ -52,7 +54,7 @@ public class IssueGlobalBadge02Step extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		String warning = null;
 		if (runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY) instanceof MembersByNameContext membersByNameContext) {
-			if (membersByNameContext.getIdentities().size() > 2) {
+			if (membersByNameContext.getIdentities().size() >= WARNING_MIN_SIZE) {
 				warning = getTranslator().translate("review.warning", Integer.toString(membersByNameContext.getIdentities().size()));
 			}
 		}
