@@ -100,7 +100,6 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -1178,12 +1177,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return badgeAssertion;
 		}
 
-		MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
-		if (!mailerResult.isSuccessful()) {
-			log.error("Sending Badge \"{}\" to \"{}\" failed", badgeAssertion.getBadgeClass().getName(),
-					badgeAssertion.getRecipient().getKey());
-		} else if (log.isDebugEnabled()) {
-			log.debug("createBadgeAssertion: sent badge email for badge '{}' to recipient '{}'.", 
+		sendBadgeEmailAsync(badgeAssertion, bakedImageFile);
+		if (log.isDebugEnabled()) {
+			log.debug("createBadgeAssertion: sent badge email for badge '{}' to recipient '{}' asynchronously.", 
 					badgeAssertion.getBadgeClass().getName(), badgeAssertion.getRecipient().getKey());
 		}
 
@@ -1226,9 +1222,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		File bakedImageFile;
 		if (getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage()) instanceof LocalFileImpl bakedFileImpl) {
 			bakedImageFile = bakedFileImpl.getBasefile();
-			MailerResult mailerResult = sendBadgeEmail(badgeAssertion, bakedImageFile);
-			if (!mailerResult.isSuccessful()) {
-				log.error("Sending badge creation email for badge \"{}\" to \"{}\" failed",
+			sendBadgeEmailAsync(badgeAssertion, bakedImageFile);
+			if (log.isDebugEnabled()) {
+				log.debug("Sent badge creation email for badge \"{}\" to \"{}\" asynchronously.",
 						badgeAssertion.getBadgeClass().getName(), badgeAssertion.getRecipient().getKey());
 			}
 		} else {
@@ -1236,7 +1232,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 	}
 
-	private MailerResult sendBadgeEmail(BadgeAssertion badgeAssertion, File bakedImageFile) {
+	private void sendBadgeEmailAsync(BadgeAssertion badgeAssertion, File bakedImageFile) {
 		MailBundle mailBundle = new MailBundle();
 		Identity recipient = badgeAssertion.getRecipient();
 		mailBundle.setToId(recipient);
@@ -1256,7 +1252,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 		mailBundle.setContent(subject, body, bakedImageFile);
 
-		return mailManager.sendMessage(mailBundle);
+		mailManager.sendMessageAsync(mailBundle);
 	}
 
 	private String[] createMailArgs(BadgeAssertion badgeAssertion, Translator translator) {
