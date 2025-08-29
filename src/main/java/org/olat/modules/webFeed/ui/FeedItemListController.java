@@ -332,7 +332,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			FormLink commentLink = uifactory.addFormLink("comments_" + feedItemDTO.item().getGuid(), "openCommentEntry", String.valueOf(numOfComments), null, null, Link.NONTRANSLATED);
 			commentLink.setIconLeftCSS("o_icon o_icon_comments_none o_icon-lg");
 
-			FormLink feedEntryLink = uifactory.addFormLink("title_" + feedItemDTO.item().getGuid(), "openEntry", feedItemDTO.item().getTitle(), null, null, Link.NONTRANSLATED);
+			FormLink feedEntryLink = uifactory.addFormLink("title_" + feedItemDTO.item().getGuid(), "openEntry", StringHelper.escapeHtml(feedItemDTO.item().getTitle()), null, null, Link.NONTRANSLATED);
 			FeedItemRow row = new FeedItemRow(feedItemDTO.item(), feedEntryLink, commentLink);
 			// add Date component
 			if (feedItemDTO.item().getDate() != null) {
