@@ -2067,7 +2067,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void doOpenFileInEditor(UserRequest ureq, FolderRow row) {
 		if (isItemNotAvailable(ureq, row, true)) return;
 		
-		if (row.getVfsItem() instanceof VFSLeaf vfsLeaf) {
+		VFSItem uncachedItem = getUncachedItem(row.getVfsItem());
+		if (uncachedItem instanceof VFSLeaf vfsLeaf) {
 			VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
 			List<Mode> modes = DocEditorService.modesEditView(canEdit(vfsLeaf));
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
