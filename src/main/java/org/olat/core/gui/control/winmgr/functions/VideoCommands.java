@@ -21,6 +21,7 @@ package org.olat.core.gui.control.winmgr.functions;
 
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.control.winmgr.Command;
@@ -28,7 +29,6 @@ import org.olat.core.gui.control.winmgr.CommandFactory.InvokeIdentifier;
 import org.olat.core.logging.AssertException;
 import org.olat.modules.video.ui.VideoDisplayController.Marker;
 
-import net.minidev.json.JSONArray;
 
 /**
  * 
@@ -132,7 +132,7 @@ public class VideoCommands extends Command {
 			m.put("time", marker.getTime());
 			m.put("action", marker.getAction());
 			m.put("showInTimeline", marker.isShowInTimeline());
-			markersArray.add(m);
+			markersArray.put(m);
 		}
 		
 		JSONObject parameters = new JSONObject();
