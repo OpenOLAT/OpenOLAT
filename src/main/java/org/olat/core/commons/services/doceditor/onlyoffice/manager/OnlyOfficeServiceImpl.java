@@ -139,7 +139,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		
 		InfoImpl info = new InfoImpl();
 		String author = vfsMetadata.getFileInitializedBy() != null
-				? StringHelper.escapeHtml(identityService.getUserDisplayName(vfsMetadata.getFileInitializedBy()))
+				? StringHelper.xssScan(identityService.getUserDisplayName(vfsMetadata.getFileInitializedBy()))
 				: null;
 		info.setAuthor(author);
 		info.setCreated(null); // not in metadata
@@ -171,7 +171,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		apiConfig.setEditor(editorConfig);
 		
 		UserImpl user = new UserImpl();
-		String name =  StringHelper.escapeHtml(identityService.getUserDisplayName(identity));
+		String name = StringHelper.xssScan(identityService.getUserDisplayName(identity));
 		user.setName(name);
 		user.setId(identityService.getGlobalIdentityId(identity));
 		editorConfig.setUser(user);

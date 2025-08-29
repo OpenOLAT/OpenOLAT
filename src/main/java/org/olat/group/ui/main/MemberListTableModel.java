@@ -28,19 +28,26 @@ import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModelDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.user.UserPortraitComponent;
+import org.olat.user.ui.identity.UserXlsFlexiTableExporter;
+
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow> {
+public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow>, ExportableFlexiTableDataModel {
 	
 	private static final Cols[] COLS = Cols.values();
 	
@@ -60,6 +67,12 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 			List<MemberRow> views = new MemberListTableSort(orderBy, this, null).sort();
 			super.setObjects(views);
 		}
+	}
+
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		List<FlexiColumnModel> columns = ExportableFlexiTableDataModelDelegate.getColumnModels(ftC.getFormItem());
+		return new UserXlsFlexiTableExporter().export(ftC, columns, ftC.getTranslator());
 	}
 
 	@Override

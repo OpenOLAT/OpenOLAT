@@ -9,10 +9,10 @@ $r.render("versions")
 		#set($versionFromTo = ["$oldVersion", "$page.getVersion()"])
 		<h4 class="o_wikimod_heading">$r.translate("diff.comparing", $versionFromTo)</h4>
 		#foreach($diff in $diffs)
-			##Size: $diff.getSize()<br />
-			##From: $diff.getFrom()<br />
-			##To: $diff.getTo()<br />
-			##Type: $diff.getType()<br />
+			##Size: $diff.getSize()<br>
+			##From: $diff.getFrom()<br>
+			##To: $diff.getTo()<br>
+			##Type: $diff.getType()<br>
 			
 			#if($diff.getType() == "CHANGE")
 				#if($diff.getFrom() == $diff.getTo())
@@ -32,7 +32,7 @@ $r.render("versions")
 			#elseif($diff.getType() == "MOVE")
 				$r.translate("$diff.getType()", "$diff.getSize()")
 			#end
-			<br />
+			<br>
 			
 			#set ($lines = $diff.getLines())
 			
@@ -43,7 +43,7 @@ $r.render("versions")
 						<div class="o_wikimod_old">
 						#foreach($line in $lines)
 							#if($foreach.count <= $diff.getSize() / 2)
-								$line<br>
+								$r.escapeHtml($line)<br>
 							#end
 						#end
 						</div>
@@ -53,7 +53,7 @@ $r.render("versions")
 						<div class="o_wikimod_new">
 						#foreach($line in $lines)
 							#if($foreach.count > $diff.getSize() / 2)
-								$line<br />
+								$r.escapeHtml($line)<br>
 							#end
 						#end
 						</div>
@@ -61,21 +61,21 @@ $r.render("versions")
 				#elseif($diff.getType() == "INSERT")
 					<div class="o_wikimod_diff"><div class="o_wikimod_ins">
 						#foreach($line in $lines)
-							+  $line<br />
+							+  $r.escapeHtml($line)<br>
 						#end
 					</div></div>
 				#elseif($diff.getType() == "DELETE")
 					<div class="o_wikimod_diff"><div class="o_wikimod_del">
 						#foreach($line in $lines)
-							-  $line<br />
+							-  $r.escapeHtml($line)<br>
 						#end
 					</div></div>
 				#else
 					#foreach($line in $lines)
-						line: $line<br />
+						line: $r.escapeHtml($line)<br>
 					#end
 				#end
-				<br />
+				<br>
 		#end
 		</div>
 	#end

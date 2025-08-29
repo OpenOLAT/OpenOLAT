@@ -1806,24 +1806,30 @@ function o_shareLinkPopup(id, text, loc) {
 	elem.attr('title',elem.attr('data-original-title'));
 }
 
-function o_QRCodePopup(id, text, loc) {	
-	if(typeof(loc)==='undefined') loc = 'top';
-	var elem = jQuery('#' + id);
+function o_QRCodePopup(id, text, loc, containerSelector) {	
+	if(typeof(loc) === 'undefined') {
+		loc = 'top';
+	}
+	if(typeof(containerSelector) === 'undefined') {
+		containerSelector = 'body';
+	}
+	console.log(containerSelector);
+	const elem = jQuery('#' + id);
 	elem.popover({
     	placement : loc,
     	html: true,
     	trigger: 'click',
-    	container: 'body',
+    	container: containerSelector,
     	content: '<div id="' + id + '_pop" class="o_qrcode"></div>'
 	}).on('shown.bs.popover', function () {
 		if (!o_info.qr || typeof o_info.qr !== 'object') {
 			o_info.qr = {};
 		}
 		o_info.qr[id] = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
-		var clickListener = function (e) {
+		const clickListener = function (e) {
 			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) {
 				elem.popover('hide');
-				var popover = elem.data('bs.popover');
+				const popover = elem.data('bs.popover');
 				if (popover && popover.inState) {
 					popover.inState.click = false; // simulate hide by click
 				}
