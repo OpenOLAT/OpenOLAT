@@ -2347,7 +2347,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				return;
 			}
 			
-			if (params.getOverwrite() == null && itemToCopy.getParentContainer() != null 
+			if (params.getOverwrite() == null && itemToCopy.getParentContainer() != null
+					&& itemToCopy.getParentContainer().getRelPath() != null
 					&& itemToCopy.getParentContainer().getRelPath().equalsIgnoreCase(params.getTargetContainer().getRelPath())) {
 				// We assume all items to copy are in the same source folder.
 				if (params.isMove()) {

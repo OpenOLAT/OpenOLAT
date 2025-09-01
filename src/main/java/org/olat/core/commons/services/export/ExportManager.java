@@ -31,7 +31,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
+
 
 /**
  * Only support course for the moment<br>
@@ -104,6 +106,8 @@ public interface ExportManager {
 	void deleteExportMetadata(ExportMetadata metadata);
 	
 	void deleteExpiredExports();
+	
+	void deleteExports(RepositoryEntryRef entry);
 	
 	List<ExportMetadata> searchMetadata(SearchExportMetadataParameters searchParams);
 

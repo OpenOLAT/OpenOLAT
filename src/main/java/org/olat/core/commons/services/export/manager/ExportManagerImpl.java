@@ -55,6 +55,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -190,6 +191,15 @@ public class ExportManagerImpl implements ExportManager {
 		return taskExecutorManager.execute(task, creator, null, resSubPath, null,
 				(id, persistentTask) -> exportMetadataDao.createMetadata(title, description, filename, type,
 						expirationDate, onlyAdministrators, null, null, resSubPath, id, persistentTask));
+	}
+
+	@Override
+	public void deleteExports(RepositoryEntryRef re) {
+		SearchExportMetadataParameters params = new SearchExportMetadataParameters(re, null, List.of(ArchiveType.values()));
+		List<ExportMetadata> exportMetadataList = this.searchMetadata(params);
+		for(ExportMetadata exportMetadata:exportMetadataList) {
+			deleteExport(exportMetadata);
+		}
 	}
 
 	@Override
