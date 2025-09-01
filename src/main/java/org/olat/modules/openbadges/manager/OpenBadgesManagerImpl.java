@@ -1142,7 +1142,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			log.debug("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
 			recreateBadgeAssertionIfNeeded(recipient, badgeClass, issuedOn, awardedBy);
 			return null;
-		} else if (log.isDebugEnabled()) {
+		} else {
 			log.debug("createBadgeAssertion for recipient '{}' and badge '{}'.", recipient.getKey(), badgeClass.getName());
 		}
 
@@ -1159,10 +1159,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		badgeAssertion = badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 
-		if (log.isDebugEnabled()) {
-			log.debug("Created badge assertion '{}' of badge '{}' for user '{}'", 
-					badgeAssertion.getUuid(), badgeClass.getName(), recipient.getKey());
-		}
+		log.debug("Created badge assertion '{}' of badge '{}' for user '{}'", badgeAssertion.getUuid(), badgeClass.getName(), recipient.getKey());
 
 		if (badgeAssertion.getBakedImage() == null) {
 			log.error("Badge assertion {} does not have an image.", badgeAssertion.getUuid());
@@ -1178,10 +1175,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		sendBadgeEmailAsync(badgeAssertion, bakedImageFile);
-		if (log.isDebugEnabled()) {
-			log.debug("createBadgeAssertion: sent badge email for badge '{}' to recipient '{}' asynchronously.", 
-					badgeAssertion.getBadgeClass().getName(), badgeAssertion.getRecipient().getKey());
-		}
+		log.debug("createBadgeAssertion: sent badge email for badge '{}' to recipient '{}' asynchronously.", badgeClass.getName(), badgeAssertion.getRecipient().getKey());
 
 		if (badgeClass.getStatus() != BadgeClass.BadgeClassStatus.active) {
 			badgeClass.setStatus(BadgeClass.BadgeClassStatus.active);
@@ -1204,15 +1198,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return;
 		}
 		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.issued)) {
-			if (log.isDebugEnabled()) {
-				log.debug("No need to update badge assertion for identity {} and badge '{}'.", recipient.getKey(), badgeClass.getName());
-			}
+			log.debug("No need to update badge assertion for identity {} and badge '{}'.", recipient.getKey(), badgeClass.getName());
 			return;
 		}
 
-		if (log.isDebugEnabled()) {
-			log.debug("Recreating badge '{}' for identity '{}'.", badgeClass.getName(), recipient.getKey());
-		}
+		log.debug("Recreating badge '{}' for identity '{}'.", badgeClass.getName(), recipient.getKey());
 
 		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.issued);
 		badgeAssertion.setIssuedOn(issuedOn);
@@ -1223,10 +1213,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage()) instanceof LocalFileImpl bakedFileImpl) {
 			bakedImageFile = bakedFileImpl.getBasefile();
 			sendBadgeEmailAsync(badgeAssertion, bakedImageFile);
-			if (log.isDebugEnabled()) {
-				log.debug("Sent badge creation email for badge \"{}\" to \"{}\" asynchronously.",
-						badgeAssertion.getBadgeClass().getName(), badgeAssertion.getRecipient().getKey());
-			}
+			log.debug("Sent badge creation email for badge \"{}\" to \"{}\" asynchronously.", 
+					badgeClass.getName(), badgeAssertion.getRecipient().getKey());
 		} else {
 			log.error("Missing baked badge image for badge assertion {}.", badgeAssertion.getUuid());
 		}
@@ -1341,35 +1329,24 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private void handleCourseReset(Identity assessedIdentity, BadgeClass badgeClass) {
 		BadgeAssertion badgeAssertion = badgeAssertionDAO.getBadgeAssertion(assessedIdentity, badgeClass);
 		if (badgeAssertion == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("'{}' doesn't have badge '{}'. Nothing to reset.", assessedIdentity.getName(),
-						badgeClass.getName());
-			}
+			log.debug("'{}' doesn't have badge '{}'. Nothing to reset.", assessedIdentity.getName(), badgeClass.getName());
 			return;
 		}
 
 		if (badgeAssertion.getStatus().equals(BadgeAssertion.BadgeAssertionStatus.reset)) {
-			if (log.isDebugEnabled()) {
-				log.debug("'{}' already has badge '{}' in reset state. No need to reset.", assessedIdentity.getName(),
-						badgeClass.getName());
-			}
+			log.debug("'{}' already has badge '{}' in reset state. No need to reset.", assessedIdentity.getName(), badgeClass.getName());
 			return;
 		}
 
 		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.reset);
 		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 
-		if (log.isDebugEnabled()) {
-			log.debug("'{}' has badge '{}' in reset state now.", assessedIdentity.getName(),
-					badgeClass.getName());
-		}
+		log.debug("'{}' has badge '{}' in reset state now.", assessedIdentity.getName(), badgeClass.getName());
 	}
 
 	@Override
 	public void issueBadgeManually(String uuid, BadgeClass badgeClass, Identity recipient, Identity awardedBy) {
-		if (log.isDebugEnabled()) {
-			log.debug("issueBadgeManually of badge '{}' and recipient '{}'", badgeClass.getKey(), recipient.getKey());
-		}
+		log.debug("issueBadgeManually of badge '{}' and recipient '{}'", badgeClass.getKey(), recipient.getKey());
 		createBadgeAssertion(uuid, badgeClass, new Date(), recipient, awardedBy);
 		issueBadgesAutomatically(recipient, awardedBy, badgeClass.getEntry());
 	}
@@ -1398,9 +1375,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		RepositoryEntry reloadedCourseEntry = courseEntry != null ? repositoryEntryDao.loadByKey(courseEntry.getKey()) : null;
 
 		if (reloadedCourseEntry != null && reloadedCourseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
-			if (log.isDebugEnabled()) {
-				log.debug("issueBadgesAutomatically: doing nothing for unpublished course.");
-			}
+			log.debug("issueBadgesAutomatically: doing nothing for unpublished course.");
 			return;
 		}
 		if (!isEnabled()) {
@@ -1416,10 +1391,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		List<AssessmentEntry> assessmentEntries = reloadedCourseEntry != null ? assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, reloadedCourseEntry) : null;
 		issueAllBadges(recipient, awardedBy, uce, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
-		
-		if (log.isDebugEnabled()) {
-			log.debug("issueBadgesAutomatically completed for recipient '{}' and context of {} badges.", recipient.getKey(), badgeIssuingContext.badgeClassesAndCriteria.size());
-		}
+
+		log.debug("issueBadgesAutomatically completed for recipient '{}' and context of {} badges.", recipient.getKey(), badgeIssuingContext.badgeClassesAndCriteria.size());
 	}
 	
 	private UserCourseEnvironment loadUserCourseEnvironment(RepositoryEntry entry, Identity recipient) {
@@ -1474,9 +1447,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(RepositoryEntry courseEntry, Identity awardedBy) {
-		if (log.isDebugEnabled()) {
-			log.debug("issueBadgesAutomatically for entry '{}' ({}).", courseEntry.getDisplayname(), courseEntry.getKey());
-		}
+		log.debug("issueBadgesAutomatically for entry '{}' ({}).", courseEntry.getDisplayname(), courseEntry.getKey());
 
 		if (courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
@@ -1520,9 +1491,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				if (issuedBadgeIds.contains(badgeClassAndCriteria.badgeClass.getKey())) {
 					continue;
 				}
-				if (log.isDebugEnabled()) {
-					log.debug("Calling badgeCriteria.allConditionsMet() for badge '{}':", badgeClassAndCriteria.badgeClass.getName());
-				}
+				log.debug("Calling badgeCriteria.allConditionsMet() for badge '{}':", badgeClassAndCriteria.badgeClass.getName());
 				if (badgeClassAndCriteria.badgeCriteria.allConditionsMet(badgeClassAndCriteria.badgeClass.getEntry(),
 						uce, recipient, badgeClassAndCriteria.learningPath, isCourseBadge(badgeClassAndCriteria.badgeClass), assessmentEntries)) {
 					String uuid = OpenBadgesFactory.createIdentifier();
@@ -1538,10 +1507,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				}
 			}
 		}
-		
-		if (log.isDebugEnabled()) {
-			log.debug("{} badges issued for user '{}'", issuedBadgeIds.size(), recipient.getName());
-		}
+
+		log.debug("{} badges issued for user '{}'", issuedBadgeIds.size(), recipient.getName());
 	}
 
 	@Override
@@ -1813,9 +1780,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry,
 												   boolean nullEntryMeansAll) {
-		if (log.isDebugEnabled()) {
-			log.debug("Read badge assertions for recipient " + recipient + " and course " + courseEntry);
-		}
+		log.debug("Read badge assertions for recipient " + recipient + " and course " + courseEntry);
 		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry, nullEntryMeansAll);
 	}
 
