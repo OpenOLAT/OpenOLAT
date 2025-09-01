@@ -28,6 +28,7 @@ import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * Only support course for the moment<br>
@@ -65,6 +66,8 @@ public interface ExportManager {
 	void deleteExportMetadata(ExportMetadata metadata);
 	
 	void deleteExpiredExports();
+	
+	void deleteExports(RepositoryEntryRef entry);
 	
 	List<ExportMetadata> searchMetadata(SearchExportMetadataParameters searchParams);
 

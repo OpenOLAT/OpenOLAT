@@ -53,6 +53,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -477,6 +478,8 @@ public class CourseFactory {
 		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, null);
 		// Delete course elements
 		CoreSpringFactory.getImpl(CourseNodeService.class).deleteCourseElements(entry);
+		// Delete course exports
+		CoreSpringFactory.getImpl(ExportManager.class).deleteExports(entry);
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());
