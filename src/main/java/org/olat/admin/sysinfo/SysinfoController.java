@@ -35,6 +35,7 @@ import java.util.TimeZone;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.services.integrity.IntegrityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -60,6 +61,8 @@ public class SysinfoController extends FormBasicController {
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private IntegrityModule integrityModule;
 	@Autowired
 	private SessionStatsManager sessionStatsManager;
 	
@@ -181,6 +184,16 @@ public class SysinfoController extends FormBasicController {
 		}
 		uifactory.addStaticTextElement("sysinfo.basedir", "sysinfo.basedir", baseDirPath, serverCont);
 		uifactory.addStaticTextElement("sysinfo.olatdata", "sysinfo.olatdata", WebappHelper.getUserDataRoot(), serverCont);
+		
+		String fsDbStatus;
+		try {
+			IntegrityModule.Check check = integrityModule.check(false);
+			fsDbStatus = translate("sysinfo.olatdata.db." + check.name().toLowerCase());
+		} catch (Exception e) {
+			fsDbStatus = translate("sysinfo.olatdata.db." + IntegrityModule.Check.FAIL.name().toLowerCase());
+			logError("", e);
+		}
+		uifactory.addStaticTextElement("sysinfo.olatdata.db", "sysinfo.olatdata.db", fsDbStatus, serverCont);
 	}
 
 	@Override
