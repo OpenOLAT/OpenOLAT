@@ -179,13 +179,13 @@ public class ProfileFormController extends FormBasicController {
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setFormStyle("o_user_profile_form");
 		this.canModify = canModify;
-		this.identityToModify = identityToModify;
+		this.identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
 		logoEnabled = userModule.isLogoByProfileEnabled();
 		
-		final Roles editedRoles = securityManager.getRoles(identityToModify);
+		final Roles editedRoles = securityManager.getRoles(this.identityToModify);
 		final Roles actingRoles = ureq.getUserSession().getRoles();
 		canManageCritical = securityModule.isUserAllowedCriticalUserChanges(actingRoles, editedRoles)
-				|| identityToModify.equals(getIdentity());
+				|| this.identityToModify.equals(getIdentity());
 		
 		inviteeOnly = editedRoles.isInviteeOnly();
 		usageIdentifier = inviteeOnly ? USAGE_INVITEE_IDENTIFIER : USAGE_USER_IDENTIFIER;
