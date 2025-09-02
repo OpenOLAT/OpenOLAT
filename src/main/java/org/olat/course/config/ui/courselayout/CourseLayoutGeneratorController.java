@@ -72,7 +72,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.core.util.vfs.filters.VFSAndFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -251,7 +253,10 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		// add css from hidden coursecss-folder
 		VFSItem coursecssCont = courseEnvironment.getCourseFolderContainer().resolve(CourseLayoutHelper.COURSEFOLDER_CSS_BASE);
 		if (coursecssCont instanceof VFSContainer) {
-			List<VFSItem> coursecssStyles = ((VFSContainer)coursecssCont).getItems(new VFSItemSuffixFilter(new String[]{ "css" }));
+			List<VFSItem> coursecssStyles = ((VFSContainer)coursecssCont).getItems(
+					new VFSAndFilter(List.of(
+							new VFSSystemItemFilter(),
+							new VFSItemSuffixFilter(new String[]{ "css" }))));
 			if (coursecssStyles != null) {
 				for (VFSItem vfsItem : coursecssStyles) {
 					keys.add(CourseLayoutHelper.COURSEFOLDER_CSS_BASE + "/" + vfsItem.getName());
