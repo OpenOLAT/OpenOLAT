@@ -1,5 +1,7 @@
 <div class="clearfix">
-	$r.render("scope.selection")
+	#if($r.available("scope.selection") && $r.visible("scope.selection"))
+		$r.render("scope.selection")
+	#end
 
 	#if($r.available("scopeCmp"))
 		$r.render("scopeCmp")
