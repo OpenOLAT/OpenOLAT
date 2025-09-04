@@ -2,7 +2,7 @@
 	<h2><i class="o_icon o_icon-fw o_icon_booking"> </i> $r.translate("orders.my")</h2>
 	<div class="clearfix">
 		#if($r.available("scope.selection") && $r.visible("scope.selection"))
-		$r.render("scope.selection")
+			$r.render("scope.selection")
 		#end
 
 		#if($r.available("scopeCmp"))

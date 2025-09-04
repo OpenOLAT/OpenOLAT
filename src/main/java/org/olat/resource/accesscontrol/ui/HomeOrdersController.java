@@ -70,7 +70,7 @@ public class HomeOrdersController extends BasicController {
 		scopeSelection.setHintsEnabled(false);
 		scopeSelection.setAllowNoSelection(false);
 		scopeSelection.setSelectedKey(SCOPE_KEY_ORDERS);
-		scopeSelection.setVisible(acModule.isInvoiceEnabled());
+		scopeSelection.setVisible(scopes.size() > 1);
 	
 		doOpenOrders(ureq);
 		putInitialPanel(mainVC);
