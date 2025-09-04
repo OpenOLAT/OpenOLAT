@@ -949,6 +949,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
 .o_ac_offer_overbooked_icon { @include o-add-icon('circle-exclamation'); }
 .o_ac_offer_pending_icon { @include o-add-icon('clock'); }
+.o_ac_order_pre { @include o-add-icon('cart-arrow-down'); }
 .o_ac_order_status_new_icon { @include o-add-icon('circle-plus');}
 .o_ac_order_status_prepayment_icon { @include o-add-icon('hourglass-half', false); }
 .o_ac_order_status_payed_icon { @include o-add-icon('circle-check'); }

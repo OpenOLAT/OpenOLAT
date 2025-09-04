@@ -19,13 +19,15 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.scope.Scope;
+import org.olat.core.gui.components.scope.ScopeEvent;
+import org.olat.core.gui.components.scope.ScopeFactory;
+import org.olat.core.gui.components.scope.ScopeSelection;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,12 +42,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class HomeOrdersController extends BasicController {
-
+	private final static String SCOPE_KEY_ORDERS = "orders";
+	private final static String SCOPE_KEY_BILLING_ADDRESSES = "billing.addresses";
+	
 	private final VelocityContainer mainVC;
-	private final Link ordersLink;
-	private Link billingAddressesLink;
-	private final SegmentViewComponent segmentView;
-
+	private final ScopeSelection scopeSelection;
 	private OrdersController ordersCtrl;
 	private BillingAddressListController billingAddressesCtrl;
 	
@@ -56,29 +57,32 @@ public class HomeOrdersController extends BasicController {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("orders");
-		
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		segmentView.setDontShowSingleSegment(true);
-		ordersLink = LinkFactory.createLink("segment.orders", mainVC, this);
-		segmentView.addSegment(ordersLink, true);
+
+		List<Scope> scopes = new ArrayList<>();
+		Scope ordersScope = ScopeFactory.createScope(SCOPE_KEY_ORDERS, translate("scope.orders"), null, "o_icon o_ac_offer_bookable_icon");
+		scopes.add(ordersScope);
 		if (acModule.isInvoiceEnabled()) {
-			billingAddressesLink = LinkFactory.createLink("segment.billing.addresses", mainVC, this);
-			segmentView.addSegment(billingAddressesLink, false);
+			Scope billingAddressesScope = ScopeFactory.createScope(SCOPE_KEY_BILLING_ADDRESSES, translate("scope.billing.addresses"), null, "o_icon o_icon_billing_address");
+			scopes.add(billingAddressesScope);
 		}
+
+		scopeSelection = ScopeFactory.createScopeSelection("scope.selection", mainVC, this, scopes);
+		scopeSelection.setHintsEnabled(false);
+		scopeSelection.setAllowNoSelection(false);
+		scopeSelection.setSelectedKey(SCOPE_KEY_ORDERS);
+		scopeSelection.setVisible(acModule.isInvoiceEnabled());
+	
 		doOpenOrders(ureq);
 		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == ordersLink) {
+		if (source == scopeSelection) {
+			if (event instanceof ScopeEvent scopeEvent) {
+				if (SCOPE_KEY_ORDERS.equals(scopeEvent.getSelectedKey())) {
 					doOpenOrders(ureq);
-				} else if (clickedLink == billingAddressesLink){
+				} else if (SCOPE_KEY_BILLING_ADDRESSES.equals(scopeEvent.getSelectedKey())) {
 					doOpenBillingAddresses(ureq);
 				}
 			}
@@ -91,7 +95,7 @@ public class HomeOrdersController extends BasicController {
 			ordersCtrl = new OrdersController(ureq, getWindowControl(), getIdentity(), settings);
 			listenTo(ordersCtrl);
 		}
-		mainVC.put("segmentCmp", ordersCtrl.getInitialComponent());
+		mainVC.put("scopeCmp", ordersCtrl.getInitialComponent());
 	}
 
 	private void doOpenBillingAddresses(UserRequest ureq) {
@@ -99,7 +103,7 @@ public class HomeOrdersController extends BasicController {
 			billingAddressesCtrl = new BillingAddressListController(ureq, getWindowControl(), null, getIdentity());
 			listenTo(billingAddressesCtrl);
 		}
-		mainVC.put("segmentCmp", billingAddressesCtrl.getInitialComponent());
+		mainVC.put("scopeCmp", billingAddressesCtrl.getInitialComponent());
 	}
 
 }

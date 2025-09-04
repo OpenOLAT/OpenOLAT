@@ -19,13 +19,15 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.scope.Scope;
+import org.olat.core.gui.components.scope.ScopeEvent;
+import org.olat.core.gui.components.scope.ScopeFactory;
+import org.olat.core.gui.components.scope.ScopeSelection;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,27 +42,32 @@ import org.olat.resource.accesscontrol.provider.auto.ui.AdvanceOrderController;
  *
  */
 public class UserOrderController extends BasicController {
+	private final static String SCOPE_KEY_ORDERS = "orders";
+	private final static String SCOPE_KEY_ADVANCE_ORDERS = "advance.orders";
 
 	private final VelocityContainer mainVC;
-	private final Link ordersLink, advanceOrdersLink;
-	private final SegmentViewComponent segmentView;
-
+	private final ScopeSelection scopeSelection;
 	private OrdersController ordersCtrl;
 	private AdvanceOrderController advanceOrdersCtrl;
 
-	private Identity identity;
+	private final Identity identity;
 
 	public UserOrderController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl);
 		this.identity = identity;
 
-		mainVC = createVelocityContainer("segments");
+		mainVC = createVelocityContainer("scopes");
 
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		ordersLink = LinkFactory.createLink("segment.orders", mainVC, this);
-		segmentView.addSegment(ordersLink, true);
-		advanceOrdersLink = LinkFactory.createLink("segment.advance.orders", mainVC, this);
-		segmentView.addSegment(advanceOrdersLink, false);
+		List<Scope> scopes = new ArrayList<>();
+		Scope ordersScope = ScopeFactory.createScope(SCOPE_KEY_ORDERS, translate("scope.orders"), null, "o_icon o_ac_offer_bookable_icon");
+		scopes.add(ordersScope);
+		Scope advanceOrdersScope = ScopeFactory.createScope(SCOPE_KEY_ADVANCE_ORDERS, translate("scope.advance.orders"), null, "o_icon o_ac_order_pre");
+		scopes.add(advanceOrdersScope);
+
+		scopeSelection = ScopeFactory.createScopeSelection("scope.selection", mainVC, this, scopes);
+		scopeSelection.setHintsEnabled(false);
+		scopeSelection.setAllowNoSelection(false);
+		scopeSelection.setSelectedKey(SCOPE_KEY_ORDERS);
 
 		doOpenOrders(ureq);
 		putInitialPanel(mainVC);
@@ -68,13 +75,11 @@ public class UserOrderController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent sve) {
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == ordersLink) {
+		if (source == scopeSelection) {
+			if (event instanceof ScopeEvent scopeEvent) {
+				if (SCOPE_KEY_ORDERS.equals(scopeEvent.getSelectedKey())) {
 					doOpenOrders(ureq);
-				} else if (clickedLink == advanceOrdersLink){
+				} else if (SCOPE_KEY_ADVANCE_ORDERS.equals(scopeEvent.getSelectedKey())) {
 					doOpenAdvanceOrders(ureq);
 				}
 			}
@@ -87,7 +92,7 @@ public class UserOrderController extends BasicController {
 			ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, settings);
 			listenTo(ordersCtrl);
 		}
-		mainVC.put("segmentCmp", ordersCtrl.getInitialComponent());
+		mainVC.put("scopeCmp", ordersCtrl.getInitialComponent());
 	}
 
 	private void doOpenAdvanceOrders(UserRequest ureq) {
@@ -95,7 +100,7 @@ public class UserOrderController extends BasicController {
 			advanceOrdersCtrl = new AdvanceOrderController(ureq, getWindowControl(), identity);
 			listenTo(advanceOrdersCtrl);
 		}
-		mainVC.put("segmentCmp", advanceOrdersCtrl.getInitialComponent());
+		mainVC.put("scopeCmp", advanceOrdersCtrl.getInitialComponent());
 	}
 
 
