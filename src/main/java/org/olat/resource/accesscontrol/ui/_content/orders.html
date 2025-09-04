@@ -1,10 +1,12 @@
 <div class="o_sel_order_list">
 	<h2><i class="o_icon o_icon-fw o_icon_booking"> </i> $r.translate("orders.my")</h2>
 	<div class="clearfix">
-		$r.render("segments")<br/>
+		#if($r.available("scope.selection") && $r.visible("scope.selection"))
+		$r.render("scope.selection")
+		#end
 
-		#if($r.available("segmentCmp"))
-			$r.render("segmentCmp")
+		#if($r.available("scopeCmp"))
+			$r.render("scopeCmp")
 		#end
 	</div>
 </div>
