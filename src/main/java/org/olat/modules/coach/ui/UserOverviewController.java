@@ -282,7 +282,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
 			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("bookings"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
-				userOrderController = new UserOrderController(uureq, bwControl, mentee);
+				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canActivatePendingAccounts());
 				listenTo(userOrderController);
 				return userOrderController;
 			});
