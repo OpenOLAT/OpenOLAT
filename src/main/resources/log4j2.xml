@@ -4,6 +4,17 @@
 			<!-- This pattern is mean for development purpose only -->
 			<PatternLayout
 				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<!-- This pattern is used when running OpenOlat in a kubernetes environment or when using a logging server that uses elastic search etc.
+			     Without custom template the JSON logger uses the standard EcsLayout.json template which seems to be just fine. 
+			<JsonLayout
+			        complete="false"
+			        compact="true"
+			        eventEol="true"
+			        properties="true"
+			        stacktraceAsString="true"
+			        objectMessageAsJsonObject="true"
+			        locationInfo="false"/>
+			-->
 
 			<!-- This pattern is used on OpenOLAT cloud AND the OpenOlat code to send feedback per email
 			<PatternLayout
