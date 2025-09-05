@@ -185,6 +185,7 @@ public class TransientAssessmentMode implements Serializable, LockRequest {
 		return beginWithLeadTime;
 	}
 
+	@Override
 	public Date getEnd() {
 		return end;
 	}

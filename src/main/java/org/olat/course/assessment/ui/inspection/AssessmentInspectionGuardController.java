@@ -431,7 +431,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		OLATResourceable resource = inspection.getResource();
 		ureq.getUserSession().setLockResource(resource, inspection);
 		getWindowControl().getWindowBackOffice().getChiefController().lockResource(resource);
-		fireEvent(ureq, new LockRequestEvent(LockRequestEvent.CHOOSE_ASSESSMENT_INSPECTION, inspection));
+		fireEvent(ureq, new LockRequestEvent(LockRequestEvent.CHOOSE_ASSESSMENT_INSPECTION, inspection, null));
 		
 		String businessPath = "[AssessmentInspection:" + inspection.getInspectionKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
