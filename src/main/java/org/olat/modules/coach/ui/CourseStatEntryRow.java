@@ -30,6 +30,7 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
 
@@ -39,7 +40,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseStatEntryRow implements RepositoryEntryRef {
+public class CourseStatEntryRow implements RepositoryEntryRef, RepositoryEntryShort {
 	
 	private boolean marked;
 	private final CourseStatEntry entry;
@@ -48,6 +49,7 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	private String translatedTechnicalType;
 	
 	private long numOfTaxonomyLevels;
+	private final boolean showStatistics;
 	private final RepositoryEntryEducationalType educationalType;
 	
 	private FormLink markLink;
@@ -57,8 +59,9 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	private FormItem ratingFormItem;
 	private FormLink taxonomyLevelsLink;
 	
-	public CourseStatEntryRow(CourseStatEntry entry, RepositoryEntryEducationalType educationalType) {
+	public CourseStatEntryRow(CourseStatEntry entry, RepositoryEntryEducationalType educationalType, boolean showStatistics) {
 		this.entry = entry;
+		this.showStatistics = showStatistics;
 		this.educationalType = educationalType;
 	}
 
@@ -73,6 +76,11 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	@Override
 	public Long getKey() {
 		return entry.getRepoKey();
+	}
+	
+	@Override
+	public String getDisplayname() {
+		return getDisplayName();
 	}
 	
 	public String getDisplayName() {
@@ -107,8 +115,14 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 		return entry.getRepoExternalId();
 	}
 
+	@Override
 	public String getExternalRef() {
 		return entry.getRepoExternalRef();
+	}
+	
+	@Override
+	public RepositoryEntryStatusEnum getEntryStatus() {
+		return getStatus();
 	}
 
 	public RepositoryEntryStatusEnum getStatus() {
@@ -125,6 +139,11 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	
 	public Long getResourceId() {
 		return entry.getResourceId();
+	}
+	
+	@Override
+	public String getResourceType() {
+		return entry.getResourceTypeName();
 	}
 	
 	public boolean isThumbnailAvailable() {
@@ -275,6 +294,10 @@ public class CourseStatEntryRow implements RepositoryEntryRef {
 	
 	public String getParticipantsAsString() {
 		return Integer.toString(entry.getParticipants());
+	}
+	
+	public boolean isShowStatistics() {
+		return showStatistics;
 	}
 	
 	public String getMarkLinkName() {

@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
@@ -57,6 +58,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -118,6 +120,11 @@ public class CoachingServiceImpl implements CoachingService {
 	@Override
 	public boolean isMasterCoach(Identity identity) {
 		return coachingDao.isMasterCoach(identity);
+	}
+
+	@Override
+	public boolean hasResourcesAsOwner(IdentityRef identity, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+		return coachingDao.hasResourcesAsOwner(identity, runtimeTypesGroup);
 	}
 
 	@Override
@@ -191,12 +198,14 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role) {
-		if(role != GroupRoles.coach & role != GroupRoles.owner) {
+	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role,
+			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+		if(role != GroupRoles.coach && role != GroupRoles.owner
+				&& runtimeTypesGroup == CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular) {
 			log.warn("Search courses in course with illegal role: {}", role);
 			return new ArrayList<>();
 		}
-		return coachingDao.getCoursesStatistics(coach, role);
+		return coachingDao.getCoursesStatistics(coach, role, runtimeTypesGroup);
 	}
 
 	@Override

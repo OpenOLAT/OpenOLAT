@@ -52,6 +52,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.modules.coach.model.CompletionStats;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
@@ -64,6 +65,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -142,6 +144,36 @@ public class CoachingDAO {
 				.setMaxResults(1)
 				.getResultList();
 		return !firstKey.isEmpty();
+	}
+	
+	public boolean hasResourcesAsOwner(IdentityRef identity, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+		String sb = """
+			select v.key from repositoryentry v
+			inner join v.olatResource as res
+			inner join v.groups as relGroup
+			inner join relGroup.group as baseGroup
+			inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role=:role)
+			where v.status in :status and v.runtimeType in :runtimeTypes""";
+		
+		List<String> runtimeTypes = runtimeTypesGroup.runtimeTypes().stream()
+				.map(RepositoryEntryRuntimeType::name)
+				.toList();
+		List<String> status = new ArrayList<>();
+		for(RepositoryEntryStatusEnum s:RepositoryEntryStatusEnum.preparationToClosed()) {
+			status.add(s.name());
+		}
+		
+		List<Long> firstKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", GroupRoles.owner.name())
+				.setParameter("runtimeTypes", runtimeTypes)
+				.setParameter("status", status)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return firstKey != null && !firstKey.isEmpty() && firstKey.get(0) != null && firstKey.get(0).longValue() > 0;
 	}
 
 	public EfficiencyStatementEntry getEfficencyStatementEntry(UserEfficiencyStatement statement,
@@ -449,20 +481,21 @@ public class CoachingDAO {
 		return !rawList.isEmpty();
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role) {
-		Map<Long,CourseStatEntry> map = getCourses(identity, role);
-		if(!map.isEmpty()) {
-			loadCoursesStatistics(identity, role, map);
+	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+		List<RepositoryEntryRuntimeType> runtimeTypes = runtimeTypesGroup.runtimeTypes();
+		Map<Long,CourseStatEntry> map = getCourses(identity, role, runtimeTypes);
+		if(!map.isEmpty() && runtimeTypesGroup.loadStatistics()) {
+			loadCoursesStatistics(identity, role, runtimeTypes, map);
 			loadCoursesStatisticsStatements(identity, role, map);
 			loadCoursesCompletions(identity, role, map);
 		}
 		return new ArrayList<>(map.values());
 	}
 	
-	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach, GroupRoles role) {
+	private Map<Long,CourseStatEntry> getCourses(IdentityRef coach, GroupRoles role, List<RepositoryEntryRuntimeType> runtimeTypes) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key, lifecycle.key, v.displayname, v.technicalType, v.externalId, v.externalRef, v.status,")
-		  .append("  v.teaser, v.location, v.authors, res.resId, lifecycle.validFrom, lifecycle.validTo,")
+		  .append("  v.teaser, v.location, v.authors, res.resId, res.resName, lifecycle.validFrom, lifecycle.validTo,")
 		  .append("  stats.rating, v.educationalType.key")
 		  .append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
@@ -471,24 +504,38 @@ public class CoachingDAO {
 		  .append(" left join v.lifecycle as lifecycle")
 		  .append(" left join v.statistics as stats")
 		  .where()
-		  .append(" res.resName='CourseModule' and v.status ").in(role == GroupRoles.owner
+		  .append(" v.status ").in(role == GroupRoles.owner
 		  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and()
+		  .append(" v.runtimeType in :runtimeTypes")
 		  .and();
-		
+
 		if(role == GroupRoles.owner) {
 			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
 			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
 			  .append("  where owner.identity.key=:coachKey")
 			  .append(")");
-		} else {
+		} else if(role == GroupRoles.coach)  {
 			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
 			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
 			  .append(")");
+		} else  {
+			sb.append("(v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(") or participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append("))");
 		}
+		
+		List<String> runtimeTypesList = runtimeTypes.stream()
+				.map(RepositoryEntryRuntimeType::name)
+				.toList();
 		
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("runtimeTypes", runtimeTypesList)
 				.getResultList();
 		Map<Long,CourseStatEntry> map = new HashMap<>();
 		for(Object[] rawStat:rawList) {
@@ -505,17 +552,18 @@ public class CoachingDAO {
 				entry.setRepoLocation((String)rawStat[8]);
 				entry.setRepoAuthors((String)rawStat[9]);
 				entry.setResourceId(PersistenceHelper.extractLong(rawStat, 10));
-				entry.setLifecycleStartDate((Date)rawStat[11]);
-				entry.setLifecycleEndDate((Date)rawStat[12]);
-				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 13));
-				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 14));
+				entry.setResourceTypeName((String)rawStat[11]);
+				entry.setLifecycleStartDate((Date)rawStat[12]);
+				entry.setLifecycleEndDate((Date)rawStat[13]);
+				entry.setAverageRating(PersistenceHelper.extractDouble(rawStat, 14));
+				entry.setEducationalTypeKey(PersistenceHelper.extractLong(rawStat, 15));
 				return entry;
 			});
 		}
 		return map;
 	}
 	
-	private void loadCoursesStatistics(IdentityRef coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
+	private void loadCoursesStatistics(IdentityRef coach, GroupRoles role, List<RepositoryEntryRuntimeType> runtimeTypes, Map<Long,CourseStatEntry> map) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key,")
 		  .append("  count(distinct participantMembers.identity.key) as numOfParticipants,")
@@ -530,11 +578,13 @@ public class CoachingDAO {
 		  .append(" inner join relGroup.group as participantGroup")
 		  .append(" inner join participantGroup.members as participantMembers on (participantMembers.role='participant')")
 		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key and courseInfos.resource.key=res.key)")
-		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key)")
+		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key and res.resName='CourseModule')")
 		  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)")
 		  .where()
-		  .append(" res.resName='CourseModule' and v.status ").in(role == GroupRoles.owner
+		  .append(" v.status ").in(role == GroupRoles.owner
 			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and()
+		  .append(" v.runtimeType in :runtimeTypes")
 		  .and();
 		
 		if(role == GroupRoles.owner) {
@@ -547,11 +597,16 @@ public class CoachingDAO {
 			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
 			  .append(")");
 		}
-		sb.append(" group by v.key, lifecycle.key");
+		sb.append(" group by v.key");
+		
+		List<String> runtimeTypesList = runtimeTypes.stream()
+				.map(RepositoryEntryRuntimeType::name)
+				.toList();
 		
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("runtimeTypes", runtimeTypesList)
 				.setParameter("now", new Date(), TemporalType.TIMESTAMP)
 				.getResultList();
 
