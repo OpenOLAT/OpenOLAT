@@ -56,8 +56,8 @@ public class ParticipantStatisticsEntry extends UserPropertiesRow implements Ide
 	
 	private List<OrganisationWithParents> organisations;
 	
-	public ParticipantStatisticsEntry(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
-		super(identityKey, userPropertyHandlers, userProperties, locale);
+	public ParticipantStatisticsEntry(Long identityKey, String externalId, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
+		super(identityKey, externalId, userPropertyHandlers, userProperties, locale);
 	}
 
 	public ParticipantStatisticsEntry(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {

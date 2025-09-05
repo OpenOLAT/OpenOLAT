@@ -69,7 +69,7 @@ public class UsersMembershipsReportQuery {
 		sb.append("select v.key, v.displayname, v.externalId, v.externalRef,")
 		  .append(" v.status, v.publicVisible, lifecycle.validFrom, lifecycle.validTo,")
 		  .append(" reMember.key, reMember.role, reMember.creationDate,")
-		  .append(" ident.key, ident.creationDate, ident.lastLogin, ident.status, v.initialAuthor");
+		  .append(" ident.key, ident.externalId, ident.creationDate, ident.lastLogin, ident.status, v.initialAuthor");
 		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
 			sb.append(", identUser.").append(userPropertyHandler.getName());
 		}
@@ -125,6 +125,7 @@ public class UsersMembershipsReportQuery {
 			
 			// Identity
 			Long identityKey = (Long)objects[pos++];
+			String identityExternalId = (String)objects[pos++];
 			Date identityCreationDate = (Date)objects[pos++];
 			Date identityLastLogin = (Date)objects[pos++];
 			int identityStatus = PersistenceHelper.extractPrimitiveInt(objects, pos++);
@@ -135,7 +136,7 @@ public class UsersMembershipsReportQuery {
 			String[] identityProps = new String[userPropertyHandlers.size()];
 			System.arraycopy(objects, pos, identityProps, 0, userPropertyHandlers.size());
 			
-			UsersMembershipsEntry entry = new UsersMembershipsEntry(identityKey, userPropertyHandlers, identityProps, locale,
+			UsersMembershipsEntry entry = new UsersMembershipsEntry(identityKey, identityExternalId, userPropertyHandlers, identityProps, locale,
 					identityStatus, identityCreationDate, identityLastLogin, repositoryEntryKey, 
 					repositoryEntryDisplayname, initialAuthor, repositoryEntryExternalId, repositoryEntryExternalRef,
 					repositoryEntryStatus, repositoryEntryPublicVisible, lifecycleFrom, lifecycleTo, role, registrationDate);

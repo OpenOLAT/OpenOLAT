@@ -776,7 +776,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		RecurrenceId<Temporal> eventRecurenceId = event.getRecurrenceId();
 		String recurrenceId = null;
 		if(eventRecurenceId != null) {
-			recurrenceId = eventRecurenceId.getValue();
+			try {
+				recurrenceId = eventRecurenceId.getValue();
+			} catch (Exception e) {
+				log.warn("Non readable recurence ID", e);
+			}
 		}
 
 		KalendarEvent calEvent = new KalendarEvent(uid, recurrenceId, subject, start, end);

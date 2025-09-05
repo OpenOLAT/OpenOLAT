@@ -227,6 +227,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.status, new IdentityStatusCellRenderer(getTranslator())));
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.id));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, UserCols.externalId));
 		}
 
 		int colPos = USER_PROPS_OFFSET;

@@ -62,11 +62,11 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 		deletionEmailDate = identity.getDeletionEmailDate();
 	}
 	
-	public IdentityPropertiesRow(Long identityKey, Date creationDate, Date lastLogin, Integer status,
+	public IdentityPropertiesRow(Long identityKey, String externalId, Date creationDate, Date lastLogin, Integer status,
 			Date plannedInactivationDate, Date inactivationDate, Date reactivationDate,
 			Date expirationDate, Date plannedDeletionDate, Date deletionEmailDate,
 			List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
-		super(identityKey, userPropertyHandlers, identityProps, locale);
+		super(identityKey, externalId, userPropertyHandlers, identityProps, locale);
 		this.status = status;
 		this.creationDate = creationDate;
 		this.lastLogin = lastLogin;

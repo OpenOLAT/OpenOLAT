@@ -47,8 +47,8 @@ public class StudentStatEntry extends UserPropertiesRow implements CompletionSta
 	private Set<String> repoIds = new HashSet<>();
 	private Set<String> launchIds = new HashSet<>();
 	
-	public StudentStatEntry(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
-		super(identityKey, userPropertyHandlers, userProperties, locale);
+	public StudentStatEntry(Long identityKey, String externalId, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
+		super(identityKey, externalId, userPropertyHandlers, userProperties, locale);
 	}
 
 	public StudentStatEntry(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {

@@ -105,6 +105,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select")
 		  .append(" ident.id as ident_id,")
+		  .append(" ident.externalId as ident_ext_id,")
 		  .append(" ident.creationDate as ident_cDate,")
 		  .append(" ident.lastLogin as ident_lDate,")
 		  .append(" ident.status as ident_Status,")
@@ -134,6 +135,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			int pos = 0;
 			
 			Long identityKey = ((Number)rawObject[pos++]).longValue();
+			String externalId = (String)rawObject[pos++];
 			Date creationDate = (Date)rawObject[pos++];
 			Date lastLogin = (Date)rawObject[pos++];
 			Integer status = (Integer)rawObject[pos++];
@@ -149,7 +151,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				userProperties[i] = (String)rawObject[pos++];
 			}
 			
-			IdentityPropertiesRow row = new IdentityPropertiesRow(identityKey, creationDate, lastLogin, status,
+			IdentityPropertiesRow row = new IdentityPropertiesRow(identityKey, externalId, creationDate, lastLogin, status,
 					plannedInactivationDate, inactivationDate, reactivationDate,
 					expirationDate, plannedDeletionDate, deletionEmailDate,
 					userPropertyHandlers, userProperties, locale);
