@@ -259,7 +259,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 			allOk &= false;
 		} else if(!validateFormItem(ureq, beginEl)) {
 			allOk &= false;
-		} else if(!validateFutureDate(ureq, beginEl)) {
+		} else if(beginEl.isEnabled() && !validateFutureDate(ureq, beginEl)) {
 			allOk &= false;
 		}
 		if(endEl.getDate() == null) {
