@@ -28,9 +28,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * Course planners (curriculum managers), product (curriculum) and element owners
+ * 
  * 
  * Initial date: 12 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service("curriculumManagerAndOwnerSiteSecurityCallback")
@@ -45,7 +47,7 @@ public class CurriculumManagerAndOwnerSecurityCallback implements SiteSecurityCa
 		if(usess == null ) return false;
 		
 		Roles roles = usess.getRoles();
-		return roles != null && (roles.isAdministrator() || roles.isPrincipal() || roles.isCurriculumManager()
-				|| curriculumService.isCurriculumOwnerUptoEntryOwner(ureq.getIdentity()));
+		return roles != null && (roles.isAdministrator() || roles.isCurriculumManager()
+				|| curriculumService.isCurriculumOrElementOwner(ureq.getIdentity()));
 	}
 }
