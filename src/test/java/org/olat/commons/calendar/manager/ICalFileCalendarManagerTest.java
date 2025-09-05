@@ -760,7 +760,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testImportICal_recurringEvent()
+	public void importICalRecurringEvent()
 	throws IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
 		URL calendarUrl = CalendarImportTest.class.getResource("RecurringEvent.ics");
@@ -774,7 +774,27 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testImportICal_outlookFullDay()
+	public void importICalRecurringEventUnreadableRecurringId()
+	throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur4-");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("RecurringDate.ics");
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		// Try catch save the event at this specific date
+		ZonedDateTime startDate = ZonedDateTime.of(2022, 03, 4, 10, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime endDate = ZonedDateTime.of(2022, 03, 7, 10, 0, 0, 0, ZoneId.systemDefault());
+		List<KalendarEvent> recurringEvents = calendarManager.getEvents(importedCalendar.getKalendar(), startDate, endDate, true);
+		Assert.assertEquals(1, recurringEvents.size());
+	}
+	
+	@Test
+	public void importICalOutlookFullDay()
 	throws IOException {
 		TimeZone vmTimeZone = TimeZone.getDefault();
 		TimeZone ooTimeZone = TimeZone.getTimeZone("Europe/Zurich");
@@ -795,7 +815,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testImportICal_icalFullDay()
+	public void importICalIcalFullDay()
 	throws IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur3-");
 		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_ical.ics");
@@ -817,7 +837,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		KalendarEvent longDay = importedCalendar.getKalendar().getEvent("C562E736-DCFF-4002-9E5B-77D891D4A322", null);
 		Assert.assertFalse(longDay.isAllDayEvent());
 	}
-
 	
 	/**
 	 * Test concurrent add event with two threads and code-point to control concurrency.
