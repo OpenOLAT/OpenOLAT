@@ -20,13 +20,10 @@
 package org.olat.core.commons.services.sms.spi;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +54,6 @@ import org.springframework.stereotype.Service;
 public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(WebSMSProvider.class);
-	private final BasicCredentialsProvider provider = new BasicCredentialsProvider();
 	
 	private static final String NAME = "websms.username";
 	private static final String CREDENTIALS = "websms.password";
@@ -89,8 +85,6 @@ public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI 
 	protected void setCredentials(String username, String password) {
 		this.username = username;
 		this.password = password;
-		provider.setCredentials(new AuthScope("api.websms.com", 443),
-				new UsernamePasswordCredentials(username, password));
 	}
 	
 	@Override
@@ -106,9 +100,6 @@ public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI 
 	private void updateProperties() {
 		username = getStringPropertyValue(NAME, username);
 		password = getStringPropertyValue(CREDENTIALS, password);
-
-		provider.setCredentials(new AuthScope("api.websms.com", 443),
-				new UsernamePasswordCredentials(username, password));
 	}
 	
 	protected void setTest(boolean test) {
@@ -162,9 +153,7 @@ public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI 
 		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 		send.setEntity(smsEntity);
 		
-		try(CloseableHttpClient httpclient = httpClientService.createHttpClientBuilder()
-				.setDefaultCredentialsProvider(provider)
-				.build();
+		try(CloseableHttpClient httpclient = httpClientService.createHttpClientBuilder("api.websms.com", 443, username, password).build();
 				CloseableHttpResponse response = httpclient.execute(send)) {
 			int returnCode = response.getStatusLine().getStatusCode();
 			String responseString = EntityUtils.toString(response.getEntity());

@@ -36,6 +36,16 @@ public interface HttpClientService {
 	public HttpClientBuilder createHttpClientBuilder();
 	
 	/*
+	 * Creates a HttpClientBuilder with default configuration.
+	 *
+	 * @param host For basic authentication
+	 * @param port For basic authentication
+	 * @param port For basic authentication
+	 * @param user For basic authentication
+	 */
+	public HttpClientBuilder createHttpClientBuilder(String host, int port, String user, String password);
+	
+	/*
 	 * Creates a HttpClient with default configuration.
 	 */
 	public CloseableHttpClient createHttpClient();

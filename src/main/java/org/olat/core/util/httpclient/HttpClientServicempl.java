@@ -20,6 +20,7 @@
 package org.olat.core.util.httpclient;
 
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -37,6 +38,7 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,11 @@ public class HttpClientServicempl implements HttpClientService {
 	
 	@Override
 	public HttpClientBuilder createHttpClientBuilder() {
+		return createHttpClientBuilder(null, -1, null, null);
+	}
+	
+	@Override
+	public HttpClientBuilder createHttpClientBuilder(String host, int port, String user, String password) {
 		dbInstance.commit();// free connection
 		
 		RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
@@ -63,7 +70,11 @@ public class HttpClientServicempl implements HttpClientService {
 				.setConnectionRequestTimeout(httpClientModule.getHttpConnectRequestTimeout())
 				.setSocketTimeout(httpClientModule.getHttpSocketTimeout())
 				.build();
-		return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
+		HttpClientBuilder builder = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig);
+		
+		setProxyAndCredentials(builder, host, port, user, password);
+		
+		return builder;
 	}
 	
 	@Override
@@ -93,13 +104,40 @@ public class HttpClientServicempl implements HttpClientService {
 		} else {
 			clientBuilder.setRedirectStrategy(new NoRedirectStrategy());
 		}
-		if (user != null && user.length() > 0) {
-			CredentialsProvider provider = new BasicCredentialsProvider();
-			provider.setCredentials(new AuthScope(host, port), new UsernamePasswordCredentials(user, password));
-			clientBuilder.setDefaultCredentialsProvider(provider);
-		}
+		
+		setProxyAndCredentials(clientBuilder, host, port, user, password);
 		
 		return clientBuilder.build();
+	}
+
+	private void setProxyAndCredentials(HttpClientBuilder builder, String host, int port, String user,
+			String password) {
+		CredentialsProvider credentialsProvider = null;
+		if (StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyUrl())) {
+			HttpHost proxy = new HttpHost(httpClientModule.getHttpProxyUrl(), httpClientModule.getHttpProxyPort());
+			builder.setProxy(proxy);
+			builder.setRoutePlanner(new ProxyRoutePlanner(proxy, httpClientModule.getHttpProxyExclusionUrls()));
+			
+			if (StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyUser()) && StringHelper.containsNonWhitespace(httpClientModule.getHttpProxyPwd())) {
+				credentialsProvider = new BasicCredentialsProvider();
+				credentialsProvider.setCredentials(
+						new AuthScope(httpClientModule.getHttpProxyUrl(), httpClientModule.getHttpProxyPort()),
+						new UsernamePasswordCredentials(httpClientModule.getHttpProxyUser(), httpClientModule.getHttpProxyPwd())
+					);
+			}
+		}
+		
+		if (StringHelper.containsNonWhitespace(host) && StringHelper.containsNonWhitespace(user) && StringHelper.containsNonWhitespace(password)) {
+			if (credentialsProvider == null) {
+				credentialsProvider = new BasicCredentialsProvider();
+			}
+			credentialsProvider.setCredentials(
+					new AuthScope(host, port),
+					new UsernamePasswordCredentials(user, password)
+				);
+		}
+		
+		builder.setDefaultCredentialsProvider(credentialsProvider);
 	}
 	
 	private static class NoRedirectStrategy implements RedirectStrategy {
