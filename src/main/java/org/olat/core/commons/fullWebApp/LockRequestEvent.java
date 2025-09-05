@@ -34,11 +34,17 @@ public class LockRequestEvent extends Event {
 	public static final String CHOOSE_ASSESSMENT_MODE = "choose-assessment-mode";
 	public static final String CHOOSE_ASSESSMENT_INSPECTION = "choose-assessment-inspection";
 	
+	private Integer extraTime;
 	private LockRequest lockRequest;
 	
-	public LockRequestEvent(String name, LockRequest lockRequest) {
+	public LockRequestEvent(String name, LockRequest lockRequest, Integer extraTime) {
 		super(name);
+		this.extraTime = extraTime;
 		this.lockRequest = lockRequest;
+	}
+	
+	public Integer getExtraTime() {
+		return extraTime;
 	}
 	
 	public LockRequest getLockRequest() {

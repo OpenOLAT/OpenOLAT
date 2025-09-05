@@ -558,11 +558,15 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	 * @param mode
 	 */
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
+		Integer extraTime = mode.isManual()
+				? null
+				: assessmentModeCoordinationService.getDisadvantageCompensationExtensionTime(mode, getIdentity());
+		
 		ureq.getUserSession().setLockRequests(null);
 		OLATResourceable resource = mode.getResource();
 		ureq.getUserSession().setLockResource(resource, mode);
 		getWindowControl().getWindowBackOffice().getChiefController().lockResource(resource);
-		fireEvent(ureq, new LockRequestEvent(LockRequestEvent.CHOOSE_ASSESSMENT_MODE, mode));
+		fireEvent(ureq, new LockRequestEvent(LockRequestEvent.CHOOSE_ASSESSMENT_MODE, mode, extraTime));
 		
 		String businessPath = "[RepositoryEntry:" + mode.getRepositoryEntryKey() + "]";
 		if(StringHelper.containsNonWhitespace(mode.getStartElementKey())) {

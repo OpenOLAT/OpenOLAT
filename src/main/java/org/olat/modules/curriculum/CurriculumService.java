@@ -163,9 +163,9 @@ public interface CurriculumService {
 	/**
 	 * @param identity The identity
 	 * @return true if the identity is manager of at least one curriculum or
-	 * 		is course owner of a course in a curriculum.
+	 * 		is element owner in a curriculum.
 	 */
-	public boolean isCurriculumOwnerUptoEntryOwner(IdentityRef identity);
+	public boolean isCurriculumOrElementOwner(IdentityRef identity);
 	
 	/**
 	 * Add a member to the curriculum with the specified role.

@@ -605,7 +605,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if (isAdminOf || isPrincipalOf || isRolesManagerOf) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_ACCESS), uureq -> {
-				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity);
+				Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity, false);
 				listenTo(accessCtr);
 				return accessCtr.getInitialComponent();
 			});

@@ -313,9 +313,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public boolean isCurriculumOwnerUptoEntryOwner(IdentityRef identity) {
+	public boolean isCurriculumOrElementOwner(IdentityRef identity) {
 		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculumowner.name())
-				|| curriculumDao.hasOwnerRoleInCurriculumElement(identity)
 				|| curriculumElementDao.hasCurriculumElementRole(identity, CurriculumRoles.curriculumelementowner.name());
 	}
 

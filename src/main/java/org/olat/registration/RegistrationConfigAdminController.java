@@ -111,7 +111,6 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		registrationEl.toggle(registrationModule.isSelfRegistrationEnabled());
 
 		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, new String[]{ translate("admin.enableRegistration.on") });
-		registrationLoginElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLoginElement.select("on", registrationModule.isSelfRegistrationLoginEnabled());
 
 		uifactory.addSpacerElement("spacer", settingsContainer, false);
@@ -262,9 +261,6 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		if (!orgEmailDomainEnabled) {
 			domainListElement.setVisible(domainRestrictionEl.isOn());
 		}
-
-		boolean enableDomains = enableMain && registrationLoginElement.isSelected(0);
-		domainsContainer.setVisible(enableDomains);
 	}
 
 	@Override
@@ -276,8 +272,6 @@ public class RegistrationConfigAdminController extends FormBasicController {
 			mainForm.setHideDirtyMarkingMessage(true);
 			markDirty();
 		} else if (source == domainRestrictionEl) {
-			updateUI();
-		} else if (source == registrationLoginElement) {
 			updateUI();
 		}
 

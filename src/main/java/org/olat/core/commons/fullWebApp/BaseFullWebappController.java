@@ -26,6 +26,7 @@
 package org.olat.core.commons.fullWebApp;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -729,6 +730,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				lockStatus = LockStatus.locked;
 				removeAsListenerAndDispose(assessmentGuardCtrl);
 				assessmentGuardCtrl = null;
+				checkAssessmentModeWarning(ureq, lre);
 			} else if(event instanceof ContinueEvent ce) {
 				unlock(ureq, ce.getModeKey());
 			} else if("continue".equals(event.getCommand())) {
@@ -746,6 +748,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				}
 			}
 		} 
+	}
+	
+	private void checkAssessmentModeWarning(UserRequest ureq, LockRequestEvent event) {
+		try {
+			//message 5 minutes before end
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(event.getLockRequest().getEnd());
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			cal.add(Calendar.MINUTE, -6);
+			if(ureq.getRequestTimestamp().after(cal.getTime())) {
+				lockResourceWarningMessage(event.getLockRequest(), event.getExtraTime());
+			}
+		} catch (Exception e) {
+			logError("Try to set assessment mode warning", e);
+		}
 	}
 	
 	@Override
