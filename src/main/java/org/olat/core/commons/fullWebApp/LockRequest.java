@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.fullWebApp;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,6 +40,8 @@ public interface LockRequest {
 	OLATResourceable getResource();
 	
 	Long getRepositoryEntryKey();
+	
+	Date getEnd();
 	
 	Status getStatus();
 	

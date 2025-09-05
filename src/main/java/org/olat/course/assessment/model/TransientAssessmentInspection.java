@@ -158,6 +158,11 @@ public class TransientAssessmentInspection implements Serializable, LockRequest 
 		return from;
 	}
 	
+	@Override
+	public Date getEnd() {
+		return getToDate();
+	}
+	
 	public Date getToDate() {
 		return to;
 	}
