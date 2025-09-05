@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
@@ -34,6 +35,7 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -55,6 +57,9 @@ public interface CoachingService {
 	public CoachingSecurity isCoach(Identity identity, Roles roles);
 	
 	public boolean isMasterCoach(Identity identity);
+	
+	public boolean hasResourcesAsOwner(IdentityRef identity, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
+	
 	
 	/**
 	 * @param coach The coach or owner
@@ -85,7 +90,8 @@ public interface CoachingService {
 	 * @param role The role to search for, coach or owner only
 	 * @return A list of courses statistics
 	 */
-	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role);
+	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
+			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
 	
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach);
 	

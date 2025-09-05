@@ -638,6 +638,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			case "key":
 				sb.append(" order by ident.key ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;
+			case "externalId":
+				sb.append(" order by ident.externalId ").append(orderBy.isAsc() ? "asc" : "desc").append(" nulls last");
+				break;
 			case "creationDate":
 				sb.append(" order by ident.creationDate ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;

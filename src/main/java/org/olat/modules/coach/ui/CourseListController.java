@@ -66,10 +66,8 @@ import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.rating.RatingFormItem;
-import org.olat.core.gui.components.scope.FormScopeSelection;
-import org.olat.core.gui.components.scope.Scope;
-import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -88,9 +86,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
 import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
@@ -104,9 +104,13 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.repository.ui.author.TechnicalTypeRenderer;
+import org.olat.repository.ui.author.TypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -128,6 +132,7 @@ public class CourseListController extends FormBasicController implements Activat
 	protected static final String FILTER_LAST_VISIT = "last-visit";
 	protected static final String FILTER_ASSESSMENT = "assessment";
 	protected static final String FILTER_CERTIFICATES = "certificates";
+	protected static final String FILTER_RESOURCE_TYPE = "resourcetype";
 	protected static final String FILTER_WITH_PARTICIPANTS = "WithParticipants";
 	protected static final String FILTER_WITHOUT_PARTICIPANTS = "WithoutParticipants";
 	
@@ -154,17 +159,19 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
 	private static final String FINISHED_TAB_ID = "Finished";
+	private static final String BOOKMARK_TAB_ID = "Bookmarks";
 	private static final String ACCESS_FOR_COACH_TAB_ID = "AccessForCoach";
 
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab bookmarkTab;
 	private FlexiTableElement tableEl;
 	private CoursesTableDataModel tableModel;
-	private List<Scope> scopes;
-	private FormScopeSelection scopeEl;
 
 	private int counter = 0;
+	private final GroupRoles role;
 	private final MapperKey mapperThumbnailKey;
 	private List<RepositoryEntryEducationalType> educationalTypes;
+	private final CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -185,38 +192,32 @@ public class CourseListController extends FormBasicController implements Activat
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
-	public CourseListController(UserRequest ureq, WindowControl wControl) {
+	public CourseListController(UserRequest ureq, WindowControl wControl,
+			GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
 		educationalTypes = repositoryManager.getAllEducationalTypes();
+		this.runtimeTypesGroup = runtimeTypesGroup;
+		this.role = role;
 		
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initScopes(formLayout);
-		initForm(formLayout, ureq);
-	}
-	
-	private void initScopes(FormItemContainer formLayout) {
-		// As coach / course owner
-		scopes = new ArrayList<>(4);
-		scopes.add(ScopeFactory.createScope(GroupRoles.coach.name(), translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
-		scopes.add(ScopeFactory.createScope(GroupRoles.owner.name(), translate("lectures.owner.menu.title"), null, "o_icon o_icon_coaching_tool"));
-		scopeEl = uifactory.addScopeSelection("scopes", null, formLayout, scopes);
-		scopeEl.setSelectedKey(GroupRoles.coach.name());
-	}
-	
-	private void initForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.key));
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(Columns.mark);
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header");
 		markColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(markColumn);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.key));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.resourceType,
+				new TypeRenderer()));
 		DefaultFlexiColumnModel technicalTypeCol = new DefaultFlexiColumnModel(false, Columns.technicalType);
 		technicalTypeCol.setCellRenderer(new TechnicalTypeRenderer());
 		columnsModel.addFlexiColumnModel(technicalTypeCol);
@@ -231,28 +232,31 @@ public class CourseListController extends FormBasicController implements Activat
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.access,
 				new AccessRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.participants));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.participantsVisited));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.participantsNotVisited));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastVisit,
-				new LastVisitCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion,
-				new CompletionCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.successStatus,
-				new SuccessStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusPassed));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusNotPassed));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusUndefined));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.averageScore,
-				new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificates));
+		if(runtimeTypesGroup.loadStatistics()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.participants));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.participantsVisited));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.participantsNotVisited));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastVisit,
+					new LastVisitCellRenderer(getTranslator())));
 		
-		// Assessment tool
-		DefaultFlexiColumnModel assessmentToolCol = new DefaultFlexiColumnModel(Columns.assessmentTool, CMD_ASSESSMENT,
-				new StaticFlexiCellRenderer("", CMD_ASSESSMENT, null, "o_icon-lg o_icon_assessment_tool", translate("table.header.assessment.tool")));
-		assessmentToolCol.setExportable(false);
-		assessmentToolCol.setIconHeader("o_icon o_icon-lg o_icon_assessment_tool");
-		columnsModel.addFlexiColumnModel(assessmentToolCol);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion,
+					new CompletionCellRenderer(getTranslator())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.successStatus,
+					new SuccessStatusCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusPassed));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusNotPassed));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.statusUndefined));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.averageScore,
+					new ScoreCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificates));
+			
+			// Assessment tool
+			DefaultFlexiColumnModel assessmentToolCol = new DefaultFlexiColumnModel(Columns.assessmentTool, CMD_ASSESSMENT,
+					new StaticFlexiCellRenderer("", CMD_ASSESSMENT, null, "o_icon-lg o_icon_assessment_tool", translate("table.header.assessment.tool")));
+			assessmentToolCol.setExportable(false);
+			assessmentToolCol.setIconHeader("o_icon o_icon-lg o_icon_assessment_tool");
+			columnsModel.addFlexiColumnModel(assessmentToolCol);
+		}
 		
 		// Infos
 		DefaultFlexiColumnModel infosCol = new DefaultFlexiColumnModel(Columns.infos, CMD_INFOS,
@@ -275,7 +279,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.4");
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.5-" + runtimeTypesGroup.name());
 		
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -297,53 +301,72 @@ public class CourseListController extends FormBasicController implements Activat
 		filters.add(new FlexiTableDateRangeFilter(translate("filter.date.range"), FILTER_PERIOD, true, false,
 				getLocale()));
 		
-		SelectionValues notVisitedPK = new SelectionValues();
-		notVisitedPK.add(SelectionValues.entry(FILTER_NOT_VISITED, translate("filter.not.visited")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.not.visited"),
-				FILTER_NOT_VISITED, notVisitedPK, true));
-		
-		SelectionValues lastVisitPK = new SelectionValues();
-		lastVisitPK.add(SelectionValues.entry(VISIT_LESS_1_DAY, translate("filter.visit.less.1.day")));
-		lastVisitPK.add(SelectionValues.entry(VISIT_LESS_1_WEEK, translate("filter.visit.less.1.week")));
-		lastVisitPK.add(SelectionValues.entry(VISIT_LESS_4_WEEKS, translate("filter.visit.less.4.weeks")));
-		lastVisitPK.add(SelectionValues.entry(VISIT_LESS_12_MONTHS, translate("filter.visit.less.12.months")));
-		lastVisitPK.add(SelectionValues.entry(VISIT_MORE_12_MONTS, translate("filter.visit.more.12.months")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.last.visit"),
-				FILTER_LAST_VISIT, lastVisitPK, true));
-
-		SelectionValues assessmentPK = new SelectionValues();
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_NONE, translate("filter.assessment.passed.none")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_PARTIALLY, translate("filter.assessment.passed.partially")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_ALL, translate("filter.assessment.passed.all")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_NONE, translate("filter.assessment.not.passed.none")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_PARTIALLY, translate("filter.assessment.not.passed.partially")));
-		assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_ALL, translate("filter.assessment.not.passed.all")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assessment"),
-				FILTER_ASSESSMENT, assessmentPK, true));
+		if(runtimeTypesGroup.loadStatistics()) {
+			SelectionValues notVisitedPK = new SelectionValues();
+			notVisitedPK.add(SelectionValues.entry(FILTER_NOT_VISITED, translate("filter.not.visited")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.not.visited"),
+					FILTER_NOT_VISITED, notVisitedPK, true));
+			
+			SelectionValues lastVisitPK = new SelectionValues();
+			lastVisitPK.add(SelectionValues.entry(VISIT_LESS_1_DAY, translate("filter.visit.less.1.day")));
+			lastVisitPK.add(SelectionValues.entry(VISIT_LESS_1_WEEK, translate("filter.visit.less.1.week")));
+			lastVisitPK.add(SelectionValues.entry(VISIT_LESS_4_WEEKS, translate("filter.visit.less.4.weeks")));
+			lastVisitPK.add(SelectionValues.entry(VISIT_LESS_12_MONTHS, translate("filter.visit.less.12.months")));
+			lastVisitPK.add(SelectionValues.entry(VISIT_MORE_12_MONTS, translate("filter.visit.more.12.months")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.last.visit"),
+					FILTER_LAST_VISIT, lastVisitPK, true));
+	
+			SelectionValues assessmentPK = new SelectionValues();
+			assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_NONE, translate("filter.assessment.passed.none")));
+			assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_PARTIALLY, translate("filter.assessment.passed.partially")));
+			assessmentPK.add(SelectionValues.entry(ASSESSMENT_PASSED_ALL, translate("filter.assessment.passed.all")));
+			assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_NONE, translate("filter.assessment.not.passed.none")));
+			assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_PARTIALLY, translate("filter.assessment.not.passed.partially")));
+			assessmentPK.add(SelectionValues.entry(ASSESSMENT_NOT_PASSED_ALL, translate("filter.assessment.not.passed.all")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.assessment"),
+					FILTER_ASSESSMENT, assessmentPK, true));
+		}
 		
 		SelectionValues statusPK = new SelectionValues();
+		boolean owner = role == GroupRoles.owner || role == null;
+		if(owner) {
+			statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
+			statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
+		}
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("status.closed")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
-				FILTER_STATUS, statusPK, false));
-		
-		SelectionValues withoutParticipantsPK = new SelectionValues();
-		withoutParticipantsPK.add(SelectionValues.entry(FILTER_WITHOUT_PARTICIPANTS, translate("filter.without.participants")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.without.participants"),
-				FILTER_WITHOUT_PARTICIPANTS, withoutParticipantsPK, false));
-		
-		SelectionValues withParticipantsPK = new SelectionValues();
-		withParticipantsPK.add(SelectionValues.entry(FILTER_WITH_PARTICIPANTS, translate("filter.with.participants")));
-		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.with.participants"),
-				FILTER_WITH_PARTICIPANTS, withParticipantsPK, false));
+				FILTER_STATUS, statusPK, owner));
 
-		SelectionValues certificatesPK = new SelectionValues();
-		certificatesPK.add(SelectionValues.entry(CERTIFICATES_WITHOUT, translate("filter.certificate.without")));
-		certificatesPK.add(SelectionValues.entry(CERTIFICATES_WITH, translate("filter.certificate.with")));
-		certificatesPK.add(SelectionValues.entry(CERTIFICATES_INVALID, translate("filter.certificate.invalid")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.certificates"),
-				FILTER_CERTIFICATES, certificatesPK, false));
+		SelectionValues resourceValues = new SelectionValues();
+		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+		for(OrderedRepositoryHandler handler:supportedHandlers) {
+			String type = handler.getHandler().getSupportedType();
+			String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
+			resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
+		}
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
+				FILTER_RESOURCE_TYPE, resourceValues, true));
+		
+		if(runtimeTypesGroup.loadStatistics()) {
+			SelectionValues withoutParticipantsPK = new SelectionValues();
+			withoutParticipantsPK.add(SelectionValues.entry(FILTER_WITHOUT_PARTICIPANTS, translate("filter.without.participants")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.without.participants"),
+					FILTER_WITHOUT_PARTICIPANTS, withoutParticipantsPK, false));
+			
+			SelectionValues withParticipantsPK = new SelectionValues();
+			withParticipantsPK.add(SelectionValues.entry(FILTER_WITH_PARTICIPANTS, translate("filter.with.participants")));
+			filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.with.participants"),
+					FILTER_WITH_PARTICIPANTS, withParticipantsPK, false));
+	
+			SelectionValues certificatesPK = new SelectionValues();
+			certificatesPK.add(SelectionValues.entry(CERTIFICATES_WITHOUT, translate("filter.certificate.without")));
+			certificatesPK.add(SelectionValues.entry(CERTIFICATES_WITH, translate("filter.certificate.with")));
+			certificatesPK.add(SelectionValues.entry(CERTIFICATES_INVALID, translate("filter.certificate.invalid")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.certificates"),
+					FILTER_CERTIFICATES, certificatesPK, false));
+		}
 		
     	tableEl.setFilters(true, filters, true, false);
     }
@@ -351,22 +374,30 @@ public class CourseListController extends FormBasicController implements Activat
     private void initFiltersPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
+		bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters(BOOKMARK_TAB_ID, translate("search.mark"),
+				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_MARKED, FILTER_MARKED)));
+		bookmarkTab.setFiltersExpanded(true);
+		tabs.add(bookmarkTab);
+		
 		allTab = FlexiFiltersTabFactory.tabWithFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.clear, List.of());
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
-				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						RepositoryEntryStatusEnum.published.name()), FlexiTableFilterValue.valueOf(FILTER_WITH_PARTICIPANTS, FILTER_WITH_PARTICIPANTS)));
-		relevantTab.setFiltersExpanded(true);
-		tabs.add(relevantTab);
-		
-		FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
-				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						RepositoryEntryStatusEnum.coachpublished.name())));
-		accessForCoachTab.setFiltersExpanded(true);
-		tabs.add(accessForCoachTab);
+		FlexiFiltersTab relevantTab = null;
+		if(runtimeTypesGroup.loadStatistics()) {
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							RepositoryEntryStatusEnum.published.name()), FlexiTableFilterValue.valueOf(FILTER_WITH_PARTICIPANTS, FILTER_WITH_PARTICIPANTS)));
+			relevantTab.setFiltersExpanded(true);
+			tabs.add(relevantTab);
+			
+			FlexiFiltersTab accessForCoachTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACCESS_FOR_COACH_TAB_ID, translate("filter.access.for.coach"),
+					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							RepositoryEntryStatusEnum.coachpublished.name())));
+			accessForCoachTab.setFiltersExpanded(true);
+			tabs.add(accessForCoachTab);
+		}
 		
 		FlexiFiltersTab finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB_ID, translate("filter.finished"),
 				TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
@@ -375,7 +406,11 @@ public class CourseListController extends FormBasicController implements Activat
 		tabs.add(finishedTab);
 
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, relevantTab);
+		if(runtimeTypesGroup.loadStatistics()) {
+			tableEl.setSelectedFilterTab(ureq, relevantTab);
+		} else {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+		}
     }
     
 	@Override
@@ -404,8 +439,8 @@ public class CourseListController extends FormBasicController implements Activat
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
 		
-		GroupRoles role = GroupRoles.valueOf(scopeEl.getSelectedKey());
-		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(), role);
+		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(),
+				role, runtimeTypesGroup);
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
 				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey())))
 				.collect(Collectors.toList());
@@ -428,7 +463,7 @@ public class CourseListController extends FormBasicController implements Activat
 	
 	private CourseStatEntryRow forgeRow(CourseStatEntry entry, boolean marked) {
 		RepositoryEntryEducationalType educationalType = getEducationalType(entry);
-		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType);
+		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, runtimeTypesGroup.loadStatistics());
 		row.setMarked(marked);
 		
 		forgeActionsLinks(row);
@@ -544,8 +579,6 @@ public class CourseListController extends FormBasicController implements Activat
 		if(source instanceof RatingFormItem ratingItem
 				&& ratingItem.getUserObject() instanceof CourseStatEntryRow courseStat) {
 			doOpenCourseInfos(ureq, courseStat, "[Ratings:0]");
-		} else if(scopeEl == source) {
-			loadModel();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				if(CMD_SELECT.equals(se.getCommand())) {
@@ -671,7 +704,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private class ToolsController extends BasicController {
 		
 		private final Link infosLink;
-		private final Link assessmentToolLink;
+		private Link assessmentToolLink;
 		
 		private final CourseStatEntryRow row;
 		
@@ -681,8 +714,12 @@ public class CourseListController extends FormBasicController implements Activat
 			
 			VelocityContainer mainVC = createVelocityContainer("tool_courses");
 			
-			assessmentToolLink = LinkFactory.createLink("assessment.tool", "assessment.tool", "assessment", mainVC, this);
-			assessmentToolLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_tool");
+			String type = row.getResourceType();
+			if(("CourseModule".equals(type) || ImsQTI21Resource.TYPE_NAME.equals(type))
+					&& runtimeTypesGroup == CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular) {
+				assessmentToolLink = LinkFactory.createLink("assessment.tool", "assessment.tool", "assessment", mainVC, this);
+				assessmentToolLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_tool");
+			}
 			
 			infosLink = LinkFactory.createLink("infos", "infos", "infos", mainVC, this);
 			infosLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");

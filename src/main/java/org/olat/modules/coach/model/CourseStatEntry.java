@@ -52,6 +52,7 @@ public class CourseStatEntry {
 	private Long educationalTypeKey;
 	
 	private Long resourceId;
+	private String resourceTypeName;
 	
 	private Double averageRating;
 	
@@ -174,6 +175,14 @@ public class CourseStatEntry {
 
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
+	}
+
+	public String getResourceTypeName() {
+		return resourceTypeName;
+	}
+
+	public void setResourceTypeName(String resourceTypeName) {
+		this.resourceTypeName = resourceTypeName;
 	}
 
 	public Date getLifecycleStartDate() {

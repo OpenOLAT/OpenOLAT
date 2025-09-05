@@ -173,7 +173,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 				if(ctrl != null) {
 					ctrl.activate(ureq, entries, null);
 				}
-			} else if("AssessmentTool".equalsIgnoreCase(type)) {
+			} else if("AssessmentTool".equalsIgnoreCase(type) || "AssessmentToolv2".equalsIgnoreCase(type)) {
 				entries = entries.subList(1, entries.size());
 				Activateable2 ctrl = doAssessmentTool(ureq);
 				if(ctrl != null) {

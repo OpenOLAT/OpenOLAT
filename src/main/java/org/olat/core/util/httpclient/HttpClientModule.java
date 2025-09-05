@@ -19,7 +19,12 @@
  */
 package org.olat.core.util.httpclient;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +45,17 @@ public class HttpClientModule extends AbstractSpringModule {
 	private int httpConnectRequestTimeout;
 	@Value("${http.connect.socket.timeout:30000}")
 	private int httpSocketTimeout;
+	@Value("${http.proxy.url}")
+	private String httpProxyUrl;
+	@Value("${http.proxy.port:8080}")
+	private int httpProxyPort;
+	@Value("${http.proxy.exclusion}")
+	private String httpProxyExclusion;
+	private Set<String> httpProxyExclusionUrls;
+	@Value("${http.proxy.user}")
+	private String httpProxyUser;
+	@Value("${http.proxy.pwd}")
+	private String httpProxyPwd;
 	
 	@Autowired
 	private HttpClientModule(CoordinatorManager coordinateManager) {
@@ -70,6 +86,36 @@ public class HttpClientModule extends AbstractSpringModule {
 
 	public int getHttpSocketTimeout() {
 		return httpSocketTimeout;
+	}
+
+	public String getHttpProxyUrl() {
+		return httpProxyUrl;
+	}
+
+	public int getHttpProxyPort() {
+		return httpProxyPort;
+	}
+
+	public Set<String> getHttpProxyExclusionUrls() {
+		if (httpProxyExclusionUrls == null) {
+			if (StringHelper.containsNonWhitespace(httpProxyExclusion)) {
+				httpProxyExclusionUrls = Arrays.asList(httpProxyExclusion.split(",")).stream()
+						.filter(StringHelper::containsNonWhitespace)
+						.map(String::toLowerCase)
+						.collect(Collectors.toSet());
+			} else {
+				httpProxyExclusionUrls = Set.of();
+			}
+		}
+		return httpProxyExclusionUrls;
+	}
+
+	public String getHttpProxyUser() {
+		return httpProxyUser;
+	}
+
+	public String getHttpProxyPwd() {
+		return httpProxyPwd;
 	}
 
 }

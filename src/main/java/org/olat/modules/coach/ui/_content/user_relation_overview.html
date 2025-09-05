@@ -10,6 +10,11 @@
 #if($r.available("userDetails"))
 <div class="o_block_bottom">
 	$r.render("userDetails")
+	#if($pendingMembershipWarning)
+	<div class="o_warning_with_icon">
+		$pendingMembershipWarning
+	</div>
+	#end
 </div>
 #end
 #if($r.available("bookOnBehalf") || $r.available("moreMenu"))

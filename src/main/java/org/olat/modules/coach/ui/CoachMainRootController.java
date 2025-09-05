@@ -79,10 +79,10 @@ public class CoachMainRootController extends BasicController implements Activate
 	private GroupListController groupListCtrl;
 	private LecturesMainController lecturesCtrl;
 	private UserSearchController userSearchCtrl;
-	private CourseListController courseListCtrl;
 	private CoachReportsController reportsCtrl;
 	private CoachPeopleController peopleListCtrl;
 	private OrdersAdminController ordersAdminCtrl;
+	private CoursesAndOthersController courseListCtrl;
 	private OrdersOverviewController ordersOverviewCtrl;
 	private CoachParticipantsListController quickSearchCtrl;
 	private final CoachMainSearchHeaderController searchFieldCtrl;
@@ -274,14 +274,14 @@ public class CoachMainRootController extends BasicController implements Activate
 		content.pushController(translate("groups.menu.title"), groupListCtrl);
 	}
 	
-	private CourseListController doCourses(UserRequest ureq) {
+	private CoursesAndOthersController doCourses(UserRequest ureq) {
 		content.popUpToController(this);
 		cleanUp();
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		courseListCtrl = new CourseListController(ureq, bwControl);
+		courseListCtrl = new CoursesAndOthersController(ureq, bwControl);
 		listenTo(courseListCtrl);
 		content.pushController(translate("courses.menu.title"), courseListCtrl);
 		return courseListCtrl;

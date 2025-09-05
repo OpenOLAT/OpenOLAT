@@ -81,6 +81,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.HomePageDisplayController;
@@ -178,7 +179,9 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private CatalogV2Module catalogV2Module;
 	@Autowired
 	private ACReservationDAO reservationDAO;
-
+	@Autowired
+	private ACService acService;
+	
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  Object statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
 		super(ureq, wControl);
@@ -195,6 +198,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		mainVC = createVelocityContainer("user_relation_overview");
 
 		initUserDetails(ureq, mentee);
+		initPendingMembershipWarning();
 		initButtons();
 		initTabbedPane(ureq);
 
@@ -263,6 +267,14 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		mainVC.put("userDetails", infoCtrl.getInitialComponent());
 	}
 	
+	private void initPendingMembershipWarning() {
+		int pendingMembershipCount = acService.getReservations(mentee).size();
+		if (pendingMembershipCount > 0) {
+			String warning = translate("warning.pending.membership", Integer.toString(pendingMembershipCount));
+			mainVC.contextPut("pendingMembershipWarning", warning);
+		}
+	}
+
 	private void initTabbedPane(UserRequest ureq) {
 		functionsTabbedPane = new TabbedPane("functionsTabbedPane", ureq.getLocale());
 		functionsTabbedPane.addListener(this);

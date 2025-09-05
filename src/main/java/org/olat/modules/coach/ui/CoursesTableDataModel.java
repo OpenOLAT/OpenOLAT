@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -81,6 +82,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			final String certificates = getFiltered(filters, CourseListController.FILTER_CERTIFICATES);
 			final List<String> assessment = getFilteredList(filters, CourseListController.FILTER_ASSESSMENT);
 			final List<String> status = getFilteredList(filters, CourseListController.FILTER_STATUS);
+			final List<String> resourcesTypesList = getFilteredList(filters, CourseListController.FILTER_RESOURCE_TYPE);
+			final Set<String> resourcesTypes = resourcesTypesList == null ? Set.of() : Set.copyOf(resourcesTypesList);
 			final LocalDateTime now = DateUtils.toLocalDateTime(new Date());
 			final String lastVisit = getFiltered(filters, CourseListController.FILTER_LAST_VISIT);
 			final Boolean marked = getFilteredOneClick(filters, CourseListController.FILTER_MARKED);
@@ -94,6 +97,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 				boolean accept = accept(loweredSearchString, row)
 						&& acceptAssessment(assessment, row)
 						&& acceptStatus(status, row)
+						&& acceptResourceType(resourcesTypes, row)
 						&& acceptMarked(marked, row)
 						&& acceptNotVisited(notVisited, row)
 						&& acceptWithParticipants(withParticipants, row)
@@ -126,6 +130,11 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		if(refs == null || refs.isEmpty()) return true;
 		return refs.stream()
 				.anyMatch(ref -> entry.getStatus() != null && ref.equals(entry.getStatus().name()));
+	}
+	
+	private boolean acceptResourceType(Set<String> types, CourseStatEntryRow entry) {
+		if(types == null || types.isEmpty()) return true;
+		return types.contains(entry.getResourceType());
 	}
 	
 	private boolean acceptAssessment(List<String> refs, CourseStatEntryRow entry) {
@@ -278,6 +287,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		return switch(COLS[col]) {
 			case key -> row.getKey();
 			case mark -> row.getMarkLink();
+			case resourceType -> row;
 			case technicalType -> row.getTechnicalType();
 			case name -> row.getDisplayName();
 			case externalId -> row.getExternalId();
@@ -333,7 +343,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		assessmentTool("table.header.assessment.tool"),
 		infos("table.header.infos"),
 		tools("action.more"),
-		taxonomyLevels("table.header.num.of.levels");
+		taxonomyLevels("table.header.num.of.levels"),
+		resourceType("table.header.typeimg");
 		
 		private final String i18nKey;
 		
