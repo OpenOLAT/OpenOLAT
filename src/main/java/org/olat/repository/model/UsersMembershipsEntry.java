@@ -53,13 +53,13 @@ public class UsersMembershipsEntry extends UserPropertiesRow {
 	private List<String> organisations;
 	private List<String> taxonomyLevels;
 	
-	public UsersMembershipsEntry(Long identityKey, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale,
+	public UsersMembershipsEntry(Long identityKey, String externalId, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale,
 			int identityStatus, Date identityCreationDate, Date identityLastLogin,
 			Long repositoryEntryKey, String repositoryEntryDisplayname, String repositoryEntryInitialAuthor,
 			String repositoryEntryExternalId, String repositoryEntryExternalRef,
 			RepositoryEntryStatusEnum repositoryEntryStatus, Boolean repositoryEntryPublicVisible, Date lifecycleFrom, Date lifecycleTo,
 			GroupRoles role, Date registrationDate) {
-		super(identityKey, userPropertyHandlers, identityProps, locale);
+		super(identityKey, externalId, userPropertyHandlers, identityProps, locale);
 		this.repositoryEntryKey = repositoryEntryKey;
 		this.repositoryEntryDisplayname = repositoryEntryDisplayname;
 		this.repositoryEntryInitialAuthor = repositoryEntryInitialAuthor;

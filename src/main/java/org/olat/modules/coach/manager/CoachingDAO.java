@@ -680,7 +680,8 @@ public class CoachingDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  member.key,")
-		  .append("  memberUser.key,");
+		  .append("  memberUser.key,")
+		  .append("  member.externalId,");
 		writeUserProperties("memberUser", sb, userPropertyHandlers);
 		sb.append(" 0 as numOf")
 		  .append(" from organisation as org")
@@ -715,13 +716,14 @@ public class CoachingDAO {
 		for(Object rawObject:rawList) {
 			final Object[] rawStat = (Object[])rawObject;
 			Long identityKey = ((Number)rawStat[0]).longValue();
+			String identityExternalId = (String)rawStat[2];
 			statisticsEntries.computeIfAbsent(identityKey, idKey -> {
-				int pos = 2;
+				int pos = 3;
 				String[] userProperties = new String[numOfProperties];
 				for(int i=0; i<numOfProperties; i++) {
 					userProperties[i] = (String)rawStat[pos++];
 				}
-				ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(idKey, userPropertyHandlers, userProperties, locale);
+				ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(idKey, identityExternalId, userPropertyHandlers, userProperties, locale);
 				statsEntries.add(entry);
 				return entry;
 			});
@@ -734,7 +736,8 @@ public class CoachingDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  member.key,")
-		  .append("  memberUser.key,");
+		  .append("  memberUser.key,")
+		  .append("  member.externalId,");
 		writeUserProperties("memberUser", sb, userPropertyHandlers);
 		sb.append(" 0 as numOf")
 		  .append(" from identitytoidentity as relation")
@@ -753,13 +756,14 @@ public class CoachingDAO {
 		for(Object rawObject:rawList) {
 			final Object[] rawStat = (Object[])rawObject;
 			Long identityKey = ((Number)rawStat[0]).longValue();
+			String externalId = (String)rawStat[2];
 			statisticsEntries.computeIfAbsent(identityKey, idKey -> {
-				int pos = 2;
+				int pos = 3;
 				String[] userProperties = new String[numOfProperties];
 				for(int i=0; i<numOfProperties; i++) {
 					userProperties[i] = (String)rawStat[pos++];
 				}
-				ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(idKey, userPropertyHandlers, userProperties, locale);
+				ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(idKey, externalId, userPropertyHandlers, userProperties, locale);
 				statsEntries.add(entry);
 				return entry;
 			});
@@ -772,7 +776,8 @@ public class CoachingDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  participant.key,")
-		  .append("  participantUser.key,");
+		  .append("  participantUser.key,")
+		  .append("  participant.externalId,");
 		writeUserProperties("participantUser", sb, userPropertyHandlers);
 		sb.append("  count(distinct re.key) as numOfCourse,")
 		  .append("  count(distinct courseInfos.key) as numOfVisited,")
@@ -830,11 +835,11 @@ public class CoachingDAO {
 		final List<ParticipantStatisticsEntry> list = new ArrayList<>(rawList.size());
 		final int numOfProperties = userPropertyHandlers.size();
 		
-		for(Object rawObject:rawList) {
-			Object[] rawStat = (Object[])rawObject;
+		for(Object[] rawStat:rawList) {
 			Long identityKey = ((Number)rawStat[0]).longValue();
+			String externalId = (String)rawStat[2];
 			
-			int pos = 2;
+			int pos = 3;
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
@@ -848,7 +853,7 @@ public class CoachingDAO {
 			long numOfCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, pos++);
 			long numOfInvalidCertificates = PersistenceHelper.extractPrimitiveLong(rawStat, pos);
 
-			ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(identityKey, userPropertyHandlers, userProperties, locale);
+			ParticipantStatisticsEntry entry = new ParticipantStatisticsEntry(identityKey, externalId, userPropertyHandlers, userProperties, locale);
 			entry.setEntries(new Entries(numOfCourses, numOfVisited, numOfCourses - numOfVisited));
 			entry.setLastVisit(lastVisit);
 			entry.setCertificates(new Certificates(numOfCertificates, numOfCoursesWithCertificate, numOfInvalidCertificates));
@@ -1150,7 +1155,7 @@ public class CoachingDAO {
 														 Identity identity, List<Organisation> organisations,
 														 OrganisationRoles organisationRole, Locale locale) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct ident.key");
+		sb.append("select distinct ident.key, ident.externalId");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
 		}
@@ -1182,10 +1187,12 @@ public class CoachingDAO {
 		String[] userProperties = new String[nbProperties];
 
 		Long identityKey = (Long) objects[srcIdx++];
+		String identityExternalId = (String) objects[srcIdx++];
+		
 		for (int propIdx = 0; propIdx < nbProperties; propIdx++) {
 			userProperties[propIdx] = (String) objects[srcIdx++];
 		}
-		return new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
+		return new StudentStatEntry(identityKey, identityExternalId, userPropertyHandlers, userProperties, locale);
 	}
 
 	/**
@@ -1209,7 +1216,8 @@ public class CoachingDAO {
 		Map<String,Object> queryParams = new HashMap<>();
 		sb.append("select ")
 		  .append("  sg_participant_id.id as part_id,")
-		  .append("  sg_participant_user.user_id as part_user_id,");
+		  .append("  sg_participant_user.user_id as part_user_id,")
+		  .append("  sg_participant_id.external_id as part_ext_id,");
 		writeUserProperties("sg_participant_user",  sb, userPropertyHandlers);
 		sb.append("  count(distinct sg_re.repositoryentry_id) as re_count, ")
 		  .append("  count(distinct pg_initial_launch.id) as pg_id ")
@@ -1244,12 +1252,13 @@ public class CoachingDAO {
 			int pos = 0;
 			Long identityKey = ((Number)rawStat[pos++]).longValue();
 			((Number)rawStat[pos++]).longValue();//user key
+			String identityExternalId = (String)rawStat[pos++];
 			
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
 			}
-			StudentStatEntry entry = new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
+			StudentStatEntry entry = new StudentStatEntry(identityKey, identityExternalId, userPropertyHandlers, userProperties, locale);
 			entry.setCountRepo(((Number)rawStat[pos++]).intValue());
 			entry.setInitialLaunch(((Number)rawStat[pos++]).intValue());
 			map.put(identityKey, entry);

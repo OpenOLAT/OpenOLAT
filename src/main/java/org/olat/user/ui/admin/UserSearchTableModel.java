@@ -102,6 +102,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		if(col < UserSearchTableController.USER_PROPS_OFFSET) {
 			switch(COLS[col]) {
 				case id: return userRow.getIdentityKey();
+				case externalId: return userRow.getIdentityExternalId();
 				case creationDate: return userRow.getCreationDate();
 				case lastLogin: return getLastLogin(userRow);
 				case status: return userRow.getStatus();
@@ -163,7 +164,8 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		daysToInactivation("table.identity.days.inactivation"),
 		daysToDeletion("table.identity.days.deletion"),
 		expirationDate("table.identity.expiration.date"),
-		organisations("table.identity.organisations");
+		organisations("table.identity.organisations"),
+		externalId("table.identity.external.id");
 		
 		private final String i18nKey;
 		
