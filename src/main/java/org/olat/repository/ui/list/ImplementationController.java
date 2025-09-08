@@ -36,7 +36,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.curriculum.ui.CurriculumElementListConfig;
 import org.olat.modules.curriculum.ui.CurriculumElementListController;
 import org.olat.repository.RepositoryService;
@@ -55,7 +54,7 @@ public class ImplementationController extends BasicController {
 	
 	private final CurriculumElement rootElement;
 	
-	private CurriculumElementInfosController infosCtrl;
+	private ImplementationCurriculumElementInfosController infosCtrl;
 	private final ImplementationHeaderController headerCtrl;
 	private final CurriculumElementListController elementListCtrl;
 	
@@ -100,6 +99,10 @@ public class ImplementationController extends BasicController {
 			} else if(event instanceof ImplementationEvent) {
 				doOpenDetails(ureq, rootElement);
 			}
+		} else if (source == infosCtrl) {
+			if (event == Event.DONE_EVENT) {
+				stackPanel.popUpToController(this);
+			}
 		} else if(elementListCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
@@ -120,7 +123,7 @@ public class ImplementationController extends BasicController {
 		OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		
-		infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, null, getIdentity(), false);
+		infosCtrl = new ImplementationCurriculumElementInfosController(ureq, bwControl, curriculumElement, null, getIdentity(), false);
 		listenTo(infosCtrl);
 		addToHistory(ureq, infosCtrl);
 		

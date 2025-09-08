@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
@@ -35,6 +36,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -59,6 +61,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CalendarSyncher {
+
+	private static final Logger log = Tracing.createLoggerFor(CalendarSyncher.class);
 	
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
@@ -113,6 +117,7 @@ public class CalendarSyncher {
 			if (eventExternalId.equals(event.getExternalId())) {
 				updateEvent(appointment, event, identity);
 				calendarManager.updateEventFrom(cal, event);
+				log.debug("Event updated: {}", eventExternalId);
 				return;
 			}
 		}
@@ -120,6 +125,7 @@ public class CalendarSyncher {
 		// create new event if no existing
 		KalendarEvent newEvent = createEvent(appointment, identity);
 		calendarManager.addEventTo(cal, newEvent);
+		log.debug("Event created: {}", eventExternalId);
 	}
 	
 	/**

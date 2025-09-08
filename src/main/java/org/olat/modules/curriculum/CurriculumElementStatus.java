@@ -67,6 +67,15 @@ public enum CurriculumElementStatus {
 		return ok;
 	}
 	
+	public static boolean isInArray(CurriculumElementStatus val, CurriculumElementStatus[] array) {
+		for(int i=array.length; i-->0; ) {
+			if(val == array[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public static CurriculumElementStatus[] visibleUser() {
 		return new CurriculumElementStatus[] {
 				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,

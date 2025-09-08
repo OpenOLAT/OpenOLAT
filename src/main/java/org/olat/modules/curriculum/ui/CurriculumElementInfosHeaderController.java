@@ -43,6 +43,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
@@ -150,14 +151,20 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		
 		if (isMember) {
 			startCtrl.getInitialComponent().setVisible(true);
-			if(entry == null && element.isSingleCourseImplementation()) {
-				setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
-				startCtrl.getStartLink().setEnabled(false);
-			//TODO OO-8519 temporary revert
-			} else if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
-				startCtrl.getStartLink().setEnabled(true);
-			} else {
-				setWarning(translate("access.denied.preparation"), translate("access.denied.preparation.hint"));
+			if (element.isSingleCourseImplementation()) {
+				if (entry == null) {
+					setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
+					startCtrl.getStartLink().setEnabled(false);
+				} else if (RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
+					//TODO OO-8519 temporary revert
+					startCtrl.getStartLink().setEnabled(true);
+				} else {
+					setWarning(translate("access.denied.preparation"), translate("access.denied.preparation.hint"));
+					startCtrl.getStartLink().setEnabled(false);
+				}
+			} else if (element != null && !CurriculumElementStatus.isInArray(element.getElementStatus(), CurriculumElementStatus.visibleUser())) {
+				setWarning(translate("access.denied.preparation.element", StringHelper.escapeHtml(element.getType().getDisplayName())),
+						translate("access.denied.preparation.hint"));
 				startCtrl.getStartLink().setEnabled(false);
 			}
 			initLeaveButton();

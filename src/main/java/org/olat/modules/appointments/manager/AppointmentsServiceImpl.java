@@ -480,9 +480,6 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 
 	@Override
 	public Appointment saveAppointment(Appointment appointment) {
-		if (Status.confirmed == appointment.getStatus() || Type.finding != appointment.getTopic().getType()) {
-			calendarSyncher.syncCalendars(appointment.getTopic(), singletonList(appointment));
-		}
 		BigBlueButtonMeeting bbbMeeting = appointment.getBBBMeeting();
 		if (bbbMeeting != null) {
 			bbbMeeting = bigBlueButtonManager.updateMeeting(bbbMeeting);
@@ -491,7 +488,13 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		if (teamsMeeting != null) {
 			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
 		}
-		return appointmentDao.saveAppointment(appointment, bbbMeeting, teamsMeeting);
+		Appointment savedAppointment = appointmentDao.saveAppointment(appointment, bbbMeeting, teamsMeeting);
+		
+		if (Status.confirmed == savedAppointment.getStatus() || Type.finding != savedAppointment.getTopic().getType()) {
+			calendarSyncher.syncCalendars(savedAppointment.getTopic(), singletonList(savedAppointment));
+		}
+		
+		return savedAppointment;
 	}
 	
 	@Override
