@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 
 /**
  * Initial date: 2025-09-05<br>
@@ -36,17 +37,20 @@ public class PendingMembershipRow {
 	private final Date end;
 	private final String type;
 	private final Date confirmationUntil;
+	private final Long curriculumElementKey;
 
 	private FormLink toolsLink;
+	private MemberDetailsController detailsCtrl;
 
 	public PendingMembershipRow(String title, String extRef, Date begin, Date end, String type,
-								Date confirmationUntil) {
+								Date confirmationUntil, Long curriculumElementKey) {
 		this.title = title;
 		this.extRef = extRef;
 		this.begin = begin;
 		this.end = end;
 		this.type = type;
 		this.confirmationUntil = confirmationUntil;
+		this.curriculumElementKey = curriculumElementKey;
 	}
 
 	public String getTitle() {
@@ -79,5 +83,31 @@ public class PendingMembershipRow {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+
+	public MemberDetailsController getDetailsController() {
+		return detailsCtrl;
+	}
+
+	public void setDetailsController(MemberDetailsController detailsCtrl) {
+		this.detailsCtrl = detailsCtrl;
+	}
+
+	public String getDetailsControllerName() {
+		if (detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().getComponent().getComponentName();
+		}
+		return null;
+	}
+
+	public boolean isDetailsControllerAvailable() {
+		if (detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().isVisible();
+		}
+		return false;
+	}
+
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
 	}
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,19 +27,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
+import org.olat.modules.curriculum.ui.member.MemberDetailsController;
+import org.olat.repository.ui.list.ImplementationEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -50,23 +61,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class PendingMembershipsController extends FormBasicController {
+public class PendingMembershipsController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	private static final String ROW_SELECT_ACTION = "select.row";
 
 	private final Identity identity;
 	private FlexiTableElement tableEl;
 	private PendingMembershipsTableModel tableModel;
-	
+	private final VelocityContainer detailsVC;
+
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	
 	public PendingMembershipsController(UserRequest ureq, WindowControl wControl, Identity identity) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "pending_memberships");
 		this.identity = identity;
-		
+
+		detailsVC = createVelocityContainer("pending_membership_details");
+
 		initForm(ureq);
 		loadModel();
 	}
@@ -87,6 +101,38 @@ public class PendingMembershipsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		tableEl.setMultiSelect(true);
+		tableEl.setSearchEnabled(true);
+		
+		tableEl.setDetailsRenderer(detailsVC, this);
+		tableEl.setMultiDetails(true);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (tableEl == source) {
+			if (event instanceof DetailsToggleEvent detailsToggleEvent) {
+				PendingMembershipRow row = tableModel.getObject(detailsToggleEvent.getRowIndex());
+				if (detailsToggleEvent.isVisible()) {
+					doOpenDetails(ureq, row);
+				} else {
+					doCloseDetails(row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof MemberDetailsController detailsCtrl) {
+			if (detailsCtrl.getUserObject() instanceof PendingMembershipRow row) {
+				if (event instanceof ImplementationEvent) {
+					doLearnMoreAboutImplementation(ureq, row);
+				}
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -112,6 +158,59 @@ public class PendingMembershipsController extends FormBasicController {
 		return new PendingMembershipRow(curriculumElement.getDisplayName(), curriculumElement.getIdentifier(),
 				curriculumElement.getBeginDate(), curriculumElement.getEndDate(), 
 				curriculumElement.getType() != null ? curriculumElement.getType().getDisplayName() : "",
-				reservation.getExpirationDate());
+				reservation.getExpirationDate(), curriculumElement.getKey());
+	}
+
+	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> components = new ArrayList<>();
+		if (rowObject instanceof PendingMembershipRow pendingMembershipRow && 
+				pendingMembershipRow.getDetailsController() != null) {
+			components.add(pendingMembershipRow.getDetailsController().getInitialFormItem().getComponent());
+		};
+		return components;
+	}
+	
+	private void doOpenDetails(UserRequest ureq, PendingMembershipRow row) {
+		if (row == null) {
+			return;
+		}
+		
+		if (row.getDetailsController() != null) {
+			removeAsListenerAndDispose(row.getDetailsController());
+			flc.remove(row.getDetailsController().getInitialFormItem());
+		}
+
+		CurriculumElement curriculumElement = curriculumElementDao.loadByKey(row.getCurriculumElementKey());
+		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(curriculumElement);
+		List<CurriculumElement> elements = new ArrayList<>(descendants);
+		elements.add(curriculumElement);
+		
+		MemberDetailsConfig detailsConfig = new MemberDetailsConfig(null, null, false, true, false, true, 
+				true, true, true, true, true);
+		
+		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
+				curriculumElement.getCurriculum(), curriculumElement, elements, identity, detailsConfig);
+		detailsCtrl.setUserObject(row);
+		listenTo(detailsCtrl);
+		row.setDetailsController(detailsCtrl);
+		flc.add(detailsCtrl.getInitialFormItem());
+	}
+	
+	private void doCloseDetails(PendingMembershipRow row) {
+		if (row.getDetailsController() != null) {
+			removeAsListenerAndDispose(row.getDetailsController());
+			flc.remove(row.getDetailsController().getInitialFormItem());
+			row.setDetailsController(null);
+		}
+	}
+	
+	private void doLearnMoreAboutImplementation(UserRequest ureq, PendingMembershipRow row) {
+		//
 	}
 }

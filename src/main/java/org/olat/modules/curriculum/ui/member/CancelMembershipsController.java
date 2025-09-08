@@ -398,7 +398,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		List<CurriculumRoles> rolesToSee = List.of(role);
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true,
-				true, false, false);
+				true, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);
 		listenTo(detailsCtrl);

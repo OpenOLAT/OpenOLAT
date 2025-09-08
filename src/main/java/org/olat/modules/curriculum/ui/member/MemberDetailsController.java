@@ -44,6 +44,8 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
+import org.olat.repository.ui.list.ImplementationEvent;
+import org.olat.repository.ui.list.ImplementationHeaderController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Order;
@@ -147,15 +149,22 @@ public class MemberDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			// Profile
-			PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(getLocale(), member);
-			MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
-					member, config.profileConfig(), memberPortraitUser);
-			listenTo(profile);
-			layoutCont.put("profil", profile.getInitialComponent());
-			
-			String historyTitle = translate("details.history.title", "<small class='o_muted'>" + StringHelper.escapeHtml(selectedCurriculumElement.getDisplayName()) + "</small>" );
-			layoutCont.contextPut("historyTitle", historyTitle);
+			if (config.profileConfig() != null) {
+				// Profile
+				PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(getLocale(), member);
+				MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
+						member, config.profileConfig(), memberPortraitUser);
+				listenTo(profile);
+				layoutCont.put("profil", profile.getInitialComponent());
+
+				String historyTitle = translate("details.history.title", "<small class='o_muted'>" + StringHelper.escapeHtml(selectedCurriculumElement.getDisplayName()) + "</small>" );
+				layoutCont.contextPut("historyTitle", historyTitle);
+			} else if (config.showImplementation() && selectedCurriculumElement != null){
+				ImplementationHeaderController implementationHeaderController = new ImplementationHeaderController(ureq,
+						getWindowControl(), selectedCurriculumElement);
+				listenTo(implementationHeaderController);
+				layoutCont.put("implementationDetails", implementationHeaderController.getInitialComponent());
+			}
 		}
 		
 		editMemberShipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
@@ -200,6 +209,8 @@ public class MemberDetailsController extends FormBasicController {
 			}
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (event instanceof ImplementationEvent) {
+			fireEvent(ureq, event);
 		}
 	}
 	

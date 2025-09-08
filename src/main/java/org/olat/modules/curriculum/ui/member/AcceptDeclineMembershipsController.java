@@ -373,7 +373,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		List<CurriculumRoles> rolesToSee = List.of(role);
 		boolean withOrders = (nextStatus == GroupMembershipStatus.declined);
 		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true,
-				withOrders, false, false);
+				withOrders, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);
 		listenTo(detailsCtrl);
