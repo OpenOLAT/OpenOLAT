@@ -96,9 +96,8 @@ public class AuthoringEditAccessController extends BasicController {
 		this.readOnly = readOnly;
 		
 		mainVC = createVelocityContainer("editproptabpub");
-		if(repositoryService.canEditRuntimeType(entry)) {
-			initRuntimeType(ureq, mainVC);
-		}
+
+		initRuntimeType(ureq, mainVC);
 		initAccessShare(ureq, mainVC);
 		initAccessOffers(ureq, mainVC);
 		// LTI13 is restricted. Only if it is activated for all groups or activated for course owners with author role || administrator can always access that area

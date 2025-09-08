@@ -555,14 +555,6 @@ public interface RepositoryService {
 	Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(RepositoryEntry entry);
 
 	/**
-	 * Returns true if the runtime type of 'entry' can be edited.
-	 *
-	 * @param entry The repository entry to perform the check on.
-	 * @return True if the runtime type of 'entry' can be edited.
-	 */
-	boolean canEditRuntimeType(RepositoryEntry entry);
-
-	/**
 	 * Returns the default runtime type for a 'resource'. If no knows default value can be determined, this
 	 * method returns null.
 	 *
