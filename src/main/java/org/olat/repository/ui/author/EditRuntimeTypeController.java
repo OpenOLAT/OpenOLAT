@@ -111,6 +111,10 @@ public class EditRuntimeTypeController extends FormBasicController {
 		}
 
 		Set<RepositoryEntryRuntimeType> possibleRuntimeTypes = repositoryService.getPossibleRuntimeTypes(entry);
+		if(entry.getRuntimeType() != null) {
+			possibleRuntimeTypes.add(entry.getRuntimeType());
+		}
+
 		SelectionValues runtimeTypeKV = new SelectionValues();
 		if (possibleRuntimeTypes.contains(RepositoryEntryRuntimeType.embedded)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(),
