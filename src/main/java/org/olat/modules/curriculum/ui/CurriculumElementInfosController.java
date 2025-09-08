@@ -33,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
@@ -94,6 +95,9 @@ public class CurriculumElementInfosController extends BasicController {
 		super(ureq, wControl);
 		this.element = element;
 		this.entry = entry;
+		
+		// Reset the velocity root, so that the children find the template
+		setVelocityRoot(Util.getPackageVelocityRoot(CurriculumElementInfosController.class));
 		mainVC = createVelocityContainer("curriculum_element_infos");
 		putInitialPanel(mainVC);
 		
