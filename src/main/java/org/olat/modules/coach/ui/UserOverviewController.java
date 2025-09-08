@@ -269,8 +269,11 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	
 	private void initPendingMembershipWarning() {
 		int pendingMembershipCount = acService.getReservations(mentee).size();
-		if (pendingMembershipCount > 0) {
-			String warning = translate("warning.pending.membership", Integer.toString(pendingMembershipCount));
+		if (pendingMembershipCount > 1) {
+			String warning = translate("warning.pending.membership.plural", Integer.toString(pendingMembershipCount));
+			mainVC.contextPut("pendingMembershipWarning", warning);
+		} else if (pendingMembershipCount == 1) {
+			String warning = translate("warning.pending.membership.singular");
 			mainVC.contextPut("pendingMembershipWarning", warning);
 		}
 	}
