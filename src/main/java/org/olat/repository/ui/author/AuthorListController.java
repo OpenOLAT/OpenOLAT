@@ -766,7 +766,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 		if(runtimeTypeKV.size() > 1) {
-			filters.add(new FlexiTableSingleSelectionFilter(translate("cif.runtime.type"),
+			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.runtime.type"),
 					AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, false));
 		}
 
