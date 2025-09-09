@@ -116,7 +116,7 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 		BigBlueButtonMeeting bigBlueButtonMeeting = addLectureCtxt.getBigBlueButtonMeeting();
 		TeamsMeeting teamsMeeting = addLectureCtxt.getTeamsMeeting();
 		if(addLectureCtxt.isWithBigBlueButtonMeeting() && bigBlueButtonMeeting != null) {
-			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting);
+			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting, true);
 			lectureBlock.setBBBMeeting(bigBlueButtonMeeting);
 			lectureBlock.setTeamsMeeting(null);
 			if(teamsMeeting != null) {

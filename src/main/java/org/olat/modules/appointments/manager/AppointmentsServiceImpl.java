@@ -482,7 +482,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	public Appointment saveAppointment(Appointment appointment) {
 		BigBlueButtonMeeting bbbMeeting = appointment.getBBBMeeting();
 		if (bbbMeeting != null) {
-			bbbMeeting = bigBlueButtonManager.updateMeeting(bbbMeeting);
+			bbbMeeting = bigBlueButtonManager.updateMeeting(bbbMeeting, false);
 		}
 		TeamsMeeting teamsMeeting = appointment.getTeamsMeeting();
 		if (teamsMeeting != null) {
@@ -859,7 +859,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		meeting.setDescription(topic.getDescription());
 		meeting.setStartDate(appointment.getStart());
 		meeting.setEndDate(appointment.getEnd());
-		meeting = bigBlueButtonManager.updateMeeting(meeting);
+		meeting = bigBlueButtonManager.updateMeeting(meeting, false);
 		return appointmentDao.saveAppointment(appointment, meeting, null);
 	}
 

@@ -114,7 +114,7 @@ public class SlideUploadController extends FormBasicController {
 		meeting = bigBlueButtonManager.getMeeting(meeting);
 		VFSContainer slidesContainer = bigBlueButtonManager.getSlidesContainer(meeting);
 		fileEl.moveUploadFileTo(slidesContainer);
-		meeting = bigBlueButtonManager.updateMeeting(meeting);
+		meeting = bigBlueButtonManager.updateMeeting(meeting, true);
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -489,9 +489,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 
 	@Override
-	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting) {
+	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting, boolean isCalendarEvent) {
 		meeting = bigBlueButtonMeetingDao.updateMeeting(meeting);
-		updateCalendarEvent(meeting);
+		if (isCalendarEvent) {
+			updateCalendarEvent(meeting);
+		}
 		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
 			OLATResource resource = resourceManager.findResourceable(meeting.getKey(), TASK_MEETING_RESNAME);
 			if(resource == null) {

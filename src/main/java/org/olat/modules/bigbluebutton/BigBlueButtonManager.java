@@ -133,7 +133,7 @@ public interface BigBlueButtonManager {
 	 */
 	public BigBlueButtonMeeting getMeeting(String identifier);
 	
-	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting);
+	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting, boolean isCalendarEvent);
 	
 	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Identity creator);
 	

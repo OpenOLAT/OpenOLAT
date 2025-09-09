@@ -852,7 +852,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private void updateOnlineMeetings() {
 		boolean enableOnlineMeeting = enabledOnlineMeetingEl.isVisible() && enabledOnlineMeetingEl.isOn() && onlineMeetingEl.isOneSelected();
 		if(enableOnlineMeeting && BIGBLUEBUTTON_MEETING.equals(onlineMeetingEl.getSelectedKey())) {
-			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting);
+			bigBlueButtonMeeting = bigBlueButtonManager.updateMeeting(bigBlueButtonMeeting, true);
 			lectureBlock.setBBBMeeting(bigBlueButtonMeeting);
 			lectureBlock.setTeamsMeeting(null);
 			if(teamsMeeting != null) {

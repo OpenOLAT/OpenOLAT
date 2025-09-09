@@ -413,7 +413,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 				}
 			}
 			
-			bigBlueButtonManager.updateMeeting(bMeeting);
+			bigBlueButtonManager.updateMeeting(bMeeting, true);
 		}
 	}
 	
