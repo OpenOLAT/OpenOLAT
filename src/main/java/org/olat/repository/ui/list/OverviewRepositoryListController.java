@@ -254,7 +254,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			if(CMD_IN_PREPARATION.equalsIgnoreCase(scope) && hasScope(CMD_IN_PREPARATION)) {
 				doOpenInPreparation(ureq);
 				scopesSelection.setSelectedKey(CMD_IN_PREPARATION);
-			} else if("CurriculumElement".equals(scope)) {
+			} else if("Implementation".equals(scope) || "CurriculumElement".equals(scope)) {
 				activateCurriculumElement(ureq, entry.getOLATResourceable().getResourceableId());
 			} else {
 				RepositoryEntryListController listCtrl = doOpenEntries(ureq);
@@ -275,15 +275,22 @@ public class OverviewRepositoryListController extends BasicController implements
 			scopesSelection.setSelectedKey(scopeId);
 		} else {
 			CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(elementKey));
+			if (element == null) {
+				return;
+			}
 			if(element.getParent() != null) {
 				element = curriculumService.getImplementationOf(element);
 			}
 			entries = BusinessControlFactory.getInstance()
 					.createCEListFromString(OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()));
+			if (CurriculumElementStatus.preparation == element.getElementStatus()) {
+				doOpenInPreparation(ureq);
+				scopesSelection.setSelectedKey(CMD_IN_PREPARATION);
+			} else {
+				doOpenImplementationsList(ureq).activate(ureq, entries, null);
+				scopesSelection.setSelectedKey(CMD_IMPLEMENTATIONS_LIST);
+			}
 		}
-		
-		doOpenImplementationsList(ureq).activate(ureq, entries, null);
-		scopesSelection.setSelectedKey(scopeId);
 	}
 	
 	private boolean hasScope(String id) {
