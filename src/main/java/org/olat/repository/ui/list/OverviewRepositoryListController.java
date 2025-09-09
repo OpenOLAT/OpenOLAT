@@ -54,6 +54,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.site.CoachSite;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -79,7 +80,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OverviewRepositoryListController extends BasicController implements Activateable2, GenericEventListener {
-
+	
+	public static final List<CurriculumElementStatus> SCOPE_ELEMENT_STATUS = List.of(
+			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+			CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+			CurriculumElementStatus.finished);
+	
 	private static final String CMD_MY_COURSES = "MyCourses";
 	private static final String CMD_IN_PREPARATION = "InPreparation";
 	private static final String CMD_IMPLEMENTATION = "Implementation";
@@ -180,7 +186,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		if(!guestOnly) {
 			if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
-				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true, participantsOnly);
+				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true, participantsOnly, SCOPE_ELEMENT_STATUS);
 				for(CurriculumElement implementation:implementations) {
 					String name = StringHelper.escapeHtml(implementation.getDisplayName());
 					String hint = scopeDatesHint(implementation);

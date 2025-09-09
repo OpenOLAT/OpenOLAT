@@ -160,7 +160,7 @@ public class ImplementationsListController extends FormBasicController implement
 	private void loadModel() {
 		Set<Long> markedElementKeys = markManager.getMarkResourceIds(getIdentity(), "CurriculumElement", List.of());
 		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(),
-				false, participantsOnly);
+				false, participantsOnly, null);
 		List<ImplementationRow> rows = new ArrayList<>();
 		for(CurriculumElement implementation:implementations) {
 			boolean marked = markedElementKeys.contains(implementation.getKey());

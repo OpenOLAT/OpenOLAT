@@ -58,12 +58,13 @@ public class RepositoryEntryMyImplementationsQueries {
 	private CurriculumElementDAO curriculumElementDao;
 	
 	public boolean hasImplementations(IdentityRef identity, boolean participantsOnly) {
-		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, participantsOnly);
+		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, participantsOnly, null);
 		return elements != null && !elements.isEmpty() && elements.get(0) != null;
 	}
 
-	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly, boolean participantsOnly) {
-		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, participantsOnly);
+	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly,
+			boolean participantsOnly, List<CurriculumElementStatus> status) {
+		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, participantsOnly, status);
 
 		List<CurriculumElement> implementations;
 		if(elements.isEmpty()) {
@@ -93,7 +94,8 @@ public class RepositoryEntryMyImplementationsQueries {
 		return implementations;
 	}
 	
-	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults, boolean participantsOnly) {
+	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
+			boolean participantsOnly, List<CurriculumElementStatus> searchStatus) {
 		String query = """
 			select el from curriculumelement el
 			left join el.type curElementType
@@ -113,9 +115,9 @@ public class RepositoryEntryMyImplementationsQueries {
 			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
 			))""";
 		
-		List<String> status = VISIBLE_STATUS.stream()
-				.map(CurriculumElementStatus::name)
-				.toList();
+		List<String> status = searchStatus != null
+				? searchStatus.stream().map(CurriculumElementStatus::name).toList()
+				: VISIBLE_STATUS.stream().map(CurriculumElementStatus::name).toList();
 		List<String> roles = participantsOnly
 				? List.of(GroupRoles.participant.name())
 				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name());
