@@ -19,6 +19,7 @@
  */
 package org.olat.registration;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,12 +42,13 @@ public class RegistrationMailStep03Controller extends StepFormBasicController {
 	private final RegistrationStepsListener registrationStepsListener;
 	private final MailValidationController emailForm;
 
-	public RegistrationMailStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm,
+	public RegistrationMailStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm, Invitation invitation,
 											StepsRunContext runContext, RegistrationStepsListener registrationStepsListener) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
 		this.registrationStepsListener = registrationStepsListener;
-		this.emailForm = new MailValidationController(ureq, wControl, rootForm, true, false, runContext);
+		String invitationEmail = invitation == null ? null : invitation.getMail();
+		emailForm = new MailValidationController(ureq, wControl, rootForm, invitationEmail, true, false, runContext);
 
 		initForm(ureq);
 	}

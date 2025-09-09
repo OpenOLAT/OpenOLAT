@@ -19,6 +19,7 @@
  */
 package org.olat.registration;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -34,10 +35,12 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class RegistrationMailStep03 extends BasicStep {
 
+	private final Invitation invitation;
 	private final boolean isAdditionalRegistrationFormEnabled;
 
-	public RegistrationMailStep03(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled) {
+	public RegistrationMailStep03(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled, Invitation invitation) {
 		super(ureq);
+		this.invitation = invitation;
 		this.isAdditionalRegistrationFormEnabled = isAdditionalRegistrationFormEnabled;
 
 		setI18nTitleAndDescr("admin.enable.email.validation", "step1.reg.text");
@@ -47,7 +50,7 @@ public class RegistrationMailStep03 extends BasicStep {
 
 	private void updateNextStep(UserRequest ureq, boolean isDomainAllowed) {
 		if (isDomainAllowed) {
-			setNextStep(new RegistrationPersonalDataStep04(ureq, null, isAdditionalRegistrationFormEnabled));
+			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		} else {
 			setNextStep(new RegistrationSupportFormStep03(ureq, true));
 		}
@@ -60,6 +63,6 @@ public class RegistrationMailStep03 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationMailStep03Controller(ureq, wControl, form, runContext, this::updateNextStep);
+		return new RegistrationMailStep03Controller(ureq, wControl, form, invitation, runContext, this::updateNextStep);
 	}
 }

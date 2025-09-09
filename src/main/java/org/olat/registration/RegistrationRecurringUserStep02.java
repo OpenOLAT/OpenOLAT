@@ -54,7 +54,7 @@ public class RegistrationRecurringUserStep02 extends BasicStep {
 		if (isRecurringUser) {
 			setNextStep(new RegistrationSupportFormStep03(ureq, false));
 		} else if (isEmailValidationEnabled) {
-			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
+			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled, invitation));
 		} else {
 			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		}
