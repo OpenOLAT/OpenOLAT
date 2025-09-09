@@ -40,19 +40,24 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsTog
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.repository.ui.list.ImplementationEvent;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.PendingMembershipsTableModel.PendingMembershipCol;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,12 +74,13 @@ public class PendingMembershipsController extends FormBasicController implements
 	private FlexiTableElement tableEl;
 	private PendingMembershipsTableModel tableModel;
 	private final VelocityContainer detailsVC;
+	private FlexiFiltersTab allTab;
 
 	@Autowired
-	private ACService acService;
-	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
-	
+	@Autowired
+	private ACReservationDAO reservationDao;
+
 	public PendingMembershipsController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, "pending_memberships");
 		this.identity = identity;
@@ -99,13 +105,25 @@ public class PendingMembershipsController extends FormBasicController implements
 		
 		tableModel = new  PendingMembershipsTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
-		tableEl.setMultiSelect(true);
+		//tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
 		
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+		
+		initFiltersPreset(ureq);
+	}
+
+	private void initFiltersPreset(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("all", translate("filter.all"), 
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(allTab);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 
 	@Override
@@ -118,6 +136,8 @@ public class PendingMembershipsController extends FormBasicController implements
 				} else {
 					doCloseDetails(row);
 				}
+			} else if (event instanceof FlexiTableSearchEvent) {
+				loadModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -141,14 +161,28 @@ public class PendingMembershipsController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		List<ResourceReservation> reservations = acService.getReservations(identity);
+		List<ResourceReservation> reservations = reservationDao.loadReservations(identity);
 		Set<OLATResource> resources = reservations.stream().map(ResourceReservation::getResource).collect(Collectors.toSet());
 		List<CurriculumElement> curriculumElements = curriculumElementDao.loadElementsByResources(resources);
 		Map<Long, CurriculumElement> resourceKeyToElement = new HashMap<>();
 		for (CurriculumElement curriculumElement : curriculumElements) {
 			resourceKeyToElement.put(curriculumElement.getResource().getKey(), curriculumElement);
 		}
-		List<PendingMembershipRow> rows = reservations.stream().map(r -> toRow(r, resourceKeyToElement)).toList();
+		String searchString = tableEl.getQuickSearchString() != null ? tableEl.getQuickSearchString().toLowerCase() : null;
+		List<PendingMembershipRow> rows = reservations.stream().map(r -> toRow(r, resourceKeyToElement))
+				.filter(r -> {
+					if (!StringHelper.containsNonWhitespace(searchString)) {
+						return true;
+					}
+					if (StringHelper.containsNonWhitespace(r.getTitle()) && r.getTitle().toLowerCase().contains(searchString)) {
+						return true;
+					}
+					if (StringHelper.containsNonWhitespace(r.getExtRef()) && r.getExtRef().toLowerCase().contains(searchString)) {
+						return true;
+					}
+					return false;
+				})
+				.toList();
 		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
@@ -158,7 +192,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		return new PendingMembershipRow(curriculumElement.getDisplayName(), curriculumElement.getIdentifier(),
 				curriculumElement.getBeginDate(), curriculumElement.getEndDate(), 
 				curriculumElement.getType() != null ? curriculumElement.getType().getDisplayName() : "",
-				reservation.getExpirationDate(), curriculumElement.getKey());
+				reservation.getExpirationDate(), curriculumElement.getKey(), reservation.getKey());
 	}
 
 	@Override
