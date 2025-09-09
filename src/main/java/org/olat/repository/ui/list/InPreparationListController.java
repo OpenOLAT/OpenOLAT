@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -50,9 +51,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -110,6 +113,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InPreparationListController extends FormBasicController implements FlexiTableComponentDelegate {
 
+	static final String FAVORITE_TAB = "Marks";
+	static final String ALL_TAB = "All";
+	
+	private FlexiFiltersTab favoriteTab;
 	private FlexiFiltersTab allTab;
 	
 	private FlexiTableElement tableEl;
@@ -161,11 +168,22 @@ public class InPreparationListController extends FormBasicController implements 
 		
 		initForm(ureq);
 		loadModel();
+		
+		if(tableModel.hasMarked()) {
+			tableEl.setSelectedFilterTab(ureq, favoriteTab);
+		} else {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+		}
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(InPreparationCols.mark);
+		markColModel.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+		markColModel.setExportable(false);
+		columnsModel.addFlexiColumnModel(markColModel);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InPreparationCols.type,
 				new TypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InPreparationCols.key));
@@ -208,6 +226,11 @@ public class InPreparationListController extends FormBasicController implements 
 	private void initFilterPresets(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
+		favoriteTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAVORITE_TAB, translate("search.mark"),
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
+		tabs.add(favoriteTab);
+		
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("All", translate("search.all"),
 				TabSelectionBehavior.reloadData, List.of());
 		allTab.setElementCssClass("o_sel_inpreparation_all");
@@ -219,6 +242,11 @@ public class InPreparationListController extends FormBasicController implements 
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues markedKeyValue = new SelectionValues();
+		markedKeyValue.add(SelectionValues.entry("marked", translate("search.mark")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
+				FilterButton.MARKED.name(), markedKeyValue, true));
 		
 		// authors / owners
 		filters.add(new FlexiTableTextFilter(translate("cif.author"), FilterButton.AUTHORS.name(), true));
@@ -405,6 +433,9 @@ public class InPreparationListController extends FormBasicController implements 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
 			if(event instanceof FlexiTableSearchEvent) {
+				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+				tableEl.reset(true, true, false);
+			} else if (event instanceof FlexiTableFilterTabEvent) {
 				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 				tableEl.reset(true, true, false);
 			}
