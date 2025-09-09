@@ -53,6 +53,11 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 		this.locale = locale;
 	}
 	
+	public boolean hasMarked() {
+		if(backups == null || backups.isEmpty()) return false;
+		return backups.stream().anyMatch(InPreparationRow::isMarked);
+	}
+	
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
@@ -66,10 +71,17 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 		if(StringHelper.containsNonWhitespace(searchString)
 				|| (filters != null && !filters.isEmpty() && filters.get(0) != null)) {
 			
+			boolean markedOnly = false;
 			String authors = null;
 			List<Long> educationalTypesKeys = List.of();
 			String lowerSearchString = searchString.toLowerCase();
 			Long searchKey = StringHelper.isLong(lowerSearchString) ? Long.valueOf(lowerSearchString) : null;
+			
+			FlexiTableFilter markedFilter = FlexiTableFilter.getFilter(filters, FilterButton.MARKED.name());
+			if (markedFilter != null) {
+				String markedValue = ((FlexiTableExtendedFilter)markedFilter).getValue();
+				markedOnly = StringHelper.containsNonWhitespace(markedValue) ? true : false;
+			}
 			
 			FlexiTableFilter authorsFilter = FlexiTableFilter.getFilter(filters, FilterButton.AUTHORS.name());
 			if (authorsFilter != null) {
@@ -88,6 +100,7 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 			List<InPreparationRow> filteredRows = new ArrayList<>();
 			for(InPreparationRow row:backups) {
 				if((quickSearch(lowerSearchString, row) || searchKey(searchKey, row))
+						&& acceptMarked(markedOnly, row)
 						&& acceptEducationalTypes(educationalTypesKeys, row)
 						&& acceptAuthors(authors, row)) {
 					filteredRows.add(row);
@@ -98,6 +111,13 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 		} else {
 			super.setObjects(backups);
 		}
+	}
+	
+	private boolean acceptMarked(boolean markedOnly, InPreparationRow row) {
+		if (markedOnly) {
+			return row.isMarked();
+		}
+		return true;
 	}
 	
 	private boolean acceptAuthors(String author, InPreparationRow row) {
@@ -165,6 +185,7 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 			case details -> row.getDetailsLink();
 			case detailsSmall -> row.getDetailsSmallLink();
 			case type -> row;
+			case mark -> row.getMarkLink();
 			default -> "ERROR";
 		};
 	}
@@ -191,7 +212,8 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 		educationalType("table.header.educational.type"),
 		details("table.header.learn.more"),
 		detailsSmall("table.header.learn.more"),
-		type("table.header.typeimg");
+		type("table.header.typeimg"),
+		mark("table.header.mark");
 		
 		private final String i18nKey;
 		

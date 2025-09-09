@@ -69,7 +69,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-1");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false, true);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false, true, null);
 		Assert.assertNotNull(list);
 	}
 	
@@ -78,7 +78,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, true);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, true, null);
 		Assert.assertNotNull(list);
 	}
 	
@@ -100,7 +100,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -123,7 +123,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -146,9 +146,45 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
 		Assertions.assertThat(list)
 			.isEmpty();
+	}
+	
+	@Test
+	public void searchImplementationStatus() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-5");
+		
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-impl-5", "Curriculum for implementation", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType structuredType = curriculumElementTypeDao.createCurriculumElementType("typ-structred-cur-el-5", "Structured type", "", "");
+		structuredType.setAllowedAsRootElement(true);
+		structuredType.setMaxRepositoryEntryRelations(0);
+		structuredType.setSingleElement(false);
+		structuredType = curriculumElementTypeDao.update(structuredType);
+			
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-51", "51. Element",
+				CurriculumElementStatus.preparation, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-52", "52. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element2, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-53", "53. Element",
+				CurriculumElementStatus.deleted, new Date(), new Date(), null, structuredType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element3, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
+		Assertions.assertThat(list)
+			.containsExactlyInAnyOrder(element1, element2);
+		
+		list = myImplementationsQueries.searchImplementations(participant, false, true,
+				List.of(CurriculumElementStatus.active, CurriculumElementStatus.confirmed));
+		Assertions.assertThat(list)
+			.containsExactlyInAnyOrder(element2);
 	}
 	
 	@Test

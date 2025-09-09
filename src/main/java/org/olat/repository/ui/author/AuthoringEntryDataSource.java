@@ -219,9 +219,10 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				searchParams.setEducationalTypeKeys(educationalTypes);
 				break;
 			case RUNTIMETYPE:
-				String runtimeType = ((FlexiTableSingleSelectionFilter)filter).getValue();
-				if(StringHelper.containsNonWhitespace(runtimeType)) {
-					searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.valueOf(runtimeType)));
+				if (filter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter && multiSelectionFilter.getValues() != null) {
+					List<RepositoryEntryRuntimeType> runtimeTypes = multiSelectionFilter.getValues().stream()
+							.map(RepositoryEntryRuntimeType::valueOf).collect(Collectors.toList());
+					searchParams.setRuntimeTypes(runtimeTypes);
 				} else {
 					searchParams.setRuntimeTypes(configuration.getAllowedRuntimeTypes());
 				}

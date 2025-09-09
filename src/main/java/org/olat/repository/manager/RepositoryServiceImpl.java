@@ -1338,17 +1338,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public boolean canEditRuntimeType(RepositoryEntry entry) {
-		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
-			if (curriculumModule.isEnabled()) {
-				return true;
-			}
-			return false;
-		}
-		return true;
-	}
-
-	@Override
 	public RepositoryEntryRuntimeType getDefaultRuntimeType(OLATResource resource) {
 		if ("CourseModule".equals(resource.getResourceableTypeName())) {
 			if (curriculumModule.isEnabled()) {

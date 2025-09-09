@@ -1,4 +1,11 @@
-$r.render("profil")
+#if($r.available("profil"))
+	$r.render("profil")
+#end
+#if($r.available("implementationDetails"))
+<div class="o_table_details o_entry_wrapper">
+	$r.render("implementationDetails")
+</div>
+#end
 
 #if($r.available("edit.member") || $r.available("accept") || $r.available("decline"))
 <div class="o_button_group o_button_group_right">

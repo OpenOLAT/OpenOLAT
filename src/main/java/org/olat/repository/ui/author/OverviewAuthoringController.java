@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -37,11 +38,14 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.archiver.ArchivesOverviewController;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -60,6 +64,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private final boolean isGuestOnly;
 	private final EventBus eventBus;
 	
+	@Autowired
+	private CurriculumModule curriculumModule;
+
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
@@ -71,6 +78,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
 		AuthorListConfiguration config = AuthorListConfiguration.allEnabled();
+		config.setAllowedRuntimeTypes(allowedRuntimeTypes());
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.setCanCopy(true);
 		searchParams.setCanDownload(true);
@@ -84,7 +92,15 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		putInitialPanel(stackPanel);
 	}
-	
+
+	private List<RepositoryEntryRuntimeType> allowedRuntimeTypes() {
+		List<RepositoryEntryRuntimeType> runtimeTypes = new ArrayList<>(List.of(RepositoryEntryRuntimeType.values()));
+		if (!curriculumModule.isEnabled()) {
+			runtimeTypes.remove(RepositoryEntryRuntimeType.curricular);
+		}
+		return runtimeTypes;
+	}
+
 	@Override
 	protected void doDispose() {
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
