@@ -201,7 +201,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	private void initEmailValidation(UserRequest ureq, TextElement mailEl) {
 		flc.remove(submitBtn);
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), mainForm,
-				true, false, null, mailEl);
+				null, true, false, null, mailEl);
 		listenTo(mailValidationCtrl);
 		flc.add(mailValidationCtrl.getInitialFormItem());
 	}

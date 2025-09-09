@@ -80,6 +80,7 @@ public class MailValidationController extends FormBasicController {
 	private TextElement otpEl;
 	private StaticTextElement codeNotReceivedStaticText;
 
+	private String invitationEmail;
 	private TemporaryKey temporaryKey;
 
 	private FormLayoutContainer validationCont;
@@ -100,17 +101,18 @@ public class MailValidationController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 
-	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
+	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm, String invitationEmail,
 									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext) {
-		this(ureq, wControl, mainForm, isRegistrationProcess, isUserManager, runContext, null);
+		this(ureq, wControl, mainForm, invitationEmail, isRegistrationProcess, isUserManager, runContext, null);
 	}
 
-	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
+	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm, String invitationEmail,
 									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext,
 									TextElement externalMailEl) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.isRegistrationProcess = isRegistrationProcess;
 		this.isUserManager = isUserManager;
+		this.invitationEmail = invitationEmail;
 		this.runContext = runContext;
 		this.externalMailEl = externalMailEl;
 		initForm(ureq);
@@ -127,14 +129,16 @@ public class MailValidationController extends FormBasicController {
 		}
 
 		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("mail_cont", getTranslator());
+		mailCont.setElementCssClass("o_sel_registration_validate_form");
 		formLayout.add(mailCont);
 
 		if (externalMailEl != null) {
 			formLayout.setFormLayout("default");
 			mailEl = externalMailEl;
 		} else {
-			mailEl = uifactory.addTextElement("mail", "email.address", 255, "", mailCont);
+			mailEl = uifactory.addTextElement("mail", "email.address", 255, invitationEmail, mailCont);
 			mailEl.setElementCssClass("o_sel_registration_email");
+			mailEl.setEnabled(!StringHelper.containsNonWhitespace(invitationEmail));
 			mailEl.setMandatory(true);
 		}
 
@@ -202,7 +206,9 @@ public class MailValidationController extends FormBasicController {
 		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
 		String[] whereFromAttrs = new String[]{ serverPath, today };
 
-		if (isEmailEligibleForRegistration(email)) {
+		if(StringHelper.containsNonWhitespace(invitationEmail)) {
+			loadOrCreateTemporaryKey(ureq, invitationEmail, ip, whereFromAttrs);
+		} else if ( isEmailEligibleForRegistration(email)) {
 			loadOrCreateTemporaryKey(ureq, email, ip, whereFromAttrs);
 		} else {
 			// if users with this email address exists, they are informed.

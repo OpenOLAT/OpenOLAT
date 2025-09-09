@@ -41,10 +41,10 @@ public class RegistrationDisclaimerStep01 extends BasicStep {
 		super(ureq);
 
 		setI18nTitleAndDescr("disclaimer.header", "step4.reg.text");
-		if (isRecurringRegistrationEnabled) {
+		if (invitation == null && isRecurringRegistrationEnabled) {
 			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled, isEmailValidationEnabled, invitation));
-		} else if (isEmailValidationEnabled && invitation == null) {
-			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
+		} else if (isEmailValidationEnabled) {
+			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled, invitation));
 		} else {
 			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		}

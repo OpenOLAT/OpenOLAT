@@ -221,8 +221,11 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private void doOpenRegistration(UserRequest ureq) {
 		boolean isAdditionalRegistrationFormEnabled = !userManager
 				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+		boolean emailValidation = registrationModule.isEmailValidationEnabled();
+		boolean allowRecurringUserEnabled = registrationModule.isAllowRecurringUserEnabled();
+		
 		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
-				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled, registrationModule.isAllowRecurringUserEnabled());
+				emailValidation, isAdditionalRegistrationFormEnabled, allowRecurringUserEnabled);
 		// Skip the language step if there is only one language enabled - default
 		// language will be used. Use the calculated next step as start step instead.
 		if (i18nModule.getEnabledLanguageKeys().size() == 1) {	

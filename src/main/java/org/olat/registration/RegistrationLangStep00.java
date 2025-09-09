@@ -44,10 +44,10 @@ public class RegistrationLangStep00 extends BasicStep {
 		setI18nTitleAndDescr("select.language", "select.language.description");
 		if (isDisclaimerEnabled) {
 			setNextStep(new RegistrationDisclaimerStep01(ureq, invitation, isEmailValidationEnabled, isAdditionalRegistrationFormEnabled, isRecurringRegistrationEnabled));
-		} else if (isRecurringRegistrationEnabled) {
+		} else if (invitation == null && isRecurringRegistrationEnabled) {
 			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled, isEmailValidationEnabled, invitation));
-		} else if (invitation == null && isEmailValidationEnabled) {
-			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
+		} else if (isEmailValidationEnabled) {
+			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled, invitation));
 		} else {
 			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		}

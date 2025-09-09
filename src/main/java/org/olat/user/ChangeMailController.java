@@ -64,7 +64,7 @@ public class ChangeMailController extends FormBasicController {
 		uifactory.addStaticTextElement("change.mail.current", currentMail, mailCont);
 
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
-				false, isUserManager, null);
+				null, false, isUserManager, null);
 		listenTo(mailValidationCtrl);
 		formLayout.add(mailValidationCtrl.getInitialFormItem());
 

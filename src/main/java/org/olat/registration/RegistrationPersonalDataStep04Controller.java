@@ -56,10 +56,10 @@ public class RegistrationPersonalDataStep04Controller extends StepFormBasicContr
 		String lastName = invitation != null ? invitation.getLastName() : null;
 		String email = invitation != null ? invitation.getMail() : (String) runContext.get(RegWizardConstants.EMAIL);
 		User user = invitation != null ? invitation.getIdentity().getUser() : null;
-		boolean usernameReadOnly = invitation != null;
+		boolean username = invitation == null;
 
 		registrationPersonalDataCtrl = new RegistrationPersonalDataController(ureq, getWindowControl(), runContext, i18nModule.getLocaleKey(getLocale()),
-				proposedUsername, firstName, lastName, email, user, false, usernameReadOnly, rootForm);
+				proposedUsername, firstName, lastName, email, user, false, username, rootForm);
 		initForm(ureq);
 	}
 

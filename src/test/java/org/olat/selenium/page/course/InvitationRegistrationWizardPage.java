@@ -93,6 +93,31 @@ public class InvitationRegistrationWizardPage {
 		return this;
 	}
 	
+	public InvitationRegistrationWizardPage nextToValidateEmail() {
+		OOGraphene.nextStep(browser);
+		
+		By cred1By = By.cssSelector(".o_wizard_steps_current .o_sel_registration_email");
+		OOGraphene.waitElement(cred1By, browser);
+		return this;
+	}
+	
+	public InvitationRegistrationWizardPage sendValidationToken() {
+		By sendValidationBy = By.cssSelector(".o_wizard_steps_current div.o_sel_registration_validate_form a.btn.btn-primary");
+		OOGraphene.waitElement(sendValidationBy, browser);
+		OOGraphene.click(sendValidationBy, browser);
+		return this;
+	}
+	
+	public InvitationRegistrationWizardPage validate(String otp) {
+		By otpBy = By.cssSelector(".o_wizard_steps_current .o_sel_registration_otp input[type='text']");
+		OOGraphene.waitElement(otpBy, browser);
+		browser.findElement(otpBy).sendKeys(otp);
+		
+		By validatedBy = By.cssSelector(".o_sel_registration_otp .o_success_with_icon");
+		OOGraphene.waitElement(validatedBy, browser);
+		return this;
+	}
+	
 	public InvitationRegistrationWizardPage nextToPassword() {
 		OOGraphene.nextStep(browser);
 		
@@ -108,5 +133,18 @@ public class InvitationRegistrationWizardPage {
 		browser.findElement(cred2By).sendKeys(password);
 		
 		OOGraphene.finishStep(browser);
+	}
+	
+	public static String extractOtp(SmtpMessage message) {
+		String body = message.getBody();
+		int index = body.indexOf("'otp'>");
+		if(index >= 0) {
+			body = body.substring(index + 6);
+		}
+		int nextIndex = body.indexOf("</span");
+		if(nextIndex >= 0) {
+			body = body.substring(0, nextIndex);
+		}
+		return body;
 	}
 }

@@ -93,7 +93,6 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private SingleSelection lang;
 	private SingleSelection organisationSelection;
 	private TextElement usernameEl;
-	private StaticTextElement usernameStatic;
 	private TextElement newpass1;
 	private TextElement newpass2; // confirm
 	
@@ -102,7 +101,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private final String firstName;
 	private final String lastName;
 	private final boolean userInUse;
-	private final boolean usernameReadonly;
+	private final boolean username;
 	private final PasskeyLevels requiredLevel;
 	private final SyntaxValidator passwordSyntaxValidator;
 	private final SyntaxValidator usernameSyntaxValidator;
@@ -126,7 +125,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 
 	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, String languageKey,
 											  String proposedUsername, String firstName, String lastName,
-											  String email, User invUser, boolean userInUse, boolean usernameReadonly, Form mainForm) {
+											  String email, User invUser, boolean userInUse, boolean username, Form mainForm) {
 		super(ureq, wControl, "registration_personal_data", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.runContext = runContext;
 		this.invUser = invUser;
@@ -143,7 +142,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 		this.lastName = lastName;
 		this.email = email;
 		this.userInUse = userInUse;
-		this.usernameReadonly = usernameReadonly;
+		this.username = username;
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
@@ -184,8 +183,8 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	protected String getLogin() {
 		if(usernameEl != null) {
 			return usernameEl.getValue().trim();
-		} else if (usernameStatic != null) {
-			return usernameStatic.getValue().trim();
+		} else if (StringHelper.containsNonWhitespace(proposedUsername)) {
+			return proposedUsername.trim();
 		}
 		return null;
 	}
@@ -193,16 +192,12 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private void setLogin(String login) {
 		if(usernameEl != null) {
 			usernameEl.setValue(login);
-		} else if (usernameStatic != null) {
-			usernameStatic.setValue(login);
 		}
 	}
 	
 	private void setLoginErrorKey(String errorKey) {
 		if(usernameEl != null) {
 			usernameEl.setErrorKey(errorKey);
-		} else if (usernameStatic != null) {
-			usernameStatic.setErrorKey(errorKey);
 		}
 	}
 	
@@ -246,13 +241,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	}
 	
 	private void initLoginDataForm(FormLayoutContainer formLayout, UserRequest ureq) {
-		if(usernameReadonly) {
-			usernameStatic = uifactory.addStaticTextElement("username", "user.login", proposedUsername, formLayout);
-			usernameStatic.setMandatory(true);
-			if(proposedUsername != null && proposedUsername.equals(email)) {
-				usernameStatic.setLabel("user.login.email", null);
-			}
-		} else {
+		if(username) {
 			String usernameRules = "<div class='o_info_with_icon'>" + translate("form.username.rules") + "</div>";
 			StaticTextElement hintEl = uifactory.addStaticTextElement("form.username.rules", null, usernameRules, formLayout);
 			hintEl.setDomWrapperElement(DomWrapperElement.div);
