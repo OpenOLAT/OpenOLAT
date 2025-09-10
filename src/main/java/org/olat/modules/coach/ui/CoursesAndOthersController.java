@@ -140,7 +140,7 @@ public class CoursesAndOthersController extends BasicController implements Activ
 	}
 	
 	private CourseListController doOpenOthers(UserRequest ureq) {
-		return doOpenCourses(ureq, SCOPE_OTHERS, null, CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate);
+		return doOpenCourses(ureq, SCOPE_OTHERS, GroupRoles.owner, CoursesStatisticsRuntimeTypesGroup.embeddedAndTemplate);
 	}
 	
 	private CourseListController doOpenCourses(UserRequest ureq, String scope, GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimesGroup) {

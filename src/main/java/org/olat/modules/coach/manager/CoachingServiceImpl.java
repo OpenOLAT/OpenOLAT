@@ -202,8 +202,7 @@ public class CoachingServiceImpl implements CoachingService {
 	@Override
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
-		if(role != GroupRoles.coach && role != GroupRoles.owner
-				&& runtimeTypesGroup == CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular) {
+		if(role != GroupRoles.coach && role != GroupRoles.owner) {
 			log.warn("Search courses in course with illegal role: {}", role);
 			return new ArrayList<>();
 		}
