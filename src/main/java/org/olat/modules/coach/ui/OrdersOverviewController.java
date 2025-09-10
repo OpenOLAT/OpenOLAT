@@ -93,18 +93,18 @@ public class OrdersOverviewController extends BasicController implements Activat
 		segmentView.setDontShowSingleSegment(true);
 		
 		assessmentReviewLink = LinkFactory.createLink("orders.review", mainVC, this);
-		assessmentReviewLink.setVisible(coachingSec.isCoach());
+		assessmentReviewLink.setVisible(coachingSec.coach() || coachingSec.owner());
 		segmentView.addSegment(assessmentReviewLink, true);
-		if(coachingSec.isCoach()) {
+		if(coachingSec.coach() || coachingSec.owner()) {
 			doOpenAssessmentReview(ureq);
 		}
 		
 		assessmentApplyGradeLink = LinkFactory.createLink("orders.grades", mainVC, this);
-		assessmentApplyGradeLink.setVisible(coachingSec.isCoach());
+		assessmentApplyGradeLink.setVisible(coachingSec.coach() || coachingSec.owner());
 		segmentView.addSegment(assessmentApplyGradeLink, false);
 		
 		assessmentReleaseLink = LinkFactory.createLink("orders.release", mainVC, this);
-		assessmentReleaseLink.setVisible(coachingSec.isCoach());
+		assessmentReleaseLink.setVisible(coachingSec.coach() || coachingSec.owner());
 		segmentView.addSegment(assessmentReleaseLink, false);
 		
 		gradingAssignmentsLink = LinkFactory.createLink("orders.grading", mainVC, this);
@@ -127,13 +127,13 @@ public class OrdersOverviewController extends BasicController implements Activat
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		StateEntry nextState = entries.get(0).getTransientState();
-		if("Review".equalsIgnoreCase(type) && coachingSec.isCoach()) {
+		if("Review".equalsIgnoreCase(type) && (coachingSec.coach() || coachingSec.owner())) {
 			doOpenAssessmentReview(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(assessmentReviewLink);
-		} else if("Release".equalsIgnoreCase(type) && coachingSec.isCoach()) {
+		} else if("Release".equalsIgnoreCase(type) && (coachingSec.coach() || coachingSec.owner())) {
 			doOpenAssessmentRelease(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(assessmentReleaseLink);
-		} else if("ApplyGrade".equalsIgnoreCase(type) && coachingSec.isCoach()) {
+		} else if("ApplyGrade".equalsIgnoreCase(type) && (coachingSec.coach() || coachingSec.owner())) {
 			doOpenAssessmentApplyGrade(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(assessmentReleaseLink);
 		} else if("Assignments".equalsIgnoreCase(type) && secCallback.canGrade()) {

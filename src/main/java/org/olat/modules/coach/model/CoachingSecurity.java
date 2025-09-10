@@ -25,31 +25,11 @@ package org.olat.modules.coach.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CoachingSecurity {
-	
-	private final boolean masterCoach;
-	private final boolean coach;
-	private final boolean teacher;
-	private final boolean isUserRelationSource;
-	private final boolean lineManager;
-	private final boolean educationManager;
-
-	public CoachingSecurity(boolean masterCoach, boolean coach, boolean teacher, boolean isUserRelationSource, 
-							boolean lineManager, boolean educationManager) {
-		this.masterCoach = masterCoach;
-		this.coach = coach;
-		this.teacher = teacher;
-		this.isUserRelationSource = isUserRelationSource;
-		this.lineManager = lineManager;
-		this.educationManager = educationManager;
-	}
+public record CoachingSecurity(boolean masterCoach, boolean owner, boolean coach, boolean teacher, boolean userRelationSource, 
+		boolean lineManager, boolean educationManager) {
 
 	public boolean isMasterCoachForLectures() {
 		return masterCoach;
-	}
-
-	public boolean isCoach() {
-		return coach;
 	}
 
 	public boolean isTeacher() {
@@ -57,7 +37,7 @@ public class CoachingSecurity {
 	}
 
 	public boolean isUserRelationSource() {
-		return isUserRelationSource;
+		return userRelationSource;
 	}
 
 	public boolean isLineManager() {

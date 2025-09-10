@@ -125,6 +125,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 	
+	protected static final String COURSE_MODULE = "CourseModule";
+	
 	protected static final String FILTER_MARKED = "Marked";
 	protected static final String FILTER_PERIOD = "Period";
 	protected static final String FILTER_STATUS = "status";
@@ -157,7 +159,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String CMD_LEVELS = "levels";
 	
 	private static final String ALL_TAB_ID = "All";
-	private static final String RELEVANT_TAB_ID = "Relevant";
+	private static final String PUBLISHED_TAB_ID = "Published";
 	private static final String FINISHED_TAB_ID = "Finished";
 	private static final String BOOKMARK_TAB_ID = "Bookmarks";
 	private static final String ACCESS_FOR_COACH_TAB_ID = "AccessForCoach";
@@ -171,6 +173,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private final GroupRoles role;
 	private final MapperKey mapperThumbnailKey;
 	private List<RepositoryEntryEducationalType> educationalTypes;
+	private Map<Long,RepositoryEntryEducationalType> educationalTypesMap;
 	private final CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup;
 	
 	private ToolsController toolsCtrl;
@@ -200,6 +203,8 @@ public class CourseListController extends FormBasicController implements Activat
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
 		educationalTypes = repositoryManager.getAllEducationalTypes();
+		educationalTypesMap = educationalTypes.stream()
+				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, v) -> u));
 		this.runtimeTypesGroup = runtimeTypesGroup;
 		this.role = role;
 		
@@ -386,9 +391,9 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		FlexiFiltersTab relevantTab = null;
 		if(runtimeTypesGroup.loadStatistics()) {
-			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PUBLISHED_TAB_ID, translate("filter.published"),
 					TabSelectionBehavior.clear, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-							RepositoryEntryStatusEnum.published.name()), FlexiTableFilterValue.valueOf(FILTER_WITH_PARTICIPANTS, FILTER_WITH_PARTICIPANTS)));
+							RepositoryEntryStatusEnum.published.name())));
 			relevantTab.setFiltersExpanded(true);
 			tabs.add(relevantTab);
 			
@@ -463,13 +468,14 @@ public class CourseListController extends FormBasicController implements Activat
 	
 	private CourseStatEntryRow forgeRow(CourseStatEntry entry, boolean marked) {
 		RepositoryEntryEducationalType educationalType = getEducationalType(entry);
-		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, runtimeTypesGroup.loadStatistics());
+		boolean showStatistics = runtimeTypesGroup.loadStatistics();
+		CourseStatEntryRow row = new CourseStatEntryRow(entry, educationalType, showStatistics);
 		row.setMarked(marked);
 		
 		forgeActionsLinks(row);
 		forgeRatings(entry, row);
 		
-		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance("CourseModule", entry.getResourceId()));
+		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance(COURSE_MODULE, entry.getResourceId()));
 		if(image != null) {
 			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
 		}
@@ -477,7 +483,7 @@ public class CourseListController extends FormBasicController implements Activat
 		if(StringHelper.containsNonWhitespace(entry.getRepoTechnicalType())) {
 			NodeAccessType type = NodeAccessType.of(entry.getRepoTechnicalType());
 			String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
-					? translate("CourseModule")
+					? translate(COURSE_MODULE)
 					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 			row.setTranslatedTechnicalType(translatedType);
 		}
@@ -487,9 +493,7 @@ public class CourseListController extends FormBasicController implements Activat
 	
 	private RepositoryEntryEducationalType getEducationalType(CourseStatEntry entry) {
 		if(entry.getEducationalTypeKey() == null) return null;
-		return educationalTypes.stream()
-				.filter(type -> type.getKey().equals(entry.getEducationalTypeKey()))
-				.findFirst().orElse(null);
+		return educationalTypesMap.get(entry.getEducationalTypeKey());
 	}
 	
 	private void forgeRatings(CourseStatEntry entry, CourseStatEntryRow row) {
@@ -715,7 +719,7 @@ public class CourseListController extends FormBasicController implements Activat
 			VelocityContainer mainVC = createVelocityContainer("tool_courses");
 			
 			String type = row.getResourceType();
-			if(("CourseModule".equals(type) || ImsQTI21Resource.TYPE_NAME.equals(type))
+			if((COURSE_MODULE.equals(type) || ImsQTI21Resource.TYPE_NAME.equals(type))
 					&& runtimeTypesGroup == CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular) {
 				assessmentToolLink = LinkFactory.createLink("assessment.tool", "assessment.tool", "assessment", mainVC, this);
 				assessmentToolLink.setIconLeftCSS("o_icon o_icon-fw o_icon_assessment_tool");

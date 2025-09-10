@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.site;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -56,12 +57,20 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 		Roles roles = usess.getRoles();
 		if(roles.isAdministrator() || roles.isPrincipal() || roles.isLearnResourceManager() || roles.isLectureManager()) {
 			return new CoachSite(this, null, null, ureq.getLocale());
-		}	
+		}
+		OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
+		if(organisationModule.isEnabled() && (roles.isLineManager() || roles.isEducationManager())) {
+			return new CoachSite(this, null, null, ureq.getLocale());
+		}
+		
 		CoachingSecurity coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity(), roles);
+		if(coachingSec.coach() || coachingSec.owner() || coachingSec.masterCoach() || coachingSec.teacher() || 
+				coachingSec.userRelationSource() || coachingSec.educationManager() || coachingSec.lineManager()) {
+			return new CoachSite(this, coachingSec, null, ureq.getLocale());
+		}
+		
 		GradingSecurity gradingSec = CoreSpringFactory.getImpl(GradingService.class).isGrader(ureq.getIdentity(), roles);
-		if(coachingSec.isCoach() || coachingSec.isMasterCoachForLectures() || coachingSec.isTeacher() || 
-				coachingSec.isUserRelationSource() || coachingSec.isEducationManager() || coachingSec.isLineManager() 
-				|| gradingSec.isGrader() || gradingSec.isGradedResourcesManager()) {
+		if(gradingSec.isGrader() || gradingSec.isGradedResourcesManager()) {
 			return new CoachSite(this, coachingSec, gradingSec, ureq.getLocale());
 		}
 		return null;

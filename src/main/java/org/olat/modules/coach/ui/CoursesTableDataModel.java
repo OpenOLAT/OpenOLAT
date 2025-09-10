@@ -299,13 +299,13 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			case participantsVisited -> row.getParticipantsVisited();
 			case participantsNotVisited -> row.getParticipantsNotVisited();
 			case lastVisit -> row.getLastVisit();
-			case completion -> row.getAverageCompletion();
-			case successStatus -> row.getSuccessStatus();
-			case statusPassed -> row.getStatusPassed();
-			case statusNotPassed -> row.getStatusNotPassed();
-			case statusUndefined -> row.getStatusUndefined();
+			case completion -> row.isShowStatistics() && row.isCourse() ? row.getAverageCompletion() : null;
+			case successStatus -> row.isShowStatistics() && row.isCourse() ? row.getSuccessStatus() : null;
+			case statusPassed -> row.isShowStatistics() && row.isCourse() ? row.getStatusPassed() : null;
+			case statusNotPassed -> row.isShowStatistics() && row.isCourse() ? row.getStatusNotPassed() : null;
+			case statusUndefined -> row.isShowStatistics() && row.isCourse() ? row.getStatusUndefined() : null;
 			case averageScore -> row.getAverageScore();
-			case certificates -> row.getCertificates().numOfCoursesWithCertificates() > 0
+			case certificates -> row.isShowStatistics() && row.isCourse()  && row.getCertificates().numOfCoursesWithCertificates() > 0
 					? row.getCertificates().numOfCertificates() : "";
 			case tools -> Boolean.TRUE;
 			case taxonomyLevels -> row.getTaxonomyLevelsLink();

@@ -93,19 +93,26 @@ public class CoachingDAO {
 	@Autowired
 	private RepositoryManager repositoryManager;
 
-	public boolean isCoach(IdentityRef coach) {
-		QueryBuilder sb = new QueryBuilder(1024);
-		sb.append("select v.key from repositoryentry v")
-		  .append(" inner join v.olatResource as res on res.resName='CourseModule'")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role ").in(GroupRoles.owner, GroupRoles.coach.name()).append(")")
-		  .append(" where v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+	
+	public boolean isMember(IdentityRef identity, GroupRoles role, RepositoryEntryStatusEnum[] status) {
+		String sb = """
+				select v.key from repositoryentry v
+				inner join v.olatResource as res
+				inner join v.groups as relGroup
+				inner join relGroup.group as baseGroup
+				inner join baseGroup.members as membership
+				where v.status in :status and membership.identity.key=:identityKey and membership.role=:role""";
+		
+		List<String> statusList = List.of(status).stream()
+				.map(RepositoryEntryStatusEnum::name)
+				.toList();
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setFlushMode(FlushModeType.COMMIT)
-				.setParameter("identityKey", coach.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("status", statusList)
+				.setParameter("role", role.name())
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
@@ -536,6 +543,7 @@ public class CoachingDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
 				.setParameter("runtimeTypes", runtimeTypesList)
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 		Map<Long,CourseStatEntry> map = new HashMap<>();
 		for(Object[] rawStat:rawList) {
@@ -608,6 +616,7 @@ public class CoachingDAO {
 				.setParameter("coachKey", coach.getKey())
 				.setParameter("runtimeTypes", runtimeTypesList)
 				.setParameter("now", new Date(), TemporalType.TIMESTAMP)
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 
 		for(Object[] rawStat:rawList) {
@@ -666,6 +675,7 @@ public class CoachingDAO {
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 		for(Object[] rawObjects:rawList) {
 			Long entryKey = ((Number)rawObjects[0]).longValue();
@@ -716,6 +726,7 @@ public class CoachingDAO {
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("coachKey", coach.getKey())
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 		for(Object[] rawObjects:rawList) {
 			Long entryKey = ((Number)rawObjects[0]).longValue();
@@ -1366,7 +1377,7 @@ public class CoachingDAO {
 	}
 	
 	private NativeQueryBuilder appendUsersStatisticsJoins(SearchCoachedIdentityParams params, NativeQueryBuilder sb) {
-		if(StringHelper.containsNonWhitespace(params.getLogin()) || (params != null && params.getUserProperties() != null && params.getUserProperties().size() > 0)) {
+		if(StringHelper.containsNonWhitespace(params.getLogin()) || (params.getUserProperties() != null && params.getUserProperties().size() > 0)) {
 			sb.append(" inner join o_user user_participant on (user_participant.fk_identity=id_participant.id)");
 		}
 		return sb;
