@@ -1463,13 +1463,19 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 		
-		//check if coaching tool is enabled
-		boolean canCourseCoach = coachingDAO.isMember(courseOwner, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
+		// Owner
+		boolean canCourseCoach = coachingDAO.isMember(courseOwner, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
 		Assert.assertTrue(canCourseCoach);
+		
+		// Coach
 		boolean canGroupCoach = coachingDAO.isMember(groupCoach, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		Assert.assertTrue(canGroupCoach);
-		boolean canCourseParticipant= coachingDAO.isMember(courseParticipant, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
-		Assert.assertFalse(canCourseParticipant);
+		
+		// Participant
+		boolean canCourseParticipantAsCoach = coachingDAO.isMember(courseParticipant, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
+		Assert.assertFalse(canCourseParticipantAsCoach);
+		boolean canCourseParticipantAsOwner = coachingDAO.isMember(courseParticipant, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
+		Assert.assertFalse(canCourseParticipantAsOwner);
 	}
 	
 	private void setScoreInformations(Date date, Float score, Float weightedScore,
