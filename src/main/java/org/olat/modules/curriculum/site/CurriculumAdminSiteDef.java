@@ -45,7 +45,7 @@ public class CurriculumAdminSiteDef extends AbstractSiteDefinition {
 		
 		UserSession usess = ureq.getUserSession();
 		if(usess != null && usess.getRoles() != null &&
-				(usess.getRoles().isLearnResourceManager() || usess.getRoles().isCurriculumManager() || usess.getRoles().isPrincipal())) {
+				(usess.getRoles().isLearnResourceManager() || usess.getRoles().isCurriculumManager())) {
 			// only for admins
 			return new CurriculumAdminSite(this, ureq.getLocale());
 		}

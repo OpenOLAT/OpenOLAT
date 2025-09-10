@@ -127,7 +127,6 @@ import org.olat.registration.SelfRegistrationAdvanceOrderInput;
 import org.olat.registration.TemporaryKey;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -672,7 +671,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (StringHelper.containsNonWhitespace(
 				row.getAccessError()) ||
 				row.isReservationAvailable() ||
-				(row.isMember() && row.isUnpublishedSingleCourseImplementation())) {
+				(row.isMember() && row.isUnpublishedImplementation())) {
 			link.setEnabled(false);
 		}
 	}
@@ -937,14 +936,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (row.getRepositotyEntryKey() != null) {
 			businessPath = "[RepositoryEntry:" + row.getRepositotyEntryKey() + "]";
 		} else if (row.getCurriculumElementKey() != null) {
-			if (row.isSingleCourseImplementation()) {
-				if (row.getSingleCourseEntryKey() != null) {
-					if (RepositoryEntryStatusEnum.isInArray(row.getSingleCourseEntryStartus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
-						businessPath = "[RepositoryEntry:" + row.getSingleCourseEntryKey() + "]";
-					}
+			if (!row.isUnpublishedImplementation()) {
+				if (row.isSingleCourseImplementation()) {
+					businessPath = "[RepositoryEntry:" + row.getSingleCourseEntryKey() + "]";
+				} else {
+					businessPath = "[MyCoursesSite:0][Implementation:" + row.getCurriculumElementKey() + "]";
 				}
-			} else {
-				businessPath = "[MyCoursesSite:0][Implementation:" + row.getCurriculumElementKey() + "]";
 			}
 		}
 		return businessPath;

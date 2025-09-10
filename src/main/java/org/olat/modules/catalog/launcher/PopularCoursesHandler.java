@@ -151,7 +151,7 @@ public class PopularCoursesHandler implements CatalogLauncherHandler {
 		Predicate<? super CatalogEntry> educationalTypeFilter = createEducationalTypeFilter(config);
 		
 		List<Long> repositoryEntryKeys = catalogEntries.stream()
-			.filter(entry -> entry.getStatus() != null && RepositoryEntryStatusEnum.published == entry.getStatus())
+			.filter(entry -> entry.getRepositoryEntryStatus() != null && RepositoryEntryStatusEnum.published == entry.getRepositoryEntryStatus())
 			.filter(educationalTypeFilter)
 			.map(CatalogEntry::getRepositoryEntryKey)
 			.filter(Objects::nonNull)

@@ -29,6 +29,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -57,7 +58,8 @@ public class CatalogEntryRow {
 	private String translatedTechnicalType;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
-	private final RepositoryEntryStatusEnum status;
+	private final RepositoryEntryStatusEnum repositoryEntryStatus;
+	private final CurriculumElementStatus curriculumElementStatus;
 	private final boolean publicVisible;
 	private final String lifecycleLabel;
 	private final String lifecycleSoftKey;
@@ -86,7 +88,7 @@ public class CatalogEntryRow {
 	private final License license;
 	private final boolean singleCourseImplementation;
 	private final Long singleCourseEntryKey;
-	private final RepositoryEntryStatusEnum singleCourseEntryStartus;
+	private final RepositoryEntryStatusEnum singleCourseEntryStatus;
 	private String infoUrl;
 	private String startUrl;
 	
@@ -111,7 +113,8 @@ public class CatalogEntryRow {
 		location = catalogEntry.getLocation();
 		educationalType = catalogEntry.getEducationalType();
 		expenditureOfWork = catalogEntry.getExpenditureOfWork();
-		status = catalogEntry.getStatus();
+		repositoryEntryStatus = catalogEntry.getRepositoryEntryStatus();
+		curriculumElementStatus = catalogEntry.getCurriculumElementStatus();
 		publicVisible = catalogEntry.isPublicVisible();
 		lifecycleLabel = catalogEntry.getLifecycleLabel();
 		lifecycleSoftKey = catalogEntry.getLifecycleSoftKey();
@@ -128,7 +131,7 @@ public class CatalogEntryRow {
 		license = catalogEntry.getLicense();
 		singleCourseImplementation = catalogEntry.isSingleCourseImplementation();
 		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
-		singleCourseEntryStartus = catalogEntry.getSingleCourseEntryStartus();
+		singleCourseEntryStatus = catalogEntry.getSingleCourseEntryStartus();
 		
 		averageRating = catalogEntry.getAverageRating();
 		
@@ -154,11 +157,11 @@ public class CatalogEntryRow {
 	}
 
 	public boolean isClosed() {
-		return status != null && status.decommissioned();
+		return repositoryEntryStatus != null && repositoryEntryStatus.decommissioned();
 	}
 
-	public RepositoryEntryStatusEnum getStatus() {
-		return status;
+	public RepositoryEntryStatusEnum getRepositoryEntryStatus() {
+		return repositoryEntryStatus;
 	}
 	
 	public boolean isPublicVisible() {
@@ -405,14 +408,19 @@ public class CatalogEntryRow {
 		return singleCourseEntryKey;
 	}
 
-	public RepositoryEntryStatusEnum getSingleCourseEntryStartus() {
-		return singleCourseEntryStartus;
+	public RepositoryEntryStatusEnum getSingleCourseEntryStatus() {
+		return singleCourseEntryStatus;
 	}
 
-	public boolean isUnpublishedSingleCourseImplementation() {
-		return isSingleCourseImplementation() 
-				&& (	singleCourseEntryStartus == null 
-					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStartus, RepositoryEntryStatusEnum.publishedAndClosed()));
+	public boolean isUnpublishedImplementation() {
+		if (isSingleCourseImplementation()) {
+			return singleCourseEntryStatus == null 
+					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStatus, RepositoryEntryStatusEnum.publishedAndClosed());
+		} if (curriculumElementStatus != null) {
+			return !CurriculumElementStatus.isInArray(curriculumElementStatus, CurriculumElementStatus.visibleUser());
+		}
+		
+		return false;
 	}
 
 	public Double getAverageRating() {
