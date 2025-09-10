@@ -49,7 +49,7 @@ public interface TeamsService {
 	 */
 	public TeamsMeeting getMeeting(TeamsMeeting meeting);
 	
-	public TeamsMeeting updateMeeting(TeamsMeeting meeting);
+	public TeamsMeeting updateMeeting(TeamsMeeting meeting, boolean isCalendarEvent);
 	
 	public void deleteMeeting(TeamsMeeting meeting);
 	

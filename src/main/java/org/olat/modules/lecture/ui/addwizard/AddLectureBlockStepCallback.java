@@ -123,7 +123,7 @@ public class AddLectureBlockStepCallback implements StepRunnerCallback {
 				teamsService.deleteMeeting(teamsMeeting);
 			}
 		} else if(addLectureCtxt.isWithTeamsMeeting() && teamsMeeting != null) {
-			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
+			teamsMeeting = teamsService.updateMeeting(teamsMeeting, true);
 			lectureBlock.setBBBMeeting(null);
 			lectureBlock.setTeamsMeeting(teamsMeeting);
 			if(bigBlueButtonMeeting != null) {

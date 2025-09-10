@@ -486,7 +486,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		}
 		TeamsMeeting teamsMeeting = appointment.getTeamsMeeting();
 		if (teamsMeeting != null) {
-			teamsMeeting = teamsService.updateMeeting(teamsMeeting);
+			teamsMeeting = teamsService.updateMeeting(teamsMeeting, false);
 		}
 		Appointment savedAppointment = appointmentDao.saveAppointment(appointment, bbbMeeting, teamsMeeting);
 		
@@ -1021,7 +1021,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		meeting.setDescription(topic.getDescription());
 		meeting.setStartDate(appointment.getStart());
 		meeting.setEndDate(appointment.getEnd());
-		meeting = teamsService.updateMeeting(meeting);
+		meeting = teamsService.updateMeeting(meeting, false);
 		return appointmentDao.saveAppointment(appointment, null, meeting);
 	}
 
