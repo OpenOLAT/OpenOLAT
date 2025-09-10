@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.core.commons.services.license.License;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -60,7 +61,8 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private String lifecycleSoftKey;
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
-	private final RepositoryEntryStatusEnum status;
+	private final RepositoryEntryStatusEnum repositoryEntryStatus;
+	private final CurriculumElementStatus curriculumElementStatus;
 	private final Date publishedDate;
 	private final boolean publicVisible;
 	
@@ -113,7 +115,8 @@ public class CatalogEntryImpl implements CatalogEntry {
 				lifecycleSoftKey = re.getLifecycle().getSoftKey();
 			}
 		}
-		status = re.getEntryStatus();
+		repositoryEntryStatus = re.getEntryStatus();
+		curriculumElementStatus = null;
 		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
 		maxParticipants = null;
@@ -153,7 +156,8 @@ public class CatalogEntryImpl implements CatalogEntry {
 		expenditureOfWork = element.getExpenditureOfWork();
 		lifecycleStart = element.getBeginDate();
 		lifecycleEnd = element.getEndDate();
-		status = null;
+		repositoryEntryStatus = null;
+		curriculumElementStatus = element.getElementStatus();
 		publishedDate = null;
 		publicVisible = true;
 		maxParticipants = element.getMaxParticipants();
@@ -255,8 +259,13 @@ public class CatalogEntryImpl implements CatalogEntry {
 	}
 
 	@Override
-	public RepositoryEntryStatusEnum getStatus() {
-		return status;
+	public RepositoryEntryStatusEnum getRepositoryEntryStatus() {
+		return repositoryEntryStatus;
+	}
+
+	@Override
+	public CurriculumElementStatus getCurriculumElementStatus() {
+		return curriculumElementStatus;
 	}
 
 	@Override

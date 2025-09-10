@@ -88,7 +88,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 		} else if(cellValue instanceof CatalogEntryRow re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());
 			managed = false;// no indication for this type of row
-			status = re.getStatus();
+			status = re.getRepositoryEntryStatus();
 		} else if(cellValue instanceof InPreparationRow re) {
 			if(re.getCurriculumElementKey() != null) {
 				cssClass = "o_icon_curriculum_element";

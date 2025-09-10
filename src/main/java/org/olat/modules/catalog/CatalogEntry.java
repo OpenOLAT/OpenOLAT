@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -72,7 +73,9 @@ public interface CatalogEntry {
 	
 	Date getLifecycleEnd();
 	
-	RepositoryEntryStatusEnum getStatus();
+	RepositoryEntryStatusEnum getRepositoryEntryStatus();
+	
+	CurriculumElementStatus getCurriculumElementStatus();
 	
 	Date getPublishedDate();
 

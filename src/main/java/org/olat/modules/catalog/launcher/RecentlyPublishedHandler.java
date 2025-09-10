@@ -157,7 +157,7 @@ public class RecentlyPublishedHandler implements CatalogLauncherHandler {
 		Predicate<? super CatalogEntry> educationalTypeFilter = createEducationalTypeFilter(config);
 		
 		List<CatalogEntry> launcherEntries = catalogEntries.stream()
-				.filter(entry -> entry.getStatus() != null && RepositoryEntryStatusEnum.published == entry.getStatus())
+				.filter(entry -> entry.getRepositoryEntryStatus() != null && RepositoryEntryStatusEnum.published == entry.getRepositoryEntryStatus())
 				.filter(resourceTypeFilter)
 				.filter(educationalTypeFilter)
 				.sorted(Comparator.nullsLast((e1, e2) -> e2.getPublishedDate().compareTo(e1.getPublishedDate())))
