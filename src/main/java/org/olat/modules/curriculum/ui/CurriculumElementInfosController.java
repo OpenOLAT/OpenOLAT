@@ -257,7 +257,10 @@ public class CurriculumElementInfosController extends BasicController {
 	}
 	
 	protected void doStart(UserRequest ureq) {
-		if(isMember && entry != null) {
+		if (!isMember) {
+			return;
+		}
+		if(entry != null) {
 			try {
 				String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -265,9 +268,8 @@ public class CurriculumElementInfosController extends BasicController {
 				logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
 				showError("cif.error.corrupted");
 			}
-		} else {
-			//TODO OO-8519 temporary revert
-			String businessPath = "[MyCoursesSite:0][Curriculum:0][Curriculum:" + element.getCurriculum().getKey() + "]";
+		} else if(element != null) {
+			String businessPath = "[MyCoursesSite:0][Implementation:" + element.getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
