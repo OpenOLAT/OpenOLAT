@@ -103,8 +103,7 @@ public class InvitationRegistrationWizardPage {
 	
 	public InvitationRegistrationWizardPage sendValidationToken() {
 		By sendValidationBy = By.cssSelector(".o_wizard_steps_current div.o_sel_registration_validate_form a.btn.btn-primary");
-		OOGraphene.waitElement(sendValidationBy, browser);
-		OOGraphene.click(sendValidationBy, browser);
+		OOGraphene.waitElement(sendValidationBy, browser).click();
 		return this;
 	}
 	
