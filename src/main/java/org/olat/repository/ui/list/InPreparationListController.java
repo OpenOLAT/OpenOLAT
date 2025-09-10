@@ -174,6 +174,7 @@ public class InPreparationListController extends FormBasicController implements 
 		} else {
 			tableEl.setSelectedFilterTab(ureq, allTab);
 		}
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 	}
 
 	@Override
@@ -237,7 +238,6 @@ public class InPreparationListController extends FormBasicController implements 
 		tabs.add(allTab);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	private void initFilters() {
