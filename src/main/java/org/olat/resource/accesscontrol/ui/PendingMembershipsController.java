@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -80,6 +81,7 @@ public class PendingMembershipsController extends FormBasicController implements
 	private static final String ROW_SELECT_ACTION = "select.row";
 	private static final String CMD_ACCEPT = "accept";
 	private static final String CMD_DECLINE = "decline";
+	private static final String CMD_TOOLS = "tools";
 
 	private final Identity identity;
 	private FlexiTableElement tableEl;
@@ -118,7 +120,25 @@ public class PendingMembershipsController extends FormBasicController implements
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PendingMembershipCol.type));
 		DateFlexiCellRenderer dateCellRenderer = new DateFlexiCellRenderer(getLocale());
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PendingMembershipCol.confirmationUntil, dateCellRenderer));
-		
+
+		DefaultFlexiColumnModel acceptColumn = new DefaultFlexiColumnModel(PendingMembershipCol.accept.i18nHeaderKey(), 
+				PendingMembershipCol.accept.ordinal(), "accept",
+				new StaticFlexiCellRenderer("", "accept", null, "o_icon o_icon-fw o_icon_accepted", translate("accept")));
+		acceptColumn.setIconHeader("o_icon o_icon-fw o_icon_accepted");
+		acceptColumn.setHeaderLabel(translate("accept"));
+		acceptColumn.setExportable(false);
+		acceptColumn.setAlwaysVisible(true);
+		columnModel.addFlexiColumnModel(acceptColumn);
+
+		DefaultFlexiColumnModel declineColumn = new DefaultFlexiColumnModel(PendingMembershipCol.decline.i18nHeaderKey(),
+				PendingMembershipCol.decline.ordinal(), "decline",
+				new StaticFlexiCellRenderer("", "decline", null, "o_icon o_icon-fw o_icon_decline", translate("decline")));
+		declineColumn.setIconHeader("o_icon o_icon-fw o_icon_decline");
+		declineColumn.setHeaderLabel(translate("decline"));
+		declineColumn.setExportable(false);
+		declineColumn.setAlwaysVisible(true);
+		columnModel.addFlexiColumnModel(declineColumn);
+
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(PendingMembershipCol.tools);
 		toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
 		toolsColumn.setAlwaysVisible(true);
@@ -162,8 +182,14 @@ public class PendingMembershipsController extends FormBasicController implements
 				loadModel();
 			}
 		} else if (source instanceof FormLink formLink) {
-			if ("tools".equals(formLink.getCmd()) && formLink.getUserObject() instanceof PendingMembershipRow row) {
-				doOpenTools(ureq, row, formLink);
+			if (formLink.getUserObject() instanceof PendingMembershipRow row) {
+				if (CMD_TOOLS.equals(formLink.getCmd())) {
+					doOpenTools(ureq, row, formLink);
+				} else if (CMD_ACCEPT.equals(formLink.getCmd())) {
+					doAcceptDeclineOne(ureq, row, true);
+				} else if (CMD_DECLINE.equals(formLink.getCmd())) {
+					doAcceptDeclineOne(ureq, row, false);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -251,14 +277,30 @@ public class PendingMembershipsController extends FormBasicController implements
 				curriculumElement.getType() != null ? curriculumElement.getType().getDisplayName() : "",
 				reservation.getExpirationDate(), curriculumElement.getKey(), reservation.getKey());
 		
+		forgeLinks(row);
+		return row;
+	}
+
+	private void forgeLinks(PendingMembershipRow row) {
 		String id = Integer.toString(++counter);
 
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
+		FormLink acceptLink = uifactory.addFormLink("accept_".concat(id), CMD_ACCEPT, "", null, null, Link.NONTRANSLATED);
+		acceptLink.setIconLeftCSS("o_icon o_icon-fw o_icon_accepted");
+		acceptLink.setTitle(translate("accept"));
+		acceptLink.setUserObject(row);
+		row.setAcceptLink(acceptLink);
+
+		FormLink declineLink = uifactory.addFormLink("decline_".concat(id), CMD_DECLINE, "", null, null, Link.NONTRANSLATED);
+		declineLink.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
+		declineLink.setTitle(translate("decline"));
+		declineLink.setUserObject(row);
+		row.setDeclineLink(declineLink);
+
+		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
-		return row;
 	}
 
 	@Override
