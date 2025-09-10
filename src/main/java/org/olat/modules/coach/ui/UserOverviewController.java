@@ -268,6 +268,9 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	}
 	
 	private void initPendingMembershipWarning() {
+		if (!roleSecurityCallback.canViewPendingCourseBookings()) {
+			return;
+		}
 		int pendingMembershipCount = acService.getReservations(mentee).size();
 		if (pendingMembershipCount > 1) {
 			String warning = translate("warning.pending.membership.plural", Integer.toString(pendingMembershipCount));
@@ -297,7 +300,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
 			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("bookings"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
-				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canActivatePendingAccounts());
+				userOrderController = new UserOrderController(uureq, bwControl, mentee, roleSecurityCallback.canViewPendingCourseBookings());
 				listenTo(userOrderController);
 				return userOrderController;
 			});
