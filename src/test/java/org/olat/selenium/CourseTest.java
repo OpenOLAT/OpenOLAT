@@ -72,6 +72,7 @@ import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
+import org.olat.selenium.page.user.RegistrationPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -2094,7 +2095,7 @@ public class CourseTest extends Deployments {
 	
 
 	/**
-	 * An administrator invite an external user in a course. The
+	 * An administrator invites an external user in a course. The
 	 * invitee read the email, copy the link and jump to the
 	 * course. It registers itself, set a password and arrive
 	 * to the course.
@@ -2168,6 +2169,17 @@ public class CourseTest extends Deployments {
 			.selectLanguage()
 			.nextToDisclaimer()
 			.acknowledgeDisclaimer()
+			.nextToValidateEmail()
+			.sendValidationToken();
+
+		// Wait the mail
+		OOGraphene.waitingALittleBit();
+		emails = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(2, emails.size());
+		String otp = RegistrationPage.extractOtp(emails.get(1));
+		
+		registration
+			.validate(otp)
 			.nextToPassword()
 			.finalizeRegistration("2#ChangeSometimes");
 		
