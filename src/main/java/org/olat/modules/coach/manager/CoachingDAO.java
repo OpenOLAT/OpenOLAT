@@ -526,13 +526,6 @@ public class CoachingDAO {
 			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
 			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
 			  .append(")");
-		} else  {
-			sb.append("(v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
-			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
-			  .append("  where owner.identity.key=:coachKey")
-			  .append(") or participantGroup.key in (select coach.group.key from bgroupmember as coach")
-			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
-			  .append("))");
 		}
 		
 		List<String> runtimeTypesList = runtimeTypes.stream()
