@@ -83,7 +83,7 @@ public class GroupListController extends BasicController implements Activateable
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), null, null, null, null, true, getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("group.name", Columns.name.ordinal(), "select", getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.countCourses", Columns.countCourses.ordinal(), null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.countStudents", Columns.countStudents.ordinal(), null, getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.participants", Columns.countStudents.ordinal(), null, getLocale()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.login", Columns.initialLaunch.ordinal(), null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new LightIconRenderer()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.passed", Columns.countPassed.ordinal(), null, getLocale(),
