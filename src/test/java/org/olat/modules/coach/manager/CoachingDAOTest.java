@@ -1399,23 +1399,23 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void isCoachOwner() throws URISyntaxException {
+	public void isMemberByOwner() throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 	
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1-", defaultUnitTestOrganisation, null);
-		repositoryService.addRole(coach, re, GroupRoles.owner.name());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1-", defaultUnitTestOrganisation, null);
+		repositoryService.addRole(owner, re, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
-		boolean canCoach = coachingDAO.isCoach(coach);
+		boolean canCoach = coachingDAO.isMember(owner, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
 		Assert.assertTrue(canCoach);
 	}
 	
 	@Test
-	public void isCoachByCoach() {
+	public void isMemberByCoach() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
 				courseUrl, defaultUnitTestOrganisation);
@@ -1435,9 +1435,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if coaching tool is enabled
-		boolean canCourseCoach = coachingDAO.isCoach(courseCoach);
+		boolean canCourseCoach = coachingDAO.isMember(courseCoach, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		Assert.assertTrue(canCourseCoach);
-		boolean canGroupCoach = coachingDAO.isCoach(groupCoach);
+		boolean canGroupCoach = coachingDAO.isMember(groupCoach, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		Assert.assertTrue(canGroupCoach);
 	}
 	
@@ -1464,11 +1464,11 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if coaching tool is enabled
-		boolean canCourseCoach = coachingDAO.isCoach(courseOwner);
+		boolean canCourseCoach = coachingDAO.isMember(courseOwner, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		Assert.assertTrue(canCourseCoach);
-		boolean canGroupCoach = coachingDAO.isCoach(groupCoach);
+		boolean canGroupCoach = coachingDAO.isMember(groupCoach, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		Assert.assertTrue(canGroupCoach);
-		boolean canCourseParticipant= coachingDAO.isCoach(courseParticipant);
+		boolean canCourseParticipant= coachingDAO.isMember(courseParticipant, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
 		Assert.assertFalse(canCourseParticipant);
 	}
 	

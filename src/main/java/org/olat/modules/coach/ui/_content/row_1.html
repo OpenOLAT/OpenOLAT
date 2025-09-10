@@ -77,9 +77,9 @@
 			#end
 		#end
 		
-		<div class="o_flex_block_one_line_left o_flex_block_last">
-			#if(${row.isShowStatistics()})
-			<div class="o_performance o_flex_item_max">
+		<div class="o_flex_block_one_line_left o_flex_block_last"><div class="o_performance o_flex_item_max">
+		#if(${row.isShowStatistics()})
+			#if(${row.isCourse()})
 				#if($r.isNotEmpty(${row.averageCompletionInPercents}))
 					#if($r.isNotNull($row.averageCompletionInPercents) && $row.averageCompletionInPercents == "100")
 					<i class="o_icon o_icon_circle_color"> </i>
@@ -109,15 +109,15 @@
 					&#8960; ${row.averageScoreAsString} $r.translate("points")
 					<span class="o_spacer">&middot;</span>
 				#end
-				${row.participants}
-				#if($row.participant == 1)
-					$r.translate("participant")
-				#else
-					$r.translate("participants")
-				#end
-			</div>
 			#end
-		</div>
+			${row.participants}
+			#if($row.participant == 1)
+				$r.translate("participant")
+			#else
+				$r.translate("participants")
+			#end
+		#end
+		</div></div>
 	</div>
 	<div class="o_access">
 		<div class="o_social_actions">

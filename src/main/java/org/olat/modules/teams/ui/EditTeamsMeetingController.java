@@ -375,7 +375,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		meeting.setAllowedPresenters(presentersEl.getSelectedKey());
 		meeting.setParticipantsCanOpen(participantsOpenEl.isAtLeastSelected(1));
 		
-		meeting = teamsService.updateMeeting(meeting);
+		meeting = teamsService.updateMeeting(meeting, true);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

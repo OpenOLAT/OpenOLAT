@@ -137,6 +137,20 @@ public class IdentityToIdentityRelationDAO {
 				.getResultList();
 	}
 	
+	public boolean hasRelationsAsSource(IdentityRef source) {
+		String sb = """
+				select identRel.key from identitytoidentity as identRel
+				where identRel.source.key=:sourceKey""";
+		
+		List<Long> keys =dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("sourceKey", source.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
+	
 	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef target, RelationSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select identRel from identitytoidentity as identRel")

@@ -300,6 +300,10 @@ public class CourseStatEntryRow implements RepositoryEntryRef, RepositoryEntrySh
 		return showStatistics;
 	}
 	
+	public boolean isCourse() {
+		return CourseListController.COURSE_MODULE.equals(entry.getResourceTypeName());
+	}
+	
 	public String getMarkLinkName() {
 		return markLink.getComponent().getComponentName();
 	}

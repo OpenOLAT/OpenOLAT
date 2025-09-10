@@ -38,12 +38,13 @@ public class PendingMembershipRow {
 	private final String type;
 	private final Date confirmationUntil;
 	private final Long curriculumElementKey;
+	private final Long reservationKey;
 
 	private FormLink toolsLink;
 	private MemberDetailsController detailsCtrl;
 
 	public PendingMembershipRow(String title, String extRef, Date begin, Date end, String type,
-								Date confirmationUntil, Long curriculumElementKey) {
+								Date confirmationUntil, Long curriculumElementKey, Long reservationKey) {
 		this.title = title;
 		this.extRef = extRef;
 		this.begin = begin;
@@ -51,6 +52,7 @@ public class PendingMembershipRow {
 		this.type = type;
 		this.confirmationUntil = confirmationUntil;
 		this.curriculumElementKey = curriculumElementKey;
+		this.reservationKey = reservationKey;
 	}
 
 	public String getTitle() {
@@ -109,5 +111,9 @@ public class PendingMembershipRow {
 
 	public Long getCurriculumElementKey() {
 		return curriculumElementKey;
+	}
+
+	public Long getReservationKey() {
+		return reservationKey;
 	}
 }

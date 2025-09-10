@@ -831,7 +831,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		// copy the slides, eventually update the directory field
 		doCopySlides(getIdentity());
 
-		meeting = bigBlueButtonManager.updateMeeting(meeting);
+		meeting = bigBlueButtonManager.updateMeeting(meeting, true);
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

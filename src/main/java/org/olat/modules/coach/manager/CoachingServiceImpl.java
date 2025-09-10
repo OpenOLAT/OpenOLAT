@@ -33,10 +33,10 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRole;
+import org.olat.basesecurity.manager.IdentityToIdentityRelationDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -69,6 +69,7 @@ import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,7 +101,7 @@ public class CoachingServiceImpl implements CoachingService {
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	@Autowired
-	private IdentityRelationshipService identityRelationsService;
+	private IdentityToIdentityRelationDAO identityToIdentityRelationDao;
 	@Autowired
 	private IdentityPowerSearchQueries identityPowerSearchQueries;
 	
@@ -108,13 +109,14 @@ public class CoachingServiceImpl implements CoachingService {
 	
 	@Override
 	public CoachingSecurity isCoach(Identity identity, Roles roles) {
-		boolean coach = coachingDao.isCoach(identity);
+		boolean coach = coachingDao.isMember(identity, GroupRoles.coach, RepositoryEntryStatusEnum.coachPublishedToClosed());
+		boolean owner = coachingDao.isMember(identity, GroupRoles.owner, RepositoryEntryStatusEnum.preparationToClosed());
 		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
 		boolean masterCoach =  lectureModule.isEnabled() && coachingDao.isMasterCoach(identity);
-		boolean isUserRelationSource = !identityRelationsService.getRelationsAsSource(identity).isEmpty();
+		boolean isUserRelationSource = identityToIdentityRelationDao.hasRelationsAsSource(identity);
 		boolean lineManager = organisationModule.isEnabled() && roles.isLineManager();
 		boolean educationManager = organisationModule.isEnabled() && roles.isEducationManager();
-		return new CoachingSecurity(masterCoach, coach, teacher, isUserRelationSource, lineManager, educationManager);
+		return new CoachingSecurity(masterCoach, owner, coach, teacher, isUserRelationSource, lineManager, educationManager);
 	}
 
 	@Override

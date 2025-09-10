@@ -136,9 +136,11 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public TeamsMeeting updateMeeting(TeamsMeeting meeting) {
+	public TeamsMeeting updateMeeting(TeamsMeeting meeting, boolean isCalendarEvent) {
 		meeting = teamsMeetingDao.updateMeeting(meeting);
-		updateCalendarEvent(meeting);
+		if (isCalendarEvent) {
+			updateCalendarEvent(meeting);
+		}
 		return meeting;
 	}
 	

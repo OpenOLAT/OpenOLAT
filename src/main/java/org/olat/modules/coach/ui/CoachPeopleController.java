@@ -117,8 +117,10 @@ public class CoachPeopleController extends BasicController implements Activateab
 		
 		// As coach / course owner
 		scopes = new ArrayList<>(4);
-		if(coachingSec.isCoach()) {
+		if(coachingSec.coach()) {
 			scopes.add(ScopeFactory.createScope(COACH_SCOPE, translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
+		}
+		if(coachingSec.owner()) {
 			scopes.add(ScopeFactory.createScope(OWNER_SCOPE, translate("lectures.owner.menu.title"), null, "o_icon o_icon_coaching_tool"));
 		}
 		

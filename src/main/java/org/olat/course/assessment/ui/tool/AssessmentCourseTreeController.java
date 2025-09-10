@@ -496,7 +496,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Orders", Long.valueOf(0));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, getWindowControl());
 		
-		CoachingSecurity coachingSecurity = new CoachingSecurity(false, true, false, false, false, false);
+		CoachingSecurity coachingSecurity = new CoachingSecurity(false, false, true, false, false, false, false);
 		GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getManagerCalllback(getIdentity(), ureq.getUserSession().getRoles());
 		
 		ordersCtrl = new OrdersOverviewController(ureq, bwControl, stackPanel, courseEntry, coachingSecurity, secCallback, null);
