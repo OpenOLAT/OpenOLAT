@@ -113,18 +113,17 @@ public class CurriculumElementLecturesController extends BasicController {
 					.getRepositoryEntriesWithLectures(curriculum, checkByIdentity);
 		}
 		
-		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
-		params.setEntries(entries);
-		List<LectureBlockIdentityStatistics> rawStatistics = lectureService
-				.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
-		List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
-		calculateWarningRates(rawStatistics, aggregatedStatistics);
-		
 		List<RepositoryEntryRef> filterByEntry = new ArrayList<>(entries);
-
 		if(filterByEntry.isEmpty()) {
 			mainVC.contextPut("hasLectures", Boolean.FALSE);
 		} else {
+			LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+			params.setEntries(entries);
+			List<LectureBlockIdentityStatistics> rawStatistics = lectureService
+					.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
+			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);
+			calculateWarningRates(rawStatistics, aggregatedStatistics);
+
 			lecturesListCtlr = new LecturesListController(ureq, getWindowControl(), breadcrumbPanel,
 					aggregatedStatistics, filterByEntry, curriculum, element, userPropertyHandlers, PROPS_IDENTIFIER);
 			listenTo(lecturesListCtlr);
@@ -154,7 +153,9 @@ public class CurriculumElementLecturesController extends BasicController {
 	
 	private void calculateWarningRates(List<LectureBlockIdentityStatistics> rawStatistics, List<LectureBlockIdentityStatistics> aggregatedStatistics) {
 		List<IdentityRateWarning> warnings = lectureService.groupRateWarning(rawStatistics);
-		if(warnings.isEmpty()) return;
+		if(warnings.isEmpty()) {
+			return;
+		}
 
 		Map<Long,IdentityRateWarning> warningMap = warnings.stream()
 				.collect(Collectors.toMap(IdentityRateWarning::getIdentityKey, w -> w, (u, v) -> u));

@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -83,16 +84,18 @@ public class LecturesReportController extends FormBasicController {
 		formLayout.add(searchCont);
 		
 		startEl = uifactory.addDateChooser("search.form.start", "search.form.start", null, searchCont);
+		startEl.setMandatory(true);
 		endEl = uifactory.addDateChooser("search.form.end", "search.form.end", null, searchCont);
+		endEl.setMandatory(true);
 		
 		String[] statusValues = new String[] {
 				translate("search.form.status.open"), translate("search.form.status.closed"),
 				translate("search.form.status.autoclosed"), translate("search.form.status.reopen")
 		};
 		statusEl = uifactory.addCheckboxesHorizontal("search.form.status", "search.form.status", searchCont, statusKeys, statusValues);
+		statusEl.setMandatory(true);
 		
-		FormLayoutContainer searchButtonsCont = FormLayoutContainer.createButtonLayout("searchButtons", getTranslator());
-		searchCont.add(searchButtonsCont);
+		FormLayoutContainer searchButtonsCont = uifactory.addButtonsFormLayout("searchButtons", null, searchCont);
 		uifactory.addFormSubmitButton("search", "search", searchButtonsCont);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -112,6 +115,36 @@ public class LecturesReportController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "lecturesblocks-admin-report");
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		startEl.clearError();
+		if(startEl.getDate() == null) {
+			startEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		endEl.clearError();
+		if(endEl.getDate() == null) {
+			endEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		if(allOk && Math.abs(DateUtils.countDays(startEl.getDate() , endEl.getDate())) > 740) {
+			startEl.setErrorKey("error.max.two.years");
+			allOk &= false;
+		}
+		
+		statusEl.clearError();
+		if(statusEl.getSelectedKeys() == null || statusEl.getSelectedKeys().isEmpty()) {
+			statusEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+
+		return allOk;
 	}
 
 	@Override
