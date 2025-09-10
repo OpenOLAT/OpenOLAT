@@ -41,6 +41,8 @@ public class PendingMembershipRow {
 	private final Long reservationKey;
 
 	private FormLink toolsLink;
+	private FormLink acceptLink;
+	private FormLink declineLink;
 	private MemberDetailsController detailsCtrl;
 
 	public PendingMembershipRow(String title, String extRef, Date begin, Date end, String type,
@@ -85,6 +87,22 @@ public class PendingMembershipRow {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+
+	public FormLink getAcceptLink() {
+		return acceptLink;
+	}
+
+	public void setAcceptLink(FormLink acceptLink) {
+		this.acceptLink = acceptLink;
+	}
+
+	public FormLink getDeclineLink() {
+		return declineLink;
+	}
+
+	public void setDeclineLink(FormLink declineLink) {
+		this.declineLink = declineLink;
 	}
 
 	public MemberDetailsController getDetailsController() {

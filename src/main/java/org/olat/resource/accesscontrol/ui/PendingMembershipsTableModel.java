@@ -60,6 +60,8 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 			case end -> row.getEnd();
 			case type -> row.getType();
 			case confirmationUntil -> row.getConfirmationUntil();
+			case accept -> row.getAcceptLink();
+			case decline -> row.getDeclineLink();
 			case tools -> row.getToolsLink();
 		};
 	}
@@ -71,6 +73,8 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 		end("table.header.end"),
 		type("table.header.type"),
 		confirmationUntil("table.header.confirmation.until"),
+		accept("accept"),
+		decline("decline"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;
@@ -86,7 +90,10 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 
 		@Override
 		public boolean sortable() {
-			return this != tools;
+			if (this == tools || this == accept || this == decline) {
+				return false;
+			}
+			return true;
 		}
 
 		@Override
