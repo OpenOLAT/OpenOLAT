@@ -314,7 +314,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		allOk &= CurriculumHelper.validateTextElement(requirementsEl, false, 2000);
 		allOk &= CurriculumHelper.validateTextElement(creditsEl, false, 2000);
 		
-		if(creditPointCont.isVisible()) {
+		if(creditPointCont != null && creditPointCont.isVisible()) {
 			allOk &= CurriculumHelper.validateIntegerElement(creditPointsEl, true);
 			allOk &= CurriculumHelper.validateElement(creditPointSystemEl);
 		}
@@ -378,9 +378,9 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			element.setCredits(creditsEl.getValue());
 			element.setTaughtBys(taughtByEl.getSelectedKeys().stream().map(TaughtBy::valueOf).collect(Collectors.toSet()));
 			element = curriculumService.updateCurriculumElement(element);
+			
+			commitCreditPointConfiguration();
 		}
-		
-		commitCreditPointConfiguration();
 		
 		if (imageEl.getUploadFile() != null) {
 			curriculumService.storeCurriculumElemenFile(element, CurriculumElementFileType.teaserImage, imageEl.getUploadFile(), imageEl.getUploadFileName(), getIdentity());

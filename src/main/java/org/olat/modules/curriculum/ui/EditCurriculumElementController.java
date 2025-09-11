@@ -116,7 +116,7 @@ public class EditCurriculumElementController extends BasicController {
 		executionLink = LinkFactory.createLink("curriculum.element.execution", getTranslator(), this);
 		segmentButtonsCmp.addButton(executionLink, false);
 		
-		if(element.getParent() == null) {// Only implementations
+		if(element != null && element.getParent() == null) {// Only implementations
 			automationLink = LinkFactory.createLink("curriculum.element.automation", getTranslator(), this);
 			segmentButtonsCmp.addButton(automationLink, false);
 		}
