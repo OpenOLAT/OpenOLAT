@@ -21,6 +21,7 @@ package org.olat.modules.quality.analysis.ui;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
@@ -47,15 +49,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AnalysisExcelExport extends EvaluationFormExcelExport {
 	
+	private final Figures analysisFigures;
 	private final List<QualityContext> contexts;
 	private final Map<EvaluationFormSession, QualityDataCollection> sessionToDataCollection;
 
 	@Autowired
 	private QualityService qualityService;
 
-	public AnalysisExcelExport(Form form, SessionFilter filter, Comparator<EvaluationFormSession> comparator,
-			UserColumns userColumns, String fileName) {
-		super(form, filter, comparator, userColumns, fileName);
+	public AnalysisExcelExport(Locale locale, RepositoryEntry formEntry, Form form, SessionFilter filter,
+			Comparator<EvaluationFormSession> comparator, UserColumns userColumns, String fileName,
+			Figures analysisFigures) {
+		super(locale, formEntry, form, filter, comparator, userColumns, fileName);
+		this.analysisFigures = analysisFigures;
 		
 		contexts = qualityService.loadContextBySessions(sessions);
 		sessionToDataCollection = contexts.stream()
@@ -67,7 +72,7 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 	
 	@Override
 	protected List<String> getWorksheetNames() {
-		return List.of(super.getWorksheetNames().get(0), "context");
+		return List.of(super.getWorksheetNames().get(0), "context", super.getWorksheetNames().get(1));
 	}
 	
 	@Override
@@ -154,6 +159,11 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 				}
 			}
 		}
+	}
+
+	@Override
+	protected Figures getCustomFigures() {
+		return analysisFigures;
 	}
 
 }

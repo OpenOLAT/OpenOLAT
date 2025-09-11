@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -34,9 +35,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.io.ShieldOutputStream;
@@ -45,9 +48,13 @@ import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorkbookStyles;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormStatistic;
+import org.olat.modules.forms.Figure;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
@@ -66,6 +73,7 @@ import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.Spacer;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.model.xml.Title;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,18 +87,23 @@ public class EvaluationFormExcelExport {
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormExcelExport.class);
 	private static final List<String> MERGE_TYPES = List.of(HTMLParagraph.TYPE, HTMLRaw.TYPE);
 
+	private final Translator translator;
+	private final RepositoryEntry formEntry;
 	private final String fileName;
 	private final UserColumns userColumns;
 	private final List<AbstractElement> elements;
 	private final EvaluationFormResponses responses;
 	protected final List<EvaluationFormSession> sessions;
+	private final EvaluationFormStatistic statistic;
 	private final List<String> mergedElementIds = new ArrayList<>();
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormExcelExport(Form form, SessionFilter filter, Comparator<EvaluationFormSession> comparator,
-			UserColumns userColumns, String fileName) {
+	public EvaluationFormExcelExport(Locale locale, RepositoryEntry formEntry, Form form,
+			SessionFilter filter, Comparator<EvaluationFormSession> comparator, UserColumns userColumns, String fileName) {
+		this.translator = Util.createPackageTranslator(EvaluationFormExcelExport.class, locale);
+		this.formEntry = formEntry;
 		this.fileName = getFileName(fileName);
 		this.userColumns = userColumns;
 
@@ -98,6 +111,7 @@ public class EvaluationFormExcelExport {
 		elements = evaluationFormManager.getUncontainerizedElements(form);
 		responses = evaluationFormManager.loadResponsesBySessions(filter);
 		sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+		statistic = evaluationFormManager.getSessionsStatistic(filter);
 		if (comparator != null) {
 			sessions.sort(comparator);
 		}
@@ -141,20 +155,23 @@ public class EvaluationFormExcelExport {
 			addHeader(workbook, exportSheet);
 			addContent(workbook, exportSheet);
 			if (sheetNames.size() > 1) {
-				for (int i = 1; i < sheetNames.size(); i++) {
+				for (int i = 1; i < sheetNames.size() - 1; i++) {
 					exportSheet = workbook.nextWorksheet();
 					addCustomWorksheet(workbook, exportSheet, i);
 				}
 			}
+			
+			OpenXMLWorksheet metadataSheet = workbook.nextWorksheet();
+			addMetadataContent(workbook, metadataSheet);
 		} catch (IOException e) {
 			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
-	
+
 	protected List<String> getWorksheetNames() {
-		return List.of("response");
+		return List.of("response", "metadata");
 	}
 	
 	/**
@@ -469,6 +486,30 @@ public class EvaluationFormExcelExport {
 		return FilterFactory.getHtmlTagAndDescapingFilter().filter(sb.toString());
 	}
 	
+	protected void addMetadataContent(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet) {
+		Row row = sheet.newRow();
+		row.addCell(0, translator.translate("report.excel.form"), workbook.getStyles().getTopAlignStyle());
+		row.addCell(1, formEntry.getDisplayname() , workbook.getStyles().getTopAlignStyle());
+		row = sheet.newRow();
+		row.addCell(0, translator.translate("report.excel.form.id"), workbook.getStyles().getTopAlignStyle());
+		row.addCell(1, formEntry.getKey(), workbook.getStyles().getIntegerStyle());
+		
+		List<Figure> figures = FiguresFactory.createFigures(translator, getCustomFigures(), statistic);
+		for (Figure figure : figures) {
+			row = sheet.newRow();
+			row.addCell(0, figure.getName(), workbook.getStyles().getTopAlignStyle());
+			
+			CellStyle valueStyle = StringHelper.isLong(figure.getValue())
+					? workbook.getStyles().getIntegerStyle()
+					: workbook.getStyles().getTopAlignStyle();
+			row.addCell(1, figure.getValue(), valueStyle);
+		}
+	}
+	
+	protected Figures getCustomFigures() {
+		return null;
+	}
+
 	public interface UserColumns {
 		
 		public void addHeaderColumns(Row row, AtomicInteger col, OpenXMLWorkbookStyles styles);

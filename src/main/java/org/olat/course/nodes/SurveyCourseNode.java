@@ -88,9 +88,9 @@ import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.ReportHelperUserColumns;
 import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -376,8 +376,8 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode
 				ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
 				ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
 				
-				EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
-						reportHelper.getComparator(), userColumns, getShortName());
+				EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(locale, survey.getFormEntry(),
+						form, filter, reportHelper.getComparator(), userColumns, getShortName());
 				evaluationFormExport.export(exportStream, archivePath);
 			}
 		} catch (IOException e) {

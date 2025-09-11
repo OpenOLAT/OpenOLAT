@@ -43,6 +43,7 @@ import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController.Target;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,6 +67,7 @@ public class EvaluationFormReportsController extends BasicController implements 
 	private CloseableCalloutWindowController calloutCtrl;
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
 
+	private final RepositoryEntry formEntry;
 	private final Form form;
 	private final DataStorage storage;
 	private final SessionFilter filter;
@@ -76,14 +78,16 @@ public class EvaluationFormReportsController extends BasicController implements 
 	@Autowired
 	private PdfModule pdfModule;
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
-			SessionFilter filter, Figures figures) {
-		this(ureq, wControl, form, storage, filter, null, null, figures, null);
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, RepositoryEntry formEntry,
+			Form form, DataStorage storage, SessionFilter filter, Figures figures) {
+		this(ureq, wControl, formEntry, form, storage, filter, null, null, figures, null);
 	}
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
-			ReportSegment show, Component formHeader, Figures figures, String title) {
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, RepositoryEntry formEntry,
+			Form form, DataStorage storage, SessionFilter filter, ReportSegment show, Component formHeader,
+			Figures figures, String title) {
 		super(ureq, wControl);
+		this.formEntry = formEntry;
 		this.form = form;
 		this.storage = storage;
 		this.filter = filter;
@@ -194,8 +198,8 @@ public class EvaluationFormReportsController extends BasicController implements 
 
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
-		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, filter, reportHelper.getComparator(),
-				new ReportHelperUserColumns(reportHelper, getTranslator()), surveyName);
+		EvaluationFormExcelExport export = new EvaluationFormExcelExport(getLocale(), formEntry, form,
+				filter, reportHelper.getComparator(), new ReportHelperUserColumns(reportHelper, getTranslator()), surveyName);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 

@@ -67,7 +67,7 @@ public class SurveyReportingController extends BasicController {
 				.addCustomFigure(translate("figure.course"), courseEntry.getDisplayname())
 				.addCustomFigure(translate("figure.course.node"), courseNode.getShortTitle())
 				.build();
-		reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter, figures);
+		reportsCtrl = new EvaluationFormReportsController(ureq, wControl, survey.getFormEntry(), form, storage, filter, figures);
 		listenTo(reportsCtrl);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 

@@ -525,13 +525,13 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
-	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns) {
+	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Form form = loadForm(survey);
 		Boolean lastRun = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)? null: Boolean.TRUE;
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, lastRun, true);
 		String nodeName = courseNode.getShortName();
-		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(form, filter, null, userColumns, nodeName);
+		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(locale, survey.getFormEntry(), form, filter, null, userColumns, nodeName);
 		
 		List<FileUpload> fileUploads = evaluationFormManager.getUncontainerizedElements(form).stream().filter(element -> element instanceof FileUpload).map(element -> (FileUpload)element).toList();
 		if (fileUploads.isEmpty()) {
@@ -542,20 +542,20 @@ public class FormManagerImpl implements FormManager {
 
 	@Override
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
-			EvaluationFormSurveyIdentifier identifier, UserColumns userColumns) {
+			EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Boolean lastRun = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)? null: Boolean.TRUE;
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, lastRun, true);
-		return getExcelExport(courseNode, identifier, filter, userColumns);
+		return getExcelExport(courseNode, identifier, locale, filter, userColumns);
 	}
 	
 	@Override
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
-			EvaluationFormSurveyIdentifier identifier, SessionFilter filter, UserColumns userColumns) {
+			EvaluationFormSurveyIdentifier identifier, Locale locale, SessionFilter filter, UserColumns userColumns) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Form form = loadForm(survey);
 		String surveyName = courseNode.getShortName();
-		return new EvaluationFormExcelExport(form, filter, null, userColumns, surveyName);
+		return new EvaluationFormExcelExport(locale, survey.getFormEntry(), form, filter, null, userColumns, surveyName);
 	}
 
 	@Override

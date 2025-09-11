@@ -140,8 +140,8 @@ public class MSScoreEvaluationAndDataHelper {
 					ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
 					ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
 					
-					EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
-							reportHelper.getComparator(), userColumns, courseNode.getShortName());
+					EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(locale, formEntry,
+							form, filter, reportHelper.getComparator(), userColumns, courseNode.getShortName());
 					evaluationFormExport.export(archiveStream, path);
 				}
 			}
