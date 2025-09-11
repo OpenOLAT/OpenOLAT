@@ -865,6 +865,13 @@ public class RepositoryManager {
 		}
 		reloadedRe.setRuntimeType(runtimeType);
 		reloadedRe.setLastModified(new Date());
+		
+		// Special constraints for the template runtime type:
+		if (RepositoryEntryRuntimeType.template.equals(runtimeType)) {
+			reloadedRe.setCanReference(false);
+			reloadedRe.setCanIndexMetadata(false);
+		}
+
 		//properties
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
