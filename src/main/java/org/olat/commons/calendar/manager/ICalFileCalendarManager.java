@@ -683,7 +683,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		String recurrence = kEvent.getRecurrenceRule();
 		if(recurrence != null && !recurrence.equals("")) {
 			try {
-				Recur<Temporal> recur = new Recur<>(recurrence);
+				Recur<Temporal> recur = new Recur<>(recurrence, true);
+				Temporal until = recur.getUntil();
+				if(until instanceof LocalDate date) {
+					//recur.setUntil(LocalDateTime.of(date.getYear(), date.getMonth(), date.getDayOfMonth(), 23, 59));
+				}
 				RRule<Temporal> rrule = new RRule<>(recur);
 				vEventProperties.add(rrule);
 			} catch (Exception e) {
