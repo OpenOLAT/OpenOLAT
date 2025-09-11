@@ -271,9 +271,11 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (!roleSecurityCallback.canViewPendingCourseBookings()) {
 			return;
 		}
-		int pendingMembershipCount = acService.getReservations(mentee).size();
+		long pendingMembershipCount = acService.getReservations(mentee).stream()
+				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
+				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX)).count();
 		if (pendingMembershipCount > 1) {
-			String warning = translate("warning.pending.membership.plural", Integer.toString(pendingMembershipCount));
+			String warning = translate("warning.pending.membership.plural", Long.toString(pendingMembershipCount));
 			mainVC.contextPut("pendingMembershipWarning", warning);
 		} else if (pendingMembershipCount == 1) {
 			String warning = translate("warning.pending.membership.singular");

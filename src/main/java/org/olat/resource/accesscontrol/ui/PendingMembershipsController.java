@@ -60,6 +60,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.ui.member.AcceptDeclineMembershipsController;
 import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
@@ -244,7 +245,10 @@ public class PendingMembershipsController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		List<ResourceReservation> reservations = reservationDao.loadReservations(identity);
+		List<ResourceReservation> reservations = reservationDao.loadReservations(identity).stream()
+				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
+				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX))
+				.toList();
 		Set<OLATResource> resources = reservations.stream().map(ResourceReservation::getResource).collect(Collectors.toSet());
 		List<CurriculumElement> curriculumElements = curriculumElementDao.loadElementsByResources(resources);
 		Map<Long, CurriculumElement> resourceKeyToElement = new HashMap<>();
