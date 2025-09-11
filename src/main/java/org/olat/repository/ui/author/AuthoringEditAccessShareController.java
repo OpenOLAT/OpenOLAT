@@ -246,9 +246,12 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted;
 		boolean supportsDownload = handlerFactory.getRepositoryHandler(entry).supportsDownload();
+		boolean notTemplateRuntimeType = !RepositoryEntryRuntimeType.template.equals(entry.getRuntimeType());
 
 		SelectionValues canSV = new SelectionValues();
-		canSV.add(SelectionValues.entry(KEY_REFERENCE, translate("cif.canReference")));
+		if (notTemplateRuntimeType) {
+			canSV.add(SelectionValues.entry(KEY_REFERENCE, translate("cif.canReference")));
+		}
 		canSV.add(SelectionValues.entry(KEY_COPY, translate("cif.canCopy")));
 		if (supportsDownload) {
 			canSV.add(SelectionValues.entry(KEY_DOWNLOAD, translate("cif.canDownload")));
@@ -256,7 +259,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", generalCont, canSV.keys(), canSV.values(), 1);
 		authorCanEl.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
 		authorCanEl.addActionListener(FormEvent.ONCHANGE);
-		authorCanEl.select(KEY_REFERENCE, entry.getCanReference());
+		if (notTemplateRuntimeType) {
+			authorCanEl.select(KEY_REFERENCE, entry.getCanReference());
+		}
 		authorCanEl.select(KEY_COPY, entry.getCanCopy());
 		if (supportsDownload) {
 			authorCanEl.select(KEY_DOWNLOAD, entry.getCanDownload());
@@ -272,7 +277,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		enableMetadataIndexingEl.setHelpUrlForManualPage("manual_admin/administration/Modules_OAI/");
 		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
 		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
-		enableMetadataIndexingEl.setVisible(oaiPmhModule.isEnabled());
+		enableMetadataIndexingEl.setVisible(oaiPmhModule.isEnabled() && notTemplateRuntimeType);
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
@@ -453,8 +458,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	private void updateIndexMetadataWarningUI() {
+		boolean notTemplateRuntimeType = !RepositoryEntryRuntimeType.template.equals(entry.getRuntimeType());
 		oaiCont.setVisible(
 				oaiPmhModule.isEnabled()
+				&& notTemplateRuntimeType
 				&& enableMetadataIndexingEl.isSelected(0)
 				&& (entry.getEntryStatus() != RepositoryEntryStatusEnum.published ||
 				!isEntryLicenseAllowedForIndexing()));
