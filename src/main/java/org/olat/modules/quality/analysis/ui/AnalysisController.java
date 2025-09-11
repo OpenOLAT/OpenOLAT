@@ -784,7 +784,11 @@ public class AnalysisController extends BasicController implements TooledControl
 	private Figures getReportFigures() {
 		if (reportFigures == null) {
 			FiguresBuilder figuresBuilder = FiguresBuilder.builder();
-			figuresBuilder.addCustomFigure(translate("report.figure.form.name"), presentation.getFormEntry().getDisplayname());
+			figuresBuilder.addCustomFigure(
+					translate("report.figure.form.name"),
+					translate("report.figure.form.name.value",
+							presentation.getFormEntry().getDisplayname(),
+							String.valueOf(presentation.getFormEntry().getKey())));
 			AnlaysisFigures analyticFigures = analysisService.loadFigures(presentation.getSearchParams());
 			figuresBuilder.withNumberOfParticipations(analyticFigures.getParticipationCount());
 			if (analyticFigures.getPublicParticipationCount().longValue() > 0) {

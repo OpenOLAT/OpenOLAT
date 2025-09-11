@@ -105,13 +105,14 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.formTitle, CMD_OPEN));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AnalysisCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.formCreated));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.soonest));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.latest));
 		DefaultFlexiColumnModel numDataCollectionsColumn = new DefaultFlexiColumnModel(AnalysisCols.numberDataCollections);
 		numDataCollectionsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		numDataCollectionsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
-		columnsModel.addFlexiColumnModel(numDataCollectionsColumn);;
+		columnsModel.addFlexiColumnModel(numDataCollectionsColumn);
 		DefaultFlexiColumnModel numParticipationsColumn = new DefaultFlexiColumnModel(AnalysisCols.numberParticipations);
 		numParticipationsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		numParticipationsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -123,9 +124,8 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setElementCssClass("o_qual_ana_table");
 		tableEl.setSearchEnabled(false);
-		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "quality-analysis");
+		tableEl.setAndLoadPersistedPreferences(ureq, "quality-analysis-v1");
 		tableEl.setEmptyTableMessageKey("analysis.table.empty");
 		
 		VelocityContainer row = createVelocityContainer("analysis_row");

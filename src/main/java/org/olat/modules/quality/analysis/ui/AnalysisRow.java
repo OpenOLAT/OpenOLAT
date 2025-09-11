@@ -46,6 +46,10 @@ public class AnalysisRow implements EvaluationFormView {
 		return formView.getFormEntry();
 	}
 	
+	public Long getFormEntryKey() {
+		return formView.getFormEntry().getKey();
+	}
+	
 	public Date getFormCreatedDate() {
 		return formView.getFormEntry().getCreationDate();
 	}
