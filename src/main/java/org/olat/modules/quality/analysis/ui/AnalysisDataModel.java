@@ -70,6 +70,7 @@ class AnalysisDataModel extends DefaultFlexiTableDataModel<AnalysisRow>
 	@Override
 	public Object getValueAt(AnalysisRow row, int col) {
 		switch(AnalysisCols.values()[col]) {
+			case key: return row.getFormEntryKey();
 			case formTitle: return row.getFormTitle();
 			case formCreated: return row.getFormCreatedDate();
 			case numberDataCollections: return row.getNumberDataCollections();
@@ -81,6 +82,7 @@ class AnalysisDataModel extends DefaultFlexiTableDataModel<AnalysisRow>
 	}
 	
 	enum AnalysisCols implements FlexiSortableColumnDef {
+		key("analysis.table.form.id"),
 		formTitle("analysis.table.form.title"),
 		formCreated("analysis.table.form.created"),
 		numberDataCollections("analysis.table.data.collections.number"),

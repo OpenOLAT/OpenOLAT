@@ -560,6 +560,31 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, recurringEvents.size());
 	}
 	
+	@Test
+	public void calendarRecurringEventUntilLocalDate()
+	throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("RecurenceLocalDate.ics");
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		ZonedDateTime startDate = ZonedDateTime.of(2025, 9, 10, 10, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime endDate = ZonedDateTime.of(2025, 10, 17, 10, 0, 0, 0, ZoneId.systemDefault());
+		
+		List<KalendarEvent> recurringEvents = calendarManager.getEvents(importedCalendar.getKalendar(), startDate, endDate, true);
+		Assert.assertEquals(6, recurringEvents.size());
+		
+		List<KalendarEvent> recurringRecurEvents =  recurringEvents.stream()
+				.filter(event -> event instanceof KalendarRecurEvent)
+				.toList();
+		Assert.assertEquals(6, recurringRecurEvents.size());
+	}
+	
 	/**
 	 * A recurring event with missing end date. This error
 	 * in the calendar cause the whole calendar to crash.
