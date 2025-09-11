@@ -54,7 +54,6 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
-import org.olat.modules.forms.FiguresBuilder;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
@@ -137,6 +136,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private final MainSecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
 	
+	private final RepositoryEntry formEntry;
 	private final Form form;
 	private final DataStorage storage;
 	private final AvailableAttributes availableAttributes;
@@ -170,7 +170,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.presentation = presentation;
-		RepositoryEntry formEntry = repositoryManager.lookupRepositoryEntry(presentation.getFormEntry().getKey());
+		this.formEntry = repositoryManager.lookupRepositoryEntry(presentation.getFormEntry().getKey());
 		this.form = evaluationFormManager.loadForm(formEntry);
 		this.storage = evaluationFormManager.loadStorage(formEntry);
 		
@@ -714,8 +714,11 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
-		AnalysisExcelExport export = new AnalysisExcelExport(form, getReportSessionFilter(),
-				getReportHelper().getComparator(), new ReportHelperUserColumns(getReportHelper(), getTranslator()), surveyName);
+		AnlaysisFigures analyticFigures = analysisService.loadFigures(presentation.getSearchParams());
+		Figures analysisFigures = FiguresFactory.createFigures(getTranslator(), formEntry, analyticFigures, false);
+		AnalysisExcelExport export = new AnalysisExcelExport(getLocale(), formEntry, form, getReportSessionFilter(),
+				getReportHelper().getComparator(), new ReportHelperUserColumns(getReportHelper(), getTranslator()),
+				surveyName, analysisFigures);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	
@@ -783,20 +786,8 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private Figures getReportFigures() {
 		if (reportFigures == null) {
-			FiguresBuilder figuresBuilder = FiguresBuilder.builder();
-			figuresBuilder.addCustomFigure(
-					translate("report.figure.form.name"),
-					translate("report.figure.form.name.value",
-							presentation.getFormEntry().getDisplayname(),
-							String.valueOf(presentation.getFormEntry().getKey())));
 			AnlaysisFigures analyticFigures = analysisService.loadFigures(presentation.getSearchParams());
-			figuresBuilder.withNumberOfParticipations(analyticFigures.getParticipationCount());
-			if (analyticFigures.getPublicParticipationCount().longValue() > 0) {
-				figuresBuilder.withNumberOfPublicParticipations(analyticFigures.getPublicParticipationCount());
-			}
-			figuresBuilder.addCustomFigure(translate("report.figure.number.data.collections"),
-					analyticFigures.getDataCollectionCount().toString());
-			reportFigures = figuresBuilder.build();
+			reportFigures = FiguresFactory.createFigures(getTranslator(), presentation.getFormEntry(), analyticFigures, true);
 		}
 		return reportFigures;
 	}

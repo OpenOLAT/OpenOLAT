@@ -462,7 +462,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	private void doExport(UserRequest ureq) {
 		UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, getTranslator(),
 				courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
-		MediaResource mediaResource = formManager.getExport(courseNode, survey.getIdentifier(), userColumns);
+		MediaResource mediaResource = formManager.getExport(courseNode, survey.getIdentifier(), getLocale(), userColumns);
 		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 	}
 	

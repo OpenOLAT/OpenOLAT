@@ -68,50 +68,8 @@ public class EvaluationFormOverviewController extends BasicController {
 
 		mainVC = createVelocityContainer("overview");
 
-		List<Figure> allFigures = new ArrayList<>();
-		if (figures != null) {
-			allFigures.addAll(figures.getCustomFigures());
-		}	
-		
 		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(filter);
-		
-		long numOfDoneSessions = statistic.getNumOfDoneSessions();
-		if (figures != null && figures.getNumberOfPublicParticipations() != null) {
-			numOfDoneSessions -= figures.getNumberOfPublicParticipations().longValue();
-		}
-		if (figures != null && figures.getNumberOfParticipations() != null) {
-			long numberOfParticipations = figures.getNumberOfParticipations().longValue();
-			
-			double percent = numberOfParticipations > 0
-					? (double)numOfDoneSessions / numberOfParticipations * 100.0d
-					: 0.0;
-			long percentRounded = Math.round(percent);
-			
-			String[] args = new String[] {
-					String.valueOf(numOfDoneSessions),
-					String.valueOf(numberOfParticipations),
-					String.valueOf(percentRounded)
-			};
-			String numberSessions = translate("report.overview.figures.number.done.session.of", args);
-			allFigures.add(new Figure(translate("report.overview.figures.number.done.session.percent"),
-					numberSessions));
-		} else {
-			String numberSessions = String.valueOf(numOfDoneSessions);
-			allFigures.add(new Figure(translate("report.overview.figures.number.done.session"),
-					numberSessions));
-		}
-		
-		if (figures != null && figures.getNumberOfPublicParticipations() != null) {
-			allFigures.add(new Figure(translate("report.overview.figures.number.public.participations"),
-					String.valueOf(figures.getNumberOfPublicParticipations())));
-		}
-		
-		String submissionPeriod = EvaluationFormFormatter.period(statistic.getFirstSubmission(),
-				statistic.getLastSubmission(), getLocale());
-		allFigures.add(
-				new Figure(translate("report.overview.figures.submission.period"), submissionPeriod));
-		allFigures.add(new Figure(translate("report.overview.figures.average.duration"),
-				EvaluationFormFormatter.duration(statistic.getAverageDuration())));
+		List<Figure> allFigures = FiguresFactory.createFigures(getTranslator(), figures, statistic);
 		mainVC.contextPut("figures", allFigures);
 
 		if (hasRubrics(form)) {

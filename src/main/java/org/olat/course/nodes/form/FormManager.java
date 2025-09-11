@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -105,11 +106,11 @@ public interface FormManager {
 	
 	public void deleteAllData(EvaluationFormSurvey survey, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
-	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns);
+	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns);
 	
-	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns);
+	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, UserColumns userColumns);
 	
-	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, SessionFilter filter, UserColumns userColumns);
+	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, Locale locale, SessionFilter filter, UserColumns userColumns);
 
 	public List<String> getRelativeToDateTypes(RepositoryEntry courseEntry);
 

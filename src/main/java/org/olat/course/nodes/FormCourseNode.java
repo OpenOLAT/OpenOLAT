@@ -303,7 +303,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 					.getPropertyHandlerTranslator(Util.createPackageTranslator(FormCourseNode.class, locale));
 			UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, userPropertyTranslator,
 					getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
-			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, userColumns);
+			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, locale, userColumns);
 			excelExport.export(exportStream, archivePath);
 		} catch (IOException e) {
 			log.error("", e);
@@ -354,7 +354,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 				});
 			}
 			
-			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, sessionFilter, userColumns);
+			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, locale, sessionFilter, userColumns);
 			excelExport.export(archiveStream, path);
 		} catch (IOException e) {
 			log.error("", e);
