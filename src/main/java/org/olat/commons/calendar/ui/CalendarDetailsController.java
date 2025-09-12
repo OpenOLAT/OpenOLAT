@@ -197,7 +197,6 @@ public class CalendarDetailsController extends BasicController {
 		} else if(source instanceof Link internalLink
 				&& internalLink.getUserObject() instanceof LinkWrapper wrapper) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			System.out.println(wrapper.getUri());
 			ureq.getDispatchResult()
 				.setResultingMediaResource(new RedirectMediaResource(wrapper.getUri()));
 		}
