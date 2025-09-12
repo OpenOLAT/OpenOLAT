@@ -431,7 +431,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		List<CurriculumRoles> rolesToModify = List.of(membersContext.getRoleToModify());
 		boolean withConfirmation = membersContext.hasModificationsWithConfirmation();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToModify, false, false, false, true, withConfirmation,
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToModify, false, false, true, false, true, withConfirmation,
 				false, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);

@@ -182,7 +182,7 @@ public class MemberDetailsController extends FormBasicController {
 		
 		cancelButton = uifactory.addFormLink("cancel.booking", formLayout, Link.BUTTON);
 		cancelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_xmark");
-		cancelButton.setVisible(showAcceptDeclineButtons && config.withOrders() && hasOngoingOrder());
+		cancelButton.setVisible(config.withCancelBooking() && showAcceptDeclineButtons && config.withOrders() && hasOngoingOrder());
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
 		if(ordersCtrl != null) {
