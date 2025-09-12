@@ -84,6 +84,7 @@ import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextRole;
+import org.olat.modules.quality.QualityContextToTaxonomyLevel;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
@@ -758,6 +759,11 @@ public class QualityServiceImpl
 				}
 			}
 		}
+	}
+	
+	@Override
+	public List<QualityContextToTaxonomyLevel> loadContextTaxonomyLevel(List<? extends EvaluationFormSessionRef> sessions) {
+		return contextToTaxonomyLevelDao.loadBySessions(sessions);
 	}
 
 	@Override

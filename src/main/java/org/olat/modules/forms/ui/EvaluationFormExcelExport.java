@@ -87,7 +87,7 @@ public class EvaluationFormExcelExport {
 	private static final Logger log = Tracing.createLoggerFor(EvaluationFormExcelExport.class);
 	private static final List<String> MERGE_TYPES = List.of(HTMLParagraph.TYPE, HTMLRaw.TYPE);
 
-	private final Translator translator;
+	protected final Translator translator;
 	private final RepositoryEntry formEntry;
 	private final String fileName;
 	private final UserColumns userColumns;

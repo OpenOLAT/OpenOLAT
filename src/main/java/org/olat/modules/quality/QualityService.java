@@ -217,6 +217,8 @@ public interface QualityService {
 	 * @param contetxtRefs
 	 */
 	public void deleteContextsAndParticipations(Collection<QualityContextRef> contextRefs);
+	
+	public List<QualityContextToTaxonomyLevel> loadContextTaxonomyLevel(List<? extends EvaluationFormSessionRef> sessions);
 
 	public QualityReminder createReminder(QualityDataCollectionRef dataCollectionRef, Date sendDate,
 			QualityReminderType type);

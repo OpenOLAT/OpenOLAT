@@ -23,9 +23,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DB;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextToTaxonomyLevel;
@@ -71,6 +72,21 @@ class QualityContextToTaxonomyLevelDAO {
 				.setParameter("contextKey", contextRef.getKey())
 				.getResultList();
 		return relations;
+	}
+
+	public List<QualityContextToTaxonomyLevel> loadBySessions(List<? extends EvaluationFormSessionRef> sessions) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel");
+		sb.append("  from contexttotaxonomylevel as rel");
+		sb.append("       join fetch rel.context as context");
+		sb.append("       join fetch rel.taxonomyLevel as taxonomyLevel");
+		sb.append("       left join fetch taxonomyLevel.type as taxonomyType");
+		sb.append(" where rel.context.evaluationFormSession.key in :sessionKeys");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContextToTaxonomyLevel.class)
+				.setParameter("sessionKeys", sessions.stream().map(EvaluationFormSessionRef::getKey).toList())
+				.getResultList();
 	}
 
 	void deleteRelations(QualityContextRef context) {
