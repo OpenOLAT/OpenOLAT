@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -26,7 +27,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -36,8 +39,11 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.quality.QualityContext;
+import org.olat.modules.quality.QualityContextToTaxonomyLevel;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,6 +58,9 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 	private final Figures analysisFigures;
 	private final List<QualityContext> contexts;
 	private final Map<EvaluationFormSession, QualityDataCollection> sessionToDataCollection;
+	private final List<QualityContextToTaxonomyLevel> contextTaxonomyLevel;
+	private final List<TaxonomyLevel> taxonomyLevels;
+	private final List<String> worksheetNames;
 
 	@Autowired
 	private QualityService qualityService;
@@ -68,11 +77,31 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 						QualityContext::getEvaluationFormSession,
 						QualityContext::getDataCollection,
 						(u, v) -> u));
+		
+		contextTaxonomyLevel = qualityService.loadContextTaxonomyLevel(sessions);
+		contextTaxonomyLevel.sort(Comparator
+				.comparingLong((QualityContextToTaxonomyLevel ctl) -> ctl.getContext().getEvaluationFormSession().getKey())
+				.thenComparingLong((QualityContextToTaxonomyLevel ctl) -> ctl.getTaxonomyLevel().getKey())
+			);
+		taxonomyLevels = contextTaxonomyLevel.stream()
+				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
+				.distinct()
+				.sorted(Comparator.comparingLong((TaxonomyLevel level) -> level.getKey()))
+				.toList();
+		
+		worksheetNames = new ArrayList<>();
+		worksheetNames.add(super.getWorksheetNames().get(0));
+		worksheetNames.add("context");
+		if (!contextTaxonomyLevel.isEmpty()) {
+			worksheetNames.add("context_taxonomy");
+			worksheetNames.add("taxonomy");
+		}
+		worksheetNames.add(super.getWorksheetNames().get(1));
 	}
 	
 	@Override
 	protected List<String> getWorksheetNames() {
-		return List.of(super.getWorksheetNames().get(0), "context", super.getWorksheetNames().get(1));
+		return worksheetNames;
 	}
 	
 	@Override
@@ -128,7 +157,17 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 	protected void addCustomWorksheet(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, int sheetNum) {
 		if (sheetNum == 1) {
 			addContextHeader(workbook, exportSheet);
-			addContentContent(workbook, exportSheet);
+			addContextContent(workbook, exportSheet);
+		}
+		if (!contextTaxonomyLevel.isEmpty()) {
+			if (sheetNum == 2) {
+				addContextTaxonomyHeader(workbook, exportSheet);
+				addContextTaxonomyContent(workbook, exportSheet);
+			}
+			if (sheetNum == 3) {
+				addTaxonomyHeader(workbook, exportSheet);
+				addTaxonomyContent(workbook, exportSheet);
+			}
 		}
 	}
 
@@ -144,7 +183,7 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 		headerRow.addCell(col.getAndIncrement(), "oo_context_repo_title", workbook.getStyles().getBottomAlignStyle());
 	}
 
-	private void addContentContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+	private void addContextContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
 		for (QualityContext context : contexts) {
 			if (context.getEvaluationFormSession() != null) {
 				if (context.getAudienceRepositoryEntry() != null) {
@@ -158,6 +197,55 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 					row.addCell(col.getAndIncrement(), repositoryEntry.getDisplayname(), workbook.getStyles().getTopAlignStyle());
 				}
 			}
+		}
+	}
+	
+	private void addContextTaxonomyHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+		Row headerRow = exportSheet.newRow();
+		
+		AtomicInteger col = new AtomicInteger();
+		headerRow.addCell(col.getAndIncrement(), "oo_session_id", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_id", workbook.getStyles().getBottomAlignStyle());
+	}
+
+	private void addContextTaxonomyContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		for (QualityContextToTaxonomyLevel contextToTaxonomyLevel : contextTaxonomyLevel) {
+			Row row = exportSheet.newRow();
+			row.addCell(0, contextToTaxonomyLevel.getContext().getEvaluationFormSession().getKey(), workbook.getStyles().getIntegerStyle());
+			row.addCell(1, contextToTaxonomyLevel.getTaxonomyLevel().getKey(), workbook.getStyles().getIntegerStyle());
+		}
+	}
+	
+	private void addTaxonomyHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+		Row headerRow = exportSheet.newRow();
+		
+		AtomicInteger col = new AtomicInteger();
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_id", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_external_id", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_identitifer", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_path", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_title", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_type_title", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_taxonomy_level_sort_order", workbook.getStyles().getBottomAlignStyle());
+	}
+
+	private void addTaxonomyContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		Translator taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, translator.getLocale());
+		
+		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+			Row row = exportSheet.newRow();
+			AtomicInteger col = new AtomicInteger();
+			row.addCell(col.getAndIncrement(), taxonomyLevel.getKey(), workbook.getStyles().getIntegerStyle());
+			row.addCell(col.getAndIncrement(), taxonomyLevel.getExternalId());
+			row.addCell(col.getAndIncrement(), taxonomyLevel.getIdentifier());
+			row.addCell(col.getAndIncrement(), taxonomyLevel.getMaterializedPathIdentifiers());
+			String levelTitle = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, taxonomyLevel);
+			row.addCell(col.getAndIncrement(), levelTitle);
+			String typeTitle = taxonomyLevel.getType() != null? taxonomyLevel.getType().getDisplayName(): null;
+			row.addCell(col.getAndIncrement(), typeTitle);
+			row.addCell(col.getAndIncrement(), taxonomyLevel.getSortOrder(), workbook.getStyles().getIntegerStyle());
 		}
 	}
 

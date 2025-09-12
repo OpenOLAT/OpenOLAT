@@ -271,7 +271,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		if (!roleSecurityCallback.canViewPendingCourseBookings()) {
 			return;
 		}
-		long pendingMembershipCount = acService.getReservations(mentee).stream()
+		long pendingMembershipCount = acService.getReservationsWithOrders(mentee).stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
 				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX)).count();
 		if (pendingMembershipCount > 1) {
@@ -280,7 +280,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		} else if (pendingMembershipCount == 1) {
 			String warning = translate("warning.pending.membership.singular");
 			mainVC.contextPut("pendingMembershipWarning", warning);
-			
+		}
+		if (pendingMembershipCount > 0) {
 			confirmationLink = LinkFactory.createToolLink("go.to.confirmation", translate("go.to.confirmation"), this);
 			confirmationLink.setIconRightCSS("o_icon o_icon-fw o_icon_start");
 			mainVC.put("pendingMembershipWarningLink", confirmationLink);

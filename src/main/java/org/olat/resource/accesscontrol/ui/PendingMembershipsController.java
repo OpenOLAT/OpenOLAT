@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,7 @@ import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.repository.ui.list.ImplementationEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.PendingMembershipsTableModel.PendingMembershipCol;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +99,8 @@ public class PendingMembershipsController extends FormBasicController implements
 
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
+	@Autowired
+	private ACOrderDAO orderDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
 
@@ -245,7 +249,7 @@ public class PendingMembershipsController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		List<ResourceReservation> reservations = reservationDao.loadReservations(identity).stream()
+		List<ResourceReservation> reservations = orderDao.getReservationsWithOrders(identity).stream()
 				.filter(r -> StringHelper.containsNonWhitespace(r.getType()))
 				.filter(r -> r.getType().startsWith(CurriculumService.RESERVATION_PREFIX))
 				.toList();
@@ -257,6 +261,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		}
 		String searchString = tableEl.getQuickSearchString() != null ? tableEl.getQuickSearchString().toLowerCase() : null;
 		List<PendingMembershipRow> rows = reservations.stream().map(r -> toRow(r, resourceKeyToElement))
+				.filter(Objects::nonNull)
 				.filter(r -> {
 					if (!StringHelper.containsNonWhitespace(searchString)) {
 						return true;
@@ -276,6 +281,12 @@ public class PendingMembershipsController extends FormBasicController implements
 
 	private PendingMembershipRow toRow(ResourceReservation reservation, Map<Long, CurriculumElement> resourceKeyToElement) {
 		CurriculumElement curriculumElement = resourceKeyToElement.get(reservation.getResource().getKey());
+		if (curriculumElement == null) {
+			return null;
+		}
+		if (!curriculumElement.getType().isAllowedAsRootElement()) {
+			return null;
+		}
 		PendingMembershipRow row = new PendingMembershipRow(curriculumElement.getDisplayName(), curriculumElement.getIdentifier(),
 				curriculumElement.getBeginDate(), curriculumElement.getEndDate(),
 				curriculumElement.getType() != null ? curriculumElement.getType().getDisplayName() : "",

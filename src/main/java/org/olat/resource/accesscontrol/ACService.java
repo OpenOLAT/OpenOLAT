@@ -254,6 +254,15 @@ public interface ACService {
 	public List<ResourceReservation> getReservations(IdentityRef identity);
 
 	/**
+	 * Retrieves a list of resource reservations associated with the specified identity. 
+	 * Only includes reservations that have corresponding orders.
+	 *
+	 * @param identity the identity used to filter and retrieve reservations
+	 * @return a list of resource reservations containing corresponding orders
+	 */
+	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity);
+
+	/**
 	 * Reserve a resource
 	 * @param identity
 	 * @param offer

@@ -71,6 +71,8 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.PriceImpl;
@@ -120,6 +122,10 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private AccessControlModule acModule;
 	@Autowired
 	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
+	@Autowired
+	private ACOrderDAO acOrderDao;
+	@Autowired
+	private ACReservationDAO acReservationDao;
 
 	@Test
 	public void testManagers() {
@@ -729,6 +735,42 @@ public class ACFrontendManagerTest extends OlatTestCase {
 			.hasSize(2)
 			.filteredOn(point -> GroupMembershipStatus.removed == point.getStatus())
 			.hasSize(1);
+	}
+	
+	@Test
+	public void getReservationsWithOrders() {
+		// arrange
+		Identity orderer = JunitTestHelper.createAndPersistIdentityAsRndUser("orderer");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-RES", "Curriculum Reservations", "Curriculum", false, null);
+		CurriculumElement ce1 = curriculumService.createCurriculumElement("CE-1", "Element 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.createCurriculumElement("CE-2", "Element 2",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(ce1.getResource(), "Offer for curriculum element 1");
+		offer = acService.save(offer);
+		
+		Order order = acOrderDao.createOrder(orderer);
+		OrderPart orderPart = acOrderDao.addOrderPart(order);
+		acOrderDao.addOrderLine(orderPart, offer);
+		acOrderDao.save(order);
+
+		ResourceReservation reservationWithOrder = acReservationDao.createReservation(orderer, "curriculum_participant",
+				null, Boolean.TRUE, ce1.getResource());
+
+		dbInstance.commitAndCloseSession();
+
+		// act
+		List<ResourceReservation> reservations = acService.getReservationsWithOrders(orderer);
+
+		// assert
+		assertEquals(1, reservations.size());
+		assertEquals(reservationWithOrder, reservations.get(0));
+		assertEquals(ce1.getResource(), reservations.get(0).getResource());
+		assertEquals(orderer, reservations.get(0).getIdentity());
 	}
 	
 }

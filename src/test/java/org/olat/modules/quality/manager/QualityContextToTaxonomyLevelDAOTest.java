@@ -26,8 +26,11 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextToTaxonomyLevel;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,8 @@ public class QualityContextToTaxonomyLevelDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
+	@Autowired
+	private QualityContextDAO contextDao;
 	
 	@Autowired
 	private QualityContextToTaxonomyLevelDAO sut;
@@ -84,6 +89,41 @@ public class QualityContextToTaxonomyLevelDAOTest extends OlatTestCase {
 		assertThat(relations)
 				.containsExactlyInAnyOrder(relation1, relation2)
 				.doesNotContain(otherRelation);
+	}
+	
+	@Test
+	public void shouldLoadRelationsBySessions() {
+		TaxonomyLevel taxonomyLevel1 = qualityTestHelper.createTaxonomyLevel();
+		TaxonomyLevel taxonomyLevel2 = qualityTestHelper.createTaxonomyLevel();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		
+		EvaluationFormParticipation participation1 = qualityTestHelper.createParticipation();
+		QualityContext context1 = contextDao.createContext(dataCollection, participation1, null, null, null, null);
+		QualityContextToTaxonomyLevel relation11 = sut.createRelation(context1, taxonomyLevel1);
+		QualityContextToTaxonomyLevel relation12 = sut.createRelation(context1, taxonomyLevel2);
+		contextDao.createContext(dataCollection, participation1, null, null, null, null);
+		EvaluationFormSession session1 = qualityTestHelper.createSession(participation1);
+		contextDao.finish(participation1, session1);
+		
+		EvaluationFormParticipation participation2 = qualityTestHelper.createParticipation();
+		QualityContext context2 = contextDao.createContext(dataCollection, participation2, null, null, null, null);
+		QualityContextToTaxonomyLevel relation21 = sut.createRelation(context2, taxonomyLevel1);
+		contextDao.createContext(dataCollection, participation2, null, null, null, null);
+		EvaluationFormSession session2 = qualityTestHelper.createSession(participation2);
+		contextDao.finish(participation2, session2);
+		
+		EvaluationFormParticipation participation3 = qualityTestHelper.createParticipation();
+		QualityContext context3 = contextDao.createContext(dataCollection, participation3, null, null, null, null);
+		sut.createRelation(context3, taxonomyLevel1);
+		contextDao.createContext(dataCollection, participation3, null, null, null, null);
+		EvaluationFormSession session3 = qualityTestHelper.createSession(participation3);
+		contextDao.finish(participation3, session3);
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityContextToTaxonomyLevel> relations = sut.loadBySessions(List.of(session1, session2));
+		
+		assertThat(relations).containsExactlyInAnyOrder(relation11, relation12, relation21);
 	}
 
 	@Test
