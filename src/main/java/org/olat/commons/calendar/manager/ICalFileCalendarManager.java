@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -686,7 +687,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				Recur<Temporal> recur = new Recur<>(recurrence, true);
 				Temporal until = recur.getUntil();
 				if(until instanceof LocalDate date) {
-					//recur.setUntil(LocalDateTime.of(date.getYear(), date.getMonth(), date.getDayOfMonth(), 23, 59));
+					recur.setUntil(LocalDateTime.of(date.getYear(), date.getMonth(), date.getDayOfMonth(), 23, 59));
 				}
 				RRule<Temporal> rrule = new RRule<>(recur);
 				vEventProperties.add(rrule);
