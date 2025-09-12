@@ -759,6 +759,11 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 	public List<ResourceReservation> getReservations(IdentityRef identity) {
 		return reservationDao.loadReservations(identity);
 	}
+	
+	@Override
+	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity) {
+		return orderManager.getReservationsWithOrders(identity);
+	}
 
 	@Override
 	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, Date expirationDate, MailPackage mailing, Identity doer, String adminNote) {

@@ -50,6 +50,7 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.OrderLineImpl;
@@ -642,6 +643,23 @@ public class ACOrderDAO {
 				.getResultList()
 				.stream()
 				.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
+	}
+	
+	public List<ResourceReservation> getReservationsWithOrders(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder();
+		
+		sb.append("select reservation from resourcereservation as reservation ");
+		sb.append(" inner join acorder o on o.delivery.key = reservation.identity.key");
+		sb.append(" inner join o.parts orderPart");
+		sb.append(" inner join orderPart.lines orderLine");
+		sb.append(" inner join orderLine.offer offer");
+		sb.and().append("reservation.identity.key=:identityKey");
+		sb.and().append("reservation.resource.key = offer.resource.key");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ResourceReservation.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 	
 	public List<UserOrder> getUserBookings(BookingOrdersSearchParams params, List<UserPropertyHandler> userPropertyHandlers) {
