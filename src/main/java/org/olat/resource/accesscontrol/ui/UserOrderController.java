@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.ui.AdvanceOrderController;
@@ -45,11 +46,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class UserOrderController extends BasicController {
-	private final static String SCOPE_KEY_ORDERS = "orders";
-	private final static String SCOPE_KEY_PENDING_MEMBERSHIPS = "pending.memberships";
-	private final static String SCOPE_KEY_ADVANCE_ORDERS = "advance.orders";
+	private final static String SCOPE_KEY_ORDERS = "Orders";
+	private final static String SCOPE_KEY_PENDING_MEMBERSHIPS = "PendingMemberships";
+	private final static String SCOPE_KEY_ADVANCE_ORDERS = "AdvanceOrders";
 
 	private final VelocityContainer mainVC;
+	private final List<Scope> scopes;
 	private final ScopeSelection scopeSelection;
 	private OrdersController ordersCtrl;
 	private PendingMembershipsController pendingMembershipsCtrl;
@@ -70,7 +72,7 @@ public class UserOrderController extends BasicController {
 
 		mainVC = createVelocityContainer("scopes");
 
-		List<Scope> scopes = new ArrayList<>();
+		scopes = new ArrayList<>();
 		Scope ordersScope = ScopeFactory.createScope(SCOPE_KEY_ORDERS, translate("scope.orders"), null, "o_icon o_ac_offer_bookable_icon");
 		scopes.add(ordersScope);
 		if (isShowPendingMemberships()) {
@@ -124,7 +126,8 @@ public class UserOrderController extends BasicController {
 	private void doOpenOrders(UserRequest ureq) {
 		if(ordersCtrl == null) {
 			OrdersSettings settings = OrdersSettings.defaultSettings();
-			ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, settings);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SCOPE_KEY_ORDERS), null);
+			ordersCtrl = new OrdersController(ureq, bwControl, identity, settings);
 			listenTo(ordersCtrl);
 		}
 		mainVC.put("scopeCmp", ordersCtrl.getInitialComponent());
@@ -132,7 +135,8 @@ public class UserOrderController extends BasicController {
 
 	private void doPendingMemberships(UserRequest ureq) {
 		if (pendingMembershipsCtrl == null) {
-			pendingMembershipsCtrl = new PendingMembershipsController(ureq, getWindowControl(), identity);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SCOPE_KEY_PENDING_MEMBERSHIPS), null);
+			pendingMembershipsCtrl = new PendingMembershipsController(ureq, bwControl, identity);
 			listenTo(pendingMembershipsCtrl);
 		}
 		mainVC.put("scopeCmp", pendingMembershipsCtrl.getInitialComponent());
@@ -140,9 +144,19 @@ public class UserOrderController extends BasicController {
 
 	private void doOpenAdvanceOrders(UserRequest ureq) {
 		if(advanceOrdersCtrl == null) {
-			advanceOrdersCtrl = new AdvanceOrderController(ureq, getWindowControl(), identity);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(SCOPE_KEY_ADVANCE_ORDERS), null);
+			advanceOrdersCtrl = new AdvanceOrderController(ureq, bwControl, identity);
 			listenTo(advanceOrdersCtrl);
 		}
 		mainVC.put("scopeCmp", advanceOrdersCtrl.getInitialComponent());
+	}
+
+	public void goToPendingMemberships(UserRequest ureq) {
+		if (!scopes.stream().map(Scope::getKey).anyMatch(SCOPE_KEY_PENDING_MEMBERSHIPS::equals)) {
+			return;
+		}
+
+		scopeSelection.setSelectedKey(SCOPE_KEY_PENDING_MEMBERSHIPS);
+		doPendingMemberships(ureq);
 	}
 }
