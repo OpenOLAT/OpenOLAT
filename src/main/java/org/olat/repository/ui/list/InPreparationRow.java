@@ -267,7 +267,7 @@ public class InPreparationRow {
 	}
 
 	public String getDetailsLinkName() {
-		return detailsLink.getComponent().getComponentName();
+		return detailsLink == null ? null : detailsLink.getComponent().getComponentName();
 	}
 
 	public FormLink getDetailsLink() {

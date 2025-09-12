@@ -12,7 +12,7 @@
 	$r.render("userDetails")
 	#if($pendingMembershipWarning)
 	<div class="o_warning_with_icon">
-		$pendingMembershipWarning
+		$pendingMembershipWarning $r.render("pendingMembershipWarningLink")
 	</div>
 	#end
 </div>

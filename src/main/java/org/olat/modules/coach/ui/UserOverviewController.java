@@ -129,7 +129,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private Link nextStudent;
 	private Link previousStudent;
 	private Link bookOnBehalfOfLink;
-
+	private Link confirmationLink;
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
@@ -280,6 +280,10 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		} else if (pendingMembershipCount == 1) {
 			String warning = translate("warning.pending.membership.singular");
 			mainVC.contextPut("pendingMembershipWarning", warning);
+			
+			confirmationLink = LinkFactory.createToolLink("go.to.confirmation", translate("go.to.confirmation"), this);
+			confirmationLink.setIconRightCSS("o_icon o_icon-fw o_icon_start");
+			mainVC.put("pendingMembershipWarningLink", confirmationLink);
 		}
 	}
 
@@ -411,6 +415,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			if(event instanceof TabbedPaneChangedEvent pce && pce.getNewController() != null) {
 				addToHistory(ureq, pce.getNewController());
 			}
+		} else if (source == confirmationLink) {
+			doConfirmation(ureq);
 		}
 	}
 
@@ -600,5 +606,10 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		}
 		
 		calendars.add(calendarWrapper);
+	}
+	
+	private void doConfirmation(UserRequest ureq) {
+		functionsTabbedPane.setSelectedPane(ureq, orderTabIndex);
+		userOrderController.goToPendingMemberships(ureq);
 	}
 }
