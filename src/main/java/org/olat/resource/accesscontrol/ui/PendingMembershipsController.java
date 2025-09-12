@@ -337,7 +337,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		List<CurriculumElement> elements = new ArrayList<>(descendants);
 		elements.add(curriculumElement);
 		
-		MemberDetailsConfig detailsConfig = new MemberDetailsConfig(null, null, false, true, false, true, 
+		MemberDetailsConfig detailsConfig = new MemberDetailsConfig(null, null, false, true, false, false, true, 
 				true, true, true, true, true);
 		
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,

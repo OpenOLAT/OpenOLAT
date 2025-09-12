@@ -366,7 +366,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 		}
 
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, false, false, false, true, false,
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, false, false, true, false, true, false,
 				true, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);

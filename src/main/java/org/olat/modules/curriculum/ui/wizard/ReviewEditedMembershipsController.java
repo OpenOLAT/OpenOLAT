@@ -369,7 +369,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToReview, false, false, false, true, false,
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToReview, false, false, true, false, true, false,
 				false, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
