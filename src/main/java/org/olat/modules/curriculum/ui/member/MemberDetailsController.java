@@ -161,7 +161,7 @@ public class MemberDetailsController extends FormBasicController {
 				layoutCont.contextPut("historyTitle", historyTitle);
 			} else if (config.showImplementation() && selectedCurriculumElement != null){
 				ImplementationHeaderController implementationHeaderController = new ImplementationHeaderController(ureq,
-						getWindowControl(), selectedCurriculumElement);
+						getWindowControl(), selectedCurriculumElement, false);
 				listenTo(implementationHeaderController);
 				layoutCont.put("implementationDetails", implementationHeaderController.getInitialComponent());
 			}

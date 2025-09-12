@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImplementationHeaderController extends FormBasicController {
 	
+	private final boolean withDetailsLink;
 	private FormLink markLink;
 	private FormLink selectLink;
 	private FormLink detailsLink;
@@ -71,13 +72,14 @@ public class ImplementationHeaderController extends FormBasicController {
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public ImplementationHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element) {
+	public ImplementationHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element, boolean withDetailsLink) {
 		super(ureq, wControl, "row_1");
 		setTranslator(Util.createPackageTranslator(OpenAccessOfferController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
 		this.element = element;
+		this.withDetailsLink = withDetailsLink;
 		curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
 		curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
 				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
@@ -117,11 +119,13 @@ public class ImplementationHeaderController extends FormBasicController {
 			boolean marked = markManager.isMarked(item, getIdentity(), null);
 			decoratedMarkLink(marked);
 			
-			detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);
-			detailsLink.setIconRightCSS("o_icon o_icon_details");
-			detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-primary o_details o_in_preparation");
-			detailsLink.setTitle("details");
-			row.setDetailsLink(detailsLink);
+			if (withDetailsLink) {
+				detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);
+				detailsLink.setIconRightCSS("o_icon o_icon_details");
+				detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-primary o_details o_in_preparation");
+				detailsLink.setTitle("details");
+				row.setDetailsLink(detailsLink);
+			}
 		}
 	}
 

@@ -74,7 +74,7 @@ public class ImplementationController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("implementation");
 		
-		headerCtrl = new ImplementationHeaderController(ureq, wControl, rootElement);
+		headerCtrl = new ImplementationHeaderController(ureq, wControl, rootElement, true);
 		listenTo(headerCtrl);
 		mainVC.put("elementHeader", headerCtrl.getInitialComponent());
 		
