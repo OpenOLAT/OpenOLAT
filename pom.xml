@@ -1730,7 +1730,7 @@
 		<dependency>
 			<groupId>org.commonmark</groupId>
 			<artifactId>commonmark</artifactId>
-			<version>0.25.1</version>
+			<version>0.26.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
@@ -2185,7 +2185,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.23.0</version>
+			<version>1.23.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
