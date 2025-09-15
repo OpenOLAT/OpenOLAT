@@ -237,7 +237,7 @@ public class CoursePlannerTest extends Deployments {
 			.openMyCourses()
 			.openInPreparation()
 			.assertOnCurriculumElementInList(elementName)
-			.more(elementName)
+			.select(elementName)
 			.assertOnCurriculumElementDetails(elementName);
 	}
 	
@@ -346,7 +346,7 @@ public class CoursePlannerTest extends Deployments {
 			.openMyCourses()
 			.openInPreparation()
 			.assertOnCurriculumElementInList(elementName)
-			.more(elementName)
+			.select(elementName)
 			.assertOnCurriculumElementDetails(elementName);
 	}
 	
