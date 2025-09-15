@@ -1,6 +1,8 @@
 <div class="o_repo_entry_list_item #if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #else o_standard_course #end">
 	<div class="o_visual">
-		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
+		#if($row.getDetailsLinkName())
+			<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
+		#end
 		#if($row.isThumbnailAvailable())
 			<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 		#else
@@ -145,7 +147,7 @@
 		#end
 		
 		<div class="o_actions">
-			#if($rwo.getDetailsLinkName())
+			#if($row.getDetailsLinkName())
 				$r.render($row.getDetailsLinkName())
 			#end
 			#if($row.getStartLinkName())

@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -185,6 +186,13 @@ public class PendingMembershipsController extends FormBasicController implements
 				}
 			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel();
+			} else if (event instanceof SelectionEvent selectionEvent) {
+				int rowIndex = selectionEvent.getIndex();
+				if (tableEl.isDetailsExpended(rowIndex)) {
+					tableEl.collapseDetails(rowIndex);
+				} else {
+					tableEl.expandDetails(rowIndex);
+				}
 			}
 		} else if (source instanceof FormLink formLink) {
 			if (formLink.getUserObject() instanceof PendingMembershipRow row) {
@@ -368,7 +376,11 @@ public class PendingMembershipsController extends FormBasicController implements
 	}
 	
 	private void doLearnMoreAboutImplementation(UserRequest ureq, PendingMembershipRow row) {
-		//
+		int rowIndex = tableModel.getObjects().indexOf(row);
+		if (rowIndex < 0) {
+			return;
+		}
+		tableEl.collapseDetails(rowIndex);
 	}
 	
 	private void doAcceptDeclineOne(UserRequest ureq, PendingMembershipRow row, boolean accept) {
