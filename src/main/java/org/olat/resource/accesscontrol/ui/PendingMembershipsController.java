@@ -216,6 +216,9 @@ public class PendingMembershipsController extends FormBasicController implements
 			if (detailsCtrl.getUserObject() instanceof PendingMembershipRow row) {
 				if (event instanceof ImplementationEvent) {
 					doLearnMoreAboutImplementation(ureq, row);
+				} else if (event == Event.CHANGED_EVENT) {
+					loadModel();
+					fireEvent(ureq, event);
 				}
 			}
 		} else if (acceptDeclineCtrl == source) {
@@ -223,6 +226,7 @@ public class PendingMembershipsController extends FormBasicController implements
 				loadModel();
 				cmc.deactivate();
 				cleanUp();
+				fireEvent(ureq, event);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
