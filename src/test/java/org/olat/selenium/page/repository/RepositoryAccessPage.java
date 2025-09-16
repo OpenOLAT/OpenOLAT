@@ -184,7 +184,7 @@ public class RepositoryAccessPage {
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_free_form");
 		// configure method
 		new BookingPage(browser)
-			.configureFreeBooking(message, false);
+			.configureFreeBooking(message, false, false);
 
 		return this;
 	}
