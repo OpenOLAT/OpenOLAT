@@ -8,7 +8,9 @@
 		#else
 			<div class="o_visual_not_available"></div>
 		#end
-		</a>	
+		#if($row.getDetailsLinkName())
+			</a>
+		#end
 	</div>
 	<div class="o_meta">
 		<div class="o_go_xs visible-xs">
