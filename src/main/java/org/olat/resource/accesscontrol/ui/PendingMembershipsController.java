@@ -153,7 +153,6 @@ public class PendingMembershipsController extends FormBasicController implements
 		
 		tableModel = new  PendingMembershipsTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
-		//tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
 		
@@ -188,10 +187,13 @@ public class PendingMembershipsController extends FormBasicController implements
 				loadModel();
 			} else if (event instanceof SelectionEvent selectionEvent) {
 				int rowIndex = selectionEvent.getIndex();
+				PendingMembershipRow row = tableModel.getObject(rowIndex);
 				if (tableEl.isDetailsExpended(rowIndex)) {
 					tableEl.collapseDetails(rowIndex);
+					doCloseDetails(row);
 				} else {
 					tableEl.expandDetails(rowIndex);
+					doOpenDetails(ureq, row);
 				}
 			}
 		} else if (source instanceof FormLink formLink) {
@@ -381,6 +383,7 @@ public class PendingMembershipsController extends FormBasicController implements
 			return;
 		}
 		tableEl.collapseDetails(rowIndex);
+		doCloseDetails(row);
 	}
 	
 	private void doAcceptDeclineOne(UserRequest ureq, PendingMembershipRow row, boolean accept) {
