@@ -72,15 +72,10 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 	private InvoiceModule invoiceModule;
 
 	public InvoiceAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
-			boolean edit) {
-		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean confirmationByManagerSupported, CatalogInfo catalogInfo, boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, confirmationByManagerSupported, catalogInfo, edit);
 		initForm(ureq);
-	}
-	
-	@Override
-	protected boolean isConfirmationByManagerSupported() {
-		return true;
 	}
 
 	@Override

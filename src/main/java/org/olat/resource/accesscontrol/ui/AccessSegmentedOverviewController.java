@@ -72,7 +72,7 @@ public class AccessSegmentedOverviewController extends BasicController {
 		
 		accessConfigCtrl = new AccessConfigurationController(ureq, wControl, resource,
 				displayName, allowPaymentMethod, openAccessSupported, guestSupported,
-				offerOrganisationsSupported, defaultOfferOrganisations,
+				offerOrganisationsSupported, defaultOfferOrganisations, true,
 				catalogInfo, readOnly, managedBookings, true, helpUrl);
 		listenTo(accessConfigCtrl);
 		

@@ -280,6 +280,8 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		} else if (pendingMembershipCount == 1) {
 			String warning = translate("warning.pending.membership.singular");
 			mainVC.contextPut("pendingMembershipWarning", warning);
+		} else {
+			mainVC.contextRemove("pendingMembershipWarning");
 		}
 		if (pendingMembershipCount > 0) {
 			confirmationLink = LinkFactory.createToolLink("go.to.confirmation", translate("go.to.confirmation"), this);
@@ -446,6 +448,10 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			cleanUpNonModalControllers();
 			if (event instanceof BookedEvent bookedEvent) {
 				doDisplayInfo(bookedEvent);
+			}
+		} else if (source == userOrderController) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				initPendingMembershipWarning();
 			}
 		}
 		super.event(ureq, source, event);

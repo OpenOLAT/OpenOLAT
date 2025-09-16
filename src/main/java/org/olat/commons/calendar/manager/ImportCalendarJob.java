@@ -26,9 +26,11 @@
 package org.olat.commons.calendar.manager;
 
 import java.io.InputStream;
-import java.net.URLConnection;
 import java.util.List;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.ImportedToCalendar;
@@ -38,6 +40,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.crypto.RandomUtils;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
 
@@ -69,6 +72,7 @@ public class ImportCalendarJob extends JobWithDB {
 	private boolean updateCalendarIn(Scheduler scheduler) {
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		ImportToCalendarManager importToCalendarManager = CoreSpringFactory.getImpl(ImportToCalendarManager.class);
+		HttpClientService httpClientService = CoreSpringFactory.getImpl(HttpClientService.class);
 		
 		List<ImportedToCalendar> importedToCalendars = importToCalendarManager.getImportedToCalendars();
 		log.info(Tracing.M_AUDIT, "Begin to update {} calendars.", importedToCalendars.size() );
@@ -81,18 +85,17 @@ public class ImportCalendarJob extends JobWithDB {
 			String id = importedToCalendar.getToCalendarId();
 			String importUrl = importedToCalendar.getUrl();
 			if(check || importToCalendarManager.check(importedToCalendar)) {
-				URLConnection connection = calendarManager.getURLConnection(importUrl);
-				if(connection != null) {
-					try(InputStream in = connection.getInputStream()) {
-						Kalendar cal = calendarManager.getCalendar(type, id);
-						if(calendarManager.synchronizeCalendarFrom(in, importUrl, cal)) {
-							log.info(Tracing.M_AUDIT, "Updated successfully calendar: {} / {}", type, id);
-						} else {
-							log.info(Tracing.M_AUDIT, "Failed to update calendar: {} / {}", type, id);
-						}
-					} catch(Exception ex) {
-						log.warn("Cannot synchronize calendar ({}) from url: {}", importedToCalendar.getKey() , importUrl, ex);
+				try (CloseableHttpClient client = httpClientService.createHttpClient();
+						CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
+						InputStream in = response.getEntity().getContent()) {
+					Kalendar cal = calendarManager.getCalendar(type, id);
+					if (calendarManager.synchronizeCalendarFrom(in, importUrl, cal)) {
+						log.info(Tracing.M_AUDIT, "Updated successfully calendar: {} / {}", type, id);
+					} else {
+						log.info(Tracing.M_AUDIT, "Failed to update calendar: {} / {}", type, id);
 					}
+				} catch (Exception ex) {
+					log.warn("Cannot synchronize calendar ({}) from url: {}", importedToCalendar.getKey() , importUrl, ex);
 				}
 			} else {
 				log.info(Tracing.M_AUDIT, "Delete imported calendar because of missing resource: {} / {} with URL: {}", type, id, importUrl);

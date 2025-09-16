@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -63,19 +64,23 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private static final String PERIOD_DATE = "date";
 	private static final String CATALOG_OO = "openolat";
 	private static final String CATALOG_WEB = "web";
+	protected static final String CONFIRMATION_BY_MANAGER_NO = "confirmation.by.manager.no";
+	protected static final String CONFIRMATION_BY_MANAGER_YES = "confirmation.by.manager.yes";
 	
-	private TextElement descEl;
+	protected TextElement descEl;
 	private TextElement labelEl;
 	private SingleSelection periodEl;
 	private DateChooser datesEl;
 	private MultiSelectionFilterElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
+	protected SingleSelection confirmationByManagerEl;
 	private MultipleSelectionElement confirmationEmailEl;
-	private MultipleSelectionElement confirmationByManagerEl;
+	protected SpacerElement customSpacerEl;
 
 	protected final OfferAccess link;
 	private final boolean offerOrganisationsSupported;
 	private final Collection<Organisation> offerOrganisations;
+	private final boolean confirmationByManagerSupported;
 	protected final CatalogInfo catalogInfo;
 	private List<Organisation> organisations;
 	private final boolean edit;
@@ -88,13 +93,14 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private OrganisationModule organisationModule;
 	
 	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
-			boolean edit) {
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean confirmationByManagerSupported, CatalogInfo catalogInfo, boolean edit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AbstractConfigurationMethodController.class, getLocale(), getTranslator()));
 		this.link = link;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.offerOrganisations = offerOrganisations;
+		this.confirmationByManagerSupported = confirmationByManagerSupported;
 		this.catalogInfo = catalogInfo;
 		this.edit = edit;
 	}
@@ -151,18 +157,27 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		uifactory.addSpacerElement("confirmations", formLayout, false);
 		
 		// Confirmations
-		if (isConfirmationByManagerSupported()) {
-			confirmationByManagerEl = uifactory.addCheckboxesHorizontal("confirmation.by", formLayout, onKeys,
-					new String[] { translate("confirmation.by.admin") });
+		if (confirmationByManagerSupported) {
+			SelectionValues confirmationSV = new SelectionValues();
+			confirmationSV.add(SelectionValues.entry(CONFIRMATION_BY_MANAGER_NO, translate("membership.confirmation.standard"), translate("membership.confirmation.standard.desc"), "o_icon o_ac_membership_standard_icon", null, true));
+			confirmationSV.add(SelectionValues.entry(CONFIRMATION_BY_MANAGER_YES, translate("membership.confirmation.manager"), translate("membership.confirmation.manager.desc"), "o_icon o_ac_membership_confirmation_icon", null, true));
+			confirmationByManagerEl = uifactory.addCardSingleSelectHorizontal("membership.confirmation", "membership.confirmation", formLayout, confirmationSV);
 			confirmationByManagerEl.setElementCssClass("o_sel_accesscontrol_confirmation_manager");
-			confirmationByManagerEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired());
+			confirmationByManagerEl.addActionListener(FormEvent.ONCHANGE);
+			if (link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired()) {
+				confirmationByManagerEl.select(CONFIRMATION_BY_MANAGER_YES, true);
+			} else {
+				confirmationByManagerEl.select(CONFIRMATION_BY_MANAGER_NO, true);
+			}
 		}
 		
-		confirmationEmailEl = uifactory.addCheckboxesHorizontal("email.confirmation", formLayout, onKeys,
-				new String[] { translate("email.confirmation.self") });
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("booking.receipt", formLayout, onKeys,
+				new String[] { translate("booking.receipt.option") });
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
 		
-		uifactory.addSpacerElement("others", formLayout, false);
+		initCustomMembershipElements(formLayout);
+		
+		customSpacerEl = uifactory.addSpacerElement("others", formLayout, false);
 		
 		// Custom
 		initCustomFormElements(formLayout);
@@ -208,13 +223,23 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
-	protected boolean isConfirmationByManagerSupported() {
-		return false;
+	/**
+	 * @param formLayout the container to place the elements
+	 */
+	protected void initCustomMembershipElements(FormItemContainer formLayout) {
+		//
 	}
-
-	protected abstract void initCustomFormElements(FormItemContainer formLayout);
 	
-	protected abstract void updateCustomChanges();
+	/**
+	 * @param formLayout the container to place the elements
+	 */
+	protected void initCustomFormElements(FormItemContainer formLayout) {
+		//
+	}
+	
+	protected void updateCustomChanges() {
+		//
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -276,7 +301,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	public OfferAccess getOfferAccess() {
 		Offer offer = link.getOffer();
 		offer.setLabel(labelEl.getValue());
-		offer.setDescription(descEl.getValue());
+		offer.setDescription(descEl.isVisible()? descEl.getValue(): null);
 		boolean hasDate = periodEl.isKeySelected(PERIOD_DATE);
 		Date validFrom = hasDate? datesEl.getDate(): null;
 		Date validTo = hasDate? datesEl.getSecondDate(): null;
@@ -286,7 +311,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		offer.setCatalogWebPublish(catalogEl.isKeySelected(CATALOG_WEB));
 		offer.setConfirmationEmail(confirmationEmailEl.isAtLeastSelected(1));
 		if (confirmationByManagerEl != null) {
-			offer.setConfirmationByManagerRequired(confirmationByManagerEl.isAtLeastSelected(1));
+			offer.setConfirmationByManagerRequired(confirmationByManagerEl.isOneSelected() && confirmationByManagerEl.isKeySelected(CONFIRMATION_BY_MANAGER_YES));
 		}
 		link.setValidFrom(datesEl.getDate());
 		link.setValidTo(datesEl.getSecondDate());

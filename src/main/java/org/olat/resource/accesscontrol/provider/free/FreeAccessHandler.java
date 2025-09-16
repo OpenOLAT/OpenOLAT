@@ -103,17 +103,17 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
-			CatalogInfo catalogInfo) {
+			boolean confirmationByManagerSupported, CatalogInfo catalogInfo) {
 		return new FreeAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, catalogInfo, true);
+				offerOrganisations, confirmationByManagerSupported, catalogInfo, true);
 	}
 
 	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
-			CatalogInfo catalogInfo) {
+			boolean confirmationByManagerSupported, CatalogInfo catalogInfo) {
 		return new FreeAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, catalogInfo, false);
+				offerOrganisations, confirmationByManagerSupported, catalogInfo, false);
 	}
 
 	@Override

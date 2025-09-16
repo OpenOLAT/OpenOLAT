@@ -65,7 +65,7 @@ public class BusinessGroupEditAccessController extends BasicController {
 			boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
 			boolean waitingList = businessGroup.getWaitingListEnabled();
 			accessCtrl = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(),
-					!waitingList, false, false, false, null, createCatalogInfo(businessGroup), false, managed, false,
+					!waitingList, false, false, false, null, false, createCatalogInfo(businessGroup), false, managed, false,
 					"manual_user/groups/Group_Administration/#booking");
 			listenTo(accessCtrl);
 			mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());

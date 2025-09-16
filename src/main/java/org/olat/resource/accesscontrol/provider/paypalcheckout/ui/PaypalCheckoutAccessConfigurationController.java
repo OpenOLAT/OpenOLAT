@@ -55,9 +55,9 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 	private PaypalCheckoutModule paypalModule;
 	
 	public PaypalCheckoutAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
-			boolean edit) {
-		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean confirmationByManagerSupported, CatalogInfo catalogInfo, boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, confirmationByManagerSupported, catalogInfo, edit);
 		initForm(ureq);
 	}
 

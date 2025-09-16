@@ -27,7 +27,6 @@
 package org.olat.commons.calendar.manager;
 
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +34,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.calendar.CalendarManager;
@@ -45,6 +47,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.repository.RepositoryEntry;
@@ -68,13 +71,15 @@ public class ImportToCalendarManager {
 
 	private AtomicInteger counter = new AtomicInteger(0);
 	private static final Logger log = Tracing.createLoggerFor(ImportToCalendarManager.class);
-
+	
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private HttpClientService httpClientService;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -101,7 +106,9 @@ public class ImportToCalendarManager {
 		String id = importedToCalendar.getToCalendarId();
 		String importUrl = importedToCalendar.getUrl();
 		
-		try(InputStream in = new URL(importUrl).openStream()) {
+		try (CloseableHttpClient client = httpClientService.createHttpClient();
+				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
+				InputStream in = response.getEntity().getContent()) {
 			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
 			List<KalendarEvent> importedEvents = importedKalendar.getEvents();
 			Set<String>  importedEventsIds = importedEvents.stream().map(KalendarEvent::getID).collect(Collectors.toSet());
@@ -122,7 +129,9 @@ public class ImportToCalendarManager {
 		String id = importedToCalendar.getToCalendarId();
 		String importUrl = importedToCalendar.getUrl();
 		
-		try(InputStream in = new URL(importUrl).openStream()) {
+		try (CloseableHttpClient client = httpClientService.createHttpClient();
+				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
+				InputStream in = response.getEntity().getContent()) {
 			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
 			List<KalendarEvent> importedEvents = importedKalendar.getEvents();
 			Set<String>  importedEventsIds = importedEvents.stream().map(KalendarEvent::getID).collect(Collectors.toSet());
@@ -186,7 +195,9 @@ public class ImportToCalendarManager {
 	 * @return
 	 */
 	public boolean importCalendarIn(Kalendar cal, String importUrl) {
-		try (InputStream in = new URL(importUrl).openStream()){
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
+				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
+				InputStream in = response.getEntity().getContent()) {
 			Kalendar importedCal = calendarManager.buildKalendarFrom(in, cal.getType(), cal.getCalendarID());
 			boolean imported = calendarManager.updateCalendar(cal, importedCal);
 			if(imported) {

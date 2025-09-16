@@ -427,5 +427,8 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		flc.remove(row.getDetailsController().getInitialFormItem());
 		row.setDetailsController(null);
 	}
-	
+
+	public CurriculumElement getSelectedCurriculumElement() {
+		return selectedCurriculumElement;
+	}
 }

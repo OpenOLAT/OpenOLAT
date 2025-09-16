@@ -29,7 +29,6 @@ package org.olat.commons.calendar.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +39,10 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.CalendarFileInfos;
@@ -51,9 +54,9 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -82,11 +85,15 @@ public class ImportCalendarManager {
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
+	private HttpClientService httpClientService;
+	@Autowired
 	private ImportedCalendarDAO importedCalendarDao;
 
 	public KalendarRenderWrapper importCalendar(Identity identity, String calendarName, String type, String url) throws IOException {
 		File tmpFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID() + ".ics");
-		try(InputStream in = new URL(url).openStream()) {
+		try (CloseableHttpClient client = httpClientService.createHttpClient();
+				CloseableHttpResponse response = client.execute(new HttpGet(url));
+				InputStream in = response.getEntity().getContent()) {
 			Files.copy(in, tmpFile.toPath());
 		} catch(IOException e) {
 			log.error("Cannot copy {}", tmpFile, e);
@@ -223,7 +230,9 @@ public class ImportCalendarManager {
 	 * @param calId
 	 */
 	private void reloadCalendarFromUrl(String importUrl, String calType, String calId, KalendarEventFilter filter) {
-		try (InputStream in = new URL(importUrl).openStream()){
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
+				CloseableHttpResponse response = client.execute(new HttpGet(importUrl));
+				InputStream in = response.getEntity().getContent()) {
 			String targetId = "-" + CalendarManager.TYPE_USER + "-" + calId;
 			Kalendar kalendar = calendarManager.buildKalendarFrom(in, calType, calId);
 			Collection<KalendarEvent> events = kalendar.getEvents();
