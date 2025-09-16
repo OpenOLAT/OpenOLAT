@@ -23,8 +23,10 @@ package org.olat.resource.accesscontrol.provider.free.ui;
 import java.util.Collection;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.resource.accesscontrol.CatalogInfo;
@@ -47,25 +49,23 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	private String[] autoKeys = new String[]{ "x" };
 	
 	public FreeAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
-			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
-			boolean edit) {
-		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
+			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
+			boolean confirmationByManagerSupported, CatalogInfo catalogInfo, boolean edit) {
+		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, confirmationByManagerSupported, catalogInfo, edit);
 		initForm(ureq);
-	}
-	
-	@Override
-	protected boolean isConfirmationByManagerSupported() {
-		return true;
+		updateAutoBookingUI();
 	}
 
 	@Override
-	protected void initCustomFormElements(FormItemContainer formLayout) {
+	protected void initCustomMembershipElements(FormItemContainer formLayout) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_free_form");
 		
 		if (catalogInfo.isAutoBookingSupported()) {
-			String[] autoValues = new String[]{ translate("auto.booking.value") };
+			String[] autoValues = new String[]{ translate("auto.booking.option") };
 			autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);
+			autoEl.setHelpText(translate("auto.booking.help"));
 			autoEl.setElementCssClass("o_sel_accesscontrol_auto_booking");
+			autoEl.addActionListener(FormEvent.ONCHANGE);
 			if(link.getOffer() != null && link.getOffer().getKey() != null) {
 				autoEl.select(autoKeys[0], link.getOffer().isAutoBooking());
 			} else {
@@ -75,9 +75,33 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	}
 
 	@Override
-	protected void updateCustomChanges() {
-		if (autoEl != null) {
-			link.getOffer().setAutoBooking(autoEl.isAtLeastSelected(1));
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == confirmationByManagerEl) {
+			updateAutoBookingUI();
+		} else if (source == autoEl) {
+			updateAutoBookingUI();
 		}
+		super.formInnerEvent(ureq, source, event);
 	}
+
+	private void updateAutoBookingUI() {
+		if (autoEl == null) {
+			return;
+		}
+		
+		boolean confirmationByManager = confirmationByManagerEl != null
+				&& confirmationByManagerEl.isOneSelected()
+				&& confirmationByManagerEl.isKeySelected(CONFIRMATION_BY_MANAGER_YES);
+		autoEl.setVisible(!confirmationByManager);
+		
+		boolean autoBooking = autoEl.isVisible() && autoEl.isAtLeastSelected(1);
+		customSpacerEl.setVisible(!autoBooking);
+		descEl.setVisible(!autoBooking);
+	}
+
+	@Override
+	protected void updateCustomChanges() {
+		link.getOffer().setAutoBooking(autoEl != null && autoEl.isVisible() && autoEl.isAtLeastSelected(1));
+	}
+	
 }

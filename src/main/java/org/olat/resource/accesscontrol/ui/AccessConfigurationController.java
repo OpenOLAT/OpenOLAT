@@ -118,6 +118,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private final boolean guestSupported;
 	private final boolean offerOrganisationsSupported;
 	private Collection<Organisation> defaultOfferOrganisations;
+	private final boolean confirmationByManagerSupported;
 	private final CatalogInfo catalogInfo;
 	private final boolean readOnly;
 	private final boolean managedBookings;
@@ -137,7 +138,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
-			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
+			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations, boolean confirmationByManagerSupported,
 			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, boolean withLinkToOrders, String helpUrl) {
 		super(ureq, wControl, "access_configuration");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -149,6 +150,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.guestSupported = guestSupported;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
+		this.confirmationByManagerSupported = confirmationByManagerSupported;
 		this.catalogInfo = catalogInfo;
 		this.statusEvaluator = catalogInfo.getStatusEvaluator();
 		this.readOnly = readOnly;
@@ -163,7 +165,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, Form form, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
-			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
+			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations, boolean confirmationByManagerSupported,
 			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, boolean withLinkToOrders, String helpUrl) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -175,6 +177,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.guestSupported = guestSupported;
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
+		this.confirmationByManagerSupported = confirmationByManagerSupported;
 		this.catalogInfo = catalogInfo;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
@@ -774,7 +777,7 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
 			Collection<Organisation> offerOrganisations = acService.getOfferOrganisations(link.getOffer());
-			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, offerOrganisations, catalogInfo);
+			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, offerOrganisations, confirmationByManagerSupported, catalogInfo);
 			if(editMethodCtrl != null) {
 				listenTo(editMethodCtrl);
 	
@@ -796,7 +799,7 @@ public class AccessConfigurationController extends FormBasicController {
 		removeAsListenerAndDispose(newMethodCtrl);
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
-			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, defaultOfferOrganisations, catalogInfo);
+			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link, offerOrganisationsSupported, defaultOfferOrganisations, confirmationByManagerSupported, catalogInfo);
 		}
 		if(newMethodCtrl != null && handler != null) {
 			listenTo(newMethodCtrl);

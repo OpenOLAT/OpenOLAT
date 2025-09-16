@@ -34,7 +34,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -126,7 +125,6 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -1204,13 +1202,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 			if(!secCallback.isReadonly()) {
 				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon-fw o_icon_edit", links);
-				// Just a prototype until new member management is implemented
-				if (row.getMembership().isPending() 
-						&& row.getMembership().getResourceReservation() != null 
-						&& row.getMembership().getResourceReservation().getUserConfirmable() != null 
-						&& !row.getMembership().getResourceReservation().getUserConfirmable()) {
-					addLink("accept.member", "accept", "o_icon o_icon-fw ", links);
-				}
 			}
 			
 			if((!globallyManaged || overrideManaged) && secCallback.canRemoveMembers()) {
@@ -1251,11 +1242,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 					doOpenVisitingCard(ureq, row);
 				} else if(TABLE_ACTION_CONTACT.equals(cmd)) {
 					doOpenContact(ureq, row);
-				} else if ("accept".equals(cmd)){
-					ACService acService = CoreSpringFactory.getImpl(ACService.class);
-					Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
-					acService.acceptReservationToResource(identity, row.getMembership().getResourceReservation());
-					reloadModel();
 				}
 			}
 		}
