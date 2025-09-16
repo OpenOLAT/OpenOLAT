@@ -20,27 +20,34 @@
 package org.olat.modules.webFeed.manager;
 
 import java.io.FileNotFoundException;
-import java.io.Reader;
-import java.net.URL;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.webFeed.Enclosure;
 import org.olat.modules.webFeed.ExternalFeedFetcher;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.model.EnclosureImpl;
 import org.olat.modules.webFeed.model.ItemImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEnclosure;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.ParsingFeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
@@ -57,6 +64,9 @@ import com.rometools.rome.io.XmlReader;
 public class RomeFeedFetcher implements ExternalFeedFetcher {
 
 	private static final Logger log = Tracing.createLoggerFor(RomeFeedFetcher.class);
+	
+	@Autowired
+	private HttpClientService httpClientService;
 
 	private final SyndFeedInput syndFeedInput;
 
@@ -113,20 +123,40 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 	 * Fetches the SyndFeed of an URL.
 	 * @param feedURL
 	 * @return
+	 * @throws IOException 
+	 * @throws FeedException 
+	 * @throws IllegalArgumentException 
 	 */
 	protected SyndFeed fetchSyndFeed(String feedURL) {
-		SyndFeed syndFeed = null;
-
-		try(Reader xmlReader = new XmlReader(new URL(feedURL))) {
-			syndFeed = syndFeedInput.build(xmlReader);
+		try {
+			SyndFeed syndFeed = getSyndFeed(feedURL);
 			log.info("Read external feed: {}", feedURL);
+			return syndFeed;
 		} catch (Exception e) {
-			log.warn("Cannot read external feed: : {}", feedURL);
+			log.debug(e);
 		}
-
-		return syndFeed;
+		
+		return null;
 	}
-
+	
+	private SyndFeed getSyndFeed(String feedURL) throws IOException, IllegalArgumentException, FeedException {
+		try(CloseableHttpClient client = httpClientService.createHttpClient();
+				CloseableHttpResponse response = client.execute(new HttpGet(feedURL))) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			log.debug("Status code of: {} {}", feedURL, statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					try (XmlReader xmlReader = new XmlReader(entity.getContent())) {
+						return syndFeedInput.build(xmlReader);
+					}
+				}
+			}
+		}
+		
+		log.warn("Cannot read external feed: : {}", feedURL);
+		return null;
+	}
 
 	/**
 	 * Converts a <code>SyndEntry</code> into an <code>Item</code>
@@ -199,19 +229,12 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 
 	@Override
 	public ValidatedURL validateFeedUrl(String url, boolean enclosuresExpected) {
-		SyndFeedInput input = new SyndFeedInput();
-
-		boolean modifiedProtocol = false;
 		try {
-			url = url.trim();
-			if (url.startsWith("feed") || url.startsWith("itpc")) {
-				// accept feed(s) urls like generated in safari browser
-				url = "http" + url.substring(4);
-				modifiedProtocol = true;
+			SyndFeed feed = getSyndFeed(url);
+			if (feed == null) {
+				return new ValidatedURL(url, null, ValidatedURL.State.NOT_FOUND);
 			}
-			URL realUrl = new URL(url);
-			SyndFeed feed = input.build(new XmlReader(realUrl));
-			if (!feed.getEntries().isEmpty() && enclosuresExpected) {
+			if (enclosuresExpected && !feed.getEntries().isEmpty()) {
 				SyndEntry entry = feed.getEntries().get(0);
 				if (entry.getEnclosures().isEmpty()) {
 					return new ValidatedURL(url, null, ValidatedURL.State.NO_ENCLOSURE);
@@ -220,11 +243,6 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 			// The feed was read successfully
 			return new ValidatedURL(url, feed.getTitle(), ValidatedURL.State.VALID);
 		} catch (ParsingFeedException e) {
-			if (modifiedProtocol) {
-				// fallback for SWITCHcast itpc -> http -> https
-				url = "https" + url.substring(4);
-				return validateFeedUrl(url, enclosuresExpected);
-			}
 			String message = String.format("Validation of the feed url %s failed. %s: %s ", url, e.getClass(), e.getMessage());
 			log.debug(message);
 			return new ValidatedURL(url, null, ValidatedURL.State.NOT_FOUND);
