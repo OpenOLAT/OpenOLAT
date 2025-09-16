@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -62,6 +63,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.ui.member.AcceptDeclineMembershipsController;
@@ -104,6 +106,8 @@ public class PendingMembershipsController extends FormBasicController implements
 	private ACOrderDAO orderDao;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private GroupDAO groupDao;
 
 	public PendingMembershipsController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, "pending_memberships");
@@ -218,12 +222,15 @@ public class PendingMembershipsController extends FormBasicController implements
 					doLearnMoreAboutImplementation(ureq, row);
 				} else if (event == Event.CHANGED_EVENT) {
 					loadModel();
+					checkAcceptDeclineOutcome(row.getCurriculumElementKey());
 					fireEvent(ureq, event);
 				}
 			}
 		} else if (acceptDeclineCtrl == source) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
+				Long curriculumElementKey = acceptDeclineCtrl.getSelectedCurriculumElement() != null ? acceptDeclineCtrl.getSelectedCurriculumElement().getKey() : null;
+				checkAcceptDeclineOutcome(curriculumElementKey);
 				cmc.deactivate();
 				cleanUp();
 				fireEvent(ureq, event);
@@ -244,6 +251,23 @@ public class PendingMembershipsController extends FormBasicController implements
 			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void checkAcceptDeclineOutcome(Long curriculumElementKey) {
+		if (curriculumElementKey == null) {
+			return;
+		}
+		
+		CurriculumElement curriculumElement = curriculumElementDao.loadByKey(curriculumElementKey);
+		if (curriculumElement == null) {
+			return;
+		}
+		
+		if (groupDao.hasRole(curriculumElement.getGroup(), identity, CurriculumRoles.participant.name())) {
+			showInfo("pending.membership.accepted");
+		} else {
+			showInfo("pending.membership.declined");
+		}
 	}
 
 	private void cleanUp() {
