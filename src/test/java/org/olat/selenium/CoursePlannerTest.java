@@ -430,7 +430,7 @@ public class CoursePlannerTest extends Deployments {
 		courseElementPage
 			.openOffersTab()
 			.addFreeBooking()
-			.configureFreeBooking(freeBookingName, true);
+			.configureFreeBooking(freeBookingName, true, false);
 		
 		// Publish the element
 		courseElementPage

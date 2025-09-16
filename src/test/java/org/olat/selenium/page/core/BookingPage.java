@@ -225,9 +225,13 @@ public class BookingPage {
 		By priceBy = By.cssSelector(".o_sel_accesscontrol_invoice_price input[type='text']");
 		browser.findElement(priceBy).sendKeys(price);
 		
-		By confirmationByManagerBy = By.cssSelector(".o_sel_accesscontrol_confirmation_manager input[type='checkbox']");
-		WebElement confirmationByManagerEl = browser.findElement(confirmationByManagerBy);
-		OOGraphene.check(confirmationByManagerEl, Boolean.valueOf(adminConfirmation));
+		// Default is no
+		if(adminConfirmation) {
+			By confirmationBy =  By.cssSelector(".o_sel_accesscontrol_confirmation_manager input[type='radio'][name='membership.confirmation'][value='confirmation.by.manager.yes']");
+			browser.findElement(confirmationBy).click();
+			By confirmationCheckBy =  By.cssSelector(".o_sel_accesscontrol_confirmation_manager input[type='radio'][checked='checked'][name='membership.confirmation'][value='confirmation.by.manager.yes']");
+			OOGraphene.waitElement(confirmationCheckBy, browser);
+		}
 		
 		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_invoice_form .o_sel_accesscontrol_description textarea");
 		browser.findElement(descriptionBy).sendKeys(description);
@@ -247,7 +251,7 @@ public class BookingPage {
 	 * @param description The description of the booking.
 	 * @return Itself
 	 */
-	public BookingPage configureFreeBooking(String description, boolean externalCatalog) {
+	public BookingPage configureFreeBooking(String description, boolean externalCatalog, boolean adminConfirmation) {
 		if(externalCatalog) {
 			By catalogBy = By.cssSelector(".o_sel_accesscontrol_free_form .o_sel_accesscontrol_publish input[name='offer.publish.in'][value='web']");
 			WebElement catalogEl = OOGraphene.waitElement(catalogBy, browser);
@@ -256,8 +260,14 @@ public class BookingPage {
 			OOGraphene.waitElement(catalogCheckedBy, browser);
 		}
 		
-		By descriptionBy = By.cssSelector(".o_sel_accesscontrol_free_form .o_sel_accesscontrol_description textarea");
-		browser.findElement(descriptionBy).sendKeys(description);
+		// Default is no
+		if(adminConfirmation) {
+			By confirmationBy =  By.cssSelector(".o_sel_accesscontrol_confirmation_manager input[type='radio'][name='membership.confirmation'][value='confirmation.by.manager.yes']");
+			browser.findElement(confirmationBy).click();
+			By descriptionBy = By.cssSelector(".o_sel_accesscontrol_free_form .o_sel_accesscontrol_description textarea");
+			OOGraphene.waitElement(descriptionBy, browser);
+			browser.findElement(descriptionBy).sendKeys(description);
+		}
 		
 		By submitBy = By.cssSelector(".o_sel_accesscontrol_free_form button.btn-primary");
 		OOGraphene.click(submitBy, browser);
