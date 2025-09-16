@@ -30,11 +30,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -166,18 +163,6 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// see http://sourceforge.net/forum/forum.php?thread_id=1253735&forum_id=368291
 		// made in module System.setProperty("ical4j.unfolding.relaxed", "true");
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
-	}
-	
-	@Override
-	public URLConnection getURLConnection(String url) {
-		try {
-			URLConnection conn = new URL(url).openConnection();
-			conn.setConnectTimeout(15000);
-			return conn;
-		} catch (IOException e) {
-			log.error("Cannot open URL connection for: {}", url, e);
-			return null;
-		}
 	}
 	
 	/**
