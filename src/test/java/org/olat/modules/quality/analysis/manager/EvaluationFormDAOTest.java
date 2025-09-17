@@ -230,6 +230,32 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterByFormEntries() {
+		RepositoryEntry formEntry1 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry2 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry3 = qualityTestHelper.createFormEntry();
+		Organisation organisation = organisationService.createOrganisation("Org-14", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry1);
+		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollection2 = qualityService.createDataCollection(organisations, formEntry2);
+		qualityTestHelper.updateStatus(dataCollection2, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollection3 = qualityService.createDataCollection(organisations, formEntry3);
+		qualityTestHelper.updateStatus(dataCollection3, QualityDataCollectionStatus.FINISHED);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
+		searchParams.setFormEntryKeys(List.of(formEntry1.getKey(), formEntry2.getKey()));
+		List<EvaluationFormView> forms = sut.load(searchParams);
+		
+		assertThat(forms)
+				.hasSize(2)
+				.extracting(view -> view.getFormEntry().getKey())
+				.containsExactlyInAnyOrder(formEntry1.getKey(), formEntry2.getKey());
+	}
+	
+	@Test
 	public void shouldFilterByOrganisations() {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		RepositoryEntry otherFormEntry = qualityTestHelper.createFormEntry();

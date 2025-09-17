@@ -19,15 +19,13 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.id.OrganisationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -79,7 +77,10 @@ public class EvaluationFormDAO {
 
 	private void appendWhere(QueryBuilder sb, EvaluationFormViewSearchParams searchParams) {
 		sb.and().append("collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
-		if (searchParams.getOrganisationRefs() != null) {
+		if (searchParams.getFormEntryKeys() != null && !searchParams.getFormEntryKeys().isEmpty()) {
+			sb.and().append("formEntry.key in :formEntryKeys");
+		}
+		if (searchParams.getOrganisationKeys() != null) {
 			sb.and();
 			sb.append("collection.key in (");
 			sb.append("   select dataCollection.key");
@@ -90,9 +91,11 @@ public class EvaluationFormDAO {
 	}
 
 	private void appendParameters(TypedQuery<EvaluationFormView> query, EvaluationFormViewSearchParams searchParams) {
-		if (searchParams.getOrganisationRefs() != null) {
-			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
-			organisationKeys = !organisationKeys.isEmpty()? organisationKeys: Collections.singletonList(-1l);
+		if (searchParams.getFormEntryKeys() != null && !searchParams.getFormEntryKeys().isEmpty()) {
+			query.setParameter("formEntryKeys", searchParams.getFormEntryKeys());
+		}
+		if (searchParams.getOrganisationKeys() != null) {
+			Collection<Long> organisationKeys = !searchParams.getOrganisationKeys().isEmpty()? searchParams.getOrganisationKeys(): List.of(-1l);
 			query.setParameter("organisationKeys", organisationKeys);
 		}
 	}

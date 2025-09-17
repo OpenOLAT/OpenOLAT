@@ -104,7 +104,7 @@ public class EvaluationFormExcelExport {
 			SessionFilter filter, Comparator<EvaluationFormSession> comparator, UserColumns userColumns, String fileName) {
 		this.translator = Util.createPackageTranslator(EvaluationFormExcelExport.class, locale);
 		this.formEntry = formEntry;
-		this.fileName = getFileName(fileName);
+		this.fileName = createFileName(fileName);
 		this.userColumns = userColumns;
 
 		CoreSpringFactory.autowireObject(this);
@@ -117,7 +117,7 @@ public class EvaluationFormExcelExport {
 		}
 	}
 	
-	public String getFileName(String surveyName) {
+	private String createFileName(String surveyName) {
 		return new StringBuilder()
 				.append(StringHelper.transformDisplayNameToFileSystemName(surveyName))
 				.append("_")
@@ -126,6 +126,10 @@ public class EvaluationFormExcelExport {
 				.toString();
 	}
 	
+	public String getFileName() {
+		return fileName;
+	}
+
 	public OpenXMLWorkbookResource createMediaResource() {
 		return new OpenXMLWorkbookResource(fileName) {
 			@Override
@@ -146,7 +150,7 @@ public class EvaluationFormExcelExport {
 		}
 	}
 
-	private void createWorkbook(OutputStream out) {
+	public void createWorkbook(OutputStream out) {
 		List<String> sheetNames = getWorksheetNames();
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, sheetNames.size(), sheetNames)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();

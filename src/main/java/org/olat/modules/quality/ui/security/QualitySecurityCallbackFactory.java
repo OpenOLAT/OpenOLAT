@@ -41,6 +41,7 @@ import org.olat.modules.quality.generator.QualityGenerator;
  */
 public class QualitySecurityCallbackFactory {
 
+	private static final ForbiddenSecurityCallback FORBIDDEN_SECURITY_CALLBACK = new ForbiddenSecurityCallback();
 	private static final DataCollectionReadOnlySecurityCallback DATA_COLLECTION_READ_ONLY_SECURITY_CALLBACK = new DataCollectionReadOnlySecurityCallback();
 	private static final GeneratorReadOnlySecurityCallback GENERATOR_READ_ONLY_SECURITY_CALLBACK = new GeneratorReadOnlySecurityCallback();
 	private static final OrganisationRoles[] QUALITY_MANAGER_ROLES = new OrganisationRoles[] {
@@ -101,6 +102,10 @@ public class QualitySecurityCallbackFactory {
 			return roles.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager);
 		}
 		return null; // all organisations
+	}
+	
+	public static MainSecurityCallback createForbiddenSecurityCallback() {
+		return FORBIDDEN_SECURITY_CALLBACK;
 	}
 	
 	public static DataCollectionSecurityCallback createDataCollectionSecurityCallback(Roles roles,

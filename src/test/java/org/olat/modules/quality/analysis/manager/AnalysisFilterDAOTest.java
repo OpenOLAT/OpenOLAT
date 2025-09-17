@@ -189,6 +189,16 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadFiguresNoDataCollections() {
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AnlaysisFigures figures = sut.loadAnalyticFigures(searchParams);
+		
+		assertThat(figures.getDataCollectionCount()).isEqualTo(0);
+		assertThat(figures.getParticipationCount()).isEqualTo(0);
+		assertThat(figures.getPublicParticipationCount()).isEqualTo(0);
+	}
+	
+	@Test
 	public void shouldLoadDistinctSessions() {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");

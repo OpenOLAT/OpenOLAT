@@ -31,14 +31,25 @@ import org.olat.core.id.OrganisationRef;
  */
 public class EvaluationFormViewSearchParams {
 	
-	private Collection<? extends OrganisationRef> organisationRefs;
+	private Collection<Long> formEntryKeys;
+	private Collection<Long> organisationKeys;
+	
+	public Collection<Long> getFormEntryKeys() {
+		return formEntryKeys;
+	}
 
-	public Collection<? extends OrganisationRef> getOrganisationRefs() {
-		return organisationRefs;
+	public void setFormEntryKeys(Collection<Long> formEntryKeys) {
+		this.formEntryKeys = formEntryKeys;
+	}
+
+	public Collection<Long> getOrganisationKeys() {
+		return organisationKeys;
 	}
 
 	public void setOrganisationRefs(Collection<? extends OrganisationRef> organisationRefs) {
-		this.organisationRefs = organisationRefs;
+		this.organisationKeys = organisationRefs != null
+				? organisationRefs.stream().map(OrganisationRef::getKey).toList()
+				: null;
 	}
 
 }
