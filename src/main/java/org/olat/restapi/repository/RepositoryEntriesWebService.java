@@ -122,7 +122,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 				)
 		),
 	servers = { @Server(url = "/restapi"),
-				@Server(url = "/olat/restapi")}
+				@Server(url = "/olat/restapi"),
+				@Server(url = "/test9/restapi")}
 )
 @Path("repo/entries")
 public class RepositoryEntriesWebService {
