@@ -127,14 +127,20 @@ public class RestApiLoginFilter implements Filter {
 				if(isApiDocIndex(httpRequest)) {
 					sendSwaggerUI(httpResponse);
 				} else if(uress != null && uress.isAuthenticated()) {
-					//use the available session
-					followSession(httpRequest, httpResponse, chain);
+					if(restModule.getApiAccess() == ApiAccess.all
+							|| (restModule.getApiAccess() == ApiAccess.apikey  && RestModule.RESTAPI_AUTH.equals(uress.getSessionInfo().getAuthProvider()))) {
+						followSession(httpRequest, httpResponse, chain);
+					} else if(isRequestURIInOpenSpace(requestURI)) {
+						followWithoutAuthentication(httpRequest, httpResponse, chain);
+					} else {
+						sendUnauthorized(httpResponse);
+					}
 				} else {
 					if(isRequestURIInLoginSpace(requestURI)) {
 						followForAuthentication(requestURI, uress, httpRequest, httpResponse, chain);
 					} else if(isRequestURIInOpenSpace(requestURI)) {
 						followWithoutAuthentication(httpRequest, httpResponse, chain);
-					} else if( isRequestURIInIPProtectedSpace(requestURI, httpRequest, restModule)) {
+					} else if(isRequestURIInIPProtectedSpace(requestURI, httpRequest, restModule)) {
 						upgradeIpAuthentication(httpRequest, httpResponse);
 						followWithoutAuthentication(httpRequest, httpResponse, chain);
 					} else if (isRequestTokenValid(httpRequest)) {
@@ -144,8 +150,7 @@ public class RestApiLoginFilter implements Filter {
 					} else if (isBasicAuthenticated(httpRequest, httpResponse, requestURI)) {
 						followBasicAuthenticated(request, response, chain);
 					} else  {
-						httpResponse.setHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
-						httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+						sendUnauthorized(httpResponse);
 					}
 				}
 			} catch (Exception e) {
@@ -164,6 +169,11 @@ public class RestApiLoginFilter implements Filter {
 		} else {
 			throw new ServletException("Only accept HTTP Request");
 		}
+	}
+	
+	private void sendUnauthorized(HttpServletResponse httpResponse) {
+		httpResponse.setHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
+		httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	}
 	
 	/**
