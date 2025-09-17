@@ -230,6 +230,10 @@ public class DateUtils {
 	}
 	
 	public static Date getStartOfDay(Date date) {
+		if (date == null) {
+			return null;
+		}
+		
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -240,6 +244,10 @@ public class DateUtils {
 	}
 	
 	public static Date getEndOfDay(Date date) {
+		if (date == null) {
+			return null;
+		}
+		
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.set(Calendar.HOUR_OF_DAY, 23);

@@ -655,6 +655,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.LecturesBlockRollCallTest.class,
 	org.olat.restapi.NotificationsTest.class,
 	org.olat.restapi.NotificationsSubscribersTest.class,
+	org.olat.restapi.QualityWebServiceTest.class,
 	org.olat.restapi.RelationRolesWebServiceTest.class,
 	org.olat.restapi.IdentityToIdentityRelationsWebServiceTest.class,
 	org.olat.restapi.RepositoryEntryLifecycleTest.class,

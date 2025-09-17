@@ -49,6 +49,7 @@
 				<value>org.olat.modules.lecture.restapi</value>
 				<value>org.olat.modules.openmeetings.restapi</value>
 				<value>org.olat.modules.qpool.restapi</value>
+				<value>org.olat.modules.quality.restapi</value>
 				<value>org.olat.modules.reminder.restapi</value>
 				<value>org.olat.modules.taxonomy.restapi</value>
 				<value>org.olat.modules.todo.restapi</value>

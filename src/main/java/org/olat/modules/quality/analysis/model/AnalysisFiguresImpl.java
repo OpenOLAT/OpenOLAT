@@ -34,9 +34,13 @@ public class AnalysisFiguresImpl implements AnlaysisFigures {
 	private final Long publicPparticipationCount;
 	
 	public AnalysisFiguresImpl(Long dataCollectionCount, Long totalCount, Long publicCount, Long publicDoneCount) {
-		this.dataCollectionCount = dataCollectionCount;
-		this.participationCount = totalCount - publicCount;
-		this.publicPparticipationCount = publicDoneCount;
+		this.dataCollectionCount = zeroIfNull(dataCollectionCount);
+		this.participationCount = zeroIfNull(totalCount) - zeroIfNull(publicCount);
+		this.publicPparticipationCount = zeroIfNull(publicDoneCount);
+	}
+	
+	private Long zeroIfNull(Long value) {
+		return value != null? value: Long.valueOf(0);
 	}
 
 	@Override
