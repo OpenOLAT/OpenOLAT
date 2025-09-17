@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -70,6 +71,11 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
+import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler;
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 import org.olat.resource.accesscontrol.ui.OfferCatalogInfo.OfferCatalogStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,6 +100,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private FormLink addOpenAccessButton;
 	private FormLink addGuestLink;
 	private FormLink addGuestButton;
+	private SpacerItem withoutMembershipSpacer;
 	private final List<FormLink> addOfferLinks = new ArrayList<>();
 
 	private CloseableModalController cmc;
@@ -282,25 +289,19 @@ public class AccessConfigurationController extends FormBasicController {
 				addMethodDropdown.setAriaLabel("action.nore");
 				addMethodDropdown.setExpandContentHeight(true);
 				
-				for(AccessMethod method:methods) {
-					AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-					
-					String title = handler.getMethodName(getLocale());
-					FormLink addLink = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
-					addLink.setUserObject(method);
-					addLink.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-fw");
-					addMethodDropdown.addElement(addLink);
-					formLayout.add(addLink.getName(), addLink);
-					
-					FormLink addButton = uifactory.addFormLink("create.b." + handler.getType(), title, null, offersContainer, Link.BUTTON | Link.NONTRANSLATED);
-					addButton.setUserObject(method);
-					addButton.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg");
-					addOfferLinks.add(addButton);
-				}
+				boolean addGuest = isAddGuest();
+				addGuestLink = uifactory.addFormLink("create.offer.guest.link", "create.offer.guest", null, formLayout, Link.LINK);
+				addGuestLink.setIconLeftCSS( ("o_icon o_ac_guests_icon o_icon-fw"));
+				addGuestLink.setElementCssClass("o_sel_ac_add_guest");
+				addGuestLink.setVisible(addGuest);
+				addMethodDropdown.addElement(addGuestLink);
+				formLayout.add(addGuestLink.getName(), addGuestLink);
 				
-				if (openAccessSupported || guestSupported) {
-					addMethodDropdown.addElement(new SpacerItem("spacer"));
-				}
+				addGuestButton = uifactory.addFormLink("create.offer.guest", offersContainer, Link.BUTTON);
+				addGuestButton.setIconLeftCSS("o_icon o_ac_guests_icon o_icon-lg");
+				addGuestButton.setElementCssClass("o_sel_ac_add_guest");
+				addGuestButton.setVisible(addGuest);
+				addOfferLinks.add(addGuestButton);
 				
 				addOpenAccessLink = uifactory.addFormLink("create.offer.open.link", "create.offer.open", null, formLayout, Link.LINK);
 				addOpenAccessLink.setIconLeftCSS("o_icon o_ac_openaccess_icon o_icon-fw");
@@ -315,25 +316,54 @@ public class AccessConfigurationController extends FormBasicController {
 				addOpenAccessButton.setVisible(openAccessSupported);
 				addOfferLinks.add(addOpenAccessButton);
 				
-				boolean addGuest = isAddGuest();
-				addGuestLink = uifactory.addFormLink("create.offer.guest.link", "create.offer.guest", null, formLayout, Link.LINK);
-				addGuestLink.setIconLeftCSS( ("o_icon o_ac_guests_icon o_icon-fw"));
-				addGuestLink.setElementCssClass("o_sel_ac_add_guest");
-				addGuestLink.setVisible(addGuest);
-				addMethodDropdown.addElement(addGuestLink);
-				formLayout.add(addGuestLink.getName(), addGuestLink);
+				withoutMembershipSpacer = new SpacerItem("spacer");
+				addMethodDropdown.addElement(withoutMembershipSpacer);
 				
-				addGuestButton = uifactory.addFormLink("create.offer.guest", offersContainer, Link.BUTTON);
-				addGuestButton.setIconLeftCSS("o_icon o_ac_guests_icon o_icon-lg");
-				addGuestButton.setElementCssClass("o_sel_ac_add_guest");
-				addGuestButton.setVisible(addGuest);
-				addOfferLinks.add(addGuestButton);
+				Map<String, AccessMethod> typeToMethod = methods.stream().collect(Collectors.toMap(AccessMethod::getType, Function.identity()));
+				
+				boolean added = false;
+				if (createAddLinks(formLayout, typeToMethod, FreeAccessHandler.METHOD_TYPE)) {
+					added = true;
+				}
+				if (createAddLinks(formLayout, typeToMethod, TokenAccessHandler.METHOD_TYPE)) {
+					added = true;
+				}
+				if (added) {
+					addMethodDropdown.addElement(new SpacerItem("spacer2"));
+				}
+				
+				createAddLinks(formLayout, typeToMethod, InvoiceAccessHandler.METHOD_TYPE);
+				createAddLinks(formLayout, typeToMethod, PaypalCheckoutAccessHandler.METHOD_TYPE);
+				createAddLinks(formLayout, typeToMethod, PaypalAccessHandler.METHOD_TYPE);
 			}
 			
 			updateAddUI();
 		}
 		
 		updateCatalogOverviewUI();
+	}
+
+	private boolean createAddLinks(FormItemContainer formLayout, Map<String, AccessMethod> typeToMethod, String type) {
+		AccessMethod method = typeToMethod.get(type);
+		if (method == null) {
+			return false;
+		}
+		
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+		
+		String title = handler.getMethodName(getLocale());
+		FormLink addLink = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		addLink.setUserObject(method);
+		addLink.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-fw");
+		addMethodDropdown.addElement(addLink);
+		formLayout.add(addLink.getName(), addLink);
+		
+		FormLink addButton = uifactory.addFormLink("create.b." + handler.getType(), title, null, offersContainer, Link.BUTTON | Link.NONTRANSLATED);
+		addButton.setUserObject(method);
+		addButton.setIconLeftCSS("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg");
+		addOfferLinks.add(addButton);
+		
+		return true;
 	}
 	
 	private void updateAddUI() {
@@ -344,6 +374,8 @@ public class AccessConfigurationController extends FormBasicController {
 		if (addGuestButton != null) {
 			addGuestButton.setVisible(guestVisible);
 		}
+		
+		withoutMembershipSpacer.setVisible(addGuestLink.isVisible() || addOpenAccessLink.isVisible());
 	}
 
 	protected boolean isAddGuest() {

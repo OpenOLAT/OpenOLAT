@@ -139,7 +139,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			boolean wantSpacer = false;
 			for(Component component:components) {
 				if(component instanceof Spacer spacer) {
-					wantSpacer = true;
+					if (spacer.isVisible()) {
+						wantSpacer = true;
+					}
 					spacer.setDirty(false);
 				} else if(component.isVisible()) {
 					if(wantSpacer) {
