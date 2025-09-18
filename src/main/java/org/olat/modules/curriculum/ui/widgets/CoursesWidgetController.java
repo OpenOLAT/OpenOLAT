@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -159,7 +160,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 			if(curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0) {
 				addResourceButton = uifactory.addFormLink("add.resource", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-				addResourceButton.setTitle("add.resource");
+				addResourceButton.setTitle(translate("add.resource"));
 			}
 
 			if(curriculumElementType != null && curriculumElementType.getMaxRepositoryEntryRelations() == 1) {
@@ -169,7 +170,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 				
 				addTemplateButton = uifactory.addFormLink("add.template", "add.template", null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				addTemplateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-				addTemplateButton.setTitle("add.template");
+				addTemplateButton.setTitle(translate("add.template"));
 			}
 		}
 
@@ -362,10 +363,18 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
-		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
+		if (roles.isCurriculumManager()) {
+			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template, RepositoryEntryRuntimeType.curricular));
+		} else {
+			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
+		}
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		if (roles.isCurriculumManager()) {
+			searchParams.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		}
 		searchParams.addResourceTypes("CourseModule");
+		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
 		listenTo(repoSearchCtr);
 		repoSearchCtr.selectFilterTab(ureq, repoSearchCtr.getMyCoursesTab());

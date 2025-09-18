@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -354,9 +355,16 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
-		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
+		if (roles.isCurriculumManager()) {
+			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template, RepositoryEntryRuntimeType.curricular));
+		} else {
+			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
+		}
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		if (roles.isCurriculumManager()) {
+			searchParams.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		}
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(tableConfig.getAllowedRuntimeTypes());
 		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);

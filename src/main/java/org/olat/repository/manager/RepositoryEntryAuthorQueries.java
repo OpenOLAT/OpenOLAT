@@ -46,6 +46,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -423,6 +424,9 @@ public class RepositoryEntryAuthorQueries {
 		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
 			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
+		if (!params.isOwnedResourcesOnly() && params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
+			dbQuery.setParameter("additionalOrgRoles", params.getAdditionalCurricularOrgRoles().stream().map(OrganisationRoles::name).toList());
+		}
 		return dbQuery;
 	}
 	
@@ -467,7 +471,21 @@ public class RepositoryEntryAuthorQueries {
 				} 
 				
 				sb.append(" )");
-				  
+
+				if (params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
+					sb.append(" or ( ");
+					sb.append(" membership.role in (:additionalOrgRoles) ");
+					sb.append(" and ");
+					sb.append(" v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
+					sb.append(" and v.status ");
+					if (params.hasStatus()) {
+						sb.in(params.getStatus());
+					} else {
+						sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+					}
+					sb.append(" ) ");
+				}
+
 				if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))
 						&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
 					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
