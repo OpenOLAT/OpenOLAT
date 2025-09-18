@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -323,6 +324,9 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		if (roles.isCurriculumManager()) {
+			searchParams.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		}
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
