@@ -75,7 +75,7 @@
 		<apache.poi>5.4.1</apache.poi>
 		<apache.log4j>2.25.1</apache.log4j>
 		<org.slf4j>2.0.17</org.slf4j>
-		<org.bouncycastle>1.81</org.bouncycastle>
+		<org.bouncycastle>1.82</org.bouncycastle>
 		<io.jsonwebtoken>0.13.0</io.jsonwebtoken>
 		<io.undertow>2.3.19.Final</io.undertow>
 		<jackson.version>2.20.0</jackson.version>
@@ -88,7 +88,7 @@
 		<version.selenium>4.35.0</version.selenium>
 		<activemq.artemis.version>2.42.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
-		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
+		<jakarta.xml.bind-api>4.0.4</jakarta.xml.bind-api>
 		<jakarta.xml.ws-api>4.0.2</jakarta.xml.ws-api>
 		<qtiworks.version>1.0.31</qtiworks.version>
 		
@@ -2174,7 +2174,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.52.0</version>
+			<version>6.53.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2196,7 +2196,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.17.0</version>
+			<version>1.18.0</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
@@ -2352,7 +2352,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.22.1</version>
+			<version>3.22.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -2445,7 +2445,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>33.4.8-jre</version>
+			<version>33.5.0-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
