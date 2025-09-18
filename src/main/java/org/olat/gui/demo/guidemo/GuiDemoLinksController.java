@@ -35,6 +35,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -66,7 +67,7 @@ public class GuiDemoLinksController extends BasicController {
 	private Link buttonPreferred;
 	
 	private Link link;
-	private Link linkExtern;	
+	private ExternalLink linkExtern;
 	private Link linkBack, linkPos, linkTooltip;
 	private Link linkMail;
 	private Link iconButton;
@@ -123,8 +124,10 @@ public class GuiDemoLinksController extends BasicController {
 		
 		link = LinkFactory.createLink("link", mainVC, this);
 		linkBack = LinkFactory.createLinkBack(mainVC, this);
-		linkExtern = LinkFactory.createCustomLink("link.ext", "link.ext", "link.ext", Link.LINK, mainVC, this);	
+		linkExtern = LinkFactory.createExternalLink("link.ext", "link.ext", "https://www.openolat.org");
+		linkExtern.setName(translate("link.ext"));
 		linkExtern.setIconLeftCSS("o_icon o_icon_link_extern");
+		mainVC.put("link.ext", linkExtern);
 		linkMail = LinkFactory.createCustomLink("link.mail", "link.mail", "link.mail", Link.LINK, mainVC, this);	
 		linkMail.setIconLeftCSS("o_icon o_icon_mail");
 		
@@ -220,7 +223,7 @@ public class GuiDemoLinksController extends BasicController {
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
-				throw new OLATRuntimeException(this.getClass(), "Error while let OLAT sleeping for the purpose of demo", e);
+				throw new OLATRuntimeException(this.getClass(), "Error while letting OpenOlat sleep for the purpose of demo.", e);
 			}
 			showInfo("info.button.long.trans", ureq.getIdentity().getName());			
 		} else if (source == buttonCloseIcon){
