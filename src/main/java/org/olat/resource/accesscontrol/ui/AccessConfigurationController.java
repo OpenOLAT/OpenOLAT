@@ -375,7 +375,9 @@ public class AccessConfigurationController extends FormBasicController {
 			addGuestButton.setVisible(guestVisible);
 		}
 		
-		withoutMembershipSpacer.setVisible(addGuestLink.isVisible() || addOpenAccessLink.isVisible());
+		if(withoutMembershipSpacer != null) {
+			withoutMembershipSpacer.setVisible(addGuestLink.isVisible() || addOpenAccessLink.isVisible());
+		}
 	}
 
 	protected boolean isAddGuest() {
