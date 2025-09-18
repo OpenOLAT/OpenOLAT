@@ -142,6 +142,13 @@ public class AccessOverviewController extends BasicController {
 				translate("access.overview.right", translate("access.overview.right.full")));
 		mainVC.contextPut("learnresourcemanager", learnresourcemanager);
 		
+		String curriculummanager = ICON_ACTIVE;
+		Long curriculummanagerCount = roleToCountMemebers.getOrDefault(OrganisationRoles.curriculummanager.name(), 0L);
+		curriculummanager += translate("access.overview.curriculummanagers",
+				curriculummanagerCount.toString(),
+				translate("access.overview.right", translate("access.overview.right.read.content")));
+		mainVC.contextPut("curriculummanager", curriculummanager);
+		
 		Long principalsCount = roleToCountMemebers.getOrDefault(OrganisationRoles.principal.name(), Long.valueOf(0));
 		String principals = ICON_ACTIVE + translate("access.overview.principals", 
 				principalsCount.toString(),
