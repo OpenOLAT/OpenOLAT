@@ -101,10 +101,17 @@ public class CoursePlannerTest extends Deployments {
 		// Publish the course
 		new RepositoryEditDescriptionPage(browser)
 			.clickToolbarBack();
-		CoursePageFragment.getCourse(browser)
+		CoursePageFragment course = CoursePageFragment.getCourse(browser)
 			.edit()
 			.autoPublish()
 			.changeStatus(RepositoryEntryStatusEnum.published);
+		
+		// Set curricular runtime type
+		course
+			.settings()
+			.accessConfiguration()
+			.setCurricularRuntimeType()
+			.clickToolbarBack();
 		
 		CoursePlannerPage coursePlannerPage = navBar
 			.openCoursePlanner();
@@ -163,7 +170,6 @@ public class CoursePlannerTest extends Deployments {
 		participantCourse
 			.assertOnLearnPathNodeDone("Participant list");
 	}
-
 	
 	/**
 	 * A curriculum manager creates a curriculum, an element with a type
@@ -237,7 +243,7 @@ public class CoursePlannerTest extends Deployments {
 			.openMyCourses()
 			.openInPreparation()
 			.assertOnCurriculumElementInList(elementName)
-			.select(elementName)
+			.more(elementName)
 			.assertOnCurriculumElementDetails(elementName);
 	}
 	

@@ -57,10 +57,19 @@ public class RepositoryAccessPage {
 		browser.findElement(saveBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 		
-		String icon = type == RepositoryEntryRuntimeType.standalone ? "o_icon_people" : "o_icon_link";
+		String icon = runtimeTypeIcon(type);
 		By accessBy = By.cssSelector("fieldset.o_ac_runtime_type_form i." + icon);
 		OOGraphene.waitElement(accessBy, browser);
 		return this;
+	}
+	
+	private String runtimeTypeIcon(RepositoryEntryRuntimeType type) {
+		return switch (type) {
+			case standalone -> "o_icon_people";
+			case curricular -> "o_icon_curriculum";
+			case embedded -> "o_icon_link";
+			case template -> "o_icon_template";
+		};
 	}
 	
 	/**
@@ -91,6 +100,11 @@ public class RepositoryAccessPage {
 	public RepositoryAccessPage assertOnOaiWarning() {
 		By oaiWarningBy = By.cssSelector(".o_sel_repo_access_general .o_sel_repo_oai_warning");
 		OOGraphene.waitElement(oaiWarningBy, browser);
+		return this;
+	}
+	
+	public RepositoryAccessPage setCurricularRuntimeType() {
+		setRuntimeType(RepositoryEntryRuntimeType.curricular);
 		return this;
 	}
 	
