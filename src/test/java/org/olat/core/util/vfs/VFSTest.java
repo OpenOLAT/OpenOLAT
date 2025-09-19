@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.vfs;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,11 +30,15 @@ import java.util.UUID;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.admin.quota.QuotaImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.callbacks.DefaultVFSSecurityCallback;
+import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,6 +89,67 @@ public class VFSTest extends OlatTestCase {
 		VFSMetadata copiedMetaInfo = copiedLeaf.getMetaInfo();
 		Assert.assertEquals("A comment", copiedMetaInfo.getComment());
 		Assert.assertEquals("Me", copiedMetaInfo.getCreator());
+	}
+	
+	@Test
+	public void copyFrom_sourceDoesNotAllow() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer sourceContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/" + random(), null);
+		sourceContainer.createChildLeaf(random() + ".txt");
+		sourceContainer.setLocalSecurityCallback(new DefaultVFSSecurityCallback());
+		
+		VFSSuccess success = testContainer.copyFrom(sourceContainer, null);
+		
+		Assert.assertEquals(VFSSuccess.ERROR_SECURITY_DENIED, success);
+	}
+	
+	@Test
+	public void copyFrom_quotaCheckLeaf() {
+		VFSContainer targetContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/" + random(), null);
+		VFSContainer sourceContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/" + random(), null);
+		VFSLeaf sourceFile = sourceContainer.createChildLeaf(random() + ".txt");
+		fillFile(sourceFile, 9);
+		
+		// No quota
+		VFSSuccess success = targetContainer.copyContentOf(sourceContainer, null);
+		Assert.assertEquals(VFSSuccess.SUCCESS, success);
+		
+		// Enough quota
+		sourceFile.rename(random() + ".txt");
+		VFSSecurityCallback quotaSecCallback = new FullAccessWithQuotaCallback(new QuotaImpl(null, 20l, 10l));
+		targetContainer.setLocalSecurityCallback(quotaSecCallback);
+		success = targetContainer.copyContentOf(sourceContainer, null);
+		Assert.assertEquals(VFSSuccess.SUCCESS, success);
+		
+		// Not enough quota anymore
+		sourceFile.rename(random() + ".txt");
+		success = targetContainer.copyContentOf(sourceContainer, null);
+		Assert.assertEquals(VFSSuccess.ERROR_QUOTA_EXCEEDED, success);
+	}
+	
+	@Test
+	public void copyFrom_quotaCheckSub() {
+		VFSContainer targetContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/" + random(), null);
+		VFSContainer sourceContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/" + random(), null);
+		VFSContainer sourceSubContainer = sourceContainer.createChildContainer(random());
+		VFSLeaf sourceFile = sourceSubContainer.createChildLeaf(random() + ".txt");
+		fillFile(sourceFile, 9);
+		
+		// No quota
+		VFSSuccess success = targetContainer.copyContentOf(sourceContainer, null);
+		Assert.assertEquals(VFSSuccess.SUCCESS, success);
+		
+		// Enough quota
+		sourceSubContainer.rename(random());
+		VFSSecurityCallback quotaSecCallback = new FullAccessWithQuotaCallback(new QuotaImpl(null, 20l, 10l));
+		targetContainer.setLocalSecurityCallback(quotaSecCallback);
+		success = targetContainer.copyContentOf(sourceContainer, null);
+		Assert.assertEquals(VFSSuccess.SUCCESS, success);
+		
+		// Not enough quota anymore
+		sourceSubContainer.rename(random());
+		success = targetContainer.copyContentOf(sourceContainer, null);
+		Assert.assertEquals(VFSSuccess.ERROR_QUOTA_EXCEEDED, success);
 	}
 	
 	@Test
@@ -159,4 +226,16 @@ public class VFSTest extends OlatTestCase {
 			log.error("", e);
 		}
 	}
+	
+	private void fillFile(VFSLeaf leaf, int sizeInKB) {
+		try (OutputStream out =  leaf.getOutputStream(true)) {
+			int sizeInBytes = sizeInKB * 1024;
+			for (int i = 0; i < sizeInBytes; i++) {
+				out.write('a');
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
 }
