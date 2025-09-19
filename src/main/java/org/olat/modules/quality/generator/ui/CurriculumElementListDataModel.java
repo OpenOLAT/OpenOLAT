@@ -63,7 +63,8 @@ class CurriculumElementListDataModel extends DefaultFlexiTableDataModel<Curricul
 	public Object getValueAt(CurriculumElement row, int col) {
 		switch(Cols.values()[col]) {
 			case displayName: return row.getDisplayName();
-			case identifier: return row.getIdentifier();
+			case externalRef: return row.getIdentifier();
+			case externalId: return row.getExternalId();
 			case typeName: {
 				CurriculumElementType type = row.getType();
 				return type != null? type.getDisplayName(): null;
@@ -76,7 +77,8 @@ class CurriculumElementListDataModel extends DefaultFlexiTableDataModel<Curricul
 	
 	public enum Cols implements FlexiSortableColumnDef {
 		displayName("curriculum.element.title"),
-		identifier("curriculum.element.identifier"),
+		externalRef("curriculum.element.external.ref"),
+		externalId("curriculum.element.external.id"),
 		typeName("curriculum.element.type.name"),
 		begin("curriculum.element.begin"),
 		end("curriculum.element.end");
