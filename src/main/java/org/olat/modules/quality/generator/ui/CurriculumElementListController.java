@@ -103,7 +103,8 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.displayName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.typeName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.begin));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumElementListDataModel.Cols.end));
