@@ -81,6 +81,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 		
 		mainVC.contextPut("iconCssClass", getIconCssClass());
 		mainVC.contextPut("externalRef", getExternalRef());
+		mainVC.contextPut("translatedTechnicalType", getTranslatedTechnicalType());
 		mainVC.contextPut("title", getTitle());
 		mainVC.contextPut("authors", getAuthors());
 		mainVC.contextPut("teaser", getTeaser());
@@ -112,6 +113,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	
 	protected abstract String getIconCssClass();
 	protected abstract String getExternalRef();
+	protected abstract String getTranslatedTechnicalType();
 	protected abstract String getTitle();
 	protected abstract String getAuthors();
 	protected abstract String getTeaser();

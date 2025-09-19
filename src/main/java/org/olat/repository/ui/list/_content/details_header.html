@@ -7,9 +7,17 @@
 		#end
 		<div class="o_meta_wrapper">
 			<div class="o_meta">
-				#if($externalRef)
+				#if ($r.isNotEmpty($externalRef) || $r.isNotEmpty($translatedTechnicalType))
 					<div class="o_ext_ref o_nowrap">
-						$r.escapeHtml($externalRef)
+						#if($r.isNotEmpty($externalRef))
+							$r.escapeHtml($externalRef)
+							#if($r.isNotEmpty($translatedTechnicalType))
+								<span class="o_spacer">&middot;</span>
+							#end
+						#end
+						#if($r.isNotEmpty($translatedTechnicalType))
+							$r.escapeHtml($translatedTechnicalType)
+						#end
 					</div>
 				#end
 				#if($title)

@@ -191,15 +191,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		}
 		return status;
 	}
-
-	/**
-	 * Internal copy from, preventing quota checks on subfolders.
-	 * 
-	 * @param source
-	 * @param checkQuota
-	 * @param savedBy 
-	 * @return
-	 */
+	
 	private VFSSuccess copyFrom(VFSItem source, boolean checkQuota, Identity savedBy) {
 		if (source.canCopy() != VFSStatus.YES) {
 			log.warn("Cannot copy file {} security denied", source);
@@ -234,9 +226,10 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			// copy recursively
 			List<VFSItem> children = sourceContainer.getItems(new VFSSystemItemFilter());
 			for (VFSItem child : children) {
-				VFSSuccess status = targetContainer.copyFrom(child , false, savedBy);
+				VFSSuccess status = targetContainer.copyFrom(child , checkQuota, savedBy);
 				if (status != VFSSuccess.SUCCESS) {
 					log.warn("Cannot copy file {} with status {}", child , status);
+					return status;
 				}
 			}
 		} else if (source instanceof VFSLeaf sourceLeaf) {

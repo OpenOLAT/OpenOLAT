@@ -108,6 +108,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
+	protected String getTranslatedTechnicalType() {
+		return null;
+	}
+
+	@Override
 	protected String getTitle() {
 		return element.getDisplayName();
 	}
