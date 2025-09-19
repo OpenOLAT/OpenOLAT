@@ -36,6 +36,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -67,6 +70,8 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private NodeAccessService nodeAccessService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 
 	public RepositoryEntryDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
@@ -87,6 +92,17 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Override
 	protected String getExternalRef() {
 		return entry.getExternalRef();
+	}
+
+	@Override
+	protected String getTranslatedTechnicalType() {
+		if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
+			NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
+			return ConditionNodeAccessProvider.TYPE.equals(type.getType())
+					? translate("CourseModule")
+					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
+		}
+		return null;
 	}
 
 	@Override
@@ -226,7 +242,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	
 	@Override
 	protected String getStartLinkText() {
-		return translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+		return translate("open.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 	}
 
 	@Override

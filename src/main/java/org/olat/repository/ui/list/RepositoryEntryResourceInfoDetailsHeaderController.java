@@ -165,7 +165,7 @@ public class RepositoryEntryResourceInfoDetailsHeaderController extends FormBasi
 	}
 
 	private FormLink createStartLink(FormLayoutContainer layoutCont) {
-		String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+		String linkText = translate("open.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 		FormLink link = uifactory.addFormLink("start", START_EVENT.getCommand(), linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 		link.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 		link.setPrimary(true);
