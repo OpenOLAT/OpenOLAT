@@ -411,7 +411,13 @@ public class JunitTestHelper {
 		String login = getRandomizedLoginName(prefixLogin);
 		return createAndPersistIdentityAsLearnResourceManager(login);
 	}
-	
+
+
+	public static Identity createAndPersistIdentityAsRndCurriculumManager(String prefix) {
+		String login = getRandomizedLoginName(prefix);
+		return createAndPersistIdentityAsCurriculumManager(login);
+	}
+
 	/**
 	 * Create an identity with admin permissions
 	 * @param login
@@ -429,6 +435,24 @@ public class JunitTestHelper {
 		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, PWD, null);
 		addToDefaultOrganisation(identity, OrganisationRoles.learnresourcemanager);
+		addToDefaultOrganisation(identity, OrganisationRoles.user);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+		return identity;
+	}
+	
+	private static Identity createAndPersistIdentityAsCurriculumManager(String login) {
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity identity = findIdentityByLogin(login);
+		if (identity != null) {
+			return identity;
+		}
+		
+		User user = CoreSpringFactory.getImpl(UserManager.class)
+				.createUser("first" + login, "last" + login, login + "@" + maildomain);
+		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user, 
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, 
+				null, login, PWD, null);
+		addToDefaultOrganisation(identity, OrganisationRoles.curriculummanager);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;

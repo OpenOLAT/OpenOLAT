@@ -24,12 +24,15 @@ import static org.olat.test.JunitTestHelper.random;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -38,6 +41,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -45,6 +49,8 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.junit.Assert;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,6 +78,10 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	private RepositoryEntryAuthorQueries repositoryEntryAuthorViewQueries;
 	@Autowired
 	private TaxonomyService taxomomyService;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private GroupDAO groupDao;
 	
 	@Test
 	public void searchViews() {
@@ -633,5 +643,66 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 			}
 		}
 		return false;
+	}
+	
+	@Test
+	public void searchViews_curriculumManagerRoleSpecificOrg() {
+		// Arrange
+		
+		// org 1
+		Organisation org_1 = organisationService.createOrganisation("Org 1", "org-1", 
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Group g_1 = org_1.getGroup();
+		RepositoryEntry re_1 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		
+		// org 1 : re 1
+		re_1.setRuntimeType(RepositoryEntryRuntimeType.curricular);
+		repositoryEntryRelationDao.createRelation(g_1, re_1, false);
+
+		// org 2
+		Organisation org_2 = organisationService.createOrganisation("Org 2", "org-2",
+				null, null, null, JunitTestHelper.getDefaultActor());
+		Group g_2 = org_2.getGroup();
+		
+		// org 2 : re 2
+		RepositoryEntry re_2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		re_2.setRuntimeType(RepositoryEntryRuntimeType.curricular);
+		repositoryEntryRelationDao.createRelation(g_2, re_2, false);
+		
+		// org 2 : re 3
+		RepositoryEntry re_3 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		re_3.setRuntimeType(RepositoryEntryRuntimeType.curricular);
+		repositoryEntryRelationDao.createRelation(g_2, re_3, false);
+		
+		// i_1 is curriculum manager of org_1 and user of org_2
+		Identity i_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("id-");
+		groupDao.addMembershipOneWay(g_1, i_1, OrganisationRoles.curriculummanager.name());
+		groupDao.addMembershipOneWay(g_2, i_1, OrganisationRoles.user.name());
+		
+		// i_2 is curriculum manager of org_2
+		Identity i_2 = JunitTestHelper.createAndPersistIdentityAsRndUser("id-");
+		groupDao.addMembershipOneWay(g_2, i_2, OrganisationRoles.curriculummanager.name());
+
+		dbInstance.commitAndCloseSession();
+
+		// Act
+		Roles roles_1 = securityManager.getRoles(i_1);
+		SearchAuthorRepositoryEntryViewParams params_1 = new SearchAuthorRepositoryEntryViewParams(i_1, roles_1);
+		params_1.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		RepositoryEntryAuthorViewResults results_1 = repositoryEntryAuthorViewQueries.searchViews(params_1, 0, 10);
+
+		Roles roles_2 = securityManager.getRoles(i_2);
+		SearchAuthorRepositoryEntryViewParams params_2 = new SearchAuthorRepositoryEntryViewParams(i_2, roles_2);
+		params_2.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		RepositoryEntryAuthorViewResults results_2 = repositoryEntryAuthorViewQueries.searchViews(params_2, 0, 10);
+		
+		// Assert
+		Assert.assertTrue(contains(re_1, results_1));
+		Assert.assertFalse(contains(re_2, results_1));
+		Assert.assertFalse(contains(re_3, results_1));
+
+		Assert.assertFalse(contains(re_1, results_2));
+		Assert.assertTrue(contains(re_2, results_2));
+		Assert.assertTrue(contains(re_3, results_2));
 	}
 }
