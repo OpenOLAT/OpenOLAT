@@ -1266,7 +1266,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private void doCopy(UserRequest ureq) {
 		removeAsListenerAndDispose(copyWrapperCtrl);
 
-		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, false);
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, false, false);
 		listenTo(copyWrapperCtrl);
 	}
 	

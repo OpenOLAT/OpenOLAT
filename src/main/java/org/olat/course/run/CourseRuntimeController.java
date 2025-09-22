@@ -261,6 +261,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link copyWithWizardLink;
+	private Link saveAsTemplateLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 
@@ -694,7 +695,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			initToolsMenuRuntime(toolsDropdown, course, uce);
 			initToolsMenuStatistics(toolsDropdown, course, uce);
 			initToolsMenuEdition(toolsDropdown);
-			initToolsBeta(toolsDropdown, course);
+			initToolsMenuCopy(toolsDropdown, course);
 			initToolsMenuDelete(toolsDropdown);
 		}
 	}
@@ -957,15 +958,26 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	protected void initToolsBeta(Dropdown toolsDropdown, ICourse course) {
+	protected void initToolsMenuCopy(Dropdown toolsDropdown, ICourse course) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
 		boolean canCopy = !copyManaged && hasCopyDeletePermissions();
 
-		if (canCopy && course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
-			Integer index = toolsDropdown.getComponentIndex(copyLink);
-			if(index != null) {
-				copyWithWizardLink = LinkFactory.createToolLink("copy.course.with.wizard", translate("tools.copy.course.with.wizard"), this, "o_icon o_icon-fw  o_icon_copy");
-				toolsDropdown.addComponent(index.intValue() + 1, copyWithWizardLink);
+		if (canCopy && course != null) {
+			if (LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+				Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
+				if (copyIndex != null) {
+					copyWithWizardLink = LinkFactory.createToolLink("copy.course.with.wizard", translate("tools.copy.course.with.wizard"), this, "o_icon o_icon-fw  o_icon_copy");
+					toolsDropdown.addComponent(copyIndex + 1, copyWithWizardLink);
+				}
+			}
+			
+			saveAsTemplateLink = LinkFactory.createToolLink("save.as.template", translate("tools.save.as.template"), this, "o_icon o_icon-fw o_icon_template");
+			Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
+			Integer copyWithWizardIndex = toolsDropdown.getComponentIndex(copyWithWizardLink);
+			if (copyWithWizardIndex != null) {
+				toolsDropdown.addComponent(copyWithWizardIndex + 1, saveAsTemplateLink);
+			} else if (copyIndex != null) {
+				toolsDropdown.addComponent(copyIndex + 1, saveAsTemplateLink);
 			}
 		}
 	}
@@ -1495,6 +1507,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doConfirmLeave(ureq);
 		} else if(copyWithWizardLink == source) {
 			doCopyWithWizard(ureq);
+		} else if(saveAsTemplateLink == source) {
+			doSaveAsTemplate(ureq);
 		} else if(source instanceof Link groupLink && "group".equals(groupLink.getCommand())
 				&& groupLink.getUserObject() instanceof BusinessGroupRef ref) {
 			launchGroup(ureq, ref.getKey());
@@ -3491,7 +3505,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void doCopyWithWizard(UserRequest ureq) {
 		removeAsListenerAndDispose(copyWrapperCtrl);
 
-		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, true);
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, true, false);
+		listenTo(copyWrapperCtrl);
+	}
+	
+	private void doSaveAsTemplate(UserRequest ureq) {
+		removeAsListenerAndDispose(copyWrapperCtrl);
+		
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, true, true);
 		listenTo(copyWrapperCtrl);
 	}
 	

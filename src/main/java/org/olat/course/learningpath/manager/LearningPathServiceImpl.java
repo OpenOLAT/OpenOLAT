@@ -197,7 +197,7 @@ public class LearningPathServiceImpl implements LearningPathService, GenericEven
 		if (displayname.length() > 100) {
 			displayname = displayname.substring(0, 100);
 		}
-		RepositoryEntry lpEntry = respositoryService.copy(courseEntry, identity, displayname, null);
+		RepositoryEntry lpEntry = respositoryService.copy(courseEntry, identity, displayname, null, false);
 		lpEntry = repositoryManager.setTechnicalType(lpEntry, LearningPathNodeAccessProvider.TYPE);
 		
 		ICourse course = CourseFactory.loadCourse(lpEntry);

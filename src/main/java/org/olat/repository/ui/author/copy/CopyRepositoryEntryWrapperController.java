@@ -50,35 +50,35 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 	private CopyRepositoryEntryController copyRepositoryEntryController;	
 	private CloseableModalController cmc;
 	
-	private RepositoryEntry repositoryEntry;
+	private final RepositoryEntry repositoryEntry;
 
 	/**
-	 * Beta features will become default and this flag can be removed in future releases
-	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param repositoryEntry
-	 * @param useBetaFeautres
+	 * @param useCourseWizard
+	 * @param saveAsTemplate
 	 */
-	public CopyRepositoryEntryWrapperController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, boolean useBetaFeautres) {
+	public CopyRepositoryEntryWrapperController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, boolean useCourseWizard, boolean saveAsTemplate) {
 		super(ureq, wControl);
 		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		this.repositoryEntry = repositoryEntry;
 		
-		if (useBetaFeautres && repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.ORES_TYPE_COURSE)) {
+		if (useCourseWizard && repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.ORES_TYPE_COURSE)) {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry);
 			
 			if (course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
-				copyLearningPathCourseWizardController = new CopyCourseWizardController(ureq, wControl, repositoryEntry, course);
+				copyLearningPathCourseWizardController = new CopyCourseWizardController(ureq, wControl, repositoryEntry, course, saveAsTemplate);
 				listenTo(copyLearningPathCourseWizardController);
 				return;
 			}
 		}
 		
-		copyRepositoryEntryController = new CopyRepositoryEntryController(ureq, getWindowControl(), repositoryEntry);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyRepositoryEntryController.getInitialComponent(), true, translate("details.copy"));
+		copyRepositoryEntryController = new CopyRepositoryEntryController(ureq, getWindowControl(), repositoryEntry, saveAsTemplate);
+		String title = saveAsTemplate ? translate("details.save.as.template") : translate("details.copy");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyRepositoryEntryController.getInitialComponent(), true, title);
 		
 		listenTo(cmc);
 		listenTo(copyRepositoryEntryController);

@@ -156,8 +156,9 @@ public class CopyServiceImpl implements CopyService {
 		// For easier handling, put all nodes into a map with their identifier
 		Map<String, CopyCourseOverviewRow> sourceCourseNodesMap = context.getCourseNodesMap();
 		
+		RepositoryEntryRuntimeType runtimeType = context.isSaveAsTemplate() ? RepositoryEntryRuntimeType.template : RepositoryEntryRuntimeType.standalone;
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
-				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, null);
+				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, runtimeType, null);
 		
 		// Copy metadata
 		target.setTechnicalType(sourceEntry.getTechnicalType());

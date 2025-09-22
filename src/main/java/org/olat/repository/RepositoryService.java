@@ -66,7 +66,7 @@ public interface RepositoryService {
 			OLATResource resource, RepositoryEntryStatusEnum status,
 			RepositoryEntryRuntimeType runtimeType, Organisation organisation);
 
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef);
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate);
 	
 	public boolean canCopy(RepositoryEntry entryToCopy, Identity identity);
 

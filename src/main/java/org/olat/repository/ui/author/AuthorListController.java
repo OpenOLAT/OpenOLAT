@@ -1794,7 +1794,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(displayname.length() > 99) {
 				displayname = displayname.substring(0, 99);
 			}
-			repositoryService.copy(sourceEntry, getIdentity(), displayname, null);
+			repositoryService.copy(sourceEntry, getIdentity(), displayname, null, false);
 		}
 		
 		showInfo("details.copy.success", new String[]{ Integer.toString(rows.size()) });
@@ -1859,7 +1859,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(copyCtrl);
 
 		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		copyCtrl = new CopyRepositoryEntryController(ureq, getWindowControl(), entry);
+		copyCtrl = new CopyRepositoryEntryController(ureq, getWindowControl(), entry, false);
 		listenTo(copyCtrl);
 		
 		String title = translate("details.copy");
@@ -1872,7 +1872,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(copyWrapperCtrl);
 
 		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), entry, true);
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), entry, true, false);
 		listenTo(copyWrapperCtrl);
 	}
 

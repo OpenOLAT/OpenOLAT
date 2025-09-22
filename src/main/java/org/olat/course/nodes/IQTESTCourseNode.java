@@ -1081,7 +1081,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 						Translator translator = Util.createPackageTranslator(RepositoryService.class, context.getExecutingLocale()); 
 						
 						RepositoryEntry copy = repositoryService.copy(source, context.getExecutingIdentity(),
-								source.getDisplayname() + " " + translator.translate("copy.suffix"), null);
+								source.getDisplayname() + " " + translator.translate("copy.suffix"), null, false);
 						IQEditController.setIQReference(copy, getModuleConfiguration());
 					}
 					

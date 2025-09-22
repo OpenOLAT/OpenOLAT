@@ -51,14 +51,16 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	
 	private RepositoryEntry copyEntry;
 	private final RepositoryEntry sourceEntry;
+	private final boolean saveAsTemplate;
 
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public CopyRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryEntry sourceEntry) {
+	public CopyRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryEntry sourceEntry, boolean saveAsTemplate) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.sourceEntry = sourceEntry;
+		this.saveAsTemplate = saveAsTemplate;
 
 		initForm(ureq);
 		validateDisplayName(ureq);
@@ -67,14 +69,17 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String displayName = translate("copy.entry", sourceEntry.getDisplayname());
+		String displayName = translate(saveAsTemplate ? "save.as.template.title" : "copy.entry", sourceEntry.getDisplayname());
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, displayName, formLayout);
 		displaynameEl.setMandatory(true);
 		displaynameEl.setInlineValidationOn(true);
 		
-		String externalRef = StringHelper.containsNonWhitespace(sourceEntry.getExternalRef())
-				? translate("copy.entry", sourceEntry.getExternalRef())
-				: null;
+		String externalRef = null;
+		if (!saveAsTemplate) {
+			if (StringHelper.containsNonWhitespace(sourceEntry.getExternalRef())) {
+				externalRef = translate("copy.entry", sourceEntry.getExternalRef());
+			}
+		}
 		externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref.long", 255, externalRef, formLayout);
 		externalRefEl.setHelpText(translate("cif.externalref.hover"));
 		externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
@@ -82,7 +87,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		
 		FormLayoutContainer buttonContainer = uifactory.addButtonsFormLayout("buttonContainer", null, formLayout);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
-		uifactory.addFormSubmitButton("details.copy", buttonContainer);
+		uifactory.addFormSubmitButton(saveAsTemplate ? "save" : "details.copy", buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
@@ -95,7 +100,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		String displayname = displaynameEl.getValue();
 		String externalRef = externalRefEl.getValue();
 		fireEvent(ureq, Event.CLOSE_EVENT);
-		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef);
+		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef, saveAsTemplate);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

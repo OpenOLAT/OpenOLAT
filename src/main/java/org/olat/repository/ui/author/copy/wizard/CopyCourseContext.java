@@ -152,7 +152,10 @@ public class CopyCourseContext {
 	// Documents
 	private CopyType documentsCopyType;
 	private CopyType coachDocumentsCopyType;
-	
+
+	// Template
+	private boolean saveAsTemplate;
+
 	// Load config from module
 	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
 		setGroupCopyType(wizardModule.getGroupsCopyType());
@@ -779,6 +782,14 @@ public class CopyCourseContext {
 	
 	public void setLectureBlockRows(List<LectureBlockRow> lectureBlockRows) {
 		this.lectureBlockRows = lectureBlockRows;
+	}
+
+	public void setSaveAsTemplate(boolean saveAsTemplate) {
+		this.saveAsTemplate = saveAsTemplate;
+	}
+
+	public boolean isSaveAsTemplate() {
+		return saveAsTemplate;
 	}
 	
 	

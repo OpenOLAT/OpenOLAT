@@ -161,16 +161,19 @@ public class CopyCourseGeneralStep extends BasicStep {
 			formLayout.add(referenceAndTitleLayout);
 			
 			// Course name
-			String displayName = translate("copy.entry", context.getSourceRepositoryEntry().getDisplayname());
+			String displayName = translate(context.isSaveAsTemplate() ? "save.as.template.title" : "copy.entry", context.getSourceRepositoryEntry().getDisplayname());
 			displayNameEl = uifactory.addTextElement("cif.title", "cif.title", 100, displayName, referenceAndTitleLayout);
 			displayNameEl.setDisplaySize(30);
 			displayNameEl.setNotEmptyCheck("input.mandatory");
 			displayNameEl.setInlineValidationOn(true);
 			
 			// Course reference
-			String externalRef = StringHelper.containsNonWhitespace(context.getSourceRepositoryEntry().getExternalRef())
-					? translate("copy.entry", context.getSourceRepositoryEntry().getExternalRef())
-					: null;
+			String externalRef = null;
+			if (!context.isSaveAsTemplate()) {
+				if (StringHelper.containsNonWhitespace(context.getSourceRepositoryEntry().getExternalRef())) {
+					externalRef = translate("copy.entry", context.getSourceRepositoryEntry().getExternalRef());
+				}
+			}
 			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, externalRef, referenceAndTitleLayout);
 			externalRefEl.setHelpText(translate("cif.externalref.hover"));
 			externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");

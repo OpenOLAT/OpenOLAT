@@ -141,7 +141,7 @@ public class CopyCourseWizardController extends BasicController {
 	@Autowired
 	private ProjectGroupManager projectGroupManager;
 	
-	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
+	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course, boolean saveAsTemplate) {
 		super(ureq, wControl);
 		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -205,10 +205,12 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setHasCatalogEntry(hasCatalogEntry(sourceEntry));
 		copyContext.setDocuments(hasDocuments(course));
 		copyContext.setCoachDocuments(hasCoachDocuments(course));
+		copyContext.setSaveAsTemplate(saveAsTemplate);
 		
         CopyCourseGeneralStep copyCourseStep = new CopyCourseGeneralStep(ureq, copySteps, copyContext);
         
-        copyWizardController = new StepsMainRunController(ureq, getWindowControl(), copyCourseStep, finish, cancel, translate("course.copy"), null);
+		String title = saveAsTemplate ? translate("details.save.as.template") : translate("course.copy");
+        copyWizardController = new StepsMainRunController(ureq, getWindowControl(), copyCourseStep, finish, cancel, title, null);
 		
         listenTo(copyWizardController);
         getWindowControl().pushAsModalDialog(copyWizardController.getInitialComponent());
