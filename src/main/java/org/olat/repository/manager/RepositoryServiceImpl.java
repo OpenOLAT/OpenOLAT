@@ -333,16 +333,21 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef) {
-		return copy(sourceEntry, author, displayname, externalRef, false, null);
+		return copy(sourceEntry, author, displayname, externalRef, false, null, false, false);
 	}
 	
 	@Override
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> selectedOrgs) {
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> selectedOrgs, boolean canCopy, boolean canDownload) {
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, 
 				copyAsTemplate ? RepositoryEntryRuntimeType.template : sourceEntry.getRuntimeType(), null);
+
+		if (copyAsTemplate) {
+			copyEntry.setCanCopy(canCopy);
+			copyEntry.setCanDownload(canDownload);
+		}
 
 		//copy all fields
 		copyEntry.setExternalRef(externalRef);

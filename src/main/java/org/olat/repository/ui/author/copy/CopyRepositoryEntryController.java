@@ -30,9 +30,11 @@ import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,9 +60,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CopyRepositoryEntryController extends FormBasicController {
 
+	private static final String KEY_COPY = "copy";
+	private static final String KEY_DOWNLOAD = "download";
+
 	private TextElement displaynameEl;
 	private TextElement externalRefEl;
 	private OrgSelectorElement organisationsEl;
+	private SelectionElement authorsCanEl;
 	
 	private RepositoryEntry copyEntry;
 	private final RepositoryEntry sourceEntry;
@@ -101,7 +107,10 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 		externalRefEl.setInlineValidationOn(true);
 		
-		initFormOrgs(formLayout, ureq.getUserSession());
+		if (saveAsTemplate) {
+			initFormOrgs(formLayout, ureq.getUserSession());
+			initAuthorsCan(formLayout);
+		}
 		
 		FormLayoutContainer buttonContainer = uifactory.addButtonsFormLayout("buttonContainer", null, formLayout);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
@@ -128,6 +137,14 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		organisationsEl.setMultipleSelection(true);
 		organisationsEl.setSelection(selectedOrgKeys);
 	}
+	
+	private void initAuthorsCan(FormItemContainer formLayout) {
+		SelectionValues authorsCanSV = new SelectionValues();
+		authorsCanSV.add(SelectionValues.entry(KEY_COPY, translate("cif.canCopy")));
+		authorsCanSV.add(SelectionValues.entry(KEY_DOWNLOAD, translate("cif.canDownload")));
+
+		authorsCanEl = uifactory.addCheckboxesVertical("cif.author.can", formLayout, authorsCanSV.keys(), authorsCanSV.values(), 1);
+	}
 
 	public RepositoryEntry getCopiedEntry() {
 		return copyEntry;
@@ -138,11 +155,20 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		String displayname = displaynameEl.getValue();
 		String externalRef = externalRefEl.getValue();
 		fireEvent(ureq, Event.CLOSE_EVENT);
-		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef, saveAsTemplate, getSelectedOrgs());
+		boolean canCopy = false;
+		boolean canDownload = false;
+		if (authorsCanEl != null) {
+			canCopy = authorsCanEl.isKeySelected(KEY_COPY);
+			canDownload = authorsCanEl.isKeySelected(KEY_DOWNLOAD);
+		}
+		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef, saveAsTemplate, getSelectedOrgs(), canCopy, canDownload);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	private List<Organisation> getSelectedOrgs() {
+		if (organisationsEl == null) {
+			return null;
+		}
 		Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
 				.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
 		return organisationService.getOrganisation(selectedOrganisationRefs);

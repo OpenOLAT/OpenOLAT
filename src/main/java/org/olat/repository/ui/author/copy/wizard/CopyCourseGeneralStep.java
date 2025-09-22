@@ -28,6 +28,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -95,6 +96,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 
 		private static final String CUSTOM_MODE = "wizard.mode.custom";
 		private static final String AUTOMATIC_MODE = "wizard.mode.automatic";
+		private static final String KEY_COPY = "copy";
+		private static final String KEY_DOWNLOAD = "download";
 		
 		private final Map<String, String> COPY_TYPE_TRANSLATION_KEYS_MAP = Map.of(
 			"copy", "options.copy",
@@ -112,6 +115,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 		private TextElement externalRefEl;
 		private TextElement displayNameEl;
 		private OrgSelectorElement organisationsEl;
+		private SelectionElement authorsCanEl;
 		
 		private RepositoryEntryLifecycleController lifecycleController;
 		private RepositoryEntryMetadataController metadataController;
@@ -159,7 +163,13 @@ public class CopyCourseGeneralStep extends BasicStep {
 		protected void formOK(UserRequest ureq) {
 			context.setDisplayName(displayNameEl.getValue());
 			context.setExternalRef(externalRefEl.getValue());
-			context.setSelectedOrgKeys(organisationsEl.getSelection());
+			if (organisationsEl != null) {
+				context.setSelectedOrgKeys(organisationsEl.getSelection());
+			}
+			if (authorsCanEl != null) {
+				context.setCanCopy(authorsCanEl.isKeySelected(KEY_COPY));
+				context.setCanDownload(authorsCanEl.isKeySelected(KEY_DOWNLOAD));
+			}
 			
 			if (lifecycleController.saveToContext(ureq, context) && metadataController.saveToContext(ureq, context)) {
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -192,7 +202,10 @@ public class CopyCourseGeneralStep extends BasicStep {
 			externalRefEl.setInlineValidationOn(true);
 			
 			// Administrative access
-			initFormOrgs(referenceAndTitleLayout, ureq.getUserSession());
+			if (context.isSaveAsTemplate()) {
+				initFormOrgs(referenceAndTitleLayout, ureq.getUserSession());
+				initAuthorsCan(referenceAndTitleLayout);
+			}
 			
 			// Spacer
 			uifactory.addSpacerElement("space_1", formLayout, false);
@@ -243,6 +256,14 @@ public class CopyCourseGeneralStep extends BasicStep {
 			organisationsEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations", formLayout, getWindowControl(), orgs);
 			organisationsEl.setMultipleSelection(true);
 			organisationsEl.setSelection(selectedOrgKeys);
+		}
+		
+		private void initAuthorsCan(FormItemContainer formLayout) {
+			SelectionValues authorsCanSV = new SelectionValues();
+			authorsCanSV.add(SelectionValues.entry(KEY_COPY, translate("cif.canCopy")));
+			authorsCanSV.add(SelectionValues.entry(KEY_DOWNLOAD, translate("cif.canDownload")));
+
+			authorsCanEl = uifactory.addCheckboxesVertical("cif.author.can", formLayout, authorsCanSV.keys(), authorsCanSV.values(), 1);
 		}
 		
 		@Override

@@ -68,7 +68,7 @@ public interface RepositoryService {
 
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef);
 	
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> sourceOrgs);
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> sourceOrgs, boolean canCopy, boolean canDownload);
 	
 	public boolean canCopy(RepositoryEntry entryToCopy, Identity identity);
 

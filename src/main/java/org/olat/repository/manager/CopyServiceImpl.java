@@ -165,6 +165,12 @@ public class CopyServiceImpl implements CopyService {
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, runtimeType, null);
 		
+		// Override defaults for template
+		if (context.isSaveAsTemplate()) {
+			target.setCanCopy(context.isCanCopy());
+			target.setCanDownload(context.isCanDownload());
+		}
+
 		// Copy metadata
 		target.setTechnicalType(sourceEntry.getTechnicalType());
 		target.setCredits(sourceEntry.getCredits());

@@ -156,6 +156,8 @@ public class CopyCourseContext {
 	// Template
 	private boolean saveAsTemplate;
 	private Set<Long> selectedOrgKeys;
+	private boolean canCopy;
+	private boolean canDownload;
 
 	// Load config from module
 	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
@@ -799,6 +801,22 @@ public class CopyCourseContext {
 
 	public Set<Long> getSelectedOrgKeys() {
 		return selectedOrgKeys;
+	}
+
+	public void setCanCopy(boolean canCopy) {
+		this.canCopy = canCopy;
+	}
+
+	public boolean isCanCopy() {
+		return canCopy;
+	}
+
+	public void setCanDownload(boolean canDownload) {
+		this.canDownload = canDownload;
+	}
+
+	public boolean isCanDownload() {
+		return canDownload;
 	}
 	
 	
