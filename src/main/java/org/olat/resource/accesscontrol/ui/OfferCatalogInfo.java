@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.Offer;
 
@@ -96,8 +97,8 @@ public class OfferCatalogInfo {
 		boolean active = true;
 		boolean withPeriod = false;
 		
-		Date from = offer.getValidFrom();
-		Date to = offer.getValidTo();
+		Date from = DateUtils.getStartOfDay(offer.getValidFrom());
+		Date to = DateUtils.getEndOfDay(offer.getValidTo());
 		if (to != null && to.before(new Date())) {
 			status = OfferCatalogStatus.finished;
 			active = false;
@@ -106,12 +107,11 @@ public class OfferCatalogInfo {
 			status = OfferCatalogStatus.pending;
 			active = false;
 			withPeriod = true;
-		} else if (to != null && to.after(new Date())) {
+		} else if ((from != null && from.before(new Date())) || (to != null && to.after(new Date()))) {
 			if (statusEvaluator != null && !statusEvaluator.isVisibleStatusPeriod()) {
 				status = OfferCatalogStatus.notAvailable;
 			} else {
 				status = OfferCatalogStatus.bookable;
-				
 			}
 			withPeriod = true;
 		} else {
