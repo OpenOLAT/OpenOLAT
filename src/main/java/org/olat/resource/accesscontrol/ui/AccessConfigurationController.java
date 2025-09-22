@@ -1094,9 +1094,14 @@ public class AccessConfigurationController extends FormBasicController {
 			} else if (OfferCatalogInfo.OfferCatalogStatus.notAvailable == offerCatalogInfo.getStatus()) {
 				dates = catalogInfo.getStatusPeriodOption();
 			} else if (OfferCatalogInfo.OfferCatalogStatus.bookable == offerCatalogInfo.getStatus()) {
-				if (to != null && to.after(new Date())) {
+				if (to != null && DateUtils.isSameDay(to, new Date())) {
+					dates = formatPeriod(from, to)
+						+ " | <strong>" + translate("access.period.ends.today") + "</strong>";
+				} else if (to != null && to.after(new Date())) {
 					dates = formatPeriod(from, to)
 						+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
+				} else if (from != null && from.before(new Date())) {
+					// Nothing to display
 				} else {
 					dates = catalogInfo.getStatusPeriodOption();
 				}
@@ -1107,9 +1112,9 @@ public class AccessConfigurationController extends FormBasicController {
 			if (from != null && to != null) {
 				return translate("access.period.range", formatter.formatDate(from), formatter.formatDate(to));
 			} else if (from != null) {
-				return translate("access.period.range.from", formatter.formatDate(from));
+				return translate("access.period.range.period.from", formatter.formatDate(from));
 			} else if (to != null) {
-				return translate("access.period.range.to", formatter.formatDate(to));
+				return translate("access.period.range.period.to", formatter.formatDate(to));
 			}
 			return "";
 		}
