@@ -598,7 +598,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				for(RepositoryEntry entry:entries) {
 					if(repositoryService.canCopy(entry, doer)) {
 						String externalRef = settings.evaluateIdentifier(entry.getExternalRef());
-						RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname(), externalRef, false);
+						RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname(), externalRef);
 						repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy, true);// First relation of new course
 						fireRepositoryEntryAddedEvent(clone, entryCopy);
 						
@@ -709,7 +709,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		
-		RepositoryEntry entry = repositoryService.copy(template, doer, displayName, externalRef, false);
+		RepositoryEntry entry = repositoryService.copy(template, doer, displayName, externalRef);
 		
 		// Lifecycle
 		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();

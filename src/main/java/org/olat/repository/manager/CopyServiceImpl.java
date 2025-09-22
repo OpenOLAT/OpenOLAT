@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.OrganisationDAO;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -36,6 +39,7 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -141,7 +145,8 @@ public class CopyServiceImpl implements CopyService {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	
+	@Autowired
+	private OrganisationDAO organisationDao;
 	
 	@Override
 	public RepositoryEntry copyLearningPathCourse(CopyCourseContext context) {
@@ -180,12 +185,13 @@ public class CopyServiceImpl implements CopyService {
 		}
 		
 		// Add to organisations
-		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(Collections.singletonList(sourceEntry));
-		if (sourceOrganisations != null) {
-			for(Organisation sourceOrganisation:sourceOrganisations) {
-				RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, target, false);
+		List<Organisation> selectedOrgs = getSelectedOrgs(context);
+		List<Organisation> targetOrgs = selectedOrgs != null ? selectedOrgs : reToGroupDao.getOrganisations(Collections.singletonList(sourceEntry));
+		if (targetOrgs != null) {
+			for (Organisation targetOrg : targetOrgs) {
+				RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(targetOrg, target, false);
 				target.getOrganisations().add(orgRelation);
-				RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), target, false);
+				RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(targetOrg.getGroup(), target, false);
 				target.getGroups().add(grpRelation);
 			}
 		}
@@ -284,6 +290,15 @@ public class CopyServiceImpl implements CopyService {
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, target.getKey());
 		
 		return target;
+	}
+	
+	private List<Organisation> getSelectedOrgs(CopyCourseContext context) {
+		if (context.getSelectedOrgKeys() == null) {
+			return null;
+		}
+		Collection<OrganisationRef> selectedOrganisationRefs = context.getSelectedOrgKeys().stream()
+				.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
+		return organisationDao.loadByKeys(selectedOrganisationRefs);
 	}
 	
 	protected void copyGroups(CopyCourseContext context, RepositoryEntry target) {

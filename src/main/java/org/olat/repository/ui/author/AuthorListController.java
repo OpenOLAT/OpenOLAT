@@ -1794,7 +1794,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(displayname.length() > 99) {
 				displayname = displayname.substring(0, 99);
 			}
-			repositoryService.copy(sourceEntry, getIdentity(), displayname, null, false);
+			repositoryService.copy(sourceEntry, getIdentity(), displayname, null);
 		}
 		
 		showInfo("details.copy.success", new String[]{ Integer.toString(rows.size()) });

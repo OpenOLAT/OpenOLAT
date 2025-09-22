@@ -19,8 +19,12 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,13 +43,17 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.settings.RepositoryEntryLifecycleController;
 import org.olat.repository.ui.settings.RepositoryEntryMetadataController;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -103,6 +111,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 		
 		private TextElement externalRefEl;
 		private TextElement displayNameEl;
+		private OrgSelectorElement organisationsEl;
 		
 		private RepositoryEntryLifecycleController lifecycleController;
 		private RepositoryEntryMetadataController metadataController;
@@ -113,6 +122,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 		private RepositoryService repositoryService;
 		@Autowired
 		private CopyCourseWizardModule wizardModule;
+		@Autowired
+		private OrganisationService organisationService;
 		
 		public GeneralStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -148,6 +159,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 		protected void formOK(UserRequest ureq) {
 			context.setDisplayName(displayNameEl.getValue());
 			context.setExternalRef(externalRefEl.getValue());
+			context.setSelectedOrgKeys(organisationsEl.getSelection());
 			
 			if (lifecycleController.saveToContext(ureq, context) && metadataController.saveToContext(ureq, context)) {
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -179,6 +191,9 @@ public class CopyCourseGeneralStep extends BasicStep {
 			externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 			externalRefEl.setInlineValidationOn(true);
 			
+			// Administrative access
+			initFormOrgs(referenceAndTitleLayout, ureq.getUserSession());
+			
 			// Spacer
 			uifactory.addSpacerElement("space_1", formLayout, false);
 			
@@ -208,6 +223,26 @@ public class CopyCourseGeneralStep extends BasicStep {
 			copyModeEl.select(steps.isAdvancedMode() ? custom.getKey() : automatic.getKey(), true);
 			copyModeEl.addActionListener(FormEvent.ONCHANGE);
 			copyModeEl.setHelpText(getCopyTypeHelpText());
+		}
+		
+		private void initFormOrgs(FormItemContainer formLayout, UserSession userSession) {
+			Roles roles = userSession.getRoles();
+
+			List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+			List<Organisation> allOrgs = new ArrayList<>(orgs);
+			List<Organisation> selectedOrgs = repositoryService.getOrganisations(context.getSourceRepositoryEntry());
+			List<Long> selectedOrgKeys = selectedOrgs.stream().map(Organisation::getKey).toList();
+
+			for (Organisation selectedOrg : selectedOrgs) {
+				if (selectedOrg != null && !allOrgs.contains(selectedOrg)) {
+					allOrgs.add(selectedOrg);
+				}
+			}
+
+			organisationsEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations", formLayout, getWindowControl(), orgs);
+			organisationsEl.setMultipleSelection(true);
+			organisationsEl.setSelection(selectedOrgKeys);
 		}
 		
 		@Override

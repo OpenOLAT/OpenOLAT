@@ -20,6 +20,13 @@
  */
 package org.olat.repository.ui.author.copy;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,13 +36,18 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,6 +60,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	private TextElement displaynameEl;
 	private TextElement externalRefEl;
+	private OrgSelectorElement organisationsEl;
 	
 	private RepositoryEntry copyEntry;
 	private final RepositoryEntry sourceEntry;
@@ -55,6 +68,9 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	@Autowired
 	private RepositoryService repositoryService;
+	
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public CopyRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryEntry sourceEntry, boolean saveAsTemplate) {
 		super(ureq, wControl);
@@ -85,12 +101,34 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		externalRefEl.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 		externalRefEl.setInlineValidationOn(true);
 		
+		initFormOrgs(formLayout, ureq.getUserSession());
+		
 		FormLayoutContainer buttonContainer = uifactory.addButtonsFormLayout("buttonContainer", null, formLayout);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
 		uifactory.addFormSubmitButton(saveAsTemplate ? "save" : "details.copy", buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
+	private void initFormOrgs(FormItemContainer formLayout, UserSession userSession) {
+		Roles roles = userSession.getRoles();
+		
+		List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		List<Organisation> allOrgs = new ArrayList<>(orgs);
+		List<Organisation> selectedOrgs = repositoryService.getOrganisations(sourceEntry);
+		List<Long> selectedOrgKeys = selectedOrgs.stream().map(Organisation::getKey).toList();
+
+		for (Organisation selectedOrg : selectedOrgs) {
+			if (selectedOrg != null && !allOrgs.contains(selectedOrg)) {
+				allOrgs.add(selectedOrg);
+			}
+		}
+
+		organisationsEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations", formLayout, getWindowControl(), orgs);
+		organisationsEl.setMultipleSelection(true);
+		organisationsEl.setSelection(selectedOrgKeys);
+	}
+
 	public RepositoryEntry getCopiedEntry() {
 		return copyEntry;
 	}
@@ -100,10 +138,16 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		String displayname = displaynameEl.getValue();
 		String externalRef = externalRefEl.getValue();
 		fireEvent(ureq, Event.CLOSE_EVENT);
-		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef, saveAsTemplate);
+		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname, externalRef, saveAsTemplate, getSelectedOrgs());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
+	private List<Organisation> getSelectedOrgs() {
+		Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
+				.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
+		return organisationService.getOrganisation(selectedOrganisationRefs);
+	}
+
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);

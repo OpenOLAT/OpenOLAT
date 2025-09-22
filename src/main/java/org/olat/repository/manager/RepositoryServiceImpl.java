@@ -332,7 +332,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate) {
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef) {
+		return copy(sourceEntry, author, displayname, externalRef, false, null);
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef, boolean copyAsTemplate, List<Organisation> selectedOrgs) {
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
@@ -356,11 +361,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			copyEntry.getTaxonomyLevels().add(relation);
 		}
 
-		List<Organisation> sourceOrganisations = getOrganisations(sourceEntry);
-		for(Organisation sourceOrganisation:sourceOrganisations) {
-			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, copyEntry, false);
+		List<Organisation> targetOrgs = selectedOrgs != null ? selectedOrgs : getOrganisations(sourceEntry);
+		for (Organisation targetOrg : targetOrgs) {
+			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(targetOrg, copyEntry, false);
 			copyEntry.getOrganisations().add(orgRelation);
-			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), copyEntry, false);
+			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(targetOrg.getGroup(), copyEntry, false);
 			copyEntry.getGroups().add(grpRelation);
 		}
 
