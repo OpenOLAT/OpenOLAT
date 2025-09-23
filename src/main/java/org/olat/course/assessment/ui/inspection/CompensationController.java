@@ -142,7 +142,9 @@ public class CompensationController extends StepFormBasicController {
 			CompensationRow row = new CompensationRow(identity, extraTime, userPropertyHandlers, getLocale());
 			rows.add(row);
 
-			final int duration = context.getInspectionConfiguration().getDuration();
+			final int duration = context.getNewConfiguration() != null
+					? context.getNewConfiguration().duration()
+					: context.getInspectionConfiguration().getDuration();
 			int val = (extraTime + duration) / 60;
 			TextElement durationEl = uifactory.addTextElement("duration_" + (++counter), null, 10, Integer.toString(val), flc);
 			row.setDurationEl(durationEl);
@@ -150,7 +152,7 @@ public class CompensationController extends StepFormBasicController {
 			if(context.getEditedInspection() != null
 					&& context.getEditedInspection().getExtraTime() != null
 					&& context.getEditedInspection().getIdentity().equals(identity)) {
-				int totalDuration = (context.getEditedInspection().getExtraTime().intValue() + context.getInspectionConfiguration().getDuration()) / 60;
+				int totalDuration = (context.getEditedInspection().getExtraTime().intValue() + duration) / 60;
 				durationEl.setValue(Integer.toString(totalDuration));
 			}
 		}
@@ -163,7 +165,9 @@ public class CompensationController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		List<CompensationRow> rows = tableModel.getObjects();
 		List<InspectionCompensation> compensations = new ArrayList<>();
-		int defaultDuration = context.getInspectionConfiguration().getDuration();
+		int defaultDuration = context.getNewConfiguration() != null
+				? context.getNewConfiguration().duration()
+				: context.getInspectionConfiguration().getDuration();
 		
 		for(CompensationRow row:rows) {
 			Long identityKey = row.getIdentityKey();
