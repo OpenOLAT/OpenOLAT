@@ -615,6 +615,7 @@ public class RepositoryManager {
 		boolean isEntryAdmin = false;
 		boolean isAdministrativeUser = false;
 		boolean isPrincipal = false;
+		boolean isCurriculumManager = false;
 		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
 		boolean isMasterCoach = false;
@@ -681,6 +682,9 @@ public class RepositoryManager {
 						case principal:
 							isPrincipal = true;
 							break;
+						case curriculummanager:
+							isCurriculumManager = true;
+							break;
 						default: break;
 					}
 				} else if(CurriculumRoles.isValueOf(role)) {
@@ -700,6 +704,8 @@ public class RepositoryManager {
 				canLaunch = true;
 				isEntryAdmin = true;
 			} else if(isPrincipal) {
+				canLaunch = true;
+			} else if (isCurriculumManager) {
 				canLaunch = true;
 			} else {
 				if (isAuthor) {
@@ -739,7 +745,8 @@ public class RepositoryManager {
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach, isGroupWaiting,
 				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,
-				isAuthor, isAdministrator, isLearnRessourceManager, isPrincipal, canLaunch, readOnly);
+				isAuthor, isAdministrator, isLearnRessourceManager, isPrincipal, isCurriculumManager,
+				canLaunch, readOnly);
 	}
 	
 	public RepositoryEntry setOptions(final RepositoryEntry re,

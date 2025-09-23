@@ -83,6 +83,8 @@ public interface RepositoryEntrySecurity {
 	 * @return true if the user has the role principal
 	 */
 	boolean isPrincipal();
+	
+	boolean isCurriculumManager();
 
 	/**
 	 * @return true if the user has the role principal but

@@ -143,6 +143,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correction { @include o-add-icon('highlighter');}
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
 .o_icon_customize { @include o-add-icon('gear');}
+.o_icon_curriculum_manager { @include o-add-icon('eye');}
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}
 .o_icon_decline { @include o-add-icon('thumbs-down', false);}
