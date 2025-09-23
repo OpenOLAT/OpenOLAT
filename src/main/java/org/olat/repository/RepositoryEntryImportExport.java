@@ -345,6 +345,9 @@ public class RepositoryEntryImportExport {
 		String educationalTypeIdentifier = repositoryProperties.getEducationalTypeIdentifier();
 		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
 		
+		if (StringHelper.containsNonWhitespace(repositoryProperties.getRuntimeType())) {
+			repositoryManager.setRuntimeType(newEntry, RepositoryEntryRuntimeType.secureValueOf(repositoryProperties.getRuntimeType(), RepositoryEntryRuntimeType.standalone));
+		}
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(), repositoryProperties.getTeaser(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
@@ -540,6 +543,7 @@ public class RepositoryEntryImportExport {
 		private String description;
 		private String teaser;
 		private String initialAuthor;
+		private String runtimeType;
 		
 		private String externalId;
 		private String externalRef;
@@ -575,6 +579,7 @@ public class RepositoryEntryImportExport {
 			description = re.getDescription();
 			teaser = re.getTeaser();
 			initialAuthor = re.getInitialAuthor();
+			runtimeType = re.getRuntimeType().name();
 			
 			resourceType = re.getOlatResource().getResourceableTypeName();
 			
@@ -683,6 +688,14 @@ public class RepositoryEntryImportExport {
 		
 		public void setInitialAuthor(String initialAuthor) {
 			this.initialAuthor = initialAuthor;
+		}
+
+		public String getRuntimeType() {
+			return runtimeType;
+		}
+
+		public void setRuntimeType(String runtimeType) {
+			this.runtimeType = runtimeType;
 		}
 
 		public String getAuthors() {
