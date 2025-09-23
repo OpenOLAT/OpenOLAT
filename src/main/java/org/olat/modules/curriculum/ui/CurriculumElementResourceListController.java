@@ -356,7 +356,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
 		if (roles.isCurriculumManager()) {
-			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template, RepositoryEntryRuntimeType.curricular));
+			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.curricular));
 		} else {
 			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
 		}
