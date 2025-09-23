@@ -39,6 +39,7 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 		learningResourceManager("role.learning.resource.manager", "o_icon_lrm"),
 		coach("role.coach", "o_icon_coach"),
 		principal("role.principal", "o_icon_principal"),
+		curriculumManager("role.curriculum.manager", "o_icon_curriculum_manager"),
 		masterCoach("role.master.coach", "o_icon_master_coach"),
 		participant("role.participant", "o_icon_user"),
 		fakeParticipant("role.fake.participant", "o_icon_fake_participant");
@@ -83,6 +84,8 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 		
 		if (wrappedSecurity.isPrincipal()) {
 			return Role.principal;
+		} else if (wrappedSecurity.isCurriculumManager()) {
+			return Role.curriculumManager;
 		} else if (wrappedSecurity.isLearnResourceManager()) {
 			return Role.learningResourceManager;
 		} else if (wrappedSecurity.isMasterCoach()) {
@@ -251,6 +254,11 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	@Override
 	public boolean isPrincipal() {
 		return Role.principal == currentRole;
+	}
+
+	@Override
+	public boolean isCurriculumManager() {
+		return Role.curriculumManager == currentRole;
 	}
 
 	@Override
