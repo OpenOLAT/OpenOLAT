@@ -75,7 +75,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private final RepositoryEntry entry;
 	private VFSContainer mediaContainer;
 	private final String baseUrl;
-	private boolean isMember;
+	private Identity bookedIdentity;
 	private Boolean descriptionOpen = Boolean.TRUE;
 	private Boolean objectivesOpen = Boolean.TRUE;
 	private Boolean requirementsOpen = Boolean.TRUE;
@@ -101,11 +101,10 @@ public class CurriculumElementInfosController extends BasicController {
 		mainVC = createVelocityContainer("curriculum_element_infos");
 		putInitialPanel(mainVC);
 		
-		bookedIdentity = bookedIdentity != null ? bookedIdentity : getIdentity();
-		if (bookedIdentity != null) {
-			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity)).isEmpty();
-		} else {
-			isMember = false;
+		this.bookedIdentity = bookedIdentity != null ? bookedIdentity : getIdentity();
+		boolean isMember = false;
+		if (this.bookedIdentity != null) {
+			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(this.bookedIdentity)).isEmpty();
 		}
 		
 		List<LectureBlock> lectureBlocks = List.of();
@@ -118,7 +117,7 @@ public class CurriculumElementInfosController extends BasicController {
 		
 		
 		// Header
-		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, entry, bookedIdentity, isMember, preview);
+		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, entry, this.bookedIdentity, isMember, preview);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
@@ -257,7 +256,8 @@ public class CurriculumElementInfosController extends BasicController {
 	}
 	
 	protected void doStart(UserRequest ureq) {
-		if (!isMember) {
+		// Reload membership, mayne auto-booked
+		if (bookedIdentity == null && !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity)).isEmpty()) {
 			return;
 		}
 		if(entry != null) {

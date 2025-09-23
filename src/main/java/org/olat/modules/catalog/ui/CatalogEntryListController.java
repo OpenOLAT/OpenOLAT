@@ -671,7 +671,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (StringHelper.containsNonWhitespace(
 				row.getAccessError()) ||
 				row.isReservationAvailable() ||
-				(row.isMember() && row.isUnpublishedImplementation())) {
+				(row.isMember() && row.isUnpublishedImplementation()) ||
+				(row.isAutoBooking() && row.isUnpublishedSingleCourseImplementation())
+				) {
 			link.setEnabled(false);
 		}
 	}
