@@ -247,6 +247,18 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		Assert.assertFalse(isPartOwner);
 	}
 	
-	
+	@Test
+	public void saveAsTemplate() {
+		String displayName = "original course (template)";
+		String extRef = "TMPL";
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("auth");
+		RepositoryEntry source = JunitTestHelper.deployBasicCourse(author);
 
+		RepositoryEntry template = repositoryService.copy(source, author, displayName, extRef, true, null, false, true);
+		
+		Assert.assertNotNull(template);
+		Assert.assertEquals(RepositoryEntryRuntimeType.template, template.getRuntimeType());
+		Assert.assertFalse(template.getCanCopy());
+		Assert.assertTrue(template.getCanDownload());
+	}
 }

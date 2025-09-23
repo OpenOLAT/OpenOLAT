@@ -53,6 +53,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -522,5 +523,19 @@ public class CopyServiceImplTest extends OlatTestCase {
 		mode2.setEnd(new Date());
 		
 		assessmentModeManager.persist(mode2);
+	}
+
+	@Test
+	public void saveAsTemplate() {
+		CopyCourseContext context = createContext();
+		context.setSaveAsTemplate(true);
+		context.setCanCopy(true);
+		context.setCanDownload(false);
+		
+		target = copyService.copyLearningPathCourse(context);
+		
+		Assert.assertTrue(target.getCanCopy());
+		Assert.assertFalse(target.getCanDownload());
+		Assert.assertEquals(RepositoryEntryRuntimeType.template, target.getRuntimeType());
 	}
 }
