@@ -1457,7 +1457,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		ResourceReservation reservation = reservationDao.loadReservation(member, resource);
 		if(reservation == null) {
 			Date expiration = expirationDate == null
-					? DateUtils.addMonth(DateUtils.getStartOfDay(new Date()), 6)
+					? getDefaultReservationExpiration()
 					: expirationDate;
 			expiration = DateUtils.getEndOfDay(expiration);
 			Group group = element.getGroup();
@@ -1466,6 +1466,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					GroupMembershipStatus.reservation, false, null, null, actor, note);
 			dbInstance.commit();
 		}
+	}
+
+	@Override
+	public Date getDefaultReservationExpiration() {
+		return DateUtils.addMonth(DateUtils.getEndOfDay(new Date()), 6);
 	}
 	
 	@Override
