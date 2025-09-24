@@ -1,0 +1,10 @@
+#if($r.available("billing.address") && $r.visible("billing.address"))
+	<div class="o_block_small_bottom">
+		$r.render("billing.address")
+	</div>
+#else
+	<div class="form-control-static">
+		$r.translate("billing.address.not.selected")
+	</div>
+#end
+$r.render("select.billing.address")

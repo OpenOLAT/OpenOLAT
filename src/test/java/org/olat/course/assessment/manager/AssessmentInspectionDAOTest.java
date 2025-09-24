@@ -402,6 +402,33 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		Date now = new Date();
 		String subIdent = "123456F";
 		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-36");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-37");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AssessmentInspectionConfiguration config = inspectionConfigurationDao.createInspectionConfiguration(entry);
+		config = inspectionConfigurationDao.saveConfiguration(config);
+		AssessmentInspection inspection1 = inspectionDao
+				.createInspection(id1, DateUtils.addHours(now, -3), DateUtils.addHours(now, -1), null, null, subIdent, config);
+		AssessmentInspection inspection2 = inspectionDao
+				.createInspection(id2, DateUtils.addHours(now, -1), DateUtils.addHours(now, 1), null, null, subIdent, config);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(inspection1);
+		Assert.assertNotNull(inspection2);
+		
+		inspectionDao.deleteInspection(inspection1);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentInspection reloadedInspection1 = inspectionDao.loadByKey(inspection1.getKey());
+		Assert.assertNull(reloadedInspection1);
+		AssessmentInspection reloeadedInspection2 = inspectionDao.loadByKey(inspection2.getKey());
+		Assert.assertNotNull(reloeadedInspection2);
+	}
+	
+	@Test
+	public void deleteInspectionsByConfig() {
+		Date now = new Date();
+		String subIdent = "123456F";
+		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-8");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-9");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -420,7 +447,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		
 		AssessmentInspection deletedInspection1 = inspectionDao.loadByKey(inspection1.getKey());
 		Assert.assertNull(deletedInspection1);
-		AssessmentInspection deletedInspection2 = inspectionDao.loadByKey(inspection1.getKey());
+		AssessmentInspection deletedInspection2 = inspectionDao.loadByKey(inspection2.getKey());
 		Assert.assertNull(deletedInspection2);
 	}
 	

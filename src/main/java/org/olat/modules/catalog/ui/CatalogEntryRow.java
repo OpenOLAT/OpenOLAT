@@ -422,6 +422,15 @@ public class CatalogEntryRow {
 		
 		return false;
 	}
+	
+	public boolean isUnpublishedSingleCourseImplementation() {
+		if (isSingleCourseImplementation()) {
+			return singleCourseEntryStatus == null 
+					|| !RepositoryEntryStatusEnum.isInArray(singleCourseEntryStatus, RepositoryEntryStatusEnum.publishedAndClosed());
+		}
+		
+		return false;
+	}
 
 	public Double getAverageRating() {
 		return averageRating;

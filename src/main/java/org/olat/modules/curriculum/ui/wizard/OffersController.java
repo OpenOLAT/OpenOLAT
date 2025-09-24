@@ -85,6 +85,7 @@ public class OffersController extends StepFormBasicController {
 	private TextElement commentEl;
 	private SingleSelection bookingsEl;
 	private FormLayoutContainer billingAddressInfoCont;
+	private FormLayoutContainer billingAddressCont;
 	private BillingAddressItem billingAddressEl;
 	private FormLink billingAdresseSelectLink;
 	private StaticTextElement priceEl;
@@ -232,14 +233,19 @@ public class OffersController extends StepFormBasicController {
 		billingAddressInfoCont.setRootForm(mainForm);
 		formLayout.add(billingAddressInfoCont);
 		
+		billingAddressCont = FormLayoutContainer.createCustomFormLayout("billingAddress", getTranslator(), velocity_root + "/billing_address.html");
+		billingAddressCont.setLabel("booking.billing.address", null);
+		billingAddressCont.setRootForm(mainForm);
+		formLayout.add(billingAddressCont);
+		
 		billingAddressEl = new BillingAddressItem("billing,address", getLocale());
 		billingAddressEl.setLabel("booking.billing.address", null);
-		formLayout.add(billingAddressEl);
+		billingAddressCont.add(billingAddressEl);
 		if (allIdentitiesInSameOrganisations && uniqueUserBillingAddress != null) {
 			billingAddressEl.setBillingAddress(uniqueUserBillingAddress);
 		}
 		
-		billingAdresseSelectLink = uifactory.addFormLink("select.billing.address", formLayout, Link.BUTTON);
+		billingAdresseSelectLink = uifactory.addFormLink("select.billing.address", billingAddressCont, Link.BUTTON);
 		billingAdresseSelectLink.setElementCssClass("o_sel_billing_address_select");
 		
 		priceEl = uifactory.addStaticTextElement("booking.offer.price", "booking.offer.price", "", formLayout);
@@ -323,6 +329,7 @@ public class OffersController extends StepFormBasicController {
 			needBillingAddress = method.isNeedBillingAddress();
 			billingAddressInfoCont.setVisible(needBillingAddress && !allIdentitiesInSameOrganisations);
 			billingAddressEl.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
+			billingAddressEl.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
 			billingAdresseSelectLink.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
 			purchaseOrderNumberEl.setVisible(needBillingAddress);
 		} else {
@@ -331,6 +338,7 @@ public class OffersController extends StepFormBasicController {
 			priceEl.setVisible(false);
 			cancellationFeeEl.setVisible(false);
 			billingAddressInfoCont.setVisible(false);
+			billingAddressEl.setVisible(false);
 			billingAddressEl.setVisible(false);
 			billingAdresseSelectLink.setVisible(false);
 			purchaseOrderNumberEl.setVisible(false);

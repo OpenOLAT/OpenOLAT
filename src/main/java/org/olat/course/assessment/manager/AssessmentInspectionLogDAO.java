@@ -28,10 +28,10 @@ import jakarta.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.AssessmentInspectionLog;
-import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
+import org.olat.course.assessment.AssessmentInspectionLog;
+import org.olat.course.assessment.AssessmentInspectionLog.Action;
 import org.olat.course.assessment.model.AssessmentInspectionLogImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,6 +85,14 @@ public class AssessmentInspectionLogDAO {
 			logQuery.setParameter("to", to, TemporalType.TIMESTAMP);
 		}
 		return logQuery.getResultList();
+	}
+
+	public void deleteInspectionLog(AssessmentInspection inspection) {
+		String query = "delete from courseassessmentinspectionlog as log where log.inspection.key = :inspectionKey";
+		
+		dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("inspectionKey", inspection.getKey())
+				.executeUpdate();
 	}
 	
 	public int deleteInspectionLog(AssessmentInspectionConfiguration configuration) {

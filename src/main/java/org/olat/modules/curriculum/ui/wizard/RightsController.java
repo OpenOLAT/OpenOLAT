@@ -62,6 +62,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
@@ -72,6 +73,7 @@ import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.NoteCalloutController;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.modules.curriculum.ui.wizard.RightsCurriculumElementsTableModel.RightsElementsCols;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -107,6 +109,9 @@ public class RightsController extends StepFormBasicController {
 	private NoteCalloutController noteCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private AddMembershipCalloutController addMembershipCtrl;
+	
+	@Autowired
+	private CurriculumService curriculumService;
 
 	public RightsController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			MembersContext membersContext) {
@@ -139,10 +144,10 @@ public class RightsController extends StepFormBasicController {
 	private void initSettingsForm(FormItemContainer formLayout) {
 		SelectionValues confirmationPK = new SelectionValues();
 		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITHOUT.name(), translate("confirmation.membership.without"),
-				translate("confirmation.membership.without.desc"), "o_icon o_icon_check", null, true));
+				translate("confirmation.membership.without.desc"), "o_icon o_ac_membership_standard_icon", null, true));
 		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITH.name(), translate("confirmation.membership.with"),
-				translate("confirmation.membership.with.desc"), "o_icon o_icon_timelimit_end", null, true));
-		confirmationTypeEl = uifactory.addCardSingleSelectHorizontal("confirmation.membership", formLayout,
+				translate("confirmation.membership.with.desc"), "o_icon o_ac_membership_confirmation_icon", null, true));
+		confirmationTypeEl = uifactory.addCardSingleSelectHorizontal("membership", formLayout,
 				confirmationPK.keys(), confirmationPK.values(), confirmationPK.descriptions(), confirmationPK.icons());
 		confirmationTypeEl.addActionListener(FormEvent.ONCLICK);
 		confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
@@ -158,7 +163,8 @@ public class RightsController extends StepFormBasicController {
 		confirmationByEl.setVisible(confirmationPossible);
 		
 		// confirmation until
-		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", null, formLayout);
+		Date confirmUntil = curriculumService.getDefaultReservationExpiration();
+		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", confirmUntil, formLayout);
 		confirmUntilEl.setVisible(roleToModify == CurriculumRoles.participant);
 		
 		SpacerElement spacerEl = uifactory.addSpacerElement("confirm_spacer", formLayout, false);

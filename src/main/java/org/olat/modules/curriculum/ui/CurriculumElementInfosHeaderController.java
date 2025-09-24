@@ -204,8 +204,10 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			}
 			
 			if (!preview && acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-				startCtrl.getInitialComponent().setVisible(true);
-				startCtrl.setAutoBooking(true);
+				if (!element.isSingleCourseImplementation() || (entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed()))) {
+					startCtrl.getInitialComponent().setVisible(true);
+					startCtrl.setAutoBooking(true);
+				}
 				if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
 					startCtrl.setWarning(getAvailabilityText(availabilityNum));
 				}
@@ -318,7 +320,9 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == startCtrl) {
-			if (event == LEAVE_EVENT) {
+			if (event == START_EVENT) {
+				fireEvent(ureq, event);
+			} else if (event == LEAVE_EVENT) {
 				doConfirmLeave(ureq);
 			}
 		} else if (leaveConfirmationCtrl == source) {
