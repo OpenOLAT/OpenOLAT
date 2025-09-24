@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -37,6 +38,7 @@ import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
+import org.olat.modules.ceditor.ui.event.EditPageElementEvent;
 
 /**
  * 
@@ -84,6 +86,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 1, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
+		titleItem.setPlaceholderKey("title.placeholder", null);
 	}
 
 	@Override
@@ -109,16 +112,27 @@ public class TitleEditorController extends FormBasicController implements PageEl
 			syncContent(ureq, dropToEditorEvent.getContent());
 		} else if (event instanceof DropToPageElementEvent dropToPageElementEvent) {
 			syncContent(ureq, dropToPageElementEvent.getContent());
+		} else if (event instanceof EditPageElementEvent) {
+			if (StringHelper.containsNonWhitespace(title.getContent())) {
+				String content = FilterFactory.getHtmlTagsFilter().filter(title.getContent());
+				TitleSettings titleSettings = title.getTitleSettings();
+				content = TitleElement.toHtmlForEditor(content, titleSettings);
+				titleItem.setValue(content);
+			} else {
+				titleItem.setValue("");
+			}
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void syncContent(UserRequest ureq, String content) {
+		content = FilterFactory.getHtmlTagsFilter().filter(content);
+		TitleSettings titleSettings = title.getTitleSettings();
+		content = TitleElement.toHtmlForEditor(content, titleSettings);
+
 		if (!titleItem.getValue().equals(content)) {
 			titleItem.setValue(content);
-			title.setContent(content);
-			title = store.savePageElement(title);
-			fireEvent(ureq, new ChangePartEvent(title));
+			doSave(ureq);
 		}
 	}
 

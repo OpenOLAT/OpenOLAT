@@ -67,6 +67,15 @@ public interface TitleElement extends PageElement {
 		}
 		return content;
 	}
+	
+	public static String toHtmlPlaceholder(String placeholderString, TitleSettings settings) {
+		if (settings != null && settings.getSize() > 0) {
+			int size = settings.getSize();
+			String text = FilterFactory.getHtmlTagsFilter().filter(placeholderString);
+			return "<h" + size + " class=\"o_title_placeholder\"><i class=\"o_icon o_icon-fw o_icon_header\"> </i> " + text + "</h" + size + ">";
+		}
+		return placeholderString;
+	}
 
 	public static String toHtmlForEditor(String content, TitleSettings settings) {
 		if(settings != null && settings.getSize() > 0) {

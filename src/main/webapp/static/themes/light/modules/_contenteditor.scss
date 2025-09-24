@@ -1988,6 +1988,10 @@ table.o_ce_table {
 	.o_title_page_element, .o_image_title {
 		hyphens: auto;
 		word-break: break-word;
+		
+		.o_title_placeholder {
+			color: #7b7b7b;
+		}
 	}
 
 	.o_ed_htmlparagraph {
@@ -2002,6 +2006,10 @@ table.o_ce_table {
 	.o_ce_html_raw, .o_ce_html_paragraph {
 		hyphens: auto;
 		word-break: break-word;
+		
+		.o_text_placeholder {
+			color: #7b7b7b;
+		}
 	}
 
 	.o_ce_layout_predefined,

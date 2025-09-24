@@ -26,6 +26,9 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
@@ -91,7 +94,17 @@ public class ParagraphPageElementHandler implements PageElementHandler, PageElem
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		TextComponent cmp = null;
 		if (element instanceof ParagraphPart paragraphPart) {
-			cmp = ComponentsFactory.getContent(paragraphPart, options.isEditable());
+			if (options.isEditable()) {
+				String raw = FilterFactory.getHtmlTagsFilter().filter(paragraphPart.getContent());
+				if (StringHelper.containsNonWhitespace(raw)) {
+					cmp = ComponentsFactory.getContent(paragraphPart, true);
+				} else {
+					String placeholder = Util.createPackageTranslator(TextRunComponent.class, ureq.getLocale()).translate("text.placeholder");
+					cmp = ComponentsFactory.getContent(paragraphPart, placeholder);
+				}
+			} else {
+				cmp = ComponentsFactory.getContent(paragraphPart, false);
+			}
 			cmp.setCssClass(ComponentsFactory.getCssClass(paragraphPart, false));
 		}
 		return new TextRunComponent(cmp, false);

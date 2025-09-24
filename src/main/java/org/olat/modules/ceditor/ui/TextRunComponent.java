@@ -23,6 +23,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.model.HTMLElement;
@@ -58,8 +61,13 @@ public class TextRunComponent extends PageRunComponent {
 			PageElement element = changePartEvent.getElement();
 			if (element instanceof TitleElement titleElement) {
 				TitleSettings titleSettings = titleElement.getTitleSettings();
-				newValue = TitleElement.toHtml(titleElement.getContent(), titleSettings);
 				newCssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, inForm);
+				if (StringHelper.containsNonWhitespace(titleElement.getContent())) {
+					newValue = TitleElement.toHtml(titleElement.getContent(), titleSettings);
+				} else {
+					String content = Util.createPackageTranslator(TitleEditorController.class, ureq.getLocale()).translate("title.placeholder");
+					newValue = TitleElement.toHtmlPlaceholder(content, titleSettings);
+				}
 			} else if (element instanceof HTMLElement htmlElement) {
 				newValue = htmlElement.getContent();
 				String elementCssClass = null;
@@ -76,7 +84,13 @@ public class TextRunComponent extends PageRunComponent {
 			}
 			if (getComponent() instanceof TextComponent textComponent) {
 				if (source instanceof PageElementEditorController && element instanceof ParagraphElement paragraphElement) {
-					newValue = ComponentsFactory.getContent(paragraphElement, true).getDisplayText();
+					String raw = FilterFactory.getHtmlTagsFilter().filter(paragraphElement.getContent());
+					if (StringHelper.containsNonWhitespace(raw)) {
+						newValue = ComponentsFactory.getContent(paragraphElement, true).getDisplayText();
+					} else {
+						String placeholder = Util.createPackageTranslator(TextRunComponent.class, ureq.getLocale()).translate("text.placeholder");
+						newValue = ComponentsFactory.getContent(paragraphElement, placeholder).getDisplayText();
+					}
 				}
 				if (newValue != null && !Objects.equal(newValue, textComponent.getDisplayText())) {
 					textComponent.setText(newValue);

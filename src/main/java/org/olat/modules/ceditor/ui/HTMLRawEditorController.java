@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -42,6 +41,7 @@ import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.DropToEditorEvent;
 import org.olat.modules.ceditor.ui.event.DropToPageElementEvent;
+import org.olat.modules.ceditor.ui.event.EditPageElementEvent;
 
 /**
  * 
@@ -85,7 +85,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String cmpId = "html-" + CodeHelper.getRAMUniqueID() + "h";
-		String content = contentOrExample(htmlPart.getContent());
+		String content = htmlPart.getContent();
 		
 		if(minimalEditor) {
 			htmlItem = uifactory.addRichTextElementForParagraphEditor(cmpId, null, content, 8, 80, formLayout, getWindowControl());
@@ -103,6 +103,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		if(toolLinkTreeModel != null) {
 			htmlItem.getEditorConfiguration().setToolLinkTreeModel(toolLinkTreeModel);
 		}
+		htmlItem.setPlaceholderKey("text.placeholder", null);
 
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);
 	}
@@ -132,6 +133,8 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 			syncContent(ureq, dropToEditorEvent.getContent());
 		} else if (event instanceof DropToPageElementEvent dropToPageElementEvent) {
 			syncContent(ureq, dropToPageElementEvent.getContent());
+		} else if (event instanceof EditPageElementEvent) {
+			htmlItem.setValue(htmlPart.getContent());
 		}
 		super.event(ureq, source, event);
 	}
@@ -172,14 +175,5 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 
 	private void setBlockLayoutClass(TextSettings textSettings) {
 		flc.contextPut("blockLayoutClass", BlockLayoutClassFactory.buildClass(textSettings, inForm));
-	}
-
-	private String contentOrExample(String content) {
-		String raw = FilterFactory.getHtmlTagsFilter().filter(content);
-		String staticContent = content;
-		if (!StringHelper.containsNonWhitespace(raw)) {
-			staticContent = getTranslator().translate("raw.example");
-		}
-		return staticContent;
 	}
 }

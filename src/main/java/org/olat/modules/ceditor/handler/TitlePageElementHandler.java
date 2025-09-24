@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
@@ -83,10 +84,21 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 		String htmlContent = "";
 		String cssClass = "";
 		if (element instanceof TitlePart titlePart) {
-			String content = titlePart.getContent();
 			TitleSettings titleSettings = titlePart.getTitleSettings();
-			htmlContent = TitleElement.toHtml(content, titleSettings);
 			cssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, false);
+
+			if (options.isEditable()) {
+				if (StringHelper.containsNonWhitespace(titlePart.getContent())) {
+					htmlContent = TitleElement.toHtml(titlePart.getContent(), titleSettings);
+				} else {
+					String placeholder = Util.createPackageTranslator(TitleEditorController.class, ureq.getLocale()).translate("title.placeholder");
+					htmlContent = TitleElement.toHtmlPlaceholder(placeholder, titleSettings);
+				}
+			} else {
+				if (StringHelper.containsNonWhitespace(titlePart.getContent())) {
+					htmlContent = TitleElement.toHtml(titlePart.getContent(), titleSettings);
+				}
+			}
 		}
 		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(),
 				htmlContent, cssClass, false, null);
@@ -112,7 +124,7 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		TitlePart title = new TitlePart();
-		title.setContent(Util.createPackageTranslator(TitleEditorController.class, locale).translate("title.example"));
+		title.setContent(Util.createPackageTranslator(TitleEditorController.class, locale).translate("title.placeholder"));
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
 		settings.setLayoutSettings(BlockLayoutSettings.getPredefined());
