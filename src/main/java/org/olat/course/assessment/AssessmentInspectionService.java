@@ -103,6 +103,8 @@ public interface AssessmentInspectionService {
 	
 	AssessmentInspection pauseInspection(Identity assessedIdentity, AssessmentInspection inspection, long duration);
 	
+	void deleteInspections(RepositoryEntry entry, String subIdent);
+	
 	void log(Action action, String before, String after, TransientAssessmentInspection inspection, Identity doer);
 	
 	List<AssessmentInspectionLog> getLogFor(AssessmentInspection inspection, Date from, Date to);

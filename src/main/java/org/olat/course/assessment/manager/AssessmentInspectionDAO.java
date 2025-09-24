@@ -80,8 +80,6 @@ public class AssessmentInspectionDAO {
 	public List<AssessmentInspection> searchInspection(RepositoryEntry entry, String subIdent) {
 		String query = """
 				select inspection from courseassessmentinspection as inspection
-				inner join fetch inspection.identity as ident
-				inner join fetch ident.user as identUser
 				inner join inspection.configuration as configuration
 				where configuration.repositoryEntry.key=:entryKey and inspection.subIdent=:subIdent
 				""";
@@ -307,6 +305,14 @@ public class AssessmentInspectionDAO {
 			sb.append("(inspection.fromDate>=:now or inspection.toDate<=:now)");
 		}
 		sb.append(" and inspection.inspectionStatus").in(AssessmentInspectionStatusEnum.scheduled).append(")");
+	}
+	
+	public int deleteInspection(AssessmentInspection inspection) {
+		String query = "delete from courseassessmentinspection as inspection where inspection.key = :inspectionKey";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("inspectionKey", inspection.getKey())
+				.executeUpdate();
 	}
 	
 	public int deleteInspections(AssessmentInspectionConfiguration configuration) {

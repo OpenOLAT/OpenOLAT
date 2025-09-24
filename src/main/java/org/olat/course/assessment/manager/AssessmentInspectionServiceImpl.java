@@ -442,6 +442,15 @@ public class AssessmentInspectionServiceImpl implements AssessmentInspectionServ
 	}
 	
 	@Override
+	public void deleteInspections(RepositoryEntry entry, String subIdent) {
+		List<AssessmentInspection> inspections = inspectionDao.searchInspection(entry, subIdent);
+		for (AssessmentInspection inspection : inspections) {
+			inspectionLogDao.deleteInspectionLog(inspection);
+			inspectionDao.deleteInspection(inspection);
+		}
+	}
+	
+	@Override
 	public void log(Action action, String before, String after, TransientAssessmentInspection inspection, Identity doer) {
 		AssessmentInspection assessmentInspection = inspectionDao.loadByKey(inspection.getInspectionKey());
 		inspectionLogDao.createLog(action, before, after, assessmentInspection, doer);

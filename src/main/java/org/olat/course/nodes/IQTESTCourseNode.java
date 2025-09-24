@@ -83,6 +83,7 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.AssessmentInspectionService;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -546,6 +547,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		// 2) Delete all assessment test sessions (QTI 2.1)
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(courseEntry, getIdent());
+		
+		// Delete assessment inspections
+		CoreSpringFactory.getImpl(AssessmentInspectionService.class).deleteInspections(courseEntry, getIdent());
 		
 		// Delete GradeScales
 		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(courseEntry, getIdent());
