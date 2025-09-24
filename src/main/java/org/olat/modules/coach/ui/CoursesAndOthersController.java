@@ -149,7 +149,8 @@ public class CoursesAndOthersController extends BasicController implements Activ
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(scope, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		coursesListCtrl = new CourseListController(ureq, bwControl, role, runtimesGroup);
+		CourseListConfig config = CourseListConfig.defaultConfig();
+		coursesListCtrl = new CourseListController(ureq, bwControl, role, runtimesGroup, config);
 		listenTo(coursesListCtrl);
 		mainVC.put("component", coursesListCtrl.getInitialComponent());
 		return coursesListCtrl;

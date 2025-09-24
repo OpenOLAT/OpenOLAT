@@ -29,7 +29,6 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -40,7 +39,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseStatEntryRow implements RepositoryEntryRef, RepositoryEntryShort {
+public class CourseStatEntryRow implements RepositoryEntryShort {
 	
 	private boolean marked;
 	private final CourseStatEntry entry;

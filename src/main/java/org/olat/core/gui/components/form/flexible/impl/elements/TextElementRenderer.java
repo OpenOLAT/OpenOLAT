@@ -169,8 +169,14 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			  .append("</span>");
 		}
 		
-		if(StringHelper.containsNonWhitespace(te.getTextAddOn())) {
-			sb.append(" <span class=''>").append(translator.translate(te.getTextAddOn())).append("</span>");
+		if(StringHelper.containsNonWhitespace(te.getTextAddOn()) ) {
+			sb.append(" <span class=''>");
+			if(te.isTranslateTextAddOn()) {
+				sb.append(translator.translate(te.getTextAddOn()));
+			} else {
+				sb.append(te.getTextAddOn());
+			}
+			sb.append("</span>");
 		}
 	}
 }

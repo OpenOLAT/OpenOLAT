@@ -66,6 +66,7 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
@@ -207,6 +208,11 @@ public class CoachingServiceImpl implements CoachingService {
 			return new ArrayList<>();
 		}
 		return coachingDao.getCoursesStatistics(coach, role, runtimeTypesGroup);
+	}
+
+	@Override
+	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement) {
+		return coachingDao.getCoursesStatistics(curriculumElement);
 	}
 
 	@Override

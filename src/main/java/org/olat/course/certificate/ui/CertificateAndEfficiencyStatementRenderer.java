@@ -22,7 +22,6 @@ package org.olat.course.certificate.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableDataModel;
@@ -38,7 +37,7 @@ import org.olat.core.util.StringHelper;
  * Initial date: 23.11.2021<br>
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCellRenderer implements ActionDelegateCellRenderer {
+public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCellRenderer {
 	
 	private final StaticFlexiCellRenderer delegateRenderer = new StaticFlexiCellRenderer("", "");
 	

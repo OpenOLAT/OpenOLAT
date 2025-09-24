@@ -34,6 +34,7 @@ import java.util.NavigableSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -1139,8 +1140,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	public static void decorateCourseConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options,
 			CourseEnvironment courseEnv, CourseNode courseNode, RepositoryEntry testEntry, Date timestamp, Locale locale)  {
 		MailBundle bundle = new MailBundle();
-		bundle.setToId(candidateSession.getIdentity());
-		Identity assessedIdentity = candidateSession.getIdentity();
+		Identity assessedIdentity =CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(candidateSession.getIdentity().getKey());
+		bundle.setToId(assessedIdentity);
 		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(assessedIdentity);
 		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
 

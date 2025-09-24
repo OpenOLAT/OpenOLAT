@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate.model;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -45,6 +47,21 @@ public class CertificateStandalone extends AbstractCertificate {
 
 	public void setArchivedResourceKey(Long archivedResourceKey) {
 		this.archivedResourceKey = archivedResourceKey;
+	}
+	
+	@Override
+	public Long getRecertificationCount() {
+		return null;
+	}
+	
+	@Override
+	public Date getRecertificationWindowDate() {
+		return null;
+	}
+	
+	@Override
+	public boolean isRecertificationPaused() {
+		return false;
 	}
 
 	@Override

@@ -136,6 +136,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeSystemListController;
@@ -204,6 +206,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private FolderModule folderModule;
+	@Autowired
+	private CertificatesDAO certificatesDao;
 	@Autowired
 	private CertificatesModule certificatesModule;
 	@Autowired
@@ -944,6 +948,27 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return null;
 	}
 	
+	private Date getDateNextRecertification(Certificate certificate, CertificationProgram certificateConfig) {
+		if(certificateConfig.isValidityEnabled() && certificate != null) {
+			Date date = certificate.getCreationDate();
+			int time = certificateConfig.getValidityTimelapse();
+			DurationType timeUnit = certificateConfig.getValidityTimelapseUnit();
+			Date nextRecertification = timeUnit.toDate(date, time);
+			nextRecertification = CalendarUtils.endOfDay(nextRecertification);
+			return nextRecertification;
+		}		
+		return null;
+	}
+	
+	private Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateConfig) {
+		DurationType durationUnit = certificateConfig.getRecertificationWindowUnit();
+		int duration = certificateConfig.getRecertificationWindow();
+		if(nextCertificationDate != null && durationUnit != null && duration > 0) {
+			return durationUnit.toDate(nextCertificationDate, duration);
+		}
+		return null;
+	}
+	
 	@Override
 	public void deleteCertificate(Certificate certificate) {
 		File certificateFile = getCertificateFile(certificate);
@@ -1032,6 +1057,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setLast(true);
 		certificate.setStatus(CertificateStatus.ok);
 		certificate.setNextRecertificationDate(nextRecertificationDate);
+		certificate.setRecertificationPaused(false);
 
 		String dir = usersStorage.generateDir();
 		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
@@ -1047,7 +1073,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 			Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 			if (dateFirstCertification != null) {
-				removeLastFlag(identity, resource.getKey());
+				certificatesDao.removeLastFlag(identity, resource.getKey());
 			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
@@ -1095,7 +1121,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			
 			Date dateFirstCertification = getDateFirstCertification(identity, resourceKey);
 			if (dateFirstCertification != null) {
-				removeLastFlag(identity, resourceKey);
+				certificatesDao.removeLastFlag(identity, resourceKey);
 			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
@@ -1172,14 +1198,30 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, CertificateConfig config) {
-		Certificate certificate = persistCertificate(certificateInfos, entry, template, config);
+		Certificate certificate = persistCertificate(certificateInfos, entry, template, null, config);
 		markPublisherNews(null, entry.getOlatResource());
+		return certificate;
+	}
+	
+	@Override
+	public Certificate generateCertificate(CertificateInfos infos, CertificationProgram certificationProgram,
+			RepositoryEntry entry, CertificateConfig config) {
+		CertificateTemplate template = certificationProgram.getTemplate();
+		Certificate certificate = persistCertificate(infos, entry, template, certificationProgram, config);
+		OLATResource resource = certificationProgram != null
+				? certificationProgram.getResource()
+				: entry.getOlatResource();
+		
+		markPublisherNews(null, resource);
+		
 		return certificate;
 	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, CertificateConfig config) {
-		OLATResource resource = entry.getOlatResource();
+			CertificateTemplate template, CertificationProgram certificationProgram, CertificateConfig config) {
+		OLATResource resource = certificationProgram != null
+				? certificationProgram.getResource()
+				: entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
 		
 		CertificateImpl certificate = new CertificateImpl();
@@ -1195,11 +1237,22 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setExternalId(certificateInfos.getExternalId());
 		certificate.setLast(true);
-		certificate.setCourseTitle(entry.getDisplayname());
 		certificate.setStatus(CertificateStatus.pending);
+		certificate.setRecertificationPaused(false);
 		
-		RepositoryEntryCertificateConfiguration certificateConfig = getConfiguration(entry);
-		Date nextCertificationDate = getDateNextRecertification(certificate, certificateConfig);
+		Date nextCertificationDate;
+		if(certificationProgram != null) {
+			nextCertificationDate = getDateNextRecertification(certificate, certificationProgram);
+			Date windowDate = getDateWindowRecertification(nextCertificationDate, certificationProgram);
+			certificate.setRecertificationWindowDate(windowDate);
+			certificate.setCertificationProgram(certificationProgram);
+			long counter = certificatesDao.certificationCount(identity, certificationProgram);
+			certificate.setRecertificationCount(Long.valueOf(counter + 1l));
+		} else {
+			certificate.setCourseTitle(entry.getDisplayname());
+			RepositoryEntryCertificateConfiguration certificateConfig = getConfiguration(entry);
+			nextCertificationDate = getDateNextRecertification(certificate, certificateConfig);
+		}
 		certificate.setNextRecertificationDate(nextCertificationDate);
 		
 		dbInstance.getCurrentEntityManager().persist(certificate);
@@ -1349,7 +1402,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		if(dateFirstCertification != null) {
 			//not the first certification, reset the last of the others certificates
-			removeLastFlag(identity, resource.getKey());
+			certificatesDao.removeLastFlag(identity, resource.getKey());
 		}
 		MailerResult result = sendCertificate(identity, entry, certificate, certificateFile, workUnit.getConfig());
 		if(result.isSuccessful()) {
@@ -1484,18 +1537,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.getResultList();
 		return dates.isEmpty() ? null : dates.get(0);
 	}
-	
-	private void removeLastFlag(Identity identity, Long resourceKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("update certificate cer set cer.last=false")
-		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey");
-		
-		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
-				.setParameter("resourceKey", resourceKey)
-				.setParameter("identityKey", identity.getKey())
-				.executeUpdate();
-	}
-	
 
 	@Override
 	public List<CertificateTemplate> getTemplates() {

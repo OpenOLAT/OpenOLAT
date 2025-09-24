@@ -430,6 +430,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_read { @include o-add-icon('circle', false);}
 .o_icon_readonly { @include o-add-icon('edit'); color:red;}
 .o_icon_readwrite { @include o-add-icon('edit');}
+.o_icon_recertification { @include o-add-icon('arrow-rotate-right');}
 .o_icon_recycle { @include o-add-icon('recycle');}
 .o_icon_rectangle { @include o-add-icon('square', false);}
 .o_icon_redo { @include o-add-icon('repeat');}
@@ -997,6 +998,12 @@ $fa-css-prefix: "o_icon" !default;
 /* Certification */
 .o_icon_certification_status_active { @include o-add-icon('check', false); }
 .o_icon_certification_status_inactive { @include o-add-icon('pause', false); }
+.o_icon_certification_status_valid { @include o-add-icon('check', false); }
+.o_icon_certification_status_expired { @include o-add-icon('clock-rotate-left', false); }
+.o_icon_certification_status_paused { @include o-add-icon('pause', false); }
+.o_icon_certification_status_not_renewable { @include o-add-icon('ban', false); }
+.o_icon_certification_status_revoked { @include o-add-icon('ban', false); }
+.o_icon_certification_status_archived { @include o-add-icon('box-archive', false); }
 
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}

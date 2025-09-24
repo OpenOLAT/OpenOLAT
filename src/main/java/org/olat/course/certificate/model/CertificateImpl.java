@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate.model;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,6 +28,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.model.CertificationProgramImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 
@@ -47,6 +51,21 @@ public class CertificateImpl extends AbstractCertificate {
 	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_olatresource", nullable=false, insertable=true, updatable=true)
 	private OLATResource olatResource;
+	
+	@Column(name="c_recertification_count", nullable=true, insertable=true, updatable=true)
+	private Long recertificationCount;
+	@Column(name="c_recertification_win_date", nullable=true, insertable=true, updatable=true)
+	private Date recertificationWindowDate;
+	@Column(name="c_recertification_paused", nullable=false, insertable=true, updatable=true)
+	private boolean recertificationPaused;
+	
+	@ManyToOne(targetEntity=CertificationProgramImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_certification_program", nullable=false, insertable=true, updatable=false)
+	private CertificationProgram certificationProgram;
+	
+	public CertificateImpl() {
+		//
+	}
 
 	@Override
 	public Long getArchivedResourceKey() {
@@ -63,6 +82,41 @@ public class CertificateImpl extends AbstractCertificate {
 
 	public void setOlatResource(OLATResource olatResource) {
 		this.olatResource = olatResource;
+	}
+
+	@Override
+	public Long getRecertificationCount() {
+		return recertificationCount;
+	}
+
+	public void setRecertificationCount(Long recertificationCount) {
+		this.recertificationCount = recertificationCount;
+	}
+
+	@Override
+	public Date getRecertificationWindowDate() {
+		return recertificationWindowDate;
+	}
+
+	public void setRecertificationWindowDate(Date date) {
+		this.recertificationWindowDate = date;
+	}
+
+	@Override
+	public boolean isRecertificationPaused() {
+		return recertificationPaused;
+	}
+
+	public void setRecertificationPaused(boolean recertificationPaused) {
+		this.recertificationPaused = recertificationPaused;
+	}
+
+	public CertificationProgram getCertificationProgram() {
+		return certificationProgram;
+	}
+
+	public void setCertificationProgram(CertificationProgram certificationProgram) {
+		this.certificationProgram = certificationProgram;
 	}
 
 	@Override

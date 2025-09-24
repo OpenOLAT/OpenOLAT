@@ -283,16 +283,20 @@
 }
 
 /* need some empty block before and after */
-.o_mega_buttons_3_centered {
+.o_mega_buttons.o_mega_buttons_3_centered {
 	grid-template-columns: 3fr repeat(3, minmax(207px, 1fr)) 3fr;
 }
 
-.o_mega_buttons_4_centered {
+.o_mega_buttons.o_mega_buttons_4_centered {
 	grid-template-columns: 4fr repeat(4, minmax(207px, 1fr)) 4fr;
 }
 
+.o_mega_buttons.o_mega_buttons_5_centered {
+	grid-template-columns: 5fr repeat(5, minmax(207px, 1fr)) 5fr;
+}
+
 @media (max-width: $screen-md) {
-	.o_mega_buttons_3_centered, .o_mega_buttons_4_centered  {
+	.o_mega_buttons_3_centered, .o_mega_buttons_4_centered, .o_mega_buttons_5_centered  {
 		grid-template-columns: 1fr 1fr;
 		
 		li[aria-hidden='true'] {
@@ -302,7 +306,7 @@
 }
 
 @media (max-width: $screen-xs) {
-	.o_mega_buttons_3_centered, .o_mega_buttons_4_centered  {
+	.o_mega_buttons_3_centered, .o_mega_buttons_4_centered, .o_mega_buttons_5_centered  {
 		grid-template-columns: 1fr;
 		
 		li[aria-hidden='true'] {

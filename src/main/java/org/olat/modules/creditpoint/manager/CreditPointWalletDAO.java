@@ -26,9 +26,11 @@ import java.util.List;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TemporalType;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.certificationprogram.CertificationProgramRef;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointWallet;
 import org.olat.modules.creditpoint.model.CreditPointWalletImpl;
@@ -105,6 +107,25 @@ public class CreditPointWalletDAO {
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointWallet.class)
 				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	public List<CreditPointWallet> loadWalletOfCertificationProgram(CertificationProgramRef  certificationProgram) {
+		String query = """
+				select wallet from creditpointwallet as wallet
+				inner join wallet.identity ident
+				inner join fetch wallet.creditPointSystem system
+				where exists (select membership.key from bgroupmember as membership
+				 inner join curriculumelement curEl on (membership.group.key=curEl.group.key)
+				 inner join certificationprogramtoelement as rel on (rel.curriculumElement.key=curEl.key)
+				 inner join certificationprogram as program on (rel.certificationProgram.key=program.key)
+				 where program.key=:programKey and program.creditPointSystem.key=system.key
+				 and membership.identity.key=ident.key and membership.role=:role
+				) """;
+
+		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointWallet.class)
+				.setParameter("programKey", certificationProgram.getKey())
+				.setParameter("role", GroupRoles.participant.name())
 				.getResultList();
 	}
 

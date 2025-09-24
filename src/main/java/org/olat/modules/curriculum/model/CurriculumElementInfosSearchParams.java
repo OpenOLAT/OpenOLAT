@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.model;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -46,6 +47,8 @@ public class CurriculumElementInfosSearchParams {
 	private List<CurriculumElementStatus> statusList;
 	
 	private final IdentityRef identity;
+	
+	private CertificationProgram certificationProgram;
 	
 	public CurriculumElementInfosSearchParams(IdentityRef identity) {
 		this.identity = identity;
@@ -134,6 +137,14 @@ public class CurriculumElementInfosSearchParams {
 
 	public void setStatusList(List<CurriculumElementStatus> statusList) {
 		this.statusList = statusList;
+	}
+
+	public CertificationProgram getCertificationProgram() {
+		return certificationProgram;
+	}
+
+	public void setCertificationProgram(CertificationProgram certificationProgram) {
+		this.certificationProgram = certificationProgram;
 	}
 
 }

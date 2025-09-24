@@ -43,6 +43,7 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -92,6 +93,8 @@ public interface CoachingService {
 	 */
 	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
+	
+	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement);
 	
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach);
 	

@@ -1,0 +1,43 @@
+<div class="o_curriculum_metadata_header">
+	<div class="o_curriculum_metadata_header_content">
+		<div class="o_curriculum_metadata_header_values">
+			#if($r.isNotEmpty($key))
+				<div class="o_curriculum_metadata_header_key">
+					<div>
+						<strong>$r.translate("certification.program.key")</strong>
+					</div>
+					<div>$key</div>
+				</div>
+			#end
+			
+			#if($r.isNotEmpty($validity))
+				<div class="o_curriculum_metadata_header_key">
+					<div>
+						<strong>$r.translate("validity.duration")</strong>
+					</div>
+					<div>$r.escapeHtml($validity)</div>
+				</div>
+			#end
+			
+			#if($r.isNotEmpty($rmode))
+				<div class="o_curriculum_metadata_header_key">
+					<div>
+						<strong>$r.translate("table.header.recertification.mode")</strong>
+					</div>
+					<div>$r.xssScan($rmode)</div>
+				</div>
+			#end
+			
+			#if($r.isNotEmpty($creditPoints))
+				<div class="o_curriculum_metadata_header_key">
+					<div>
+						<strong>$r.translate("credit.point.need")</strong>
+					</div>
+					<div>$r.escapeHtml($creditPoints)</div>
+				</div>
+			#end
+		</div>
+	</div>
+	$r.render("segments")
+</div>
+$r.render("content")

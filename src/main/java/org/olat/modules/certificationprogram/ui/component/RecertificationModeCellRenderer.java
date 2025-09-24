@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,10 +14,10 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui.component;
+package org.olat.modules.certificationprogram.ui.component;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -25,27 +25,27 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.certificationprogram.RecertificationMode;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 3 sept. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumElementStatusCellRenderer implements FlexiCellRenderer {
+public class RecertificationModeCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
 	
-	public CurriculumElementStatusCellRenderer(Translator translator) {
+	public RecertificationModeCellRenderer(Translator translator) {
 		this.translator = translator;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof CurriculumElementStatus status) {
-			target.append(translator.translate("status.".concat(status.name())));
+			URLBuilder ubu, Translator transl) {
+		if(cellValue instanceof RecertificationMode mode) {
+			target.append(translator.translate("certification.mode.".concat(mode.name())));
 		}
 	}
 }

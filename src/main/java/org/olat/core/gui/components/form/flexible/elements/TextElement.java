@@ -193,6 +193,8 @@ public interface TextElement extends FormItem{
 	 */
 	public void setTextAddOn(String text);
 	
+	public void setTextAddOn(String text, boolean translate);
+	
 	public boolean isShowHideEye();
 
 	public void setShowHideEye(boolean enable);

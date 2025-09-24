@@ -21,6 +21,7 @@ package org.olat.course.config.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -35,11 +36,13 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.CertificateReminderProvider;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
+import org.olat.course.certificate.ui.CertificationProgramOptionsController;
 import org.olat.course.certificate.ui.RecertificationOptionsController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.RunMainController;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.creditpoint.ui.CreditPointRepositoryEntryConfigController;
 import org.olat.modules.openbadges.OpenBadgesModule;
@@ -61,8 +64,8 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private Controller scoreCtrl;
 	private CoachRightsController coachRightsCtrl;
 	private Controller efficiencyStatementCtrl;
+	private FormBasicController certificatesCtrl;
 	private CourseReminderListController remindersCtrl;
-	private CertificatesOptionsController certificatesCtrl;
 	private OpenBadgesAssessmentSettingsController badgesCtrl;
 	private RecertificationOptionsController recertificationCtrl;
 	private CreditPointRepositoryEntryConfigController creditPointsConfigCtrl;
@@ -77,6 +80,8 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
 	@Autowired
@@ -126,7 +131,11 @@ public class CourseAssessmentSettingsController extends BasicController {
 			mainVC.put("creditpoints", creditPointsConfigCtrl.getInitialComponent());
 		}
 		
-		certificatesCtrl = new CertificatesOptionsController(ureq, wControl, entry, editableAndLocked);
+		if(certificationProgramService.isInCertificationProgram(entry)) {
+			certificatesCtrl = new CertificationProgramOptionsController(ureq, wControl, entry);
+		} else {
+			certificatesCtrl = new CertificatesOptionsController(ureq, wControl, entry, editableAndLocked);
+		}
 		listenTo(certificatesCtrl);
 		mainVC.put("certificate", certificatesCtrl.getInitialComponent());
 

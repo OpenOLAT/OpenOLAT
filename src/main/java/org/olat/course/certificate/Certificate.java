@@ -49,14 +49,20 @@ public interface Certificate extends CreateInfo {
 
 	public void setNextRecertificationDate(Date nextRecertificationDate);
 	
-	public String getPath();
+	Long getRecertificationCount();
+
+	Date getRecertificationWindowDate();
 	
-	public String getCourseTitle();
+	boolean isRecertificationPaused();
 	
-	public Long getArchivedResourceKey();
+	String getPath();
 	
-	public Identity getIdentity();
+	String getCourseTitle();
 	
-	public VFSMetadata getMetadata();
+	Long getArchivedResourceKey();
+	
+	Identity getIdentity();
+	
+	VFSMetadata getMetadata();
 
 }

@@ -1,0 +1,16 @@
+$r.render("portrait")
+#if($r.isTrue($warningNotRenewable))
+	<div class="o_warning_with_icon">$r.translate("warning.certification.not.renewable")</div>
+#end
+#if($r.available("recertificationTable"))
+<fieldset class="o_block">
+	<legend>$r.translate("recertification.title")</legend>
+	$r.render("recertificationTable")
+</fieldset>
+#end
+#if($r.available("statementTable"))
+<fieldset class="o_block">
+	<legend>$r.translate("efficiency.statements.title")</legend>
+	$r.render("statementTable")
+</fieldset>
+#end

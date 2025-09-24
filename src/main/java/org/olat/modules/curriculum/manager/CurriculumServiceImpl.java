@@ -82,6 +82,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.lti13.LTI13Service;
+import org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAO;
 import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -230,6 +231,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
+	@Autowired
+	private CertificationProgramToCurriculumElementDAO certificationProgramToCurriculumElementDao;
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
@@ -793,6 +796,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				: List.of();
 		
 		groupDao.removeMemberships(reloadedElement.getGroup());
+		
+		certificationProgramToCurriculumElementDao.deleteRelation(reloadedElement);
 		
 		//only flag as deleted
 		reloadedElement.setParent(null);

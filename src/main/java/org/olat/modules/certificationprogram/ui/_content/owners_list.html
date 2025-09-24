@@ -1,0 +1,9 @@
+<div class="o_header_with_buttons">
+	<h3><i class='o_icon o_icon_user'> </i> $r.translate("certification.program.owners")</h3>
+	#if($r.available("add.owner"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.owner")
+	</div>
+	#end
+</div>
+$r.render("table")

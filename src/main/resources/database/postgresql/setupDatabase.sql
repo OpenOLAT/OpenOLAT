@@ -1911,6 +1911,9 @@ create table o_cer_certificate (
    c_external_id varchar(64),
    c_managed_flags varchar(255),
    c_next_recertification timestamp,
+   c_recertification_count int8,
+   c_recertification_win_date timestamp,
+   c_recertification_paused bool default false not null,
    c_path varchar(1024),
    c_last bool not null default true,
    c_course_title varchar(255),
@@ -1918,6 +1921,7 @@ create table o_cer_certificate (
    fk_olatresource int8,
    fk_identity int8 not null,
    fk_metadata int8,
+   fk_certification_program int8,
    primary key (id)
 );
 
@@ -1940,6 +1944,51 @@ create table o_cer_entry_config (
   fk_entry int8 not null,
   unique(fk_entry),
   primary key (id)
+);
+
+-- Certification program
+create table o_cer_program (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp,
+   c_identifier varchar(64),
+   c_displayname varchar(255) not null,
+   c_description text,
+   c_status varchar(16) default 'active' not null,
+   c_recert_enabled bool default false not null,
+   c_recert_mode varchar(16),
+   c_recert_creditpoint decimal,
+   c_recert_window_enabled bool default false not null,
+   c_recert_window int8 default 0 not null,
+   c_recert_window_unit varchar(32),
+   c_premature_recert_enabled bool default false not null,
+   c_validity_enabled bool default false not null,
+   c_validity_timelapse int8 default 0 not null,
+   c_validity_timelapse_unit varchar(32),
+   c_cer_custom_1 varchar(4000),
+   c_cer_custom_2 varchar(4000),
+   c_cer_custom_3 varchar(4000),
+   fk_credit_point_system int8,
+   fk_group int8 not null,
+   fk_template int8,
+   fk_resource int8,
+   primary key (id)
+);
+
+create table o_cer_program_to_organisation (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_program int8 not null,
+   fk_organisation int8 not null,
+   primary key (id)
+);
+
+create table o_cer_program_to_element (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_program int8 not null,
+   fk_element int8 not null,
+   primary key (id)
 );
 
 -- Grade
@@ -6183,6 +6232,31 @@ alter table o_cer_entry_config add constraint cer_entry_config_entry_idx foreign
 create index idx_cer_entry_config_entry_idx on o_cer_entry_config(fk_entry);
 alter table o_cer_entry_config add constraint template_config_entry_idx foreign key (fk_template) references o_cer_template (id);
 create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
+
+alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
+create index idx_cer_to_cprog_idx on o_cer_certificate (fk_certification_program);
+
+-- certification program
+alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);
+create index idx_cer_progr_to_group_idx on o_cer_program (fk_group);
+alter table o_cer_program add constraint cer_progr_to_credsys_idx foreign key (fk_credit_point_system) references o_cp_system (id);
+create index idx_cer_progr_to_credsys_idx on o_cer_program (fk_credit_point_system);
+
+alter table o_cer_program add constraint cer_progr_to_template_idx foreign key (fk_template) references o_cer_template (id);
+create index idx_cer_progr_to_template_idx on o_cer_program(fk_template);
+
+alter table o_cer_program add constraint cer_progr_to_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
+create index idx_cer_progr_to_resource_idx on o_cer_program (fk_resource);
+
+alter table o_cer_program_to_organisation add constraint cer_prog_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+create index idx_cer_prog_to_prog_idx on o_cer_program_to_organisation (fk_program);
+alter table o_cer_program_to_organisation add constraint cer_prog_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_cer_prog_to_org_idx on o_cer_program_to_organisation (fk_organisation);
+
+alter table o_cer_program_to_element add constraint cer_prog_to_el_prog_idx foreign key (fk_program) references o_cer_program (id);
+create index idx_cer_prog_to_el_prog_idx on o_cer_program_to_element (fk_program);
+alter table o_cer_program_to_element add constraint cer_prog_to_el_element_idx foreign key (fk_element) references o_cur_curriculum_element (id);
+create index idx_cer_prog_to_el_element_idx on o_cer_program_to_element (fk_element);
 
 -- sms
 alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

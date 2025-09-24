@@ -64,6 +64,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	protected String original;
 	protected String value;
 	private String textAddOn;
+	private boolean translateTextAddOn;
 	private boolean checkForNotEmpty = false;
 	private boolean checkForLength = false;
 	private boolean checkForEquals = false; 
@@ -140,15 +141,23 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public String getTextAddOn() {
 		return textAddOn;
 	}
+	
+	public boolean isTranslateTextAddOn() {
+		return translateTextAddOn;
+	}
 
 	@Override
 	public void setTextAddOn(String textAddOn) {
-		this.textAddOn = textAddOn;
+		setTextAddOn(textAddOn, true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#preventValueTrim()
-	 */
+	@Override
+	public void setTextAddOn(String text, boolean translate) {
+		this.textAddOn = text;
+		this.translateTextAddOn = translate;
+		setComponentDirty();
+	}
+
 	@Override
 	public void preventValueTrim(boolean preventTrim){
 		this.preventTrim = preventTrim;

@@ -49,8 +49,7 @@ public class IdentityRefImpl implements IdentityRef {
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
-		} else if(obj instanceof IdentityRefImpl) {
-			IdentityRefImpl ref = (IdentityRefImpl)obj;
+		} else if(obj instanceof IdentityRefImpl ref) {
 			return identityKey != null && identityKey.equals(ref.identityKey);
 		}
 		return false;

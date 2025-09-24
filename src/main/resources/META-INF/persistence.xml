@@ -233,6 +233,9 @@
 		<class>org.olat.modules.cemedia.model.MediaToGroupRelationImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToPagePartImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
+		<class>org.olat.modules.certificationprogram.model.CertificationProgramImpl</class>
+		<class>org.olat.modules.certificationprogram.model.CertificationProgramToOrganisationImpl</class>
+		<class>org.olat.modules.certificationprogram.model.CertificationProgramToCurriculumElementImpl</class>
 		<class>org.olat.modules.creditpoint.model.CreditPointSystemImpl</class>
 		<class>org.olat.modules.creditpoint.model.CreditPointWalletImpl</class>
 		<class>org.olat.modules.creditpoint.model.CreditPointTransactionImpl</class>

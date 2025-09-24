@@ -39,6 +39,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.certificationprogram.CertificationModule;
+import org.olat.modules.certificationprogram.ui.CertificationProgramListController;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -66,6 +68,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final Link curriculumsLink;
 	private final Link lecturesBlocksLink;
 	private final Link implementationsLink;
+	private final Link certificationProgramsLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
 	private final CurriculumSecurityCallback secCallback;
@@ -79,11 +82,14 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
 	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CertificationProgramListController certificationProgramListCtrl;
 
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CertificationModule certificationProgramModule;
 	
 	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
@@ -114,7 +120,12 @@ public class CurriculumManagerRootController extends BasicController implements 
 		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
 		reportsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_reports");
 		reportsLink.setVisible(secCallback.canCurriculumsReports());
-
+		
+		certificationProgramsLink = LinkFactory.createLink("certification.programs", "certifications", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		certificationProgramsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_certificate");
+		certificationProgramsLink.setElementCssClass("btn btn-default o_button_mega o_sel_certification_programs");
+		certificationProgramsLink.setVisible(certificationProgramModule.isEnabled());
+		
 		initDashboard(ureq);
 		putInitialPanel(mainVC);
 	}
@@ -157,6 +168,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if("Reports".equalsIgnoreCase(type)) {
 			doOpenReports(ureq);
+		} else if("Certification".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenCertificationPrograms(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 
@@ -184,6 +198,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 			doOpenLecturesBlocks(ureq).activate(ureq, relevant, null);
 		} else if(source == reportsLink) {
 			doOpenReports(ureq);
+		} else if(source == certificationProgramsLink) {
+			List<ContextEntry> active = BusinessControlFactory.getInstance().createCEListFromString("[Active:0]");
+			doOpenCertificationPrograms(ureq).activate(ureq, active, null);
 		}
 	}
 	
@@ -278,5 +295,18 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(reportsCtrl);
 		toolbarPanel.pushController(translate("curriculum.reports"), reportsCtrl);
 		return reportsCtrl;
+	}
+	
+	private CertificationProgramListController doOpenCertificationPrograms(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(certificationProgramListCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Certification", 0L);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		certificationProgramListCtrl = new CertificationProgramListController(ureq, bwControl, toolbarPanel);
+		listenTo(certificationProgramListCtrl);
+		toolbarPanel.pushController(translate("certification.programs"), certificationProgramListCtrl);
+		return certificationProgramListCtrl;
 	}
 }

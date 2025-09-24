@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.modules.certificationprogram.CertificationModule;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
@@ -65,6 +66,7 @@ public class EditCurriculumElementController extends BasicController {
 	private final Link executionLink;
 	private final Link optionsLink;
 	private final Link previewButton;
+	private Link certificationProgramLink; 
 	
 	private EditCurriculumElementMetadataController metadataCtrl;
 	private EditCurriculumElementInfosController infoCtrl;
@@ -72,6 +74,7 @@ public class EditCurriculumElementController extends BasicController {
 	private EditCurriculumElementAutomationController automationCtrl;
 	private EditCurriculumElementOptionsController optionsCtrl;
 	private CurriculumElementInfosController previewCtrl;
+	private EditCurriculumElementCertificationProgramController certificationProgramCtrl;
 	
 	private CurriculumElement element;
 	private final CurriculumElement parentElement;
@@ -83,6 +86,8 @@ public class EditCurriculumElementController extends BasicController {
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CertificationModule certificationProgramModule;
 	
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum,
@@ -122,6 +127,11 @@ public class EditCurriculumElementController extends BasicController {
 		}
 		optionsLink = LinkFactory.createLink("curriculum.element.options", getTranslator(), this);
 		segmentButtonsCmp.addButton(optionsLink, false);
+
+		if(certificationProgramModule.isEnabled()) {
+			certificationProgramLink = LinkFactory.createLink("curriculum.element.certification.program", getTranslator(), this);
+			segmentButtonsCmp.addButton(certificationProgramLink, false);
+		}
 		
 		previewButton = LinkFactory.createButton("preview.info", mainVC, this);
 		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
@@ -176,6 +186,8 @@ public class EditCurriculumElementController extends BasicController {
 			doOpenAutomation(ureq);
 		} else if (source == optionsLink) {
 			doOpenOptions(ureq);
+		} else if (source == certificationProgramLink) {
+			doOpenCertificationProgram(ureq);
 		} else if (source == previewButton) {
 			doOpenPreview(ureq);
 		}
@@ -248,6 +260,15 @@ public class EditCurriculumElementController extends BasicController {
 		automationCtrl = new EditCurriculumElementAutomationController(ureq, getWindowControl(), element);
 		listenTo(automationCtrl);
 		mainVC.put("content", automationCtrl.getInitialComponent());
+		segmentButtonsCmp.setSelectedButton(automationLink);
+	}
+	
+	private void doOpenCertificationProgram(UserRequest ureq) {
+		removeAsListenerAndDispose(certificationProgramCtrl);
+		
+		certificationProgramCtrl = new EditCurriculumElementCertificationProgramController(ureq, getWindowControl(), curriculum, element, secCallback);
+		listenTo(certificationProgramCtrl);
+		mainVC.put("content", certificationProgramCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(automationLink);
 	}
 

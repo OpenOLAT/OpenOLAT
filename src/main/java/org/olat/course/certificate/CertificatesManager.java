@@ -39,6 +39,7 @@ import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -263,6 +264,8 @@ public interface CertificatesManager {
 	public void generateCertificates(List<CertificateInfos> infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 
 	public Certificate generateCertificate(CertificateInfos infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
+	
+	public Certificate generateCertificate(CertificateInfos infos, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateConfig config);
 	
 	public void deleteCertificate(Certificate certificate);
 	

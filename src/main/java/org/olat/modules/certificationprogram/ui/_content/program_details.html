@@ -1,0 +1,9 @@
+<div class="o_block">
+	<div class="o_certification_dashboard_title">
+		<h2><i class="o_icon o_icon_certificate"> </i> $r.escapeHtml($displayName)</h2>
+		#if($r.available("status"))
+			$r.render("status")
+		#end
+	</div>
+</div>
+$r.render("tabs")

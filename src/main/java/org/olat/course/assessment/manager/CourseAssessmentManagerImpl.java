@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
@@ -84,6 +84,11 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.certificationprogram.CertificationCoordinator;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
+import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
@@ -117,6 +122,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private final CourseGroupManager cgm;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
 	private CreditPointService creditPointService;
@@ -124,6 +131,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
+	@Autowired
+	private CertificationCoordinator certificationOrchestrator;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -174,7 +185,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry) {
 		AssessmentEntry updateAssessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		return updateAssessmentEntry;
 	}
 
@@ -371,9 +382,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			nodeAssessment.setLastUserModified(new Date());
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode);
 		if(assessmentConfig.isAssessable()) {
@@ -404,7 +415,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			nodeAssessment.setLastUserModified(new Date());
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cgm.getCourseEntry(), courseNode);
@@ -420,7 +431,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		assessmentService.setLastVisit(nodeAssessment, lastVisit);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 	}
 
 	@Override
@@ -439,7 +450,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			nodeAssessment.setLastUserModified(new Date());
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 	}
 
 	@Override
@@ -457,14 +468,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			nodeAssessment.setLastUserModified(new Date());
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		nodeAccessService.onStatusUpdated(courseNode, userCourseEnvironment, status);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 	}
 
 	@Override
@@ -483,16 +494,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		nodeAssessment.setFullyAssessed(fullyAssessed);
 		
 		nodeAssessment = assessmentService.updateAssessmentEntry(nodeAssessment);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
+		transfertCreditPoint(userCourseEnvironment, nodeAssessment);
 		generateCertificate(userCourseEnvironment);
 		awardBadge(userCourseEnvironment, nodeAssessment.getCoach());
-		transfertCreditPoint(userCourseEnvironment, nodeAssessment);
 	}
 
 	@Override
@@ -570,17 +581,17 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			assessmentEntry.setLastAttempt(new Date());
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		nodeAccessService.onScoreUpdated(courseNode, userCourseEnv, score, assessmentEntry.getUserVisibility());
 		nodeAccessService.onPassedUpdated(courseNode, userCourseEnv, passed, assessmentEntry.getUserVisibility());
 		nodeAccessService.onStatusUpdated(courseNode, userCourseEnv, assessmentEntry.getAssessmentStatus());
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		//reevalute the tree
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		// node log
 		UserNodeAuditManager am = courseEnv.getAuditManager();
@@ -627,9 +638,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		updateUserEfficiencyStatement(userCourseEnv);
+		transfertCreditPoint(userCourseEnv, assessmentEntry);
 		generateCertificate(userCourseEnv);
 		awardBadge(userCourseEnv, assessmentEntry.getCoach());
-		transfertCreditPoint(userCourseEnv, assessmentEntry);
 	}
 	
 	@Override
@@ -659,14 +670,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setLastCoachModified(now);
 		assessmentEntry.getPassedOverridable().override(passed, coach, now);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		logAuditPassed(rootNode, coach, Role.coach, userCourseEnvironment, passed);
 		logActivityPassed(assessedIdentity, passed);
@@ -676,9 +687,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
+		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
 		generateCertificate(userCourseEnvironment);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
-		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
 
 		return assessmentEntry.getPassedOverridable();
 	}
@@ -699,15 +710,15 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setLastCoachModified(now);
 		assessmentEntry.getPassedOverridable().reset();
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		Boolean passed = assessmentEntry.getPassed();
 		nodeAccessService.onPassedUpdated(rootNode, userCourseEnvironment, passed, Boolean.TRUE);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		
 		logAuditPassed(rootNode, coach, Role.coach, userCourseEnvironment, passed);
 		logActivityPassed(assessedIdentity, passed);
@@ -717,9 +728,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
+		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
 		generateCertificate(userCourseEnvironment);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
-		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
 
 		return assessmentEntry.getPassedOverridable();
 	}
@@ -784,28 +795,65 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {
 		RepositoryEntry courseEntry = cgm.getCourseEntry();
-		if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
-			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
-			AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
-			if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
-					&& certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
-				RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
-				CertificateTemplate template = certificateConfig.getTemplate();
-				CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, rootEval,
-						userCourseEnvironment.getCourseEnvironment());
-				CertificateConfig config = CertificateConfig.builder()
-						.withCustom1(certificateConfig.getCertificateCustom1())
-						.withCustom2(certificateConfig.getCertificateCustom2())
-						.withCustom3(certificateConfig.getCertificateCustom3())
-						.withSendEmailBcc(true)
-						.withSendEmailLinemanager(true)
-						.withSendEmailIdentityRelations(true)
-						.build();
-				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, config);
-			}
+		if(certificationProgramService.isInCertificationProgram(courseEntry)) {
+			generateCertificateOfCertificationProgram(userCourseEnvironment, courseEntry);
+		} else if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
+			generateCertificateOfCourse(userCourseEnvironment, courseEntry);
 		}
+	}
+
+	private void generateCertificateOfCourse(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
+		if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
+				&& certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
+			RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+			CertificateTemplate template = certificateConfig.getTemplate();
+			CertificateInfos certificateInfos = CertificateInfos.valueOf(assessedIdentity, rootEval,
+					userCourseEnvironment.getCourseEnvironment());
+			CertificateConfig config = CertificateConfig.builder()
+					.withCustom1(certificateConfig.getCertificateCustom1())
+					.withCustom2(certificateConfig.getCertificateCustom2())
+					.withCustom3(certificateConfig.getCertificateCustom3())
+					.withSendEmailBcc(true)
+					.withSendEmailLinemanager(true)
+					.withSendEmailIdentityRelations(true)
+					.build();
+			certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
+		}
+	}
+	
+	/**
+	 * Search for an active certification program with automatic recertification
+	 * mode and if the course is passed, delegate the second step in the certification
+	 * coordinator for extra checks about the program, wallet of the user...
+	 * 
+	 * @param userCourseEnvironment The user course environment
+	 * @param courseEntry The course
+	 */
+	private void generateCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
+		List<CertificationProgram> certificationPrograms = certificationProgramService.getCertificationPrograms(courseEntry);
+		CertificationProgram certificationProgram = getUniqueActiveCertificationProgram(certificationPrograms);
+		if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
+				&& certificationProgram != null) {
+			certificationOrchestrator.processCertificationDemand(assessedIdentity, certificationProgram, new Date());
+		}
+	}
+	
+	private CertificationProgram getUniqueActiveCertificationProgram(List<CertificationProgram> certificationPrograms) {
+		List<CertificationProgram> certificationActivePrograms = certificationPrograms.stream()
+				.filter(program -> program.getStatus() == CertificationProgramStatusEnum.active)
+				.filter(program -> program.getRecertificationMode() == RecertificationMode.automatic)
+				.toList();
+		return certificationActivePrograms.size() == 1
+				? certificationActivePrograms.get(0)
+				: null;
 	}
 	
 	private void transfertCreditPoint(UserCourseEnvironment userCourseEnvironment, AssessmentEntry rootEntry) {

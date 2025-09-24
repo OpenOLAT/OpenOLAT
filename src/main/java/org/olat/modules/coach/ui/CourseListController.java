@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsCellRenderer;
@@ -96,6 +97,7 @@ import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -170,8 +172,10 @@ public class CourseListController extends FormBasicController implements Activat
 	private CoursesTableDataModel tableModel;
 
 	private int counter = 0;
-	private final GroupRoles role;
+	private GroupRoles role;
+	private final CourseListConfig config;
 	private final MapperKey mapperThumbnailKey;
+	private final CurriculumElement curriculumElement;
 	private List<RepositoryEntryEducationalType> educationalTypes;
 	private Map<Long,RepositoryEntryEducationalType> educationalTypesMap;
 	private final CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup;
@@ -199,14 +203,29 @@ public class CourseListController extends FormBasicController implements Activat
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl,
-			GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+			GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup, CourseListConfig config) {
 		super(ureq, wControl, "course_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
 		educationalTypes = repositoryManager.getAllEducationalTypes();
 		educationalTypesMap = educationalTypes.stream()
 				.collect(Collectors.toMap(RepositoryEntryEducationalType::getKey, t -> t, (u, v) -> u));
 		this.runtimeTypesGroup = runtimeTypesGroup;
+		curriculumElement = null;
+		this.config = config;
 		this.role = role;
+		
+		initForm(ureq);
+	}
+	
+	public CourseListController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			CurriculumElement curriculumElement, CourseListConfig config) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "course_list", rootForm);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(210, 140));
+		educationalTypes = repositoryManager.getAllEducationalTypes();
+		runtimeTypesGroup = CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular;
+		this.curriculumElement = curriculumElement;
+		this.config = config;
 		
 		initForm(ureq);
 	}
@@ -277,12 +296,17 @@ public class CourseListController extends FormBasicController implements Activat
 		
 		tableModel = new CoursesTableDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		if(config.withToolbar()) {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		} else {
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
+		}
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setElementCssClass("o_coursetable");
-		tableEl.setExportEnabled(true);
-		tableEl.setCustomizeColumns(true);
-		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(config.withToolbar());
+		tableEl.setCustomizeColumns(config.withToolbar());
+		tableEl.setSearchEnabled(config.withToolbar());
+		tableEl.setNumOfRowsEnabled(config.withToolbar());
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
 		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.5-" + runtimeTypesGroup.name());
 		
@@ -291,8 +315,12 @@ public class CourseListController extends FormBasicController implements Activat
 		row.setTranslator(getTranslator());
 		tableEl.setRowRenderer(row, this);
 		
-		initFilters();
-		initFiltersPresets(ureq);
+		if(config.withFilters()) {
+			initFilters();
+		}
+		if(config.withPresetsFilters()) {
+			initFiltersPresets(ureq);
+		}
 	}
 	
     private void initFilters() {
@@ -443,9 +471,10 @@ public class CourseListController extends FormBasicController implements Activat
 				.map(Mark::getOLATResourceable)
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
-		
-		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(),
-				role, runtimeTypesGroup);
+
+		List<CourseStatEntry> courseStatistics = curriculumElement != null
+				? coachingService.getCoursesStatistics(curriculumElement)
+				: coachingService.getCoursesStatistics(getIdentity(), role, runtimeTypesGroup);
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
 				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey())))
 				.collect(Collectors.toList());

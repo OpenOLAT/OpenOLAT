@@ -1,0 +1,18 @@
+<ul class="o_dropdown list-unstyled">
+	<li>$r.render("contact")</li>
+	#if($r.available("renew") || $r.available("revoke") || $r.available("pause") || $r.available("continue"))
+		<li class="divider"></li>
+	#end	
+	#if($r.available("renew"))	
+		<li>$r.render("renew")</li>
+	#end
+	#if($r.available("revoke"))
+		<li>$r.render("revoke")</li>
+	#end
+	#if($r.available("pause"))
+		<li>$r.render("pause")</li>
+	#end
+	#if($r.available("continue"))
+		<li>$r.render("continue")</li>
+	#end
+</ul>
