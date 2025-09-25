@@ -1193,7 +1193,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumElementMembershipChange change:changes) {
 			if(change.hasStatus(GroupMembershipStatus.reservation)
 					|| change.hasStatus(GroupMembershipStatus.active)
-					|| change.hasStatus(GroupMembershipStatus.removed)) {
+					|| change.hasStatus(GroupMembershipStatus.removed)
+					|| change.hasStatus(GroupMembershipStatus.declined)) {
 				if(!changesToNotifiy.containsKey(change.getMember())) {
 					changesToNotifiy.put(change.getMember(), change);
 				} else {
