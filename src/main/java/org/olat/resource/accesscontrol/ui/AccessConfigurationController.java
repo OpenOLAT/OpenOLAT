@@ -1101,7 +1101,7 @@ public class AccessConfigurationController extends FormBasicController {
 					dates = formatPeriod(from, to)
 						+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
 				} else if (from != null && from.before(new Date())) {
-					// Nothing to display
+					dates = formatPeriod(from, to);
 				} else {
 					dates = catalogInfo.getStatusPeriodOption();
 				}

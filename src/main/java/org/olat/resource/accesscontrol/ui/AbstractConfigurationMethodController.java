@@ -151,6 +151,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		datesEl = uifactory.addDateChooser("from_" + link.getKey(), "offer.period.date.from", link.getValidFrom(), formLayout);
 		datesEl.setSecondDate(true);
 		datesEl.setSecondDate(link.getValidTo());
+		datesEl.setDefaultValue(datesEl);
 		datesEl.setSeparator("offer.period.date.to");
 		datesEl.setHelpTextKey("offer.preiod.help", null);
 		
