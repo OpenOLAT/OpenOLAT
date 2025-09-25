@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -380,11 +381,20 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	protected String getRelativePath(VFSContainer rootContainer, VFSLeaf file) {
 		String sb = "/" + file.getName();
 		VFSContainer parent = file.getParentContainer();
-		while (parent != null && !rootContainer.isSame(parent)) {
+		while (parent != null && !isSame(rootContainer, parent)) {
 			sb = "/" + parent.getName() + sb;
 			parent = parent.getParentContainer();
 		}
 		return sb;
+	}
+	
+	private boolean isSame(VFSContainer container1, VFSContainer container2) {
+		if(container1.isSame(container2)) {
+			return true;
+		}
+		String relPath1 = container1.getRelPath();
+		String relPath2 = container2.getRelPath();
+		return Objects.equals(relPath1, relPath2);
 	}
 
 	@Override
