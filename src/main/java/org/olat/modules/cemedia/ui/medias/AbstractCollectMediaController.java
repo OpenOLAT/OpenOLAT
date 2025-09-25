@@ -174,7 +174,9 @@ public abstract class AbstractCollectMediaController extends FormBasicController
 				licenseEl.select(licenseSelectionConfig.getSelectionLicenseTypeKey(), true);
 			} else {
 				String noLicenseKey = licenseService.loadLicenseTypeByName(LicenseTypeDAO.NO_LICENSE_NAME).getKey().toString();
-				licenseEl.select(noLicenseKey, true);
+				if (licenseEl.containsKey(noLicenseKey)) {
+					licenseEl.select(noLicenseKey, true);
+				}
 			}
 			licenseEl.addActionListener(FormEvent.ONCHANGE);
 			if (mediaModule.isForceLicenseCheck()) {
