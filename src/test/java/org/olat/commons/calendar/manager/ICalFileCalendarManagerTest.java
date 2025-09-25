@@ -99,7 +99,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testAddChangeRemoveEvent() {
+	public void addChangeRemoveEvent() {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");	
 
 		String eventId = "id-testAddEvent";
@@ -151,7 +151,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testAddChangeEvent_v2() {
+	public void addChangeEventV2() {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");	
 
 		final String eventId = "id-testAddEvent";
@@ -191,6 +191,29 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertEquals("Added event has wrong subject", "testEvent changed", updatedEvent.getSubject());
 		Assertions.assertThat(updatedEvent.getBegin()).isEqualTo(updatedStart);
 		Assertions.assertThat(updatedEvent.getEnd()).isEqualTo(updatedEnd);
+	}
+	
+	@Test
+	public void addFullDayEvent() {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-19-");	
+
+		final String eventId = "id-testAddFullDayEvent";
+		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
+		
+		// 1. Test Add Event
+		ZonedDateTime start = ZonedDateTime.of(2025, 9, 16, 0, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime end = ZonedDateTime.of(2025, 9, 19, 0, 0, 0, 0, ZoneId.systemDefault());
+		KalendarEvent testEvent = new KalendarEvent(eventId, null, "Full day event", start, end);
+		testEvent.setAllDayEvent(true);
+		calendarManager.addEventTo(cal, testEvent);
+		
+		//empty the cache
+		emptyCalendarCache();
+		
+		Kalendar reloadedCal = calendarManager.getPersonalCalendar(test).getKalendar();
+		KalendarEvent reloadedEvent = reloadedCal.getEvent(eventId, null);
+		Assert.assertTrue(DateUtils.isSameDay(start, reloadedEvent.getBegin()));
+		Assert.assertTrue(DateUtils.isSameDay(end, reloadedEvent.getEnd()));
 	}
 	
 	/**
@@ -861,6 +884,45 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		// almost a full day bit it miss one minute
 		KalendarEvent longDay = importedCalendar.getKalendar().getEvent("C562E736-DCFF-4002-9E5B-77D891D4A322", null);
 		Assert.assertFalse(longDay.isAllDayEvent());
+	}
+	
+	@Test
+	public void importOpenOlat191FullDay()
+	throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur4");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_openolat_191.ics");
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		KalendarEvent on3days = importedCalendar.getKalendar().getEvents().get(0);
+		Assert.assertTrue(on3days.isAllDayEvent());
+	}
+	
+	/**
+	 * The full days wrongly with time saved.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void importOpenOlat200FullDay()
+	throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur5");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_wrong_ical4.ics");
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		KalendarEvent on3days = importedCalendar.getKalendar().getEvents().get(0);
+		Assert.assertTrue(on3days.isAllDayEvent());
 	}
 	
 	/**
