@@ -292,7 +292,9 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 			if(editFragmentMode) {
 				setInspectorVisible(true, false);
 				fireEvent(ureq, new EditPageElementEvent(this));
-				editorPart.dispatchEvent(ureq, this, new EditPageElementEvent(this));
+				if (editorPart != null) {
+					editorPart.dispatchEvent(ureq, this, new EditPageElementEvent(this));
+				}
 			}
 		} else if(this.editMode && !isInspectorVisible()) {
 			setInspectorVisible(true, false);
