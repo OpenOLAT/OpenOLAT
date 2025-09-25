@@ -202,6 +202,27 @@ public class CalendarUtils {
 		return zDateTime;
 	}
 	
+	public static LocalDate convertToLocalDate(Temporal temporal) {
+		LocalDate lDate;
+		if(temporal == null) {
+			lDate = null;
+		} else if(temporal instanceof LocalDate ltStart) {
+			lDate = ltStart;
+		} else if(temporal instanceof OffsetDateTime offsetStart) {
+			lDate = offsetStart.toLocalDate();
+		} else if(temporal instanceof LocalDateTime ltStart) {
+			lDate = ltStart.toLocalDate();
+		} else if(temporal instanceof Instant instantUTC) {
+			lDate = LocalDate.ofInstant(instantUTC, ZoneId.of("UTC"));
+		} else if(temporal instanceof ZonedDateTime zDateTime) {
+			lDate = zDateTime.toLocalDate();
+		} else {
+			log.error("Cannot convert temporal {} to ZonedDateTime", temporal);
+			lDate = null;
+		}
+		return lDate;
+	}
+	
 	public static boolean isMidnight(ZonedDateTime date) {
 		return date.getHour() + date.getMinute() + date.getSecond() == 0;
 	}
@@ -242,7 +263,7 @@ public class CalendarUtils {
 				if((wdl != null && !wdl.isEmpty())) {
 					// we only support one rule with daylist
 					return KalendarEvent.WORKDAILY;
-				} else if(interval != null && interval == 2) {
+				} else if(interval != null && interval.intValue() == 2) {
 					// we only support one rule with interval
 					return KalendarEvent.BIWEEKLY;
 				} else {

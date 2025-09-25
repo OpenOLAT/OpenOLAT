@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
@@ -44,6 +45,7 @@ import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
@@ -226,6 +228,19 @@ public class CalendarImportTest {
         ZonedDateTime recurrenceDate = ZonedDateTime.from(recurrenceId.getDate());
         log.info("Recurrence: {}", recurrenceDate);
         exceptionEvent.getSequence();
+	}
+	
+	@Test
+	public void importFulldayOpenOlat191() throws IOException, ParserException {
+		InputStream in = CalendarImportTest.class.getResourceAsStream("manager/Fullday_openolat_191.ics");
+		Calendar calendar = CalendarUtils.buildCalendar(in);
+        assertNotNull(calendar);
+        in.close();
+        
+        VEvent event = getFirstEvent(calendar);
+        DateProperty<Temporal> startProperty = event.getDateTimeStart();
+        Temporal startDate = startProperty.getDate();
+        Assert.assertTrue(startDate instanceof LocalDate);
 	}
 	
 	private VEvent getFirstEvent(Calendar calendar) {

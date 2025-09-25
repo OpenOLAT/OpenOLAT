@@ -533,10 +533,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 		} else {
 			// AllDay VEvent
-			ZonedDateTime dtBegin = kEvent.getBegin();
+			LocalDate dtBegin = kEvent.getBegin().toLocalDate();
 			// adjust end date: ICal end dates for all day events are on the next day
 			ZonedDateTime adjustedEndDate = kEvent.getEnd().plus((1000 * 60 * 60 * 24), ChronoUnit.MILLIS);// .getTime() + (1000 * 60 * 60 * 24));
-			vEvent = new VEvent(dtBegin, adjustedEndDate, kEvent.getSubject());
+			LocalDate dtEnd = adjustedEndDate.toLocalDate();
+			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 		}
 
 		List<Property> vEventProperties = new ArrayList<>(vEvent.getProperties());
@@ -747,8 +748,10 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			//end   = new Date(end.getTime() - timezone.getOffset(end.getTime()));
 			
 			// adjust end date: ICal sets end dates to the next day
-			end = end.minus((1000 * 60 * 60 * 24), ChronoUnit.MILLIS);
-		} else if(start != null && end != null && ChronoUnit.MILLIS.between(start, end) == (24 * 60 * 60 * 1000)) {
+			end = end == null
+					? null
+					: end.minus((1000 * 60 * 60 * 24), ChronoUnit.MILLIS);
+		} else if(start != null && end != null && ChronoUnit.MILLIS.between(start, end) % (24 * 60 * 60 * 1000) == 0) {
 			//check that start has no hour, no minute and no second
 			isAllDay = start.getHour() == 0 && start.getMinute() == 0
 					&& start.getSecond() == 0 && start.get(ChronoField.MILLI_OF_SECOND) == 0;
@@ -1382,9 +1385,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return periodEnd;
 	}
 	
-	private List<ZonedDateTime> getExDates(VEvent vEvent) {
+	private List<Temporal> getExDatesTimes(VEvent vEvent) {
 		List<Property> exDateProps = vEvent.getProperties(Property.EXDATE);
-		List<ZonedDateTime> exDates = new ArrayList<>();
+		List<Temporal> exDates = new ArrayList<>();
 		for(Property exDateProp:exDateProps) {
 			if(exDateProp instanceof DateListProperty dateList) {
 				@SuppressWarnings("unchecked")
@@ -1397,11 +1400,26 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return exDates;
 	}
 	
-	private boolean isEx(Period<Temporal> period, List<ZonedDateTime> exDates) {
-		ZonedDateTime pStart = CalendarUtils.convertTemporal(period.getStart(), calendarModule.getDefaultZoneId());
-		for(ZonedDateTime exDate:exDates) {
+	private List<Temporal> getExDates(VEvent vEvent) {
+		List<Property> exDateProps = vEvent.getProperties(Property.EXDATE);
+		List<Temporal> exDates = new ArrayList<>();
+		for(Property exDateProp:exDateProps) {
+			if(exDateProp instanceof DateListProperty dateList) {
+				@SuppressWarnings("unchecked")
+				List<Temporal> dates = dateList.getDates();
+				for(Temporal date:dates) {
+					exDates.add(CalendarUtils.convertToLocalDate(date));
+				}
+			}
+		}
+		return exDates;
+	}
+	
+	private boolean isEx(Period<Temporal> period, List<Temporal> exDates) {
+		LocalDate pStart = CalendarUtils.convertToLocalDate(period.getStart());
+		for(Temporal exDate:exDates) {
 			//ical4j 3 checks for DATE too
-			if(period.includes(exDate) || DateUtils.isSameDay(pStart, exDate)) {
+			if(period.includes(exDate) || DateUtils.isSameDay(pStart, CalendarUtils.convertToLocalDate(exDate))) {
 				return true;
 			}
 		}
@@ -1418,14 +1436,24 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		periodStart = calculateRecurringStartPeriod(periodStart, recurringIdDates);
 		periodEnd = calculateRecurringEndPeriod(periodEnd, recurringIdDates);
 
-		//calculate the events in the specified period
-        Period<ZonedDateTime> recurringPeriod = new Period<>(periodStart, periodEnd);
-		Set<Period<Temporal>> periodList = vEvent.calculateRecurrenceSet(recurringPeriod);
+		// Calculate the events in the specified period, the ExDates (exception)
+		// must be of the same type as the event: both date or date-time
+		Period<Temporal> recurringPeriod;
+		boolean dateOnly = vEvent.getDateTimeStart().getDate() instanceof LocalDate;
+		if(dateOnly) {
+			recurringPeriod = new Period<>(periodStart.toLocalDate(), periodEnd.toLocalDate());
+		} else {
+			recurringPeriod = new Period<>(periodStart, periodEnd);
+		}
+
+        Set<Period<Temporal>> periodList = vEvent.calculateRecurrenceSet(recurringPeriod);
 		List<KalendarRecurEvent> recurringEvents = new ArrayList<>();
-		List<ZonedDateTime> exDates = getExDates(vEvent);
+		List<Temporal> exDates = dateOnly
+				? getExDates(vEvent)
+				: getExDatesTimes(vEvent);
 		
 		for(Period<Temporal> period : periodList) {
-			ZonedDateTime date = ZonedDateTime.from(period.getStart());
+			ZonedDateTime date = CalendarUtils.convertTemporal(period.getStart(), userTz);
 			if(isEx(period, exDates)) {
 				continue;
 			}
