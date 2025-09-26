@@ -86,8 +86,14 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 1, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
-		titleItem.setElementCssClass("o_tiny_icon_placeholder o_title_editor");
 		titleItem.setPlaceholderKey("title.placeholder", null);
+		setCssClasses();
+	}
+
+	private void setCssClasses() {
+		String sizeClass = "o_title_size_" + title.getTitleSettings().getSize();
+		titleItem.setElementCssClass("o_tiny_content_editor o_title_editor " + sizeClass);
+		
 	}
 
 	@Override
@@ -97,11 +103,10 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source instanceof TitleInspectorController && event instanceof ChangePartEvent) {
-			ChangePartEvent cpe = (ChangePartEvent)event;
+		if(source instanceof TitleInspectorController && event instanceof ChangePartEvent cpe) {
 			if(cpe.getElement().equals(title)) {
 				title = (TitleElement)cpe.getElement();
-				doUpdate();
+				doUpdateStyle();
 			}
 		}
 		super.event(ureq, source, event);
@@ -110,39 +115,19 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof DropToEditorEvent dropToEditorEvent) {
-			syncContent(ureq, dropToEditorEvent.getContent());
+			doUpdateContent(ureq, dropToEditorEvent.getContent());
 		} else if (event instanceof DropToPageElementEvent dropToPageElementEvent) {
-			syncContent(ureq, dropToPageElementEvent.getContent());
+			doUpdateContent(ureq, dropToPageElementEvent.getContent());
 		} else if (event instanceof EditPageElementEvent) {
-			if (StringHelper.containsNonWhitespace(title.getContent())) {
-				String formattedContent = getFormattedContent(title.getContent());
-				titleItem.setValue(formattedContent);
-			} else {
-				titleItem.setValue("");
-			}
+			doUpdateRichText();
 		}
 		super.event(ureq, source, event);
-	}
-
-	private String getFormattedContent(String content) {
-		String rawContent = FilterFactory.getHtmlTagsFilter().filter(content);
-		TitleSettings titleSettings = title.getTitleSettings();
-		return TitleElement.toHtmlForEditor(rawContent, titleSettings);
-	}
-
-	private void syncContent(UserRequest ureq, String content) {
-		String formattedContent = getFormattedContent(content);
-		if (!titleItem.getValue().equals(formattedContent)) {
-			titleItem.setValue(formattedContent);
-			doSave(ureq);
-		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(titleItem == source && RichTextElement.SAVE_INLINE_EVENT.equals(event.getCommand())) {
 			doSave(ureq);
-			titleItem.setValue(getFormattedContent(titleItem.getValue()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -151,20 +136,38 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	protected void formOK(UserRequest ureq) {
 		doSave(ureq);
 	}
+
+	private void doUpdateContent(UserRequest ureq, String content) {
+		String rawContent = getRawContent(content);
+		if (!titleItem.getValue().equals(rawContent)) {
+			titleItem.setValue(rawContent);
+			doSave(ureq);
+		}
+	}
+
+	private String getRawContent(String content) {
+		return FilterFactory.getHtmlTagsFilter().filter(content);
+	}
+
+	private void doUpdateRichText() {
+		if (StringHelper.containsNonWhitespace(title.getContent())) {
+			String rawContent = getRawContent(title.getContent());
+			titleItem.setValue(rawContent);
+		} else {
+			titleItem.setValue("");
+		}
+	}
 	
-	private void doUpdate() {
-		TitleSettings titleSettings = title.getTitleSettings();
-		String content = title.getContent();
-		String htmlContent = TitleElement.toHtmlForEditor(content, titleSettings);
-		titleItem.setValue(htmlContent);
+	private void doUpdateStyle() {
+		titleItem.setValue(title.getContent());
+		setCssClasses();
 		setBlockLayoutClass();
 		setHeight();
 	}
 	
 	private void doSave(UserRequest ureq) {
-		String htmlContent = titleItem.getValue();
-		String content = FilterFactory.getHtmlTagsFilter().filter(htmlContent);
-		title.setContent(content);
+		String rawContent = getRawContent(titleItem.getValue());
+		title.setContent(rawContent);
 		title = store.savePageElement(title);
 		fireEvent(ureq, new ChangePartEvent(title));
 	}

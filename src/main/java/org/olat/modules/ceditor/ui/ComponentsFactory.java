@@ -73,7 +73,7 @@ public class ComponentsFactory {
 	}
 
 	public static final TextComponent getContent(ParagraphElement element, String placeholder) {
-		String content = "<span class=\"o_text_placeholder\"><i class=\"o_icon o_icon-fw o_icon_align_left\"> </i>" + placeholder + "</span>";
+		String content = "<span class=\"o_text_placeholder\"><i class=\"o_icon o_icon-fw o_icon_align_left\"> </i> " + placeholder + "</span>";
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;

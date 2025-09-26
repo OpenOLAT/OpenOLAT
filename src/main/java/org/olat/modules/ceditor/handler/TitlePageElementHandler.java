@@ -124,7 +124,6 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public PageElement createPageElement(Locale locale) {
 		TitlePart title = new TitlePart();
-		title.setContent(Util.createPackageTranslator(TitleEditorController.class, locale).translate("title.placeholder"));
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
 		settings.setLayoutSettings(BlockLayoutSettings.getPredefined());
