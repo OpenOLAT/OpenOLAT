@@ -113,7 +113,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			.withIconCss(FormCourseNode.ICON_CSS)
 			.build();
 
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
 	public static final String CONFIG_KEY_MULTI_PARTICIPATION = "multi.participation";
 	public static final String CONFIG_KEY_RELATIVE_DATES = "rel.dates";
@@ -125,6 +125,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_CONFIRMATION_PARTICIPANT = "confirmation.participant";
 	public static final String CONFIG_KEY_CONFIRMATION_EXTERNAL = "confirmation.external";
 	public static final String CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS = "confirmation.external.mails";
+	public static final String CONFIG_KEY_REPORT_USER_EMAIL = "report.user.email";
 
 	public FormCourseNode() {
 		super(TYPE);
@@ -437,6 +438,9 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		}
 		if (version < 3) {
 			config.setBooleanEntry(CONFIG_KEY_MULTI_PARTICIPATION, false);
+		}
+		if (version < 4) {
+			config.setBooleanEntry(CONFIG_KEY_REPORT_USER_EMAIL, true);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

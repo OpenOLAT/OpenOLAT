@@ -84,6 +84,7 @@ public class FormConfigController extends FormBasicController {
 	private DueDateConfigFormItem participationDeadlineEl;
 	private MultipleSelectionElement confirmationEl;
 	private TextElement externalMailTextEl;
+	private MultipleSelectionElement reportUserEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
@@ -95,6 +96,7 @@ public class FormConfigController extends FormBasicController {
 	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
 	private RepositoryEntry formEntry;
+	private boolean reportUserEmail;
 	
 	@Autowired
 	private FormManager formManager;
@@ -184,6 +186,11 @@ public class FormConfigController extends FormBasicController {
 		externalMailTextEl = uifactory.addTextElement("external.mails", "", -1, confirmationExternalMails, formLayout);
 		externalMailTextEl.setPlaceholderKey("edit.confirmation.external.placeholder", null);
 		
+		reportUserEl = uifactory.addCheckboxesVertical("edit.confirmation.attachment", formLayout, ON_KEYS,
+				new String[] { translate("edit.confirmation.attachment.user") }, 1);
+		reportUserEl.addActionListener(FormEvent.ONCHANGE);
+		reportUserEmail = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_REPORT_USER_EMAIL);
+		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
@@ -209,6 +216,11 @@ public class FormConfigController extends FormBasicController {
 		replaceLink.setVisible(formSelected && replacePossible);
 		editLink.setVisible(formSelected);
 		externalMailTextEl.setVisible(confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL));
+		
+		reportUserEl.setVisible(confirmationEl.isAtLeastSelected(1));
+		if (reportUserEl.isVisible()) {
+			reportUserEl.select(reportUserEl.getKey(0), reportUserEmail);
+		}
 	}
 	
 	private void updateParticipationDeadlineUI() {
@@ -226,6 +238,8 @@ public class FormConfigController extends FormBasicController {
 			doPreviewEvaluationForm(ureq);
 		} else if(relativeDatesEl == source) {
 			updateParticipationDeadlineUI();
+		} else if (reportUserEl == source) {
+			reportUserEmail = reportUserEl.isAtLeastSelected(1);
 		}
 		updateUI();
 		super.formInnerEvent(ureq, source, event);
@@ -367,7 +381,10 @@ public class FormConfigController extends FormBasicController {
 			config.setStringValue(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS, "");
 			externalMailTextEl.setValue("");
 		}
-
+		
+		boolean reportUserEmail = !reportUserEl.isVisible() || reportUserEl.isAtLeastSelected(1);
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_REPORT_USER_EMAIL, reportUserEmail);
+		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 

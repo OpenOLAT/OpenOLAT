@@ -1,4 +1,6 @@
-$r.render("user")
+#if($r.available("user"))
+	$r.render("user")
+#end
 #if($r.available("runs"))
 	<div class="o_button_group o_button_group_right">
 		$r.render("runs")

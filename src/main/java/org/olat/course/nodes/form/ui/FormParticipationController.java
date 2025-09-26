@@ -68,23 +68,25 @@ public class FormParticipationController extends BasicController {
 	private final VelocityContainer mainVC;
 	private Dropdown runsDropdown;
 
-	private final CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
+	private CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
 	private EvaluationFormExecutionController executionCtrl;
 	
 	@Autowired
 	private FormManager formManager;
 
 	public FormParticipationController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			UserCourseEnvironment coachedCourseEnv) {
+			UserCourseEnvironment coachedCourseEnv, boolean displayUser) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("participation");
 		String courseTitle = coachedCourseEnv.getCourseEnvironment().getCourseTitle();
 		mainVC.contextPut("courseTitle", courseTitle);
 		
-		coachedIdentityLargeInfosCtrl = new CoachedIdentityLargeInfosController(ureq, wControl, coachedCourseEnv);
-		listenTo(coachedIdentityLargeInfosCtrl);
-		mainVC.put("user", coachedIdentityLargeInfosCtrl.getInitialComponent());
+		if (displayUser) {
+			coachedIdentityLargeInfosCtrl = new CoachedIdentityLargeInfosController(ureq, wControl, coachedCourseEnv);
+			listenTo(coachedIdentityLargeInfosCtrl);
+			mainVC.put("user", coachedIdentityLargeInfosCtrl.getInitialComponent());
+		}
 		
 		RepositoryEntry courseEntry = coachedCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
