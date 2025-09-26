@@ -53,6 +53,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.ui.FormParticipationController;
 import org.olat.course.nodes.form.ui.FormRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -177,8 +178,9 @@ public class FormMailing {
 	}
 
 	private void addFormPdfAttachment(MailTemplate mailTemplate, CourseNode courseNode, UserCourseEnvironment coachedCourseEnv, File formPdf) {
+		boolean displayUser = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_REPORT_USER_EMAIL);
 		ControllerCreator controllerCreator = (lureq, lwControl) -> new FormParticipationController(lureq, lwControl,
-				courseNode, coachedCourseEnv);
+				courseNode, coachedCourseEnv, displayUser);
 		try (OutputStream out = new FileOutputStream(formPdf)) {
 			WindowControl bwControl = new WindowControlMocker();
 			Identity identity = coachedCourseEnv.getIdentityEnvironment().getIdentity();

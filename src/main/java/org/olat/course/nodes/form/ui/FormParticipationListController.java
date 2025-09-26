@@ -439,7 +439,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		Identity coachedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		UserCourseEnvironment coachedCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(
 				coachedIdentity, coachCourseEnv.getCourseEnvironment());
-		particpationCtrl = new FormParticipationController(ureq, bwControl, courseNode, coachedCourseEnv);
+		particpationCtrl = new FormParticipationController(ureq, bwControl, courseNode, coachedCourseEnv, true);
 		listenTo(particpationCtrl);
 		
 		String fullName = userManager.getUserDisplayName(row.getIdentityKey());

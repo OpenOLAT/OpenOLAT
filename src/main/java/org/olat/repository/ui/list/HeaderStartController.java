@@ -55,13 +55,13 @@ public class HeaderStartController extends BasicController {
 		mainVC = createVelocityContainer("details_header_start");
 		putInitialPanel(mainVC);
 		
-		startLink = LinkFactory.createCustomLink("start", "start", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+		startLink = LinkFactory.createCustomLink("start", "header.start", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 		startLink.setEscapeMode(EscapeMode.html);
 		startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 		startLink.setPrimary(true);
 		startLink.setElementCssClass("o_start o_button_call_to_action o_nowrap");
 		
-		leaveLink = LinkFactory.createCustomLink("leave", "leave", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+		leaveLink = LinkFactory.createCustomLink("leave", "header.leave", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 		leaveLink.setCustomDisplayText(translate("sign.out"));
 		leaveLink.setElementCssClass("o_sign_out");
 		leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
