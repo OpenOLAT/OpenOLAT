@@ -86,6 +86,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		titleItem = uifactory.addRichTextElementForStringDataCompact("title", null, content, 1, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
+		titleItem.setElementCssClass("o_tiny_icon_placeholder o_title_editor");
 		titleItem.setPlaceholderKey("title.placeholder", null);
 	}
 
@@ -114,10 +115,8 @@ public class TitleEditorController extends FormBasicController implements PageEl
 			syncContent(ureq, dropToPageElementEvent.getContent());
 		} else if (event instanceof EditPageElementEvent) {
 			if (StringHelper.containsNonWhitespace(title.getContent())) {
-				String content = FilterFactory.getHtmlTagsFilter().filter(title.getContent());
-				TitleSettings titleSettings = title.getTitleSettings();
-				content = TitleElement.toHtmlForEditor(content, titleSettings);
-				titleItem.setValue(content);
+				String formattedContent = getFormattedContent(title.getContent());
+				titleItem.setValue(formattedContent);
 			} else {
 				titleItem.setValue("");
 			}
@@ -125,13 +124,16 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		super.event(ureq, source, event);
 	}
 
-	private void syncContent(UserRequest ureq, String content) {
-		content = FilterFactory.getHtmlTagsFilter().filter(content);
+	private String getFormattedContent(String content) {
+		String rawContent = FilterFactory.getHtmlTagsFilter().filter(content);
 		TitleSettings titleSettings = title.getTitleSettings();
-		content = TitleElement.toHtmlForEditor(content, titleSettings);
+		return TitleElement.toHtmlForEditor(rawContent, titleSettings);
+	}
 
-		if (!titleItem.getValue().equals(content)) {
-			titleItem.setValue(content);
+	private void syncContent(UserRequest ureq, String content) {
+		String formattedContent = getFormattedContent(content);
+		if (!titleItem.getValue().equals(formattedContent)) {
+			titleItem.setValue(formattedContent);
 			doSave(ureq);
 		}
 	}
@@ -140,6 +142,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(titleItem == source && RichTextElement.SAVE_INLINE_EVENT.equals(event.getCommand())) {
 			doSave(ureq);
+			titleItem.setValue(getFormattedContent(titleItem.getValue()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -104,6 +104,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 			htmlItem.getEditorConfiguration().setToolLinkTreeModel(toolLinkTreeModel);
 		}
 		htmlItem.setPlaceholderKey("text.placeholder", null);
+		htmlItem.setElementCssClass("o_tiny_icon_placeholder o_text_editor");
 
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);
 	}

@@ -249,3 +249,27 @@ figure.image {
 		}
 	}
 }
+
+.mce-content-body.o_tiny_icon_placeholder:not([dir=rtl])[data-mce-placeholder]:not(.mce-visualblocks)::before {
+	left: 1.25em;
+	color: $input-color-placeholder;
+}
+
+.mce-content-body.o_tiny_icon_placeholder:not([dir=rtl])[data-mce-placeholder]:not(.mce-visualblocks)::after {
+	color: $input-color-placeholder;
+	width: 1.25em;
+	position: absolute;
+	top: 0;
+	font-family: $fa-style-family;
+}
+
+.mce-content-body.o_title_editor:not([dir=rtl])[data-mce-placeholder]:not(.mce-visualblocks)::after {
+	content: "#{$fa-var-header}";
+	font-weight: 800;
+}
+
+.mce-content-body.o_text_editor:not([dir=rtl])[data-mce-placeholder]:not(.mce-visualblocks)::after {
+	content: "#{$fa-var-align-left}";
+	font-weight: 800;
+}
+

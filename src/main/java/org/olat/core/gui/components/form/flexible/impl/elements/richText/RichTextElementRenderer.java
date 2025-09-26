@@ -269,8 +269,21 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append("    height: '").append(heightInPx).append("px',\n");
 		}
 		
-		sb.append("    init_instance_callback: function (editor) {\n")
-		  .append("      const dialogContainer = editor.editorContainer.closest('dialog');\n")
+		sb.append("    init_instance_callback: function (editor) {\n");
+		if (StringHelper.containsNonWhitespace(te.getElementCssClass())) {
+			String[] cssClasses = te.getElementCssClass().split(" ");
+			sb.append("      const innerDoc = editor.getDoc();\n");
+			sb.append("      if (innerDoc) {\n");
+			sb.append("        const tinyBody = innerDoc.getElementById('tinymce');\n");
+			sb.append("        if (tinyBody) {\n");
+			for (String cssClass : cssClasses) {
+				sb.append("          tinyBody.classList.add('")
+						.append(cssClass).append("');\n");
+			}
+			sb.append("        }\n");
+			sb.append("      }\n");
+		}
+		sb.append("      const dialogContainer = editor.editorContainer.closest('dialog');\n")
 		  .append("      if (dialogContainer) {\n")
 		  .append("        const auxElements = document.querySelectorAll('body > .tox-tinymce-aux');\n")
 		  .append("        if (auxElements.length) dialogContainer.append(auxElements[auxElements.length - 1]);\n")

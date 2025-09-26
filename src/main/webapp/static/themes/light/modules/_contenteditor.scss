@@ -1990,7 +1990,7 @@ table.o_ce_table {
 		word-break: break-word;
 		
 		.o_title_placeholder {
-			color: #7b7b7b;
+			color: $input-color-placeholder;
 		}
 	}
 
@@ -2008,7 +2008,7 @@ table.o_ce_table {
 		word-break: break-word;
 		
 		.o_text_placeholder {
-			color: #7b7b7b;
+			color: $input-color-placeholder;
 		}
 	}
 
