@@ -62,6 +62,14 @@ import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.UserListController;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -88,6 +96,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	private UserManager userManager;
 	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -443,6 +453,55 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(0, entryGroup2.getCountNotAttempted());
 		Assert.assertEquals(1, entryGroup2.getInitialLaunch());
 		Assert.assertEquals(6.0f, entryGroup2.getAverageScore(), 0.0001f);
+	}
+	
+	@Test
+	public void getCoursesCurriculums() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-5");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-owner-1");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-for-impl-5", "Curriculum for implementation", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+	
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		curriculumService.addMember(element, owner, CurriculumRoles.owner, JunitTestHelper.getDefaultActor());
+		
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/curriculum_course.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(owner, "Course in curriculum", RepositoryEntryStatusEnum.published, courseUrl);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<Curriculum> list = coachingService.getCoursesCurriculums(owner, GroupRoles.owner,
+				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+		Assertions.assertThat(list)
+			.contains(curriculum);
+	}
+	
+	@Test
+	public void getCourseReferences() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-6");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("repo-owner-2");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("Cur-for-impl-6", "Curriculum for implementation", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+	
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-6", "6. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		curriculumService.addMember(element, owner, CurriculumRoles.owner, JunitTestHelper.getDefaultActor());
+		
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/curriculum_course.zip");
+		RepositoryEntry course = JunitTestHelper.deployCourse(owner, "Course with ref. to curriculum", RepositoryEntryStatusEnum.published, courseUrl);
+		curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<Curriculum> list = coachingService.getCourseReferences(course, owner, GroupRoles.owner);
+		Assertions.assertThat(list)
+			.contains(curriculum);
 	}
 	
 	/**

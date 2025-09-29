@@ -20,6 +20,7 @@
 package org.olat.modules.coach.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -382,6 +383,10 @@ public class CourseStatEntryRow implements RepositoryEntryShort {
 	
 	public long getNumOfReferences() {
 		return entry.getNumOfReferences();
+	}
+	
+	public List<Long> getCurriculumsKeys() {
+		return entry.getCurriculumsKeys();
 	}
 
 	public FormLink getReferencesLink() {

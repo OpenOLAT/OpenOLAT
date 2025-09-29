@@ -797,7 +797,7 @@ public class CoachingDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select")
 		  .append("  re.key,")
-		  .append("  count(distinct curEl.curriculum.key) as numOfCurriculums")
+		  .append("  curEl.curriculum.key")
 		  .append(" from repositoryentry as re")
 		  .append(" inner join re.groups as reToGroup")
 		  .append(" inner join reToGroup.group as rGroup")
@@ -817,7 +817,6 @@ public class CoachingDAO {
 			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
 			  .append(" )");
 		}
-		sb.append(" group by re.key");
 		
 		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -825,11 +824,16 @@ public class CoachingDAO {
 				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 		for(Object[] rawObjects:rawList) {
-			Long entryKey = ((Number)rawObjects[0]).longValue();
+			Long entryKey = PersistenceHelper.extractLong(rawObjects, 0);
+			Long curriculumKey = PersistenceHelper.extractLong(rawObjects, 1);
 			CourseStatEntry stats = map.get(entryKey);
-			if(stats != null) {
-				long numOfReferences = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
-				stats.setNumOfReferences(numOfReferences);
+			if(stats != null && curriculumKey != null) {
+				if(stats.getCurriculumsKeys() == null) {
+					stats.setCurriculumsKeys(new ArrayList<>(2));
+				}
+				if(!stats.getCurriculumsKeys().contains(curriculumKey)) {
+					stats.getCurriculumsKeys().add(curriculumKey);
+				}
 			}
 		}
 	}
@@ -870,6 +874,46 @@ public class CoachingDAO {
 				.createQuery(sb.toString(), Curriculum.class)
 				.setParameter("coachKey", coach.getKey())
 				.setParameter("repositoryEntryKey", entry.getKey())
+				.setFlushMode(FlushModeType.COMMIT)
+				.getResultList();
+	}
+	
+	public List<Curriculum> getCoursesReferences(Identity coach, GroupRoles role, List<RepositoryEntryRuntimeType> runtimeTypes) {
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select distinct cur")
+		  .append(" from repositoryentry v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as participantGroup")
+		  .append(" inner join v.groups as reToGroup")
+		  .append(" inner join reToGroup.group as rGroup")
+		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
+		  .append(" inner join curriculum as cur")
+		  .where()
+		  .append(" v.status ").in(role == GroupRoles.owner
+		  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and()
+		  .append(" v.runtimeType in :runtimeTypes")
+		  .and();
+
+		if(role == GroupRoles.owner) {
+			sb.append("v.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(")");
+		} else if(role == GroupRoles.coach)  {
+			sb.append("participantGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(")");
+		}
+		
+		List<String> runtimeTypesList = runtimeTypes.stream()
+				.map(RepositoryEntryRuntimeType::name)
+				.toList();
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Curriculum.class)
+				.setParameter("coachKey", coach.getKey())
+				.setParameter("runtimeTypes", runtimeTypesList)
 				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 	}

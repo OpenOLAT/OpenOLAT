@@ -211,4 +211,27 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		boolean hasOneImplementation = myImplementationsQueries.hasImplementations(participant, true);
 		Assert.assertTrue(hasOneImplementation);
 	}
+	
+	@Test
+	public void getCurriculums() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-5");
+		
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-impl-5", "Curriculum for implementation", "Curriculum", false,
+				JunitTestHelper.getDefaultOrganisation());
+		CurriculumElementType multipleCoursesType = curriculumElementTypeDao.createCurriculumElementType("typ-multiple-cur-el-5", "Type for multiple courses", "", "");
+		multipleCoursesType.setAllowedAsRootElement(true);
+		multipleCoursesType.setMaxRepositoryEntryRelations(-1);
+		multipleCoursesType.setSingleElement(true);
+		multipleCoursesType = curriculumElementTypeDao.update(multipleCoursesType);
+			
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, multipleCoursesType, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
+		dbInstance.commitAndCloseSession();
+
+		List<Curriculum> list = myImplementationsQueries.getCurriculums(participant, List.of(GroupRoles.participant), null);
+		Assertions.assertThat(list)
+			.containsExactly(curriculum);
+	}
 }

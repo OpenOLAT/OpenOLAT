@@ -29,6 +29,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
@@ -136,4 +137,40 @@ public class RepositoryEntryMyImplementationsQueries {
 		}
 		return elements.getResultList();
 	}
+	
+	public List<Curriculum> getCurriculums(IdentityRef identity, List<GroupRoles> roles, List<CurriculumElementStatus> searchStatus) {
+		String query = """
+			select distinct cur from curriculumelement el
+			left join el.type curElementType
+			left join el.curriculum cur
+			where el.status in (:status)
+			and (
+			  el.parent.key is not null
+			 or
+			  curElementType.maxRepositoryEntryRelations=-1
+			 or
+			  curElementType.singleElement=false
+			) and (
+			  exists (select membership.key from bgroupmember as membership
+			  where el.group.key=membership.group.key and membership.identity.key=:identityKey
+			  and membership.role in (:roles)
+			 )
+			 or exists (select reservation.key from resourcereservation as reservation
+			  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey
+			))""";
+		
+		List<String> status = searchStatus != null
+				? searchStatus.stream().map(CurriculumElementStatus::name).toList()
+				: VISIBLE_STATUS.stream().map(CurriculumElementStatus::name).toList();
+		List<String> rolesList = roles.stream()
+				.map(GroupRoles::name)
+				.toList();
+	
+		return dbInstance.getCurrentEntityManager().createQuery(query, Curriculum.class)
+				.setParameter("status", status)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", rolesList)
+				.getResultList();
+	}
+	
 }

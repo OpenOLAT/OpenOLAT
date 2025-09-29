@@ -95,6 +95,9 @@ public interface CoachingService {
 	 */
 	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
+
+	public List<Curriculum> getCoursesCurriculums(Identity identity, GroupRoles role,
+			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
 	
 	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement);
 

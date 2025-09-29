@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.curriculum.Curriculum;
@@ -61,7 +62,8 @@ public class CourseReferencesController extends BasicController {
 		List<Reference> references = new ArrayList<>();
 		for(Curriculum curriculum:curriculums) {
 			String id = "ref_" + references.size();
-			Link link = LinkFactory.createLink(id, id, "ref", curriculum.getDisplayName(), getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+			String title = StringHelper.escapeHtml(curriculum.getDisplayName());
+			Link link = LinkFactory.createLink(id, id, "ref", title, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 			List<ContextEntry> entries = BusinessControlFactory.getInstance()
 					.createCEListFromString(CurriculumHelper.getCurriculumBusinessPath(curriculum.getKey()));
 			link.setUrl(BusinessControlFactory.getInstance().getAsAuthURIString(entries, true));

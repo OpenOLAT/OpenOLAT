@@ -97,6 +97,7 @@ import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -136,6 +137,7 @@ public class CourseListController extends FormBasicController implements Activat
 	protected static final String FILTER_NOT_VISITED = "not-visited";
 	protected static final String FILTER_LAST_VISIT = "last-visit";
 	protected static final String FILTER_ASSESSMENT = "assessment";
+	protected static final String FILTER_CURRICULUM = "Curriculum";
 	protected static final String FILTER_CERTIFICATES = "certificates";
 	protected static final String FILTER_RESOURCE_TYPE = "resourcetype";
 	protected static final String FILTER_WITH_PARTICIPANTS = "WithParticipants";
@@ -379,6 +381,23 @@ public class CourseListController extends FormBasicController implements Activat
 		statusPK.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate("status.closed")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusPK, owner));
+		
+		List<Curriculum> curriculums = loadCurriculumsForFilter();
+		if(!curriculums.isEmpty()) {
+			SelectionValues curriculumValues = new SelectionValues();
+			for(Curriculum cur:curriculums) {
+				String key = cur.getKey().toString();
+				String value = StringHelper.escapeHtml(cur.getDisplayName());
+				if(StringHelper.containsNonWhitespace(cur.getIdentifier())) {
+					value += " <small class=\"mute\"> \u00B7 " + StringHelper.escapeHtml(cur.getIdentifier()) + "</small>";
+				}
+				curriculumValues.add(SelectionValues.entry(key, value));
+			}
+			
+			FlexiTableMultiSelectionFilter curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
+					FILTER_CURRICULUM, curriculumValues, true);
+			filters.add(curriculumFilter);
+		}
 
 		SelectionValues resourceValues = new SelectionValues();
 		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
@@ -474,6 +493,10 @@ public class CourseListController extends FormBasicController implements Activat
 			}
 		}
 		return list;
+	}
+	
+	private List<Curriculum> loadCurriculumsForFilter() {
+		return coachingService.getCoursesCurriculums(getIdentity(), role, runtimeTypesGroup);
 	}
 
 	private void loadModel() {

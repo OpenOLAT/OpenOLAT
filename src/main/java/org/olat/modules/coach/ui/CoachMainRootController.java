@@ -312,7 +312,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementations", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		implementationsCtrl = new ImplementationsListController(ureq, bwControl, content, List.of(GroupRoles.owner, GroupRoles.coach));
+		implementationsCtrl = new ImplementationsListController(ureq, bwControl, content, List.of(GroupRoles.owner, GroupRoles.coach), true);
 		listenTo(implementationsCtrl);
 		content.pushController(translate("implementations.title"), implementationsCtrl);
 		return implementationsCtrl;

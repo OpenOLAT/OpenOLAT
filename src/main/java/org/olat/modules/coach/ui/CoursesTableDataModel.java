@@ -84,6 +84,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 			final List<String> status = getFilteredList(filters, CourseListController.FILTER_STATUS);
 			final List<String> resourcesTypesList = getFilteredList(filters, CourseListController.FILTER_RESOURCE_TYPE);
 			final Set<String> resourcesTypes = resourcesTypesList == null ? Set.of() : Set.copyOf(resourcesTypesList);
+			final List<String> curriculumsKeysList = getFilteredList(filters, CourseListController.FILTER_CURRICULUM);
+			final Set<String> curriculumsKeys = curriculumsKeysList == null ? Set.of() : Set.copyOf(curriculumsKeysList);
 			final LocalDateTime now = DateUtils.toLocalDateTime(new Date());
 			final String lastVisit = getFiltered(filters, CourseListController.FILTER_LAST_VISIT);
 			final Boolean marked = getFilteredOneClick(filters, CourseListController.FILTER_MARKED);
@@ -104,7 +106,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 						&& acceptWithoutParticipants(withoutParticipants, row)
 						&& acceptDateRange(executionPeriod, row)
 						&& acceptCertificates(certificates, row)
-						&& acceptLastVisit(lastVisit, now, row);
+						&& acceptLastVisit(lastVisit, now, row)
+						&& acceptCurriculums(curriculumsKeys, row);
 				if(accept) {
 					filteredRows.add(row);
 				}
@@ -135,6 +138,21 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 	private boolean acceptResourceType(Set<String> types, CourseStatEntryRow entry) {
 		if(types == null || types.isEmpty()) return true;
 		return types.contains(entry.getResourceType());
+	}
+	
+	private boolean acceptCurriculums(Set<String> curriculumsKeys, CourseStatEntryRow entry) {
+		if(curriculumsKeys == null || curriculumsKeys.isEmpty()) return true;
+		
+		List<Long> entryKeys = entry.getCurriculumsKeys();
+		if(entryKeys == null || entryKeys.isEmpty()) {
+			return false;
+		}
+		for(Long entryKey:entryKeys) {
+			if(curriculumsKeys.contains(entryKey.toString())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean acceptAssessment(List<String> refs, CourseStatEntryRow entry) {

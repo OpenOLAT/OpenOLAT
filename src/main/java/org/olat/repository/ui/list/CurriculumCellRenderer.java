@@ -31,7 +31,7 @@ import org.olat.modules.curriculum.Curriculum;
 /**
  * 
  * Initial date: 25 sept. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumCellRenderer implements FlexiCellRenderer {
@@ -43,7 +43,7 @@ public class CurriculumCellRenderer implements FlexiCellRenderer {
 			String displayName = curriculum.getDisplayName();
 			boolean hasDisplayName = StringHelper.containsNonWhitespace(displayName);
 			if(hasDisplayName) {
-				target.append(displayName);
+				target.appendHtmlEscaped(displayName);
 			}
 
 			String identifier = curriculum.getIdentifier();
@@ -52,7 +52,7 @@ public class CurriculumCellRenderer implements FlexiCellRenderer {
 				if(hasDisplayName) {
 					target.append(" \u00B7 ");
 				}
-				target.append(identifier).append("</small>");
+				target.appendHtmlEscaped(identifier).append("</small>");
 			}
 		}
 	}
