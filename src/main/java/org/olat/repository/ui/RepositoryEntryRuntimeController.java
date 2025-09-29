@@ -590,7 +590,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
-		boolean canCopy = !copyManaged && hasCopyDeletePermissions();
+		boolean canCopy = !copyManaged && hasCopyPermissions();
 		
 		boolean canDownload = re.getCanDownload() && handler.supportsDownload();
 		// disable download for courses if not author or owner
@@ -617,17 +617,30 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
+	protected final boolean hasCopyPermissions() {
+		return ((isNotEntryAdmin() && reSecurity.isAdministrativeUser() && hasMatchingOrgRole())
+					||
+					(isNotEntryAdmin() && reSecurity.isEntryAdmin() && reSecurity.getWrappedSecurity().isAdministrativeUser() && hasMatchingOrgRole()))
+					||
+					// Case of an author which enters a course with the flag "Can be copied"
+					((rolesDropdown == null || rolesDropdown.size() == 0) && reSecurity.getCurrentRole() == Role.participant && reSecurity.getWrappedSecurity().isAdministrativeUser() && re.getCanCopy());
+	}
+	
 	/**
 	 * @see https://track.frentix.com/issue/OO-8646
 	 * @return
 	 */
-	protected final boolean hasCopyDeletePermissions() {
-		return reSecurity.getCurrentRole() != Role.fakeParticipant && reSecurity.getCurrentRole() != Role.participant
-				&& reSecurity.getCurrentRole() != Role.coach && reSecurity.getCurrentRole() != Role.masterCoach
-				&& reSecurity.getCurrentRole() != Role.principal
+	protected final boolean hasDeletePermissions() {
+		return isNotEntryAdmin()
 				&& ((reSecurity.isAdministrativeUser() && hasMatchingOrgRole())
 						||
 						(reSecurity.isEntryAdmin() && reSecurity.getWrappedSecurity().isAdministrativeUser() && hasMatchingOrgRole()));
+	}
+	
+	private final boolean isNotEntryAdmin() {
+		return reSecurity.getCurrentRole() != Role.fakeParticipant && reSecurity.getCurrentRole() != Role.participant
+				&& reSecurity.getCurrentRole() != Role.coach && reSecurity.getCurrentRole() != Role.masterCoach
+				&& reSecurity.getCurrentRole() != Role.principal;
 	}
 
 	protected final boolean hasMatchingOrgRole() {

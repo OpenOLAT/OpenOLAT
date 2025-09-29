@@ -946,7 +946,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super.initToolsMenuEdition(toolsDropdown);
 		if (copyLink != null) {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			boolean canConvert = hasCopyDeletePermissions();
+			boolean canConvert = hasCopyPermissions();
 			if (course != null && !LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType()) && canConvert) {
 				Integer index = toolsDropdown.getComponentIndex(copyLink);
 				if(index != null) {
@@ -960,7 +960,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	protected void initToolsMenuCopy(Dropdown toolsDropdown, ICourse course) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
-		boolean canCopy = !copyManaged && hasCopyDeletePermissions();
+		boolean canCopy = !copyManaged && hasCopyPermissions();
 
 		if (canCopy && course != null) {
 			if (LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
@@ -986,7 +986,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void initToolsMenuDelete(Dropdown settingsDropdown) {
 		RepositoryEntry re = getRepositoryEntry();
 		boolean closeManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
-		boolean canRestoreDelete = hasCopyDeletePermissions();
+		boolean canRestoreDelete = hasDeletePermissions();
 
 		if(canRestoreDelete) {
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
@@ -1690,6 +1690,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case zoom: doZoom(ureq); break;
 						case myBadges: doMyBadges(ureq); break;
 						case issuedBadges: doIssuedBadges(ureq); break;
+						case qualityPreview: doQualityPreview(ureq); break;
+						case toDoTasks: doToDoTasks(ureq); break;
+						case toDoTasksMy: doMyToDoTasks(ureq);
 					}
 					delayedClose = null;
 				} else {
