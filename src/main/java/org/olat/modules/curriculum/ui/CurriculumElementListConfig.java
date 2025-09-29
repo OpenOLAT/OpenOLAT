@@ -19,28 +19,32 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
+import org.olat.basesecurity.GroupRoles;
+
 /**
  * 
  * Initial date: 24 avr. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumElementListConfig {
 	
 	private boolean preparationWarning;
-	private boolean participantsOnly;
+	private List<GroupRoles> asRoles;
 	
-	private CurriculumElementListConfig(boolean preparationWarning, boolean participantsOnly) {
+	private CurriculumElementListConfig(boolean preparationWarning, List<GroupRoles> asRoles) {
 		this.preparationWarning = preparationWarning;
-		this.participantsOnly = participantsOnly;
+		this.asRoles = asRoles;
 	}
 	
 	public static final CurriculumElementListConfig defaultConfig() {
-		return new CurriculumElementListConfig(false, false);
+		return null;//new CurriculumElementListConfig(false, false);
 	}
 	
-	public static final CurriculumElementListConfig config(boolean preparationWarning, boolean participantsOnly) {
-		return new CurriculumElementListConfig(preparationWarning, participantsOnly);
+	public static final CurriculumElementListConfig config(boolean preparationWarning, List<GroupRoles> asRoles) {
+		return new CurriculumElementListConfig(preparationWarning, asRoles);
 	}
 	
 	public boolean preparationWarning() {
@@ -48,6 +52,10 @@ public class CurriculumElementListConfig {
 	}
 
 	public boolean participantsOnly() {
-		return participantsOnly;
+		return asRoles.size() == 1 && asRoles.contains(GroupRoles.participant);
+	}
+	
+	public List<GroupRoles> asRoles() {
+		return asRoles;
 	}
 }

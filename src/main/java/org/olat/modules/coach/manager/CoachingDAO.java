@@ -61,10 +61,12 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry.Entries;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -495,6 +497,7 @@ public class CoachingDAO {
 			loadCoursesStatistics(identity, role, runtimeTypes, map);
 			loadCoursesStatisticsStatements(identity, role, map);
 			loadCoursesCompletions(identity, role, map);
+			loadCoursesReferences(identity, role, map);
 		}
 		return new ArrayList<>(map.values());
 	}
@@ -731,6 +734,86 @@ public class CoachingDAO {
 		}
 	}
 
+	private void loadCoursesReferences(Identity coach, GroupRoles role, Map<Long,CourseStatEntry> map) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select")
+		  .append("  re.key,")
+		  .append("  count(distinct curEl.curriculum.key) as numOfCurriculums")
+		  .append(" from repositoryentry as re")
+		  .append(" inner join re.groups as reToGroup")
+		  .append(" inner join reToGroup.group as rGroup")
+		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
+		  .where()
+		  .append("  re.status").in(role == GroupRoles.owner
+			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and();
+
+		if(role == GroupRoles.owner) {
+			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(")");
+		} else {
+			sb.append("rGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(" )");
+		}
+		sb.append(" group by re.key");
+		
+		List<Object[]> rawList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("coachKey", coach.getKey())
+				.setFlushMode(FlushModeType.COMMIT)
+				.getResultList();
+		for(Object[] rawObjects:rawList) {
+			Long entryKey = ((Number)rawObjects[0]).longValue();
+			CourseStatEntry stats = map.get(entryKey);
+			if(stats != null) {
+				long numOfReferences = PersistenceHelper.extractPrimitiveLong(rawObjects, 1);
+				stats.setNumOfReferences(numOfReferences);
+			}
+		}
+	}
+	
+	/**
+	 * Must match the method above.
+	 * 
+	 * @param entry
+	 * @param coach
+	 * @param role
+	 * @return
+	 */
+	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity coach, GroupRoles role) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct cur")
+		  .append(" from repositoryentry as re")
+		  .append(" inner join re.groups as reToGroup")
+		  .append(" inner join reToGroup.group as rGroup")
+		  .append(" inner join curriculumelement as curEl on (curEl.group.key=rGroup.key)")
+		  .append(" inner join curriculum as cur")
+		  .where()
+		  .append(" entry.key=:repositoryEntryKey and re.status").in(role == GroupRoles.owner
+			  		? RepositoryEntryStatusEnum.preparationToClosed() : RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .and();
+
+		if(role == GroupRoles.owner) {
+			sb.append("re.key in (select reToOwnerGroup.entry.key from repoentrytogroup as reToOwnerGroup")
+			  .append("  inner join bgroupmember as owner on (owner.role='owner' and owner.group.key=reToOwnerGroup.group.key)")
+			  .append("  where owner.identity.key=:coachKey")
+			  .append(")");
+		} else {
+			sb.append("rGroup.key in (select coach.group.key from bgroupmember as coach")
+			  .append("  where coach.role='coach' and coach.identity.key=:coachKey")
+			  .append(" )");
+		}
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Curriculum.class)
+				.setParameter("coachKey", coach.getKey())
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setFlushMode(FlushModeType.COMMIT)
+				.getResultList();
+	}
 	
 	
 	protected void loadOrganisationsMembers(List<Group> organisationsGroups, List<OrganisationRoles> excludedRoles,

@@ -1,0 +1,13 @@
+#if($r.isNotEmpty($references))
+	<h4>$r.translate("details.curriculuminfo.txt")</h4>
+	<ul class="o_dropdown list-unstyled o_coaching_curriculum_references">
+	#foreach($reference in $references)
+		<li>
+			$r.render(${reference.link()})
+			#if($r.isNotEmpty(${reference.getIdentifier()}))
+			<small class="text-muted">$r.escapeHtml(${reference.getIdentifier()})</small>
+			#end
+		</li>
+	#end
+	</ul>
+#end

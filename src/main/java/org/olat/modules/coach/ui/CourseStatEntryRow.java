@@ -29,7 +29,6 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
 import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -37,10 +36,10 @@ import org.olat.repository.ui.RepositoyUIFactory;
 /**
  * 
  * Initial date: 30 mai 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CourseStatEntryRow implements RepositoryEntryRef, RepositoryEntryShort {
+public class CourseStatEntryRow implements RepositoryEntryShort {
 	
 	private boolean marked;
 	private final CourseStatEntry entry;
@@ -57,6 +56,7 @@ public class CourseStatEntryRow implements RepositoryEntryRef, RepositoryEntrySh
 	private FormLink openLink;
 	private FormLink infosLink;
 	private FormItem ratingFormItem;
+	private FormLink referencesLink;
 	private FormLink taxonomyLevelsLink;
 	
 	public CourseStatEntryRow(CourseStatEntry entry, RepositoryEntryEducationalType educationalType, boolean showStatistics) {
@@ -378,5 +378,17 @@ public class CourseStatEntryRow implements RepositoryEntryRef, RepositoryEntrySh
 
 	public void setTaxonomyLevelsLink(FormLink taxonomyLevelsLink) {
 		this.taxonomyLevelsLink = taxonomyLevelsLink;
+	}
+	
+	public long getNumOfReferences() {
+		return entry.getNumOfReferences();
+	}
+
+	public FormLink getReferencesLink() {
+		return referencesLink;
+	}
+
+	public void setReferencesLink(FormLink referencesLink) {
+		this.referencesLink = referencesLink;
 	}
 }

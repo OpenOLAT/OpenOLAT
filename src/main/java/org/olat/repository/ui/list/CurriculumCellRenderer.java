@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,10 +14,10 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui.component;
+package org.olat.repository.ui.list;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -25,27 +25,35 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.Curriculum;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * Initial date: 25 sept. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementStatusCellRenderer implements FlexiCellRenderer {
+public class CurriculumCellRenderer implements FlexiCellRenderer {
 	
-	private final Translator translator;
-	
-	public CurriculumElementStatusCellRenderer(Translator translator) {
-		this.translator = translator;
-	}
-
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof CurriculumElementStatus status) {
-			target.append(translator.translate("status.".concat(status.name())));
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Curriculum curriculum) {
+			String displayName = curriculum.getDisplayName();
+			boolean hasDisplayName = StringHelper.containsNonWhitespace(displayName);
+			if(hasDisplayName) {
+				target.append(displayName);
+			}
+
+			String identifier = curriculum.getIdentifier();
+			if(StringHelper.containsNonWhitespace(identifier)) {
+				target.append("<small>");
+				if(hasDisplayName) {
+					target.append(" \u00B7 ");
+				}
+				target.append(identifier).append("</small>");
+			}
 		}
 	}
 }

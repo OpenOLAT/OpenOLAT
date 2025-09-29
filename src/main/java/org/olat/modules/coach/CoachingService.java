@@ -43,7 +43,9 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -92,6 +94,16 @@ public interface CoachingService {
 	 */
 	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
+	
+	/**
+	 * Load the curriculums which match the statistics of the method above.
+	 * @see getCoursesStatistics
+	 * 
+	 * @param identity The identity
+	 * @param role The role to search for, coach or owner only
+	 * @return A list of curriculums
+	 */
+	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, GroupRoles role);
 	
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach);
 	

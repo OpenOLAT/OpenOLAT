@@ -107,6 +107,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private final boolean guestOnly;
 	private final EventBus eventBus;
 	private final boolean participantsOnly;
+	private final List<GroupRoles> asRoles;
 	
 	@Autowired
 	private ACService acService;
@@ -129,6 +130,9 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		participantsOnly = repositoryModule.isMyCoursesParticipantsOnly();
+		asRoles = participantsOnly
+				? List.of(GroupRoles.participant)
+				: List.of(GroupRoles.participant, GroupRoles.coach);
 
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
@@ -186,7 +190,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		if(!guestOnly) {
 			if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
-				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true, participantsOnly, SCOPE_ELEMENT_STATUS);
+				List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(), true, asRoles, SCOPE_ELEMENT_STATUS);
 				for(CurriculumElement implementation:implementations) {
 					String name = StringHelper.escapeHtml(implementation.getDisplayName());
 					String hint = scopeDatesHint(implementation);
@@ -401,7 +405,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(implementationsListCtrl == null) {
 			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
 
-			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel);
+			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel, asRoles);
 			listenTo(implementationsListCtrl);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {

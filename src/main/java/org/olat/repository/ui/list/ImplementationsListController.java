@@ -20,15 +20,19 @@
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -36,13 +40,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,14 +59,19 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.ui.list.ImplementationsListDataModel.ImplementationsCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,49 +83,61 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ImplementationsListController extends FormBasicController implements Activateable2 {
-	
-	static final String FAVORITE_TAB = "Marks";
-	static final String ACTIVE_TAB = "Active";
-	static final String FINISHED_TAB = "Finished";
+
 	private final String CMD_SELECT  = "iselect";
 	
-	private FlexiFiltersTab favoriteTab;
+	private static final String ALL_TAB_ID = "All";
+	private static final String ACTIVE_TAB_ID = "Active";
+	private static final String FAVORITE_TAB_ID = "Marks";
+	private static final String FINISHED_TAB_ID = "Finished";
+	private static final String RELEVANT_TAB_ID = "Relevant";
+	private static final String PREPARATION_TAB_ID = "Preparation";
+	
+	static final String FILTER_MARKED = "Marked";
+	static final String FILTER_STATUS = "Status";
+	static final String FILTER_PERIOD = "Period";
+	static final String FILTER_CURRICULUM = "Curriculum";
+	
+	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab activeTab;
+	private FlexiFiltersTab favoriteTab;
 	private FlexiFiltersTab finishedTab;
+	private FlexiFiltersTab relevantTab;
+	private FlexiFiltersTab preparationTab;
 	
 	private FlexiTableElement tableEl;
 	private ImplementationsListDataModel tableModel;
 	private final BreadcrumbedStackedPanel stackPanel;
 	
-	private final boolean participantsOnly;
+	private final List<GroupRoles> asRoles;
+	private final boolean onlyParticipant;
 	
 	private ImplementationController implementationCtrl;
 
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
-	private RepositoryModule repositoryModule;
-	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
 	
-	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
+	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, List<GroupRoles> asRoles) {
 		super(ureq, wControl, "implementations");
-		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(),
+				Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		this.stackPanel = stackPanel;
-		participantsOnly = repositoryModule.isMyCoursesParticipantsOnly();
+		this.asRoles = asRoles;
+		onlyParticipant = asRoles.size() == 1 && asRoles.contains(GroupRoles.participant);
 		
 		initForm(ureq);
 		loadModel();
 		
 		if(tableModel.hasMarked()) {
-			tableModel.filter(FAVORITE_TAB);
 			tableEl.setSelectedFilterTab(ureq, favoriteTab);
 		} else {
-			tableModel.filter(ACTIVE_TAB);
-			tableEl.setSelectedFilterTab(ureq, activeTab);
+			tableEl.setSelectedFilterTab(ureq, allTab);
 		}
+		filterModel();
 	}
 
 	@Override
@@ -126,33 +152,106 @@ public class ImplementationsListController extends FormBasicController implement
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ImplementationsCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.displayName, CMD_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!onlyParticipant, ImplementationsCols.curriculum,
+				new CurriculumCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleStart,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ImplementationsCols.lifecycleEnd,
 				new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!onlyParticipant, ImplementationsCols.elementStatus,
+				new CurriculumStatusCellRenderer(getTranslator())));
 		
 		tableModel = new ImplementationsListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setSearchEnabled(true);
 		
+		initFilter();
 		initFilterPresets();
+	}
+	
+	private void initFilter() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues markedKeyValue = new SelectionValues();
+		markedKeyValue.add(SelectionValues.entry(FILTER_MARKED, translate("search.mark")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("search.mark"),
+				FILTER_MARKED, markedKeyValue, true));
+		
+		List<Curriculum> curriculums = loadCurriculumsForFilter();
+		if(!curriculums.isEmpty()) {
+			SelectionValues curriculumValues = new SelectionValues();
+			for(Curriculum cur:curriculums) {
+				String key = cur.getKey().toString();
+				String value = StringHelper.escapeHtml(cur.getDisplayName());
+				if(StringHelper.containsNonWhitespace(cur.getIdentifier())) {
+					value += " <small class=\"mute\"> \u00B7 " + StringHelper.escapeHtml(cur.getIdentifier()) + "</small>";
+				}
+				curriculumValues.add(SelectionValues.entry(key, value));
+			}
+			
+			FlexiTableMultiSelectionFilter curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
+					FILTER_CURRICULUM, curriculumValues, true);
+			filters.add(curriculumFilter);
+		}
+    	
+		SelectionValues statusValues = new SelectionValues();
+		if(!onlyParticipant) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.preparation.name(), translate("filter.preparation")));
+		}
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.provisional.name(), translate("filter.provisional")));
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.confirmed.name(), translate("filter.confirmed")));
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.active.name(), translate("filter.active")));
+		if(!onlyParticipant) {
+			statusValues.add(SelectionValues.entry(CurriculumElementStatus.cancelled.name(), translate("filter.cancelled")));
+		}
+		statusValues.add(SelectionValues.entry(CurriculumElementStatus.finished.name(), translate("filter.finished")));
+		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
+				FILTER_STATUS, statusValues, true);
+		filters.add(statusFilter);
+		
+		FlexiTableDateRangeFilter periodFilter = new FlexiTableDateRangeFilter(translate("filter.date.range"),
+				FILTER_PERIOD, true, false, getLocale());
+		filters.add(periodFilter);
+
+		tableEl.setFilters(true, filters, false, false);
 	}
 	
 	private void initFilterPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		favoriteTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAVORITE_TAB, translate("filter.mark"),
-				TabSelectionBehavior.nothing, List.of());
+		favoriteTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAVORITE_TAB_ID, translate("filter.mark"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_MARKED, FILTER_MARKED)));
 		tabs.add(favoriteTab);
+
+		if(onlyParticipant) {
+			activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB_ID, translate("filter.active") ,
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
+									CurriculumElementStatus.active.name()))));
+			tabs.add(activeTab);
+		} else {
+			allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+					TabSelectionBehavior.nothing, List.of());
+			tabs.add(allTab);
+			
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
+									CurriculumElementStatus.active.name()))));
+			tabs.add(relevantTab);
+			
+			preparationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PREPARATION_TAB_ID, translate("filter.preparation"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+							List.of(CurriculumElementStatus.preparation.name()))));
+			tabs.add(preparationTab);
+		}
 		
-		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ACTIVE_TAB, translate("filter.active"),
-				TabSelectionBehavior.nothing, List.of());
-		tabs.add(activeTab);
-		
-		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB, translate("filter.finished"),
-				TabSelectionBehavior.nothing, List.of());
+		finishedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FINISHED_TAB_ID, translate("filter.finished"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
+						List.of(CurriculumElementStatus.finished.name()))));
 		tabs.add(finishedTab);
+
 
 		tableEl.setFilterTabs(true, tabs);
 	}
@@ -160,23 +259,38 @@ public class ImplementationsListController extends FormBasicController implement
 	private void loadModel() {
 		Set<Long> markedElementKeys = markManager.getMarkResourceIds(getIdentity(), "CurriculumElement", List.of());
 		List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity(),
-				false, participantsOnly, null);
+				false, asRoles, null);
 		List<ImplementationRow> rows = new ArrayList<>();
 		for(CurriculumElement implementation:implementations) {
 			boolean marked = markedElementKeys.contains(implementation.getKey());
-			rows.add(forgeRow(implementation, marked));
+			Curriculum curriculum = implementation.getCurriculum();
+			rows.add(forgeRow(implementation, curriculum, marked));
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private ImplementationRow forgeRow(CurriculumElement implementation, boolean marked) {
+	private ImplementationRow forgeRow(CurriculumElement implementation, Curriculum curriculum, boolean marked) {
 		FormLink markLink = uifactory.addFormLink("mark_" + implementation.getResource().getKey(), "mark", "", tableEl, Link.NONTRANSLATED);
 		decoratedMarkLink(markLink, marked);
 		
-		ImplementationRow row = new ImplementationRow(implementation, markLink);
+		ImplementationRow row = new ImplementationRow(implementation, curriculum, markLink);
 		markLink.setUserObject(row);
 		return row;
+	}
+	
+	private void filterModel() {
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		tableEl.reset(true, true, true);
+	}
+	
+	private List<Curriculum> loadCurriculumsForFilter() {
+		Set<Curriculum> curriculums = new HashSet<>();
+		
+		CurriculumSearchParameters elementCoachParams = new CurriculumSearchParameters();
+		elementCoachParams.setElementOwner(getIdentity());
+		curriculums.addAll(curriculumService.getCurriculums(elementCoachParams));
+		return List.copyOf(curriculums);
 	}
 	
 	private void decoratedMarkLink(FormLink markLink, boolean marked) {
@@ -196,6 +310,30 @@ public class ImplementationsListController extends FormBasicController implement
 			if(row != null) {
 				doOpenImplementation(ureq, row);
 			}
+		} else if(ALL_TAB_ID.equalsIgnoreCase(type) && allTab != null) {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+			filterModel();
+		} else if(ACTIVE_TAB_ID.equalsIgnoreCase(type) && activeTab != null) {
+			tableEl.setSelectedFilterTab(ureq, activeTab);
+			filterModel();
+		} else if(FAVORITE_TAB_ID.equalsIgnoreCase(type) && favoriteTab != null) {
+			tableEl.setSelectedFilterTab(ureq, favoriteTab);
+			filterModel();
+		} else if(RELEVANT_TAB_ID.equalsIgnoreCase(type) && relevantTab != null) {
+			tableEl.setSelectedFilterTab(ureq, relevantTab);
+			filterModel();
+		} else if(FINISHED_TAB_ID.equalsIgnoreCase(type) && finishedTab != null) {
+			tableEl.setSelectedFilterTab(ureq, finishedTab);
+			filterModel();
+		} else if(PREPARATION_TAB_ID.equalsIgnoreCase(type) && preparationTab != null) {
+			tableEl.setSelectedFilterTab(ureq, preparationTab);
+			filterModel();
+		} else if(allTab != null) {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+			filterModel();
+		} else if(activeTab != null) {
+			tableEl.setSelectedFilterTab(ureq, activeTab);
+			filterModel();
 		}
 	}
 	
@@ -214,9 +352,8 @@ public class ImplementationsListController extends FormBasicController implement
 			if(event instanceof SelectionEvent se) {
 				ImplementationRow row = tableModel.getObject(se.getIndex());
 				doOpenImplementation(ureq, row);
-			} else if(event instanceof FlexiTableFilterTabEvent te) {
-				tableModel.filter(te.getTab().getId());
-				tableEl.reset(true, true, true);
+			} else if(event instanceof FlexiTableFilterTabEvent || event instanceof FlexiTableSearchEvent) {
+				filterModel();
 			}
 		} else if(source instanceof FormLink link && link.getUserObject() instanceof ImplementationRow row) {
 			if("mark".equals(link.getCmd())) {
@@ -240,7 +377,7 @@ public class ImplementationsListController extends FormBasicController implement
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementation", element.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		implementationCtrl = new ImplementationController(ureq, swControl, stackPanel,
-				element.getCurriculum(), element, participantsOnly, secCallback);
+				element.getCurriculum(), element, asRoles, secCallback);
 		listenTo(implementationCtrl);
 		stackPanel.pushController(element.getDisplayName(), implementationCtrl);
 	}

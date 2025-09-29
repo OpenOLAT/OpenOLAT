@@ -23,6 +23,7 @@ package org.olat.modules.coach.ui.curriculum.course;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.scope.Scope;
@@ -95,7 +96,8 @@ public class CourseListWrapperController extends BasicController implements Acti
 		List<Scope> scopes = new ArrayList<>(4);
 		scopes.add(ScopeFactory.createScope(CMD_ALL_COURSES, translate("all.courses"), null, "o_icon o_icon-fw o_icon_curriculum"));
 		if(curriculumModule.isEnabled()) {
-			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(mentee, true, false, null);
+			List<GroupRoles> asRoles = List.of(GroupRoles.coach, GroupRoles.participant);
+			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(mentee, true, asRoles, null);
 			for(CurriculumElement implementation:implementations) {
 				String name = StringHelper.escapeHtml(implementation.getDisplayName());
 				String hint = scopeDatesHint(implementation);

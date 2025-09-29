@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -244,8 +245,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
-		
+		if(config.asRoles().contains(GroupRoles.participant)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
@@ -340,7 +342,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		CurriculumElementStatus[] visibleStatus = RepositoryEntryMyImplementationsQueries.VISIBLE_STATUS.toArray(new CurriculumElementStatus[0]);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
 				.getCurriculumElements(assessedIdentity, roles, curriculumList, visibleStatus,
-						RepositoryEntryRuntimeType.notEmbedded(), config.participantsOnly());
+						RepositoryEntryRuntimeType.notEmbedded(), config.asRoles());
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);

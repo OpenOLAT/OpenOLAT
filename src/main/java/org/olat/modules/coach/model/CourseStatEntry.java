@@ -63,30 +63,14 @@ public class CourseStatEntry {
 	
 	private Certificates certificates = NO_CERTIFICATES;
 
-	private double totalScore;
 	private Double averageScore;
-	private int totalScoredStudents;
 	private Double averageCompletion;
 	private SuccessStatus successStatus = NO_SUCCESS;
 	
+	private long numOfReferences;
+	
 	public CourseStatEntry() {
 		//
-	}
-	
-	public double getTotalScore() {
-		return totalScore;
-	}
-
-	public void setTotalScore(double totalScore) {
-		this.totalScore = totalScore;
-	}
-
-	public int getTotalScoredStudents() {
-		return totalScoredStudents;
-	}
-
-	public void setTotalScoredStudents(int totalScoredStudents) {
-		this.totalScoredStudents = totalScoredStudents;
 	}
 
 	public Long getRepoKey() {
@@ -275,5 +259,13 @@ public class CourseStatEntry {
 
 	public void setAverageRating(Double averageRating) {
 		this.averageRating = averageRating;
+	}
+
+	public long getNumOfReferences() {
+		return numOfReferences;
+	}
+
+	public void setNumOfReferences(long numOfReferences) {
+		this.numOfReferences = numOfReferences;
 	}
 }

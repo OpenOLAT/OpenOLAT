@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.List;
+
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -65,7 +68,7 @@ public class ImplementationController extends BasicController {
 	
 	public ImplementationController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			CurriculumRef curriculum, CurriculumElement rootElement,
-			boolean participantsOnly, CurriculumSecurityCallback secCallback) {
+			List<GroupRoles> asRoles, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -78,7 +81,7 @@ public class ImplementationController extends BasicController {
 		listenTo(headerCtrl);
 		mainVC.put("elementHeader", headerCtrl.getInitialComponent());
 		
-		CurriculumElementListConfig config = CurriculumElementListConfig.config(false, participantsOnly);
+		CurriculumElementListConfig config = CurriculumElementListConfig.config(false, asRoles);
 		elementListCtrl = new CurriculumElementListController(ureq, wControl, stackPanel,
 				getIdentity(), curriculum, rootElement, secCallback, config);
 		listenTo(elementListCtrl);
