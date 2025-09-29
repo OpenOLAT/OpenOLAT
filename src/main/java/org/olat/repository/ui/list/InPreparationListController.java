@@ -217,14 +217,14 @@ public class InPreparationListController extends FormBasicController implements 
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		initFilterPresets(ureq);
+		initFilterPresets();
 		initFilters();
 		initSorters(tableEl);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-in-preparation-v1");
 	}
 	
-	private void initFilterPresets(UserRequest ureq) {
+	private void initFilterPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		favoriteTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAVORITE_TAB, translate("search.mark"),

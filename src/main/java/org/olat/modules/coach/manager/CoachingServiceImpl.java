@@ -67,9 +67,11 @@ import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,6 +215,11 @@ public class CoachingServiceImpl implements CoachingService {
 	@Override
 	public List<CourseStatEntry> getCoursesStatistics(CurriculumElement curriculumElement) {
 		return coachingDao.getCoursesStatistics(curriculumElement);
+	}
+	
+	@Override
+	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, GroupRoles role) {
+		return coachingDao.getCourseReferences(entry, identity, role);
 	}
 
 	@Override

@@ -309,6 +309,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 					? row.getCertificates().numOfCertificates() : "";
 			case tools -> Boolean.TRUE;
 			case taxonomyLevels -> row.getTaxonomyLevelsLink();
+			case references -> row.getReferencesLink();
 			default -> "ERROR";
 		};
 	}
@@ -344,7 +345,8 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		infos("table.header.infos"),
 		tools("action.more"),
 		taxonomyLevels("table.header.num.of.levels"),
-		resourceType("table.header.typeimg");
+		resourceType("table.header.typeimg"),
+		references("table.header.references");
 		
 		private final String i18nKey;
 		

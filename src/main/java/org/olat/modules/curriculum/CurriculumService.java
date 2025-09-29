@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -684,7 +685,7 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
 			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status,
-			RepositoryEntryRuntimeType[] runtimeTypes, boolean participantsOnly);
+			RepositoryEntryRuntimeType[] runtimeTypes, List<GroupRoles> asRoles);
 	
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 

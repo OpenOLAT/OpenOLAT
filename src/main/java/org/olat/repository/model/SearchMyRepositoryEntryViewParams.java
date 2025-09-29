@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -318,6 +319,20 @@ public class SearchMyRepositoryEntryViewParams {
 		notBooked,
 		passed,
 		notPassed,
-		withoutPassedInfos
+		withoutPassedInfos;
+		
+		public static List<Filter> rolesFilters(List<GroupRoles> roles) {
+			List<Filter> filters = new ArrayList<>();
+			if(roles.contains(GroupRoles.participant)) {
+				filters.add(Filter.asParticipant);
+			}
+			if(roles.contains(GroupRoles.coach)) {
+				filters.add(Filter.asCoach);
+			}
+			if(roles.contains(GroupRoles.owner)) {
+				filters.add(Filter.asAuthor);
+			}
+			return filters;
+		}
 	}
 }

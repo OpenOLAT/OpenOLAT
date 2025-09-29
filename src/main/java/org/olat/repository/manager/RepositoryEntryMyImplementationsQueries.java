@@ -58,13 +58,16 @@ public class RepositoryEntryMyImplementationsQueries {
 	private CurriculumElementDAO curriculumElementDao;
 	
 	public boolean hasImplementations(IdentityRef identity, boolean participantsOnly) {
-		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, participantsOnly, null);
+		List<GroupRoles> roles = participantsOnly
+				? List.of(GroupRoles.participant)
+				: List.of(GroupRoles.participant, GroupRoles.coach);
+		List<CurriculumElement> elements = loadImplementations(identity, 0, 1, roles, null);
 		return elements != null && !elements.isEmpty() && elements.get(0) != null;
 	}
 
 	public List<CurriculumElement> searchImplementations(IdentityRef identity, boolean bookmarksOnly,
-			boolean participantsOnly, List<CurriculumElementStatus> status) {
-		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, participantsOnly, status);
+			List<GroupRoles> roles, List<CurriculumElementStatus> status) {
+		List<CurriculumElement> elements = loadImplementations(identity, 0, -1, roles, status);
 
 		List<CurriculumElement> implementations;
 		if(elements.isEmpty()) {
@@ -94,8 +97,8 @@ public class RepositoryEntryMyImplementationsQueries {
 		return implementations;
 	}
 	
-	private List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
-			boolean participantsOnly, List<CurriculumElementStatus> searchStatus) {
+	public List<CurriculumElement> loadImplementations(IdentityRef identity, int firstResult, int maxResults,
+			List<GroupRoles> roles, List<CurriculumElementStatus> searchStatus) {
 		String query = """
 			select el from curriculumelement el
 			left join el.type curElementType
@@ -118,14 +121,14 @@ public class RepositoryEntryMyImplementationsQueries {
 		List<String> status = searchStatus != null
 				? searchStatus.stream().map(CurriculumElementStatus::name).toList()
 				: VISIBLE_STATUS.stream().map(CurriculumElementStatus::name).toList();
-		List<String> roles = participantsOnly
-				? List.of(GroupRoles.participant.name())
-				: List.of(GroupRoles.participant.name(), GroupRoles.coach.name());
-		
+		List<String> rolesList = roles.stream()
+				.map(GroupRoles::name)
+				.toList();
+	
 		TypedQuery<CurriculumElement> elements = dbInstance.getCurrentEntityManager().createQuery(query, CurriculumElement.class)
 				.setParameter("status", status)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("roles", roles);
+				.setParameter("roles", rolesList);
 		if(maxResults > 0) {
 			elements = elements
 					.setFirstResult(firstResult)

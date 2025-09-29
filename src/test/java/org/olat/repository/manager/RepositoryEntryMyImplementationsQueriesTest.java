@@ -25,6 +25,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
@@ -51,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 	
+	private static final List<GroupRoles> PARTICIPANTS_ONLY = List.of(GroupRoles.participant);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -69,7 +72,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-1");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false, true, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, false, PARTICIPANTS_ONLY, null);
 		Assert.assertNotNull(list);
 	}
 	
@@ -78,7 +81,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("my-implementations-view-2");
 		dbInstance.commit();
 		
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, true, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(id, true, PARTICIPANTS_ONLY, null);
 		Assert.assertNotNull(list);
 	}
 	
@@ -100,7 +103,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -123,7 +126,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
 		Assertions.assertThat(list)
 			.containsExactly(element);
 	}
@@ -146,7 +149,7 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
 		Assertions.assertThat(list)
 			.isEmpty();
 	}
@@ -177,11 +180,11 @@ public class RepositoryEntryMyImplementationsQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element3, participant, CurriculumRoles.participant, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, true, null);
+		List<CurriculumElement> list = myImplementationsQueries.searchImplementations(participant, false, PARTICIPANTS_ONLY, null);
 		Assertions.assertThat(list)
 			.containsExactlyInAnyOrder(element1, element2);
 		
-		list = myImplementationsQueries.searchImplementations(participant, false, true,
+		list = myImplementationsQueries.searchImplementations(participant, false, List.of(GroupRoles.participant),
 				List.of(CurriculumElementStatus.active, CurriculumElementStatus.confirmed));
 		Assertions.assertThat(list)
 			.containsExactlyInAnyOrder(element2);

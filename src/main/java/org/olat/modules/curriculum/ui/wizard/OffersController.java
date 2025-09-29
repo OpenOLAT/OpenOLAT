@@ -238,11 +238,11 @@ public class OffersController extends StepFormBasicController {
 		billingAddressCont.setRootForm(mainForm);
 		formLayout.add(billingAddressCont);
 		
-		billingAddressEl = new BillingAddressItem("billing,address", getLocale());
+		billingAddressEl = new BillingAddressItem("billing.address", getLocale());
 		billingAddressEl.setLabel("booking.billing.address", null);
 		billingAddressCont.add(billingAddressEl);
 		if (allIdentitiesInSameOrganisations && uniqueUserBillingAddress != null) {
-			billingAddressEl.setBillingAddress(uniqueUserBillingAddress);
+			doBillingAddressSelected(uniqueUserBillingAddress);
 		}
 		
 		billingAdresseSelectLink = uifactory.addFormLink("select.billing.address", billingAddressCont, Link.BUTTON);
@@ -328,7 +328,7 @@ public class OffersController extends StepFormBasicController {
 			
 			needBillingAddress = method.isNeedBillingAddress();
 			billingAddressInfoCont.setVisible(needBillingAddress && !allIdentitiesInSameOrganisations);
-			billingAddressEl.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
+			billingAddressCont.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
 			billingAddressEl.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
 			billingAdresseSelectLink.setVisible(needBillingAddress && allIdentitiesInSameOrganisations);
 			purchaseOrderNumberEl.setVisible(needBillingAddress);
@@ -338,7 +338,7 @@ public class OffersController extends StepFormBasicController {
 			priceEl.setVisible(false);
 			cancellationFeeEl.setVisible(false);
 			billingAddressInfoCont.setVisible(false);
-			billingAddressEl.setVisible(false);
+			billingAddressCont.setVisible(false);
 			billingAddressEl.setVisible(false);
 			billingAdresseSelectLink.setVisible(false);
 			purchaseOrderNumberEl.setVisible(false);
@@ -372,7 +372,7 @@ public class OffersController extends StepFormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				billingAddressEl.setBillingAddress(addressSelectionCtrl.getBillingAddress());
+				doBillingAddressSelected(addressSelectionCtrl.getBillingAddress());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -438,6 +438,12 @@ public class OffersController extends StepFormBasicController {
 				addressSelectionCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doBillingAddressSelected(BillingAddress billingAddress) {
+		billingAddressEl.setBillingAddress(billingAddress);
+		billingAddressEl.setVisible(billingAddress != null);
+		billingAddressCont.setDirty(true);
 	}
 	
 }

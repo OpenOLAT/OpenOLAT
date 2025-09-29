@@ -31,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
@@ -52,8 +51,6 @@ public class UserRelationListController extends AbstractParticipantsListControll
 	private final boolean canViewCourseProgressAndStatus;
 	private final RoleSecurityCallback securityCallback;
     
-    @Autowired
-    private CoachingService coachingService;
     @Autowired
     private IdentityRelationshipService identityRelationshipService;
 

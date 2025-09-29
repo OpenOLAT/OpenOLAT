@@ -25,7 +25,6 @@ import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ui.ExportsListSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -42,16 +41,13 @@ import org.olat.core.id.context.StateEntry;
  */
 public class CoachReportsController extends BasicController implements Activateable2 {
 
-	private final TooledStackedPanel stackedPanel;
-	
 	private final VelocityContainer mainVC;
 	
 	private final ReportTemplatesController reportTemplatesCtrl;
 	private CoachReportsListController generatedReportsCtrl;
 
-	public CoachReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
+	public CoachReportsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		this.stackedPanel = stackedPanel;
 
 		mainVC = createVelocityContainer("manager_reports");
 		

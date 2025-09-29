@@ -44,11 +44,13 @@ import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.ui.component.SearchEvent;
 import org.olat.modules.coach.ui.component.SearchStateEntry;
 import org.olat.modules.coach.ui.manager.CoachReportsController;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingSecurityCallbackFactory;
 import org.olat.modules.grading.model.GradingSecurity;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.repository.ui.list.ImplementationsListController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +69,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	private Link lecturesButton;
 	private Link ordersAdminButton;
 	private Link businessGroupsButton;
+	private Link implementationsButton;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel content;
@@ -85,12 +88,15 @@ public class CoachMainRootController extends BasicController implements Activate
 	private CoursesAndOthersController courseListCtrl;
 	private OrdersOverviewController ordersOverviewCtrl;
 	private CoachParticipantsListController quickSearchCtrl;
+	private ImplementationsListController implementationsCtrl;
 	private final CoachMainSearchHeaderController searchFieldCtrl;
 	
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private GradingModule gradingModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	
@@ -151,6 +157,11 @@ public class CoachMainRootController extends BasicController implements Activate
 		businessGroupsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_group");
 		businessGroupsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_groups");
 		businessGroupsButton.setVisible(coachingSec.coach() || coachingSec.owner());	
+		
+		implementationsButton = LinkFactory.createLink("implementations.menu.title", "implementations.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		implementationsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum");
+		implementationsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_implementations");
+		implementationsButton.setVisible(curriculumModule.isEnabled() && (coachingSec.coach() || coachingSec.owner()));	
 	}
 	
 	@Override
@@ -180,7 +191,10 @@ public class CoachMainRootController extends BasicController implements Activate
 			doReport(ureq);
 		} else if("UserSearch".equalsIgnoreCase(type) || "UsersSearch".equalsIgnoreCase(type)) {
 			doUserSearch(ureq);
-		}  
+		} else if("Implementations".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doImplementations(ureq).activate(ureq, subEntries, null);
+		}
 	}
 	
 	@Override
@@ -199,6 +213,8 @@ public class CoachMainRootController extends BasicController implements Activate
 			doBusinessGroups(ureq);
 		} else if(lecturesButton == source) {
 			doLectures(ureq);
+		} else if(implementationsButton == source) {
+			doImplementations(ureq);
 		}
 	}
 	
@@ -216,6 +232,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(implementationsCtrl);
 		removeAsListenerAndDispose(ordersOverviewCtrl);
 		removeAsListenerAndDispose(ordersAdminCtrl);
 		removeAsListenerAndDispose(quickSearchCtrl);
@@ -225,6 +242,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		removeAsListenerAndDispose(courseListCtrl);
 		removeAsListenerAndDispose(lecturesCtrl);
 		removeAsListenerAndDispose(reportsCtrl);
+		implementationsCtrl = null;
 		ordersOverviewCtrl = null;
 		ordersAdminCtrl = null;
 		quickSearchCtrl = null;
@@ -287,6 +305,19 @@ public class CoachMainRootController extends BasicController implements Activate
 		return courseListCtrl;
 	}
 	
+	private ImplementationsListController doImplementations(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementations", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		implementationsCtrl = new ImplementationsListController(ureq, bwControl, content, List.of(GroupRoles.owner, GroupRoles.coach));
+		listenTo(implementationsCtrl);
+		content.pushController(translate("implementations.title"), implementationsCtrl);
+		return implementationsCtrl;
+	}
+	
 	private LecturesMainController doLectures(UserRequest ureq) {
 		content.popUpToController(this);
 		cleanUp();
@@ -333,7 +364,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reports", 0L);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		reportsCtrl = new CoachReportsController(ureq, bwControl, content);
+		reportsCtrl = new CoachReportsController(ureq, bwControl);
 		listenTo(reportsCtrl);
 		content.pushController(translate("reports.menu.title"), reportsCtrl);
 	}

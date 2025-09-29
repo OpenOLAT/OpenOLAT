@@ -23,8 +23,10 @@ import java.util.Date;
 
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 
 /**
  * 
@@ -35,10 +37,12 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 public class ImplementationRow implements CurriculumElementRef {
 	
 	private final FormLink markLink;
+	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	
-	public ImplementationRow(CurriculumElement curriculumElement, FormLink markLink) {
+	public ImplementationRow(CurriculumElement curriculumElement, Curriculum curriculum, FormLink markLink) {
 		this.curriculumElement = curriculumElement;
+		this.curriculum = curriculum;
 		this.markLink = markLink;
 	}
 
@@ -49,6 +53,10 @@ public class ImplementationRow implements CurriculumElementRef {
 	@Override
 	public Long getKey() {
 		return curriculumElement.getKey();
+	}
+	
+	public Curriculum getCurriculum() {
+		return curriculum;
 	}
 	
 	public String getDisplayName() {
@@ -65,6 +73,10 @@ public class ImplementationRow implements CurriculumElementRef {
 	
 	public Date getEndDate() {
 		return curriculumElement.getEndDate();
+	}
+	
+	public CurriculumElementStatus getStatus() {
+		return curriculumElement.getElementStatus();
 	}
 	
 	public boolean isMarked() {

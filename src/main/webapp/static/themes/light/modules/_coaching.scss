@@ -79,5 +79,17 @@
 	  	line-height: $headings-line-height;
 		border-bottom: 1px solid $modal-header-border-color;
 	}
+}
+
+.o_coaching_curriculum_references.o_dropdown {
+	li {
+		display: flex;
+		flex-direction: column-reverse;
+	}
+
+	small {
+		padding: 0 15px;
+	}
 
 }
+

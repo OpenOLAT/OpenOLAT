@@ -98,6 +98,7 @@ import org.olat.modules.coach.ui.component.CompletionCellRenderer;
 import org.olat.modules.coach.ui.component.LastVisitCellRenderer;
 import org.olat.modules.coach.ui.component.SuccessStatusCellRenderer;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -159,6 +160,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private static final String CMD_ASSESSMENT = "assessment";
 	private static final String CMD_INFOS = "infos";
 	private static final String CMD_LEVELS = "levels";
+	private static final String CMD_REFERENCES = "refs";
 	
 	private static final String ALL_TAB_ID = "All";
 	private static final String PUBLISHED_TAB_ID = "Published";
@@ -181,6 +183,7 @@ public class CourseListController extends FormBasicController implements Activat
 	private final CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup;
 	
 	private ToolsController toolsCtrl;
+	private CourseReferencesController referencesCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	@Autowired
@@ -189,6 +192,8 @@ public class CourseListController extends FormBasicController implements Activat
 	private MarkManager markManager;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -254,6 +259,9 @@ public class CourseListController extends FormBasicController implements Activat
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lifecycleEnd,
 				new DateFlexiCellRenderer(getLocale())));
+		if(curriculumModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.references));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.access,
 				new AccessRenderer(getLocale())));
 		if(runtimeTypesGroup.loadStatistics()) {
@@ -308,7 +316,7 @@ public class CourseListController extends FormBasicController implements Activat
 		tableEl.setSearchEnabled(config.withToolbar());
 		tableEl.setNumOfRowsEnabled(config.withToolbar());
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_CourseModule_icon");
-		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.5-" + runtimeTypesGroup.name());
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v3.6-" + runtimeTypesGroup.name());
 		
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -461,6 +469,9 @@ public class CourseListController extends FormBasicController implements Activat
 			if(entryRow.getTaxonomyLevelsLink() != null) {
 				list.add(entryRow.getTaxonomyLevelsLink().getComponent());
 			}
+			if(entryRow.getReferencesLink() != null) {
+				list.add(entryRow.getReferencesLink().getComponent());
+			}
 		}
 		return list;
 	}
@@ -577,6 +588,12 @@ public class CourseListController extends FormBasicController implements Activat
 				.getAuthenticatedURLFromBusinessPathString(businessPath));
 		openLink.setUserObject(row);
 		row.setOpenLink(openLink);
+		
+		if(row.getNumOfReferences() > 0) {
+			FormLink referencesLink = uifactory.addFormLink("refs_".concat(count), CMD_REFERENCES, Long.toString(row.getNumOfReferences()), tableEl, Link.NONTRANSLATED);
+			referencesLink.setUserObject(row);
+			row.setReferencesLink(referencesLink);
+		}
 	}
 	
 	@Override
@@ -649,6 +666,8 @@ public class CourseListController extends FormBasicController implements Activat
 				doOpenCourseInfos(ureq, row, null);
 			} else if(CMD_LEVELS.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
 				doOpenCourseInfos(ureq, row, "[Taxonomy:0]");
+			} else if(CMD_REFERENCES.equals(cmd) && link.getUserObject() instanceof CourseStatEntryRow row) {
+				doOpenReferences(ureq, row, link.getFormDispatchId());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -719,6 +738,16 @@ public class CourseListController extends FormBasicController implements Activat
 		EntryChangedEvent e = new EntryChangedEvent(() -> row.getKey(), getIdentity(), Change.addBookmark, "coaching.courses");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 		return true;
+	}
+	
+	private void doOpenReferences(UserRequest ureq, CourseStatEntryRow entry, String targetId) {
+		referencesCtrl = new CourseReferencesController(ureq, getWindowControl(), entry, role);
+		listenTo(referencesCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				referencesCtrl.getInitialComponent(), targetId, "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doOpenTools(UserRequest ureq, CourseStatEntryRow entry, String targetId) {
