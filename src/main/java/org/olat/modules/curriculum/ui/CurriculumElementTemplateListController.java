@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -157,7 +158,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 			tableEl.addBatchButton(removeTemplatesButton);
 			// empty behavior
 			String[] emptyI18nArgs = {
-					curriculumElementType.getDisplayName()
+					StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 				};
 			tableEl.setEmptyTableSettings("table.templates.empty", "table.templates.empty.hint",
 					"o_CourseModule_icon", "add.template", "o_icon_add", true, emptyI18nArgs);
@@ -216,7 +217,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 	
 	void updateAddButtonAndEmptyMessages(int linkedCourses) {
 		String[] emptyI18nArgs = {
-				curriculumElementType == null ? "" : curriculumElementType.getDisplayName()
+				curriculumElementType == null ? "" : StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 			};
 		if(linkedCourses >= 1) {
 			tableEl.setEmptyTableSettings("table.templates.empty", "table.templates.empty.linked.hint",

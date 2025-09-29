@@ -20,6 +20,7 @@
 package org.olat.modules.coach.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.Certificates;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry.SuccessStatus;
@@ -67,7 +68,7 @@ public class CourseStatEntry {
 	private Double averageCompletion;
 	private SuccessStatus successStatus = NO_SUCCESS;
 	
-	private long numOfReferences;
+	private List<Long> curriculumsKeys;
 	
 	public CourseStatEntry() {
 		//
@@ -262,10 +263,14 @@ public class CourseStatEntry {
 	}
 
 	public long getNumOfReferences() {
-		return numOfReferences;
+		return curriculumsKeys == null ? 0l : curriculumsKeys.size();
+	}
+	
+	public List<Long> getCurriculumsKeys() {
+		return curriculumsKeys;
 	}
 
-	public void setNumOfReferences(long numOfReferences) {
-		this.numOfReferences = numOfReferences;
+	public void setCurriculumsKeys(List<Long> keys) {
+		this.curriculumsKeys = keys;
 	}
 }

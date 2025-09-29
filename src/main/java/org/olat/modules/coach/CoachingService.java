@@ -94,6 +94,9 @@ public interface CoachingService {
 	 */
 	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
+
+	public List<Curriculum> getCoursesCurriculums(Identity identity, GroupRoles role,
+			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
 	
 	/**
 	 * Load the curriculums which match the statistics of the method above.

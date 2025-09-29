@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
@@ -170,7 +171,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		
 		// empty behavior
 		String[] emptyI18nArgs = {
-				curriculumElementType == null ? "" : curriculumElementType.getDisplayName()
+				curriculumElementType == null ? "" : StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 			};
 		// special rights for managers
 		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)
@@ -251,7 +252,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			addResourceButton.setEnabled(canAddResource  && linkedTemplates == 0);
 			
 			String[] emptyI18nArgs = {
-					curriculumElementType == null ? "" : curriculumElementType.getDisplayName()
+					curriculumElementType == null ? "" : StringHelper.escapeHtml(curriculumElementType.getDisplayName())
 				};
 			if(canAddResource && linkedTemplates == 1) {
 				tableEl.setEmptyTableSettings("table.resources.empty", "table.resources.instantiate.template.hint", "o_CourseModule_icon",

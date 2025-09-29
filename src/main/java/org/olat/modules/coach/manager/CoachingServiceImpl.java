@@ -212,6 +212,12 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
+	public List<Curriculum> getCoursesCurriculums(Identity identity, GroupRoles role,
+			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+		return coachingDao.getCoursesReferences(identity, role, runtimeTypesGroup.runtimeTypes());
+	}
+
+	@Override
 	public List<Curriculum> getCourseReferences(RepositoryEntryRef entry, Identity identity, GroupRoles role) {
 		return coachingDao.getCourseReferences(entry, identity, role);
 	}

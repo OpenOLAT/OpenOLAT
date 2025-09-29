@@ -20,7 +20,6 @@
 package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -68,7 +68,6 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.repository.RepositoryManager;
@@ -111,6 +110,7 @@ public class ImplementationsListController extends FormBasicController implement
 	
 	private final List<GroupRoles> asRoles;
 	private final boolean onlyParticipant;
+	private final boolean withTitle;
 	
 	private ImplementationController implementationCtrl;
 
@@ -121,11 +121,13 @@ public class ImplementationsListController extends FormBasicController implement
 	@Autowired
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
 	
-	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, List<GroupRoles> asRoles) {
+	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
+			List<GroupRoles> asRoles, boolean withTitle) {
 		super(ureq, wControl, "implementations");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(),
 				Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		this.stackPanel = stackPanel;
+		this.withTitle = withTitle;
 		this.asRoles = asRoles;
 		onlyParticipant = asRoles.size() == 1 && asRoles.contains(GroupRoles.participant);
 		
@@ -142,6 +144,10 @@ public class ImplementationsListController extends FormBasicController implement
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("withTitle", Boolean.valueOf(withTitle));
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		DefaultFlexiColumnModel markColModel = new DefaultFlexiColumnModel(ImplementationsCols.mark);
@@ -285,12 +291,7 @@ public class ImplementationsListController extends FormBasicController implement
 	}
 	
 	private List<Curriculum> loadCurriculumsForFilter() {
-		Set<Curriculum> curriculums = new HashSet<>();
-		
-		CurriculumSearchParameters elementCoachParams = new CurriculumSearchParameters();
-		elementCoachParams.setElementOwner(getIdentity());
-		curriculums.addAll(curriculumService.getCurriculums(elementCoachParams));
-		return List.copyOf(curriculums);
+		return myImplementationsQueries.getCurriculums(getIdentity(), asRoles, null);
 	}
 	
 	private void decoratedMarkLink(FormLink markLink, boolean marked) {
