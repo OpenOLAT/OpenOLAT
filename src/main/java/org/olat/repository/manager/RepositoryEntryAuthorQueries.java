@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -475,6 +476,7 @@ public class RepositoryEntryAuthorQueries {
 				if (params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
 					sb.append(" or ( ");
 					sb.append(" membership.role in (:additionalOrgRoles) ");
+					sb.append(" and membership.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
 					sb.append(" and ");
 					sb.append(" v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
 					sb.append(" and v.status ");
