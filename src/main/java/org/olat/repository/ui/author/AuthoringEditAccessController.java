@@ -113,13 +113,6 @@ public class AuthoringEditAccessController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	private boolean isCurricularCourse() {
-		if (!entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
-			return false;
-		}
-		return RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType());
-	}
-	
 	public RepositoryEntry getEntry() {
 		return entry;
 	}
@@ -285,10 +278,6 @@ public class AuthoringEditAccessController extends BasicController {
 	}
 	
 	private void updateUI() {
-		if (accessShareCtrl != null) {
-			accessShareCtrl.getInitialComponent().setVisible(!isCurricularCourse());
-		}
-
 		boolean standalone = RepositoryEntryRuntimeType.standalone == entry.getRuntimeType();
 		if(lti13AccessCtrl != null) {
 			lti13AccessCtrl.getInitialComponent().setVisible(standalone);
