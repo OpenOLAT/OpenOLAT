@@ -22,7 +22,10 @@ package org.olat.registration.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
+import java.util.List;
+
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -33,6 +36,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.helpers.Settings;
@@ -77,7 +81,7 @@ public class ChangePasswordWebService {
 	 * @return
 	 */
 	@PUT
-	@Operation(summary = "Change password", description = " Set a link to change the password. The user can change it if it has or not a password during the validity perdio of the link")
+	@Operation(summary = "Change password", description = " Set a link to change the password. The user can change it if it has or not a password during the validity period of the link")
 	@ApiResponse(responseCode = "200", description = "Password has been changed")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -85,13 +89,13 @@ public class ChangePasswordWebService {
 		if(!isUserManagerOf(identityKey, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		if(!userModule.isAnyPasswordChangeAllowed()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		if(!userModule.isAnyPasswordChangeAllowed()) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, null); 
@@ -99,6 +103,32 @@ public class ChangePasswordWebService {
 		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
 				RegistrationManager.PW_CHANGE, registrationModule.getRESTValidityOfTemporaryKey());
 		String url = Settings.getServerContextPathURI() + "/url/changepw/0/" + emailAdress + "/0";
+		TemporaryKeyVO keyVo = new TemporaryKeyVO(tk, url);
+		return Response.ok(keyVo).build();
+	}
+	
+	@GET
+	@Operation(summary = "Has an entry to change password", description = " has a link to change the password. The user can change it if it has or not a password during the validity period of the link")
+	@ApiResponse(responseCode = "200", description = "Password has been changed")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")	
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response hasRegister(@QueryParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		if(!isUserManagerOf(identityKey, request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		if(!userModule.isAnyPasswordChangeAllowed()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+
+		IdentityRef identityRef = new IdentityRefImpl(identityKey);
+		List<TemporaryKey> tks = registrationManager.loadTemporaryKeyByIdentity(identityRef, List.of(RegistrationManager.PW_CHANGE));
+		if(tks == null || tks.isEmpty()) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		TemporaryKey tk = tks.get(0);
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		String url = Settings.getServerContextPathURI() + "/url/changepw/0/" + identity.getUser().getEmail() + "/0";
 		TemporaryKeyVO keyVo = new TemporaryKeyVO(tk, url);
 		return Response.ok(keyVo).build();
 	}
