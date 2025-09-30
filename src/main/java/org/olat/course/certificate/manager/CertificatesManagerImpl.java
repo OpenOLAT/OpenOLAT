@@ -1217,6 +1217,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String entryUrl = translator.translate("certification.email.entry.url", entryUrlStr);
 		String certificateUrl = Settings.createServerURI() + DownloadCertificateCellRenderer.getUrl(certificate);
 		String downloadButton = translator.translate("certification.email.download.button", certificateUrl);
+		String institutionalName = StringHelper.blankIfNull(
+				StringHelper.escapeHtml(certificateIdentity.getUser().getProperty(UserConstants.INSTITUTIONALNAME)));
 		
 		return new String[] {
 			entry.getDisplayname(),                              // pos0: Maybe used in custom translations
@@ -1225,7 +1227,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			externalRef,
 			description,
 			entryUrl,
-			downloadButton
+			downloadButton,
+			institutionalName                                    // pos7: Maybe used in custom translations
 		};
 	}
 
