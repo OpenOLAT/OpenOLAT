@@ -49,6 +49,7 @@ public class PwChangeSupportFormStep01Controller extends StepFormBasicController
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		addToRunContext(PwChangeWizardConstants.CANNOTCHANGE, Boolean.TRUE);
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 }

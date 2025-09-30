@@ -30,19 +30,21 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Forgot password workflow: enter email or username address to retrieve the
- * password by email.
+ * password by email. If an initial email is pre-selected, the field is not
+ * editable.
  * 
  * <P>
  * Initial Date: Sep 25, 2009 <br>
  * 
  * @author Gregor Wassmann, frentix GmbH, https://www.frentix.com
  */
-public class EmailOrUsernameFormController extends FormBasicController {
+class EmailOrUsernameFormController extends FormBasicController {
 
 	private final String initialEmail;//fxdiff FXOLAT-113: business path in DMZ
 	private final StepsRunContext runContext;
@@ -53,8 +55,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	@Autowired
 	private BaseSecurity securityManager;
 
-
-	public EmailOrUsernameFormController(UserRequest ureq, WindowControl wControl, Form rootForm,
+	EmailOrUsernameFormController(UserRequest ureq, WindowControl wControl, Form rootForm,
 										 String initialEmail, StepsRunContext runContext) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		this.initialEmail = initialEmail;
@@ -70,6 +71,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 		setFormInfo("step1.pw.text");
 
 		emailOrUsernameEl = uifactory.addTextElement("emailOrUsername", "email.or.username", 255, initialEmail, formLayout);
+		emailOrUsernameEl.setEnabled(!StringHelper.containsNonWhitespace(initialEmail));
 		emailOrUsernameEl.setElementCssClass("o_sel_pw_change");
 		emailOrUsernameEl.setMandatory(true);
 		emailOrUsernameEl.setFocus(true);

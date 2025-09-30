@@ -107,8 +107,6 @@ public class UserModule extends AbstractSpringModule {
 	
 	@Value("${password.change.allowed}")
 	private boolean pwdchangeallowed;
-	@Value("${password.change.allowed.without.authentications:false}")
-	private boolean pwdChangeWithoutAuthenticationAllowed;
 	
 	@Value("${allow.request.delete.account:false}")
 	private boolean allowRequestToDeleteAccount;
@@ -424,10 +422,6 @@ public class UserModule extends AbstractSpringModule {
 	 */
 	public boolean isAnyPasswordChangeAllowed() {
 		return pwdchangeallowed;
-	}
-	
-	public boolean isPasswordChangeWithoutAuthenticationAllowed() {
-		return pwdChangeWithoutAuthenticationAllowed;
 	}
 	
 	public boolean isLogoByProfileEnabled() {

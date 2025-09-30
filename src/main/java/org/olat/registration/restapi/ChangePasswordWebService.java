@@ -90,7 +90,7 @@ public class ChangePasswordWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		if(!userModule.isPwdChangeAllowed(identity)) {
+		if(!userModule.isAnyPasswordChangeAllowed()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 

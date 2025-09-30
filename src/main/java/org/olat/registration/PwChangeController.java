@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.login.auth.OLATAuthManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,16 +57,6 @@ public class PwChangeController extends BasicController {
 
 	@Autowired
 	private OLATAuthManager olatAuthManager;
-
-	/**
-	 * Controller to change a user's password.
-	 *
-	 * @param ureq
-	 * @param wControl
-	 */
-	public PwChangeController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null, true);
-	}
 
 	/**
 	 * Controller to change a user's password.
@@ -91,14 +82,19 @@ public class PwChangeController extends BasicController {
 		}
 	}
 
-	public StepsMainRunController doOpenPasswordChange(UserRequest ureq) {
+	private StepsMainRunController doOpenPasswordChange(UserRequest ureq) {
 		Step startPwChangeStep = new PwChangeAuthStep00(ureq, initialEmail);
 		StepRunnerCallback finishCallback =
 				(uureq, swControl, runContext) -> {
 					Identity identityToModify = (Identity) runContext.get(PwChangeWizardConstants.IDENTITY);
 					String pw = (String) runContext.get(PwChangeWizardConstants.PASSWORD);
-					if(identityToModify != null && !saveFormData(identityToModify, pw)) {
-						showError("password.failed");
+					boolean saved = saveFormData(identityToModify, pw);
+					if(!saved) {
+						// check if an information has already been shown
+						if(!Boolean.TRUE.equals(runContext.get(PwChangeWizardConstants.CANNOTCHANGE))) {
+							showError("password.failed");
+						}
+						return StepsMainRunController.DONE_UNCHANGED;
 					}
 					showInfo("step4.pw.text");
 					return StepsMainRunController.DONE_MODIFIED;
@@ -116,6 +112,9 @@ public class PwChangeController extends BasicController {
 	 * @param s The identity to change the password.
 	 */
 	private boolean saveFormData(Identity identity, String pw) {
+		if(identity == null || !StringHelper.containsNonWhitespace(pw)) {
+			return false;
+		}
 		return olatAuthManager.changePasswordByPasswordForgottenLink(identity, pw);
 	}
 
