@@ -121,6 +121,7 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 			|| (Role.learningResourceManager == currentRole && !wrappedSecurity.isLearnResourceManager())
 			|| (Role.coach == currentRole && !wrappedSecurity.isCoach())
 			|| (Role.principal == currentRole && !wrappedSecurity.isPrincipal())
+			|| (Role.curriculumManager == currentRole && !wrappedSecurity.isCurriculumManager())
 			|| (Role.masterCoach == currentRole && !wrappedSecurity.isMasterCoach())
 			|| (Role.participant == currentRole && !wrappedSecurity.isParticipant())
 			|| (Role.fakeParticipant == currentRole && !isFakeParticipantAvailable())) {
@@ -144,6 +145,9 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 		}
 		if (Role.principal != currentRole && wrappedSecurity.isPrincipal()) {
 			otherRoles.add(Role.principal);
+		}
+		if (Role.curriculumManager != currentRole && wrappedSecurity.isCurriculumManager()) {
+			otherRoles.add(Role.curriculumManager);
 		}
 		if (Role.masterCoach != currentRole && wrappedSecurity.isMasterCoach()) {
 			otherRoles.add(Role.masterCoach);

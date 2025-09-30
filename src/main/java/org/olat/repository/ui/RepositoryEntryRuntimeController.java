@@ -160,6 +160,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private Link learningResourceManagerLink;
 	private Link coachLink;
 	private Link principalLink;
+	private Link curriculumManagerLink;
 	private Link masterCoachLink;
 	private Link participantLink;
 	private Link fakeParticipantLink;
@@ -487,6 +488,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			principalLink = LinkFactory.createToolLink("role.principal", translate(Role.principal.getI18nKey()), this);
 			principalLink.setIconLeftCSS("o_icon o_icon-fw " + Role.principal.getIconCssClass());
 			rolesDropdown.addComponent(principalLink);
+		}
+		if (otherRoles.contains(Role.curriculumManager)) {
+			curriculumManagerLink = LinkFactory.createToolLink("role.curriculummanager", translate(Role.curriculumManager.getI18nKey()), this);
+			curriculumManagerLink.setIconLeftCSS("o_icon o_icon-fw " + Role.curriculumManager.getIconCssClass());
+			rolesDropdown.addComponent(curriculumManagerLink);
 		}
 		if (otherRoles.contains(Role.masterCoach)) {
 			masterCoachLink = LinkFactory.createToolLink("role.master.coach", translate(Role.masterCoach.getI18nKey()), this);
@@ -877,6 +883,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doSwitchRole(ureq, Role.coach);
 		} else if (principalLink == source) {
 			doSwitchRole(ureq, Role.principal);
+		} else if (curriculumManagerLink == source) {
+			doSwitchRole(ureq, Role.curriculumManager);
 		} else if (masterCoachLink == source) {
 			doSwitchRole(ureq, Role.masterCoach);
 		} else if (participantLink == source) {
