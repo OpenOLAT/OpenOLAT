@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -43,25 +42,27 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.fileresource.types.ResourceEvaluation;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.WebDocumentHandler;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,15 +76,18 @@ public class CopyToRepositoryController extends FormBasicController {
 	private static final Logger log = Tracing.createLoggerFor(CopyToRepositoryController.class);
 
 	private TextElement displayNameEl;
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	
 	private final LocalFileImpl vfsLeaf;
 	private final VFSMetadata vfsMetadata;
 	private final String initialDisplayname;
+	private final List<Organisation> manageableOrganisations;
 	private RepositoryEntry entry;
 
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired 
@@ -99,11 +103,15 @@ public class CopyToRepositoryController extends FormBasicController {
 	
 	public CopyToRepositoryController(UserRequest ureq, WindowControl wControl, LocalFileImpl vfsLeaf) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.vfsLeaf = vfsLeaf;
 		vfsMetadata = vfsLeaf.getMetaInfo();
 		this.initialDisplayname = vfsMetadata != null && StringHelper.containsNonWhitespace(vfsMetadata.getTitle())
 				? vfsMetadata.getTitle()
 				: vfsLeaf.getName();
+		
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
 		
 		initForm(ureq);
 	}
@@ -113,7 +121,8 @@ public class CopyToRepositoryController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("config.copy.displayname", 255, initialDisplayname, formLayout);
 		displayNameEl.setMandatory(true);
 		
-		initFormOrganisations(formLayout, ureq.getUserSession());
+		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
+				organisationModule, manageableOrganisations);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -123,15 +132,6 @@ public class CopyToRepositoryController extends FormBasicController {
 	
 	public RepositoryEntry getEntry() {
 		return entry;
-	}
-
-	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
-		Roles roles = usess.getRoles();
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles, OrganisationRoles.administrator);
-		
-		organisationEl = uifactory.addOrgSelectorElement("config.copy.organisation", formLayout, 
-				getWindowControl(), organisations);
-		organisationEl.setVisible(organisationModule.isEnabled());
 	}
 	
 	@Override
@@ -143,6 +143,8 @@ public class CopyToRepositoryController extends FormBasicController {
 			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
+		
+		allOk &= RepositoyUIFactory.validateOrganisationEl(organisationEl);
 		
 		return allOk;
 	}
@@ -156,15 +158,12 @@ public class CopyToRepositoryController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String displayname = displayNameEl.getValue();
 		
-		Organisation organisation;
-		if( organisationEl.isExactlyOneSelected()) {
-			Long organisationKey = organisationEl.getSingleSelection();
-			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
-		} else {
-			organisation = organisationService.getDefaultOrganisation();
-		}
+		Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
+		
 		doCopyToRepository(displayname, organisation);
+		
 		if (entry != null) {
+			RepositoyUIFactory.addOrganisations(ureq, organisationService, repositoryService, organisationEl, entry, organisation);
 			doCopyLicense();
 		}
 		

@@ -56,6 +56,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -67,7 +68,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.olat.user.ui.organisation.structure.OrgStructureComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -116,7 +117,7 @@ public class UserRolesController extends FormBasicController {
 	private FormLayoutContainer simpleRolesCont;
 	private FormLayoutContainer rolesCont;
 	private FormLink addToOrganisationButton;
-	private OrgSelectorElement affiliationSelectorEl;
+	private ObjectSelectionElement affiliationSelectorEl;
 	private OrgStructureComponent affiliationTreeComp;
 	private List<RolesElement> rolesEls = new ArrayList<>(1);
 
@@ -232,15 +233,6 @@ public class UserRolesController extends FormBasicController {
 
 	private void initFormAffiliation(FormItemContainer formLayout) {
 		if (!manageableOrganisations.isEmpty()) {
-			affiliationSelectorEl = uifactory.addOrgSelectorElement(
-					"affiliation.orgs.label",
-					formLayout,
-					getWindowControl(),
-					manageableOrganisations
-			);
-			affiliationSelectorEl.setMandatory(true);
-			affiliationSelectorEl.setMultipleSelection(true);
-
 			affOrganisations = organisations.stream()
 					.filter(org -> {
 						RolesByOrganisation roles = editedRoles.getRoles(org);
@@ -253,8 +245,14 @@ public class UserRolesController extends FormBasicController {
 						return false;
 					})
 					.collect(Collectors.toList());
-
-			affiliationSelectorEl.setSelection(affOrganisations.stream().map(Organisation::getKey).toList());
+			
+			
+			OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+					affOrganisations,
+					() -> manageableOrganisations);
+			affiliationSelectorEl = uifactory.addObjectSelectionElement("affiliation.orgs.label", "affiliation.orgs.label",
+					formLayout, getWindowControl(), true, organisationSource);
+			affiliationSelectorEl.setMandatory(true);
 			affiliationSelectorEl.addActionListener(FormEvent.ONCHANGE);
 
 			List<Organisation> notManageableOrgs = affOrganisations.stream()
@@ -567,7 +565,7 @@ public class UserRolesController extends FormBasicController {
 			doAddToOrganisation(ureq);
 		} else if (source == affiliationSelectorEl) {
 			// get all selected keys
-			Set<Long> selKeys = affiliationSelectorEl.getSelection();
+			Set<Long> selKeys = affiliationSelectorEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
 
 			affiliationSelectorEl.clearError();
 			if (selKeys.isEmpty()) {
@@ -644,7 +642,7 @@ public class UserRolesController extends FormBasicController {
 			return;
 		}
 		
-		Set<Long> selKeys = affiliationSelectorEl.getSelection();
+		Set<Long> selKeys = affiliationSelectorEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
 		
 		// Current user orgs (where they have the "user" role)
 		Set<Long> currentOrgKeys = affOrganisations.stream()
@@ -661,7 +659,7 @@ public class UserRolesController extends FormBasicController {
 			if (selected != currentlyHas) {
 				RolesByOrganisation rolesInOrg = editedRoles.getRoles(organisation);
 				boolean hasUserRole = rolesInOrg != null && rolesInOrg.hasRole(OrganisationRoles.user);
-				boolean shouldHaveUserRole = affiliationSelectorEl.getSelection().contains(organisation.getKey());
+				boolean shouldHaveUserRole = selKeys.contains(organisation.getKey());
 				
 				if (shouldHaveUserRole && !hasUserRole) {
 					organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user, getIdentity());
@@ -689,7 +687,7 @@ public class UserRolesController extends FormBasicController {
 		for (RolesElement wrapper : rolesEls) {
 			MultipleSelectionElement rolesDropdown = wrapper.getRolesDropdown();
 			if (!rolesDropdown.isAtLeastSelected(1)
-					&& !affiliationSelectorEl.getSelection().contains(wrapper.getOrganisation().getKey())
+					&& !affiliationSelectorEl.getSelectedKeys().contains(wrapper.getOrganisation().getKey().toString())
 					&& !hasAnyExplicitRole(rolesDropdown)) {
 				organisations.remove(wrapper.getOrganisation());
 				wrappersToRemove.add(wrapper);
@@ -708,7 +706,7 @@ public class UserRolesController extends FormBasicController {
 	
 		if (affiliationSelectorEl != null) {
 			affiliationSelectorEl.clearError();
-			if (affiliationSelectorEl.getSelection().isEmpty()) {
+			if (affiliationSelectorEl.getSelectedKeys().isEmpty()) {
 				affiliationSelectorEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}

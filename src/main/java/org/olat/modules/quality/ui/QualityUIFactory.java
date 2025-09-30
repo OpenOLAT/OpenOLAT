@@ -28,7 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
@@ -38,20 +38,22 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.nodes.INode;
@@ -78,7 +80,6 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
 
 /**
  * 
@@ -402,81 +403,11 @@ public class QualityUIFactory {
 		return null;
 	}
 	
-	public static SelectionValues getOrganisationSV(UserSession usess, List<Organisation> currentOrganisations) {
-		List<Organisation> allOrganisations = getAllOrganisations(usess, currentOrganisations);
-		return OrganisationUIFactory.createSelectionValues(allOrganisations, usess.getLocale());
-	}
-	
-	public static List<Organisation> getAllOrganisations(UserSession usess, List<Organisation> currentOrganisations) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-
-		// Get all organisations of the user
-		List<Organisation> userOrganisations = organisationService.getOrganisations(usess.getIdentity(), usess.getRoles(),
+	public static Supplier<Collection<? extends OrganisationRef>> getManagedOrganisations(OrganisationService organisationService, UserRequest ureq) {
+		Identity identity = ureq.getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		return () -> organisationService.getOrganisations(identity, roles,
 				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
-		List<Organisation> allOrganisations = new ArrayList<>(userOrganisations);
-
-		// Complete with the active organisations
-		for(Organisation activeOrganisation:currentOrganisations) {
-			if(activeOrganisation != null && !allOrganisations.contains(activeOrganisation)) {
-				allOrganisations.add(activeOrganisation);
-			}
-		}
-		return allOrganisations;
-	}
-
-	public static List<OrganisationRef> getSelectedOrganisationRefs(MultiSelectionFilterElement organisationsEl) {
-		return organisationsEl.getSelectedKeys().stream()
-				.map(QualityUIFactory::getOrganisationRef)
-				.collect(Collectors.toList());
-	}
-	
-	public static List<Organisation> getSelectedOrganisations(MultiSelectionFilterElement organisationsEl,
-			List<Organisation> currentOrganisations) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-
-		// Copy the current organisations
-		List<Organisation> organisations = new ArrayList<>(currentOrganisations);
-		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
-		
-		// Remove unselected organisations
-		organisations.removeIf(organisation -> !selectedOrganisationKeys.contains(getOrganisationKey(organisation)));
-
-		// Add newly selected organisations
-		Collection<String> organisationKeys = organisations.stream()
-				.map(QualityUIFactory::getOrganisationKey)
-				.collect(Collectors.toList());
-		for (String selectedOrganisationKey: selectedOrganisationKeys) {
-			if (!organisationKeys.contains(selectedOrganisationKey)) {
-				Organisation organisation = organisationService.getOrganisation(getOrganisationRef(selectedOrganisationKey));
-				if (organisation != null) {
-					organisations.add(organisation);
-				}
-			}
-		}
-		return organisations;
-	}
-
-	public static List<Organisation> getSelectedOrganisations(Collection<Long> selectedOrganisationKeys,
-															  List<Organisation> currentOrganisations) {
-		OrganisationService organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
-
-		// Copy the current organisations
-		List<Organisation> organisations = new ArrayList<>(currentOrganisations);
-
-		// Remove unselected organisations
-		organisations.removeIf(organisation -> !selectedOrganisationKeys.contains(getOrganisationKey(organisation)));
-
-		// Add newly selected organisations
-		Collection<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).toList();
-		for (Long selectedOrganisationKey : selectedOrganisationKeys) {
-			if (!organisationKeys.contains(selectedOrganisationKey)) {
-				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(selectedOrganisationKey));
-				if (organisation != null) {
-					organisations.add(organisation);
-				}
-			}
-		}
-		return organisations;
 	}
 	
 	public static KeysValues getIdentityKeysValues(List<IdentityShort> identities) {
@@ -710,6 +641,18 @@ public class QualityUIFactory {
 		return allOk;
 	}
 
+	public static boolean validateIsMandatory(ObjectSelectionElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			if (el.getSelectedKeys().isEmpty()) {
+				el.setErrorKey("form.mandatory.hover");
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+
 	public static boolean validateIsMandatory(MultiSelectionFilterElement el) {
 		boolean allOk = true;
 		el.clearError();
@@ -727,18 +670,6 @@ public class QualityUIFactory {
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
 			if (el.getDate() == null) {
-				el.setErrorKey("form.mandatory.hover");
-				allOk = false;
-			}
-		}
-		return allOk;
-	}
-
-	public static boolean validateIsMandatory(OrgSelectorElement el) {
-		boolean allOk = true;
-		el.clearError();
-		if(el.isEnabled() && el.isVisible()) {
-			if (el.getSelection().isEmpty()) {
 				el.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}

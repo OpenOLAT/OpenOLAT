@@ -31,12 +31,13 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SelectOrganisationController extends FormBasicController {
 	
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	
 	private final List<Organisation> organisations;
 	private final Identity editedIdentity;
@@ -59,7 +60,7 @@ public class SelectOrganisationController extends FormBasicController {
 
 	public SelectOrganisationController(UserRequest ureq, WindowControl wControl, List<Organisation> organisations, Identity editedIdentity) {
 		super(ureq, wControl);
-		this.organisations = new ArrayList<>(organisations);
+		this.organisations = organisations;
 		this.editedIdentity = editedIdentity;
 		
 		initForm(ureq);
@@ -68,13 +69,14 @@ public class SelectOrganisationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		organisationEl = uifactory.addOrgSelectorElement("select.organisation", formLayout,
-				getWindowControl(), organisations);
-		if (!organisations.isEmpty()) {
-			organisationEl.setSelection(organisations.get(0).getKey());
-			if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
-				organisationEl.addActionListener(FormEvent.ONCHANGE);
-			}
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> new ArrayList<>(organisations));
+		organisationEl = uifactory.addObjectSelectionElement("organisations", "select.organisation", formLayout,
+				getWindowControl(), false, organisationSource);
+		organisationEl.setMandatory(true);
+		if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
+			organisationEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -85,10 +87,10 @@ public class SelectOrganisationController extends FormBasicController {
 	
 	public Organisation getSelectedOrganisation() {
 		Organisation organisation = null;
-		if(organisationEl.isExactlyOneSelected()) {
-			Long selection = organisationEl.getSingleSelection();
+		if(organisationEl.getSelectedKey() != null) {
+			String selectedKey = organisationEl.getSelectedKey();
 			for(Organisation org:organisations) {
-				if(selection != null && selection.equals(org.getKey())) {
+				if(selectedKey.equals(org.getKey().toString())) {
 					organisation = org;
 				}
 			}
@@ -97,8 +99,8 @@ public class SelectOrganisationController extends FormBasicController {
 	}
 
 	private void updateEmailDomainUI() {
-		if (editedIdentity != null && organisationModule.isEmailDomainEnabled() && organisationEl.isExactlyOneSelected()) {
-			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> organisationEl.getSingleSelection());
+		if (editedIdentity != null && organisationModule.isEmailDomainEnabled() && organisationEl.getSelectedKey() != null) {
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(OrganisationSelectionSource.toRef(organisationEl.getSelectedKey()));
 			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, editedIdentity.getUser().getEmail());
 			if (!emailDomainAllowed) {
 				organisationEl.setWarningKey("error.email.domain.not.allowed");
@@ -121,7 +123,7 @@ public class SelectOrganisationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		organisationEl.clearError();
-		if(!organisationEl.isExactlyOneSelected()) {
+		if(organisationEl.getSelectedKey() == null) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}

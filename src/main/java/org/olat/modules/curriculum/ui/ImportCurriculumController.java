@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,15 +34,15 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.manager.CurriculumImportHandler;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,7 +55,7 @@ public class ImportCurriculumController extends FormBasicController {
 	
 	private FileElement uploadFileEl;
 	private TextElement displayNameEl;
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -80,22 +79,19 @@ public class ImportCurriculumController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("curriculum.display.name", 255, "", formLayout);
 		displayNameEl.setMandatory(true);
 		
-		initFormOrganisations(formLayout, ureq.getUserSession());
+		Roles roles = ureq.getUserSession().getRoles();
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> organisationService.getOrganisations(getIdentity(), roles,
+						OrganisationRoles.administrator, OrganisationRoles.curriculummanager));
+		organisationEl = uifactory.addObjectSelectionElement("organisations", "curriculum.organisation", formLayout,
+				getWindowControl(), false, organisationSource);
+		organisationEl.setVisible(organisationModule.isEnabled());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("import.curriculum", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-	}
-	
-	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
-		Roles roles = usess.getRoles();
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
-		
-		organisationEl = uifactory.addOrgSelectorElement("curriculum.organisation", formLayout,
-				getWindowControl(), organisations);
-		organisationEl.setVisible(organisationModule.isEnabled());
 	}
 
 	@Override
@@ -136,9 +132,8 @@ public class ImportCurriculumController extends FormBasicController {
 		File archive = uploadFileEl.getUploadFile();
 		
 		Organisation organisation;
-		if(organisationEl.isExactlyOneSelected()) {
-			Long organisationKey = organisationEl.getSingleSelection();
-			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
+		if (organisationEl.getSelectedKey() != null) {
+			organisation = organisationService.getOrganisation(OrganisationSelectionSource.toRef(organisationEl.getSelectedKey()));
 		} else {
 			organisation = organisationService.getDefaultOrganisation();
 		}

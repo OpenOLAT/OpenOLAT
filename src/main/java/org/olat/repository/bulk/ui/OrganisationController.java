@@ -19,8 +19,6 @@
  */
 package org.olat.repository.bulk.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,13 +32,10 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
-import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -56,6 +51,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.bulk.SettingsBulkEditable;
 import org.olat.repository.bulk.model.SettingsContext;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,8 +62,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OrganisationController extends StepFormBasicController {
 	
-	private MultiSelectionFilterElement organisationAddEl;
-	private MultipleSelectionElement organisationRemoveEl;
+	private ObjectSelectionElement organisationAddEl;
+	private ObjectSelectionElement organisationRemoveEl;
 	private StaticTextElement organisationRemoveInfoEl;
 	
 	private final SettingsContext context;
@@ -104,23 +100,25 @@ public class OrganisationController extends StepFormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		List<Organisation> availableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		SelectionValues addOrganisationSV = OrganisationUIFactory.createSelectionValues(availableOrganisations, getLocale());
-		organisationAddEl = uifactory.addCheckboxesFilterDropdown("organisations.add",
-				"settings.bulk.organisation.add", formLayout, getWindowControl(), addOrganisationSV);
+		
+		OrganisationSelectionSource organisationAddSource = new OrganisationSelectionSource(
+				List.of(), () -> availableOrganisations);
+		organisationAddEl = uifactory.addObjectSelectionElement("organisations.add", "settings.bulk.organisation.add",
+				formLayout, getWindowControl(), true, organisationAddSource);
 		organisationAddEl.addActionListener(FormEvent.ONCHANGE);
 		if (context.getOrganisationAddKeys() != null) {
-			context.getOrganisationAddKeys().forEach(key -> organisationAddEl.select(key.toString(), true));
+			context.getOrganisationAddKeys().forEach(key -> organisationAddEl.select(key.toString()));
 		}
 		
-		SelectionValues removeOrganisationSV = new SelectionValues();
-		repositoryService.getOrganisations(context.getRepositoryEntries())
-				.forEach(organisation -> removeOrganisationSV.add(entry(organisation.getKey().toString(), organisation.getDisplayName())));
-		organisationRemoveEl = uifactory.addCheckboxesDropdown("organisations.remove", "settings.bulk.organisation.remove", formLayout,
-				removeOrganisationSV.keys(), removeOrganisationSV.values());
+		OrganisationSelectionSource organisationRemoveSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> organisationService.getOrganisation(repositoryService.getOrganisations(context.getRepositoryEntries())));
+		organisationRemoveEl = uifactory.addObjectSelectionElement("organisations.remove", "settings.bulk.organisation.remove",
+				formLayout, getWindowControl(), true, organisationRemoveSource);
 		organisationRemoveEl.setElementCssClass("o_form_explained");
 		organisationRemoveEl.addActionListener(FormEvent.ONCLICK);
-		if (context.getOrganisationRemoveKeys() != null) {
-			context.getOrganisationRemoveKeys().forEach(key -> organisationRemoveEl.select(key.toString(), true));
+		if (context.getOrganisationRemoveKeys() != null && !context.getOrganisationRemoveKeys().isEmpty()) {
+			context.getOrganisationRemoveKeys().forEach(key -> organisationRemoveEl.select(key.toString()));
 		}
 		
 		String organisationRemoveInfo = "<i class='o_icon o_icon_warn'> </i> " + translate("settings.bulk.organisation.last");

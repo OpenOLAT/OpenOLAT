@@ -24,11 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.MediaServerModule;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -61,9 +63,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoyUIFactory;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.olat.util.logging.activity.LoggingResourceable;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,7 +89,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private SingleSelection selectType;
 	private TextElement displaynameEl;
 	private TextElement externalRef;
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	
 	@Autowired
 	private LicenseService licenseService;
@@ -97,6 +97,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -115,7 +117,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.limitTypes = limitTypes;
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
 		
 		initForm(ureq);
 	}
@@ -162,12 +164,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 		externalRef.setInlineValidationOn(true);
 		
-		organisationEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations",
-				formLayout, getWindowControl(), manageableOrganisations);
-		if(!manageableOrganisations.isEmpty()) {
-			organisationEl.setSelection(manageableOrganisations.get(0).getKey());
-		}
-		organisationEl.setVisible(manageableOrganisations.size() > 1);
+		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
+				organisationModule, manageableOrganisations);
 
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -184,7 +182,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		updateHandlerForUrl();
 		if(validateResources()) {
-			doImport();
+			doImport(ureq);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
@@ -305,11 +303,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 		allOk &= validateResources();	
 		
-		organisationEl.clearError();
-		if(organisationEl.isVisible() && !organisationEl.isExactlyOneSelected()) {
-			organisationEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
+		allOk &= RepositoyUIFactory.validateOrganisationEl(organisationEl);
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
 			displaynameEl.setErrorKey("form.legende.mandatory");
@@ -397,7 +391,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		return allOk;
 	}
 	
-	private void doImport() {
+	private void doImport(UserRequest ureq) {
 		RepositoryHandler handler;
 		ResourceEvaluation evaluation = null;
 		if(handlerForUploadedResources == null || handlerForUploadedResources.isEmpty()) {
@@ -413,13 +407,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		}
 		
 		if(handler != null) {
-			Organisation organisation;
-			if(organisationEl.isExactlyOneSelected()) {
-				Long organisationKey = Long.valueOf(organisationEl.getSingleSelection());
-				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
-			} else {
-				organisation = organisationService.getDefaultOrganisation();
-			}
+			Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
 
 			String displayname = displaynameEl.getValue();
 			if(!StringHelper.containsNonWhitespace(displayname) && evaluation != null
@@ -432,6 +420,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			String url = urlEl.getValue();
 			importedEntry = handler.importResource(getIdentity(), null, displayname,
 					"", organisation, getLocale(), url);
+			
+			RepositoyUIFactory.addOrganisations(ureq, organisationService, repositoryService, organisationEl, importedEntry, organisation);
 			
 			if(evaluation != null) {
 				String expenditureOfWork = evaluation.getDuration() == null

@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -62,7 +64,7 @@ import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GeneratorConfigController extends FormBasicController {
 
 	private TextElement titleEl;
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private StaticTextElement evaFormNotChoosen;
 	private FormLink evaFormSelectLink;
 	private FormLink evaFormPreviewLink;
@@ -87,7 +89,6 @@ public class GeneratorConfigController extends FormBasicController {
 	private GeneratorSecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
 	private QualityGenerator generator;
-	private List<Organisation> currentOrganisations;
 	private RepositoryEntry formEntry;
 	
 	@Autowired
@@ -97,6 +98,8 @@ public class GeneratorConfigController extends FormBasicController {
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private EvaluationFormManager evaluationManager;
 
 	public GeneratorConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
@@ -105,7 +108,6 @@ public class GeneratorConfigController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		this.generator = generatorService.loadGenerator(generatorRef);
-		this.currentOrganisations = generatorService.loadGeneratorOrganisations(generatorRef);
 		this.formEntry = this.generator.getFormEntry();
 		initForm(ureq);
 	}
@@ -118,12 +120,11 @@ public class GeneratorConfigController extends FormBasicController {
 		
 		titleEl = uifactory.addTextElement("generator.title", 200, generator.getTitle(), formLayout);
 		
-		List<Organisation> allOrganisations = QualityUIFactory.getAllOrganisations(ureq.getUserSession(), currentOrganisations);
-		organisationsEl = uifactory.addOrgSelectorElement("generator.organisations", "generator.organisations",
-				formLayout, getWindowControl(), allOrganisations);
-		organisationsEl.setMultipleSelection(true);
-		List<Long> selectedOrgKeys = currentOrganisations.stream().map(Organisation::getKey).toList();
-		organisationsEl.setSelection(selectedOrgKeys);
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				generatorService.loadGeneratorOrganisations(generator),
+				QualityUIFactory.getManagedOrganisations(organisationService, ureq));
+		organisationsEl = uifactory.addObjectSelectionElement("generator.organisations", "generator.organisations", formLayout,
+				getWindowControl(), true, organisationSource);
 
 		evaFormNotChoosen = uifactory.addStaticTextElement("generator.form.not.selected", "generator.form",
 				translate("generator.form.not.selected"), formLayout);
@@ -267,8 +268,8 @@ public class GeneratorConfigController extends FormBasicController {
 		generator = generatorService.updateGenerator(generator);
 		
 		if (organisationsEl.isVisible()) {
-			currentOrganisations = QualityUIFactory.getSelectedOrganisations(organisationsEl.getSelection(), currentOrganisations);
-			generatorService.updateGeneratorOrganisations(generator, currentOrganisations);
+			List<Organisation> organisations = organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
+			generatorService.updateGeneratorOrganisations(generator, organisations);
 		}
 		
 		fireEvent(ureq, new GeneratorEvent(generator, GeneratorEvent.Action.CHANGED));

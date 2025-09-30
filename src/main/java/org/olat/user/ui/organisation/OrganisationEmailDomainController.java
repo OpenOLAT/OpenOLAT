@@ -19,6 +19,7 @@
  */
 package org.olat.user.ui.organisation;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,16 +29,15 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
-import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OrganisationEmailDomainController extends FormBasicController implements Controller {
 
-	private SingleSelection organisationsEl;
+	private ObjectSelectionElement organisationEl;
 	private TextElement domainEl;
 	private FormToggle enabledEl;
 	private FormToggle subdomainsAllowedEl;
@@ -71,15 +71,14 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addDropdownSingleselect("organisation.email.domain.organisation", formLayout, orgSV.keys(), orgSV.values());
-		organisationsEl.setMandatory(true);
-		if (emailDomain != null) {
-			organisationsEl.select(emailDomain.getOrganisation().getKey().toString(), true);
-		} else {
-			organisationsEl.select(organisationsEl.getKey(0), true);
-		}
-		organisationsEl.setEnabled(emailDomain == null && organisations.size() > 1);
+		Collection<? extends OrganisationRef> domainOrganisation = emailDomain != null? List.of(emailDomain.getOrganisation()): List.of();
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				domainOrganisation,
+				() -> organisations);
+		organisationEl = uifactory.addObjectSelectionElement("organisations", "organisation.email.domain.organisation", formLayout,
+				getWindowControl(), false, organisationSource);
+		organisationEl.setMandatory(true);
+		organisationEl.setEnabled(emailDomain == null && organisations.size() > 1);
 		
 		String domain = emailDomain != null? emailDomain.getDomain(): null;
 		domainEl = uifactory.addTextElement("organisation.email.domain.domain", 255, domain, formLayout);
@@ -107,17 +106,25 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		organisationEl.clearError();
+		if (organisationEl.isEnabled() && organisationEl.getSelectedKey() == null) {
+			organisationEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
 		domainEl.clearError();
 		if (!StringHelper.containsNonWhitespace(domainEl.getValue())) {
 			domainEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if (emailDomain == null || !Objects.equals(emailDomain.getDomain(), domainEl.getValue())){ 
-			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
-			searchParams.setOrganisations(List.of(() -> Long.valueOf(organisationsEl.getSelectedKey())));
-			searchParams.setDomains(List.of(domainEl.getValue().toLowerCase()));
-			if (!organisationService.getEmailDomains(searchParams).isEmpty()) {
-				domainEl.setErrorKey("organisation.email.domain.error.duplicate");
-				allOk &= false;
+		} else if (emailDomain == null || !Objects.equals(emailDomain.getDomain(), domainEl.getValue())) {
+			if (organisationEl.getSelectedKey() != null) {
+				OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+				searchParams.setOrganisations(OrganisationSelectionSource.toRefs(organisationEl.getSelectedKeys()));
+				searchParams.setDomains(List.of(domainEl.getValue().toLowerCase()));
+				if (!organisationService.getEmailDomains(searchParams).isEmpty()) {
+					domainEl.setErrorKey("organisation.email.domain.error.duplicate");
+					allOk &= false;
+				}
 			}
 		}
 		
@@ -132,7 +139,7 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (emailDomain == null) {
-			Long organisationKey = Long.valueOf(organisationsEl.getSelectedKey());
+			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
 			Organisation organisation = organisations.stream().filter(org -> organisationKey.equals(org.getKey())).findFirst().get();
 			emailDomain = organisationService.createOrganisationEmailDomain(organisation, domainEl.getValue());
 		}

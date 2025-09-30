@@ -25,9 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,12 +52,13 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,11 +82,15 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private FileElement uploadFileEl;
 	private StaticTextElement typeEl;
 	private TextElement displaynameEl;
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	private MultipleSelectionElement referencesEl;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -94,7 +100,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
 		
 		initForm(ureq);
 	}
@@ -104,7 +110,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.limitTypes = limitTypes;
 		manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager);
+				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
 		
 		initForm(ureq);
 	}
@@ -134,13 +140,9 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setVisible(false);
 		displaynameEl.setElementCssClass("o_sel_author_imported_name");
 		
-		organisationEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations",
-				formLayout, getWindowControl(), manageableOrganisations);
-		if(!manageableOrganisations.isEmpty()) {
-			organisationEl.setSelection(manageableOrganisations.get(0).getKey());
-		}
-		organisationEl.setVisible(manageableOrganisations.size() > 1);
-
+		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), formLayout, uifactory,
+				organisationModule, manageableOrganisations);
+		
 		String[] refValues = new String[]{ translate("references.expl") };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
 		referencesEl.setVisible(false);
@@ -182,7 +184,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(handlerForUploadedResources != null) {
-			doImport();
+			doImport(ureq);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
@@ -196,12 +198,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-
-		organisationEl.clearError();
-		if(organisationEl.isVisible() && !organisationEl.isExactlyOneSelected()) {
-			organisationEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
+		allOk &= RepositoyUIFactory.validateOrganisationEl(organisationEl);
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
 			displaynameEl.setErrorKey("form.legende.mandatory");
@@ -242,7 +239,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		return allOk;
 	}
 	
-	private void doImport() {
+	private void doImport(UserRequest ureq) {
 		RepositoryHandler handler;
 		if(handlerForUploadedResources == null || handlerForUploadedResources.isEmpty()) {
 			handler = null;
@@ -256,20 +253,16 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		}
 		
 		if(handler != null) {
-			Organisation organisation;
-			if(organisationEl.isExactlyOneSelected()) {
-				Long organisationKey = organisationEl.getSingleSelection();
-				organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
-			} else {
-				organisation = organisationService.getDefaultOrganisation();
-			}
-
+			Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
+			
 			String displayname = displaynameEl.getValue();
 			File uploadedFile = uploadFileEl.getUploadFile();
 			String uploadedFilename = uploadFileEl.getUploadFileName();
 			RepositoryEntryImportExportLinkEnum withReferences = referencesEl.isAtLeastSelected(1) ? RepositoryEntryImportExportLinkEnum.WITH_REFERENCE : RepositoryEntryImportExportLinkEnum.NONE;
 			importedEntry = handler.importResource(getIdentity(), null, displayname,
 					"", withReferences, organisation, getLocale(), uploadedFile, uploadedFilename);
+			
+			RepositoyUIFactory.addOrganisations(ureq, organisationService, repositoryService, organisationEl, importedEntry, organisation);
 			
 			if(importedEntry == null) {
 				showWarning("error.import");

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.OrganisationStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,7 +43,7 @@ import org.olat.ims.lti13.DeploymentConfigurationPermission;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.user.ui.organisation.OrganisationAdminController;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,7 +58,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	
 	private MultipleSelectionElement moduleEnabled;
 	private TextElement platformIssEl;
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private SingleSelection entryOwnerPermissionEl;
 	private SingleSelection businessGroupCoachPermissionEl;
 	private MultipleSelectionElement rolesEntryEl;
@@ -177,20 +177,24 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	}
 	
 	private void initOrganisationsEl(FormItemContainer formLayout) {
-		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
+		List<Organisation> organisations = organisationService.getOrganisations();
+		
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(), () -> organisations);
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "lti13.default.organisation", formLayout,
+				getWindowControl(), false, organisationSource);
+		
 		String defaultLtiOrgKey = lti13Module.getDefaultOrganisationKey();
 		boolean orgsContainDefaultOrg = 
 				StringHelper.containsNonWhitespace(defaultLtiOrgKey) && 
 						organisations.stream().anyMatch(org -> org.getKey().equals(Long.valueOf(defaultLtiOrgKey)));
 		
-		organisationsEl = uifactory.addOrgSelectorElement("organisations", "lti13.default.organisation", 
-				formLayout, getWindowControl(), organisations);
-		
+
 		if(orgsContainDefaultOrg) {
-			organisationsEl.setSelection(Long.valueOf(defaultLtiOrgKey));
+			organisationsEl.select(defaultLtiOrgKey);
 		} else {
 			Organisation organisation = organisationService.getDefaultOrganisation();
-			organisationsEl.setSelection(organisation.getKey());
+			organisationsEl.select(organisation.getKey().toString());
 		}
 	}
 
@@ -200,7 +204,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		
 		organisationsEl.clearError();
 		if(moduleEnabled.isAtLeastSelected(1)) {
-			if(!organisationsEl.isExactlyOneSelected()) {
+			if(organisationsEl.getSelectedKeys().size() != 1) {
 				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
@@ -234,7 +238,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
 		lti13Module.setEnabled(enabled);
 		
-		String selectedOrganisationKey = String.valueOf(organisationsEl.getSingleSelection());
+		String selectedOrganisationKey = organisationsEl.getSelectedKey();
 		lti13Module.setDefaultOrganisationKey(selectedOrganisationKey);
 		lti13Module.setDeploymentRepositoryEntryRolesConfigurationList(rolesEntryEl.getSelectedKeys());
 		lti13Module.setDeploymentBusinessGroupRolesConfigurationList(rolesBusinessGroupEl.getSelectedKeys());

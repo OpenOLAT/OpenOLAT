@@ -19,9 +19,6 @@
  */
 package org.olat.modules.video.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -35,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -47,8 +45,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,15 +57,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoCollectionAccessController extends FormBasicController {
 	
 	private FormToggle videoCollectionEl;
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	
 	private final boolean readOnly;
 	private final RepositoryEntry entry;
-	private final List<Organisation> organisations;
-	private final List<Organisation> videoOrganisations;
 	
-	@Autowired
-	private ACService acService;
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
@@ -83,9 +76,6 @@ public class VideoCollectionAccessController extends FormBasicController {
 		this.entry = entry;
 		this.readOnly = readOnly;
 		
-		organisations = acService.getSelectionOfferOrganisations(getIdentity());
-		videoOrganisations = videoManager.getVideoOrganisations(entry);
-
 		initForm(ureq);
 		updateUI();
 	}
@@ -99,16 +89,14 @@ public class VideoCollectionAccessController extends FormBasicController {
 		videoCollectionEl.addActionListener(FormEvent.ONCHANGE);
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		List<Organisation> availableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		List<Organisation> organisationList = new ArrayList<>(availableOrganisations);
-		organisationsEl = uifactory.addOrgSelectorElement("video.collection.organisations", 
-				"video.collection.organisations", formLayout, getWindowControl(), organisationList, true);
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				videoManager.getVideoOrganisations(entry),
+				() -> organisationService.getOrganisations(getIdentity(), roles,
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author));
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "video.collection.organisations", formLayout,
+				getWindowControl(), true, organisationSource);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
-		if(videoOrganisations != null) {
-			videoOrganisations.forEach(organisation -> organisationsEl.setSelection(organisation.getKey()));
-		}
 		
 		List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), repositoryService.getTaxonomy(entry));
 		String levels = RepositoryCatalogInfoFactory.wrapTaxonomyLevels(taxonomyLevels);
@@ -124,14 +112,12 @@ public class VideoCollectionAccessController extends FormBasicController {
 		organisationsEl.setVisible(organisationModule.isEnabled() && videoCollectionEl.isOn());
 	}
 	
-	
-
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		organisationsEl.clearError();
-		if(organisationsEl.isVisible() && organisationsEl.getSelection().isEmpty()) {
+		if(organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
 			organisationsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -157,16 +143,6 @@ public class VideoCollectionAccessController extends FormBasicController {
 	}
 	
 	public List<Organisation> getVideoOrganisations() {
-		if (organisationsEl == null) {
-			if (videoOrganisations == null) {
-				return Collections.emptyList();
-			}
-			return List.copyOf(videoOrganisations);
-		}
-		
-		Collection<Long> selectedOrgKeys = organisationsEl.getSelection();
-		return organisations.stream()
-				.filter(org -> selectedOrgKeys.contains(org.getKey()))
-				.toList();
+		return organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
 	}
 }

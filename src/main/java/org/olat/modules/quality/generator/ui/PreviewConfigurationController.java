@@ -26,6 +26,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -33,13 +34,11 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -58,6 +57,7 @@ import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,7 +75,6 @@ public class PreviewConfigurationController extends FormBasicController {
 	private FormLink evaFormPreviewLink;
 	private DateChooser startEl;
 	private DateChooser deadlineEl;
-	private MultiSelectionFilterElement organisationsEl;
 	private FormLayoutContainer buttonLayout;
 	private FormLink resetLink;
 	
@@ -117,11 +116,12 @@ public class PreviewConfigurationController extends FormBasicController {
 		evaFormPreviewLink.setI18nKey(StringHelper.escapeHtml(preview.getFormEntry().getDisplayname()));
 		evaFormPreviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
-		SelectionValues organisationSV = QualityUIFactory.getOrganisationSV(ureq.getUserSession(), preview.getOrganisations());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("data.collection.organisations",
-				"data.collection.organisations", formLayout, getWindowControl(), organisationSV);
-		organisationsEl.setEnabled(false);
-		preview.getOrganisations().forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		String organisations = preview.getOrganisations().stream()
+				.map(OrganisationSelectionSource::createTitle)
+				.map(StringHelper::escapeHtml)
+				.sorted()
+				.collect(Collectors.joining(", "));
+		uifactory.addStaticTextElement("data.collection.organisations", organisations, formLayout);
 		
 		uifactory.addStaticTextElement("data.collection.topic.type.select", translate(preview.getTopicType().getI18nKey()), formLayout);
 		

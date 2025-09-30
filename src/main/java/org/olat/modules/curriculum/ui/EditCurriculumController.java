@@ -20,11 +20,10 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.List;
-import java.util.Optional;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -32,21 +31,23 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureModule;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,11 +57,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditCurriculumController extends FormBasicController {
+	
+	private static final String GUIPREF_KEY_CURRICULUM_ORG = "curriculum.organisation";
 
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	private SingleSelection lecturesEnabledEl;
 	
 	private Curriculum curriculum;
@@ -70,6 +73,8 @@ public class EditCurriculumController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -123,7 +128,7 @@ public class EditCurriculumController extends FormBasicController {
 		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum(curriculum));
 		identifierEl.setMandatory(true);
 		
-		initFormOrganisations(formLayout, ureq.getUserSession());
+		initFormOrganisations(ureq, formLayout);
 		
 		SelectionValues enabledKeysValues = new SelectionValues();
 		enabledKeysValues.add(SelectionValues.entry("on", translate("type.lectures.enabled.enabled")));
@@ -150,26 +155,51 @@ public class EditCurriculumController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
-		Roles roles = usess.getRoles();
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+	private void initFormOrganisations(UserRequest ureq, FormItemContainer formLayout) {
+		Roles roles = ureq.getUserSession().getRoles();
+		List<Organisation> managedOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
-		
-		organisationEl = uifactory.addOrgSelectorElement("curriculum.organisation", 
-				"curriculum.organisation", formLayout, getWindowControl(), organisations);
-		organisationEl.setMandatory(true);
-
+				
+		Organisation currentOrganisation = null;
 		if (curriculum != null) {
-			if (curriculum.getOrganisation() != null) {
-				organisationEl.setSelection(curriculum.getOrganisation().getKey());
+			currentOrganisation = curriculum.getOrganisation();
+		}
+		if (currentOrganisation == null) {
+			String organisationKey = getDefaultOrganisationKey(ureq);
+			if (organisationKey != null) {
+				currentOrganisation =managedOrganisations.stream()
+						.filter(organisation -> organisationKey.equals(organisation.getKey().toString()))
+						.findFirst()
+						.orElseGet(null);
 			}
-		} else {
-			Organisation defaultOrg = organisationService.getDefaultOrganisation();
-			if (defaultOrg != null) {
-				if (organisations.contains(defaultOrg)) {
-					organisationEl.setSelection(defaultOrg.getKey());
-				}
+		}
+		if (currentOrganisation == null) {
+			currentOrganisation = organisationService.getDefaultOrganisation();
+		}
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(currentOrganisation),
+				() -> managedOrganisations);
+		organisationEl = uifactory.addObjectSelectionElement("organisations", "curriculum.organisation", formLayout,
+				getWindowControl(), false, organisationSource);
+		organisationEl.setMandatory(true);
+		organisationEl.setVisible(organisationModule.isEnabled());
+	}
+	
+	private String getDefaultOrganisationKey(UserRequest ureq) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			Object pref = guiPrefs.get(EditCurriculumController.class, GUIPREF_KEY_CURRICULUM_ORG);
+			if (pref instanceof String key) {
+				return key;
 			}
+		}
+		return null;
+	}
+	
+	private static void setDefaultOrganisationKey(UserRequest ureq, String key) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(EditCurriculumController.class, GUIPREF_KEY_CURRICULUM_ORG, key);
 		}
 	}
 
@@ -186,13 +216,9 @@ public class EditCurriculumController extends FormBasicController {
 	
 	private boolean validateOrg() {
 		boolean allOk = true;
-		
-		if (organisationEl == null || !organisationEl.isVisible()) {
-			return allOk;
-		}
 
 		organisationEl.clearError();
-		if (organisationEl.getSelection() == null || organisationEl.getSelection().isEmpty()) {
+		if (organisationEl.isVisible() && organisationEl.getSelectedKey() == null) {
 			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -218,12 +244,12 @@ public class EditCurriculumController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//create a new one
 		Organisation organisation = null;
-		if (organisationEl != null && organisationEl.isVisible() && organisationEl.getSelection() != null) {
-			Optional<Long> orgKey = organisationEl.getSelection().stream().findFirst();
-			if (orgKey.isPresent()) {
-				organisation = organisationService.getOrganisation(new OrganisationRefImpl(orgKey.get()));
+		if (organisationEl.isVisible() && organisationEl.getSelectedKey() != null) {
+			OrganisationRef organisationRef = OrganisationSelectionSource.toRef(organisationEl.getSelectedKey());
+			organisation = organisationService.getOrganisation(organisationRef);
+			if (curriculum == null && organisation != null) {
+				setDefaultOrganisationKey(ureq, organisation.getKey().toString());
 			}
 		}
 		if (organisation == null) {
@@ -233,6 +259,7 @@ public class EditCurriculumController extends FormBasicController {
 		boolean lecturesEnabled = lecturesEnabledEl.isOneSelected() && "on".equals(lecturesEnabledEl.getSelectedKey());
 		
 		if(curriculum == null) {
+			//create a new one
 			curriculum = curriculumService
 					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(),
 							lecturesEnabled, organisation);
@@ -254,10 +281,7 @@ public class EditCurriculumController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		if (curriculum != null) {
 			if (curriculum.getOrganisation() != null) {
-				Long orgKey = curriculum.getOrganisation().getKey();
-				if (!organisationEl.getSelection().contains(orgKey)) {
-					organisationEl.setSelection(curriculum.getOrganisation().getKey());
-				}
+				organisationEl.select(curriculum.getOrganisation().getKey().toString());
 			}
 		}
 

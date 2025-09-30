@@ -24,18 +24,14 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -54,19 +50,18 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.course.CourseModule;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -91,7 +86,6 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.repository.wizard.RepositoryWizardService;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -105,7 +99,6 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	
 	public static final Event CREATION_WIZARD = new Event("start_wizard");
 	
-	private static final String GUIPREF_KEY_REPOSITORY_ENTRY_ORGS = "repository.entry.orgs";
 	private static final String CMD_WIZARD = "wizard";
 	
 	private TextElement displaynameEl;
@@ -117,7 +110,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private FormLayoutContainer privateDatesCont;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection educationalTypeEl;
-	private OrgSelectorElement organisationEl;
+	private ObjectSelectionElement organisationEl;
 	
 	protected RepositoryEntry repositoryEntry;
 	private final RepositoryHandler handler;
@@ -265,7 +258,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			educationalTypeEl.enableNoneSelection();
 		}
 		
-		initOrganisations(ureq, generalCont);
+		organisationEl = RepositoyUIFactory.createOrganisationsEl(ureq, getWindowControl(), generalCont, uifactory,
+				organisationModule, manageableOrganisations);
 		
 		initAdditionalFormElements(formLayout, listener, ureq);
 		
@@ -298,39 +292,6 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		FormSubmit submit = uifactory.addFormSubmitButton("cmd.create.ressource", buttonContainer);
 		submit.setElementCssClass("o_sel_author_create_submit");
-	}
-	
-	private void initOrganisations(UserRequest ureq, FormItemContainer formLayout) {
-		organisationEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations",
-				formLayout, getWindowControl(), manageableOrganisations, true);
-		organisationEl.setVisible(manageableOrganisations.size() > 1 && organisationModule.isEnabled());
-		
-		if (organisationEl.isVisible()) {
-			List<Long> organisationKeys = getDefaultOrganisationKeys(ureq);
-			organisationEl.setSelection(organisationKeys);
-			if (organisationEl.getSelection().isEmpty()) {
-				organisationEl.setSelection(manageableOrganisations.get(0).getKey());
-			}
-		}
-	}
-	
-	private List<Long> getDefaultOrganisationKeys(UserRequest ureq) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			Object pref = guiPrefs.get(CreateRepositoryEntryController.class, GUIPREF_KEY_REPOSITORY_ENTRY_ORGS);
-			if (pref instanceof String preList) {
-				return Arrays.stream(preList.split("::")).map(Long::valueOf).toList();
-			}
-		}
-		return List.of();
-	}
-	
-	private void setDefaultOrganisationKeys(UserRequest ureq, Collection<Long> organisationKeys) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			String joindeKeys = organisationKeys.stream().map(String::valueOf).collect(Collectors.joining("::"));
-			guiPrefs.putAndSave(CreateRepositoryEntryController.class, GUIPREF_KEY_REPOSITORY_ENTRY_ORGS, joindeKeys);
-		}
 	}
 	
 	private void initLifecycle(FormItemContainer formLayout) {
@@ -489,11 +450,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			}
 		}
 		
-		organisationEl.clearError();
-		if(organisationEl.isVisible() && organisationEl.getSelection().isEmpty()) {
-			organisationEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
+		allOk &= RepositoyUIFactory.validateOrganisationEl(organisationEl);
 		
 		if (!allOk) {
 			wizardProvider = null;
@@ -546,30 +503,11 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private void doCreate(UserRequest ureq) {
 		String displayname = displaynameEl.getValue();
 		
-		Organisation organisation;
-		if(organisationEl.isVisible() && !organisationEl.getSelection().isEmpty()) {
-			OrganisationRef organisationRef = organisationEl.getSelection().stream()
-					.limit(1)
-					.map(OrganisationRefImpl::new)
-					.findFirst().get();
-			organisation = organisationService.getOrganisation(organisationRef);
-		} else if(manageableOrganisations.size() == 1) {
-			organisation = organisationService.getOrganisation(manageableOrganisations.get(0));
-		} else {
-			organisation = organisationService.getDefaultOrganisation();
-		}
+		Organisation organisation = RepositoyUIFactory.getResourceOrganisation(organisationService, organisationEl, manageableOrganisations);
 		
 		repositoryEntry = handler.createResource(getIdentity(), displayname, "", createObject, organisation, getLocale());
-
-		if(organisationEl.isVisible() && !organisationEl.getSelection().isEmpty()) {
-			List<OrganisationRefImpl> additionalOrganisationRefs = organisationEl.getSelection().stream()
-					.filter(key -> !key.equals(organisation.getKey()))
-					.map(OrganisationRefImpl::new)
-					.toList();
-			organisationService.getOrganisation(additionalOrganisationRefs)
-					.forEach(org -> repositoryService.addOrganisation(repositoryEntry, org));
-			setDefaultOrganisationKeys(ureq, organisationEl.getSelection());
-		}
+		
+		RepositoyUIFactory.addOrganisations(ureq, organisationService, repositoryService, organisationEl, repositoryEntry, organisation);
 		
 		String ref = externalRef.getValue().trim();
 		repositoryEntry.setExternalRef(ref);

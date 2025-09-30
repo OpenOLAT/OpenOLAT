@@ -19,8 +19,6 @@
  */
 package org.olat.repository.ui.author;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +27,6 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -42,16 +39,15 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.oaipmh.OAIPmhModule;
@@ -65,7 +61,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.settings.AccessOverviewController;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,7 +90,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private FormLayoutContainer oaiCont;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private SelectionElement authorCanEl;
 	private SelectionElement enableMetadataIndexingEl;
 
@@ -190,10 +186,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		if(organisationsEl == null || !organisationsEl.isVisible()) {
 			return repositoryEntryOrganisations;
 		}
-
-		Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
-				.map(OrganisationRefImpl::new).map(o -> (OrganisationRef) o).toList();
-		return organisationService.getOrganisation(selectedOrganisationRefs); 
+		
+		return organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
 	}
 
 	@Override
@@ -234,9 +228,15 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		initLeaveOption(generalCont);
 
 		uifactory.addSpacerElement("author.config", generalCont, false);
-
-		UserSession usess = ureq.getUserSession();
-		initFormOrganisations(generalCont, usess);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		repositoryEntryOrganisations = repositoryService.getOrganisations(entry);
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				repositoryEntryOrganisations,
+				() -> organisationService.getOrganisations(getIdentity(), roles,
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author));
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "cif.organisations", generalCont,
+				getWindowControl(), true, organisationSource);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
 		organisationsEl.addActionListener(FormEvent.ONCHANGE);
@@ -416,30 +416,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 		leaveEl.setEnabled(!managedLeaving && !readOnly);
 	}
-
-	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
-		Roles roles = usess.getRoles();
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		List<Organisation> organisationList = new ArrayList<>(organisations);
-
-		List<Organisation> reOrganisations = repositoryService.getOrganisations(entry);
-		repositoryEntryOrganisations = new ArrayList<>(reOrganisations);
-
-		for(Organisation reOrganisation:reOrganisations) {
-			if(reOrganisation != null && !organisationList.contains(reOrganisation)) {
-				organisationList.add(reOrganisation);
-			}
-		}
-		
-		List<Long> selectedOrgKeys = reOrganisations.stream().map(Organisation::getKey).toList();
-
-		organisationsEl = uifactory.addOrgSelectorElement("organisations", "cif.organisations",
-				formLayout, getWindowControl(), organisationList);
-		organisationsEl.setMultipleSelection(true);
-		organisationsEl.setSelection(selectedOrgKeys);
-	}
-
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == accessEl) {
@@ -473,7 +450,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
-			if(organisationsEl.isVisible() && organisationsEl.getSelection().isEmpty()) {
+			if(organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
 				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}

@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationModule;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -36,23 +35,21 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.DataStorage;
@@ -77,7 +74,7 @@ import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
-import org.olat.user.ui.organisation.OrganisationTreeModel;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,12 +91,12 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private FormLink evaFormEditLink;
 	private DateChooser startEl;
 	private DateChooser deadlineEl;
-	private MultiSelectionFilterElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private SingleSelection topicTypeEl;
 	private TextElement topicCustomTextEl;
 	private StaticTextElement topicIdentityNameEl;
 	private FormLink topicIdentitySelectLink;
-	private SingleSelection topicOrganisationEl;
+	private ObjectSelectionElement topicOrganisationEl;
 	private SingleSelection topicCurriculumEl;
 	private SingleSelection topicCurriculumElementEl;
 	private FormLink topicRepositorySelectLink;
@@ -183,10 +180,11 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		evaFormReplaceLink = uifactory.addFormLink("data.collection.form.replace", formCont, Link.BUTTON_XSMALL);
 		evaFormEditLink = uifactory.addFormLink("data.collection.form.edit", formCont, Link.BUTTON_XSMALL);
 		
-		SelectionValues organisationSV = QualityUIFactory.getOrganisationSV(ureq.getUserSession(), currentOrganisations);
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("data.collection.organisations",
-				"data.collection.organisations", formLayout, getWindowControl(), organisationSV);
-		currentOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				currentOrganisations,
+				QualityUIFactory.getManagedOrganisations(organisationService, ureq));
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "data.collection.organisations", formLayout,
+				getWindowControl(), true, organisationSource);
 		organisationsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// topic
@@ -206,7 +204,11 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		topicIdentityNameEl = uifactory.addStaticTextElement("data.collection.topic.identity.name", null, formLayout);
 		topicIdentitySelectLink = uifactory.addFormLink("data.collection.topic.identity.select", formLayout, Link.BUTTON_XSMALL);
 		// topic organisation
-		topicOrganisationEl = uifactory.addDropdownSingleselect("data.collection.topic.organisation", formLayout, emptyArray(), emptyArray());
+		OrganisationSelectionSource topicOrganisationSource = new OrganisationSelectionSource(
+				topicOrganisation != null? List.of(topicOrganisation): List.of(),
+				QualityUIFactory.getManagedOrganisations(organisationService, ureq));
+		topicOrganisationEl = uifactory.addObjectSelectionElement("topic.organisations", "data.collection.topic.organisation", formLayout,
+				getWindowControl(), false, topicOrganisationSource);
 		// topic curriculum
 		topicCurriculumEl = uifactory.addDropdownSingleselect("data.collection.topic.curriculum", formLayout, emptyArray(), emptyArray());
 		topicCurriculumEl.addActionListener(FormEvent.ONCHANGE);
@@ -285,21 +287,13 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				topicIdentitySelectLink.setVisible(secCallback.canUpdateBaseConfiguration());
 				break;
 			case ORGANISATION:
-				List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
-						OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
-				OrganisationTreeModel organisationModel = new OrganisationTreeModel();
-				organisationModel.loadTreeModel(organisations);
-				KeysValues organistionKeysValues = QualityUIFactory.getOrganisationKeysValues(organisationModel, topicOrganisation);
-				topicOrganisationEl.setKeysAndValues(organistionKeysValues.getKeys(), organistionKeysValues.getValues(), null);
-				if (topicOrganisation != null) {
-					topicOrganisationEl.select(QualityUIFactory.getOrganisationKey(topicOrganisation), true);
-				}
 				topicOrganisationEl.setVisible(true);
 				break;
 			case CURRICULUM:
 				CurriculumSearchParameters params = new CurriculumSearchParameters();
 				if (organisationsEl.isVisible()) {
-					params.setOrganisations(QualityUIFactory.getSelectedOrganisationRefs(organisationsEl));
+					List<Organisation> selectedOrganisations = organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
+					params.setOrganisations(selectedOrganisations);
 				}
 				List<Curriculum> curriculums = curriculumService.getCurriculums(params);
 				KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, topicCurriculum);
@@ -312,7 +306,8 @@ public class DataCollectionConfigurationController extends FormBasicController {
 			case CURRICULUM_ELEMENT:
 				CurriculumSearchParameters params2 = new CurriculumSearchParameters();
 				if (organisationsEl.isVisible()) {
-					params2.setOrganisations(QualityUIFactory.getSelectedOrganisationRefs(organisationsEl));
+					List<Organisation> selectedOrganisations = organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
+					params2.setOrganisations(selectedOrganisations);
 				}
 				List<Curriculum> curriculums2 = curriculumService.getCurriculums(params2);
 				KeysValues curriculumKeysValues2 = QualityUIFactory.getCurriculumKeysValues(curriculums2, topicCurriculum);
@@ -554,11 +549,9 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				dataCollection.setTopicIdentity(topicIdentity);
 				break;
 			case ORGANISATION: 
-				if (topicOrganisationEl.isOneSelected()) {
-					String organiationKey = topicOrganisationEl.getSelectedKey();
-					OrganisationRef organisationRef = QualityUIFactory.getOrganisationRef(organiationKey);
-					Organisation organisation = organisationService.getOrganisation(organisationRef);
-					dataCollection.setTopicOrganisation(organisation);
+				if (topicOrganisationEl.getSelectedKey() != null) {
+					Organisation topicOrganisation = organisationService.getOrganisation(OrganisationSelectionSource.toRef(topicOrganisationEl.getSelectedKey()));
+					dataCollection.setTopicOrganisation(topicOrganisation);
 				} 
 				break;
 			case CURRICULUM: 
@@ -599,8 +592,8 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		
 		// organisations
 		if (organisationsEl.isVisible()) {
-			currentOrganisations = QualityUIFactory.getSelectedOrganisations(organisationsEl, currentOrganisations);
-			qualityService.updateDataCollectionOrganisations(dataCollection, currentOrganisations);
+			List<Organisation> selectedOrganisations = organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
+			qualityService.updateDataCollectionOrganisations(dataCollection, selectedOrganisations);
 		}
 		
 		fireEvent(ureq, new DataCollectionEvent(dataCollection, Action.CHANGED));

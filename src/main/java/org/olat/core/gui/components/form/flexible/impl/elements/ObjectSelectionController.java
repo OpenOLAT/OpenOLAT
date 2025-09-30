@@ -359,6 +359,7 @@ public class ObjectSelectionController extends FormBasicController {
 		source.getOptions().stream()
 			.filter(option -> selectedKeys.contains(option.getKey()))
 			.forEach(option -> selectionsSV.add(SelectionValues.entry(option.getKey(), toSelectionValue(option))));
+
 		selectionEl.setKeysAndValues(selectionsSV.keys(), selectionsSV.values());
 		selectionEl.getKeys().stream().forEach(key -> selectionEl.select(key, true));
 		

@@ -26,22 +26,21 @@ import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.OrganisationStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Organisation;
 import org.olat.core.util.DateRange;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,7 +56,7 @@ public class ForumArchiveReportExportController extends FormBasicController {
 
 	private SingleSelection reportDataEl;
 	private DateChooser dateRangeEl;
-	private MultiSelectionFilterElement orgaSelectionEl;
+	private ObjectSelectionElement orgaSelectionEl;
 
 	@Autowired
 	private OrganisationService organisationService;
@@ -87,14 +86,13 @@ public class ForumArchiveReportExportController extends FormBasicController {
 		dateRangeEl.setSecondDate(true);
 		dateRangeEl.setSeparator("fo.report.generator.date.range.end");
 
-		// filter by selected organisations. Filter only available if organisationModule is enabled
-		SelectionValues organisationsSV = new SelectionValues();
-		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
-		organisations.forEach(o -> organisationsSV.add(new SelectionValues.SelectionValue(o.getKey().toString(), o.getDisplayName())));
-		orgaSelectionEl = uifactory.addCheckboxesFilterDropdown("fo.report.generator.orga.filter.label",
-				"fo.report.generator.orga.filter.label", formLayout, getWindowControl(), organisationsSV);
+		// filter by selected organisations. Filter only available if organisationModule is enabled;
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> organisationService.getOrganisations());
+		orgaSelectionEl = uifactory.addObjectSelectionElement("organisations", "fo.report.generator.orga.filter.label",
+				formLayout, getWindowControl(), true, organisationSource);
 		
-
 		FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttons);
 		uifactory.addFormSubmitButton("fo.report.generate.confirm", buttons);

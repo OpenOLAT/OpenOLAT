@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -63,7 +64,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,8 +87,9 @@ public class RegistrationAccountAdminController extends FormBasicController {
 	private Map<Long, String> courseNames = new HashMap<>();
 	private List<Long> courseKeys;
 	private final boolean orgEmailDomainEnabled;
+	private String defaultOrgKey;
 
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private MultipleSelectionElement addDefaultOrgEl;
 	private FormToggle staticPropElement;
 	private FormToggle autoEnrolmentCoursesEl;
@@ -158,6 +160,7 @@ public class RegistrationAccountAdminController extends FormBasicController {
 		}
 
 		orgEmailDomainEnabled = organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled();
+		defaultOrgKey = organisationService.getDefaultOrganisation().getKey().toString();
 
 		initForm(ureq);
 	}
@@ -193,29 +196,33 @@ public class RegistrationAccountAdminController extends FormBasicController {
 	}
 
 	private void initOrganisationsEl(FormLayoutContainer formLayoutCont) {
-		List<Organisation> organisations = List.of();
-		Long registrationOrgKey = null;
-
+		OrganisationSelectionSource organisationSource;
 		if (!orgEmailDomainEnabled) {
-			organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
 			Organisation registrationOrg = registrationManager.getOrganisationForRegistration(null);
-			registrationOrgKey = registrationOrg.getKey();
+			organisationSource = new OrganisationSelectionSource(
+					registrationOrg != null? List.of(registrationOrg): List.of(),
+					() -> organisationService.getOrganisations(OrganisationStatus.notDelete()));
+		} else {
+			organisationSource = new OrganisationSelectionSource(List.of(), () -> new ArrayList<>(1));
 		}
-
-		organisationsEl = uifactory.addOrgSelectorElement("organisations", "admin.registrationOrganisation", formLayoutCont, getWindowControl(), organisations);
+		
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "admin.registrationOrganisation", formLayoutCont,
+				getWindowControl(), false, organisationSource);
 		organisationsEl.setNoSelectionText(translate("admin.enable.email.validation.disabled"));
-		organisationsEl.setSelection(registrationOrgKey);
-
-		organisationsEl.addActionListener(FormEvent.ONCHANGE);
 		organisationsEl.setEnabled(!orgEmailDomainEnabled);
+		organisationsEl.addActionListener(FormEvent.ONCHANGE);
 
 		addDefaultOrgEl = uifactory.addCheckboxesHorizontal("enable.add.default.org", "admin.enable.add.default.org", formLayoutCont,
 				new String[]{"on"}, new String[]{translate("admin.enable.add.default.org.label")});
-		// only show this option if the non-default org is selected
-		Long defaultOrgKey = organisationService.getDefaultOrganisation().getKey();
-		boolean showAddDefaultOrg = !orgEmailDomainEnabled && !organisationsEl.getSingleSelection().equals(defaultOrgKey);
+		boolean showAddDefaultOrg = isAddDefaultOrgVisible();
 		addDefaultOrgEl.setVisible(showAddDefaultOrg);
 		addDefaultOrgEl.select("on", registrationModule.isAddDefaultOrgEnabled());
+	}
+
+	private boolean isAddDefaultOrgVisible() {
+		return !orgEmailDomainEnabled 
+				&& organisationsEl.getSelectedKey() != null
+				&& !defaultOrgKey.equals(organisationsEl.getSelectedKey());
 	}
 
 	private void initPendingRegistrationStatus(FormLayoutContainer formLayoutContainer) {
@@ -395,7 +402,7 @@ public class RegistrationAccountAdminController extends FormBasicController {
 		}
 
 		organisationsEl.clearError();
-		if (organisationsEl.isEnabled() && !organisationsEl.isExactlyOneSelected()) {
+		if (organisationsEl.isEnabled() && organisationsEl.getSelectedKeys().size() != 1) {
 			organisationsEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
@@ -481,8 +488,7 @@ public class RegistrationAccountAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == organisationsEl) {
-			Long defaultOrgKey = organisationService.getDefaultOrganisation().getKey();
-			addDefaultOrgEl.setVisible(!organisationsEl.getSingleSelection().equals(defaultOrgKey));
+			addDefaultOrgEl.setVisible(isAddDefaultOrgVisible());
 		} else if (source == pendingRegistrationStatusEl) {
 			updatePendingFormVisibility();
 		} else if (source == staticPropElement) {
@@ -524,8 +530,8 @@ public class RegistrationAccountAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (organisationsEl.isExactlyOneSelected()) {
-			registrationModule.setSelfRegistrationOrganisationKey(String.valueOf(organisationsEl.getSingleSelection()));
+		if (organisationsEl.getSelectedKey() != null) {
+			registrationModule.setSelfRegistrationOrganisationKey(organisationsEl.getSelectedKey());
 			// adding to default org value can be false, if default org is already selected
 			registrationModule.setAddDefaultOrgEnabled(addDefaultOrgEl.isVisible() && addDefaultOrgEl.isAtLeastSelected(1));
 		}

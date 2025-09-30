@@ -21,26 +21,27 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,7 +55,7 @@ public class OpenAccessOfferController extends FormBasicController {
 	private static final String CATALOG_WEB = "web";
 	
 	private TextElement descEl;
-	private MultiSelectionFilterElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
 
 	private final Offer offer;
@@ -62,7 +63,6 @@ public class OpenAccessOfferController extends FormBasicController {
 	private final Collection<Organisation> offerOrganisations;
 	private final CatalogInfo catalogInfo;
 	private final boolean edit;
-	private List<Organisation> organisations;
 	
 	@Autowired
 	private ACService acService;
@@ -70,6 +70,8 @@ public class OpenAccessOfferController extends FormBasicController {
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public OpenAccessOfferController(UserRequest ureq, WindowControl wControl, Offer offer,
 			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
@@ -132,20 +134,13 @@ public class OpenAccessOfferController extends FormBasicController {
 	}
 	
 	private void initFormOrganisations(FormItemContainer formLayout) {
-		organisations = acService.getSelectionOfferOrganisations(getIdentity());
-		
-		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-			for (Organisation offerOrganisation : offerOrganisations) {
-				if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {
-					organisations.add(offerOrganisation);
-				}
-			}
-		}
-		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.released.for", formLayout, getWindowControl(), orgSV);
+		Collection<? extends OrganisationRef> selectedOrganisations = offerOrganisations != null? offerOrganisations: List.of();
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				selectedOrganisations,
+				() -> acService.getSelectionOfferOrganisations(getIdentity()));
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "offer.released.for", formLayout,
+				getWindowControl(), true, organisationSource);
 		organisationsEl.setMandatory(true);
-		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
 	@Override
@@ -188,10 +183,7 @@ public class OpenAccessOfferController extends FormBasicController {
 			return List.copyOf(offerOrganisations);
 		}
 		
-		Collection<String> selectedOrgKeys = organisationsEl.getSelectedKeys();
-		return organisations.stream()
-				.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
-				.collect(Collectors.toList());
+		return organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
 	}
 
 }

@@ -43,7 +43,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -51,9 +50,9 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTablePeriodFilter.PeriodWithUnit;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -71,6 +70,7 @@ import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /** 
@@ -86,7 +86,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private static final String formIdentifyer = UsermanagerUserSearchForm.class.getCanonicalName();
 	
 	private MultipleSelectionElement roles;
-	private MultiSelectionFilterElement organisations;
+	private ObjectSelectionElement organisations;
 	private MultipleSelectionElement status;
 	private MultipleSelectionElement extraSearch;
 	private SelectionElement auth;
@@ -101,7 +101,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 	private List<String> roleKeys;
 	private List<String> roleValues;
-	private SelectionValues organisationSV;
 	private SelectionValues authKeysValues;
 	private String[] extraSearchKeys;
 	private String[] extraSearchValues;
@@ -141,8 +140,6 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		
 		extraSearchKeys = new String[] { "no-resources", "no-eff-statements" };
 		extraSearchValues = new String[] { translate("no.resource"), translate("no.eff.statement") };
-		
-		organisationSV = OrganisationUIFactory.createSelectionValues(manageableOrganisations, getLocale());
 		
 		// take all providers from the config file
 		// convention is that a translation key "search.form.constraint.auth." +
@@ -416,8 +413,11 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 		uifactory.addSpacerElement("space1", formLayout, false);
 		
-		organisations = uifactory.addCheckboxesFilterDropdown("organisations", "search.form.title.organisations",
-				formLayout, getWindowControl(), organisationSV);
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> manageableOrganisations);
+		organisations = uifactory.addObjectSelectionElement("organisations", "search.form.title.organisations",
+				formLayout, getWindowControl(), true, organisationSource);
 		
 		roles = uifactory.addCheckboxesDropdown("roles", "search.form.title.roles", formLayout,
 				roleKeys.toArray(new String[roleKeys.size()]), roleValues.toArray(new String[roleValues.size()]));

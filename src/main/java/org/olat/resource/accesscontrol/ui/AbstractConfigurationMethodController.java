@@ -23,14 +23,13 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -38,18 +37,20 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.OrganisationUIFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,7 +72,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private TextElement labelEl;
 	private SingleSelection periodEl;
 	private DateChooser datesEl;
-	private MultiSelectionFilterElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
 	protected SingleSelection confirmationByManagerEl;
 	private MultipleSelectionElement confirmationEmailEl;
@@ -82,7 +83,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private final Collection<Organisation> offerOrganisations;
 	private final boolean confirmationByManagerSupported;
 	protected final CatalogInfo catalogInfo;
-	private List<Organisation> organisations;
 	private final boolean edit;
 	
 	@Autowired
@@ -91,6 +91,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, OfferAccess link,
 			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
@@ -134,7 +136,13 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		
 		// Organisations
 		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
-			initFormOrganisations(formLayout);
+			Collection<? extends OrganisationRef> selectedOrganisations = offerOrganisations != null? offerOrganisations: List.of();
+			OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+					selectedOrganisations,
+					() -> acService.getSelectionOfferOrganisations(getIdentity()));
+			organisationsEl = uifactory.addObjectSelectionElement("organisations", "offer.released.for", formLayout,
+					getWindowControl(), true, organisationSource);
+			organisationsEl.setMandatory(true);
 		}
 		
 		// Period
@@ -176,8 +184,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 				new String[] { translate("booking.receipt.option") });
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
 		
-		initCustomMembershipElements(formLayout);
-		
 		customSpacerEl = uifactory.addSpacerElement("others", formLayout, false);
 		
 		// Custom
@@ -207,21 +213,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		updateUI();
 	}
 	
-	private void initFormOrganisations(FormItemContainer formLayout) {
-		organisations = acService.getSelectionOfferOrganisations(getIdentity());
-		
-		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
-			for (Organisation offerOrganisation : offerOrganisations) {
-				if (offerOrganisation != null && !organisations.contains(offerOrganisation)) {
-					organisations.add(offerOrganisation);
-				}
-			}
-		}
-		
-		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.released.for", formLayout, getWindowControl(), orgSV);
-		organisationsEl.setMandatory(true);
-		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+	protected boolean isConfirmationByManagerSupported() {
+		return false;
 	}
 	
 	/**
@@ -328,10 +321,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			return List.copyOf(offerOrganisations);
 		}
 		
-		Collection<String> selectedOrgKeys = organisationsEl.getSelectedKeys();
-		return organisations.stream()
-				.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
-				.collect(Collectors.toList());
+		return organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
 	}
 	
 }

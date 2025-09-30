@@ -29,14 +29,15 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OrganisationExceptionalObligationController extends FormBasicController
 		implements ExceptionalObligationController {
 	
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	
 	@Autowired
 	private OrganisationService organisationService;
@@ -61,7 +62,8 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 
 	@Override
 	public List<ExceptionalObligation> getExceptionalObligations() {
-		return organisationsEl.getSelection().stream()
+		return organisationsEl.getSelectedKeys().stream()
+				.map(Long::valueOf)
 				.map(OrganisationRefImpl::new)
 				.map(this::createExceptionalObligation)
 				.collect(Collectors.toList());
@@ -76,10 +78,13 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		organisationsEl = uifactory.addOrgSelectorElement("organisations",
-				"config.exceptional.obligation.organisations", formLayout, getWindowControl(), organisations, true);
+		Roles roles = ureq.getUserSession().getRoles();
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> organisationService.getOrganisations(getIdentity(), roles,
+						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author));
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "config.exceptional.obligation.organisations", formLayout,
+				getWindowControl(), true, organisationSource);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setElementCssClass("o_button_group_right o_block_top");
