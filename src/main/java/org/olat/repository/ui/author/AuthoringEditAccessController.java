@@ -111,7 +111,6 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessOverview(ureq, mainVC);
 		updateUI();
 		putInitialPanel(mainVC);
-		validateOfferAvailable();
 	}
 
 	private boolean isCurricularCourse() {
@@ -166,7 +165,6 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessShare(ureq, mainVC);
 		initAccessOverview(ureq, mainVC);
 		updateUI();
-		validateOfferAvailable();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -179,7 +177,6 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canDownload(),
 				accessShareCtrl.canIndexMetadata(),
 				accessShareCtrl.getSelectedOrganisations());
-		validateOfferAvailable();
 		
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq, mainVC);
@@ -284,6 +281,7 @@ public class AuthoringEditAccessController extends BasicController {
 			listenTo(accessOverviewCtrl);
 			vc.put("accessOverview", accessOverviewCtrl.getInitialComponent());
 		}
+		validateOfferAvailable();
 	}
 	
 	private void updateUI() {
