@@ -40,7 +40,6 @@ import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -642,18 +641,6 @@ public class QualityUIFactory {
 	}
 
 	public static boolean validateIsMandatory(ObjectSelectionElement el) {
-		boolean allOk = true;
-		el.clearError();
-		if(el.isEnabled() && el.isVisible()) {
-			if (el.getSelectedKeys().isEmpty()) {
-				el.setErrorKey("form.mandatory.hover");
-				allOk = false;
-			}
-		}
-		return allOk;
-	}
-
-	public static boolean validateIsMandatory(MultiSelectionFilterElement el) {
 		boolean allOk = true;
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {

@@ -1030,24 +1030,6 @@ legend.control-label {
 	}
 }
 
-/* Multi selection filter element */ 
-.o_msf_button {
-	text-align: left;
-	display: flex;
-	&>span {
-		@extend %o_nowrap;
-		width: 100%;
-	}
-	.o_icon {
-		margin: auto 0 auto auto;
-	}
-	&:is(.form-group *) {
-		width: 100%;
-		max-width: 100%;
-		min-height: $input-height-base;
-	}
-}
-
 /* Color Picker, Icon Selector */
 
 .o_color_picker_icon, .o_icon_selector_caret {

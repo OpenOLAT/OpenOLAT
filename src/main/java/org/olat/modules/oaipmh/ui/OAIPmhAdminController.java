@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
-import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -94,7 +93,7 @@ public class OAIPmhAdminController extends FormBasicController {
 	private TextElement yandexTextEl;
 	private TextElement customSitemapTextEl;
 	private TextElement customIndexTextEl;
-	private MultiSelectionFilterElement licenseSelectionEl;
+	private MultipleSelectionElement licenseSelectionEl;
 
 	@Autowired
 	private OAIPmhModule oaiPmhModule;
@@ -196,7 +195,7 @@ public class OAIPmhAdminController extends FormBasicController {
 		SelectionValues licenseSV = new SelectionValues();
 		license.forEach(l -> licenseSV.add(new SelectionValues.SelectionValue(l.getKey().toString(), LicenseUIFactory.translate(l, getLocale()))));
 
-		licenseSelectionEl = uifactory.addCheckboxesFilterDropdown("license.selected", "license.selected", restrictionsCont, getWindowControl(), licenseSV);
+		licenseSelectionEl = uifactory.addCheckboxesDropdown("license.selected", "license.selected", restrictionsCont, licenseSV.keys(), licenseSV.values());
 		licenseSelectionEl.setVisible(licenseEl.isKeySelected(OAI_KEY_LICENSE_RESTRICT));
 
 		oaiPmhModule.getLicenseSelectedRestrictions().forEach(lr -> licenseSelectionEl.select(lr, true));
