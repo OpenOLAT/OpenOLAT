@@ -55,8 +55,7 @@ public class PwChangeAuthStep00Controller extends StepFormBasicController {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
 		this.registrationStepsListener = registrationStepsListener;
-		this.emailOrUsernameCtrl = new EmailOrUsernameFormController(ureq, wControl, rootForm, initialEmail, runContext);
-
+		emailOrUsernameCtrl = new EmailOrUsernameFormController(ureq, wControl, rootForm, initialEmail, runContext);
 		initForm(ureq);
 	}
 

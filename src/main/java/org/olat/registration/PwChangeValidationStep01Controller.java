@@ -101,7 +101,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 						: PwChangeVSelectionStep01Controller.PW_CHANGE_VAL_TYPE_MAIL;
 		this.recipientIdentity = (Identity) runContext.get(PwChangeWizardConstants.IDENTITY);
 		this.recipientEmail = recipientIdentity.getUser().getEmail();
-		this.initialEmail = (String) runContext.get(PwChangeWizardConstants.INITIALMAIL);
+		initialEmail = (String) runContext.get(PwChangeWizardConstants.INITIALMAIL);
 		sendValidationToken(ureq);
 
 		initForm(ureq);

@@ -424,7 +424,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if (source == registerLink) {
 			doOpenRegistration(ureq);
 		} else if (source == changePasswordLink) {
-			doOpenChangePassword(ureq, null);
+			doOpenChangePassword(ureq);
 		} else if (ACTION_LOGIN.equals(event.getCommand())
 				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) {
 			doGuestLogin(ureq);
@@ -576,10 +576,35 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		dmzPanel.pushContent(aboutVC);
 	}
 
-	private void doOpenChangePassword(UserRequest ureq, String initialEmail) {
+	/**
+	 * Start the change password workflow (if allowed) from the login panel.
+	 * 
+	 * @param ureq The user request
+	 */
+	private void doOpenChangePassword(UserRequest ureq) {
 		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
 
 		if (userModule.isAnyPasswordChangeAllowed()) {
+			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), null, false);
+			listenTo(pwChangeCtrl);
+			getWindowControl().pushAsModalDialog(pwChangeCtrl.getInitialComponent());
+		} else {
+			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
+		}
+	}
+	
+	/**
+	 * Start the change password workflow (if allowed) from an url backed
+	 * by a temporary key.
+	 * 
+	 * @param ureq The user request
+	 * @param initialEmail The email (mandatory)
+	 */
+	private void doOpenChangePassword(UserRequest ureq, String initialEmail) {
+		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
+
+		if (userModule.isAnyPasswordChangeAllowed() && StringHelper.containsNonWhitespace(initialEmail)
+				&& registrationManager.hasTemporaryKeyByEmail(initialEmail, RegistrationManager.PW_CHANGE)) {
 			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, false);
 			listenTo(pwChangeCtrl);
 			getWindowControl().pushAsModalDialog(pwChangeCtrl.getInitialComponent());

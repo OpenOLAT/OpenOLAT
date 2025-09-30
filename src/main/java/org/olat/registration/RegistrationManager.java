@@ -482,6 +482,21 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		return tks.size() == 1 ? tks.get(0) : null;
 	}
 	
+	public boolean hasTemporaryKeyByEmail(String email, String action) {
+		if(!StringHelper.containsNonWhitespace(email) || !StringHelper.containsNonWhitespace(action)) {
+			return false;
+		}
+		String query = "select r.key from otemporarykey r where lower(r.emailAddress)=:email and r.regAction=:action";
+		List<Long> tks = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("email", email.toLowerCase())
+				.setParameter("action", action)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return tks != null && !tks.isEmpty() && tks.get(0) != null && tks.get(0).longValue() > 0;
+	}
+	
 	/**
 	 * returns an existing list of TemporaryKey by a given action or null if none
 	 * found

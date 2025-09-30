@@ -154,38 +154,66 @@ public class RegistrationManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testLoadTemporaryKeyEntryAndAction() {
+	public void loadTemporaryKeyEntryAndAction() {
 		String emailAddress = UUID.randomUUID() + "@frentix.com";
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("temp-key-1");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("load-tmp-1");
 
 		TemporaryKey tempKey = registrationManager.createAndDeleteOldTemporaryKey(id.getKey(), emailAddress, "192.168.1.100", RegistrationManager.REGISTRATION, null);
 		dbInstance.commitAndCloseSession();
 		
-
 		TemporaryKey result = registrationManager.loadTemporaryKeyByEmail(emailAddress, RegistrationManager.REGISTRATION);
 		Assert.assertNotNull(result);
 		Assert.assertEquals(tempKey, result);
 	}
 	
 	@Test
-	public void testLoadTemporaryKeyEntryAndActionWithNulls() {
-		String emailaddress = UUID.randomUUID() + "@frentix.com";
-
-		TemporaryKey resultWithoutAction = registrationManager.loadTemporaryKeyByEmail(emailaddress, null);
+	public void loadTemporaryKeyEntryWithoutAction() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("load-tmp-2");
+		String email = id.getUser().getEmail();
+		TemporaryKey temporaryKey = registrationManager.createAndDeleteOldTemporaryKey(id.getKey(), email, "192.168.1.100", RegistrationManager.PW_CHANGE, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(temporaryKey);
+		
+		TemporaryKey resultWithoutAction = registrationManager.loadTemporaryKeyByEmail(email, null);
 		Assert.assertNull(resultWithoutAction);
+	}
+	
+	@Test
+	public void loadTemporaryKeyEntryWithoutEmail() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("load-tmp-3");
+		String email = id.getUser().getEmail();
+		TemporaryKey temporaryKey = registrationManager.createAndDeleteOldTemporaryKey(id.getKey(), email, "192.168.1.100", RegistrationManager.PW_CHANGE, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(temporaryKey);
 		
 		TemporaryKey resultWithoutEmail = registrationManager.loadTemporaryKeyByEmail(null, RegistrationManager.PW_CHANGE);
 		Assert.assertNull(resultWithoutEmail);
-		
+	}
+	
+	@Test
+	public void loadTemporaryKeyEntryWithNulls() {
 		TemporaryKey resultWithout = registrationManager.loadTemporaryKeyByEmail(null, null);
 		Assert.assertNull(resultWithout);
 	}
+
+	@Test
+	public void hasTemporaryKeyEntryAndAction() {
+		String emailAddress = UUID.randomUUID() + "@frentix.com";
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("load-tmp-1");
+
+		TemporaryKey tempKey = registrationManager.createAndDeleteOldTemporaryKey(id.getKey(), emailAddress, "192.168.1.100", RegistrationManager.PW_CHANGE, null);
+		dbInstance.commitAndCloseSession();
+		
+		TemporaryKey result = registrationManager.loadTemporaryKeyByEmail(emailAddress, RegistrationManager.PW_CHANGE);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(tempKey, result);
+	}
 	
 	/**
-	 * Test load of temp key.
+	 * Test load of temporary key.
 	 */
 	@Test
-	public void testCreateTemporaryKeyEntry() {
+	public void createTemporaryKeyEntry() {
 		String emailaddress = UUID.randomUUID() + "@openolat.com";
 		String ipaddress = "130.60.112.10";
 
