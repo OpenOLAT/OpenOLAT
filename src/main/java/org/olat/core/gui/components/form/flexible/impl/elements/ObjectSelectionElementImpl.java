@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.translator.Translator;
@@ -59,6 +61,8 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	
 	private CloseableCalloutWindowController calloutCtrl;
 	private ObjectSelectionController selectionCtrl;
+	private CloseableModalController cmc;
+	private Controller browseCtrl;
 	
 	private final boolean multiSelection;
 	private String noSelectionText;
@@ -116,7 +120,10 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if (selectionCtrl == source) {
-			if (event instanceof ObjectSelectionController.SelectionEvent selectionEvent) {
+			if(event == ObjectSelectionController.OPEN_BROWSER_EVENT) {
+				calloutCtrl.deactivate();
+				doOpenBrowser(ureq);
+			} else if (event instanceof ObjectSelectionController.SelectionEvent selectionEvent) {
 				if (!selectedKeys.equals(selectionEvent.getSelectedKeys())) {
 					selectedKeys = new HashSet<>(selectionEvent.getSelectedKeys());
 					updateDisplayUI();
@@ -129,22 +136,38 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 					}
 				}
 				calloutCtrl.deactivate();
-				cleanUp();
+				cleanUpSelection();
 			}
 		} else if (calloutCtrl == source) {
-			cleanUp();
+			cleanUpSelection();
+		} else if (source == browseCtrl) {
+			if (event instanceof ObjectSelectionBrowserEvent browserEvent) {
+				doSelectedInBrowser(browserEvent.getKeys());
+			}
+			cmc.deactivate();
+			cleanUpBrowse();
+			calloutCtrl.activate();
+		} else if (cmc == source) {
+			cleanUpBrowse();
+			calloutCtrl.activate();
 		}
 	}
-	
-	private void cleanUp() {
-		calloutCtrl = cleanUp(calloutCtrl);
+
+	private void cleanUpSelection() {
 		selectionCtrl = cleanUp(selectionCtrl);
+		calloutCtrl = cleanUp(calloutCtrl);
+		cleanUpBrowse();
 		
 		component.setExpanded(false);
 		component.setAriaControls(null);
 		
 		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
 		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+	}
+	
+	private void cleanUpBrowse() {
+		browseCtrl = cleanUp(browseCtrl);
+		cmc = cleanUp(cmc);
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {
@@ -184,6 +207,12 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		updateDisplayUI();
 	}
 	
+	@Override
+	public void unselectAll() {
+		selectedKeys.clear();
+		updateDisplayUI();
+	}
+	
 	private void updateDisplayUI() {
 		updateDisplayUI(source.getDisplayValue(selectedKeys));
 	}
@@ -200,11 +229,16 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 			return;
 		}
 		
+		String labelText = displayValue.ariaTitleLabel();
+		if (!StringHelper.containsNonWhitespace(labelText)) {
+			labelText = getLabelText();
+		}
+		
 		if (StringHelper.containsNonWhitespace(displayValue.title())) {
 			component.setText(displayValue.title());
 			
 			if (StringHelper.containsNonWhitespace(displayValue.ariaTitle())) {
-				component.setAriaLabel(elementTranslator.translate("select.aria.value", getLabelText(), displayValue.ariaTitle()));
+				component.setAriaLabel(elementTranslator.translate("select.aria.value", labelText, displayValue.ariaTitle()));
 			}
 		} else {
 			String text = StringHelper.containsNonWhitespace(noSelectionText)
@@ -212,7 +246,6 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 					: elementTranslator.translate("select.please");
 			component.setText(text);
 			
-			String labelText = getLabelText();
 			if (StringHelper.containsNonWhitespace(labelText)) {
 				component.setAriaLabel(elementTranslator.translate("select.please.aria", labelText));
 			} else {
@@ -234,6 +267,23 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		component.setExpanded(true);
 		// Dialog-Element of calloutCtrl would be better, but how to get the id?
 		component.setAriaControls(Renderer.getComponentPrefix(selectionCtrl.getInitialComponent()));
+	}
+	
+
+	
+	private void doOpenBrowser(UserRequest ureq) {
+		browseCtrl = source.getBrowserCreator().createController(ureq, wControl);
+		browseCtrl.addControllerListener(this);
+		
+		String optionsLabel = source.getOptionsLabel(getTranslator().getLocale());
+		optionsLabel = StringHelper.containsNonWhitespace(optionsLabel)? optionsLabel: getTranslator().translate("options");
+		cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), browseCtrl.getInitialComponent(), true, optionsLabel);
+		cmc.activate();
+		cmc.addControllerListener(this);
+	}
+	
+	private void doSelectedInBrowser(Collection<String> keys) {
+		selectionCtrl.addSelection(keys);
 	}
 
 }

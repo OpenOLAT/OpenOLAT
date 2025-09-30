@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.DeleteFileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
@@ -83,7 +85,7 @@ import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -117,7 +119,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private SingleSelection evaluationFormEl;
 	private SingleSelection assignmentsTemplatesEl;
 	private TextBoxListElement categoriesEl;
-	private TaxonomyLevelSelection competencesEl;
+	private ObjectSelectionElement competencesEl;
 	private DownloadLink downloadAssignmentDocEl;
 	private FileElement assignmentDocUploadEl;
 	private FormLayoutContainer assignmentDocsContainer;
@@ -217,6 +219,7 @@ public class PageMetadataEditController extends FormBasicController {
 			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection,
 			Page page, boolean editTitleAndSummary) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 		this.page = page;
 		this.editTitleAndSummary = editTitleAndSummary;
@@ -356,21 +359,18 @@ public class PageMetadataEditController extends FormBasicController {
 		categoriesEl.setAllowDuplicates(false);
 		
 		if (taxonomyLinkingEnabled) {
-			Set<TaxonomyLevel>  existingCompetences = page != null
+			Collection<TaxonomyLevel> existingCompetences = page != null
 					? pageService.getRelatedCompetences(page, true)
 							.stream()
 							.map(TaxonomyCompetence::getTaxonomyLevel)
 							.collect(Collectors.toSet())
 					: Collections.emptySet();
-			Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevels(portfolioV2Module.getLinkedTaxonomies())
-					.stream()
-					.filter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence())
-					.collect(Collectors.toSet());
-			
-			competencesEl = uifactory.addTaxonomyLevelSelection("competences", "competences", formLayout,
-					getWindowControl(), availableTaxonomyLevels);
-			competencesEl.setDisplayNameHeader(translate("table.header.competence"));
-			competencesEl.setSelection(existingCompetences);
+			TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					existingCompetences,
+					() -> taxonomyService.getTaxonomyLevels(portfolioV2Module.getLinkedTaxonomies()),
+					translate("table.header.competence"), translate("table.header.competence"));
+			source.setOptionsFilter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence());
+			competencesEl = uifactory.addObjectSelectionElement("competences", "competences", formLayout, getWindowControl(), true, source);
 		}
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
@@ -714,7 +714,7 @@ public class PageMetadataEditController extends FormBasicController {
 		portfolioService.updateCategories(page, updatedCategories);
 		
 		if (taxonomyLinkingEnabled) {
-			pageService.linkCompetences(page, getIdentity(), competencesEl.getSelection());
+			pageService.linkCompetences(page, getIdentity(), TaxonomyLevelSelectionSource.toRefs(competencesEl.getSelectedKeys()));
 		}
 		
 		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[1])) {
@@ -728,7 +728,7 @@ public class PageMetadataEditController extends FormBasicController {
 					portfolioService.updatePage(sharing, null);
 					portfolioService.updateCategories(sharing, updatedCategories);
 					if (taxonomyLinkingEnabled) {
-						pageService.linkCompetences(sharing, getIdentity(), competencesEl.getSelection());
+						pageService.linkCompetences(sharing, getIdentity(), TaxonomyLevelSelectionSource.toRefs(competencesEl.getSelectedKeys()));
 					}
 				}
 			}

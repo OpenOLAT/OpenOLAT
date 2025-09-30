@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -105,12 +106,11 @@ import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsModule;
 import org.olat.modules.teams.TeamsService;
@@ -145,7 +145,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private FormLink editOnlineMeetingButton;
 	private SingleSelection onlineMeetingEl;
 	private FormToggle enabledOnlineMeetingEl;
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement teacherEl;
 	private TextElement onlineMeetingProviderUrlEl;
@@ -403,17 +403,18 @@ public class EditLectureBlockController extends FormBasicController {
 			boolean taxonomyEnabled = !readOnly && !lectureManagementManaged &&
 					!LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.subjects);
 			String subjectsLayoutPage = velocity_root + "/subjects.html";
+			String taxonomyLevelLabelI18n = "lecture.subjects";
 			FormLayoutContainer subjectsLayout = uifactory.addCustomFormLayout("lecture.subjects.layout", 
-					"lecture.subjects", subjectsLayoutPage, formLayout);
-			Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
+					taxonomyLevelLabelI18n, subjectsLayoutPage, formLayout);
+			
 			Set<TaxonomyLevel> taxonomyLevels = lectureBlock == null ? Set.of() : lectureBlock.getTaxonomyLevels()
 					.stream().map(LectureBlockToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toSet());
-			allTaxonomyLevels.addAll(taxonomyLevels);
-			
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", null, subjectsLayout,
-					getWindowControl(), allTaxonomyLevels);
-			taxonomyLevelEl.setDisplayNameHeader(translate("lecture.subjects"));
-			taxonomyLevelEl.setSelection(taxonomyLevels);
+			TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					taxonomyLevels,
+					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
+					translate(taxonomyLevelLabelI18n), translate(taxonomyLevelLabelI18n));
+			source.setAriaTitleLabel(translate(taxonomyLevelLabelI18n));
+			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy.levels", null, subjectsLayout, getWindowControl(), true, source);
 			taxonomyLevelEl.setEnabled(taxonomyEnabled);
 			
 			adoptButton = uifactory.addFormLink("adopt", subjectsLayout, Link.BUTTON);
@@ -898,7 +899,7 @@ public class EditLectureBlockController extends FormBasicController {
 		if (taxonomyLevelEl == null) {
 			return null;
 		}
-		return taxonomyLevelEl.getSelection().stream().map(TaxonomyLevelRef::getKey).collect(Collectors.toSet());
+		return taxonomyLevelEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
 	}
 	
 	private void synchronizeTeachers(StringBuilder audit) {
@@ -1043,9 +1044,7 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	private void updateTaxonomyLevelSelection(Set<TaxonomyLevel> taxonomyLevels) {
-		Set<TaxonomyLevelRef> selection = new HashSet<>(taxonomyLevelEl.getSelection());
-		selection.addAll(taxonomyLevels);
-		taxonomyLevelEl.setSelection(selection);
+		taxonomyLevels.forEach(level -> taxonomyLevelEl.select(level.getKey().toString()));
 	}
 	
 	public static class GroupBox {

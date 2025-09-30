@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -161,12 +160,6 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(Collection<? extends TaxonomyRef> refs) {
 		return taxonomyLevelDao.getLevels(refs);
-	}
-	
-	@Override
-	public Set<TaxonomyLevel> getTaxonomyLevelsAsSet(Collection<? extends TaxonomyRef> refs) {
-		List<TaxonomyLevel> levels = getTaxonomyLevels(refs);
-		return new HashSet<>(levels);
 	}
 
 	@Override

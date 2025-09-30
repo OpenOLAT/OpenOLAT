@@ -21,9 +21,9 @@ package org.olat.modules.cemedia.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.persistence.DB;
@@ -36,6 +36,8 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -58,11 +60,10 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.ui.medias.AbstractCollectMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,7 +81,7 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private TagSelection tagsEl;
 	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -153,10 +154,11 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
-		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
-				getWindowControl(), availableTaxonomyLevels);
-		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+				List.of(),
+				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
+				translate("taxonomy.levels"), translate("table.header.taxonomy"));
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, source);
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
@@ -252,8 +254,8 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	}
 
 	private void updateTaxonomyLevels() {
-		Set<TaxonomyLevelRef> selectedLevels = taxonomyLevelEl.getSelection();
-		mediaService.updateTaxonomyLevels(mediaReference, selectedLevels);
+		Collection<TaxonomyLevelRef> updatedLevels = TaxonomyLevelSelectionSource.toRefs(taxonomyLevelEl.getSelectedKeys());
+		mediaService.updateTaxonomyLevels(mediaReference, updatedLevels);
 	}
 
 	private void initMetadata() {

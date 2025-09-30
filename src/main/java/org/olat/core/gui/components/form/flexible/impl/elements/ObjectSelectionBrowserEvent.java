@@ -19,18 +19,29 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.olat.core.gui.components.EscapeMode;
+import java.util.Collection;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: Sep 25, 2025<br>
+ * Initial date: Sep 26, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public record ObjectDisplayValues(String title, EscapeMode titleEscapeMode, String ariaTitle, String ariaTitleLabel) {
+public class ObjectSelectionBrowserEvent extends Event {
+
+	private static final long serialVersionUID = 9008754185527329017L;
 	
-	public ObjectDisplayValues(String title, String ariaTitle) {
-		this(title, EscapeMode.html, ariaTitle, null);
+	private final Collection<String> keys;
+	
+	public ObjectSelectionBrowserEvent(Collection<String> keys) {
+		super("object-selection-browser");
+		this.keys = keys;
 	}
-	
+
+	public Collection<String> getKeys() {
+		return keys;
+	}
+
 }

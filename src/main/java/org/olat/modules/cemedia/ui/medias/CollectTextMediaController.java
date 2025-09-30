@@ -19,8 +19,8 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,11 +54,10 @@ import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaRelationsController;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.portfolio.handler.TextHandler;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,7 +72,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 	private TagSelection tagsEl;
 	private RichTextElement textEl;
 	private RichTextElement descriptionEl;
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 
 	private Media mediaReference;
 	
@@ -162,12 +163,11 @@ public class CollectTextMediaController extends FormBasicController implements P
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
-		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
-		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
-				getWindowControl(), availableTaxonomyLevels);
-		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
-		taxonomyLevelEl.setSelection(levels);
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+				mediaService.getTaxonomyLevels(mediaReference),
+				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
+				translate("taxonomy.levels"), translate("table.header.taxonomy"));
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, source);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
@@ -220,10 +220,10 @@ public class CollectTextMediaController extends FormBasicController implements P
 
 		List<String> updatedTags = tagsEl.getDisplayNames();
 		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
-
-		Set<TaxonomyLevelRef> updatedLevels = taxonomyLevelEl.getSelection();
+		
+		Collection<TaxonomyLevelRef> updatedLevels = TaxonomyLevelSelectionSource.toRefs(taxonomyLevelEl.getSelectedKeys());
 		mediaService.updateTaxonomyLevels(mediaReference, updatedLevels);
-
+		
 		if(relationsCtrl != null) {
 			relationsCtrl.saveRelations(mediaReference);
 		}

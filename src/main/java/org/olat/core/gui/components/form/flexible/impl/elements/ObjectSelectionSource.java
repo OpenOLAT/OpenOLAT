@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.control.creator.ControllerCreator;
+
 /**
  * 
  * Initial date: Sep 10, 2025<br>
@@ -40,5 +42,9 @@ public interface ObjectSelectionSource {
 	public String getOptionsLabel(Locale locale);
 	
 	public List<? extends ObjectOption> getOptions();
+	
+	public boolean isBrowserAvailable();
+	
+	public ControllerCreator getBrowserCreator();
 
 }

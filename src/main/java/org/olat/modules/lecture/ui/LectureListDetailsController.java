@@ -44,6 +44,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -86,10 +88,9 @@ import org.olat.modules.lecture.ui.component.LectureBlockRollCallBasicStatusCell
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.OpenOnlineMeetingEvent;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -284,17 +285,14 @@ public class LectureListDetailsController extends FormBasicController {
 		if (taxonomyRefs.isEmpty()) {
 			return;
 		}
-
-		Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
-
+		
 		if (row.getLectureBlock().getTaxonomyLevels() == null || row.getLectureBlock().getTaxonomyLevels().isEmpty()) {
 			return;
 		}
-		allTaxonomyLevels.addAll(row.getSubjects());
-
-		TaxonomyLevelSelection taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("lecture.subjects", 
-				"lecture.subjects", formLayout, getWindowControl(), allTaxonomyLevels);
-		taxonomyLevelEl.setSelection(row.getSubjects());
+		
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), row.getSubjects(), List::of, null, null);
+		ObjectSelectionElement taxonomyLevelEl = uifactory.addObjectSelectionElement("lecture.subjects",
+				"lecture.subjects", formLayout, getWindowControl(), true, source);
 		taxonomyLevelEl.setEnabled(false);
 	}
 

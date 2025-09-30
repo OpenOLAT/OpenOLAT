@@ -232,6 +232,7 @@
 		.o_competences_selection {
 			display: flex;
 			align-items: stretch;
+			.o_selection_display,
 			.o_tax_ls_button {
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;

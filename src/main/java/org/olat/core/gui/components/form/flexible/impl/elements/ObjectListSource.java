@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.olat.core.gui.control.creator.ControllerCreator;
+
 /**
  * 
  * Initial date: Sep 10, 2025<br>
@@ -74,6 +76,16 @@ public class ObjectListSource implements ObjectSelectionSource {
 	@Override
 	public List<? extends ObjectOption> getOptions() {
 		return options;
+	}
+
+	@Override
+	public boolean isBrowserAvailable() {
+		return false;
+	}
+
+	@Override
+	public ControllerCreator getBrowserCreator() {
+		return null;
 	}
 
 }

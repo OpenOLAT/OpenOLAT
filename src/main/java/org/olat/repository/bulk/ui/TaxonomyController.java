@@ -20,6 +20,7 @@
 package org.olat.repository.bulk.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,8 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -59,7 +62,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
@@ -81,7 +84,7 @@ public class TaxonomyController extends StepFormBasicController {
 	private static final String CMD_APPLY = "apply";
 	private static final String CMD_REMOVE = "remove";
 	
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 	private FormLink taxonomyLevelAddLink;
 	private FlexiTableElement tableEl;
 	private BulkTaxonomyDataModel dataModel;
@@ -158,11 +161,12 @@ public class TaxonomyController extends StepFormBasicController {
 		addCont.setRootForm(mainForm);
 		formLayout.add(addCont);
 		
-		Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(repositoryModule.getTaxonomyRefs()));
 		String labelI18nKey = catalogModule.isEnabled()? "settings.bulk.taxonomy.title.catalog": "settings.bulk.taxonomy.title";
-		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, addCont,
-				getWindowControl(), allTaxonomieLevels);
-		taxonomyLevelEl.setDisplayNameHeader(translate(labelI18nKey));
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+				List.of(),
+				() -> taxonomyService.getTaxonomyLevels(repositoryModule.getTaxonomyRefs()),
+				translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, addCont, getWindowControl(), true, source);
 		
 		FormLayoutContainer addButtonCont = FormLayoutContainer.createButtonLayout("addButtonCont", getTranslator());
 		addButtonCont.setRootForm(mainForm);
@@ -262,7 +266,7 @@ public class TaxonomyController extends StepFormBasicController {
 	}
 
 	private void doAddTaxonomyLevels() {
-		Set<TaxonomyLevelRef> selection = taxonomyLevelEl.getSelection();
+		Collection<TaxonomyLevelRef> selection = TaxonomyLevelSelectionSource.toRefs(taxonomyLevelEl.getSelectedKeys());
 		if (selection.isEmpty()) return;
 		
 		List<TaxonomyLevel> taxonomyLevelsToAdd = taxonomyService.getTaxonomyLevelsByRefs(selection);
@@ -273,7 +277,7 @@ public class TaxonomyController extends StepFormBasicController {
 			}
 		}
 		
-		taxonomyLevelEl.setSelection(null);
+		taxonomyLevelEl.unselectAll();
 		loadModel();
 	}
 

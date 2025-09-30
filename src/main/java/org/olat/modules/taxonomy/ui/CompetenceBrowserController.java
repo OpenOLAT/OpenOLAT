@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionBrowserEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -219,8 +220,8 @@ public class CompetenceBrowserController extends FormBasicController {
 				}
 			}
 		} else if (selectButton == source) {
-			List<TaxonomyLevel> taxonomyLevels = getSelectedTaxonomyLevels();
-			fireEvent(ureq, new TaxonomyLevelSelectionEvent(taxonomyLevels));
+			Collection<String> keys = getSelectedTaxonomyLevelKeys();
+			fireEvent(ureq, new ObjectSelectionBrowserEvent(keys));
 		} else if (source instanceof FormLink sFl) {
 			if (sFl.getCmd().equals(OPEN_INFO)) {
 				doOpen(ureq, sFl, (CompetenceBrowserTableRow) sFl.getUserObject());	
@@ -242,13 +243,14 @@ public class CompetenceBrowserController extends FormBasicController {
 		ccmc.activate();
 	}
 	
-	private List<TaxonomyLevel> getSelectedTaxonomyLevels() {
+	private Collection<String> getSelectedTaxonomyLevelKeys() {
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		return selectedIndex.stream()
 				.map(index -> tableModel.getObject(index.intValue()))
 				.filter(Objects::nonNull)
 				.map(CompetenceBrowserTableRow::getTaxonomyLevel)
 				.filter(Objects::nonNull)
+				.map(level -> level.getKey().toString())
 				.collect(Collectors.toList());
 	}
 	

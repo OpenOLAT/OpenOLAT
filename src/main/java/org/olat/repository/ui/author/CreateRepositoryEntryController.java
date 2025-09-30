@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -68,7 +68,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -108,7 +108,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
 	private FormLayoutContainer privateDatesCont;
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection educationalTypeEl;
 	private ObjectSelectionElement organisationEl;
 	
@@ -238,12 +238,12 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
-			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
-			
 			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, generalCont,
-					getWindowControl(), allTaxonomieLevels);
-			taxonomyLevelEl.setDisplayNameHeader(translate(labelI18nKey));
+			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					List.of(),
+					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
+					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, generalCont, getWindowControl(), true, source);
 			if (catalogModule.isEnabled()) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}
@@ -546,8 +546,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		// Taxonomy
 		Set<TaxonomyLevel> taxonomyLevels = null;
-		if (taxonomyLevelEl != null && !taxonomyLevelEl.getSelection().isEmpty()) {
-			taxonomyLevels = Set.copyOf(taxonomyService.getTaxonomyLevelsByRefs(taxonomyLevelEl.getSelection()));
+		if (taxonomyLevelEl != null && !taxonomyLevelEl.getSelectedKeys().isEmpty()) {
+			taxonomyLevels = Set.copyOf(taxonomyService.getTaxonomyLevelsByRefs(TaxonomyLevelSelectionSource.toRefs(taxonomyLevelEl.getSelectedKeys())));
 		}
 		
 		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,

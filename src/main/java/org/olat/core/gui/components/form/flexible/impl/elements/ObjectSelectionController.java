@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,6 +61,7 @@ import com.google.common.base.Objects;
  */
 public class ObjectSelectionController extends FormBasicController {
 	
+	static final Event OPEN_BROWSER_EVENT = new Event("open-browser");
 	private static final int MORE_SIZE = 50;
 	
 	private TextElement searchTermEl;
@@ -112,7 +114,7 @@ public class ObjectSelectionController extends FormBasicController {
 		openBrowserLink = uifactory.addFormLink("browser.open", "browser.open", null, formLayout, Link.BUTTON);
 		openBrowserLink.setElementCssClass("o_open_browser");
 		openBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_browse");
-		openBrowserLink.setVisible(false);
+		openBrowserLink.setVisible(source.isBrowserAvailable());
 		
 		if (multiSelection) {
 			selectAllLink = uifactory.addFormLink("select.all", formLayout);
@@ -177,6 +179,8 @@ public class ObjectSelectionController extends FormBasicController {
 			doSelectSingle();
 		} else if (loadMoreLink == source) {
 			doSearch(true);
+		} else if (openBrowserLink == source) {
+			fireEvent(ureq, OPEN_BROWSER_EVENT);
 		} else if (source == applyButton) {
 			doApplySelection(ureq);
 		}
@@ -307,6 +311,28 @@ public class ObjectSelectionController extends FormBasicController {
 	private void doUnselect() {
 		selectedKeys = new HashSet<>(selectionEl.getSelectedKeys());
 		onSelectionChanged();
+	}
+	
+	public void addSelection(Collection<String> keys) {
+		if (multiSelection) {
+			for (String key : keys) {
+				if (source.getOptions().stream().anyMatch(option -> key.equals(option.getKey()))) {
+					selectedKeys.add(key);
+				}
+			}
+			onSelectionChanged();
+			return;
+		}
+		
+		if (keys == null || keys.size() != 1) {
+			return;
+		}
+		
+		String key = List.copyOf(keys).get(0);
+		if (singleSelectionEl.containsKey(key)) {
+			singleSelectionEl.select(key, true);
+			doSelectSingle();
+		}
 	}
 
 	private void doToggleOption() {

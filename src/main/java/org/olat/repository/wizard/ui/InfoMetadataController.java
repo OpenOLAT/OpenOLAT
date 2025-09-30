@@ -22,9 +22,8 @@ package org.olat.repository.wizard.ui;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.olat.core.gui.UserRequest;
@@ -33,6 +32,8 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,11 +46,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
@@ -76,7 +78,7 @@ public class InfoMetadataController extends StepFormBasicController {
 	private TextElement externalRefEl;
 	private RichTextElement descriptionEl;
 	private TextElement authorsEl;
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection educationalTypeEl;
 	
 	private final RepositoryEntry entry;
@@ -87,6 +89,8 @@ public class InfoMetadataController extends StepFormBasicController {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
@@ -105,17 +109,19 @@ public class InfoMetadataController extends StepFormBasicController {
 		
 		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(educationalTypeIdentifier);
 		Long educationalTypeKey = educationalType != null? educationalType.getKey(): null;
+		List<TaxonomyLevelRef> taxonomyLevels = repositoryService.getTaxonomy(entry).stream().map(level -> (TaxonomyLevelRef)level).toList();
 		
-		context = (InfoMetadata)getOrCreateFromRunContext(RUN_CONTEXT_KEY, getInfoMetaSupplier(educationalTypeKey));
+		context = (InfoMetadata)getOrCreateFromRunContext(RUN_CONTEXT_KEY, getInfoMetaSupplier(educationalTypeKey, taxonomyLevels));
 		
 		initForm(ureq);
 	}
 	
-	private Supplier<Object> getInfoMetaSupplier(Long educationalTypeKey) {
+	private Supplier<Object> getInfoMetaSupplier(Long educationalTypeKey, Collection<TaxonomyLevelRef> taxonomyLevelRefs) {
 		return () -> {
 			InfoMetadata infoMetadata = new InfoMetadata();
 			infoMetadata.setDisplayName(entry.getDisplayname());
 			infoMetadata.setEducationalTypeKey(educationalTypeKey);
+			infoMetadata.setTaxonomyLevelRefs(taxonomyLevelRefs);
 			return infoMetadata;
 		};
 	}
@@ -150,12 +156,15 @@ public class InfoMetadataController extends StepFormBasicController {
 		
 		List<TaxonomyRef> taxonomyRefs = repositoryModule.getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
-			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
-		
 			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, formLayout,
-					getWindowControl(), allTaxonomieLevels);
-			taxonomyLevelEl.setSelection(context.getTaxonomyLevelRefs());
+			Collection<TaxonomyLevel> currentSelection = context.getTaxonomyLevelRefs() != null
+					? taxonomyService.getTaxonomyLevelsByRefs(context.getTaxonomyLevelRefs())
+					: List.of();
+			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					currentSelection,
+					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
+					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
 			if (catalogModule.isEnabled()) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}
@@ -206,7 +215,7 @@ public class InfoMetadataController extends StepFormBasicController {
 		context.setAuthors(authors);
 		
 		if (taxonomyLevelEl != null) {
-			context.setTaxonomyLevelRefs(taxonomyLevelEl.getSelection());
+			context.setTaxonomyLevelRefs(TaxonomyLevelSelectionSource.toRefs(taxonomyLevelEl.getSelectedKeys()));
 		}
 		
 		if (educationalTypeEl != null) {

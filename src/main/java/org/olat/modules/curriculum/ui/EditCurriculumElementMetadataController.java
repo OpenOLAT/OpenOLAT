@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
@@ -35,6 +34,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,12 +55,11 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -82,7 +82,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	private SingleSelection curriculumEl;
 	private SingleSelection curriculumElementTypeEl;
 	private SingleSelection educationalTypeEl;
-	private TaxonomyLevelSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 
 	private Curriculum curriculum;
 	private CurriculumElement element;
@@ -255,15 +255,13 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		// Subjects
 		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
 		if (taxonomyModule.isEnabled() && !taxonomyRefs.isEmpty()) {
-			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
-			List<TaxonomyLevel> taxonomyLevels = curriculumService.getTaxonomy(element);
-			
 			boolean isCatalogCandidate = catalogModule.isEnabled() && parentElement == null;
 			String labelI18nKey = isCatalogCandidate? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
-			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, formLayout,
-					getWindowControl(), allTaxonomieLevels);
-			taxonomyLevelEl.setDisplayNameHeader(translate(labelI18nKey));
-			taxonomyLevelEl.setSelection(taxonomyLevels);
+			ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					curriculumService.getTaxonomy(element),
+					() -> taxonomyService.getTaxonomyLevels(taxonomyRefs),
+					translate("cif.taxonomy.options.label"), translate(labelI18nKey));
+			taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", labelI18nKey, formLayout, getWindowControl(), true, source);
 			taxonomyLevelEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taxonomyLevel) && canEdit);
 			if (isCatalogCandidate) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
@@ -392,9 +390,9 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		
 		if (taxonomyLevelEl != null) {
-			Collection<Long> selectedLevelKeys = taxonomyLevelEl.getSelection()
+			Collection<Long> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys()
 					.stream()
-					.map(TaxonomyLevelRef::getKey)
+					.map(Long::valueOf)
 					.collect(Collectors.toList());
 			List<Long> currentKeys = curriculumService.getTaxonomy(element)
 					.stream()

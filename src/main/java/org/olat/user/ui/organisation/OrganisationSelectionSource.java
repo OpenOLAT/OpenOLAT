@@ -40,6 +40,7 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
@@ -205,6 +206,16 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 			return displayTitle;
 		}
 		
+	}
+
+	@Override
+	public boolean isBrowserAvailable() {
+		return false;
+	}
+
+	@Override
+	public ControllerCreator getBrowserCreator() {
+		return null;
 	}
 	
 	public static final OrganisationRef toRef(String key) {

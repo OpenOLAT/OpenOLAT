@@ -113,6 +113,21 @@
 }
 
 /** Taxonomy level selection element **/
+.o_selection_display {
+	.o_taxonomy_level_selection_tags {
+		gap: 2px;
+		.o_tag {
+			@extend %o_nowrap;
+			background-color: #ffffff;
+			color: $o-competences-font-color;
+			border-color: $o-competences-color; 
+			border-radius: 0.5em;
+			margin: 0;
+		}
+	}
+}
+
+/** Taxonomy level selection element **/
 .o_tax_ls_button {
 	font-size: 12px;
 	display: flex;
@@ -162,5 +177,22 @@
 		border: 1px solid #e7e7e7;
 		border-top-left-radius: 0px;
 		border-top-right-radius: 0px;
+	}
+}
+
+/** Taxonomy level in object selection element **/
+.o_taxonomy_level_selection_tags {
+	gap: 2px;
+	.o_tag {
+		@extend %o_nowrap;
+		background-color: #ffffff;
+		color: $o-competences-font-color;
+		border-color: $o-competences-color; 
+		border-radius: 0.5em;
+		margin: 0;
+		// We do not want the hover from o_tag
+		&:hover {
+			color: $o-competences-font-color;
+		}
 	}
 }

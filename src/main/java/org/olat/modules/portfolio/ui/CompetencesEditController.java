@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -44,7 +45,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CompetencesEditController extends FormBasicController {
 	
-	private TaxonomyLevelSelection competencesEl;
+	private ObjectSelectionElement competencesEl;
 	private FormLink editLink;
 	private FormSubmit saveButton;
 	
@@ -86,21 +87,18 @@ public class CompetencesEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_tags_form");
 		
-		Set<TaxonomyLevel>  existingCompetences = page != null
+		Set<TaxonomyLevel> existingCompetences = page != null
 				? pageService.getRelatedCompetences(page, true)
 						.stream()
 						.map(TaxonomyCompetence::getTaxonomyLevel)
 						.collect(Collectors.toSet())
 				: Collections.emptySet();
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevels(portfolioModule.getLinkedTaxonomies())
-				.stream()
-				.filter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence())
-				.collect(Collectors.toSet());
-		
-		competencesEl = uifactory.addTaxonomyLevelSelection("competences", "competences", formLayout,
-				getWindowControl(), availableTaxonomyLevels);
-		competencesEl.setDisplayNameHeader(translate("table.header.competence"));
-		competencesEl.setSelection(existingCompetences);
+		TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+				existingCompetences,
+				() -> taxonomyService.getTaxonomyLevels(portfolioModule.getLinkedTaxonomies()),
+				translate("table.header.competence"), translate("table.header.competence"));
+		source.setOptionsFilter(taxonomyLevel -> taxonomyLevel.getType() == null || taxonomyLevel.getType().isAllowedAsCompetence());
+		competencesEl = uifactory.addObjectSelectionElement("competences", "competences", formLayout, getWindowControl(), true, source);
 
 		editLink = uifactory.addFormLink("edit", "edit", "edit", null, formLayout, Link.LINK);
 		editLink.setCustomEnabledLinkCSS("o_competences_edit o_button_textstyle");
@@ -125,8 +123,8 @@ public class CompetencesEditController extends FormBasicController {
 		editLink.setVisible(!editable);
 		saveButton.setVisible(editable);
 		// Special label when no categories are there
-		if (competencesEl.getSelection().isEmpty()) {
-			editLink.setI18nKey("add");			
+		if (competencesEl.getSelectedKeys().isEmpty()) {
+			editLink.setI18nKey("add");
 		} else {
 			editLink.setI18nKey("edit");
 		}
@@ -160,6 +158,6 @@ public class CompetencesEditController extends FormBasicController {
 	 * @return The list of competences as visually configured in the box
 	 */
 	public Set<TaxonomyLevelRef> getUpdatedCompetences() {
-		return competencesEl.getSelection();
+		return TaxonomyLevelSelectionSource.toRefs(competencesEl.getSelectedKeys());
 	}
 }

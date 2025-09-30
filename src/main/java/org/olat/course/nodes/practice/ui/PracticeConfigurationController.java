@@ -20,11 +20,13 @@
 package org.olat.course.nodes.practice.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -39,6 +41,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -80,10 +84,9 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
@@ -105,7 +108,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private FormLink addTestButton;
 	private FormLink addPoolButton;
-	private TaxonomyLevelSelection taxonomyEl;
+	private ObjectSelectionElement taxonomyEl;
 	private MultipleSelectionElement withoutTaxonomyEl;
 	private SingleSelection levelEl;
 	private TextElement challengeToCompleteEl;
@@ -218,16 +221,22 @@ public class PracticeConfigurationController extends FormBasicController {
 	private void initCriteriaForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("criteria"));
 		
-		Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
-		Set<TaxonomyLevel> allTaxonomyLevels;
-		if(taxonomy != null) {
-			allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomy));
-		} else {
-			allTaxonomyLevels = new HashSet<>(1);
+		Supplier<Collection<TaxonomyLevel>> levelsSupplier = () -> {
+			Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
+			Collection<TaxonomyLevel> allTaxonomyLevels;
+			if (taxonomy != null) {
+				allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
+			} else {
+				allTaxonomyLevels = new HashSet<>(1);
+			}
+			return allTaxonomyLevels;
+		};
+		ObjectSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(), List.of(), levelsSupplier, null, translate("taxonomy.levels"));
+		taxonomyEl = uifactory.addObjectSelectionElement("taxonomy.levels", "taxonomy.levels.label", formLayout, getWindowControl(), true, source);
+		List<Long> selectedLevelsKeys = config.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
+		if(selectedLevelsKeys != null) {
+			selectedLevelsKeys.forEach(key -> taxonomyEl.select(key.toString()));
 		}
-		taxonomyEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels.label", formLayout,
-				getWindowControl(), allTaxonomyLevels);
-		taxonomyEl.setDisplayNameHeader(translate("taxonomy.levels"));
 		
 		SelectionValues woKeys = new SelectionValues();
 		woKeys.add(SelectionValues.entry("wo", translate("wo.taxonomy.levels")));
@@ -238,14 +247,6 @@ public class PracticeConfigurationController extends FormBasicController {
 			withoutTaxonomyEl.select("wo", true);
 		}
 		
-		List<Long> selectedLevelsKeys = config.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
-		if(selectedLevelsKeys != null) {
-			List<TaxonomyLevel> selectedLevels = allTaxonomyLevels.stream()
-					.filter(level -> selectedLevelsKeys.contains(level.getKey()))
-					.toList();
-			taxonomyEl.setSelection(selectedLevels);
-		}
-
 		SelectionValues additionalTypeKeys = getRuleTypes();
 		addRuleEl = uifactory.addDropdownSingleselect("add.rule.type", formLayout,
 				additionalTypeKeys.keys(), additionalTypeKeys.values());
@@ -658,8 +659,8 @@ public class PracticeConfigurationController extends FormBasicController {
 	}
 	
 	private List<Long> getSelectedTaxonomyLevels() {
-		return taxonomyEl.getSelection().stream()
-				.map(TaxonomyLevelRef::getKey)
+		return taxonomyEl.getSelectedKeys().stream()
+				.map(Long::valueOf)
 				.collect(Collectors.toList());
 	}
 	

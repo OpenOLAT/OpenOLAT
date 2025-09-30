@@ -41,5 +41,7 @@ public interface ObjectSelectionElement extends FormItem {
 	public Set<String> getSelectedKeys();
 	
 	public void select(String key);
+	
+	public void unselectAll();
 
 }
