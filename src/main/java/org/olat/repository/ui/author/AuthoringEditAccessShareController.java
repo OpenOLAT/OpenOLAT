@@ -218,16 +218,21 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			accessEl.select(KEY_PRIVATE, true);
 		}
 
-		repoLinkCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/repo_links.html");
-		repoLinkCont.setLabel("cif.repo.link", null);
-		repoLinkCont.setRootForm(mainForm);
-		generalCont.add("repoLink", repoLinkCont);
-		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-		repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
+		boolean notCurricularCourse = !isCurricularCourse();
+		if (notCurricularCourse) {
+			repoLinkCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/repo_links.html");
+			repoLinkCont.setLabel("cif.repo.link", null);
+			repoLinkCont.setRootForm(mainForm);
+			generalCont.add("repoLink", repoLinkCont);
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
+		}
 
 		initLeaveOption(generalCont);
 
-		uifactory.addSpacerElement("author.config", generalCont, false);
+		if (notCurricularCourse) {
+			uifactory.addSpacerElement("author.config", generalCont, false);
+		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		repositoryEntryOrganisations = repositoryService.getOrganisations(entry);
@@ -258,6 +263,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", generalCont, canSV.keys(), canSV.values(), 1);
 		authorCanEl.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
+		authorCanEl.setVisible(notCurricularCourse);
 		authorCanEl.addActionListener(FormEvent.ONCHANGE);
 		if (notTemplateRuntimeType) {
 			authorCanEl.select(KEY_REFERENCE, entry.getCanReference());
@@ -277,7 +283,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		enableMetadataIndexingEl.setHelpUrlForManualPage("manual_admin/administration/Modules_OAI/");
 		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
 		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
-		enableMetadataIndexingEl.setVisible(oaiPmhModule.isEnabled() && notTemplateRuntimeType);
+		enableMetadataIndexingEl.setVisible(oaiPmhModule.isEnabled() && notTemplateRuntimeType && notCurricularCourse);
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
@@ -310,6 +316,13 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
+	}
+
+	private boolean isCurricularCourse() {
+		if (!entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
+			return false;
+		}
+		return RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType());
 	}
 
 	private void updateCanUI() {

@@ -111,16 +111,8 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessOverview(ureq, mainVC);
 		updateUI();
 		putInitialPanel(mainVC);
-		validateOfferAvailable();
 	}
 
-	private boolean isCurricularCourse() {
-		if (!entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
-			return false;
-		}
-		return RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType());
-	}
-	
 	public RepositoryEntry getEntry() {
 		return entry;
 	}
@@ -166,7 +158,6 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessShare(ureq, mainVC);
 		initAccessOverview(ureq, mainVC);
 		updateUI();
-		validateOfferAvailable();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -179,7 +170,6 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canDownload(),
 				accessShareCtrl.canIndexMetadata(),
 				accessShareCtrl.getSelectedOrganisations());
-		validateOfferAvailable();
 		
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq, mainVC);
@@ -284,13 +274,10 @@ public class AuthoringEditAccessController extends BasicController {
 			listenTo(accessOverviewCtrl);
 			vc.put("accessOverview", accessOverviewCtrl.getInitialComponent());
 		}
+		validateOfferAvailable();
 	}
 	
 	private void updateUI() {
-		if (accessShareCtrl != null) {
-			accessShareCtrl.getInitialComponent().setVisible(!isCurricularCourse());
-		}
-
 		boolean standalone = RepositoryEntryRuntimeType.standalone == entry.getRuntimeType();
 		if(lti13AccessCtrl != null) {
 			lti13AccessCtrl.getInitialComponent().setVisible(standalone);
