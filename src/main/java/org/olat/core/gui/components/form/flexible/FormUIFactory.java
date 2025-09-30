@@ -41,6 +41,8 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyStateItem;
+import org.olat.core.gui.components.expand.ExpandButtonFactory;
+import org.olat.core.gui.components.expand.FormExpandButton;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
@@ -92,6 +94,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionFilterElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SliderElementImpl;
@@ -413,6 +418,14 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, orgSelectorElement);
 		formLayout.add(orgSelectorElement);
 		return orgSelectorElement;
+	}
+	
+	public ObjectSelectionElement addObjectSelectionElement(String name, String i18nLabel, FormItemContainer formLayout,
+			WindowControl wControl, boolean multiSelection, ObjectSelectionSource source) {
+		ObjectSelectionElement ose = new ObjectSelectionElementImpl(wControl, name, multiSelection, source);
+		setLabelIfNotNull(i18nLabel, ose);
+		formLayout.add(ose);
+		return ose;
 	}
 
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name,
@@ -1454,6 +1467,14 @@ public class FormUIFactory {
 		}
 		setLabelIfNotNull(i18nLabel, fte);
 		return fte;
+	}
+	
+	public FormExpandButton addExpandLink(String name, FormItemContainer formLayout) {
+		FormExpandButton button = ExpandButtonFactory.createLink(name);
+		if(formLayout != null) {
+			formLayout.add(button);
+		}
+		return button;
 	}
 	
 	public FormScopeSelection addScopeSelection(String name, String i18nLabel, FormItemContainer formLayout, List<Scope> scopes) {

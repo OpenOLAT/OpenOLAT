@@ -84,7 +84,9 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private String checkRegexpErrorKey;
 	private String placeholder;
 	private String autocomplete;
+	private String ariaRole;
 	private String ariaLabel;
+	private String ariaControls;
 	private boolean placeholderUpdate = false;
 	private String placeholderId;
 	private Integer placeholderMaxLength;
@@ -392,6 +394,16 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	}
 
 	@Override
+	public String getAriaRole() {
+		return ariaRole;
+	}
+
+	@Override
+	public void setAriaRole(String ariaRole) {
+		this.ariaRole = ariaRole;
+	}
+
+	@Override
 	public String getAriaLabel() {
 		return ariaLabel;
 	}
@@ -399,6 +411,16 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public void setAriaLabel(String label) {
 		this.ariaLabel = label;
+	}
+
+	@Override
+	public String getAriaControls() {
+		return ariaControls;
+	}
+
+	@Override
+	public void setAriaControls(String ariaControls) {
+		this.ariaControls = ariaControls;
 	}
 
 	@Override

@@ -82,6 +82,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if (te.getAutocomplete() != null) {
 				sb.append(" autocomplete=\"").append(te.getAutocomplete()).append("\"");
 			}
+			if(StringHelper.containsNonWhitespace(te.getAriaRole())) {
+				sb.append(" role=\"").appendHtmlEscaped(te.getAriaRole()).append("\"");
+			}
 			if(StringHelper.containsNonWhitespace(te.getAriaLabel())) {
 				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
 			}
@@ -89,6 +92,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
 			}
 			appendErrorAriaDescribedby(sb, te);
+			if (StringHelper.containsNonWhitespace(te.getAriaControls())) {
+				sb.append(" aria-controls=\"").appendHtmlEscaped(te.getAriaControls()).append("\"");
+			}
 			sb.append(">");
 			
 			if(te.isShowHideEye()) {

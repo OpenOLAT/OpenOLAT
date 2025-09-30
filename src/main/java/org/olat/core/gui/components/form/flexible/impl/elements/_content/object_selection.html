@@ -1,0 +1,53 @@
+<div class="o_object_selection">
+	#if($r.available("search.term") && $r.visible("search.term"))
+		<div class="o_object_selection_header o_block_bottom">
+			<div class="input-group">
+				<span class="input-group-addon"><i class="o_icon o_icon-fw o_icon_search"> </i></span>
+				<div class="o_object_selection_search_box">
+					$r.render("search.term", "barebone", "form")
+					$r.render("search.reset", "barebone")
+				</div>
+				#if($r.available("browser.open") && $r.visible("browser.open"))
+					<span class="input-group-btn">$r.render("browser.open", "barebone")</span>
+				#end
+			</div>
+			#if($r.available("select.all") && $r.visible("select.all"))
+				<div class="o_object_selection_actions o_block">
+					$r.render("select.all")
+					$r.render("selection.reset")
+				</div>
+			#end
+		</div>
+		
+		<div class="o_object_selection_main">
+			#if($r.available("options") && $r.visible("options"))
+				<div class="o_object_selection_divider">
+					$r.render("selections.expand")
+				</div>
+				$r.render("selection")
+				<div class="o_object_selection_divider">
+					<span class="o_object_selection_divider_text">$optionsLabel</span>
+				</div>
+				$r.render("options")
+			#end
+			
+			#if($r.available("single.selection") && $r.visible("single.selection"))
+				$r.render("single.selection")
+			#end
+			
+			#if($r.available("selection.load.more") && $r.visible("selection.load.more"))
+				<div class="o_button_group">
+					$r.render("selection.load.more")
+				</div>
+			#end
+			
+			$r.render("options.nothing.found")
+		</div>
+		
+		<div class="o_object_selection_footer o_block_top">
+			$r.render("apply")
+		</div>
+	#else 
+		$r.translate("no.values.available")
+	#end
+</div>

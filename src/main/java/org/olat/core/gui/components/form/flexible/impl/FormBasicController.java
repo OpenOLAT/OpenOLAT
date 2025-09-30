@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
@@ -455,7 +456,7 @@ public abstract class FormBasicController extends BasicController {
 				applyDirtinessToContainer(fiSrc, event);
 			}
 		} else if(fiSrc instanceof InlineElement inlineElement) {
-			if(fiSrc instanceof RichTextElement) {
+			if(fiSrc instanceof RichTextElement || fiSrc instanceof ObjectSelectionElement) {
 				// ignore
 			} else if(!inlineElement.isInlineEditingElement()
 					&& !flc.getRootForm().isInlineValidationOn()

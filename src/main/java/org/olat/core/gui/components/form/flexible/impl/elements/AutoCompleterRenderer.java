@@ -89,8 +89,14 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			}
 			sb.append(" aria-required='true'", autoCompleter.isMandatory());
 			if (autoCompleter instanceof AbstractTextElement textElement) {
+				if (StringHelper.containsNonWhitespace(textElement.getAriaRole())) {
+					sb.append(" role=\"").appendHtmlEscaped(textElement.getAriaRole()).append("\"");
+				}
 				if (StringHelper.containsNonWhitespace(textElement.getAriaLabel())) {
 					sb.append(" aria-label=\"").append(textElement.getAriaLabel()).append("\"");
+				}
+				if (StringHelper.containsNonWhitespace(textElement.getAriaControls())) {
+					sb.append(" aria-controls=\"").appendHtmlEscaped(textElement.getAriaControls()).append("\"");
 				}
 			}
 			sb.append(">");

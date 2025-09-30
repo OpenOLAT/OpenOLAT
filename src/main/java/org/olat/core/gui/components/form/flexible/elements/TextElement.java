@@ -33,6 +33,8 @@ import org.olat.core.util.filter.Filter;
  * @author patrickb
  */
 public interface TextElement extends FormItem{
+	
+	public static final String ARIA_ROLE_SEARCHBOX = "searchbox";
 
 	/**
 	 * Get the value of the text element.
@@ -199,6 +201,10 @@ public interface TextElement extends FormItem{
 
 	public void setShowHideEye(boolean enable);
 	
+	public String getAriaRole();
+	
+	public void setAriaRole(String ariaRole);
+	
 	public String getAriaLabel();
 	
 	/**
@@ -207,6 +213,10 @@ public interface TextElement extends FormItem{
 	 * @param label The translated label
 	 */
 	public void setAriaLabel(String label);
+	
+	public String getAriaControls();
+
+	public void setAriaControls(String ariaControls);
 	
 	/**
 	 * Set the autocomplete behavior of the TextElement. Default value is null

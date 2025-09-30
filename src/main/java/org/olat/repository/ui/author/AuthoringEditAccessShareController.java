@@ -192,7 +192,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 
 		Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
-				.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
+				.map(OrganisationRefImpl::new).map(o -> (OrganisationRef) o).toList();
 		return organisationService.getOrganisation(selectedOrganisationRefs); 
 	}
 

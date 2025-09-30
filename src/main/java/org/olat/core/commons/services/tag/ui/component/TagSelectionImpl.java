@@ -33,11 +33,13 @@ import org.olat.core.commons.services.tag.model.TagRefImpl;
 import org.olat.core.commons.services.tag.ui.component.TagSelectionController.TagSelectionEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.expand.ExpandButton;
+import org.olat.core.gui.components.expand.ExpandButtonFactory;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.olat.core.gui.components.form.flexible.impl.elements.SelectionDisplayComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
@@ -58,7 +60,7 @@ import org.olat.core.util.StringHelper;
 public class TagSelectionImpl extends FormItemImpl implements TagSelection, ControllerEventListener {
 	
 	private Collator collator;
-	private final SelectionDisplayComponent component;
+	private final ExpandButton component;
 	private final WindowControl wControl;
 	
 	private CloseableCalloutWindowController calloutCtrl;
@@ -74,7 +76,8 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		this.wControl = wControl;
 		this.allTags = allTags;
 		this.selectedKeys = new HashSet<>(allTags.stream().filter(TagInfo::isSelected).map(TagInfo::getKey).collect(Collectors.toSet()));
-		this.component = new SelectionDisplayComponent(this);
+		component = ExpandButtonFactory.createSelectionDisplay(this);
+		component.setEscapeMode(EscapeMode.none);
 	}
 
 	@Override
@@ -152,7 +155,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 				newTags = se.getNewTags();
 				calloutCtrl.deactivate();
 				updateDisplayUI();
-				component.setAriaExpanded(false);
+				component.setExpanded(false);
 				if (dirtyCheck) {
 					Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
 					wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
@@ -162,7 +165,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 			}
 		} else if (calloutCtrl == source) {
 			cleanUp();
-			component.setAriaExpanded(false);
+			component.setExpanded(false);
 		}
 	}
 
@@ -190,7 +193,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 			value = "&nbsp;";
 		}
 		value = "<span class=\"o_tag_selection_button_tags o_tag_selection_tags\">" + value + "</span>";
-		component.setValue(value);
+		component.setText(value);
 	}
 	
 	private String toLabel(String displayName) {
@@ -206,7 +209,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		calloutCtrl.addControllerListener(this);
 		calloutCtrl.activate();
 		
-		component.setAriaExpanded(true);
+		component.setExpanded(true);
 	}
 
 }

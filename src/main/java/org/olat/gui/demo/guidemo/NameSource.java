@@ -36,7 +36,7 @@ import org.olat.core.gui.components.util.SelectionValues;
  */
 public class NameSource implements AutoCompletionSource {
 	
-	private static final List<String> ALL = List.of("Gloria Newton", "Herman Keith", "Rajah Edwards",
+	static final List<String> ALL = List.of("Gloria Newton", "Herman Keith", "Rajah Edwards",
 			"Christian Cummings", "Ulla Stewart", "Bevis Odom", "Emi Mullins", "Kellie Juarez", "Deirdre White",
 			"Guinevere Duke", "India Brennan", "Ruby Hancock", "Libby Bray", "Ivor Mccormick", "Martin Calhoun",
 			"Aaron Suarez", "Jaime Anthony", "Nigel Simon", "Dustin Knowles", "Thane Gordon", "Pamela Reid",
