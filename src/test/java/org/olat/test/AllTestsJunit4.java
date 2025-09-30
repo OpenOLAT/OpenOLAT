@@ -673,7 +673,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.CourseAssessmentModeWebServiceTest.class,
 	org.olat.restapi.SharedFolderTest.class,
 	org.olat.restapi.SystemTest.class,
-	org.olat.restapi.ChangePasswordTest.class,
+	org.olat.restapi.ChangePasswordWebServiceTest.class,
 	org.olat.restapi.QuestionPoolTest.class,
 	org.olat.restapi.OrganisationsWebServiceTest.class,
 	org.olat.restapi.OrganisationTypesWebServiceTest.class,

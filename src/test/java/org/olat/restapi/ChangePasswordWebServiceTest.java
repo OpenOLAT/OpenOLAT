@@ -20,25 +20,27 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.UUID;
+import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.restapi.TemporaryKeyVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,22 +50,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ChangePasswordTest extends OlatRestTestCase {
+public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 	
+	/**
+	 * An administrator can request an URL for a user to change its password.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
-	public void testRegistration() throws IOException, URISyntaxException {
+	public void changePasswordAsAdmin() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("pwchange-1-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", null);
 		dbInstance.commitAndCloseSession();
-
+		
+		List<Authentication> authentications = securityManager.getAuthentications(id);
+		Assert.assertTrue(authentications.isEmpty());
+		
 		URI uri = conn.getContextURI().path("pwchange").queryParam("identityKey", id.getKey()).build();
 		HttpPut put = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(put);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
 		TemporaryKeyVO tk = conn.parse(response, TemporaryKeyVO.class);
 		Assert.assertNotNull(tk);
 		Assert.assertNotNull(tk.getIpAddress());
@@ -71,6 +85,28 @@ public class ChangePasswordTest extends OlatRestTestCase {
 		Assert.assertEquals(RegistrationManager.PW_CHANGE, tk.getRegAction());
 		Assert.assertEquals(id.getUser().getProperty(UserConstants.EMAIL, null), tk.getEmailAddress());
 		Assert.assertFalse(tk.isMailSent());
+
+		conn.shutdown();
+	}
+	
+	/**
+	 * As a standard user, I cannot request an URL to change my password.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void changePasswordAsMe() throws IOException, URISyntaxException {
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("pwchange-1-");
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection(id);
+
+		URI uri = conn.getContextURI().path("pwchange").queryParam("identityKey", id.getKey()).build();
+		HttpPut put = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(put);
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		EntityUtils.consumeQuietly(response.getEntity());
 
 		conn.shutdown();
 	}
