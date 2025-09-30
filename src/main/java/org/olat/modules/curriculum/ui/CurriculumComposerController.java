@@ -933,6 +933,23 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
+	private void doMoveCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			List<CurriculumElement> elementsToMove = Collections.singletonList(element);
+			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum, secCallback);
+			listenTo(moveElementCtrl);
+			
+			String title = translate("move.element.title", StringHelper.escapeHtml(row.getDisplayName()));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveElementCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -1193,6 +1210,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		private final VelocityContainer mainVC;
 		private Link newLink;
 		private Link openLink;
+		private Link moveLink;
 		private Link deleteLink;
 		private Link duplicateLink;
 		private Link manageMembersLink;
@@ -1214,6 +1232,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			
 			if(curriculum != null && secCallback.canEditCurriculumElement(element)) {
 				openSettingsLink = addLink("edit", "o_icon_edit", links);
+				
+				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
+					moveLink = addLink("move.element", "o_icon_move", links);
+				}
 			}
 			
 			if(curriculum != null && secCallback.canEditCurriculumElement(element) && element.getParent() != null
@@ -1277,6 +1299,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(deleteLink == source) {
 				close();
 				doConfirmDelete(ureq, row);
+			} else if(moveLink == source) {
+				close();
+				doMoveCurriculumElement(ureq, row);
 			} else if(newLink == source) {
 				close();
 				doNewSubCurriculumElement(ureq, row, null);
