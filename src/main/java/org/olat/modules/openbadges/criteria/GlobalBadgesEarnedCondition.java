@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.criteria;
 
 import java.beans.Transient;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -44,7 +45,7 @@ public class GlobalBadgesEarnedCondition implements BadgeCondition {
 	public GlobalBadgesEarnedCondition() {
 	}
 
-	public GlobalBadgesEarnedCondition(List<String> badgeClassRootIds) {
+	public GlobalBadgesEarnedCondition(Collection<String> badgeClassRootIds) {
 		this.badgeClassRootIds.addAll(badgeClassRootIds);
 	}
 

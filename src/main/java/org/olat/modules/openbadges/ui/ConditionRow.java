@@ -47,8 +47,7 @@ import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
-import org.olat.modules.openbadges.ui.element.BadgeSelectorElement;
-import org.olat.modules.openbadges.ui.element.BadgeSelectorElementImpl;
+import org.olat.modules.openbadges.ui.element.BadgeSelectionSource;
 import org.olat.modules.openbadges.ui.element.CourseSelectionSource;
 import org.olat.repository.RepositoryEntry;
 
@@ -65,7 +64,7 @@ public class ConditionRow {
 	private final SingleSelection badgesDropdown;
 	private final SingleSelection courseElementsDropdown;
 	private final ObjectSelectionElement coursesDropdown;
-	private final BadgeSelectorElement globalBadgesDropdown;
+	private final ObjectSelectionElement globalBadgesDropdown;
 	private final TextElement valueEl;
 	private final StaticTextElement unitEl;
 	private final FormLink deleteLink;
@@ -110,12 +109,18 @@ public class ConditionRow {
 			coursePassedEntryKeys = coursesPassedCondition.getCourseRepositoryEntryKeys();
 		}
 		ObjectSelectionSource courseSource = new CourseSelectionSource(ureq.getLocale(), coursePassedEntryKeys, context.visibleCourses);
-		coursesDropdown = uifactory.addObjectSelectionElement("form.condition.courses." + id, null, formLayout, formLayout.getRootForm().getWindowControl(), true, courseSource);
+		coursesDropdown = uifactory.addObjectSelectionElement("form.condition.courses." + id, null, formLayout,
+				formLayout.getRootForm().getWindowControl(), true, courseSource);
 		
-		globalBadgesDropdown = new BadgeSelectorElementImpl(ureq, formLayout.getRootForm().getWindowControl(),
-				"form.condition.global.badges." + id, context.entry, context.globalBadgesKV, context.mediaUrl);
-		formLayout.add(globalBadgesDropdown);
-		globalBadgesDropdown.addActionListener(FormEvent.ONCHANGE);
+		List<String> badgeClassRootIds = List.of();
+		if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
+			badgeClassRootIds = globalBadgesEarnedCondition.getBadgeClassRootIds();
+		}
+		ObjectSelectionSource badgesSource = new BadgeSelectionSource(ureq.getLocale(), badgeClassRootIds,
+				context.entry, context.globalBadgesKV, context.mediaUrl);
+		
+		globalBadgesDropdown = uifactory.addObjectSelectionElement("form.condition.global.badges." + id, null, formLayout,
+				formLayout.getRootForm().getWindowControl(), true, badgesSource);
 
 		valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
 				"", formLayout);
@@ -198,7 +203,6 @@ public class ConditionRow {
 		}
 		if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
 			globalBadgesDropdown.setVisible(true);
-			globalBadgesDropdown.setSelection(globalBadgesEarnedCondition.getBadgeClassRootIds());
 		}
 	}
 
@@ -282,7 +286,7 @@ public class ConditionRow {
 	/**
 	 * Used in template
 	 */
-	public BadgeSelectorElement getGlobalBadgesDropdown() {
+	public ObjectSelectionElement getGlobalBadgesDropdown() {
 		return globalBadgesDropdown;
 	}
 
@@ -329,9 +333,7 @@ public class ConditionRow {
 					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedValue() : courseElementsDropdown.getValues()[0]
 			);
 			case CoursesPassedCondition.KEY -> new CoursesPassedCondition(CourseSelectionSource.toKeys(coursesDropdown.getSelectedKeys()));
-			case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(
-					globalBadgesDropdown.getSelection().stream().toList()
-			);
+			case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(globalBadgesDropdown.getSelectedKeys());
 			default -> null;
 		};
 	}
@@ -376,7 +378,7 @@ public class ConditionRow {
 		
 		globalBadgesDropdown.clearError();
 		if (globalBadgesDropdown.isVisible()) {
-			if (globalBadgesDropdown.getSelection().isEmpty()) {
+			if (globalBadgesDropdown.getSelectedKeys().isEmpty()) {
 				globalBadgesDropdown.setErrorKey("alert");
 				allOk &= false;
 			}

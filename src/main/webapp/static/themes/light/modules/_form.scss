@@ -1230,16 +1230,40 @@ dialog {
 			margin-right: 10px;
 			margin-bottom: 3px;
 		}
+		&:has(.o_object_selection_image) {
+			label {
+				align-items: center
+			}
+			input[type="checkbox"],
+			input[type="radio"] {
+				margin-bottom: 0px;
+			}
+		}
 	}
 	
 	.o_object_selection_option {
 		max-width: 100%;
 		display: flex;
-		// Voice over: Title -> Subtitle
-		// Visual    : Subtitle -> Title
-		flex-direction: column-reverse;
-		small {
-			line-hight: 1em;
+		column-gap: 10px;
+		
+		.o_object_selection_image {
+			width: 40px;
+			max-width: 40px;
+			height: 40px;
+			max-height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.o_object_selection_text {
+			max-width: 100%;
+			display: flex;
+			// Voice over: Title -> Subtitle
+			// Visual    : Subtitle -> Title
+			flex-direction: column-reverse;
+			small {
+				line-hight: 1em;
+			}
 		}
 	}
 	

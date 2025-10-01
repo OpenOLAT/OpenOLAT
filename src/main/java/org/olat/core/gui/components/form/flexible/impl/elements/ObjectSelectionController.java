@@ -272,11 +272,19 @@ public class ObjectSelectionController extends FormBasicController {
 	private String toSelectionValue(ObjectOption option) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div class=\"o_object_selection_option\">");
+		if (StringHelper.containsNonWhitespace(option.getImageSrc())) {
+			sb.append("<div class=\"o_object_selection_image\">");
+			sb.append("<img src=\"").append(option.getImageSrc()).append("\" ");
+			sb.append("alt =\"").append(StringHelper.blankIfNull(StringHelper.escapeForHtmlAttribute(option.getImageAlt()))).append("\"");
+			sb.append(">");
+			sb.append("</div>");
+		}
+		sb.append("<div class=\"o_object_selection_text\">");
 		sb.append("<div class=\"o_nowrap\">");
 		sb.append(StringHelper.escapeHtml(option.getTitle()));
 		sb.append("</div>");
 		sb.append("<div class=\"o_nowrap o_muted\"");
-		if (StringHelper.containsNonWhitespace(option.getSubTitle()) && !Objects.equal(option.getSubTitle(), option.getSubTitleFull())) {
+		if (StringHelper.containsNonWhitespace(option.getSubTitleFull()) && !Objects.equal(option.getSubTitle(), option.getSubTitleFull())) {
 			sb.append("title=\"");
 			sb.append(StringHelper.escapeForHtmlAttribute(option.getSubTitleFull()));
 			sb.append("\"");
@@ -286,6 +294,7 @@ public class ObjectSelectionController extends FormBasicController {
 			sb.append(StringHelper.escapeHtml(option.getSubTitle()));
 		}
 		sb.append("</small></div>");
+		sb.append("</div>");
 		sb.append("</div>");
 		return sb.toString();
 	}

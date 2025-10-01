@@ -41,18 +41,30 @@ public interface ObjectOption {
 	
 	String getSubTitleFull();
 	
+	String getImageSrc();
+	
+	String getImageAlt();
+	
 	public class ObjectOptionValues implements ObjectOption {
 		
 		private final String key;
 		private final String title;
 		private final String subTitle;
 		private final String subTitleFull;
+		private final String imageSrc;
+		private final String imageAlt;
 		
 		public ObjectOptionValues(String key, String title, String subTitle, String subTitleFull) {
+			this(key, title, subTitle, subTitleFull, null, null);
+		}
+		
+		public ObjectOptionValues(String key, String title, String subTitle, String subTitleFull, String imageSrc, String imageAlt) {
 			this.key = key;
 			this.title = title;
 			this.subTitle = subTitle;
 			this.subTitleFull = subTitleFull;
+			this.imageSrc = imageSrc;
+			this.imageAlt = imageAlt;
 		}
 
 		@Override
@@ -73,6 +85,16 @@ public interface ObjectOption {
 		@Override
 		public String getSubTitleFull() {
 			return subTitleFull;
+		}
+		
+		@Override
+		public String getImageSrc() {
+			return imageSrc;
+		}
+		
+		@Override
+		public String getImageAlt() {
+			return imageAlt;
 		}
 		
 	}
