@@ -19,7 +19,6 @@
  */
 package org.olat.gui.demo.guidemo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationImpl;
@@ -35,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionE
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
 
 /**
  * Initial date: 2025-04-03<br>
@@ -43,9 +41,6 @@ import org.olat.user.ui.organisation.element.OrgSelectorElement;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class GuiDemoFlexiSelectorsController extends FormBasicController {
-
-	private OrgSelectorElement singleOrgList;
-	private OrgSelectorElement multiOrgList;
 
 	public GuiDemoFlexiSelectorsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -59,18 +54,8 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 	}
 
 	private void initOrgSelectorSection(FormItemContainer formLayout) {
-		FormLayoutContainer sectionContainer = uifactory.addDefaultFormLayout("orgSelectorSection", null, 
-				formLayout);
-		sectionContainer.setFormTitle(translate("selectors.org"));
-		
-		List<Organisation> orgs = getOrgList();
-		singleOrgList = uifactory.addOrgSelectorElement("org.selector", "selectors.org.single", 
-				sectionContainer, getWindowControl(), orgs);
-		singleOrgList.setMultipleSelection(false);
-		
-		multiOrgList = uifactory.addOrgSelectorElement("org.selector.multi", "selectors.org.multi",
-				sectionContainer, getWindowControl(), orgs);
-		multiOrgList.setMultipleSelection(true);
+		FormLayoutContainer sectionContainer = uifactory.addDefaultFormLayout("selectorSection", null, formLayout);
+		sectionContainer.setFormTitle(translate("guidemo_flexi_form_selectors"));
 		
 		ObjectListSource organisationSource = createOrganisationSource();
 		uifactory.addObjectSelectionElement("objects.single", "selection.objects.single", sectionContainer,
@@ -85,21 +70,6 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 		ObjectSelectionElement objectSelectionDisabledEl = uifactory.addObjectSelectionElement("objects.disabled",
 				"selection.objects.disabled", sectionContainer, getWindowControl(), true, createNamesSource(true));
 		objectSelectionDisabledEl.setEnabled(false);
-	}
-
-	private List<Organisation> getOrgList() {
-		List<Organisation> orgList = new ArrayList<>();
-		
-		orgList.add(new OrgBuilder(1L).name("A").location("Processes").path("/1/").build());
-		orgList.add(new OrgBuilder(2L).name("A.1").location("HR").path("/1/2/").build());
-		orgList.add(new OrgBuilder(3L).name("A.2").location("Procurement").path("/1/3/").build());
-		orgList.add(new OrgBuilder(4L).name("A.1.1").location("Salaries").path("/1/2/4/").build());
-		orgList.add(new OrgBuilder(5L).name("B").location("Manufacturing").path("/5/").build());
-		orgList.add(new OrgBuilder(6L).name("B.1").location("Assembly").path("/5/6/").build());
-		orgList.add(new OrgBuilder(7L).name("C").location("Marketing").path("/7/").build());
-		orgList.add(new OrgBuilder(8L).name("C.1").location("Online marketing").path("/7/8/").build());
-		
-		return orgList;
 	}
 	
 	private ObjectListSource createOrganisationSource() {

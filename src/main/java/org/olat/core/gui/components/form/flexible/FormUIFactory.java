@@ -134,7 +134,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
@@ -142,8 +141,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionImpl;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
-import org.olat.user.ui.organisation.element.OrgSelectorElementImpl;
 
 /**
  * Factory class to create the flexible form elements.
@@ -379,35 +376,6 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, iconSelectorElement);
 		formLayout.add(iconSelectorElement);
 		return iconSelectorElement;
-	}
-
-	public OrgSelectorElement addOrgSelectorElement(String name, FormItemContainer formLayout,
-													WindowControl wControl, List<Organisation> organisations) {
-		return addOrgSelectorElement(name, name, formLayout, wControl, organisations);
-	}
-	
-	public OrgSelectorElement addOrgSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
-													WindowControl wControl, List<Organisation> organisations) {
-		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations, formLayout.getTranslator().getLocale());
-		setLabelIfNotNull(i18nLabel, orgSelectorElement);
-		formLayout.add(orgSelectorElement);
-		return orgSelectorElement;
-	}
-
-	public OrgSelectorElement addOrgSelectorElement(String name, FormItemContainer formLayout,
-													WindowControl wControl, List<Organisation> organisations,
-													boolean multipleSelection) {
-		return addOrgSelectorElement(name, name, formLayout, wControl, organisations, multipleSelection);
-	}
-
-	public OrgSelectorElement addOrgSelectorElement(String name, String i18nLabel, FormItemContainer formLayout,
-													WindowControl wControl, List<Organisation> organisations,
-													boolean multipleSelection) {
-		OrgSelectorElement orgSelectorElement = new OrgSelectorElementImpl(wControl, name, organisations, formLayout.getTranslator().getLocale());
-		orgSelectorElement.setMultipleSelection(multipleSelection);
-		setLabelIfNotNull(i18nLabel, orgSelectorElement);
-		formLayout.add(orgSelectorElement);
-		return orgSelectorElement;
 	}
 	
 	public ObjectSelectionElement addObjectSelectionElement(String name, String i18nLabel, FormItemContainer formLayout,
