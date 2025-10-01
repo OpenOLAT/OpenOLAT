@@ -36,6 +36,7 @@ import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -471,7 +472,7 @@ public class RepositoryEntryRelationDAO {
 		return repoKeyToCountMembers;
 	}
 	
-	public Map<String, Long> getRoleToCountMembers(RepositoryEntryRef re, boolean ignoreCurriculumElementRoles) {
+	public Map<String, Long> getRoleToCountMembers(RepositoryEntryRef re, boolean ignoreCurriculumElementRoles, boolean withInheritance) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select members.role, count(distinct members.identity.id) from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup")
@@ -480,6 +481,9 @@ public class RepositoryEntryRelationDAO {
 		if (ignoreCurriculumElementRoles) {
 			sb.append(" left join curriculumelement ce on ce.group.key = baseGroup.key");
 			sb.where().append(" ce is null");
+		}
+		if (!withInheritance) {
+			sb.where().append(" members.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
 		}
 		sb.where().append(" v.key=:repoKey")
 		  .append(" group by members.role");
