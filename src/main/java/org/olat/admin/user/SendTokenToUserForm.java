@@ -172,6 +172,8 @@ public class SendTokenToUserForm extends FormBasicController {
 					userName = identityToModify.getUser().getNickName();
 				}
 			}
+			// Plus need to be URL encoded (+ is for space)
+			emailAddress = emailAddress.replace("+", "%2B");
 			String resetUrlString = serverpath + "/url/changepw/0/" + emailAddress + "/0";
 			String body = "<p>" + userTrans.translate("pwchange.intro.before") + "</p>"
 					+ userTrans.translate("pwchange.intro", userName)
