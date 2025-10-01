@@ -15,18 +15,18 @@
 	<div class="o_meta">
 		<h5 class="o_title o_card_title">$r.render($row.openFormItem)</h5>
 		#if($r.isNotEmpty($row.tags))
-			<span class="o_tag_selection_tags">
+		<span class="o_tag_selection_tags">
 			#foreach($tag in $row.tags)
 				<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
 			#end
 			</span>
 		#end
 		#if($r.isNotEmpty($row.taxonomyLevelsNames))
-			<span class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+			<span class="o_tag_selection_tags">
 			#foreach($levelName in $row.taxonomyLevelsNames)
-				<span class='o_tag o_selection_tag'>$r.escapeHtml($levelName)</span>
+				<span class='o_tag o_taxonomy'>$r.escapeHtml($levelName)</span>
 			#end
-			</span></span>
+			</span>
 		#end
 	</div>
 </div>

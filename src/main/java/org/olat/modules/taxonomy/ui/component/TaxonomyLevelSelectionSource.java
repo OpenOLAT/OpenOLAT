@@ -208,13 +208,13 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	
 	private String createLevelDisplayTitle(String title) {
 		return StringHelper.containsNonWhitespace(title)
-				? "<span class=\"o_taxonomy_level_selection_tag o_tag\">" + StringHelper.escapeHtml(title) + "</span>"
+				? "<span class=\"o_taxonomy_selection_tags o_tag\">" + StringHelper.escapeHtml(title) + "</span>"
 				: null;
 	}
 	
 	private String createDisplayTitle(String title) {
 		return StringHelper.containsNonWhitespace(title)
-				? "<span class=\"o_taxonomy_level_selection_tags o_taxonomy_tags\">" + title + "</span>"
+				? "<span class=\"o_taxonomy_selection_tags o_taxonomy_tags\">" + title + "</span>"
 				: null;
 	}
 	

@@ -30,7 +30,6 @@ import java.lang.management.MemoryType;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -138,9 +137,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
-import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionImpl;
 
 /**
  * Factory class to create the flexible form elements.
@@ -397,14 +393,6 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, acms);
 		formLayout.add(acms);
 		return acms;
-	}
-	
-	public TaxonomyLevelSelection addTaxonomyLevelSelection(String name, String i18nLabel, FormItemContainer formLayout,
-			WindowControl wControl, Set<TaxonomyLevel> allTaxonomyLevels) {
-		TaxonomyLevelSelectionImpl tlsi = new TaxonomyLevelSelectionImpl(wControl, name, allTaxonomyLevels);
-		setLabelIfNotNull(i18nLabel, tlsi);
-		formLayout.add(tlsi);
-		return tlsi;
 	}
 	
 	public TagSelection addTagSelection(String name, String i18nLabel, FormItemContainer formLayout,

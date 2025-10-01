@@ -63,6 +63,7 @@
 	border-color: $o-competences-color; 
 	border-radius: 0.5em;
 	vertical-align: bottom;
+	max-width: 100%;
 	
 	&:hover {
 		text-decoration: none;
@@ -112,87 +113,21 @@
 	flex-wrap: wrap;
 }
 
-/** Taxonomy level selection element **/
-.o_selection_display {
-	.o_taxonomy_level_selection_tags {
-		gap: 2px;
-		.o_tag {
-			@extend %o_nowrap;
-			background-color: #ffffff;
-			color: $o-competences-font-color;
-			border-color: $o-competences-color; 
-			border-radius: 0.5em;
-			margin: 0;
-		}
-	}
-}
-
-/** Taxonomy level selection element **/
-.o_tax_ls_button {
-	font-size: 12px;
-	display: flex;
-	&>span {
-		width: 100%;
-	}
-	.o_icon {
-		margin: auto 0 auto auto;
-	}
-	.o_tax_ls_tags {
-		gap: 2px;
-		.o_tag {
-			@extend %o_nowrap;
-			background-color: #ffffff;
-			color: $o-competences-font-color;
-			border-color: $o-competences-color; 
-			border-radius: 0.5em;
-			margin: 0;
-		}
-	}
-	&:is(.form-group *) {
-		width: 100%;
-		max-width: 100%;
-		min-height: $input-height-base;
-	}
-}
-.o_tax_ls_selections {
-	padding-right: 15px;
-}
-.o_tax_ls_search {
-	margin-bottom: 10px;
-}
-.o_tax_ls_option {
-	max-width: 100%;
-	display: flex;
-	flex-direction: column;
-	small {
-		line-hight: 1em;
-	}
-}
-.o_tax_ls_expand {
-	border-top: 1px solid #e7e7e7;
-	.o_tax_ls_expand_button {
-		height: 20px;
-		width: 32px;
-		padding: 0px 8px;
-		border: 1px solid #e7e7e7;
-		border-top-left-radius: 0px;
-		border-top-right-radius: 0px;
-	}
-}
-
 /** Taxonomy level in object selection element **/
-.o_taxonomy_level_selection_tags {
-	gap: 2px;
-	.o_tag {
-		@extend %o_nowrap;
-		background-color: #ffffff;
-		color: $o-competences-font-color;
-		border-color: $o-competences-color; 
-		border-radius: 0.5em;
-		margin: 0;
-		// We do not want the hover from o_tag
-		&:hover {
+.o_selection_display {
+	.o_taxonomy_selection_tags {
+		gap: 2px;
+		.o_tag {
+			@extend %o_nowrap;
+			background-color: #ffffff;
 			color: $o-competences-font-color;
+			border-color: $o-competences-color; 
+			border-radius: 0.5em;
+			margin: 0;
+			// We do not want the hover from o_tag
+			&:hover {
+				color: $o-competences-font-color;
+			}
 		}
 	}
 }

@@ -443,14 +443,6 @@
 .o_lecture_details {
 	container-type: inline-size;
 	container-name: o-lecture-details;
-
-	.o_lecture_subjects {
-		.o_tax_ls_button {
-			min-height: unset;
-			padding-top: 7px;
-			padding-bottom: 7px;
-		}
-	}
 }
 
 
@@ -464,10 +456,6 @@
 		.btn {
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
-		}
-
-		.o_tax_ls_tag {
-			line-height: 16px;
 		}
 	}
 

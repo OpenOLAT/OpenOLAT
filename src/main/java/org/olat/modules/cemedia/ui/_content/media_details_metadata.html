@@ -50,11 +50,11 @@
 	
 	#if($r.isNotEmpty($taxonomyLevels))
 	<tr><th id="oo-media-levels">$r.translate("taxonomy.levels")</th>
-		<td aria-labelledby="oo-media-levels" class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+		<td aria-labelledby="oo-media-levels">
 		#foreach($taxonomyLevel in $taxonomyLevels)
-			<span class='o_tax_ls_tag o_tag'>$r.escapeHtml($taxonomyLevel)</span>
+			<span class='o_tag o_taxonomy'>$r.escapeHtml($taxonomyLevel)</span>
 		#end
-		</span></td></tr>
+		</td></tr>
 	#end
 	
 	#if($r.isNotEmpty($media.creators))
