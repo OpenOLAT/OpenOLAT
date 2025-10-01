@@ -407,6 +407,9 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		if (roles.isCurriculumManager()) {
+			searchParams.setAdditionalCurricularOrgRoles(List.of(OrganisationRoles.curriculummanager));
+		}
 		searchParams.addResourceTypes("CourseModule");
 		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
 		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
