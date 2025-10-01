@@ -173,11 +173,9 @@ public class EditCurriculumController extends FormBasicController {
 						.orElseGet(null);
 			}
 		}
-		if (currentOrganisation == null) {
-			currentOrganisation = organisationService.getDefaultOrganisation();
-		}
+		List<Organisation> currentOrganisations = currentOrganisation != null? List.of(currentOrganisation): List.of();
 		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
-				List.of(currentOrganisation),
+				currentOrganisations,
 				() -> managedOrganisations);
 		organisationEl = uifactory.addObjectSelectionElement("organisations", "curriculum.organisation", formLayout,
 				getWindowControl(), false, organisationSource);

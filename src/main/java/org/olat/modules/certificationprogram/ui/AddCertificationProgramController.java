@@ -19,31 +19,28 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,7 +53,7 @@ public class AddCertificationProgramController extends FormBasicController {
 	
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	
 	private CertificationProgram certificationProgram;
 	
@@ -99,13 +96,13 @@ public class AddCertificationProgramController extends FormBasicController {
 	
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
 		Roles roles = usess.getRoles();
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
-				OrganisationRoles.administrator, OrganisationRoles.curriculummanager);
-		List<Organisation> organisationList = new ArrayList<>(organisations);
-
-		organisationsEl = uifactory.addOrgSelectorElement("organisations", "certification.admin.access",
-				formLayout, getWindowControl(), organisationList);
-		organisationsEl.setMultipleSelection(true);
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				List.of(),
+				() -> organisationService.getOrganisations(getIdentity(), roles,
+						OrganisationRoles.administrator, OrganisationRoles.curriculummanager));
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "certification.admin.access", formLayout,
+				getWindowControl(), true, organisationSource);
+		organisationsEl.setVisible(organisationModule.isEnabled());
 	}
 	
 	@Override
@@ -136,9 +133,7 @@ public class AddCertificationProgramController extends FormBasicController {
 
 		List<Organisation> organisations;
 		if(organisationsEl != null && organisationsEl.isVisible()) {
-			Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
-					.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
-			organisations = organisationService.getOrganisation(selectedOrganisationRefs);
+			organisations = organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
 		} else {
 			organisations = List.of(organisationService.getDefaultOrganisation());
 		}

@@ -20,13 +20,13 @@
  */
 package org.olat.repository.ui.author.copy;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,7 +50,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.user.ui.organisation.element.OrgSelectorElement;
+import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,7 +66,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	private TextElement displaynameEl;
 	private TextElement externalRefEl;
-	private OrgSelectorElement organisationsEl;
+	private ObjectSelectionElement organisationsEl;
 	private SelectionElement authorsCanEl;
 	
 	private RepositoryEntry copyEntry;
@@ -74,7 +75,8 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	@Autowired
 	private RepositoryService repositoryService;
-	
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -120,22 +122,14 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	
 	private void initFormOrgs(FormItemContainer formLayout, UserSession userSession) {
 		Roles roles = userSession.getRoles();
-		
-		List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), roles,
+		Supplier<Collection<? extends OrganisationRef>> organistionSupplier = () -> organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
-		List<Organisation> allOrgs = new ArrayList<>(orgs);
-		List<Organisation> selectedOrgs = repositoryService.getOrganisations(sourceEntry);
-		List<Long> selectedOrgKeys = selectedOrgs.stream().map(Organisation::getKey).toList();
-
-		for (Organisation selectedOrg : selectedOrgs) {
-			if (selectedOrg != null && !allOrgs.contains(selectedOrg)) {
-				allOrgs.add(selectedOrg);
-			}
-		}
-
-		organisationsEl = uifactory.addOrgSelectorElement("cif.organisations", "cif.organisations", formLayout, getWindowControl(), orgs);
-		organisationsEl.setMultipleSelection(true);
-		organisationsEl.setSelection(selectedOrgKeys);
+		OrganisationSelectionSource organisationSource = new OrganisationSelectionSource(
+				repositoryService.getOrganisations(sourceEntry),
+				organistionSupplier);
+		organisationsEl = uifactory.addObjectSelectionElement("organisations", "cif.organisations", formLayout,
+				getWindowControl(), true, organisationSource);
+		organisationsEl.setVisible(organisationModule.isEnabled());
 	}
 	
 	private void initAuthorsCan(FormItemContainer formLayout) {
@@ -169,9 +163,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		if (organisationsEl == null) {
 			return null;
 		}
-		Collection<OrganisationRef> selectedOrganisationRefs = organisationsEl.getSelection().stream()
-				.map(OrganisationRefImpl::new).map((o) -> (OrganisationRef) o).toList();
-		return organisationService.getOrganisation(selectedOrganisationRefs);
+		return organisationService.getOrganisation(OrganisationSelectionSource.toRefs(organisationsEl.getSelectedKeys()));
 	}
 
 	@Override

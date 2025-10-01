@@ -242,6 +242,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 						OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.author));
 		organisationsEl = uifactory.addObjectSelectionElement("organisations", "cif.organisations", generalCont,
 				getWindowControl(), true, organisationSource);
+		organisationsEl.setMandatory(true);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
 		organisationsEl.addActionListener(FormEvent.ONCHANGE);
