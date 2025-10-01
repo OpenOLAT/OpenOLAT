@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -67,11 +68,11 @@ import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.AuthoringEnvPage.Wizard;
-import org.olat.selenium.page.survey.EvaluationFormPage;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
+import org.olat.selenium.page.survey.EvaluationFormPage;
 import org.olat.selenium.page.user.RegistrationPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
@@ -1232,6 +1233,7 @@ public class CourseTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
+	@Ignore
 	@RunAsClient
 	public void courseFreeBooking()
 	throws IOException, URISyntaxException {

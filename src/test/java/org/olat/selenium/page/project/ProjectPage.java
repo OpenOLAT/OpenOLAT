@@ -43,19 +43,20 @@ public class ProjectPage {
 		By titleBy = By.cssSelector("fieldset.o_sel_proj_project_form input.o_sel_proj_project_title[type='text']");
 		OOGraphene.waitElement(titleBy, browser).sendKeys(title);
 		
-		By organisationBy = By.cssSelector("div.o_sel_proj_project_organisation a.o_org_selector_button");
+		By organisationBy = By.cssSelector("div.o_sel_proj_project_organisation button.o_selection_display");
 		browser.findElement(organisationBy).click();
-		OOGraphene.waitCallout(browser, ".o_sel_org_selector");
+		OOGraphene.waitCallout(browser, ".o_object_selection");
 		
-		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[contains(@class,'o_org_selector_row') and descendant::span[contains(text(),'" + organisation + "')]]//input[@type='checkbox']");
+		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + organisation + "')]]/input[@type='checkbox']");
 		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
 		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
+
+		By updateBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//span[contains(@class,'o_expand_button_text')][text()[contains(.,'(1)')]]");
+		OOGraphene.waitElement(updateBy, browser);
 		
-		By updateBy = By.cssSelector(".popover a.o_sel_org_apply");
-		browser.findElement(updateBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElementDisappears(updateBy, 5, browser);
+		By transferBy = By.cssSelector(".popover .o_object_selection a.o_object_selection_apply"); 
+		OOGraphene.waitElement(transferBy, browser).click();
+		OOGraphene.waitElementDisappears(openOlatOrgBy, 5, browser);
 		
 		if(StringHelper.containsNonWhitespace(teaser)) {
 			By teaserBy = By.cssSelector("fieldset.o_sel_proj_project_form input.o_sel_proj_project_teaser[type='text']");

@@ -185,17 +185,18 @@ public class RepositoryAccessPage {
 	public RepositoryAccessPage selectModalFreeBooking(String message) {
 		OOGraphene.waitModalDialog(browser);
 		
-		// select open
-		By openBy = By.xpath("//div[@class='modal-content']//input[@value='free.method']");
-		OOGraphene.waitElement(openBy, browser).click();
-		
+		// Select free booking
+		By freeBy = By.xpath("//div[@class='modal-content']//input[@value='free.method']");
+		OOGraphene.waitElement(freeBy, browser).click();
+		By freeCheckedBy = By.xpath("//div[@class='modal-content']//input[@value='free.method'][@checked='checked']");
+		OOGraphene.waitElement(freeCheckedBy, browser);
 		// save
 		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
 		OOGraphene.waitElementRefreshed(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
-		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_free_form");
+		OOGraphene.waitModalDialog(browser, ".o_sel_accesscontrol_free_form div.o_sel_accesscontrol_label");
 		// configure method
 		new BookingPage(browser)
 			.configureFreeBooking(message, false, false);
