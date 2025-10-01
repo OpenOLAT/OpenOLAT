@@ -1060,4 +1060,32 @@ public class CurriculumServiceTest extends OlatTestCase {
 		CurriculumElement rootElement = curriculumService.getImplementationOf(element11);
 		Assert.assertEquals(element, rootElement);
 	}
+	
+	@Test
+	public void moveCurriculumElementAndNumbering() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-21", "Curriculum 21", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-21", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-copy-1-1", "Element to copy 1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element12 = curriculumService.createCurriculumElement("Element-to-copy-1-2", "Element to copy 1.2",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element13 = curriculumService.createCurriculumElement("Element-to-copy-1-3", "Element to copy 1.3",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		curriculumService.moveCurriculumElement(element11, element1, element13, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElement> elements = curriculumService.getCurriculumElementsChildren(element1);
+		Assertions.assertThat(elements)
+			.hasSize(3)
+			.containsExactly(element12, element13, element11)
+			.map(CurriculumElement::getNumberImpl)
+			.containsExactly("1", "2", "3");
+	}
 }

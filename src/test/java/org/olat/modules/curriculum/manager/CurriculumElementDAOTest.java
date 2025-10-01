@@ -206,6 +206,23 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void updateNumber() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1c", "Curriculum for numbered element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1c", "1. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+		dbInstance.commitAndCloseSession();
+		
+		curriculumElementDao.updateNumber(element, "1.1.1.1");
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(element.getKey());
+		Assert.assertNotNull(reloadedElement);
+		Assert.assertEquals("1.1.1.1", reloadedElement.getNumberImpl());
+	}
+	
+	@Test
 	public void copyCurriculumElementSimple() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-copy-el-1", "Type for copy", "First element", "AC-234");

@@ -515,6 +515,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		// Recalculate the numbering under this implementation / root element
 		CurriculumElement rootElement = getImplementationOf(copy);
+		dbInstance.commitAndCloseSession();
+		
 		numberRootCurriculumElement(rootElement);
 		dbInstance.commitAndCloseSession();
 		
@@ -902,7 +904,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent,
+	public void moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent,
 			CurriculumElement siblingBefore, Curriculum targetCurriculum) {
 		Curriculum reloadedTargetCurriculum = curriculumDao.loadByKey(targetCurriculum.getKey());
 		CurriculumElement element = curriculumElementDao
@@ -943,10 +945,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		// Recalculate the numbering under this implementation / root element
 		CurriculumElement rootElement = getImplementationOf(element);
+		dbInstance.commitAndCloseSession();
+		
 		numberRootCurriculumElement(rootElement);
 		dbInstance.commit();
-		
-		return element;
 	}
 	
 	private void propagateMembership(CurriculumElementNode node, List<GroupMembership> membershipsToPropagate) {
