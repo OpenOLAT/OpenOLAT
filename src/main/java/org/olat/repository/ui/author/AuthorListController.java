@@ -1803,18 +1803,29 @@ public class AuthorListController extends FormBasicController implements Activat
 	private void doCoursesArchives(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		removeAsListenerAndDispose(coursesArchivesWizard);
 		
-		List<Long> repositoryEntryKeys = rows.stream()
-				.map(AuthoringEntryRow::getKey)
-				.toList();
-		List<RepositoryEntry> repositoryEntries = repositoryService.loadByKeys(repositoryEntryKeys);
-		BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
+		List<Long> repositoryEntryKeys = new ArrayList<>();
+		for(AuthoringEntryRow row:rows) {
+			if(canManage(row)) {
+				repositoryEntryKeys.add(row.getKey());
+			}
+		}
 		
-		Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
-		BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
-		coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("wizard.bulk.courses.archives.title"), "");
-		listenTo(coursesArchivesWizard);
-		getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
+		if(repositoryEntryKeys.isEmpty()) {
+			showWarning("bulk.update.nothing.applicable.selected");
+		} else {
+			rows.stream()
+					.map(AuthoringEntryRow::getKey)
+					.toList();
+			List<RepositoryEntry> repositoryEntries = repositoryService.loadByKeys(repositoryEntryKeys);
+			BulkCoursesArchivesContext context = BulkCoursesArchivesContext.defaultValues(repositoryEntries, roles);
+			
+			Step start = new BulkCoursesArchives_1_RepositoryEntriesStep(ureq, context);
+			BulkCoursesArchivesFinishStepCallback finish = new BulkCoursesArchivesFinishStepCallback(context);
+			coursesArchivesWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+					translate("wizard.bulk.courses.archives.title"), "");
+			listenTo(coursesArchivesWizard);
+			getWindowControl().pushAsModalDialog(coursesArchivesWizard.getInitialComponent());
+		}
 	}
 	
 	private void doCompleteCoursesArchives() {
