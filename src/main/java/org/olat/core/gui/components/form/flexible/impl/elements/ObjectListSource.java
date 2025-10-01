@@ -43,7 +43,7 @@ public class ObjectListSource implements ObjectSelectionSource {
 	}
 	
 	public ObjectListSource(ObjectDisplayValues defaultDisplayValue, List<? extends ObjectOption> options, String optionsLabel) {
-		this.defaultDisplayValue = defaultDisplayValue != null? defaultDisplayValue: new ObjectDisplayValues(null, null);
+		this.defaultDisplayValue = defaultDisplayValue != null? defaultDisplayValue: ObjectDisplayValues.NONE;
 		this.options = options;
 		this.optionsLabel = optionsLabel;
 	}

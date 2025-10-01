@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -29,6 +30,8 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
@@ -46,11 +49,8 @@ import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
 import org.olat.modules.openbadges.ui.element.BadgeSelectorElement;
 import org.olat.modules.openbadges.ui.element.BadgeSelectorElementImpl;
-import org.olat.modules.openbadges.ui.element.CourseSelectorElement;
-import org.olat.modules.openbadges.ui.element.CourseSelectorElementImpl;
+import org.olat.modules.openbadges.ui.element.CourseSelectionSource;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.model.RepositoryEntryRefImpl;
 
 /**
  * Initial date: 2024-09-06<br>
@@ -64,7 +64,7 @@ public class ConditionRow {
 	private final SingleSelection symbolDropdown;
 	private final SingleSelection badgesDropdown;
 	private final SingleSelection courseElementsDropdown;
-	private final CourseSelectorElement coursesDropdown;
+	private final ObjectSelectionElement coursesDropdown;
 	private final BadgeSelectorElement globalBadgesDropdown;
 	private final TextElement valueEl;
 	private final StaticTextElement unitEl;
@@ -104,12 +104,14 @@ public class ConditionRow {
 		courseElementsDropdown = uifactory.addDropdownSingleselect("form.condition.courseElements." + id, null,
 				formLayout, context.courseElementsKV.keys(), context.courseElementsKV.values());
 		courseElementsDropdown.addActionListener(FormEvent.ONCHANGE);
-
-		coursesDropdown = new CourseSelectorElementImpl(formLayout.getRootForm().getWindowControl(),
-				"form.condition.courses." + id, context.visibleCourses);
-		formLayout.add(coursesDropdown);
-		coursesDropdown.addActionListener(FormEvent.ONCHANGE);
-
+		
+		List<Long> coursePassedEntryKeys = List.of();
+		if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
+			coursePassedEntryKeys = coursesPassedCondition.getCourseRepositoryEntryKeys();
+		}
+		ObjectSelectionSource courseSource = new CourseSelectionSource(ureq.getLocale(), coursePassedEntryKeys, context.visibleCourses);
+		coursesDropdown = uifactory.addObjectSelectionElement("form.condition.courses." + id, null, formLayout, formLayout.getRootForm().getWindowControl(), true, courseSource);
+		
 		globalBadgesDropdown = new BadgeSelectorElementImpl(ureq, formLayout.getRootForm().getWindowControl(),
 				"form.condition.global.badges." + id, context.entry, context.globalBadgesKV, context.mediaUrl);
 		formLayout.add(globalBadgesDropdown);
@@ -193,8 +195,6 @@ public class ConditionRow {
 		}
 		if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
 			coursesDropdown.setVisible(true);
-			coursesDropdown.setCourses(coursesPassedCondition.getCourseRepositoryEntryKeys().stream()
-					.map(RepositoryEntryRefImpl::new).toList());
 		}
 		if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
 			globalBadgesDropdown.setVisible(true);
@@ -275,7 +275,7 @@ public class ConditionRow {
 	/**
 	 * Used in template
 	 */
-	public CourseSelectorElement getCoursesDropdown() {
+	public ObjectSelectionElement getCoursesDropdown() {
 		return coursesDropdown;
 	}
 
@@ -328,9 +328,7 @@ public class ConditionRow {
 					safeDouble(valueEl.getValue()),
 					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedValue() : courseElementsDropdown.getValues()[0]
 			);
-			case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
-					coursesDropdown.getCourses().stream().map(RepositoryEntryRef::getKey).toList()
-			);
+			case CoursesPassedCondition.KEY -> new CoursesPassedCondition(CourseSelectionSource.toKeys(coursesDropdown.getSelectedKeys()));
 			case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(
 					globalBadgesDropdown.getSelection().stream().toList()
 			);
@@ -354,7 +352,7 @@ public class ConditionRow {
 		
 		coursesDropdown.clearError();
 		if (coursesDropdown.isVisible()) {
-			if (coursesDropdown.getCourses().isEmpty()) {
+			if (coursesDropdown.getSelectedKeys().isEmpty()) {
 				coursesDropdown.setErrorKey("alert");
 				allOk &= false;
 			}

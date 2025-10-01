@@ -29,6 +29,8 @@ import org.olat.core.gui.components.EscapeMode;
  */
 public record ObjectDisplayValues(String title, EscapeMode titleEscapeMode, String ariaTitle, String ariaTitleLabel) {
 	
+	public static final ObjectDisplayValues NONE = new ObjectDisplayValues(null, null);
+	
 	public ObjectDisplayValues(String title, String ariaTitle) {
 		this(title, EscapeMode.html, ariaTitle, null);
 	}

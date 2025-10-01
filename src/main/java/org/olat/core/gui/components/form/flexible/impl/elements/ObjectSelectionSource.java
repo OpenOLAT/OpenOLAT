@@ -33,11 +33,11 @@ import org.olat.core.gui.control.creator.ControllerCreator;
  */
 public interface ObjectSelectionSource {
 	
+	public Collection<String> getDefaultSelectedKeys();
+	
 	public ObjectDisplayValues getDefaultDisplayValue();
 	
 	public ObjectDisplayValues getDisplayValue(Collection<String> keys);
-	
-	public Collection<String> getDefaultSelectedKeys();
 	
 	public String getOptionsLabel(Locale locale);
 	

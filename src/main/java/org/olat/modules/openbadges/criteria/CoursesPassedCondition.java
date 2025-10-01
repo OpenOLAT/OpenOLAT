@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.criteria;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,13 +39,12 @@ import org.olat.repository.manager.RepositoryEntryDAO;
 public class CoursesPassedCondition implements BadgeCondition {
 	public static final String KEY = "coursesPassed";
 
-	private List<Long> courseResourceKeys;
 	private List<Long> courseRepositoryEntryKeys;
 
 	public CoursesPassedCondition() {
 	}
 
-	public CoursesPassedCondition(List<Long> courseRepositoryEntryKeys) {
+	public CoursesPassedCondition(Collection<Long> courseRepositoryEntryKeys) {
 		this.courseRepositoryEntryKeys = new ArrayList<>();
 		this.courseRepositoryEntryKeys.addAll(courseRepositoryEntryKeys);
 	}
