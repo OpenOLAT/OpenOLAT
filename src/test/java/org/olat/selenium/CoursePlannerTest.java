@@ -397,10 +397,17 @@ public class CoursePlannerTest extends Deployments {
 		// Publish the course
 		new RepositoryEditDescriptionPage(browser)
 			.clickToolbarBack();
-		CoursePageFragment.getCourse(browser)
+		CoursePageFragment course = CoursePageFragment.getCourse(browser)
 			.edit()
 			.autoPublish()
 			.changeStatus(RepositoryEntryStatusEnum.published);
+		
+		// Set curricular runtime type
+		course
+			.settings()
+			.accessConfiguration()
+			.setCurricularRuntimeType()
+			.clickToolbarBack();
 
 		CoursePlannerPage coursePlannerPage = navBar
 			.openCoursePlanner();
