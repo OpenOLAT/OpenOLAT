@@ -355,7 +355,7 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		organisationService.addMember(organisation4, author4, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
-		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, false);
+		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, false, true);
 		
 		Assert.assertEquals(Long.valueOf(2), roleToCountMemebers.get(GroupRoles.participant.name()));
 		Assert.assertEquals(Long.valueOf(3), roleToCountMemebers.get(OrganisationRoles.author.name()));
@@ -385,8 +385,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(courseCoach, repositoryEntry, GroupRoles.coach.name());
 		curriculumService.addRepositoryEntry(curriculumElement, repositoryEntry, false);
 		
-		Map<String,Long> countIgnoringCurriculumElements = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, true);
-		Map<String,Long> countNotIgnoringCurriculumElements = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, false);
+		Map<String,Long> countIgnoringCurriculumElements = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, true, true);
+		Map<String,Long> countNotIgnoringCurriculumElements = repositoryEntryRelationDao.getRoleToCountMembers(repositoryEntry, false, true);
 
 		Assert.assertEquals(Long.valueOf(1), countIgnoringCurriculumElements.get(GroupRoles.participant.name()));
 		Assert.assertEquals(Long.valueOf(1), countIgnoringCurriculumElements.get(GroupRoles.coach.name()));

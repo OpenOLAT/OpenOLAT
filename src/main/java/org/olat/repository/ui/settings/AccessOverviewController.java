@@ -96,6 +96,7 @@ public class AccessOverviewController extends BasicController {
 	public void reload() {
 		entry = repositoryService.loadByKey(entry.getKey());
 		Map<String, Long> roleToCountMemebers = repositoryService.getRoleToCountMemebers(entry);
+		Map<String, Long> roleToCountRootMembers = repositoryService.getRoleToCountRootMembers(entry);
 		
 		// Members
 		Long ownersCount = roleToCountMemebers.getOrDefault(GroupRoles.owner.name(), Long.valueOf(0));
@@ -143,7 +144,7 @@ public class AccessOverviewController extends BasicController {
 		mainVC.contextPut("learnresourcemanager", learnresourcemanager);
 		
 		String curriculummanager = ICON_ACTIVE;
-		Long curriculummanagerCount = roleToCountMemebers.getOrDefault(OrganisationRoles.curriculummanager.name(), 0L);
+		Long curriculummanagerCount = roleToCountRootMembers.getOrDefault(OrganisationRoles.curriculummanager.name(), 0L);
 		curriculummanager += translate("access.overview.curriculummanagers",
 				curriculummanagerCount.toString(),
 				translate("access.overview.right", translate("access.overview.right.read.content")));

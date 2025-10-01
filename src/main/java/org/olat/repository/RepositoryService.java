@@ -236,14 +236,16 @@ public interface RepositoryService {
 	
 	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re);
 
-	/**
-	 * Return the smallest enrollment date for each identity.
-	 *
-	 * @param re
-	 * @param identities
-	 * @param roles
-	 * @return
-	 */
+	public Map<String, Long> getRoleToCountRootMembers(RepositoryEntryRef re);
+
+		/**
+		 * Return the smallest enrollment date for each identity.
+		 *
+		 * @param re
+		 * @param identities
+		 * @param roles
+		 * @return
+		 */
 	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, Collection<? extends IdentityRef> identities, String... roles);
 
 	/**
