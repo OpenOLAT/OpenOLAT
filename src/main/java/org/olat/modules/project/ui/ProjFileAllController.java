@@ -44,7 +44,6 @@ import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ui.component.ProjAvatarComponent;
 import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,12 +85,12 @@ public class ProjFileAllController extends ProjFileListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium, false)));
 
-
 		uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.upload", null, formLayout);
 		uploadEl.addActionListener(FormEvent.ONCHANGE);
 		uploadEl.setMultiFileUpload(false);
 		uploadEl.setChooseButtonLabel(translate("file.upload"));
 		uploadEl.setDragAndDropForm(true);
+		uploadEl.setVisible(secCallback.canCreateFiles());
 
 		DropdownItem uploadDropdown = uifactory.addDropdownMenu("upload.dropdown", null, null, formLayout, getTranslator());
 		uploadDropdown.setOrientation(DropdownOrientation.right);
@@ -101,6 +100,7 @@ public class ProjFileAllController extends ProjFileListController {
 		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
 		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_filehub_add");
 		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
+		addBrowserLink.setVisible(secCallback.canCreateFiles());
 		uploadDropdown.addElement(addBrowserLink);
 
 		uploadDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
@@ -115,16 +115,19 @@ public class ProjFileAllController extends ProjFileListController {
 		createWordLink = uifactory.addFormLink("document.create.word", formLayout, Link.LINK);
 		createWordLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-DOC_icon");
 		createWordLink.setNewWindow(true, true, true);
+		createWordLink.setVisible(secCallback.canCreateFiles());
 		uploadDropdown.addElement(createWordLink);
 
 		createExcelLink = uifactory.addFormLink("document.create.excel", formLayout, Link.LINK);
 		createExcelLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-XLS_icon");
 		createExcelLink.setNewWindow(true, true, true);
+		createExcelLink.setVisible(secCallback.canCreateFiles());
 		uploadDropdown.addElement(createExcelLink);
 
 		createPowerPointLink = uifactory.addFormLink("document.create.powerpoint", formLayout, Link.LINK);
 		createPowerPointLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-PPT_icon");
 		createPowerPointLink.setNewWindow(true, true, true);
+		createPowerPointLink.setVisible(secCallback.canCreateFiles());
 		uploadDropdown.addElement(createPowerPointLink);
 		
 		if (secCallback.canCreateFiles() && avModule.isRecordingEnabled()) {
