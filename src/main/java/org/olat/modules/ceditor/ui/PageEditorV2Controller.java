@@ -501,7 +501,7 @@ public class PageEditorV2Controller extends BasicController {
 				cmc.activate();
 			}
 		} else if(handler instanceof SimpleAddPageElementHandler simpleHandler) {
-			if (!checkAddPageElement(handler)) {
+			if (!checkAddPageElement(handler.getType())) {
 				return;
 			}
 
@@ -510,8 +510,8 @@ public class PageEditorV2Controller extends BasicController {
 		}
 	}
 	
-	private boolean checkAddPageElement(PageElementHandler handler) {
-		String rejectionKey = provider.getAppendRejectionKey(handler.getType());
+	private boolean checkAddPageElement(String type) {
+		String rejectionKey = provider.getAppendRejectionKey(type);
 		if (StringHelper.containsNonWhitespace(rejectionKey)) {
 			showWarning(rejectionKey);
 			return false;
@@ -608,7 +608,10 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doCloneElement(UserRequest ureq, ContentEditorFragment fragment) {
 		ContentEditorFragment clonedFragment = doCloneAndAddElement(ureq, fragment);
-		
+		if (clonedFragment == null) {
+			return;
+		}
+
 		doCloneContainerElements(ureq, clonedFragment, fragment.getElement());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -623,6 +626,9 @@ public class PageEditorV2Controller extends BasicController {
 		CloneElementHandler cloneHandler = cloneHandlerMap.get(elementToClone.getType());
 		if (cloneHandler == null) {
 			logError("Cannot find a cloneable handler of type: " + elementToClone.getType(), null);
+			return null;
+		}
+		if (!checkAddPageElement(elementToClone.getType())) {
 			return null;
 		}
 		
