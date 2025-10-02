@@ -290,9 +290,13 @@ public class CalendarUtils {
 				ParameterList pl = new ParameterList();
 				ExDate<Temporal> exdate = new ExDate<>(pl, recurrenceExc);
 				List<Temporal> dl = exdate.getDates();
-				for( Temporal date : dl ) {
-					ZonedDateTime excDate = ZonedDateTime.from(date);
-					recurExcDates.add(excDate);
+				for(Temporal date : dl ) {
+					if(date instanceof ZonedDateTime zDateTime) {
+						recurExcDates.add(zDateTime);
+					} else if(date instanceof LocalDateTime dateTime) {
+						ZonedDateTime excDate = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
+						recurExcDates.add(excDate);
+					}
 				}
 			} catch (Exception e) {
 				log.error("cannot restore recurrence exceptions", e);
