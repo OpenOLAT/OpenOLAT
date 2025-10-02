@@ -607,6 +607,10 @@ public class PageEditorV2Controller extends BasicController {
 	}
 	
 	private void doCloneElement(UserRequest ureq, ContentEditorFragment fragment) {
+		if (!checkCloneElement(fragment)) {
+			return;
+		}
+		
 		ContentEditorFragment clonedFragment = doCloneAndAddElement(ureq, fragment);
 		if (clonedFragment == null) {
 			return;
@@ -614,6 +618,43 @@ public class PageEditorV2Controller extends BasicController {
 
 		doCloneContainerElements(ureq, clonedFragment, fragment.getElement());
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private boolean checkCloneElement(ContentEditorFragment fragment) {
+		PageElement pageElement = fragment.getElement();
+		if (pageElement == null) {
+			return true;
+		}
+
+		if (!checkAddPageElement(pageElement.getType())) {
+			return false;
+		}
+
+		boolean checkChildren = pageElement instanceof Container || pageElement instanceof ContainerPart;
+		if (!checkChildren) {
+			return true;
+		}
+
+		Map<String, ? extends PageElement> idToElement = provider.getElements().stream()
+				.collect(Collectors.toMap(PageElement::getId, Function.identity()));
+
+		List<ContainerColumn> columns = new ArrayList<>();
+		if (pageElement instanceof Container originalContainer) {
+			columns.addAll(originalContainer.getContainerSettings().getColumns());
+		} else if (pageElement instanceof ContainerPart originalContainerPart) {
+			columns.addAll(originalContainerPart.getContainerSettings().getColumns());
+		}
+
+		for (ContainerColumn column : columns) {
+			for (String elementId : column.getElementIds()) {
+				PageElement element = idToElement.get(elementId);
+				if (!checkAddPageElement(element.getType())) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	private ContentEditorFragment doCloneAndAddElement(UserRequest ureq, ContentEditorFragment fragmentToClone) {
@@ -626,9 +667,6 @@ public class PageEditorV2Controller extends BasicController {
 		CloneElementHandler cloneHandler = cloneHandlerMap.get(elementToClone.getType());
 		if (cloneHandler == null) {
 			logError("Cannot find a cloneable handler of type: " + elementToClone.getType(), null);
-			return null;
-		}
-		if (!checkAddPageElement(elementToClone.getType())) {
 			return null;
 		}
 		
