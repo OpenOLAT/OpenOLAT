@@ -430,7 +430,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228T225900Z", rule);
 	}
 	
-
 	@Test
 	public void removeOccurenceOfEvent() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cal-1-");
@@ -458,6 +457,42 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		List<KalendarEvent> excEvents = calendarManager.getEvents(kal, windowStartDate, windowEndDate, true);
 		Assert.assertTrue(excEvents.isEmpty());
+	}
+	
+	@Test
+	public void removeOccurencesOfEventTwice() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cal-1-");
+		KalendarRenderWrapper kalWrapper = calendarManager.getPersonalCalendar(id);
+		Kalendar kal = kalWrapper.getKalendar();
+		
+		ZonedDateTime startDate = ZonedDateTime.of(2025, 9, 29, 15, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime endDate = ZonedDateTime.of(2025, 9, 29, 16, 0, 0, 0, ZoneId.systemDefault());
+		
+		KalendarEvent event = new KalendarEvent("cal-1-1", null, "Recurrence", startDate, endDate);
+
+		ZonedDateTime recurenceEndDate = ZonedDateTime.of(2025, 11, 4, 0, 0, 0, 0, ZoneId.systemDefault());
+		String rrule = calendarManager.getRecurrenceRule("WEEKLY", DateUtils.toDate(recurenceEndDate));
+		event.setRecurrenceRule(rrule);
+		
+		boolean added = calendarManager.addEventTo(kal, event);
+		Assert.assertTrue(added);
+		
+		ZonedDateTime windowStartDate = ZonedDateTime.of(2025, 9, 29, 0, 0, 0, 0, ZoneId.systemDefault());
+		ZonedDateTime windowEndDate = ZonedDateTime.of(2025, 11, 5, 0, 0, 0, 0, ZoneId.systemDefault());
+		
+		List<KalendarEvent> events = calendarManager.getEvents(kal, windowStartDate, windowEndDate, true);
+		Assert.assertEquals(6, events.size());
+		Assert.assertTrue(events.get(0) instanceof KalendarRecurEvent);
+		KalendarRecurEvent recurEventToRemove1 = (KalendarRecurEvent)events.get(2);
+		calendarManager.removeOccurenceOfEvent(kal, recurEventToRemove1);
+		KalendarRecurEvent recurEventToRemove2 = (KalendarRecurEvent)events.get(3);
+		calendarManager.removeOccurenceOfEvent(kal, recurEventToRemove2);
+
+		//Check
+		emptyCalendarCache();
+		
+		List<KalendarEvent> excEvents = calendarManager.getEvents(kal, windowStartDate, windowEndDate, true);
+		Assert.assertEquals(4, excEvents.size());
 	}
 
 	@Test
