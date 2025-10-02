@@ -22,6 +22,7 @@ package org.olat.selenium.page.curriculum;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -49,7 +50,7 @@ public class CurriculumPage {
 		return this;
 	}
 	
-	public CurriculumPage addCurriculum(String name, String externalRef) {
+	public CurriculumPage addCurriculum(String name, String externalRef, String organisation) {
 		By addBy = By.cssSelector(".o_sel_curriculum_management a.o_sel_add_curriculum");
 		OOGraphene.waitElement(addBy, browser).click();
 		
@@ -61,6 +62,22 @@ public class CurriculumPage {
 		
 		By identifierBy = By.cssSelector("fieldset.o_sel_curriculum_form .o_sel_curriculum_identifier input[type='text']");
 		browser.findElement(identifierBy).sendKeys(externalRef);
+		
+		// Select organisation
+		By organisationBy = By.cssSelector("div.o_sel_curriculum_organisation button.o_selection_display");
+		browser.findElement(organisationBy).click();
+		OOGraphene.waitCallout(browser, ".o_object_selection");
+		
+		By openOlatOrgBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + organisation + "')]]/input[@type='radio']");
+		WebElement openOlatOrgEl = browser.findElement(openOlatOrgBy);
+		OOGraphene.check(openOlatOrgEl, Boolean.TRUE);
+		
+		By openOlatOrgCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + organisation + "')]]/input[@type='radio'][@checked='checked']");
+		OOGraphene.waitElement(openOlatOrgCheckedBy, browser);
+		
+		By transferBy = By.cssSelector(".popover .o_object_selection a.o_object_selection_apply"); 
+		OOGraphene.waitElement(transferBy, browser).click();
+		OOGraphene.waitElementDisappears(openOlatOrgBy, 5, browser);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_curriculum_form button.btn.o_button_dirty");
 		OOGraphene.click(saveBy, browser);

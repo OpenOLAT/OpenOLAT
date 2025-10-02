@@ -235,22 +235,20 @@ public class BadgeClassesPage {
 		WebElement selectEl = browser.findElement(selectBy);
 		new Select(selectEl).selectByValue("coursesPassed");
 		
-		By courseElementBy = By.cssSelector(".o_badge_wiz_criteria_step a.btn.o_badge_course_selector_button");
-		OOGraphene.waitElement(courseElementBy, browser);
-		OOGraphene.scrollBottom(courseElementBy, browser);
-		browser.findElement(courseElementBy).click();
-		OOGraphene.waitCallout(browser, ".o_badge_course_selector");
+		By courseElementBy = By.cssSelector(".o_badge_wiz_criteria_step button.o_selection_display");
+		OOGraphene.waitElement(courseElementBy, browser).click();
+		OOGraphene.waitCallout(browser, ".o_object_selection");
 		
-		By quickSearchBy = By.cssSelector("div.o_badge_course_selector_search input.o_quick_search[type='text']");
-		OOGraphene.waitElement(quickSearchBy, browser).sendKeys(course);
+		//By quickSearchBy = By.cssSelector("div.o_object_selection_search_box input.o_search_term[type='text']");
+		//OOGraphene.waitElement(quickSearchBy, browser).sendKeys(course);
 		
-		By courseSelectBy = By.xpath("//label[div[contains(@class,'o_badge_course_selector_option')]/div[text()[contains(.,'" + course + "')]]]/input[@type='checkbox']");
-		OOGraphene.waitElement(courseSelectBy, browser).click();
+		By courseSelectBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + course + "')]]/input[@type='checkbox']");
+		WebElement courseSelectEl = browser.findElement(courseSelectBy);
+		OOGraphene.check(courseSelectEl, Boolean.TRUE);
 		
-		By selectCoursesBy = By.cssSelector(".o_badge_course_selector .o_button_group a.btn.btn-primary");
-		browser.findElement(selectCoursesBy).click();
-		
-		OOGraphene.waitCalloutDisappears(browser, ".o_badge_course_selector");
+		By transferBy = By.cssSelector(".popover .o_object_selection a.o_object_selection_apply"); 
+		OOGraphene.waitElement(transferBy, browser).click();
+		OOGraphene.waitCalloutDisappears(browser, ".o_object_selection");
 		return this;
 	}
 	

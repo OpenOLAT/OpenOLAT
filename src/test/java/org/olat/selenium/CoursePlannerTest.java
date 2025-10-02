@@ -122,7 +122,7 @@ public class CoursePlannerTest extends Deployments {
 		String curriculumRef = "CUR-1 " + id;
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
-			.addCurriculum(curriculumName, curriculumRef)
+			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
 			.assertOnCurriculumInTable(curriculumName)
 			.openCurriculum(curriculumName);
 
@@ -206,7 +206,7 @@ public class CoursePlannerTest extends Deployments {
 		String curriculumRef = "CUR-2 " + id;
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
-			.addCurriculum(curriculumName, curriculumRef)
+			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
 			.assertOnCurriculumInTable(curriculumName)
 			.openCurriculum(curriculumName);
 
@@ -307,7 +307,7 @@ public class CoursePlannerTest extends Deployments {
 		String curriculumRef = "CUR-3 " + id;
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
-			.addCurriculum(curriculumName, curriculumRef)
+			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
 			.assertOnCurriculumInTable(curriculumName)
 			.openCurriculum(curriculumName);
 
@@ -417,7 +417,7 @@ public class CoursePlannerTest extends Deployments {
 		String curriculumRef = "CUR-4 " + id;
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
-			.addCurriculum(curriculumName, curriculumRef)
+			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
 			.assertOnCurriculumInTable(curriculumName)
 			.openCurriculum(curriculumName);
 

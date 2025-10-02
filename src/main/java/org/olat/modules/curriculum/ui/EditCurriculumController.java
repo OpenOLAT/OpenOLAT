@@ -179,6 +179,7 @@ public class EditCurriculumController extends FormBasicController {
 				() -> managedOrganisations);
 		organisationEl = uifactory.addObjectSelectionElement("organisations", "curriculum.organisation", formLayout,
 				getWindowControl(), false, organisationSource);
+		organisationEl.setElementCssClass("o_sel_curriculum_organisation");
 		organisationEl.setMandatory(true);
 		organisationEl.setVisible(organisationModule.isEnabled());
 	}
