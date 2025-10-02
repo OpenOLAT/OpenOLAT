@@ -47,7 +47,14 @@ public class ComponentsFactory {
 	}
 
 	public static final TextComponent getContent(HTMLRawElement element) {
+		return getContent(element, false);
+	}
+	
+	public static final TextComponent getContent(HTMLRawElement element, boolean editMode) {
 		String content = Formatter.formatLatexFormulas(element.getContent());
+		if (editMode) {
+			content = deactivateLinks(content);
+		}
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
@@ -75,6 +82,13 @@ public class ComponentsFactory {
 	public static final TextComponent getContent(ParagraphElement element, String placeholder) {
 		String content = "<span class=\"o_text_placeholder\"><i class=\"o_icon o_icon-fw o_icon_align_left\"> </i> " + placeholder + "</span>";
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		cmp.setElementCssClass(getElementCssClass(element));
+		return cmp;
+	}
+	
+	public static final TextComponent getContent(HTMLRawElement element, String placeholder) {
+		String content = "<span class=\"o_text_placeholder\"><i class=\"o_icon o_icon-fw o_icon_align_left\"> </i> " + placeholder + "</span>";
+		TextComponent cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass(getElementCssClass(element));
 		return cmp;
 	}
