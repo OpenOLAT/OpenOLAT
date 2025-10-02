@@ -84,19 +84,20 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 		String htmlContent = "";
 		String cssClass = "";
 		if (element instanceof TitlePart titlePart) {
+			String content = titlePart.getContent();
 			TitleSettings titleSettings = titlePart.getTitleSettings();
 			cssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, false);
 
 			if (options.isEditable()) {
-				if (StringHelper.containsNonWhitespace(titlePart.getContent())) {
-					htmlContent = TitleElement.toHtml(titlePart.getContent(), titleSettings);
+				if (StringHelper.containsNonWhitespace(content)) {
+					htmlContent = TitleElement.toHtml(content, titleSettings);
 				} else {
 					String placeholder = Util.createPackageTranslator(TitleEditorController.class, ureq.getLocale()).translate("title.placeholder");
 					htmlContent = TitleElement.toHtmlPlaceholder(placeholder, titleSettings);
 				}
 			} else {
-				if (StringHelper.containsNonWhitespace(titlePart.getContent())) {
-					htmlContent = TitleElement.toHtml(titlePart.getContent(), titleSettings);
+				if (StringHelper.containsNonWhitespace(content)) {
+					htmlContent = TitleElement.toHtml(content, titleSettings);
 				}
 			}
 		}

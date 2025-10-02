@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
@@ -87,7 +87,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
-		TextComponent cmp = getComponent(element);
+		TextComponent cmp = getComponent(ureq, element, hints != null && hints.isEditable());
 		return new TextRunComponent(cmp, true);
 	}
 
@@ -109,11 +109,8 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		Translator translator = Util.createPackageTranslator(TitleEditorController.class, locale);
-		String content = translator.translate("title.example");
 		Title part = new Title();
 		part.setId(UUID.randomUUID().toString());
-		part.setContent(content);
 		TitleSettings settings = new TitleSettings();
 		settings.setSize(3);
 		settings.setLayoutSettings(BlockLayoutSettings.getPredefined());
@@ -123,8 +120,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof Title) {
-			Title title = (Title)element;
+		if (element instanceof Title title) {
 			Title clone = new Title();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setContent(title.getContent());
@@ -149,14 +145,26 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 		return null;
 	}
 
-	private TextComponent getComponent(PageElement element) {
+	private TextComponent getComponent(UserRequest ureq, PageElement element, boolean contentInEditMode) {
 		String htmlContent = "";
 		String cssClass = "";
 		if (element instanceof Title title) {
 			String content = title.getContent();
 			TitleSettings titleSettings = title.getTitleSettings();
-			htmlContent = TitleElement.toHtml(content, titleSettings);
 			cssClass = TitleElement.toCssClassWithMarkerClass(titleSettings, true);
+
+			if (contentInEditMode) {
+				if (StringHelper.containsNonWhitespace(content)) {
+					htmlContent = TitleElement.toHtml(content, titleSettings);
+				} else {
+					String placeholder = Util.createPackageTranslator(TitleEditorController.class, ureq.getLocale()).translate("title.placeholder");
+					htmlContent = TitleElement.toHtmlPlaceholder(placeholder, titleSettings);
+				}
+			} else {
+				if (StringHelper.containsNonWhitespace(content)) {
+					htmlContent = TitleElement.toHtml(content, titleSettings);
+				}				
+			}
 		}
 		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), htmlContent,
 				cssClass, false, null);
@@ -165,6 +173,6 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		return new EvaluationFormComponentReportElement(getComponent(element));
+		return new EvaluationFormComponentReportElement(getComponent(ureq, element, false));
 	}
 }
