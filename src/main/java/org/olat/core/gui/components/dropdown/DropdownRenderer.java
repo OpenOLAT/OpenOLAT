@@ -188,10 +188,6 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			} else {
 				sb.append("> </i>");
 			}
-			
-			
-		} else {
-			sb.append(" <i class='o_icon' aria-hidden='true'> </i>");
 		}
 	}
 }
