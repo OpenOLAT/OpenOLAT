@@ -985,6 +985,11 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
+		public String getAppendRejectionKey(String type) {
+			return null;
+		}
+
+		@Override
 		public PageElement appendPageElement(PageElement element) {
 			PagePart part = null;
 			if(element instanceof PagePart pagePart) {

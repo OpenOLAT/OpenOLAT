@@ -43,7 +43,17 @@ public interface PageEditorProvider extends PageProvider {
 	public List<PageLayoutHandler> getCreateLayoutHandlers();
 	
 	public int indexOf(PageElement element);
-	
+
+	/**
+	 * A PageEditorProvider implementation can choose to reject appending a PageElement of a certain type.
+	 * If this is the case, this method returns the internationalization key for the rejection message.
+	 *
+	 * @param type The type for which the check is performed and the rejection key is generated.
+	 * @return The internationalization key corresponding to the rejection of the specified page element type, 
+	 *         or null if the element can be appended and thus appending is not rejected.
+	 */
+	public String getAppendRejectionKey(String type);
+
 	public PageElement appendPageElement(PageElement element);
 	
 	public PageElement appendPageElementAt(PageElement element, int index);

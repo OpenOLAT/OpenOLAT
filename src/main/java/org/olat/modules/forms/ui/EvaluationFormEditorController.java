@@ -69,6 +69,7 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rule;
+import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.VisibilityAction;
 import org.olat.modules.forms.rules.EvaluationFormRuleHandlerProvider;
 import org.olat.modules.forms.rules.RuleHandlerProvider;
@@ -301,6 +302,17 @@ public class EvaluationFormEditorController extends BasicController implements T
 			return elements.indexOf(element);
 		}
 
+		public String getAppendRejectionKey(String type) {
+			if (SessionInformations.TYPE.equals(type)) {
+				for (PageElement pageElement : form.getElements()) {
+					if (SessionInformations.TYPE.equals(pageElement.getType())) {
+						return "add." + type + ".rejection.warning";
+					}
+				}
+			}
+			return null;
+		}
+		
 		@Override
 		public PageElement appendPageElement(PageElement element) {
 			if(element instanceof AbstractElement) {

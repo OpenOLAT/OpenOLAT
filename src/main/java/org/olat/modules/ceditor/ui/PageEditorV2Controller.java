@@ -491,7 +491,7 @@ public class PageEditorV2Controller extends BasicController {
 			addCtrl = interactiveHandler.getAddPageElementController(ureq, getWindowControl(),
 					new AddSettings(provider.getBasRepositoryEntry()));
 			if(addCtrl == null) {
-				showWarning("not.implement");
+				showWarning("not.implemented");
 			} else {
 				addCtrl.setUserObject(new AddElementInfos(refenceFragment, handler, target, column));
 				listenTo(addCtrl);
@@ -501,11 +501,24 @@ public class PageEditorV2Controller extends BasicController {
 				cmc.activate();
 			}
 		} else if(handler instanceof SimpleAddPageElementHandler simpleHandler) {
+			if (!checkAddPageElement(handler)) {
+				return;
+			}
+
 			PageElement element = simpleHandler.createPageElement(getLocale());
 			doAddPageElement(ureq, element, refenceFragment, target, column);
 		}
 	}
 	
+	private boolean checkAddPageElement(PageElementHandler handler) {
+		String rejectionKey = provider.getAppendRejectionKey(handler.getType());
+		if (StringHelper.containsNonWhitespace(rejectionKey)) {
+			showWarning(rejectionKey);
+			return false;
+		}
+		return true;
+	}
+
 	private ContentEditorFragment doAddPageElement(UserRequest ureq, PageElement element, ContentEditorFragment referenceFragment,
 			PageElementTarget target, int column) {
 		
