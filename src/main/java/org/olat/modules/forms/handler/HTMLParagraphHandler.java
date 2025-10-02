@@ -27,9 +27,10 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
@@ -87,7 +88,7 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
-		TextComponent cmp = getComponent(element);
+		TextComponent cmp = getComponent(ureq, element, hints != null && hints.isEditable());
 		return new TextRunComponent(cmp, true);
 	}
 
@@ -110,11 +111,8 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		Translator translator = Util.createPackageTranslator(HTMLRawEditorController.class, locale);
-		String content = translator.translate("raw.example");
 		HTMLParagraph part = new HTMLParagraph();
 		part.setId(UUID.randomUUID().toString());
-		part.setContent(content);
 		return part;
 	}
 
@@ -145,9 +143,20 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 		return null;
 	}
 
-	private TextComponent getComponent(PageElement element) {
+	private TextComponent getComponent(UserRequest ureq, PageElement element, boolean contentInEditMode) {
 		if (element instanceof HTMLParagraph htmlParagraph) {
-			TextComponent cmp = ComponentsFactory.getContent(htmlParagraph);
+			TextComponent cmp;
+			if (contentInEditMode) {
+				String raw = FilterFactory.getHtmlTagsFilter().filter(htmlParagraph.getContent());
+				if (StringHelper.containsNonWhitespace(raw)) {
+					cmp = ComponentsFactory.getContent(htmlParagraph, true);
+				} else {
+					String placeholder = Util.createPackageTranslator(TextRunComponent.class, ureq.getLocale()).translate("text.placeholder");
+					cmp = ComponentsFactory.getContent(htmlParagraph, placeholder);
+				}
+			} else {
+				cmp = ComponentsFactory.getContent(htmlParagraph, false);
+			}
 			cmp.setCssClass(ComponentsFactory.getCssClass(htmlParagraph, true));
 			return cmp;
 		}
@@ -157,7 +166,7 @@ public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageE
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, Form rootForm,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		return new EvaluationFormComponentReportElement(getComponent(element));
+		return new EvaluationFormComponentReportElement(getComponent(ureq, element, false));
 	}
 
 }
