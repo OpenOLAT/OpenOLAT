@@ -130,6 +130,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		organisationsEl = uifactory.addObjectSelectionElement("organisations", "cif.organisations", formLayout,
 				getWindowControl(), true, organisationSource);
 		organisationsEl.setVisible(organisationModule.isEnabled());
+		organisationsEl.setMandatory(true);
 	}
 	
 	private void initAuthorsCan(FormItemContainer formLayout) {
@@ -182,6 +183,14 @@ public class CopyRepositoryEntryController extends FormBasicController {
 			allOk &= false;
 		} else {
 			displaynameEl.clearError();
+		}
+		
+		if (organisationsEl != null) {
+			organisationsEl.clearError();
+			if (organisationsEl.getSelectedKeys().isEmpty()) {
+				organisationsEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
 		}
 
 		return allOk;

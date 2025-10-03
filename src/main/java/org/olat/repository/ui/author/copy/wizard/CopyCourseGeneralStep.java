@@ -253,6 +253,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			organisationsEl = uifactory.addObjectSelectionElement("organisations", "cif.organisations", formLayout,
 					getWindowControl(), true, organisationSource);
 			organisationsEl.setVisible(organisationModule.isEnabled());
+			organisationsEl.setMandatory(true);
 		}
 		
 		private void initAuthorsCan(FormItemContainer formLayout) {
@@ -271,6 +272,15 @@ public class CopyCourseGeneralStep extends BasicStep {
 			} else if(ok && item == externalRefEl) {
 				validateExternalRef(ureq);
 			}
+			
+			if (organisationsEl != null) {
+				organisationsEl.clearError();
+				if (organisationsEl.getSelectedKeys().isEmpty()) {
+					organisationsEl.setErrorKey("form.legende.mandatory");
+					ok &= false;
+				}
+			}
+
 			return ok;
 		}
 
