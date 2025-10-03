@@ -45,12 +45,6 @@ pdfjs-save-button-label = Desa
 pdfjs-bookmark-button =
     .title = Pàgina actual (mostra l'URL de la pàgina actual)
 pdfjs-bookmark-button-label = Pàgina actual
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = Obre en una aplicació
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = Obre en una aplicació
 
 ##  Secondary toolbar and context menu
 
@@ -277,6 +271,9 @@ pdfjs-editor-free-text-button-label = Text
 pdfjs-editor-ink-button =
     .title = Dibuixa
 pdfjs-editor-ink-button-label = Dibuixa
+
+##
+
 # Editor Parameters
 pdfjs-editor-free-text-color-input = Color
 pdfjs-editor-free-text-size-input = Mida
@@ -290,10 +287,3 @@ pdfjs-ink =
     .aria-label = Editor de dibuix
 pdfjs-ink-canvas =
     .aria-label = Imatge creada per l'usuari
-
-## Alt-text dialog
-
-
-## Editor resizers
-## This is used in an aria label to help to understand the role of the resizer.
-

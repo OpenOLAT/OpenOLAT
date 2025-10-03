@@ -45,12 +45,6 @@ pdfjs-save-button-label = Sàbhail
 pdfjs-bookmark-button =
     .title = An duilleag làithreach (Seall an URL on duilleag làithreach)
 pdfjs-bookmark-button-label = An duilleag làithreach
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = Fosgail san aplacaid
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = Fosgail san aplacaid
 
 ##  Secondary toolbar and context menu
 
@@ -277,6 +271,9 @@ pdfjs-editor-free-text-button-label = Teacsa
 pdfjs-editor-ink-button =
     .title = Tarraing
 pdfjs-editor-ink-button-label = Tarraing
+
+##
+
 # Editor Parameters
 pdfjs-editor-free-text-color-input = Dath
 pdfjs-editor-free-text-size-input = Meud
@@ -290,10 +287,3 @@ pdfjs-ink =
     .aria-label = An deasaiche tharraingean
 pdfjs-ink-canvas =
     .aria-label = Dealbh a chruthaich cleachdaiche
-
-## Alt-text dialog
-
-
-## Editor resizers
-## This is used in an aria label to help to understand the role of the resizer.
-
