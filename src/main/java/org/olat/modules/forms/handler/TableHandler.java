@@ -28,6 +28,7 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.CloneElementHandler;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
@@ -36,6 +37,7 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.TableElement;
+import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.ceditor.ui.TableEditorController;
@@ -119,6 +121,10 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 	public PageElement createPageElement(Locale locale) {
 		Table table = new Table();
 		table.setId(UUID.randomUUID().toString());
+		TableSettings tableSettings = new TableSettings();
+		tableSettings.setBordered(true);
+		String layoutOptions = ContentEditorXStream.toXml(tableSettings);
+		table.setLayoutOptions(layoutOptions);
 		return table;
 	}
 
