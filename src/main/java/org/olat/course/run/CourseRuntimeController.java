@@ -3515,7 +3515,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void doSaveAsTemplate(UserRequest ureq) {
 		removeAsListenerAndDispose(copyWrapperCtrl);
 		
-		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, true, true);
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, false, true);
 		listenTo(copyWrapperCtrl);
 	}
 	
