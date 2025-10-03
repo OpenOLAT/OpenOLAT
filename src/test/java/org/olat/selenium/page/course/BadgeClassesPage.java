@@ -230,6 +230,11 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
+	/**
+	 * 
+	 * @param course The course title
+	 * @return Itself
+	 */
 	public BadgeClassesPage criteriaGlobalPassedCourseAsFirstRule(String course) {
 		By selectBy = By.id("o_fioform_condition_new_SELBOX");
 		WebElement selectEl = browser.findElement(selectBy);
@@ -238,13 +243,22 @@ public class BadgeClassesPage {
 		By courseElementBy = By.cssSelector(".o_badge_wiz_criteria_step button.o_selection_display");
 		OOGraphene.waitElement(courseElementBy, browser).click();
 		OOGraphene.waitCallout(browser, ".o_object_selection");
+
+		// Open the browser
+		By browserBy = By.cssSelector(".o_object_selection_header a.o_open_browser");
+		OOGraphene.waitElement(browserBy, browser).click();;
+		OOGraphene.waitModalDialog(browser, "div.o_sel_search_referenceable_entries");
 		
-		//By quickSearchBy = By.cssSelector("div.o_object_selection_search_box input.o_search_term[type='text']");
-		//OOGraphene.waitElement(quickSearchBy, browser).sendKeys(course);
+		By myReferenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments')]/a[contains(@class,'o_sel_repo_popup_my_resources')][contains(@class,'btn-primary')]");
+		OOGraphene.waitElement(myReferenceableEntriesBy, browser);
 		
-		By courseSelectBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + course + "')]]/input[@type='checkbox']");
-		WebElement courseSelectEl = browser.findElement(courseSelectBy);
-		OOGraphene.check(courseSelectEl, Boolean.TRUE);
+		// Find the row with the course
+		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + course + "')]]");
+		OOGraphene.waitElement(rowBy, browser).click();
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_search_referenceable_entries");
+		
+		By courseSelectBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + course + "')]]/input[@type='checkbox'][@checked='checked']");
+		OOGraphene.waitElement(courseSelectBy, browser);
 		
 		By transferBy = By.cssSelector(".popover .o_object_selection a.o_object_selection_apply"); 
 		OOGraphene.waitElement(transferBy, browser).click();
