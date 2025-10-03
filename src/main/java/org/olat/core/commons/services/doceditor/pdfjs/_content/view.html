@@ -6,7 +6,7 @@
 		const pdfFrame = document.querySelector('#$iframeId');
 		pdfFrame.contentDocument.body.querySelector('#secondaryOpenFile').remove();
 		#if($hideDownload)
-			pdfFrame.contentDocument.body.querySelector('#download').remove();
+			pdfFrame.contentDocument.body.querySelector('#downloadButton').remove();
 			pdfFrame.contentDocument.body.querySelector('#secondaryDownload').remove();
 		#end
 		#if($pdfBase64)

@@ -51,12 +51,6 @@ pdfjs-download-button-label = ᱰᱟᱣᱩᱱᱞᱚᱰ
 pdfjs-bookmark-button =
     .title = ᱱᱤᱛᱚᱜᱟᱜ ᱥᱟᱦᱴᱟ (ᱱᱤᱛᱚᱜᱟᱜ ᱥᱟᱦᱴᱟ ᱠᱷᱚᱱ URL ᱫᱮᱠᱷᱟᱣ ᱢᱮ)
 pdfjs-bookmark-button-label = ᱱᱤᱛᱚᱜᱟᱜ ᱥᱟᱦᱴᱟ
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = ᱮᱯ ᱨᱮ ᱡᱷᱤᱡᱽ ᱢᱮ
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = ᱮᱯ ᱨᱮ ᱡᱷᱤᱡᱽ ᱢᱮ
 
 ##  Secondary toolbar and context menu
 
@@ -286,6 +280,9 @@ pdfjs-editor-ink-button-label = ᱛᱮᱭᱟᱨ
 pdfjs-editor-stamp-button =
     .title = ᱪᱤᱛᱟᱹᱨᱠᱚ ᱥᱮᱞᱮᱫ ᱥᱮ ᱥᱟᱯᱲᱟᱣ ᱢᱮ
 pdfjs-editor-stamp-button-label = ᱪᱤᱛᱟᱹᱨᱠᱚ ᱥᱮᱞᱮᱫ ᱥᱮ ᱥᱟᱯᱲᱟᱣ ᱢᱮ
+
+##
+
 # Editor Parameters
 pdfjs-editor-free-text-color-input = ᱨᱚᱝ
 pdfjs-editor-free-text-size-input = ᱢᱟᱯ
@@ -302,10 +299,3 @@ pdfjs-ink =
     .aria-label = ᱛᱮᱭᱟᱨ ᱥᱟᱯᱲᱟᱣᱤᱭᱟᱹ
 pdfjs-ink-canvas =
     .aria-label = ᱵᱮᱵᱷᱟᱨᱤᱭᱟᱹ ᱛᱮᱭᱟᱨ ᱠᱟᱫ ᱪᱤᱛᱟᱹᱨ
-
-## Alt-text dialog
-
-
-## Editor resizers
-## This is used in an aria label to help to understand the role of the resizer.
-

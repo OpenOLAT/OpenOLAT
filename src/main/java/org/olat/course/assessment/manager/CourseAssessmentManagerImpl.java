@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -100,8 +101,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Objects;
 
 /**
  * 
@@ -485,7 +484,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
-		if (Objects.equal(fullyAssessed, nodeAssessment.getFullyAssessed())) {
+		if (Objects.equals(fullyAssessed, nodeAssessment.getFullyAssessed())) {
 			// Fully assess can only set once
 			return;
 		}

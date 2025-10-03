@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.Component;
@@ -35,8 +36,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
-
-import com.google.common.base.Objects;
 
 /**
  * Initial Date: 27.11.2006 <br>
@@ -189,7 +188,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		}
 
 		String val = StringHelper.cleanUTF8ForXml(value);
-		if(!Objects.equal(val, this.value)) {
+		if(!Objects.equals(val, this.value)) {
 			this.value = val;
 			Component c = getComponent();
 			if (c != null) {

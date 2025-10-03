@@ -43,7 +43,7 @@ public class TBTopicListEditController extends TBTopicListController {
 
 	@Override
 	protected String getContextHelpUrl() {
-		return "manual_user/learningresources/Course_Element_Topic_Broker/#tab-topic-capturing-topics";
+		return "manual_user/learningresources/Course_Element_Topic_Broker/#topic_broker_setup_tab_topic";
 	}
 	
 	@Override

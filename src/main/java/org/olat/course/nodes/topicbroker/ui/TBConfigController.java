@@ -108,7 +108,7 @@ public class TBConfigController extends FormBasicController implements Controlle
 		FormLayoutContainer periodCont = FormLayoutContainer.createDefaultFormLayout("period", getTranslator());
 		periodCont.setRootForm(mainForm);
 		periodCont.setFormTitle(translate("config.selection.cont.title"));
-		periodCont.setFormContextHelp("manual_user/learningresources/Course_Element_Topic_Broker/#configuration-tab");
+		periodCont.setFormContextHelp("manual_user/learningresources/Course_Element_Topic_Broker/#topic_broker_setup_tab_config");
 		formLayout.add(periodCont);
 		
 		relativeDatesEl = uifactory.addToggleButton("relative.dates","relative.dates", translate("on"), translate("off"), periodCont);

@@ -45,12 +45,6 @@ pdfjs-save-button-label = ບັນທຶກ
 pdfjs-bookmark-button =
     .title = ໜ້າປັດຈຸບັນ (ເບິ່ງ URL ຈາກໜ້າປັດຈຸບັນ)
 pdfjs-bookmark-button-label = ຫນ້າ​ປັດ​ຈຸ​ບັນ
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = ເປີດໃນ App
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = ເປີດໃນ App
 
 ##  Secondary toolbar and context menu
 
@@ -277,6 +271,9 @@ pdfjs-editor-free-text-button-label = ຂໍ້ຄວາມ
 pdfjs-editor-ink-button =
     .title = ແຕ້ມ
 pdfjs-editor-ink-button-label = ແຕ້ມ
+
+##
+
 # Editor Parameters
 pdfjs-editor-free-text-color-input = ສີ
 pdfjs-editor-free-text-size-input = ຂະຫນາດ
@@ -290,10 +287,3 @@ pdfjs-ink =
     .aria-label = ຕົວແກ້ໄຂຮູບແຕ້ມ
 pdfjs-ink-canvas =
     .aria-label = ຮູບພາບທີ່ຜູ້ໃຊ້ສ້າງ
-
-## Alt-text dialog
-
-
-## Editor resizers
-## This is used in an aria label to help to understand the role of the resizer.
-

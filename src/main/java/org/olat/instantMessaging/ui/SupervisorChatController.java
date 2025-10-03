@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -90,7 +91,6 @@ import org.olat.user.UserPortraitFactory;
 import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Functions;
 
 /**
  * 
@@ -243,7 +243,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		RosterChannelInfos infos = imService.getRoster(chatResource, resSubPath, row.getChannel(), getIdentity());
 		List<Long> identitiyKeys = infos.getNonVipEntries().stream().map(RosterEntry::getIdentityKey).toList();
 		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(identitiyKeys).stream()
-				.collect(Collectors.toMap(Identity::getKey, Functions.identity(), (u,v) -> v));
+				.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
 		
 		RosterRow currentRow = tableModel.getObjectByChannel(row.getChannel());
 		if(currentRow != null) {
@@ -265,7 +265,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 				.map(RosterEntry::getIdentityKey)
 				.collect(Collectors.toSet());
 		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(identitiyKeys).stream()
-				.collect(Collectors.toMap(Identity::getKey, Functions.identity(), (u,v) -> v));
+				.collect(Collectors.toMap(Identity::getKey, Function.identity(), (u,v) -> v));
 		
 		List<RosterRow> rows = new ArrayList<>(rosterInfos.size());
 		for(RosterChannelInfos roster:rosterInfos) {

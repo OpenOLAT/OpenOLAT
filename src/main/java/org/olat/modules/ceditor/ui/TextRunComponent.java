@@ -19,6 +19,8 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.Objects;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.Controller;
@@ -34,8 +36,6 @@ import org.olat.modules.ceditor.model.ParagraphElement;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.model.TitleSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-
-import com.google.common.base.Objects;
 
 /**
  * 
@@ -92,10 +92,10 @@ public class TextRunComponent extends PageRunComponent {
 						newValue = ComponentsFactory.getContent(paragraphElement, placeholder).getDisplayText();
 					}
 				}
-				if (newValue != null && !Objects.equal(newValue, textComponent.getDisplayText())) {
+				if (newValue != null && !Objects.equals(newValue, textComponent.getDisplayText())) {
 					textComponent.setText(newValue);
 				}
-				if (newCssClass != null && !Objects.equal(newCssClass, textComponent.getCssClass())) {
+				if (newCssClass != null && !Objects.equals(newCssClass, textComponent.getCssClass())) {
 					textComponent.setCssClass(newCssClass);
 				}
 			}

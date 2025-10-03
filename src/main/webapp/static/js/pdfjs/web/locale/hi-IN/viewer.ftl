@@ -39,12 +39,6 @@ pdfjs-open-file-button-label = खोलें
 pdfjs-print-button =
     .title = छापें
 pdfjs-print-button-label = छापें
-# Used in Firefox for Android.
-pdfjs-open-in-app-button =
-    .title = ऐप में खोलें
-# Used in Firefox for Android.
-# Length of the translation matters since we are in a mobile context, with limited screen estate.
-pdfjs-open-in-app-button-label = ऐप में खोलें
 
 ##  Secondary toolbar and context menu
 
@@ -207,9 +201,6 @@ pdfjs-page-scale-actual = वास्तविक आकार
 #   $scale (Number) - percent value for page scale
 pdfjs-page-scale-percent = { $scale }%
 
-## PDF page
-
-
 ## Loading indicator messages
 
 pdfjs-loading-error = PDF लोड करते समय एक त्रुटि हुई.
@@ -240,14 +231,7 @@ pdfjs-password-ok-button = OK
 pdfjs-password-cancel-button = रद्द करें
 pdfjs-web-fonts-disabled = वेब फॉन्ट्स निष्क्रिय हैं: अंतःस्थापित PDF फॉन्टस के उपयोग में असमर्थ.
 
-## Editing
+##
 
 # Editor Parameters
 pdfjs-editor-free-text-color-input = रंग
-
-## Alt-text dialog
-
-
-## Editor resizers
-## This is used in an aria label to help to understand the role of the resizer.
-

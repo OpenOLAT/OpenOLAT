@@ -22,6 +22,7 @@ package org.olat.modules.appointments.manager;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,8 +45,6 @@ import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import com.google.common.base.Objects;
 
 /**
  * 
@@ -97,7 +96,7 @@ class AppointmentDAO {
 
 	Appointment updateStatus(Appointment appointment, Status status) {
 		if (appointment instanceof AppointmentImpl impl) {
-			if (!Objects.equal(appointment.getStatus(), status)) {
+			if (!Objects.equals(appointment.getStatus(), status)) {
 				impl.setStatusModified(new Date());
 			}
 			impl.setStatus(status);

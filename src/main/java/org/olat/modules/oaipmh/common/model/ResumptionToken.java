@@ -10,7 +10,6 @@
 
 package org.olat.modules.oaipmh.common.model;
 
-import static com.google.common.base.Predicates.isNull;
 import static org.olat.modules.oaipmh.common.model.Granularity.Second;
 
 import java.util.Date;
@@ -91,11 +90,11 @@ public class ResumptionToken implements XmlWritable {
 		private String metadataPrefix;
 
 		public boolean isEmpty() {
-			return isNull().apply(offset) &&
-					isNull().apply(set) &&
-					isNull().apply(from) &&
-					isNull().apply(until) &&
-					isNull().apply(metadataPrefix);
+			return offset == null &&
+					set == null &&
+					from == null &&
+					until == null &&
+					metadataPrefix == null;
 		}
 
 		public Value withOffset(long integer) {

@@ -105,6 +105,14 @@ pdfjs-document-properties-button-label = Eiginleikar skjals…
 pdfjs-document-properties-file-name = Skráarnafn:
 pdfjs-document-properties-file-size = Skrárstærð:
 # Variables:
+#   $kb (Number) - the PDF file size in kilobytes
+#   $b (Number) - the PDF file size in bytes
+pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) } KB ({ $b } bæti)
+# Variables:
+#   $mb (Number) - the PDF file size in megabytes
+#   $b (Number) - the PDF file size in bytes
+pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bæti)
+# Variables:
 #   $size_kb (Number) - the PDF file size in kilobytes
 #   $size_b (Number) - the PDF file size in bytes
 pdfjs-document-properties-kb = { $size_kb } KB ({ $size_b } bytes)
@@ -118,6 +126,9 @@ pdfjs-document-properties-subject = Efni:
 pdfjs-document-properties-keywords = Stikkorð:
 pdfjs-document-properties-creation-date = Búið til:
 pdfjs-document-properties-modification-date = Dags breytingar:
+# Variables:
+#   $dateObj (Date) - the creation/modification date and time of the PDF file
+pdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
 # Variables:
 #   $date (Date) - the creation/modification date of the PDF file
 #   $time (Time) - the creation/modification time of the PDF file
@@ -168,10 +179,10 @@ pdfjs-printing-not-ready = Aðvörun: Ekki er búið að hlaða inn allri PDF sk
 ## Tooltips and alt text for side panel toolbar buttons
 
 pdfjs-toggle-sidebar-button =
-    .title = Víxla hliðarspjaldi af/á
+    .title = Víxla hliðarstiku af/á
 pdfjs-toggle-sidebar-notification-button =
-    .title = Víxla hliðarslá (skjal inniheldur yfirlit/viðhengi/lög)
-pdfjs-toggle-sidebar-button-label = Víxla hliðarspjaldi af/á
+    .title = Víxla hliðarstiku af/á (skjal inniheldur yfirlit/viðhengi/lög)
+pdfjs-toggle-sidebar-button-label = Víxla hliðarstiku af/á
 pdfjs-document-outline-button =
     .title = Sýna yfirlit skjals (tvísmelltu til að opna/loka öllum hlutum)
 pdfjs-document-outline-button-label = Efnisskipan skjals
@@ -275,6 +286,9 @@ pdfjs-annotation-date-string = { $date }, { $time }
 # Some common types are e.g.: "Check", "Text", "Comment", "Note"
 pdfjs-text-annotation-type =
     .alt = [{ $type } Skýring]
+# Variables:
+#   $dateObj (Date) - the modification date and time of the annotation
+pdfjs-annotation-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
 
 ## Password
 
@@ -302,6 +316,9 @@ pdfjs-highlight-floating-button1 =
     .title = Áherslulita
     .aria-label = Áherslulita
 pdfjs-highlight-floating-button-label = Áherslulita
+pdfjs-editor-signature-button =
+    .title = Bæta við undirritun
+pdfjs-editor-signature-button-label = Bæta við undirritun
 
 ## Remove button for the various kind of editor.
 
@@ -313,6 +330,8 @@ pdfjs-editor-remove-stamp-button =
     .title = Fjarlægja mynd
 pdfjs-editor-remove-highlight-button =
     .title = Fjarlægja áherslulit
+pdfjs-editor-remove-signature-button =
+    .title = Fjarlægja undirskrift
 
 ##
 
@@ -329,6 +348,18 @@ pdfjs-editor-stamp-add-image-button-label = Bæta við mynd
 pdfjs-editor-free-highlight-thickness-input = Þykkt
 pdfjs-editor-free-highlight-thickness-title =
     .title = Breyta þykkt við áherslulitun annarra atriða en texta
+pdfjs-editor-signature-add-signature-button =
+    .title = Bæta við nýrri undirritun
+pdfjs-editor-signature-add-signature-button-label = Bæta við nýrri undirritun
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Vistuð undirskrift: { $description }
+# .default-content is used as a placeholder in an empty text editor.
+pdfjs-free-text2 =
+    .aria-label = Textaritill
+    .default-content = Byrjaðu að skrifa…
 pdfjs-free-text =
     .aria-label = Textaritill
 pdfjs-free-text-default-content = Byrjaðu að skrifa…
@@ -339,8 +370,9 @@ pdfjs-ink-canvas =
 
 ## Alt-text dialog
 
-# Alternative text (alt text) helps when people can't see the image.
 pdfjs-editor-alt-text-button-label = Alt-varatexti
+pdfjs-editor-alt-text-edit-button =
+    .aria-label = Breyta alt-myndatexta
 pdfjs-editor-alt-text-edit-button-label = Breyta alt-varatexta
 pdfjs-editor-alt-text-dialog-label = Veldu valkost
 pdfjs-editor-alt-text-dialog-description = Alt-varatexti (auka-myndatexti) hjálpar þegar fólk getur ekki séð myndina eða þegar hún hleðst ekki inn.
@@ -354,6 +386,9 @@ pdfjs-editor-alt-text-decorative-tooltip = Merkt sem skraut
 # .placeholder: This is a placeholder for the alt text input area
 pdfjs-editor-alt-text-textarea =
     .placeholder = Til dæmis: „Ungur maður sest við borð til að snæða máltíð“
+# Alternative text (alt text) helps when people can't see the image.
+pdfjs-editor-alt-text-button =
+    .aria-label = Alt-myndatexti
 
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
@@ -366,6 +401,22 @@ pdfjs-editor-resizer-label-bottom-right = Neðst í hægra horni - breyta stær�
 pdfjs-editor-resizer-label-bottom-middle = Neðst á miðju - breyta stærð
 pdfjs-editor-resizer-label-bottom-left = Neðst í vinstra horni - breyta stærð
 pdfjs-editor-resizer-label-middle-left = Miðja til vinstri - breyta stærð
+pdfjs-editor-resizer-top-left =
+    .aria-label = Efst í vinstra horni - breyta stærð
+pdfjs-editor-resizer-top-middle =
+    .aria-label = Efst á miðju - breyta stærð
+pdfjs-editor-resizer-top-right =
+    .aria-label = Efst í hægra horni - breyta stærð
+pdfjs-editor-resizer-middle-right =
+    .aria-label = Miðja til hægri - breyta stærð
+pdfjs-editor-resizer-bottom-right =
+    .aria-label = Neðst í hægra horni - breyta stærð
+pdfjs-editor-resizer-bottom-middle =
+    .aria-label = Neðst á miðju - breyta stærð
+pdfjs-editor-resizer-bottom-left =
+    .aria-label = Neðst í vinstra horni - breyta stærð
+pdfjs-editor-resizer-middle-left =
+    .aria-label = Miðja til vinstri - breyta stærð
 
 ## Color picker
 
@@ -415,14 +466,19 @@ pdfjs-editor-new-alt-text-error-close-button = Loka
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Sækir gervigreindarlíkan með alt-myndatextum ({ $downloadedSize } af { $totalSize } MB)
     .aria-valuetext = Sækir gervigreindarlíkan með alt-myndatextum ({ $downloadedSize } af { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
+pdfjs-editor-new-alt-text-added-button =
+    .aria-label = Alt-myndatexta bætt við
 pdfjs-editor-new-alt-text-added-button-label = Alt-myndatexta bætt við
 # This is a button that users can click to open the alt text editor and add alt text when it is not present.
+pdfjs-editor-new-alt-text-missing-button =
+    .aria-label = Vantar alt-myndatexta
 pdfjs-editor-new-alt-text-missing-button-label = Vantar alt-myndatexta
 # This is a button that opens up the alt text modal where users should review the alt text that was automatically generated.
+pdfjs-editor-new-alt-text-to-review-button =
+    .aria-label = Yfirfara alt-myndatexta
 pdfjs-editor-new-alt-text-to-review-button-label = Yfirfara myndatexta
 # "Created automatically" is a prefix that will be added to the beginning of any alt text that has been automatically generated. After the colon, the user will see/hear the actual alt text description. If the alt text has been edited by a human, this prefix will not appear.
 # Variables:
@@ -449,3 +505,93 @@ pdfjs-editor-alt-text-settings-editor-title = Ritill fyrir alt-myndatexta
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Sýna alt-myndatextaritil strax þegar mynd er bætt við
 pdfjs-editor-alt-text-settings-show-dialog-description = Hjálpar þér að tryggja að allar myndirnar þínar séu með alt-myndatexta.
 pdfjs-editor-alt-text-settings-close-button = Loka
+
+## "Annotations removed" bar
+
+pdfjs-editor-undo-bar-message-highlight = Áherslulitun fjarlægð
+pdfjs-editor-undo-bar-message-freetext = Texti fjarlægður
+pdfjs-editor-undo-bar-message-ink = Teikning fjarlægð
+pdfjs-editor-undo-bar-message-stamp = Mynd fjarlægð
+pdfjs-editor-undo-bar-message-signature = Undirskrift fjarlægð
+# Variables:
+#   $count (Number) - the number of removed annotations.
+pdfjs-editor-undo-bar-message-multiple =
+    { $count ->
+        [one] { $count } glósa fjarlægð
+       *[other] { $count } glósur fjarlægðar
+    }
+pdfjs-editor-undo-bar-undo-button =
+    .title = Afturkalla
+pdfjs-editor-undo-bar-undo-button-label = Afturkalla
+pdfjs-editor-undo-bar-close-button =
+    .title = Loka
+pdfjs-editor-undo-bar-close-button-label = Loka
+
+## Add a signature dialog
+
+pdfjs-editor-add-signature-dialog-label = Þessi gluggi gerir notandanum kleift að búa til undirskrift til að bæta við PDF-skjal. Notandinn getur breytt nafninu (sem einnig þjónar sem alt-texti), og valið að vista undirskriftina til endurtekinnar notkunar.
+pdfjs-editor-add-signature-dialog-title = Bæta við undirskrift
+
+## Tab names
+
+# Type is a verb (you can type your name as signature)
+pdfjs-editor-add-signature-type-button = Tegund
+    .title = Tegund
+# Draw is a verb (you can draw your signature)
+pdfjs-editor-add-signature-draw-button = Teikna
+    .title = Teikna
+pdfjs-editor-add-signature-image-button = Mynd
+    .title = Mynd
+
+## Tab panels
+
+pdfjs-editor-add-signature-type-input =
+    .aria-label = Skrifaðu inn undirskriftina þína
+    .placeholder = Skrifaðu inn undirskriftina þína
+pdfjs-editor-add-signature-draw-placeholder = Teiknaðu undirskriftina þína
+pdfjs-editor-add-signature-draw-thickness-range-label = Þykkt
+# Variables:
+#   $thickness (Number) - the thickness (in pixels) of the line used to draw a signature.
+pdfjs-editor-add-signature-draw-thickness-range =
+    .title = Sverleiki teikningar: { $thickness }
+pdfjs-editor-add-signature-image-placeholder = Dragðu skrá hingað til að senda inn
+pdfjs-editor-add-signature-image-browse-link =
+    { PLATFORM() ->
+        [macos] Eða skoðaðu myndskrár
+       *[other] Eða skoðaðu myndskrár
+    }
+
+## Controls
+
+pdfjs-editor-add-signature-description-label = Lýsing (alt-hjálpartexti)
+pdfjs-editor-add-signature-description-input =
+    .title = Lýsing (alt-hjálpartexti)
+pdfjs-editor-add-signature-description-default-when-drawing = Undirskrift
+pdfjs-editor-add-signature-clear-button-label = Hreinsa undirskrift
+pdfjs-editor-add-signature-clear-button =
+    .title = Hreinsa undirskrift
+pdfjs-editor-add-signature-save-checkbox = Vista undirskrift
+pdfjs-editor-add-signature-save-warning-message = Þú hefur náð hámarki 5 vistaðra undirskrifta. Fjarlægðu eina til að geta vistað fleiri.
+pdfjs-editor-add-signature-image-upload-error-title = Ekki tókst að senda inn mynd
+pdfjs-editor-add-signature-image-upload-error-description = Athugaðu nettenginguna þína eða prófaðu aðra mynd.
+pdfjs-editor-add-signature-error-close-button = Loka
+
+## Dialog buttons
+
+pdfjs-editor-add-signature-cancel-button = Hætta við
+pdfjs-editor-add-signature-add-button = Bæta við
+pdfjs-editor-edit-signature-update-button = Uppfæra
+
+## Main menu for adding/removing signatures
+
+pdfjs-editor-delete-signature-button1 =
+    .title = Fjarlægja vistaða undirskrift
+pdfjs-editor-delete-signature-button-label1 = Fjarlægja vistaða undirskrift
+
+## Editor toolbar
+
+pdfjs-editor-add-signature-edit-button-label = Breyta lýsingu
+
+## Edit signature description dialog
+
+pdfjs-editor-edit-signature-dialog-title = Breyta lýsingu
