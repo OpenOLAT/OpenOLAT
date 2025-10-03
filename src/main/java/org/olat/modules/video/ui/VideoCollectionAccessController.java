@@ -39,12 +39,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.video.VideoManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
 import org.olat.user.ui.organisation.OrganisationSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,6 +73,7 @@ public class VideoCollectionAccessController extends FormBasicController {
 	
 	public VideoCollectionAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
 		
@@ -98,11 +99,10 @@ public class VideoCollectionAccessController extends FormBasicController {
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
 		
-		List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), repositoryService.getTaxonomy(entry));
-		String levels = RepositoryCatalogInfoFactory.wrapTaxonomyLevels(taxonomyLevels);
+		String levels = TaxonomyUIFactory.getTags(getTranslator(), repositoryService.getTaxonomy(entry));
 		StaticTextElement taxonomyEl = uifactory.addStaticTextElement("video.collection.taxonomy", "video.collection.taxonomy", levels, formLayout);
 		taxonomyEl.setDomWrapperElement(DomWrapperElement.div);
-		taxonomyEl.setVisible(!taxonomyLevels.isEmpty());
+		taxonomyEl.setVisible(StringHelper.containsNonWhitespace(levels));
 		
 		FormLayoutContainer layoutCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", "save", layoutCont);

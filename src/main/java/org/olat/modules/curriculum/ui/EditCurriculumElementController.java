@@ -19,8 +19,11 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.text.Collator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,8 +44,6 @@ import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -213,15 +214,22 @@ public class EditCurriculumElementController extends BasicController {
 		
 		Set<CurriculumElementToTaxonomyLevel> ce2taxonomyLevels = element.getTaxonomyLevels();
 		if (ce2taxonomyLevels != null && !ce2taxonomyLevels.isEmpty()) {
-			List<TaxonomyLevel> levels = ce2taxonomyLevels.stream()
-				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-				.limit(3)
-				.toList();
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), levels);
-			mainVC.contextPut("taxonomyLevels", taxonomyLevels);
-			mainVC.contextPut("taxonomyLevelsEllipsis", ce2taxonomyLevels.size() > 3);
+			Collator collator = Collator.getInstance(getLocale());
+			List<String> displayNames = ce2taxonomyLevels.stream()
+					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
+					.map(level -> TaxonomyUIFactory.translateDisplayName(getTranslator(), level))
+					.filter(Objects::nonNull)
+					.toList();
+			mainVC.contextPut("taxonomyLevelsEllipsis", displayNames.size() > 3);
+			String taxonomyLevelTags = displayNames.stream()
+					.sorted((l1, l2) -> collator.compare(l1, l2))
+					.limit(3)
+					.map(TaxonomyUIFactory::getTag)
+					.collect(Collectors.joining());
+			mainVC.contextPut("taxonomyLevelTags", taxonomyLevelTags);
 		} else {
 			mainVC.contextRemove("taxonomyLevels");
+			mainVC.contextRemove("taxonomyLevelsEllipsis");
 		}
 		
 		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), element, true));

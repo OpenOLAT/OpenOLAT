@@ -84,14 +84,9 @@
 			#end
 		#end
 			
-		#if($row.taxonomyLevelNamePaths && !$row.taxonomyLevelNamePaths.empty)
+		#if($r.isNotEmpty($row.taxonomyLevelTags))
 		<div class="o_taxonomy_levels">
-			<i class="o_icon o_icon-fw o_icon_tags"> </i>
-			#foreach($taxonomy in $row.taxonomyLevelNamePaths)
-			<span class="o_tag o_taxonomy" title="$r.escapeForHtmlAttribute($taxonomy.materializedPathIdentifiersWithoutSlash)">
-				$r.escapeHtml($taxonomy.displayName)
-			</span>
-			#end
+			<i class="o_icon o_icon-fw o_icon_tags"> </i> $row.taxonomyLevelTags
 		</div>
 		#end
 	</div>

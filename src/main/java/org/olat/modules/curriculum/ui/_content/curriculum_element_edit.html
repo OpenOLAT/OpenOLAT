@@ -38,17 +38,13 @@
 					</div>
 				</div>
 			#end
-			#if($taxonomyLevels && !$taxonomyLevels.empty)
+			#if($r.isNotEmpty($taxonomyLevelTags))
 				<div class="o_curriculum_metadata_header_taxonomy o_taxonomy_levels">
 					<div>
 						<strong>$r.translate("cif.taxonomy.levels")</strong>
 					</div>
 					<div>
-						#foreach($taxonomy in $taxonomyLevels)
-							<span class="o_tag o_taxonomy" title="$r.escapeForHtmlAttribute($taxonomy.materializedPathIdentifiersWithoutSlash)">
-								$r.escapeHtml($taxonomy.displayName)
-							</span>
-						#end
+						$taxonomyLevelTags
 						#if($taxonomyLevelsEllipsis)
 							&nbsp;...
 						#end

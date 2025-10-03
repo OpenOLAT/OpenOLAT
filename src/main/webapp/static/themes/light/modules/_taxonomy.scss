@@ -55,6 +55,42 @@
 	}
 }
 
+
+/* Display of the taxonomy levels as tags */
+.o_taxonomy_tags {
+	min-width: 0;
+	max-width: 100%;
+	
+	// Crop the margin from the tags at the border of the whole element
+	margin-bottom: -2px;
+	margin-right: -2px;
+}
+
+.o_taxonomy_selection_tags {
+	.o_taxonomy_tags {
+		// Multiline inside the button of the object selection element
+		display: flex;
+		flex-wrap: wrap;
+		
+		// Avoid ellipsis if only one level selected
+		margin-right: 0;
+	}
+}
+
+.o_taxonomy_info_matadata {
+	.o_tag.o_taxonomy {
+		max-width: calc(100vw - 60px);
+	}
+	&.o_taxonomy_repo_matadata {
+		// Same brake point as in repository.scss
+		@media (min-width: 500px) {
+			.o_tag.o_taxonomy {
+				max-width: calc(50vw - 48px);
+			}
+		}
+	}
+}
+
 .o_tag.o_competence,
 .o_tag.o_taxonomy {
 	@extend %o_nowrap;
@@ -64,6 +100,7 @@
 	border-radius: 0.5em;
 	vertical-align: bottom;
 	max-width: 100%;
+	display: inline-block;
 	
 	&:hover {
 		text-decoration: none;
@@ -106,28 +143,5 @@
 .o_competences {
 	div#o_main_toolbar.o_toolbar {
 		margin-top: 0px;
-	}		
-}
-.o_taxonomy_tags {
-	display: flex;
-	flex-wrap: wrap;
-}
-
-/** Taxonomy level in object selection element **/
-.o_selection_display {
-	.o_taxonomy_selection_tags {
-		gap: 2px;
-		.o_tag {
-			@extend %o_nowrap;
-			background-color: #ffffff;
-			color: $o-competences-font-color;
-			border-color: $o-competences-color; 
-			border-radius: 0.5em;
-			margin: 0;
-			// We do not want the hover from o_tag
-			&:hover {
-				color: $o-competences-font-color;
-			}
-		}
 	}
 }

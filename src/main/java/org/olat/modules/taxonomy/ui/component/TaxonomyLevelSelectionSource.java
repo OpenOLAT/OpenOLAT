@@ -74,7 +74,7 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	private Predicate<TaxonomyLevel> optionsFilter = level -> true;
 	private Collection<TaxonomyLevel> allTaxonomyLevels;
 	private List<Taxonomy> allTaxonomies;
-	private List<TaxonomyLevelOption> options;
+	private List<ObjectOptionValues> options;
 	
 	public TaxonomyLevelSelectionSource(Locale locale, Collection<TaxonomyLevel> selectedLevels,
 			Supplier<Collection<TaxonomyLevel>> levelsSupplier, String optionsLabel, String browserTableHeader) {
@@ -98,15 +98,14 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 
 	@Override
 	public ObjectDisplayValues getDefaultDisplayValue() {
-		String title = selectedLevels.stream()
-				.map(level -> createLevelDisplayTitle(createTitle(level)))
-				.filter(Objects::nonNull)
-				.sorted(collator)
-				.collect(Collectors.joining());
-		title = createDisplayTitle(title);
+		List<String> titles = selectedLevels.stream()
+				.map(this::getDisplayName)
+				.toList();
+		String title = TaxonomyUIFactory.getTags(translator.getLocale(), titles);
+		title = wrapTagsCss(title);
 		
 		String ariaTitle = selectedLevels.stream()
-				.map(this::createTitle)
+				.map(this::getDisplayName)
 				.filter(Objects::nonNull)
 				.sorted(collator)
 				.collect(Collectors.joining(", "));
@@ -118,17 +117,16 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	public ObjectDisplayValues getDisplayValue(Collection<String> keys) {
 		initOptions();
 		
-		String title = options.stream()
+		List<String> titles = options.stream()
 				.filter(option -> keys.contains(option.getKey()))
-				.map(TaxonomyLevelOption::getDisplayTitle)
-				.filter(Objects::nonNull)
-				.sorted(collator)
-				.collect(Collectors.joining());
-		title = createDisplayTitle(title);
+				.map(ObjectOptionValues::getTitle)
+				.toList();
+		String title = TaxonomyUIFactory.getTags(translator.getLocale(), titles);
+		title = wrapTagsCss(title);
 		
 		String ariaTitle = options.stream()
 				.filter(option -> keys.contains(option.getKey()))
-				.map(TaxonomyLevelOption::getAriaTitle)
+				.map(ObjectOptionValues::getTitle)
 				.filter(Objects::nonNull)
 				.sorted(collator)
 				.collect(Collectors.joining(", "));
@@ -169,29 +167,28 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		options = toOptions(allLevels);
 	}
 	
-	private List<TaxonomyLevelOption> toOptions(Collection<TaxonomyLevel> levels) {
+	private List<ObjectOptionValues> toOptions(Collection<TaxonomyLevel> levels) {
 		Function<TaxonomyLevel, String> keyExtractor = level -> level.getKey().toString();
 		Function<TaxonomyLevel, TaxonomyLevel> parentExtractor = TaxonomyLevel::getParent;
 		Function<TaxonomyLevel, GenericTreeNode> toNode = organisation -> {
 			GenericTreeNode newNode = new GenericTreeNode();
-			newNode.setTitle(createTitle(organisation));
+			newNode.setTitle(getDisplayName(organisation));
 			return newNode;
 		};
 		GenericTreeModelBuilder<TaxonomyLevel> treeModelBuilder = new GenericTreeModelBuilder<>(keyExtractor, parentExtractor, toNode);
 		GenericTreeModel treeModel = treeModelBuilder.build(levels);
 		
-		List<TaxonomyLevelOption> options = new ArrayList<>(levels.size());
+		List<ObjectOptionValues> options = new ArrayList<>(levels.size());
 		for (TaxonomyLevel level : levels) {
 			if (optionsFilter.test(level)) {
 				TreeNode treeNode = treeModel.getNodeById(keyExtractor.apply(level));
 				List<TreeNode> treePath = TreeHelper.getTreePath(treeNode);
 				treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
 				
-				String title = createTitle(level);
+				String title = getDisplayName(level);
 				String subTitle = ObjectOption.createShortPath(treePath);
 				String subTitleFull = ObjectOption.createFullPath(treePath);
-				String displayTitle = createLevelDisplayTitle(title);
-				TaxonomyLevelOption option = new TaxonomyLevelOption(keyExtractor.apply(level), title, subTitle, subTitleFull, displayTitle, title);
+				ObjectOptionValues option = new ObjectOptionValues(keyExtractor.apply(level), title, subTitle, subTitleFull);
 				
 				options.add(option);
 			}
@@ -202,47 +199,20 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		return options;
 	}
 	
-	public String createTitle(TaxonomyLevel level) {
+	public String getDisplayName(TaxonomyLevel level) {
 		return TaxonomyUIFactory.translateDisplayName(translator, level, level::getIdentifier);
 	}
 	
-	private String createLevelDisplayTitle(String title) {
-		return StringHelper.containsNonWhitespace(title)
-				? "<span class=\"o_taxonomy_selection_tags o_tag\">" + StringHelper.escapeHtml(title) + "</span>"
+	private String wrapTagsCss(String tags) {
+		return StringHelper.containsNonWhitespace(tags)
+				? "<span class=\"o_taxonomy_selection_tags\">" + tags + "</span>"
 				: null;
 	}
 	
-	private String createDisplayTitle(String title) {
-		return StringHelper.containsNonWhitespace(title)
-				? "<span class=\"o_taxonomy_selection_tags o_taxonomy_tags\">" + title + "</span>"
-				: null;
-	}
-	
-	private static final class TaxonomyLevelOption extends ObjectOptionValues {
-		
-		private final String displayTitle;
-		private final String ariaTitle;
-		
-		public TaxonomyLevelOption(String key, String title, String subTitle, String subTitleFull, String displayTitle, String ariaTitle) {
-			super(key, title, subTitle, subTitleFull);
-			this.displayTitle = displayTitle;
-			this.ariaTitle = ariaTitle;
-		}
-		
-		public String getDisplayTitle() {
-			return displayTitle;
-		}
-
-		public String getAriaTitle() {
-			return ariaTitle;
-		}
-		
-	}
-	
-	private final static class PathTitleComparator implements Comparator<TaxonomyLevelOption> {
+	private final static class PathTitleComparator implements Comparator<ObjectOptionValues> {
 		
 		@Override
-		public int compare(TaxonomyLevelOption o1, TaxonomyLevelOption o2) {
+		public int compare(ObjectOptionValues o1, ObjectOptionValues o2) {
 			
 			// Use title fallback, otherwise all root options will be at the top of the list.
 			String subTitleFull1 = StringHelper.containsNonWhitespace(o1.getSubTitleFull())? o1.getSubTitleFull(): o1.getTitle();

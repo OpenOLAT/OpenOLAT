@@ -81,7 +81,6 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
@@ -315,11 +314,6 @@ public class InPreparationListController extends FormBasicController implements 
 			String translatedType = nodeAccessService.getNodeAccessTypeName(NodeAccessType.of(entry.entry().getTechnicalType()), getLocale());
 			row.setTranslatedTechnicalType(translatedType);
 		}
-		
-		List<TaxonomyLevelNamePath> taxonomyLevels = (entry.levels() != null) 
-				? TaxonomyUIFactory.getNamePaths(getTranslator(), entry.levels())
-				: List.of();
-		row.setTaxonomyLevels(taxonomyLevels);
 
 		VFSLeaf image = repositoryManager.getImage(entry.entry().getKey(), entry.entry().getOlatResource());
 		if(image != null) {
@@ -333,11 +327,6 @@ public class InPreparationListController extends FormBasicController implements 
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);
-		
-		List<TaxonomyLevelNamePath> taxonomyLevels = (element.levels() != null) 
-				? TaxonomyUIFactory.getNamePaths(getTranslator(), element.levels())
-				: List.of();
-		row.setTaxonomyLevels(taxonomyLevels);
 		
 		String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
 				row::getCurriculumElementKey, CurriculumElementFileType.teaserImage);

@@ -169,9 +169,6 @@
 						display: none;
 					}					
 					
-					.o_taxonomy {
-						display: inline-block;
-					}
 					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 						display: none;
 					}
@@ -985,11 +982,6 @@
 				}
 			}
 		}
-	}
-	
-	.o_taxonomy_cell {
-		display: flex;
-		flex-wrap: wrap;
 	}
 	
 	/** Override some settings from the course table **/

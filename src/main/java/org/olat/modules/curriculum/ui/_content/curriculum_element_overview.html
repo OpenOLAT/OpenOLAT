@@ -33,14 +33,10 @@
 		</div>
 	#end
 
-	#if($taxonomyLevels && !$taxonomyLevels.empty)
-		<div class="o_taxonomy_levels">
+	#if($r.isNotEmpty($taxonomyLevelTags))
+		<div class="o_taxonomy_info_matadata">
 			<h4>$r.translate("cif.taxonomy.levels")</h4>
-			#foreach($taxonomyLevel in $taxonomyLevels)
-			<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
-				$r.escapeHtml($taxonomyLevel.displayName)
-			</span>
-			#end
+			$taxonomyLevelTags
 		</div>
 	#end
 </div>

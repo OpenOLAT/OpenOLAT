@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
@@ -39,10 +41,8 @@ import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
@@ -74,23 +74,20 @@ public class CurriculumElementOffersController extends BasicController {
 		element.getCurriculum().getOrganisation().getDisplayName(); // avoid LazyInitializationException
 		
 		Collection<Organisation> defaultOfferOrganisations = List.of(element.getCurriculum().getOrganisation());
-
-		List<TaxonomyLevel> taxonomyLevels = null;
-		List<TaxonomyLevelNamePath> taxonomyLevelPath = null;
+		
+		String details = null;
 		Set<CurriculumElementToTaxonomyLevel> ce2taxonomyLevels = element.getTaxonomyLevels();
+		Set<TaxonomyLevel> taxonomyLevels = null;
 		if (ce2taxonomyLevels != null && !ce2taxonomyLevels.isEmpty()) {
 			taxonomyLevels = ce2taxonomyLevels.stream()
 				.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-				.toList();
-			taxonomyLevelPath = TaxonomyUIFactory.getNamePaths(getTranslator(), taxonomyLevels);
+				.collect(Collectors.toSet());
+			details = TaxonomyUIFactory.getTags(getTranslator(), taxonomyLevels);
+		}
+		if (!StringHelper.containsNonWhitespace(details)) {
+			details = translate("access.taxonomy.level.not.yet");
 		}
 		
-		String details;
-		if (taxonomyLevelPath == null || taxonomyLevelPath.isEmpty()) {
-			details = translate("access.taxonomy.level.not.yet");
-		} else {
-			details = RepositoryCatalogInfoFactory.wrapTaxonomyLevels(taxonomyLevelPath);
-		}
 		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Metadata:0]";
 		
 		boolean fullyBooked = curriculumService.isMaxParticipantsReached(element);

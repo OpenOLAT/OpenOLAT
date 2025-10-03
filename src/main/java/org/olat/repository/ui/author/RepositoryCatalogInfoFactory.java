@@ -32,7 +32,6 @@ import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
@@ -53,20 +52,6 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
  */
 public class RepositoryCatalogInfoFactory {
 	
-	public static String wrapTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("<div class=\"o_taxonomy_tags\">");
-		for (TaxonomyLevelNamePath taxonomyLevel : taxonomyLevels) {
-			sb.append("<span class=\"o_tag o_taxonomy\" title=\"");
-			sb.append(StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash()));
-			sb.append("\">");
-			sb.append(StringHelper.escapeHtml(taxonomyLevel.getDisplayName()));
-			sb.append("</span>");
-		}
-		sb.append("</div>");
-		return sb.toString();
-	}
-	
 	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath, boolean showRQCode) {
 		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
 		if (catalogV2Module.isEnabled()) {
@@ -78,8 +63,7 @@ public class RepositoryCatalogInfoFactory {
 			if (taxonomyLevels.isEmpty()) {
 				details = translator.translate("access.taxonomy.level.not.yet");
 			} else {
-				List<TaxonomyLevelNamePath> taxonomyLevelPaths = TaxonomyUIFactory.getNamePaths(translator, taxonomyLevels);
-				details = wrapTaxonomyLevels(taxonomyLevelPaths);
+				details = TaxonomyUIFactory.getTags(translator, taxonomyLevels);
 			}
 			String editBusinessPath = null;
 			if (showBusinessPath) {

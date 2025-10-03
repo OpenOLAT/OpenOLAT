@@ -19,16 +19,17 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.text.Collator;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 
 /**
  * 
@@ -78,18 +79,45 @@ public class TaxonomyUIFactory {
 		return translation;
 	}
 	
-	public static TaxonomyLevelNamePath getNamePath(Translator translator, TaxonomyLevel level) {
-		return new TaxonomyLevelNamePath(
-				translateDisplayName(translator, level, level::getIdentifier),
-				level.getMaterializedPathIdentifiersWithoutSlash());
+	public static final String getTags(Locale locale, Collection<String> levelDisplayNames) {
+		return getTags(locale, levelDisplayNames, displayName -> displayName, "");
 	}
 	
-	public static List<TaxonomyLevelNamePath> getNamePaths(Translator translator, Collection<TaxonomyLevel> levels) {
-		if (levels == null || levels.isEmpty()) return Collections.emptyList();
+	public static final String getTags(Locale locale, Collection<String> levelDisplayNames, String delimiter) {
+		return getTags(locale, levelDisplayNames, displayName -> displayName, delimiter);
+	}
+	
+	public static final String getTags(Translator translator, Collection<TaxonomyLevel> levels) {
+		return getTags(translator.getLocale(), levels, level -> translateDisplayName(translator, level), "");
+	}
+	
+	public static final String getTags(Translator translator, Collection<TaxonomyLevel> levels, String delimiter) {
+		return getTags(translator.getLocale(), levels, level -> translateDisplayName(translator, level), delimiter);
+	}
+	
+	public static final <T> String getTags(Locale locale, Collection<T> levels, Function<T, String> toDisplayName, String delimiter) {
+		if (levels == null || levels.isEmpty()) {
+			return "";
+		}
 		
-		return levels.stream()
-				.map(level -> getNamePath(translator, level))
-				.collect(Collectors.toList());
+		Collator collator = Collator.getInstance(locale);
+		
+		String tags = levels.stream()
+				.map(level -> toDisplayName.apply(level))
+				.filter(Objects::nonNull)
+				.sorted((l1, l2) -> collator.compare(l1, l2))
+				.map(TaxonomyUIFactory::getTag)
+				.collect(Collectors.joining(delimiter));
+		
+		if (StringHelper.containsNonWhitespace(tags)) {
+			tags = "<span class=\"o_taxonomy_tags\">" + tags + "</span>";
+		}
+		
+		return tags;
+	}
+	
+	public static final String getTag(String displayName) {
+		return "<span class=\"o_tag o_taxonomy\">" + StringHelper.escapeHtml(displayName) + "</span>";
 	}
 
 }

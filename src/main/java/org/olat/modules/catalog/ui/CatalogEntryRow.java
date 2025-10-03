@@ -20,7 +20,6 @@
 package org.olat.modules.catalog.ui;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
@@ -31,7 +30,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -71,7 +69,8 @@ public class CatalogEntryRow {
 	
 	private final OLATResource olatResource;
 	private final Set<TaxonomyLevel> taxonomyLevels;
-	private List<TaxonomyLevelNamePath> taxonomyLevelNamePaths;
+	private Set<String> taxonomyLevelDisplayNames;
+	private String taxonomyLevelTags;
 	private final boolean member;
 	private final boolean reservationAvailable;
 	private final boolean openAccess;
@@ -331,13 +330,21 @@ public class CatalogEntryRow {
 	public Set<TaxonomyLevel> getTaxonomyLevels() {
 		return taxonomyLevels;
 	}
-	
-	public List<TaxonomyLevelNamePath> getTaxonomyLevelNamePaths() {
-		return taxonomyLevelNamePaths;
+
+	public void setTaxonomyLevelTags(String taxonomyLevelTags) {
+		this.taxonomyLevelTags = taxonomyLevelTags;
 	}
 
-	public void setTaxonomyLevelNamePaths(List<TaxonomyLevelNamePath> taxonomyLevelNamePaths) {
-		this.taxonomyLevelNamePaths = taxonomyLevelNamePaths;
+	public Set<String> getTaxonomyLevelDisplayNames() {
+		return taxonomyLevelDisplayNames;
+	}
+
+	public void setTaxonomyLevelDisplayNames(Set<String> taxonomyLevelDisplayNames) {
+		this.taxonomyLevelDisplayNames = taxonomyLevelDisplayNames;
+	}
+
+	public String getTaxonomyLevelTags() {
+		return taxonomyLevelTags;
 	}
 
 	public License getLicense() {

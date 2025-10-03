@@ -20,12 +20,10 @@
 package org.olat.repository.ui.list;
 
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -62,7 +60,6 @@ public class InPreparationRow {
 	private final String location;
 	private String thumbnailRelPath;
 	private final OLATResource olatResource;
-	private List<TaxonomyLevelNamePath> taxonomyLevels;
 	private final RepositoryEntryEducationalType educationalType;
 	
 	private boolean marked;
@@ -224,18 +221,6 @@ public class InPreparationRow {
 
 	public void setTranslatedTechnicalType(String translatedTechnicalType) {
 		this.translatedTechnicalType = translatedTechnicalType;
-	}
-	
-	public int getNumOfTaxonomyLevels() {
-		return taxonomyLevels == null ? 0 : taxonomyLevels.size();
-	}
-	
-	public List<TaxonomyLevelNamePath> getTaxonomyLevels() {
-		return taxonomyLevels;
-	}
-	
-	public void setTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
-		this.taxonomyLevels = taxonomyLevels;
 	}
 	
 	public OLATResource getOlatResource() {

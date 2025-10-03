@@ -1277,6 +1277,7 @@ dialog {
 .o_expand_button {
 	&.o_selection_display {
 		display: flex;
+		gap: 5px;
 		.o_icon {
 			margin: auto 0 auto auto;
 		}

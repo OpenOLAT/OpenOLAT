@@ -20,8 +20,6 @@
 package org.olat.modules.curriculum.ui;
 
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -32,7 +30,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +77,8 @@ public class CurriculumElementInfosOverviewController extends BasicController {
 		}
 		
 		// Taxonomy levels
-		List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), curriculumService.getTaxonomy(element));
-		mainVC.contextPut("taxonomyLevels", taxonomyLevels);
+		String taxonomyLevelTags = TaxonomyUIFactory.getTags(getTranslator(), curriculumService.getTaxonomy(element));
+		mainVC.contextPut("taxonomyLevelTags", taxonomyLevelTags);
 	}
 
 	@Override

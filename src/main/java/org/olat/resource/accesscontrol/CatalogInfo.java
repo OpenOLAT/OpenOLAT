@@ -19,7 +19,7 @@
  */
 package org.olat.resource.accesscontrol;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -45,14 +45,14 @@ public class CatalogInfo {
 	private final String editLabel;
 	private final String catalogBusinessPath;
 	private final String webCatalogBusinessPath;
-	private final List<TaxonomyLevel> microsites;
+	private final Collection<TaxonomyLevel> microsites;
 	private final boolean showQRCode;
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
 			String customPublishedIn, CatalogStatusEvaluator statusEvaluator, String statusPeriodOption,
 			boolean fullyBooked, boolean startDateAvailable, String editBusinessPath, String editLabel,
-			String catalogBusinessPath, String webCatalogBusinessPath, List<TaxonomyLevel> microsites,
+			String catalogBusinessPath, String webCatalogBusinessPath, Collection<TaxonomyLevel> microsites,
 			boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
@@ -138,7 +138,7 @@ public class CatalogInfo {
 		return webCatalogBusinessPath;
 	}
 
-	public List<TaxonomyLevel> getMicrosites() {
+	public Collection<TaxonomyLevel> getMicrosites() {
 		return microsites;
 	}
 

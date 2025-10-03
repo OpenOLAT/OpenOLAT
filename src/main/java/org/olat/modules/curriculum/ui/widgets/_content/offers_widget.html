@@ -37,14 +37,8 @@
 					<div><i class="o_icon o_icon-fw o_icon_tag"> </i></div>
 				</h4>
 				<div class="o_curriculum_offers_card_content o_curriculum_taxonomy_card_content">
-					#if($taxonomyLevels && !$taxonomyLevels.empty)
-						<div class="o_taxonomy_levels">
-							#foreach($taxonomyLevel in $taxonomyLevels)
-							<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
-								$r.escapeHtml($taxonomyLevel.displayName)
-							</span>
-							#end
-						</div>
+					#if($r.isNotEmpty($taxonomyLevelTags))
+						$taxonomyLevelTags
 					#else
 						$r.render("empty.taxonomy")
 					#end

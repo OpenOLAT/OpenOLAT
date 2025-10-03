@@ -110,9 +110,6 @@
 	
 	.o_repo_meta {
 		column-count: 1;
-		.o_tag.o_taxonomy {
-			max-width: calc(100vw - 80px);
-		}
 	}
 	&>div {
 		margin-bottom: 20px;
@@ -129,9 +126,6 @@
 	@media (min-width: 500px) {
 		.o_repo_meta {
 			column-count: 2;
-			.o_tag.o_taxonomy {
-				max-width: calc(50vw - 48px);
-			}
 		}
 		.subcolumn {
 			width: 45%;	
@@ -159,10 +153,6 @@
 			.o_subcolumn {
 				width: auto;
 			}
-		}
-			
-		.o_repo_meta .o_tag.o_taxonomy {
-			max-width: 100%;
 		}
 	}
 

@@ -22,9 +22,11 @@ package org.olat.modules.catalog.ui;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,6 +42,7 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -57,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
@@ -113,7 +117,6 @@ import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.registration.PwChangeController;
@@ -315,7 +318,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.mainLanguage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.expenditureOfWork));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.educationalType, new EducationalTypeRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.taxonomyLevels, new TaxonomyLevelRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.taxonomyLevels, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.offers));
 		if(creditPointModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.creditPoints));
@@ -459,7 +462,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		return containsValue(row.getTitle(), searchValue)
 				|| containsValue(row.getExternalRef(), searchValue)
 				|| containsValue(row.getAuthors(), searchValue)
-				|| containsValue(row.getTaxonomyLevelNamePaths(), searchValue);
+				|| containsValue(row.getTaxonomyLevelDisplayNames(), searchValue);
 	}
 
 	private boolean containsValue(String candidate, String searchValue) {
@@ -470,12 +473,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 		return false;
 	}
 
-	private boolean containsValue(List<TaxonomyLevelNamePath> taxonomyLevelNamePaths, String searchValue) {
-		if (taxonomyLevelNamePaths == null || taxonomyLevelNamePaths.isEmpty()) {
+	private boolean containsValue(Collection<String> taxonomyLevelDisplayNames, String searchValue) {
+		if (taxonomyLevelDisplayNames == null || taxonomyLevelDisplayNames.isEmpty()) {
 			return false;
 		}
-		for (TaxonomyLevelNamePath taxonomyLevelNamePath : taxonomyLevelNamePaths) {
-			if (containsValue(taxonomyLevelNamePath.getDisplayName(), searchValue)) {
+		for (String displayName : taxonomyLevelDisplayNames) {
+			if (containsValue(displayName, searchValue)) {
 				return true;
 			}
 		}
@@ -486,8 +489,14 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private CatalogEntryRow toRow(CatalogEntry catalogEntry) {
 		CatalogEntryRow row = new CatalogEntryRow(catalogEntry);
 		
-		List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), row.getTaxonomyLevels());
-		row.setTaxonomyLevelNamePaths(taxonomyLevels);
+		Set<String> taxonomyLevelDisplayNames = row.getTaxonomyLevels() == null? null:
+			row.getTaxonomyLevels().stream()
+				.map(level -> TaxonomyUIFactory.translateDisplayName(getTranslator(), level))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		row.setTaxonomyLevelDisplayNames(taxonomyLevelDisplayNames);
+		String taxonomyLevelTags = TaxonomyUIFactory.getTags(getLocale(), taxonomyLevelDisplayNames, " ");
+		row.setTaxonomyLevelTags(taxonomyLevelTags);
 		
 		if (catalogEntry.isPublicVisible()) {
 			

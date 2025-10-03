@@ -48,7 +48,6 @@ import org.olat.modules.curriculum.ui.CurriculumElementCatalogStatusEvaluator;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
@@ -213,8 +212,8 @@ public class OffersWidgetController extends FormBasicController {
 		// Taxonomy
 		flc.contextPut("taxonomyEnabled", taxonomyModule.isEnabled());
 		if (taxonomyModule.isEnabled()) {
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), curriculumService.getTaxonomy(curriculumElement));
-			flc.contextPut("taxonomyLevels", taxonomyLevels);
+			String taxonomyLevelTags = TaxonomyUIFactory.getTags(getTranslator(), curriculumService.getTaxonomy(curriculumElement));
+			flc.contextPut("taxonomyLevelTags", taxonomyLevelTags);
 			
 			EmptyState emptyTaxonomy = EmptyStateFactory.create("empty.taxonomy", flc.getFormItemComponent(), this);
 			emptyTaxonomy.setMessageI18nKey("curriculum.offers.taxonomy.empty");

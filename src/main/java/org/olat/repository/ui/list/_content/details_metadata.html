@@ -35,14 +35,10 @@
 		</div>
 	#end
 </div>	
-#if($taxonomyLevels && !$taxonomyLevels.empty)
-	<div class="o_subcolumn o_taxonomy_levels">
+#if($r.isNotEmpty($taxonomyLevelTags))
+	<div class="o_subcolumn o_taxonomy_info_matadata o_taxonomy_repo_matadata">
 		<h4>$taxonomyLevelsLabel</h4>
-		#foreach($taxonomyLevel in $taxonomyLevels)
-		<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
-			$r.escapeHtml($taxonomyLevel.displayName)
-		</span>
-		#end
+		$taxonomyLevelTags
 	</div>
 #end
 #if($categories && $categories.size() > 0)

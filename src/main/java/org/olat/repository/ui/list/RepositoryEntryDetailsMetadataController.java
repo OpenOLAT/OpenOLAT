@@ -52,7 +52,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.catalog.CatalogV2Module;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
@@ -133,8 +132,8 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 			// taxonomy levels
 			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
 			layoutCont.contextPut("taxonomyLevelsLabel", translate(labelI18nKey));
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), repositoryService.getTaxonomy(entry));
-			layoutCont.contextPut("taxonomyLevels", taxonomyLevels);
+			String taxonomyLevelTags = TaxonomyUIFactory.getTags(getTranslator(), repositoryService.getTaxonomy(entry));
+			layoutCont.contextPut("taxonomyLevelTags", taxonomyLevelTags);
 			
 			if (!guestOnly) {
 				boolean marked = markManager.isMarked(entry, getIdentity(), null);

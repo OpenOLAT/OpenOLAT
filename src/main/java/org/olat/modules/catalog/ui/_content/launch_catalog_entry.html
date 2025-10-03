@@ -75,14 +75,8 @@
 							#if($r.isNotEmpty($row.location))
 								<div class="o_location o_flex_item_max">$r.escapeHtml($row.location)</div>
 							#end
-							#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
-								<div class="o_taxonomy_levels">
-									#foreach($taxonomy in $row.taxonomyLevels)
-									<span class="o_tag o_taxonomy" title="$r.escapeForHtmlAttribute($taxonomy.materializedPathIdentifiersWithoutSlash)">
-										$r.escapeHtml($taxonomy.displayName)
-									</span>
-									#end
-								</div>
+							#if($r.isNotEmpty($row.taxonomyLevelTags))
+								<div class="o_taxonomy_levels">$row.taxonomyLevelTags</div>
 							#end
 						</div>
 					</div>

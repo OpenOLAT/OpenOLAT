@@ -53,7 +53,6 @@ import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -173,8 +172,8 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 			item.setTeaser(entry.getTeaser());
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.taxonomyLevels)) {
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), entry.getTaxonomyLevels());
-			item.setTaxonomyLevels(taxonomyLevels);
+			String taxonomyLevelTags = TaxonomyUIFactory.getTags(getTranslator(), entry.getTaxonomyLevels(), " ");
+			item.setTaxonomyLevelTags(taxonomyLevelTags);
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.educationalType)) {
 			if (entry.getEducationalType() != null) {
@@ -297,7 +296,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		private RepositoryEntryEducationalType educationalType;
 		private String educationalTypeName;
 		private String thumbnailRelPath;
-		private List<TaxonomyLevelNamePath> taxonomyLevels;
+		private String taxonomyLevelTags;
 		private Link displayNameLink;
 		private boolean certificate;
 		private String creditPointAmount;
@@ -422,12 +421,12 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 			return StringHelper.containsNonWhitespace(thumbnailRelPath);
 		}
 
-		public List<TaxonomyLevelNamePath> getTaxonomyLevels() {
-			return taxonomyLevels;
+		public String getTaxonomyLevelTags() {
+			return taxonomyLevelTags;
 		}
 
-		public void setTaxonomyLevels(List<TaxonomyLevelNamePath> taxonomyLevels) {
-			this.taxonomyLevels = taxonomyLevels;
+		public void setTaxonomyLevelTags(String taxonomyLevelTags) {
+			this.taxonomyLevelTags = taxonomyLevelTags;
 		}
 
 		public Link getDisplayNameLink() {
