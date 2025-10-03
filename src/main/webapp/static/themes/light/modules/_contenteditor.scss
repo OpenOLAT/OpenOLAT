@@ -624,6 +624,14 @@
 	}
 }
 
+.o_page_content_editor {
+	.o_page_part {
+		&.o_page_part_view:hover {
+			background-color: #eee;
+		}
+	}
+}
+
 .o_ceditor_inspector {
 	border: 1px solid $o-editor-inspector-border-color;
 	background-color: white;
