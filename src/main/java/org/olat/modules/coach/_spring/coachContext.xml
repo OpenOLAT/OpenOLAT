@@ -14,7 +14,7 @@
 
 	<!-- Admin. -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="7208" />
+		<property name="order" value="7205" />
 		<property name="navigationKey" value="coachingAdmin" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">

@@ -10,7 +10,7 @@
 
 	<!-- Admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8213" />
+		<property name="order" value="7220" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.modules.grade.ui.GradeAdminController"/>
