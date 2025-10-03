@@ -41,7 +41,6 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler;
-import io.jsonwebtoken.lang.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -96,7 +95,7 @@ public class BookOnBehalfOfController extends BasicController {
 	private CatalogEntryListParams createCatalogEntryListParams() {
 		CatalogEntryListParams listParams = new CatalogEntryListParams();
 		listParams.setExcludeRepositoryEntries(true);
-		Set<Long> reservedCurriculumElementKeys = Collections.asSet(curriculumElementDAO.loadReservedElementKeys(identity));
+		Set<Long> reservedCurriculumElementKeys = Set.copyOf(curriculumElementDAO.loadReservedElementKeys(identity));
 		listParams.setExcludedCurriculumElementKeys(reservedCurriculumElementKeys);
 		listParams.setExcludeMembers(true);
 		listParams.setExcludedAccessMethodTypes(Set.of(

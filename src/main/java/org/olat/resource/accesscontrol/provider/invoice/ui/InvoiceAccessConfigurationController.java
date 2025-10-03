@@ -20,8 +20,10 @@
 package org.olat.resource.accesscontrol.provider.invoice.ui;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,10 +47,6 @@ import org.olat.resource.accesscontrol.provider.invoice.InvoiceModule;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Objects;
-
-import io.jsonwebtoken.lang.Arrays;
 
 /**
  * 
@@ -211,7 +209,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		}
 		
 		String currentFeeValue = cancellingFeeAmountEl.getValue();
-		if (Objects.equal(perviousFeeValue, currentFeeValue)) {
+		if (Objects.equals(perviousFeeValue, currentFeeValue)) {
 			String newFeeValue = null;
 			BigDecimal currentFeeDefault = invoiceModule.getCancellingFeeDefaults().get(selectedCurreny);
 			if (currentFeeDefault != null) {

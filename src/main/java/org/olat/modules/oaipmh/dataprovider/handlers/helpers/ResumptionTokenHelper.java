@@ -10,7 +10,6 @@
 
 package org.olat.modules.oaipmh.dataprovider.handlers.helpers;
 
-import static com.google.common.base.Predicates.isNull;
 import static java.lang.Math.round;
 
 import org.olat.modules.oaipmh.common.model.ResumptionToken;
@@ -47,7 +46,7 @@ public class ResumptionTokenHelper {
 	}
 
 	private boolean isInitialOffset() {
-		return isNull().apply(current.getOffset()) || current.getOffset() == 0;
+		return current.getOffset() == null || current.getOffset() == 0;
 	}
 
 	private ResumptionToken populate(ResumptionToken resumptionToken) {

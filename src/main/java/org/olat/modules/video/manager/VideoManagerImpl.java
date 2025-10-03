@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.math.RoundingMode;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -144,7 +145,6 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.io.Files;
 
 /**
  * Manager for Videoressource
@@ -676,7 +676,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		if (masterLeaf instanceof LocalFileImpl masterFile && transcodingLeaf instanceof LocalFileImpl transcodingFile) {
 			masterFile.getBasefile().delete();
 			try {
-				Files.move(transcodingFile.getBasefile(), masterFile.getBasefile());
+				Files.move(transcodingFile.getBasefile().toPath(), masterFile.getBasefile().toPath());
 				updateVideoMetadata(videoResource, transcodingForOptimization);
 				updateMetadata(masterLeaf, transcodingForOptimization);
 				videoTranscodingDao.deleteVideoTranscoding(transcodingForOptimization);

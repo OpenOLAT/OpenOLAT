@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
@@ -44,8 +45,6 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import io.jsonwebtoken.lang.Arrays;
 
 /**
  * 

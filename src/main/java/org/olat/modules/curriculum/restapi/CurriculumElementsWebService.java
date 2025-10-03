@@ -23,6 +23,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -73,8 +74,6 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Objects;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -335,7 +334,7 @@ public class CurriculumElementsWebService {
 			if(!allowedTypes.contains(type)) {
 				throw new WebApplicationException("Forbidden curriculum element type", Response.serverError().status(Status.CONFLICT).build());
 			}
-		} else if(Objects.equal(type, element.getType())) {
+		} else if(Objects.equals(type, element.getType())) {
 			// Do nothing, nothing changes
 		} else {
 			List<CurriculumElementType> allowedTypes = curriculumService.getAllowedCurriculumElementType(parentElement, element);
