@@ -228,7 +228,9 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 	}
 
 	private void updatePriorityFineTuningUI() {
-		functionAfterEl.setVisible(breakPointEl.isOneSelected() && !breakPointEl.isKeySelected(KEY_NO_BREAK_POINT));
+		if(breakPointEl != null) {
+			functionAfterEl.setVisible(breakPointEl.isOneSelected() && !breakPointEl.isKeySelected(KEY_NO_BREAK_POINT));
+		}
 		
 		TBEnrollmentStrategyConfig config = getStrategyConfig();
 		if (TBEnrollmentStrategyType.custom == config.getType()) {
