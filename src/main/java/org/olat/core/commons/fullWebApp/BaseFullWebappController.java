@@ -113,6 +113,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
@@ -120,7 +121,6 @@ import org.olat.course.assessment.ui.mode.ContinueEvent;
 import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
-import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.UserManager;
@@ -1669,7 +1669,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		} else if(lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			if(mode.getStatus() == Status.leadtime || (mode.getStatus() == Status.followup
 					&& (mode.getEndStatus() == EndStatus.all
-						|| ((mode.getEndStatus() == null || mode.getEndStatus() == EndStatus.withoutDisadvantage) && !hasDisadvantageCompensation(mode))))) {
+						|| ((mode.getEndStatus() == null || mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime || mode.getEndStatus() == EndStatus.withoutDisadvantage)
+								&& !hasDisadvantageCompensationOrExtraTime(mode, mode.getEndStatus()))))) {
 				if(assessmentGuardCtrl == null) {
 					lockStatus = LockStatus.need;
 				}
@@ -1701,9 +1702,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				businessPath, bcContextEntries, loggingResourceableList);
 	}
 	
-	private boolean hasDisadvantageCompensation(LockRequest mode) {
-		return CoreSpringFactory.getImpl(DisadvantageCompensationService.class)
-			.isActiveDisadvantageCompensation(getIdentity(), new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList());
+	private boolean hasDisadvantageCompensationOrExtraTime(LockRequest mode, EndStatus endStatus) {
+		return CoreSpringFactory.getImpl(AssessmentModeCoordinationService.class)
+			.isActiveDisadvantageCompensationOrExtraTime(getIdentity(), new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList(), endStatus);
+
 	}
 	
 	private boolean asyncUnlockResource(LockRequest mode, boolean backgroundEvent) {

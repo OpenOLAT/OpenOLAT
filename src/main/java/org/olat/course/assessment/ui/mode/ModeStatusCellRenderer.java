@@ -71,7 +71,8 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 		String statusClass = "o_labeled_light o_qti_assessment_mode o_assessment_status_" + status.name();
 		sb.append("<span class='").append(statusClass).append("'").append("title='").append(title).append("'><i class='o_icon o_icon-fw ").append(status.cssClass()).append("'> </i> ")
 				.append("<span>").append(title).append("</span>")
-				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)
+				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutBoth == endStatus || EndStatus.withoutDisadvantage == endStatus)
+				.append(" <i class='o_icon o_icon_extra_time'> </i>", EndStatus.withoutBoth == endStatus || EndStatus.withoutExtraTime == endStatus)
 				.append("</span>");
 	}
 
@@ -80,7 +81,8 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 		String statusClass = "o_labeled o_qti_assessment_mode o_assessment_status_" + status.name();
 		sb.append("<span class='").append(statusClass).append("'").append("title='").append(title).append("'><i class='o_icon o_icon-fw ").append(status.cssClass()).append("'> </i> ")
 				.append("<span>").append(title).append("</span>")
-				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutDisadvantage == endStatus)
+				.append(" <i class='o_icon o_icon_disadvantage_compensation'> </i>", EndStatus.withoutBoth == endStatus || EndStatus.withoutDisadvantage == endStatus)
+				.append(" <i class='o_icon o_icon_extra_time'> </i>", EndStatus.withoutBoth == endStatus || EndStatus.withoutExtraTime == endStatus)
 				.append("</span>");
 	}
 }

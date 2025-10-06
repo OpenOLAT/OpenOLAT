@@ -155,7 +155,7 @@ public class AssessmentModeDAO {
 		if(params.getRunning() != null && params.getRunning().booleanValue()) {
 			sb.and()
 			  .append("(mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
-			  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append("))");
+			  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime, EndStatus.withoutDisadvantage).append("))");
 		}
 		
 		if(params.getRepositoryEntryKey() != null) {
@@ -234,7 +234,7 @@ public class AssessmentModeDAO {
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
-		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append(")");
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime, EndStatus.withoutDisadvantage).append(")");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
@@ -251,11 +251,21 @@ public class AssessmentModeDAO {
 		  .append(" left join mode.curriculumElements as modeToCurriculumElement")
 		  .where().append(" entry.key=:repoKey and (")
 		  .append(" mode.statusString ").in(Status.assessment)
-		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage)
+		  // Check disadvantage compensation in follow-up / end status
+		  .append(" or (mode.statusString ").in(Status.followup.name(), Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutDisadvantage)
 		  .append("  and exists (select compensation.key from dcompensation as compensation where")
 		  .append("   compensation.entry.key=entry.key and compensation.identity.key=:identityKey and compensation.status=:status");
 		if(StringHelper.containsNonWhitespace(subIdent)) {
 			sb.append(" and compensation.subIdent=:subIdent");
+		}
+		sb.append("  )")
+		  // Check extra time on running test sessions in follow-up / end status
+		  .append(") or (mode.statusString ").in(Status.followup.name(), Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime)
+		  .append("  and exists (select session.key from qtiassessmenttestsession session") 
+		  .append("    where session.repositoryEntry.key=entry.key and session.identity.key=:identityKey and session.terminationTime is null")
+		  .append("    and session.extraTime is not null and session.extraTime>0");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and session.subIdent=:subIdent");
 		}
 		sb.append("  )")
 		  .append("))")
@@ -311,7 +321,7 @@ public class AssessmentModeDAO {
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
-		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append("))");
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime, EndStatus.withoutDisadvantage).append("))");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
@@ -385,7 +395,7 @@ public class AssessmentModeDAO {
 		  .append(" and (mode.startElement=:startIdent or mode.elementList like :nodeIdent)")
 		  .append(" and (mode.beginWithLeadTime>=:now")
 		  .append(" or mode.statusString ").in(Status.none, Status.leadtime, Status.assessment, Status.followup)
-		  .append(" or mode.endStatusString ").in(EndStatus.withoutDisadvantage).append(")");
+		  .append(" or mode.endStatusString ").in(EndStatus.withoutBoth, EndStatus.withoutExtraTime, EndStatus.withoutDisadvantage).append(")");
 
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);

@@ -379,7 +379,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
 		assessedIdentities.removeAll(extraTimes.keySet());
 	
-		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutDisadvantage;
+		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutBoth;
 		mode = ensureBothStatusOfMode(mode, Status.followup, status, doer);
 		sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode, assessedIdentities);
 		return mode;
@@ -396,7 +396,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Map<Long,Integer> extraTimes = getExtraTimesInSeconds(mode, assessedIdentities, now);
 		assessedIdentities.removeAll(extraTimes.keySet());
 	
-		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutDisadvantage;
+		EndStatus status = extraTimes.isEmpty() ? EndStatus.all : EndStatus.withoutBoth;
 		mode = ensureBothStatusOfMode(mode, Status.end, status, doer);
 		sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentities);
 		return mode;
@@ -480,27 +480,36 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 					assessmentModeManager.getAssessedIdentityKeys(mode));
 		} else if(mode.getStatus() == Status.followup) {
 			// remind user with compensation for disadvantage
-			if(mode.getEndStatus() == EndStatus.withoutDisadvantage) {
-				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+			if(mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime || mode.getEndStatus() == EndStatus.withoutDisadvantage) {
+				// Collect identities with extra time, or/and with disadvantage compensation
+				// Warning! Reverse logic because we send a start assessment event to people still in the assessment mode
+				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(mode,
+						mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime,
+						mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutDisadvantage);
 				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode, keys);
 			}
 			
 			// follow-up is ended
 			if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
-				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+				Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(mode, true, true);
 				if(keys.isEmpty() || mode.getEndStatus() == EndStatus.all) {
 					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.all, doer);
 					sendEvent(AssessmentModeNotificationEvent.END, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 				} else {
-					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.withoutDisadvantage, doer);
+					mode = ensureBothStatusOfMode(mode, Status.end, EndStatus.withoutBoth, doer);
 					Set<Long> identitiesToNotify = assessmentModeManager.getAssessedIdentityKeys(mode);
 					identitiesToNotify.removeAll(keys);
 					sendEvent(AssessmentModeNotificationEvent.END, mode, identitiesToNotify);
 				}
 			}
-		} else if(mode.getStatus() == Status.end && mode.getEndStatus() == EndStatus.withoutDisadvantage) {
-			Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+		} else if(mode.getStatus() == Status.end
+				&& (mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime || mode.getEndStatus() == EndStatus.withoutDisadvantage)) {
+			// Collect identities with extra time, or/and with disadvantage compensation
+			// Warning! Reverse logic because we send a reminder of start assessment event to people still in the assessment mode
+			Set<Long> keys = getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(mode,
+					mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime,
+					mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutDisadvantage);
 			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode, keys);
 		}
 	}
@@ -612,7 +621,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Status status = assessmentMode.getStatus();
 		EndStatus endStatus = assessmentMode.getEndStatus();
 		if(status == Status.leadtime || status == Status.assessment
-				|| (endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end))) {
+				|| ((endStatus == EndStatus.withoutBoth || endStatus == EndStatus.withoutExtraTime || endStatus == EndStatus.withoutDisadvantage)
+						&& (status == Status.followup || status == Status.end))) {
 			canStop = true;
 		} else {
 			canStop = false;
@@ -624,14 +634,16 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public boolean isDisadvantageCompensationExtensionTime(AssessmentMode assessmentMode) {
 		Status status = assessmentMode.getStatus();
 		EndStatus endStatus = assessmentMode.getEndStatus();
-		return endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end);
+		return (endStatus == EndStatus.withoutBoth || endStatus == EndStatus.withoutExtraTime || endStatus == EndStatus.withoutDisadvantage)
+				&& (status == Status.followup || status == Status.end);
 	}
 
 	@Override
 	public boolean isDisadvantageCompensationExtensionTime(TransientAssessmentMode assessmentMode) {
 		Status status = assessmentMode.getStatus();
 		EndStatus endStatus = assessmentMode.getEndStatus();
-		return endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end);
+		return (endStatus == EndStatus.withoutBoth || endStatus == EndStatus.withoutExtraTime || endStatus == EndStatus.withoutDisadvantage)
+				&& (status == Status.followup || status == Status.end);
 	}
 
 	@Override
@@ -680,29 +692,61 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	@Override
-	public AssessmentMode stopAssessment(AssessmentMode mode, boolean pullTestSessions, boolean withDisadvantaged, Identity doer) {
+	public AssessmentMode stopAssessment(AssessmentMode mode, boolean pullTestSessions, boolean withExtraTime, boolean withDisadvantaged, Identity doer) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		
 		EndStatus endStatus;
 		Set<Long> assessedIdentityKeys;
 		if(isDisadvantageCompensationExtensionTime(mode)) {
-			endStatus = withDisadvantaged ?  EndStatus.all : EndStatus.withoutDisadvantage;
-			assessedIdentityKeys = getAssessedIdentitiesWithDisadvantageCompensations(mode);
+			// This case is if the assessment mode is already partially ended
+			if(withExtraTime && withDisadvantaged) {
+				endStatus = EndStatus.all;
+				assessedIdentityKeys = getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(mode, true, true);
+			} else if(withExtraTime) {
+				endStatus = EndStatus.withoutDisadvantage;
+				assessedIdentityKeys = getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(mode, true, false);
+			} else if(withDisadvantaged) {
+				endStatus = EndStatus.withoutExtraTime;
+				assessedIdentityKeys = getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(mode, false, true);
+			} else {
+				endStatus = EndStatus.withoutBoth;
+				assessedIdentityKeys = Set.of();
+			}
 		} else {
 			assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-		
-			boolean partial = false;
+
+			boolean partialExtraTime = false;
+			boolean partialDisadvantage = false;
 			if(!withDisadvantaged) {
 				List<IdentityRef> disadvantagedIdentities = disadvantageCompensationDao
 						.getActiveDisadvantagedUsers(mode.getRepositoryEntry(), mode.getElementAsList());
 				for(IdentityRef disadvantagedIdentity:disadvantagedIdentities) {
 					if(assessedIdentityKeys.remove(disadvantagedIdentity.getKey())) {
-						partial |= true;
+						partialDisadvantage |= true;
 					}
 				}
 			}
 			
-			endStatus = partial ? EndStatus.withoutDisadvantage : EndStatus.all;
+			if(!withExtraTime) {
+				List<AssessmentTestSession> testSessions = assessmentTestSessionDao
+						.getRunningTestSessionsByIdentityKeys(mode.getRepositoryEntry(), mode.getElementAsList(), List.copyOf(assessedIdentityKeys));
+				for(AssessmentTestSession testSession:testSessions) {
+					if(testSession.getExtraTime() != null && testSession.getExtraTime().intValue() > 0
+							&& assessedIdentityKeys.remove(testSession.getIdentity().getKey())) {
+						partialExtraTime |= true;
+					}	
+				}
+			}
+			
+			if(partialDisadvantage && partialExtraTime) {
+				endStatus = EndStatus.withoutBoth;
+			} else if(partialDisadvantage) {
+				endStatus = EndStatus.withoutDisadvantage;
+			} else if(partialExtraTime) {
+				endStatus = EndStatus.withoutExtraTime;
+			} else {
+				endStatus = EndStatus.all;
+			}
 		}
 		
 		if(pullTestSessions) {
@@ -775,15 +819,33 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		CourseFactory.loadCourse(entry);
 	}
 	
-	private Set<Long> getAssessedIdentitiesWithDisadvantageCompensations(AssessmentMode assessmentMode) {
-		List<IdentityRef> identities = disadvantageCompensationDao
-				.getActiveDisadvantagedUsers(assessmentMode.getRepositoryEntry(), assessmentMode.getElementAsList());
-		return identities.stream()
-				.map(IdentityRef::getKey)
-				.collect(Collectors.toSet());
+	private Set<Long> getAssessedIdentitiesWithDisadvantageCompensationsAndExtraTime(AssessmentMode assessmentMode, boolean withExtraTime, boolean withDisadvantagecompensation) {
+		Set<Long> keys = new HashSet<>();
+
+		// Identity excluded disadvantage compensation, a.k.a identity with extra time
+		if(withExtraTime) {
+			List<Long> extraTimeKeys = assessmentTestSessionDao
+					.getRunningTestSessionIdentitiesKeyWithExtraTime(assessmentMode.getRepositoryEntry(), assessmentMode.getElementAsList());
+			keys.addAll(extraTimeKeys);
+		}
+		if(withDisadvantagecompensation) {
+			List<IdentityRef> identities = disadvantageCompensationDao
+					.getActiveDisadvantagedUsers(assessmentMode.getRepositoryEntry(), assessmentMode.getElementAsList());
+			for(IdentityRef identity:identities) {
+				keys.add(identity.getKey());
+			}
+		}
+		
+		if(!keys.isEmpty()) {
+			// Make sure the user running a test session are actually in the assessment mode
+			Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(assessmentMode);
+			keys.retainAll(assessedIdentityKeys);
+		}
+		return keys;
 	}
 	
-	private List<DisadvantageCompensation> getDisadvantageCompensations(AssessmentMode assessmentMode) {
+	@Override
+	public List<DisadvantageCompensation> getDisadvantageCompensations(AssessmentMode assessmentMode) {
 		return disadvantageCompensationDao
 				.getActiveDisadvantageCompensations(assessmentMode.getRepositoryEntry(), assessmentMode.getElementAsList());
 	}
@@ -816,6 +878,27 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			}
 		}
 		return coordinatedAssessmentMode;
+	}
+	
+	@Override
+	public boolean isActiveDisadvantageCompensationOrExtraTime(IdentityRef identity, AssessmentMode mode, EndStatus status) {
+		return isActiveDisadvantageCompensationOrExtraTime(identity, mode.getRepositoryEntry(), mode.getElementAsList(), status);
+	}
+
+	@Override
+	public boolean isActiveDisadvantageCompensationOrExtraTime(IdentityRef identity, RepositoryEntryRef entry,
+			List<String> subIdents, EndStatus status) {
+		if(status == null || status == EndStatus.withoutBoth) {
+			return disadvantageCompensationDao.isActiveDisadvantagedUser(identity, entry, subIdents)
+					|| assessmentTestSessionDao.hasRunningTestSessionsWithExtraTime(identity, entry, subIdents);
+		}
+		if(status == EndStatus.withoutExtraTime) {
+			return assessmentTestSessionDao.hasRunningTestSessionsWithExtraTime(identity, entry, subIdents);
+		}
+		if(status == EndStatus.withoutDisadvantage) {
+			return disadvantageCompensationDao.isActiveDisadvantagedUser(identity, entry, subIdents);
+		}
+		return false;
 	}
 
 	@Override

@@ -1,0 +1,9 @@
+<ul class="o_assessment_mode_participants_list">
+#foreach($participant in $participants)
+	<li>$r.escapeHtml($participant)</li>
+#end
+#if($r.available("more.participants"))
+	<li>$r.render("more.participants")</li>
+#end
+</ul>
+

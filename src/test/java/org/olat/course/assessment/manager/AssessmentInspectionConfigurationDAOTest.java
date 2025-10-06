@@ -19,11 +19,10 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Date;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -72,7 +71,7 @@ public class AssessmentInspectionConfigurationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<AssessmentInspectionConfiguration> configurations = inspectionConfigurationDao.loadConfigurationsByEntry(entry);
-		assertThat(configurations)
+		Assertions.assertThat(configurations)
 			.hasSize(1);
 		
 		AssessmentInspectionConfiguration reloadedConfig = configurations.get(0);
@@ -96,7 +95,7 @@ public class AssessmentInspectionConfigurationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(inspection);
 		
 		List<AssessmentInspectionConfigurationWithUsage> configurations = inspectionConfigurationDao.loadConfigurationsWithUsageByEntry(entry);
-		assertThat(configurations)
+		Assertions.assertThat(configurations)
 			.hasSize(1);
 		
 		AssessmentInspectionConfiguration reloadedConfig = configurations.get(0).configuration();
