@@ -136,9 +136,12 @@ public class ImplementationsListController extends FormBasicController implement
 		
 		if(tableModel.hasMarked()) {
 			tableEl.setSelectedFilterTab(ureq, favoriteTab);
-		} else {
+		} else if(allTab != null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);
+		} else if(activeTab != null) {
+			tableEl.setSelectedFilterTab(ureq, activeTab);
 		}
+		
 		filterModel();
 	}
 
