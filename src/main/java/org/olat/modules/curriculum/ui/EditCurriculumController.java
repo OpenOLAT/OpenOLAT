@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -69,6 +70,8 @@ public class EditCurriculumController extends FormBasicController {
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -262,7 +265,7 @@ public class EditCurriculumController extends FormBasicController {
 			curriculum = curriculumService
 					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(),
 							lecturesEnabled, organisation);
-			curriculumService.addMember(curriculum, getIdentity(), CurriculumRoles.curriculummanager);
+			curriculumService.addMember(curriculum, getIdentity(), CurriculumRoles.curriculumowner);
 		} else {
 			curriculum = curriculumService.getCurriculum(curriculum);
 			curriculum.setIdentifier(identifierEl.getValue());
@@ -272,6 +275,8 @@ public class EditCurriculumController extends FormBasicController {
 			curriculum.setOrganisation(organisation);
 			curriculum = curriculumService.updateCurriculum(curriculum);
 		}
+		
+		dbInstance.commit();
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

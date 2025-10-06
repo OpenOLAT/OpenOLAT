@@ -45,7 +45,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -59,12 +58,8 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
-import org.olat.modules.curriculum.ui.RoleListController;
-import org.olat.modules.curriculum.ui.event.RoleEvent;
-import org.olat.modules.curriculum.ui.member.CurriculumUserManagementTableModel.CurriculumMemberCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.olat.user.ui.organisation.component.RoleFlexiCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,7 +74,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
 	private FlexiTableElement tableEl;
-	private FormLink addMemberButton;
+	private FormLink addOwnerButton;
 	private FormLink removeMembershipButton;
 	private CurriculumUserManagementTableModel tableModel;
 	
@@ -87,8 +82,6 @@ public class CurriculumUserManagementController extends FormBasicController {
 	private UserSearchController userSearchCtrl;
 	private DialogBoxController confirmRemoveCtrl;
 	
-	private RoleListController roleListCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final Curriculum curriculum;
 	private final boolean membersManaged;
@@ -131,20 +124,17 @@ public class CurriculumUserManagementController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, null, true, "userProp-" + colIndex));
 			colIndex++;
 		}
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumMemberCols.role, new RoleFlexiCellRenderer(getTranslator())));
 
 		tableModel = new CurriculumUserManagementTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v2");
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v3");
 		
 		if(!membersManaged && secCallback.canManagerCurriculumUsers()) {
-			addMemberButton = uifactory.addFormLink("add.members", formLayout, Link.BUTTON);
-			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
+			addOwnerButton = uifactory.addFormLink("add.curriculumowner", formLayout, Link.BUTTON);
+			addOwnerButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 
 			tableEl.setMultiSelect(true);
 			
@@ -190,14 +180,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(roleListCtrl == source) {
-			calloutCtrl.deactivate();
-			cleanUp();
-			if(event instanceof RoleEvent) {
-				RoleEvent re = (RoleEvent)event;
-				doSearchMember(ureq, re.getRole());
-			}
-		} else if(cmc == source || calloutCtrl == source) {
+		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -206,11 +189,9 @@ public class CurriculumUserManagementController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmRemoveCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
-		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmRemoveCtrl = null;
 		userSearchCtrl = null;
-		calloutCtrl = null;
 		cmc = null;
 	}
 
@@ -221,8 +202,8 @@ public class CurriculumUserManagementController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addMemberButton == source) {
-			doRoleCallout(ureq);
+		if(addOwnerButton == source) {
+			doSearchMember(ureq, CurriculumRoles.curriculumowner);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
 		} else if(tableEl == source) {
@@ -255,19 +236,6 @@ public class CurriculumUserManagementController extends FormBasicController {
 		loadModel(true);
 	}
 	
-	private void doRoleCallout(UserRequest ureq) {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(roleListCtrl);
-		
-		String title = translate("add.members");
-		roleListCtrl = new RoleListController(ureq, getWindowControl(), new CurriculumRoles[] { CurriculumRoles.curriculumowner });
-		listenTo(roleListCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();	
-	}
-	
 	private void doSearchMember(UserRequest ureq, CurriculumRoles role) {
 		if(guardModalController(userSearchCtrl)) return;
 
@@ -287,5 +255,4 @@ public class CurriculumUserManagementController extends FormBasicController {
 		}
 		loadModel(true);
 	}
-	
 }

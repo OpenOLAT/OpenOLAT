@@ -22,7 +22,10 @@ package org.olat.modules.curriculum.ui;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_LECTURES;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_METADATA;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OWNERS;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_REPORTS;
 
 import java.util.List;
 
@@ -77,8 +80,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 
 	private static final int TITLE_SIZE = 3;
 	
+	private int ownersTab;
+	private int reportsTab;
 	private int lecturesTab;
 	private int overviewTab;
+	private int metadataTab;
 	private int implementationsTab;
 	
 	private Link deleteButton;
@@ -170,8 +176,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			config.setWithMixMaxColumn(true);
 			config.setRootElementsOnly(true);
 			config.setFlat(true);
-			WindowControl subControl = addToHistory(uureq, OresHelper
-					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS), null);
+			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_IMPLEMENTATIONS), null);
 			implementationsCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
 					curriculum, null, config, secCallback, lecturesSecCallback);
 			listenTo(implementationsCtrl);
@@ -184,8 +189,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		// Events / lectures blocks
 		if(lectureModule.isEnabled()) {
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
-				WindowControl subControl = addToHistory(uureq, OresHelper
-						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
+				WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_LECTURES), null);
 				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig("curriculum-details-v1.1")
 						.withExternalRef(Visibility.HIDE)
 						.withCurriculum(Visibility.HIDE)
@@ -216,26 +220,29 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		}
 		
 		// User management
-		tabPane.addTab(ureq, translate("tab.owner.management"), uureq -> {
-			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum, secCallback);
+		ownersTab = tabPane.addTab(ureq, translate("tab.owner.management"), uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_OWNERS), null);
+			userManagementCtrl = new CurriculumUserManagementController(uureq, subControl, curriculum, secCallback);
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();
 		});
 		
 		// Metadata
-		tabPane.addTab(ureq, translate("curriculum.metadata"), uureq -> {
-			editMetadataCtrl = new EditCurriculumController(uureq, getWindowControl(), curriculum, secCallback);
+		metadataTab = tabPane.addTab(ureq, translate("curriculum.metadata"), "o_sel_curriculum_metadata", uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_METADATA), null);
+			editMetadataCtrl = new EditCurriculumController(uureq, subControl, curriculum, secCallback);
 			listenTo(editMetadataCtrl);
 			return editMetadataCtrl.getInitialComponent();
-		});
+		}, true);
 		
 		// Reports
 		if(secCallback.canCurriculumReports(curriculum)) {
-			tabPane.addTab(ureq, translate("curriculum.reports"), uureq -> {
-				reportsCtrl = new CurriculumReportsController(uureq, getWindowControl(), null, curriculum, null, ArchiveType.CURRICULUM, TITLE_SIZE);
+			reportsTab = tabPane.addTab(ureq, translate("curriculum.reports"), "o_sel_curriculum_reports", uureq -> {
+				WindowControl subControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CONTEXT_REPORTS), null);
+				reportsCtrl = new CurriculumReportsController(uureq, subControl, null, curriculum, null, ArchiveType.CURRICULUM, TITLE_SIZE);
 				listenTo(reportsCtrl);
 				return reportsCtrl.getInitialComponent();
-			});
+			}, true);
 		}
 	}
 	
@@ -277,6 +284,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			if(implementationsCtrl != null) {
 				implementationsCtrl.activate(ureq, entries, state);
 			}
+		} else if(CONTEXT_METADATA.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, metadataTab);
+		} else if(CONTEXT_OWNERS.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, ownersTab);
+		} else if(CONTEXT_REPORTS.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, reportsTab);
 		}
 	}
 	

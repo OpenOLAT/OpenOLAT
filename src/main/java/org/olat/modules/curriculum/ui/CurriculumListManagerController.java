@@ -32,7 +32,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -112,8 +111,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public static final String CONTEXT_PROVISIONAL = "Provisional";
 	public static final String CONTEXT_RESOURCES = "Resources";
 	public static final String CONTEXT_MEMBERS = "Members";
+	public static final String CONTEXT_OWNERS = "Owners";
 	public static final String CONTEXT_OFFERS = "Offers";
 	public static final String CONTEXT_METADATA = "Metadata";
+	public static final String CONTEXT_REPORTS = "Reports";
 	public static final String CONTEXT_ABSENCES = "Absences";
 	public static final String CONTEXT_CONFIRMED = "Confirmed";
 	public static final String CONTEXT_ACTIVE = "Active";
@@ -145,7 +146,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private FlexiTableElement tableEl;
 	private FormLink bulkDeleteButton;
 	private FormLink newCurriculumButton;
-	private FormLink importCurriculumButton;
 	private CurriculumManagerDataModel tableModel;
 	private final TooledStackedPanel toolbarPanel;
 	
@@ -195,14 +195,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			newCurriculumButton = uifactory.addFormLink("add.curriculum", "add.curriculum", null, formLayout, Link.BUTTON);
 			newCurriculumButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			newCurriculumButton.setElementCssClass("o_sel_add_curriculum");
-			
-			DropdownItem moreDropdown = uifactory.addDropdownMenuMore("more.menu", formLayout, getTranslator());
-			moreDropdown.setEmbbeded(true);
-			moreDropdown.setButton(true);
-			
-			importCurriculumButton = uifactory.addFormLink("import.curriculum", "import.curriculum", null, formLayout, Link.LINK);
-			importCurriculumButton.setElementCssClass("o_sel_import_curriculum");
-			moreDropdown.addElement(importCurriculumButton);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -452,6 +444,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(newCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(tableEl.getQuickSearchString(), true);
+				if(newCurriculumCtrl.getCurriculum() != null) {
+					CurriculumRow row = tableModel.getRow(newCurriculumCtrl.getCurriculum().getKey());
+					doOpenCurriculumMetadata(ureq, row);
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -507,8 +503,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			doBulkDeleteCurriculums(ureq);
 		} else if(newCurriculumButton == source) {
 			doNewCurriculum(ureq);
-		} else if(importCurriculumButton == source) {
-			doImportCurriculum(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -537,17 +531,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void doSearch(FlexiTableSearchEvent event) {
 		loadModel(event.getSearch(), true);
-	}
-	
-	private void doImportCurriculum(UserRequest ureq) {
-		if(guardModalController(importCurriculumCtrl)) return;
-
-		importCurriculumCtrl = new ImportCurriculumController(ureq, getWindowControl());
-		listenTo(importCurriculumCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCurriculumCtrl.getInitialComponent(), true, translate("import.curriculum"));
-		listenTo(cmc);
-		cmc.activate();
 	}
 	
 	private void doNewCurriculum(UserRequest ureq) {
@@ -636,6 +619,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void doOpenCurriculumDetails(UserRequest ureq, CurriculumRow row) {
 		doOpenCurriculumDetails(ureq, row, List.of());
+	}
+	
+	private void doOpenCurriculumMetadata(UserRequest ureq, CurriculumRow row) {
+		List<ContextEntry> context = BusinessControlFactory.getInstance()
+				.createCEListFromString("[Metadata:0]");
+		doOpenCurriculumDetails(ureq, row, context);
 	}
 	
 	private void doOpenCurriculumImplementations(UserRequest ureq, CurriculumRow row) {

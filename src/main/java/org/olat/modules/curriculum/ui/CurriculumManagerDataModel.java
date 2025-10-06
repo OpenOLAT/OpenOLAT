@@ -100,6 +100,13 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 			super.setObjects(backups);
 		}
 	}
+	
+	public CurriculumRow getRow(Long curriculumKey) {
+		return backups.stream()
+				.filter(row -> curriculumKey.equals(row.getKey()))
+				.findFirst()
+				.orElse(null);
+	}
 
 	@Override
 	public String getUrl(Component source, Object object, String action) {
