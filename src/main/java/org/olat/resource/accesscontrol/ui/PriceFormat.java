@@ -108,6 +108,22 @@ public class PriceFormat {
 		return priceAmountFormat.format(amount.setScale(2, RoundingMode.HALF_EVEN));
 	}
 	
+	/**
+	 * Method use by payment processor.
+	 * 
+	 * @param price The price
+	 * @return The amount formatted with only point as separator
+	 */
+	public static String formatForJson(Price price) {
+		if(price == null) {
+			return "";
+		}
+		if(price.getAmount() == null) {
+			return "";
+		}
+		return formatMoneyForTextInput(price.getAmount());
+	}
+	
 	public static String formatMoneyForTextInput(BigDecimal value) {
 		return value.setScale(2, RoundingMode.HALF_EVEN).toString();
 	}

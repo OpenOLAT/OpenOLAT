@@ -184,7 +184,7 @@ public class CheckoutV2Provider {
 		orderRequest.checkoutPaymentIntent(intent);
 		orderRequest.applicationContext(applicationContext);
 
-		String price = PriceFormat.format(order.getTotal());
+		String price = PriceFormat.formatForJson(order.getTotal());
 		String currencyCode = order.getCurrencyCode();
 		
 		AmountWithBreakdown amount = new AmountWithBreakdown()
