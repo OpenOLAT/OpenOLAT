@@ -19,8 +19,6 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Date;
 import java.util.List;
 
@@ -96,7 +94,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(inspection);
 		
 		List<AssessmentInspection> inspectionlist = inspectionDao.searchInspection(entry, "123456");
-		assertThat(inspectionlist)
+		Assertions.assertThat(inspectionlist)
 			.hasSize(1)
 			.containsExactly(inspection);
 		
@@ -134,7 +132,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 
 		// Search by identity 1;
 		List<AssessmentInspection> inspectionsToIdentity1 = inspectionDao.searchInspectionFor(id1, now);
-		assertThat(inspectionsToIdentity1)
+		Assertions.assertThat(inspectionsToIdentity1)
 			.hasSize(1)
 			.containsExactly(inspection1);
 		AssessmentInspection loadedInspection = inspectionsToIdentity1.get(0);
@@ -142,7 +140,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		
 		// Search empty
 		List<AssessmentInspection> inspectionsToIdentity2 = inspectionDao.searchInspectionFor(id2, now);
-		assertThat(inspectionsToIdentity2)
+		Assertions.assertThat(inspectionsToIdentity2)
 			.isEmpty();
 	}
 	
@@ -239,7 +237,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		params.setEntry(entry);
 		params.setSubIdents(List.of("123456D"));
 		List<AssessmentEntryInspection> loadedInspectionsToIdentities = inspectionDao.searchInspection(params);
-		assertThat(loadedInspectionsToIdentities)
+		Assertions.assertThat(loadedInspectionsToIdentities)
 			.hasSize(3)
 			.map(AssessmentEntryInspection::inspection)
 			.containsExactlyInAnyOrder(inspection1, inspection2, inspection3);
@@ -249,7 +247,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		paramsEmpty.setEntry(entry);
 		paramsEmpty.setSubIdents(List.of("1234DFG"));
 		List<AssessmentEntryInspection> noInspectionsToIdentities = inspectionDao.searchInspection(paramsEmpty);
-		assertThat(noInspectionsToIdentities)
+		Assertions.assertThat(noInspectionsToIdentities)
 			.isEmpty();
 	}
 	
@@ -277,7 +275,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		activeParams.setSubIdents(List.of(subIdent));
 		activeParams.setActiveInspections(Boolean.TRUE);
 		List<AssessmentEntryInspection> activeInspections = inspectionDao.searchInspection(activeParams);
-		assertThat(activeInspections)
+		Assertions.assertThat(activeInspections)
 			.hasSize(1)
 			.map(AssessmentEntryInspection::inspection)
 			.containsExactlyInAnyOrder(inspection2);
@@ -288,7 +286,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		inactiveParams.setSubIdents(List.of(subIdent));
 		inactiveParams.setActiveInspections(Boolean.FALSE);
 		List<AssessmentEntryInspection> inactiveInspections = inspectionDao.searchInspection(inactiveParams);
-		assertThat(inactiveInspections)
+		Assertions.assertThat(inactiveInspections)
 			.hasSize(2)
 			.map(AssessmentEntryInspection::inspection)
 			.containsExactlyInAnyOrder(inspection1, inspection3);

@@ -93,7 +93,6 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
-import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.ConfirmRecertificationController;
@@ -204,8 +203,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Autowired 
 	private CourseDisclaimerManager disclaimerManager;
 	@Autowired
-	private AssessmentModeManager assessmentModeManager;
-	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 
 	/**
@@ -278,8 +275,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			EndStatus assessmentEndStatus = assessmentMode.getEndStatus();
 			
 			if(assessmentStatus == Status.assessment
-					|| (assessmentStatus == Status.end && assessmentEndStatus == EndStatus.withoutDisadvantage
-						&& assessmentModeManager.isDisadvantagedUser(assessmentMode, getIdentity()))) {
+					|| (assessmentStatus == Status.end
+						&& (assessmentEndStatus == EndStatus.withoutBoth || assessmentEndStatus == EndStatus.withoutExtraTime || assessmentEndStatus == EndStatus.withoutDisadvantage)
+						&& assessmentModeCoordinationService.isActiveDisadvantageCompensationOrExtraTime(getIdentity(), assessmentMode, assessmentEndStatus))) {
 				visibilityFilter = new AssessmentModeTreeFilter(re, wControl.getWindowBackOffice().getChiefController());
 			} else if(assessmentStatus == Status.leadtime || assessmentStatus == Status.followup) {
 				visibilityFilter = new InvisibleTreeFilter();
@@ -419,14 +417,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	public boolean isInDisadvantageCompensation(AssessmentMode assessmentMode, UserRequest ureq) {
 		Status assessmentStatus = assessmentMode.getStatus();
 		EndStatus assessmentEndStatus = assessmentMode.getEndStatus();
-		if(assessmentStatus == Status.end && assessmentEndStatus == EndStatus.withoutDisadvantage) {
-			boolean compensation = assessmentModeManager.isDisadvantagedUser(assessmentMode, getIdentity());
+		if(assessmentStatus == Status.end
+				&& (assessmentEndStatus == EndStatus.withoutBoth || assessmentEndStatus == EndStatus.withoutExtraTime || assessmentEndStatus == EndStatus.withoutDisadvantage)) {
+			boolean compensation = assessmentModeCoordinationService
+					.isActiveDisadvantageCompensationOrExtraTime(getIdentity(), assessmentMode, assessmentEndStatus);
 			if(compensation) {
 				if(assessmentMode.isManualBeginEnd()) {
 					return true;
 				}
 				
-				Integer extraTime = assessmentModeCoordinationService.getDisadvantageCompensationExtensionTime(assessmentMode, getIdentity());
+				Integer extraTime = assessmentModeCoordinationService
+						.getDisadvantageCompensationExtensionTime(assessmentMode, getIdentity());
 				Date endDate = assessmentMode.getEnd();
 				if(extraTime != null && extraTime.intValue() > 0) {
 					endDate = DateUtils.addSeconds(endDate, extraTime.intValue());

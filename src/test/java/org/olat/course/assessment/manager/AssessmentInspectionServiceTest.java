@@ -19,12 +19,11 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -90,7 +89,7 @@ public class AssessmentInspectionServiceTest extends OlatTestCase {
 		
 		// Check inspection to identity
 		List<AssessmentInspection> inspectionList = inspectionService.getInspectionFor(assessedId, new Date());
-		assertThat(inspectionList)
+		Assertions.assertThat(inspectionList)
 			.hasSize(1);
 		AssessmentInspection inspection = inspectionList.get(0);
 		Assert.assertEquals(assessedId, inspection.getIdentity());
@@ -98,7 +97,7 @@ public class AssessmentInspectionServiceTest extends OlatTestCase {
 		
 		// Check log
 		List<AssessmentInspectionLog> inspectionLogList = inspectionService.getLogFor(inspection, null, null);
-		assertThat(inspectionLogList)
+		Assertions.assertThat(inspectionLogList)
 			.hasSize(1);
 		AssessmentInspectionLog inspectionLog = inspectionLogList.get(0);
 		Assert.assertEquals(inspection, inspectionLog.getInspection());

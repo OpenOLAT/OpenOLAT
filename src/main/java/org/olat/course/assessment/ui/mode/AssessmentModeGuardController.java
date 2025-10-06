@@ -65,14 +65,13 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
 import org.olat.course.assessment.model.TransientAssessmentMode;
-import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 18.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class AssessmentModeGuardController extends BasicController implements LockGuardController, GenericEventListener {
@@ -91,8 +90,6 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	
 	@Autowired
 	private AssessmentModule assessmentModule;
-	@Autowired
-	private DisadvantageCompensationService disadvantageCompensationService;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
@@ -326,7 +323,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			cont.setVisible(false);
 			quitSEB.setEnabled(false);
 			quitSEB.setVisible(false);
-		} else if(Status.assessment == mode.getStatus() || isDisadvantageCompensationExtension(mode)) {
+		} else if(Status.assessment == mode.getStatus() || isDisadvantageCompensationExtensionOrExtraTime(mode)) {
 			state = Status.assessment.name();
 			go.setEnabled(true);
 			go.setVisible(true);
@@ -362,11 +359,11 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return state;
 	}
 	
-	private boolean isDisadvantageCompensationExtension(TransientAssessmentMode mode) {
-		if(mode.getEndStatus() == EndStatus.withoutDisadvantage
+	private boolean isDisadvantageCompensationExtensionOrExtraTime(TransientAssessmentMode mode) {
+		if((mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime || mode.getEndStatus() == EndStatus.withoutDisadvantage)
 				&& (mode.getStatus() == Status.followup || mode.getStatus() == Status.end)) {
-			return disadvantageCompensationService.isActiveDisadvantageCompensation(getIdentity(),
-					new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList());
+			return assessmentModeCoordinationService.isActiveDisadvantageCompensationOrExtraTime(getIdentity(),
+					new RepositoryEntryRefImpl(mode.getRepositoryEntryKey()), mode.getElementList(), mode.getEndStatus());
 		}
 		return false;
 	}

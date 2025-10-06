@@ -59,7 +59,6 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
-import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.repository.RepositoryEntry;
@@ -96,8 +95,6 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
-	@Autowired
-	private DisadvantageCompensationDAO disadvantageCompensationDao;
 	@Autowired
 	private AssessmentModeCoordinationServiceImpl assessmentModeCoordinationService;
 
@@ -370,7 +367,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			myModes = new ArrayList<>(allMyModes.size());
 			for(AssessmentMode mode:allMyModes) {
 				if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
-					if(isDisadvantagedUser(mode, identity)) {
+					if(assessmentModeCoordinationService.isActiveDisadvantageCompensationOrExtraTime(identity, mode, mode.getEndStatus())) {
 						myModes.add(mode);
 					}
 				} else if(mode.getStatus() != Status.end) {
@@ -379,12 +376,6 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			}
 		}
 		return myModes == null ? Collections.<AssessmentMode>emptyList() : myModes;
-	}
-	
-	@Override
-	public boolean isDisadvantagedUser(AssessmentMode mode, IdentityRef identity) {
-		return disadvantageCompensationDao
-				.isActiveDisadvantagedUser(identity, mode.getRepositoryEntry(), mode.getElementAsList());
 	}
 
 	@Override

@@ -106,6 +106,7 @@ import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
+import org.olat.ims.qti21.model.jpa.AssessmentRunningTestSessionInfos;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
@@ -745,10 +746,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		return testSessionDao.hasRunningTestSessions(entry, subIdent, testEntry, identities);
 	}
 	
-
 	@Override
-	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, List<String> subIdents, List<? extends IdentityRef> identities) {
-		return testSessionDao.hasRunningTestSessions(entry, subIdents, identities);
+	public List<AssessmentRunningTestSessionInfos> getRunningAssessmentTestSession(RepositoryEntry entry, List<String> subIdents, List<? extends IdentityRef> identities) {
+		return testSessionDao.getRunningTestSessionsInfos(entry, subIdents, identities);
 	}
 
 	@Override
