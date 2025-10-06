@@ -444,8 +444,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(retrieveConfirmationCtr == source) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doPullSession(ureq, (AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
+			if((DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event))
+					&& retrieveConfirmationCtr.getUserObject() instanceof AssessmentTestSession testSession) {
+				doPullSession(ureq, testSession);
 				updateModel();
 			}
 		} else if(invalidateConfirmationCtr == source || revalidateConfirmationCtr == source || deleteToolCtrl == source) {

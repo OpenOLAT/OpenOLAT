@@ -70,6 +70,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -214,6 +215,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private UserCourseInformationsManager userCourseInfoMgr;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -1360,9 +1363,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		for(AssessmentMode mode:modes) {
 			if(re.equals(mode.getRepositoryEntry()) &&
 					(mode.getStatus() == Status.assessment
-					|| (mode.getEndStatus() == EndStatus.withoutDisadvantage 
+					|| ((mode.getEndStatus() == EndStatus.withoutBoth || mode.getEndStatus() == EndStatus.withoutExtraTime || mode.getEndStatus() == EndStatus.withoutDisadvantage)
 						&& (mode.getStatus() == Status.followup || mode.getStatus() == Status.end)
-						&& assessmentModeMgr.isDisadvantagedUser(mode, getIdentity())))) {
+						&& assessmentModeCoordinationService.isActiveDisadvantageCompensationOrExtraTime(getIdentity(), mode, mode.getEndStatus())))) {
 				return true;
 			}
 		}

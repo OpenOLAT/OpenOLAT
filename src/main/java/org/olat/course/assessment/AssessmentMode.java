@@ -163,6 +163,8 @@ public interface AssessmentMode extends SafeExamBrowserEnabled, ModifiedInfo, Cr
 	
 	public enum EndStatus {
 		all,
-		withoutDisadvantage
+		withoutDisadvantage,
+		withoutExtraTime,
+		withoutBoth;
 	}
 }

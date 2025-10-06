@@ -20,13 +20,17 @@
 package org.olat.course.assessment;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.model.AssessmentModeStatistics;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -51,8 +55,22 @@ public interface AssessmentModeCoordinationService {
 	 */
 	public boolean canStop(AssessmentMode assessmentMode);
 	
+	/**
+	 * Returns true the assessment mode is in the follow-up or end status
+	 * with exceptions for disadvantage compensation or extra time.
+	 * 
+	 * @param assessmentMode The assessment mode
+	 * @return true if disadvantage compensation or extra time quick in
+	 */
 	public boolean isDisadvantageCompensationExtensionTime(AssessmentMode assessmentMode);
 	
+	/**
+	 * Returns true the assessment mode is in the follow-up or end status
+	 * with exceptions for disadvantage compensation or extra time.
+	 * 
+	 * @param assessmentMode The assessment mode
+	 * @return true if disadvantage compensation or extra time quick in
+	 */
 	public boolean isDisadvantageCompensationExtensionTime(TransientAssessmentMode assessmentMode);
 	
 	/**
@@ -82,9 +100,15 @@ public interface AssessmentModeCoordinationService {
 	
 	public AssessmentMode startAssessment(AssessmentMode assessmentMode);
 	
-	public AssessmentMode stopAssessment(AssessmentMode assessmentMode, boolean pullTestSessions, boolean withDisadvantaged, Identity doer);
+	public AssessmentMode stopAssessment(AssessmentMode assessmentMode, boolean pullTestSessions, boolean withExtraTime, boolean withDisadvantaged, Identity doer);
 	
 	public AssessmentModeStatistics getStatistics(AssessmentMode assessmentMode);
+	
+	public List<DisadvantageCompensation> getDisadvantageCompensations(AssessmentMode assessmentMode);
+	
+	public boolean isActiveDisadvantageCompensationOrExtraTime(IdentityRef identity, AssessmentMode mode, EndStatus status);
+	
+	public boolean isActiveDisadvantageCompensationOrExtraTime(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdents, EndStatus status);
 	
 	public void waitFor(IdentityRef identity, TransientAssessmentMode assessmentMode);
 	

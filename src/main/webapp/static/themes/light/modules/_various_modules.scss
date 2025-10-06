@@ -908,6 +908,19 @@ div.o_assessment_mode_row {
 	}
 }
 
+.o_assessment_mode_participants_list {
+	padding: 7px 0 0 19px;
+}
+
+.o_assessment_mode_confirm_participants_list > ul {
+	padding-top: 7px;
+}
+
+.o_assessment_mode_more_participants_list {
+	padding: 5px 19px 0 19px;
+	margin-bottom: 5px;
+}
+
 div.o_assessment_inspection_with_code {
 	display: grid;
 	grid-template-columns: 50% 49%;

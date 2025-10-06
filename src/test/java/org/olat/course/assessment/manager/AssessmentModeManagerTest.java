@@ -19,13 +19,12 @@
  */
 package org.olat.course.assessment.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -644,8 +643,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		boolean inAssessment2run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, null, participant2);
 		Assert.assertTrue(inAssessment2run1);
 		
-		mode1pos1 = assessmentModeCoordinationService.stopAssessment(mode1pos1, false, true, author);
-		mode2pos1 = assessmentModeCoordinationService.stopAssessment(mode2pos1, false, true, author);
+		mode1pos1 = assessmentModeCoordinationService.stopAssessment(mode1pos1, false, true, true, author);
+		mode2pos1 = assessmentModeCoordinationService.stopAssessment(mode2pos1, false, true, true, author);
 		mode1pos2 = assessmentModeCoordinationService.startAssessment(mode1pos2);
 		mode2pos2 = assessmentModeCoordinationService.startAssessment(mode2pos2);
 		dbInstance.commitAndCloseSession();
@@ -1057,7 +1056,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Date from = DateUtils.addDays(new Date(), -5);
 		Date to = DateUtils.addDays(new Date(), -2);
 		List<AssessmentMode> plannedModes = assessmentModeMgr.getPlannedAssessmentMode(entry, from, to);
-		assertThat(plannedModes)
+		Assertions.assertThat(plannedModes)
 			.isNotNull()
 			.containsAnyOf(mode);
 	}
@@ -1085,13 +1084,13 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		params.setAllowedModeStatus(List.of(Status.none.name()));
 
 		List<AssessmentMode> plannedModes = assessmentModeMgr.findAssessmentMode(params);
-		assertThat(plannedModes)
+		Assertions.assertThat(plannedModes)
 			.isNotNull()
 			.containsAnyOf(mode);
 
 		params.setAllowedModeStatus(List.of(Status.end.name()));
 		List<AssessmentMode> excludeEndMode = assessmentModeMgr.findAssessmentMode(params);
-		assertThat(excludeEndMode).hasSize(plannedModes.size() - 1);
+		Assertions.assertThat(excludeEndMode).hasSize(plannedModes.size() - 1);
 	}
 	
 	/**
@@ -1127,7 +1126,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		params.setRunning(Boolean.TRUE);
 	
 		List<AssessmentMode> runningModes = assessmentModeMgr.findAssessmentMode(params);
-		assertThat(runningModes)
+		Assertions.assertThat(runningModes)
 			.isNotNull()
 			.containsAnyOf(mode);
 		
@@ -1138,7 +1137,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<AssessmentMode> rModes = assessmentModeMgr.findAssessmentMode(params);
-		assertThat(rModes)
+		Assertions.assertThat(rModes)
 			.isNotNull()
 			.doesNotContainSequence(mode);
 	}

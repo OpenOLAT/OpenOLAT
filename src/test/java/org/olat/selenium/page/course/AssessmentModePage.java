@@ -223,7 +223,7 @@ public class AssessmentModePage {
 	public AssessmentModePage confirmStop() {
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-body button.btn-primary");
 		OOGraphene.waitElement(confirmButtonBy, browser).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
