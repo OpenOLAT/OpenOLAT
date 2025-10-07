@@ -214,7 +214,7 @@ public class CalendarEntryForm extends FormBasicController {
 			chooseRecurrence.setVisible(false);
 		} else {
 			String recurrence = CalendarUtils.getRecurrence(kalendarEvent.getRecurrenceRule());
-			if(recurrence != null && !recurrence.equals("") && !recurrence.equals(RECURRENCE_NONE)) {
+			if(StringHelper.containsNonWhitespace(recurrence) && !recurrence.equals(RECURRENCE_NONE)) {
 				chooseRecurrence.select(recurrence, true);
 				ZonedDateTime recurEnd = calendarManager.getRecurrenceEndDate(kalendarEvent.getRecurrenceRule());
 				if(recurEnd != null) {
@@ -305,7 +305,7 @@ public class CalendarEntryForm extends FormBasicController {
 		if (chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE)) {
 			event.setRecurrenceRule(null);
 		} else {
-			String rrule = calendarManager.getRecurrenceRule(chooseRecurrence.getSelectedKey(), recurrenceEnd.getDate());
+			String rrule = calendarManager.getRecurrenceRule(chooseRecurrence.getSelectedKey(), recurrenceEnd.getDate(), allDayEvent.isOn());
 			event.setRecurrenceRule(rrule);
 		}
 		

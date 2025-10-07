@@ -1,6 +1,5 @@
-<div class="o_warning_with_icon">$r.translate("cal.delete.dialogtext")</div>
+<div class="o_warning_with_icon">$msg</div>
 <div class="o_button_group">
-	$r.render("cancel")
 	#if($r.available("delete"))
 		$r.render("delete")
 	#end
@@ -13,4 +12,5 @@
 	#if($r.available("delete.one"))
 		$r.render("delete.one")
 	#end
+	$r.render("cancel")
 </div>

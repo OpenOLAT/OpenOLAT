@@ -425,9 +425,19 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Calendar cal = Calendar.getInstance();
 		cal.set(2025, 1, 28, 0, 0, 0);
 		Date recurrenceEnd = cal.getTime();
-		String rule = calendarManager.getRecurrenceRule("WEEKLY", recurrenceEnd);
+		String rule = calendarManager.getRecurrenceRule("WEEKLY", recurrenceEnd, false);
 		Assert.assertNotNull(rule);
-		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228T225900Z", rule);
+		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228T000000Z;COUNT=-1", rule);
+	}
+	
+	@Test
+	public void getWeeklyRecurrenceRuleAllDay() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(2025, 1, 28, 0, 0, 0);
+		Date recurrenceEnd = cal.getTime();
+		String rule = calendarManager.getRecurrenceRule("WEEKLY", recurrenceEnd, true);
+		Assert.assertNotNull(rule);
+		Assert.assertEquals("FREQ=WEEKLY;UNTIL=20250228;COUNT=-1", rule);
 	}
 	
 	@Test
@@ -440,7 +450,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		ZonedDateTime endDate = ZonedDateTime.of(2022, 3, 3, 16, 0, 0, 0, ZoneId.systemDefault());
 		
 		KalendarEvent event = new KalendarEvent("cal-1-1", null, "Recurrence", startDate, endDate);
-		String rrule = calendarManager.getRecurrenceRule("WEEKLY", new Date());
+		String rrule = calendarManager.getRecurrenceRule("WEEKLY", new Date(), false);
 		event.setRecurrenceRule(rrule);
 		
 		boolean added = calendarManager.addEventTo(kal, event);
@@ -471,7 +481,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		KalendarEvent event = new KalendarEvent("cal-1-1", null, "Recurrence", startDate, endDate);
 
 		ZonedDateTime recurenceEndDate = ZonedDateTime.of(2025, 11, 4, 0, 0, 0, 0, ZoneId.systemDefault());
-		String rrule = calendarManager.getRecurrenceRule("WEEKLY", DateUtils.toDate(recurenceEndDate));
+		String rrule = calendarManager.getRecurrenceRule("WEEKLY", DateUtils.toDate(recurenceEndDate), false);
 		event.setRecurrenceRule(rrule);
 		
 		boolean added = calendarManager.addEventTo(kal, event);
