@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalMergedState;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTransaction;
@@ -41,11 +40,13 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTra
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataModel<PaypalCheckoutTransaction>
-	implements SortableFlexiTableDataModel<PaypalCheckoutTransaction>, FilterableFlexiTableModel {
+public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataModel<PaypalCheckoutTransactionRow>
+	implements SortableFlexiTableDataModel<PaypalCheckoutTransactionRow>, FilterableFlexiTableModel {
+	
+	private static final CheckoutCols[] COLS = CheckoutCols.values();
 
 	private final Locale locale;
-	private List<PaypalCheckoutTransaction> backups;
+	private List<PaypalCheckoutTransactionRow> backups;
 	
 	public PaypalCheckoutTransactionDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
@@ -55,7 +56,7 @@ public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataMod
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<PaypalCheckoutTransaction> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<PaypalCheckoutTransactionRow> rows = new PaypalCheckoutTransactionDataModelDelegate(orderBy, this, locale).sort();
 			super.setObjects(rows);
 		}
 	}
@@ -64,9 +65,9 @@ public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataMod
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
 		if(StringHelper.containsNonWhitespace(key)) {
-			List<PaypalCheckoutTransaction> filteredRows = new ArrayList<>(backups.size());
+			List<PaypalCheckoutTransactionRow> filteredRows = new ArrayList<>(backups.size());
 			if(PaypalMergedState.isValueOf(key)) {
-				for(PaypalCheckoutTransaction row:backups) {
+				for(PaypalCheckoutTransactionRow row:backups) {
 					if(accept(key, row)) {
 						filteredRows.add(row);
 					}
@@ -80,7 +81,7 @@ public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataMod
 		}
 	}
 	
-	private boolean accept(String filter, PaypalCheckoutTransaction transaction) {
+	private boolean accept(String filter, PaypalCheckoutTransactionRow transaction) {
 		boolean accept = true;
 		if(StringHelper.containsNonWhitespace(filter) && !"showAll".equals(filter)) {
 			String status = transaction.getStatus() == null ? "" : transaction.getStatus().name();
@@ -92,36 +93,45 @@ public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataMod
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		PaypalCheckoutTransaction transaction = getObject(row);
+		PaypalCheckoutTransactionRow transaction = getObject(row);
 		return getValueAt(transaction, col);
 	}
 
 	@Override
-	public Object getValueAt(PaypalCheckoutTransaction transaction, int col) {
-		switch(CheckoutCols.values()[col]) {
-			case status: return transaction.getPaypalOrderStatus();
-			case date: return transaction.getCreationDate();
-			case paypalOrderNr: return transaction.getPaypalOrderId();
-			case orderNr: return transaction.getOrderNr();
-			case amount: return transaction.getSecurePrice();
-			case olatStatus: return transaction.getStatus() == null ? "???" : transaction.getStatus().name();
-			default: return null;
+	public Object getValueAt(PaypalCheckoutTransactionRow transaction, int col) {
+		if(col >= 0 && col < COLS.length) {
+			return switch(COLS[col]) {
+				case status -> transaction.getPaypalOrderStatus();
+				case date -> transaction.getCreationDate();
+				case paypalOrderNr -> transaction.getPaypalOrderId();
+				case orderNr -> transaction.getOrderNr();
+				case amount -> transaction.getSecurePrice();
+				case olatStatus -> transaction.getStatus() == null ? "???" : transaction.getStatus().name();
+				default -> "ERROR";
+			};
 		}
+		
+		 if(col >= PaypalCheckoutTransactionsController.USER_PROPS_OFFSET) {
+			int propIndex = col - PaypalCheckoutTransactionsController.USER_PROPS_OFFSET;
+			return transaction.getIdentityProp(propIndex);
+		}
+		 
+		 return "ERROR";
 	}
 
 	@Override
-	public void setObjects(List<PaypalCheckoutTransaction> objects) {
+	public void setObjects(List<PaypalCheckoutTransactionRow> objects) {
 		super.setObjects(objects);
 		this.backups = objects;
 	}
 
 	public PaypalCheckoutTransaction getTransaction(Long key) {
-		List<PaypalCheckoutTransaction> transactions = getObjects();
+		List<PaypalCheckoutTransactionRow> transactions = getObjects();
 		if(transactions == null) return null;
 		
-		for(PaypalCheckoutTransaction trx:transactions) {
+		for(PaypalCheckoutTransactionRow trx:transactions) {
 			if(trx.getKey().equals(key)) {
-				return trx;
+				return trx.getTransaction();
 			}
 		}
 		return null;

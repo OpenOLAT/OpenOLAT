@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
@@ -41,12 +43,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTransaction;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionWithDelivery;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutTransactionDataModel.CheckoutCols;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,18 +63,32 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class PaypalCheckoutTransactionsController extends FormBasicController implements Activateable2 {
+
+	protected static final int USER_PROPS_OFFSET = 500;
+	protected static final String USER_PROPS_ID = PaypalCheckoutTransactionsController.class.getCanonicalName();
 	
 	private FlexiTableElement tableEl;
 	private PaypalCheckoutTransactionDataModel dataModel;
+
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private CloseableModalController cmc;
 	private PaypalCheckoutTransactionDetailsController transactionDetailsCtrl;
-	
+
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private PaypalCheckoutManager paypalManager;
 	
 	public PaypalCheckoutTransactionsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "transactions");
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		initForm(ureq);
 		loadModel();
@@ -84,6 +105,18 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.amount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.orderNr, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CheckoutCols.olatStatus));
+		
+		int i=0;
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			int colIndex = USER_PROPS_OFFSET + i++;
+			if (userPropertyHandler == null) continue;
+			
+			String propName = userPropertyHandler.getName();
+			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+
+			FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			columnsModel.addFlexiColumnModel(col);
+		}
 		
 		dataModel = new PaypalCheckoutTransactionDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "results", dataModel, 25, false, getTranslator(), formLayout);
@@ -109,8 +142,16 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 	}
 	
 	private void loadModel() {
-		List<PaypalCheckoutTransaction> transactions = paypalManager.searchTransactions(null);
-		dataModel.setObjects(transactions);
+		String searchString = tableEl.getQuickSearchString();
+		List<PaypalCheckoutTransactionWithDelivery> transactionsWithDeliveryList = paypalManager.searchTransactions(searchString);
+		List<PaypalCheckoutTransactionRow> rows = new ArrayList<>(transactionsWithDeliveryList.size());
+		for(PaypalCheckoutTransactionWithDelivery transactionWithDelivery:transactionsWithDeliveryList) {
+			Identity identity = transactionWithDelivery.delivery();
+			PaypalCheckoutTransaction transaction = transactionWithDelivery.transaction();
+			rows.add(new PaypalCheckoutTransactionRow(transaction, identity, userPropertyHandlers, getLocale()));
+		}
+		
+		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
@@ -142,13 +183,12 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 		if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				PaypalCheckoutTransaction row = dataModel.getObject(se.getIndex());
+				PaypalCheckoutTransactionRow row = dataModel.getObject(se.getIndex());
 				if("select".equals(se.getCommand())) {
-					doSelectTransaction(ureq, row);
+					doSelectTransaction(ureq, row.getTransaction());
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
-				doSearch(se.getSearch());
+				loadModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -157,12 +197,6 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-	
-	private void doSearch(String search) {
-		List<PaypalCheckoutTransaction> transactions = paypalManager.searchTransactions(search);
-		dataModel.setObjects(transactions);
-		tableEl.reset(true, true, true);
 	}
 	
 	private void doSelectTransaction(UserRequest ureq, PaypalCheckoutTransaction trx) {

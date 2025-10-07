@@ -587,6 +587,36 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutTransactionsController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="PayPal transactions list" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyTelMobile" />
+								<ref bean="userPropertyPoBox" />
+								<ref bean="userPropertyStreet" />
+								<ref bean="userPropertyZipCode" />
+								<ref bean="userPropertyCity" />
+								<ref bean="userPropertyCountry" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyTelMobile" />
+								<ref bean="userPropertyPoBox" />
+								<ref bean="userPropertyStreet" />
+								<ref bean="userPropertyZipCode" />
+								<ref bean="userPropertyCity" />
+								<ref bean="userPropertyCountry" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.course.nodes.cl.ui.CheckListAssessmentController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
