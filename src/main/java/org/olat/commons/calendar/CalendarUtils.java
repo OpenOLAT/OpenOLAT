@@ -54,7 +54,6 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
-import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Recur;
@@ -71,16 +70,19 @@ public class CalendarUtils {
 	private static final DateFormat iso8601DateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
 	/**
-	 * The method replace \\n in the input stream with a double spaces.
+	 * The method replace \\n in the input stream with a double spaces and use a copy
+	 * of specialized DefaultContentHandler which doesn't register the TimezoneRegistry.
+	 * This operation is done only once at start of the calendar module. Goal is
+	 * to prevent a memory leak: @see https://track.frentix.com/issue/OO-8985
 	 * 
 	 * @param in The input stream
 	 * @return A calendar
 	 */
-	public static final net.fortuna.ical4j.model.Calendar buildCalendar(InputStream in) {
+	public static final net.fortuna.ical4j.model.Calendar buildCalendar(InputStream in, CalendarModule calendarModule) {
 		try(InputStream	bin = new BufferedInputStream(in);
 				InputStream fin = new ReplacingInputStream(bin, "\n\\n", "\n \\n");
 				InputStream f2in = new ReplacingInputStream(fin, "\r\\n", "\n \\n");)  {
-			CalendarBuilder builder = new CalendarBuilder();
+			CalendarBuilder builder = new CalendarBuilder(calendarModule.geTimeZoneRegistry());
 			return builder.build(f2in);
 		} catch (Exception e) {
 			throw new OLATRuntimeException("Error parsing calendar", e);
