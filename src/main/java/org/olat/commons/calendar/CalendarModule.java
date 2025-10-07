@@ -20,6 +20,7 @@
 package org.olat.commons.calendar;
 
 import java.time.ZoneId;
+import java.time.zone.ZoneRulesProvider;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Service;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
+import net.fortuna.ical4j.model.ZoneRulesProviderImpl;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
 /**
@@ -58,6 +60,7 @@ public class CalendarModule extends AbstractSpringModule {
 	
 	private ZoneId defaultZoneId;
 	private TimeZone defaultTimeZone;
+	private TimeZoneRegistry timeZoneRegistry;
 	
 	@Value("${calendar.enabled:true}")
 	private boolean enabled;
@@ -89,8 +92,11 @@ public class CalendarModule extends AbstractSpringModule {
 		String defaultTimeZoneID = java.util.TimeZone.getDefault().getID();
 		defaultZoneId = ZoneId.systemDefault();
 		log.info("Calendar time zone: {} - {}", defaultTimeZoneID, defaultZoneId.getId());
-		TimeZoneRegistry timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
+		timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
 		defaultTimeZone = timeZoneRegistry.getTimeZone(defaultTimeZoneID);
+		// Do it only once, replace the call made CalendarBuilder / DefaultContentHandler.endCalendar()
+        ZoneRulesProvider.registerProvider(new ZoneRulesProviderImpl(timeZoneRegistry));
+		
 		if(defaultTimeZone == null) {
 			log.error("Cannot match the JVM default time zone to an ical4j time zone: {}", defaultTimeZoneID);
 		}
@@ -132,6 +138,10 @@ public class CalendarModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(managedCalEnabledObj)) {
 			managedCalendars = "true".equals(managedCalEnabledObj);
 		}
+	}
+	
+	public TimeZoneRegistry geTimeZoneRegistry() {
+		return timeZoneRegistry;
 	}
 	
 	public TimeZone getDefaultTimeZone() {

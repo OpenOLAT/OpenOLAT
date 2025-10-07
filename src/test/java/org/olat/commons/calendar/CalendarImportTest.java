@@ -36,9 +36,10 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.logging.Tracing;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
@@ -47,7 +48,6 @@ import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.RecurrenceId;
-import net.fortuna.ical4j.util.CompatibilityHints;
 
 /**
  * 
@@ -58,17 +58,12 @@ import net.fortuna.ical4j.util.CompatibilityHints;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CalendarImportTest {
+public class CalendarImportTest extends OlatTestCase {
 
 	private static final Logger log = Tracing.createLoggerFor(CalendarImportTest.class);
 	
-	@Before
-	public void setUp() {
-		// Use the same settings as OpenOlat CalendarModule
-		System.setProperty("net.fortuna.ical4j.timezone.cache.impl", "net.fortuna.ical4j.util.MapTimeZoneCache");
-		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
-		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
-	}
+	@Autowired
+	private CalendarModule calendarModule;
 	
 	/**
 	 * The upgrade to iCal4j 3.0 bring an issue with some calendars where
@@ -80,7 +75,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportLineBreakCrasher() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_linebreak_crash.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -95,7 +90,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportNewLineCrasher() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_newline_crash.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -110,7 +105,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportMultiLines() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_multiline_crash.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -126,7 +121,7 @@ public class CalendarImportTest {
 	public void testImportMultiLinesFile() throws Exception {
 		URL url = CalendarImportTest.class.getResource("cal_multiline_crash.ics");
 		InputStream in = new FileInputStream(new File(url.toURI()));
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
 		Assert.assertNotNull(calendar);
         in.close();
         
@@ -141,7 +136,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_30.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
 	}
@@ -149,7 +144,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportWeekFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_7.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
 	}
@@ -157,7 +152,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportAllFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_Alles.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
 	}
@@ -165,7 +160,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportOktoberFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_Okt.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
 	}
@@ -173,7 +168,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Hoffstedde.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
 	}
@@ -181,21 +176,21 @@ public class CalendarImportTest {
 	@Test
 	public void testImportRefresh() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Refresh.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
 	}
 
 	@Test
 	public void testImportFromFGiCal() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("EMAIL.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
 	}
 	
 	@Test
 	public void testImportRecurringCal() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("RecurringEvent.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
         
@@ -233,7 +228,7 @@ public class CalendarImportTest {
 	@Test
 	public void importFulldayOpenOlat191() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("manager/Fullday_openolat_191.ics");
-		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in, calendarModule);
         assertNotNull(calendar);
         in.close();
         
