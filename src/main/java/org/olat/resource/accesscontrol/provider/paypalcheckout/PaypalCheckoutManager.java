@@ -29,6 +29,7 @@ import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CheckoutRequest;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CreateSmartOrder;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionWithDelivery;
 
 import com.paypal.payments.Capture;
 
@@ -90,7 +91,7 @@ public interface PaypalCheckoutManager {
 	
 	public Order getOrder(PaypalCheckoutTransaction trx);
 	
-	public List<PaypalCheckoutTransaction> searchTransactions(String id);
+	public List<PaypalCheckoutTransactionWithDelivery> searchTransactions(String id);
 	
 	
 	public String getPreferredLocale(Locale locale);

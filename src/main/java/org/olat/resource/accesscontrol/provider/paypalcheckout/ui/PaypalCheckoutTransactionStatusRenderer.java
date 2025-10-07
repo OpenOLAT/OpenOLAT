@@ -47,8 +47,8 @@ public class PaypalCheckoutTransactionStatusRenderer  implements FlexiCellRender
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof String) {
-			String status = ((String)cellValue).toLowerCase();
+		if(cellValue instanceof String string) {
+			String status = string.toLowerCase();
 			String cssClass;
 			String i18nKey;
 			switch(status) {
@@ -74,8 +74,13 @@ public class PaypalCheckoutTransactionStatusRenderer  implements FlexiCellRender
 					cssClass = "o_ac_status_unnkown_icon";
 					break;
 			}
+
 			String title = translator.translate(i18nKey, new String[] { status });
-			sb.append("<span title=\"").append(title).append("\"><i class='o_icon o_icon-fw ").append(cssClass).append("'> </i></span>");
+			if(renderer == null) {
+				sb.append(title);
+			} else {
+				sb.append("<span title=\"").append(title).append("\"><i class='o_icon o_icon-fw ").append(cssClass).append("'> </i></span>");
+			}
 		}
 	}
 }

@@ -56,6 +56,7 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTra
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CheckoutRequest;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.CreateSmartOrder;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionWithDelivery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -450,7 +451,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	}
 
 	@Override
-	public List<PaypalCheckoutTransaction> searchTransactions(String id) {
+	public List<PaypalCheckoutTransactionWithDelivery> searchTransactions(String id) {
 		return transactionDao.searchTransactions(id);
 	}
 

@@ -38,6 +38,7 @@ import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutTransaction;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionImpl;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionWithDelivery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -135,16 +136,19 @@ public class PaypalCheckoutTransactionDAO {
 				.getResultList();
 	}
 	
-	public List<PaypalCheckoutTransaction> searchTransactions(String id) {
+	public List<PaypalCheckoutTransactionWithDelivery> searchTransactions(String id) {
 		QueryBuilder sb = new QueryBuilder(128);
-		sb.append("select trx from paypalcheckouttransaction as trx");  
+		sb.append("select new PaypalCheckoutTransactionWithDelivery(trx, delivery) from paypalcheckouttransaction as trx")
+		  .append(" left join acorder as order on (trx.orderId=order.key)")
+		  .append(" left join order.delivery as delivery")
+		  .append(" left join fetch delivery.user as deliveryUser");  
 		if(StringHelper.containsNonWhitespace(id)) {
 			sb.and()
 			  .append(" (trx.orderNr=:searchId or trx.paypalOrderId=:searchId or trx.paypalAuthorizationId=:searchId or trx.paypalCaptureId=:searchId or trx.paypalInvoiceId=:searchId)");
 		}
 		
-		TypedQuery<PaypalCheckoutTransaction> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), PaypalCheckoutTransaction.class);
+		TypedQuery<PaypalCheckoutTransactionWithDelivery> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PaypalCheckoutTransactionWithDelivery.class);
 		
 		if(StringHelper.containsNonWhitespace(id)) {
 			query.setParameter("searchId", id);
