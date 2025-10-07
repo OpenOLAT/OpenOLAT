@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -62,8 +63,8 @@ public class RequestAccountDeletionController extends FormBasicController {
 	@Autowired
 	private RegistrationManager registrationManager;
 	
-	public RequestAccountDeletionController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "request_delete");
+	public RequestAccountDeletionController(UserRequest ureq, WindowControl wControl, Form rootForm) {
+		super(ureq, wControl,LAYOUT_CUSTOM, "request_delete", rootForm);
 		initForm(ureq);
 	}
 

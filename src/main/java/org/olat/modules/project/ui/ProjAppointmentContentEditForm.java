@@ -311,7 +311,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	
 	public String getRecurrenceRule() {
 		return recurrenceRuleEl.isOneSelected() && !RECURRENCE_NONE.equals(recurrenceRuleEl.getSelectedKey())
-				? calendarManager.getRecurrenceRule(recurrenceRuleEl.getSelectedKey(), recurrenceEndEl.getDate())
+				? calendarManager.getRecurrenceRule(recurrenceRuleEl.getSelectedKey(), recurrenceEndEl.getDate(), allDayEl.isOn())
 				: null;
 	}
 	

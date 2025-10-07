@@ -386,7 +386,7 @@ public interface CalendarManager {
 	 * @param recurrenceEnd
 	 * @return
 	 */
-	public String getRecurrenceRule(String recurrence, Date recurrenceEnd);
+	public String getRecurrenceRule(String recurrence, Date recurrenceEnd, boolean fullDay);
 	
 	/**
 	 * Build a Calendar object from String object.

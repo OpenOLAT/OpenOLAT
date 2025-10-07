@@ -160,10 +160,9 @@ public class DisclaimerFormController extends FormBasicController {
 		formLayout.add(disclaimerCont);
 
 		if (readOnly && userModule.isAllowRequestToDeleteAccount() && ureq.getIdentity() != null) {
-			requestAccountDeletionCtrl = new RequestAccountDeletionController(ureq, getWindowControl());
+			requestAccountDeletionCtrl = new RequestAccountDeletionController(ureq, getWindowControl(), mainForm);
 			listenTo(requestAccountDeletionCtrl);
-
-			disclaimerCont.put("radform", requestAccountDeletionCtrl.getInitialComponent());
+			disclaimerCont.add("radform", requestAccountDeletionCtrl.getInitialFormItem());
 		}
 
 		FormLayoutContainer legendContainer = FormLayoutContainer.createBareBoneFormLayout("legend", getTranslator());
@@ -224,7 +223,7 @@ public class DisclaimerFormController extends FormBasicController {
 		}
 
 		if (readOnly) {
-			formLayout.setEnabled(false);
+			disableUI();
 		} else if(withButtons) {
 			// Create submit and cancel buttons
 			final FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttons", null, formLayout);
@@ -232,6 +231,18 @@ public class DisclaimerFormController extends FormBasicController {
 			uifactory.addFormSubmitButton(DCL_ACCEPT, NLS_DISCLAIMER_OK, buttonLayout);
 			FormCancel cancelButton = uifactory.addFormCancelButton(NLS_DISCLAIMER_NOK, buttonLayout, ureq, getWindowControl());	
 			cancelButton.setI18nKey(NLS_DISCLAIMER_NOK);
+		}
+	}
+	
+	private void disableUI() {
+		if(acceptCheckbox != null) {
+			acceptCheckbox.setEnabled(false);
+		}
+		if(additionalCheckbox != null) {
+			additionalCheckbox.setEnabled(false);
+		}
+		if(additionalCheckbox2 != null) {
+			additionalCheckbox2.setEnabled(false);
 		}
 	}
 

@@ -42,8 +42,11 @@ import org.olat.core.util.Util;
  */
 public class ConfirmDeleteController extends BasicController {
 	
+	private Link deleteButton;
+	private Link deleteOneButton;
+	private Link deleteAllButton;
+	private Link deleteFutureButton;
 	private final Link cancelButton;
-	private Link deleteButton, deleteAllButton, deleteFutureButton, deleteOneButton;
 	
 	private final KalendarEvent kalendarEvent;
 	
@@ -52,11 +55,12 @@ public class ConfirmDeleteController extends BasicController {
 		this.kalendarEvent = kalendarEvent;
 		
 		VelocityContainer mainVC = createVelocityContainer("confirm_delete");
+		mainVC.contextPut("msg", translate("cal.delete.dialogtext"));
 		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
 		
 		if(StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceRule())) {
-			if(kalendarEvent instanceof KalendarRecurEvent) {
-				KalendarRecurEvent recurEvent = (KalendarRecurEvent)kalendarEvent;
+			if(kalendarEvent instanceof KalendarRecurEvent recurEvent) {
+				mainVC.contextPut("msg", translate("cal.delete.recurring.dialogtext"));
 				if(recurEvent.isOriginal()) {
 					deleteAllButton = LinkFactory.createButton("delete.all", mainVC, this);
 					deleteAllButton.setElementCssClass("o_sel_cal_delete_all");

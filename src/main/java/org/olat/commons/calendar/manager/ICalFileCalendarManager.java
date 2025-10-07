@@ -1102,7 +1102,14 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				String rRule = rootEvent.getRecurrenceRule();
 				
 				//iCal4j 3: RRULE:FREQ=DAILY;UNTIL=20250306;COUNT=-1
-				ZonedDateTime occurenceDate = occurenceDateTime.truncatedTo(ChronoUnit.DAYS);
+				Temporal occurenceDate;
+				if(kalendarEvent.isAllDayEvent()) {
+					occurenceDate = occurenceDateTime.toLocalDate()
+							.minusDays(1);
+				} else {
+					occurenceDate = occurenceDateTime.truncatedTo(ChronoUnit.DAYS)
+							.withZoneSameInstant(ZoneId.of("UTC"));
+				}
 				Recur<Temporal> recur = new Recur.Builder<>(new Recur<>(rRule))
 					.until(occurenceDate)
 					.count(-1)
@@ -1512,7 +1519,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	 * @return rrule
 	 */
 	@Override
-	public String getRecurrenceRule(String recurrence, Date recurrenceEnd) {
+	public String getRecurrenceRule(String recurrence, Date recurrenceEnd, boolean fullDay) {
 		if (recurrence != null) { // recurrence available
 			// create recurrence rule
 			StringBuilder sb = new StringBuilder();
@@ -1529,12 +1536,23 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 			
 			if(recurrenceEnd != null) {
-				ZonedDateTime recurrenceEndDateTime = DateUtils.toZonedDateTime(recurrenceEnd, calendarModule.getDefaultZoneId());
-				recurrenceEndDateTime = DateUtils.getEndOfDay(recurrenceEndDateTime)
-						.withSecond(0)
-						.withZoneSameInstant(ZoneId.of("UTC"));
-				String recurrenceEndStr = CalendarDateFormat.FLOATING_DATE_TIME_FORMAT.format(recurrenceEndDateTime);
-				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurrenceEndStr).append("Z");
+				String recurrenceEndStr;
+				if(fullDay) {
+					LocalDate recurrenceEndDate = DateUtils.toLocalDate(recurrenceEnd);
+					recurrenceEndStr = CalendarDateFormat.DATE_FORMAT.format(recurrenceEndDate);
+				} else if(recurrence.equals(KalendarEvent.DAILY) || recurrence.equals(KalendarEvent.WEEKLY)
+						|| recurrence.equals(KalendarEvent.MONTHLY) || recurrence.equals(KalendarEvent.YEARLY)
+						|| recurrence.equals(KalendarEvent.WORKDAILY) || recurrence.equals(KalendarEvent.BIWEEKLY)) {
+					LocalDateTime recurrenceEndDateTime = DateUtils.toLocalDateTime(recurrenceEnd)
+							.truncatedTo(ChronoUnit.DAYS);
+					recurrenceEndStr = CalendarDateFormat.FLOATING_DATE_TIME_FORMAT.format(recurrenceEndDateTime) + "Z";
+				} else {
+					ZonedDateTime recurrenceEndDateTime = DateUtils.toZonedDateTime(recurrenceEnd, ZoneId.of("UTC"));
+					recurrenceEndDateTime = recurrenceEndDateTime
+							.withSecond(0);
+					recurrenceEndStr = CalendarDateFormat.FLOATING_DATE_TIME_FORMAT.format(recurrenceEndDateTime) + "Z";
+				}
+				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurrenceEndStr).append(";COUNT=-1");
 			}
 			
 			try {
