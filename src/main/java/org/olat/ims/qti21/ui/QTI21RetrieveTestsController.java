@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,22 +29,14 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -78,11 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21RetrieveTestsController extends FormBasicController {
 
-	private static int LIST_SIZE = 1;
-	
-	private FormLink extraTimeLink;
-	private FormLink moreParticipantsLink;
-	private FormLink disadvantageCompensationsLink;
 	private MultipleSelectionElement withExtraTimeEl;
 	private MultipleSelectionElement withDisadvantagesEl;
 	
@@ -91,9 +79,6 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private final List<Identity> identities;
 	private final List<AssessmentTestSession> sessions;
 	private final Set<Long> identityKeysWithCompensations;
-	
-	private MoreIdentitiesController moreIdentitiesCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -182,9 +167,10 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		List<Identity> extraTimeList = new ArrayList<>();
 		List<Identity> assessedIdentitiesList = new ArrayList<>();
 		List<Identity> disadvantageCompensationList = new ArrayList<>();
+		Set<Identity> deduplicateSet = new HashSet<>();
 		for(AssessmentTestSession session:sessions) {
 			Identity assessedIdentity = session.getIdentity();
-			if(identities.contains(assessedIdentity)) {
+			if(identities.contains(assessedIdentity) && !deduplicateSet.contains(assessedIdentity)) {
 				if(identityKeysWithCompensations.contains(assessedIdentity.getKey())) {
 					disadvantageCompensationList.add(assessedIdentity);
 				} else if(session.getExtraTime() != null && session.getExtraTime().intValue() > 0) {
@@ -192,6 +178,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 				} else {
 					assessedIdentitiesList.add(assessedIdentity);
 				}
+				deduplicateSet.add(assessedIdentity);
 			}
 		}
 		
@@ -225,93 +212,52 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private void initParticipants(FormItemContainer formLayout, List<Identity> assessedIdentityKeys) {
 		if(assessedIdentityKeys.isEmpty()) return;
 		
-		String page = velocity_root + "/confirm_pull_participants.html";
-		FormLayoutContainer customLayout = uifactory.addCustomFormLayout("confirm.pull.participants", "confirm.pull.participants", page, formLayout);
-		
-		initListOfIdentities(customLayout, assessedIdentityKeys);
-		moreParticipantsLink = initMoreIdentities(customLayout, assessedIdentityKeys);
+		List<String> participants = getListOfIdentities(assessedIdentityKeys);
+		uifactory.addStaticListElement("participants.with", "confirm.pull.participants", participants, formLayout);
 	}
 	
 	private void initExtraTime(FormItemContainer formLayout, List<Identity> runningIdentitiesWithExtraTime) {
 		if(runningIdentitiesWithExtraTime.isEmpty()) return;
-		
-		String page = velocity_root + "/confirm_pull_check_participants.html";
-		FormLayoutContainer customLayout = uifactory.addCustomFormLayout("extra.time", "confirm.extra.time", page, formLayout);
-		String label = "<span><i class='o_icon o_icon-fw o_icon_extra_time'> </i> " + translate("confirm.extra.time") + "</span>";
-		customLayout.setLabel(label, null, false);
-		
-		customLayout.setLabel(label, null, false);
 		
 		SelectionValues keyValues = new SelectionValues();
 		String optionKey = runningIdentitiesWithExtraTime.size() == 1
 				? "confirm.stop.text.test"
 				: "confirm.stop.text.tests";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(runningIdentitiesWithExtraTime.size()))));
-		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withExtraTime", null, customLayout,
+		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withExtraTime", null, formLayout,
 				keyValues.keys(), keyValues.values());
+		String label = "<span><i class='o_icon o_icon-fw o_icon_extra_time'> </i> " + translate("confirm.extra.time") + "</span>";
+		withExtraTimeEl.setLabel(label, null, false);
+		withExtraTimeEl.setElementCssClass("o_assessment_mode_check");
 		
-		initListOfIdentities(customLayout, runningIdentitiesWithExtraTime);
-		extraTimeLink = initMoreIdentities(customLayout, runningIdentitiesWithExtraTime);
+		List<String> participants = getListOfIdentities(runningIdentitiesWithExtraTime);
+		uifactory.addStaticListElement("participants.with.extra", null, participants, formLayout);
 	}
 	
 	private void initDisadvantageCompensations(FormItemContainer formLayout, List<Identity> disadvantageCompensationIdentities) {
 		if(disadvantageCompensationIdentities.isEmpty()) return;
-		
-		String page = velocity_root + "/confirm_pull_check_participants.html";
-		FormLayoutContainer customLayout = uifactory.addCustomFormLayout("confirm.disadvantage.compensations", "confirm.disadvantage.compensations", page, formLayout);
-		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
-		customLayout.setLabel(label, null, false);
-		
+	
 		SelectionValues keyValues = new SelectionValues();
 		String optionKey = disadvantageCompensationIdentities.size() == 1
 				? "confirm.stop.text.test"
 				: "confirm.stop.text.tests";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(disadvantageCompensationIdentities.size()))));
-		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withDisadvantages", null, customLayout,
+		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withDisadvantages", null, formLayout,
 				keyValues.keys(), keyValues.values());
+		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
+		withDisadvantagesEl.setLabel(label, null, false);
+		withDisadvantagesEl.setElementCssClass("o_assessment_mode_check");
 		
-		initListOfIdentities(customLayout, disadvantageCompensationIdentities);
-		disadvantageCompensationsLink = initMoreIdentities(customLayout, disadvantageCompensationIdentities);
+		List<String> participants = getListOfIdentities(disadvantageCompensationIdentities);
+		uifactory.addStaticListElement("participants.with.compensations", null, participants, formLayout);
 	}
 	
-	private void initListOfIdentities(FormLayoutContainer formLayout, List<Identity> identities) {
-		List<Identity> firstIdentities;
-		boolean split = identities.size() > LIST_SIZE;
-		if(split) {
-			firstIdentities = identities.subList(0, LIST_SIZE);
-		} else {
-			firstIdentities = identities;
-		}
-		
-		List<String> moreParticipants = firstIdentities.stream()
+	private List<String> getListOfIdentities(List<Identity> identities) {
+		return identities.stream()
 				.map(id -> userManager.getUserDisplayName(id))
 				.toList();
-		formLayout.contextPut("participants", moreParticipants);
 	}
 	
-	private FormLink initMoreIdentities(FormLayoutContainer formLayout, List<Identity> identities) {
-		if(identities.size() <= LIST_SIZE) return null;
-		
-		int additionalParticipants = identities.size() - LIST_SIZE;
-		String i18nKey = additionalParticipants <= 1 ? "confirm.pull.participants.more" : "confirm.pull.participants.more.plural";
-		String link = translate(i18nKey, Integer.toString(additionalParticipants));
-		FormLink moreLink = uifactory.addFormLink("more.participants", link, null, formLayout, Link.LINK | Link.NONTRANSLATED);
-		List<Identity> moreParticipants = identities.subList(LIST_SIZE, identities.size());
-		moreLink.setUserObject(new Identities(moreParticipants));
-		return moreLink;
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(extraTimeLink == source && extraTimeLink.getUserObject() instanceof Identities participants) {
-			doOpenIdentitiesCallout(ureq, extraTimeLink, participants.identities());
-		} else if(moreParticipantsLink == source && moreParticipantsLink.getUserObject() instanceof Identities participants) {
-			doOpenIdentitiesCallout(ureq, moreParticipantsLink, participants.identities());
-		} else if(disadvantageCompensationsLink == source && disadvantageCompensationsLink.getUserObject() instanceof Identities participants) {
-			doOpenIdentitiesCallout(ureq, disadvantageCompensationsLink, participants.identities());
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -376,39 +322,5 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 			QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, testEntry, null, getLocale());
 		}
 		return options;
-	}
-	
-	private void doOpenIdentitiesCallout(UserRequest ureq, FormLink link, List<Identity> identities) {
-		List<String> names = identities.stream()
-				.map(id -> userManager.getUserDisplayName(id))
-				.toList();
-		
-		moreIdentitiesCtrl = new MoreIdentitiesController(ureq, getWindowControl(), names);
-		listenTo(moreIdentitiesCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				moreIdentitiesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
-	private record Identities(List<Identity> identities) {
-		//
-	}
-	
-	private class MoreIdentitiesController extends BasicController {
-		
-		public MoreIdentitiesController(UserRequest ureq, WindowControl wControl, List<String> names) {
-			super(ureq, wControl);
-			
-			VelocityContainer mainVC = createVelocityContainer("confirm_more_participants");
-			mainVC.contextPut("names", names);
-			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			//
-		}
 	}
 }
