@@ -107,6 +107,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
 	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
+	private static final String XSS_SANITIZATION = "xss_sanitization";
 	
 	private static final String VOID_ELEMENTS = "area base basefont br col frame hr img input isindex link"
 			+ " meta param embed source wbr track" // Copy from TinyMCE code
@@ -375,7 +376,7 @@ public class RichTextConfiguration implements Disposable {
 		// Allow editing of all kind of HTML elements and attributes
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, EXTENDED_VALID_ELEMENTS_VALUE_FULL + "," + MATHML_VALID_ELEMENTS);
 		setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FILE_FULL_VALUE_UNSAVE);
-
+		setNonQuotedConfigValue(XSS_SANITIZATION, "false");// If true, will remove some script contents with < > like in loops
 		setNonQuotedConfigValue(PASTE_DATA_IMAGES, "true");
 		// Setup file and link browser
 		if (baseContainer != null) {
