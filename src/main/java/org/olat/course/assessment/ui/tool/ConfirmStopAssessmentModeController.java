@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,6 +84,8 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_assessment_mode_stop");
+		
 		List<String> nodeList = mode.getElementAsList();
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		List<Long> assessedIdentityKeys = new ArrayList<>(assessmentModeManager.getAssessedIdentityKeys(mode));
@@ -138,7 +141,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		initDisadvantageCompensations(formLayout, disadvantageCompensationIdentitiesKeys);
 		
 		// Show pull tests only if running tests
-		if(!runningIdentityKeysWithExtraTime.isEmpty()) {
+		if(!runningSessions.isEmpty()) {
 			SelectionValues keyValues = new SelectionValues();
 			keyValues.add(SelectionValues.entry("with", translate("confirm.stop.pull.running.sessions.option")));
 			pullRunningSessionsEl = uifactory.addCheckboxesHorizontal("runningSessions", "confirm.stop.pull.running.sessions", formLayout,
@@ -160,44 +163,52 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 	
 	private void initExtraTime(FormItemContainer formLayout, List<Long> runningIdentityKeysWithExtraTime) {
 		if(runningIdentityKeysWithExtraTime.isEmpty()) return;
+
+		String page = velocity_root + "/check_with_list.html";
+		FormLayoutContainer customCont = uifactory.addCustomFormLayout("withExtraTime", "confirm.disadvantage.compensations", page, formLayout);
+		String label = "<span><i class='o_icon o_icon-fw o_icon_extra_time'> </i> " + translate("confirm.extra.time") + "</span>";
+		customCont.setLabel(label, null, false);
 		
 		SelectionValues keyValues = new SelectionValues();
 		String optionKey = runningIdentityKeysWithExtraTime.size() == 1
 				? "confirm.stop.text.exam"
 				: "confirm.stop.text.exams";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(runningIdentityKeysWithExtraTime.size()))));
-		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withExtraTime", "confirm.extra.time", formLayout,
+		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withChecks", "confirm.extra.time", customCont,
 				keyValues.keys(), keyValues.values());
 		withExtraTimeEl.setElementCssClass("o_assessment_mode_check");
-		String label = "<span><i class='o_icon o_icon-fw o_icon_extra_time'> </i> " + translate("confirm.extra.time") + "</span>";
-		withExtraTimeEl.setLabel(label, null, false);
 		
 		List<String> participants = getListOfIdentities(runningIdentityKeysWithExtraTime);
-		uifactory.addStaticListElement("participants.with.extra", null, participants, formLayout);
+		uifactory.addStaticListElement("participants.list", null, participants, customCont);
 	}
 	
 	private void initDisadvantageCompensations(FormItemContainer formLayout, List<Long> disadvantageCompensationIdentitiesKeys) {
 		if(disadvantageCompensationIdentitiesKeys.isEmpty()) return;
+		
+		String page = velocity_root + "/check_with_list.html";
+		FormLayoutContainer customCont = uifactory.addCustomFormLayout("withDisadvantages", "confirm.disadvantage.compensations", page, formLayout);
+		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
+		customCont.setLabel(label, null, false);
 		
 		SelectionValues keyValues = new SelectionValues();
 		String optionKey = disadvantageCompensationIdentitiesKeys.size() == 1
 				? "confirm.stop.text.exam"
 				: "confirm.stop.text.exams";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(disadvantageCompensationIdentitiesKeys.size()))));
-		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withDisadvantages", null, formLayout,
+		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withChecks", null, customCont,
 				keyValues.keys(), keyValues.values());
 		withDisadvantagesEl.setElementCssClass("o_assessment_mode_check");
-		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
-		withDisadvantagesEl.setLabel(label, null, false);
 		
 		List<String> participants = getListOfIdentities(disadvantageCompensationIdentitiesKeys);
-		uifactory.addStaticListElement("participants.with.compensations", null, participants, formLayout);
+		uifactory.addStaticListElement("participants.list", null, participants, customCont);
 	}
 	
 	private List<String> getListOfIdentities(List<Long> identitiesKeys) {
-		List<Identity> identities = securityManager.loadIdentityByKeys(identitiesKeys);
+		final Collator collator = Collator.getInstance(getLocale());
+		final List<Identity> identities = securityManager.loadIdentityByKeys(identitiesKeys);
 		return identities.stream()
 				.map(id -> userManager.getUserDisplayName(id))
+				.sorted((s1, s2) -> collator.compare(s1, s2))
 				.toList();
 	}
 	
