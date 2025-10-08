@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -164,6 +165,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_qti_test_session_stop");
+		
 		List<Identity> extraTimeList = new ArrayList<>();
 		List<Identity> assessedIdentitiesList = new ArrayList<>();
 		List<Identity> disadvantageCompensationList = new ArrayList<>();
@@ -219,45 +222,52 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private void initExtraTime(FormItemContainer formLayout, List<Identity> runningIdentitiesWithExtraTime) {
 		if(runningIdentitiesWithExtraTime.isEmpty()) return;
 		
+		String page = velocity_root + "/check_with_list.html";
+		FormLayoutContainer customCont = uifactory.addCustomFormLayout("withExtraTime", "confirm.extra.time", page, formLayout);
+		String label = "<span><i class='o_icon o_icon-fw o_icon_extra_time'> </i> " + translate("confirm.extra.time") + "</span>";
+		customCont.setLabel(label, null, false);
+		
 		SelectionValues keyValues = new SelectionValues();
 		String optionKey = runningIdentitiesWithExtraTime.size() == 1
 				? "confirm.stop.text.test"
 				: "confirm.stop.text.tests";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(runningIdentitiesWithExtraTime.size()))));
-		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withExtraTime", null, formLayout,
+		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withChecks", null, customCont,
 				keyValues.keys(), keyValues.values());
-		String label = "<span><i class='o_icon o_icon-fw o_icon_extra_time'> </i> " + translate("confirm.extra.time") + "</span>";
-		withExtraTimeEl.setLabel(label, null, false);
 		withExtraTimeEl.setElementCssClass("o_assessment_mode_check");
 		
 		List<String> participants = getListOfIdentities(runningIdentitiesWithExtraTime);
-		uifactory.addStaticListElement("participants.with.extra", null, participants, formLayout);
+		uifactory.addStaticListElement("participants.list", null, participants, customCont);
 	}
 	
 	private void initDisadvantageCompensations(FormItemContainer formLayout, List<Identity> disadvantageCompensationIdentities) {
 		if(disadvantageCompensationIdentities.isEmpty()) return;
-	
+		
+		String page = velocity_root + "/check_with_list.html";
+		FormLayoutContainer customCont = uifactory.addCustomFormLayout("withDisadvantages", "confirm.disadvantage.compensations", page, formLayout);
+		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
+		customCont.setLabel(label, null, false);
+		
 		SelectionValues keyValues = new SelectionValues();
 		String optionKey = disadvantageCompensationIdentities.size() == 1
 				? "confirm.stop.text.test"
 				: "confirm.stop.text.tests";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(disadvantageCompensationIdentities.size()))));
-		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withDisadvantages", null, formLayout,
+		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withChecks", null, customCont,
 				keyValues.keys(), keyValues.values());
-		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
-		withDisadvantagesEl.setLabel(label, null, false);
 		withDisadvantagesEl.setElementCssClass("o_assessment_mode_check");
 		
 		List<String> participants = getListOfIdentities(disadvantageCompensationIdentities);
-		uifactory.addStaticListElement("participants.with.compensations", null, participants, formLayout);
+		uifactory.addStaticListElement("participants.list", null, participants, customCont);
 	}
 	
 	private List<String> getListOfIdentities(List<Identity> identities) {
+		final Collator collator = Collator.getInstance(getLocale());
 		return identities.stream()
 				.map(id -> userManager.getUserDisplayName(id))
+				.sorted((s1, s2) -> collator.compare(s1, s2))
 				.toList();
 	}
-	
 
 	@Override
 	protected void formOK(UserRequest ureq) {
