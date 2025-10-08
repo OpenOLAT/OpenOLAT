@@ -98,6 +98,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 				: List.of();
 		List<Long> disadvantageCompensationIdentitiesKeys = disadvantageCompensations.stream()
 				.map(comp -> comp.getIdentity().getKey())
+				.filter(key -> assessedIdentityKeys.contains(key))
 				.distinct()
 				.toList();
 		
@@ -108,6 +109,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 				? runningSessions.stream()
 						.filter(infos -> infos.extraTime() != null && infos.extraTime().intValue() > 0)
 						.map(AssessmentRunningTestSessionInfos::identityKey)
+						.filter(key -> assessedIdentityKeys.contains(key))
 						.distinct()
 						.toList()
 				: List.of();
