@@ -916,6 +916,11 @@ div.o_assessment_mode_row {
 	margin-bottom: 0;
 }
 
+form .o_form.o_qti_test_session_stop .o_static_list ,
+form .o_form.o_assessment_mode_stop .o_static_list {
+	padding-left: 19px;
+}
+
 div.o_assessment_inspection_with_code {
 	display: grid;
 	grid-template-columns: 50% 49%;
