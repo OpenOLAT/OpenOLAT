@@ -1684,7 +1684,7 @@ public class AssessmentTest extends Deployments {
 			.resume();
 		
 		//create a course
-		String courseTitle = "GBadge " + UUID.randomUUID();
+		String courseTitle = "1. GBadge " + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
