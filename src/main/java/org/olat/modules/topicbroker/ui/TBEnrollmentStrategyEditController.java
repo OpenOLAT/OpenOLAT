@@ -84,12 +84,12 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 			config.setMaxTopicsWeight((int)weightMaxTopicEl.getValue());
 			config.setMaxPrioritiesWeight((int)weightMaxPrioritiesEl.getValue());
 			
-			TBEnrollmentFunction prioritiesFunction = functionEl.isOneSelected()
+			TBEnrollmentFunction prioritiesFunction = functionEl != null && functionEl.isOneSelected()
 					? TBEnrollmentFunction.valueOf(functionEl.getSelectedKey())
 					: TBEnrollmentFunction.linear;
 			config.setMaxPrioritiesFunction(prioritiesFunction);
 			
-			if (breakPointEl.isOneSelected() && !KEY_NO_BREAK_POINT.equals(breakPointEl.getSelectedKey())) {
+			if (breakPointEl != null && breakPointEl.isOneSelected() && !KEY_NO_BREAK_POINT.equals(breakPointEl.getSelectedKey())) {
 				config.setMaxPriorityBreakPoint(Integer.valueOf(breakPointEl.getSelectedKey()));
 				
 				TBEnrollmentFunction prioritiesFunctionAfter = functionAfterEl.isOneSelected()
@@ -235,7 +235,9 @@ public class TBEnrollmentStrategyEditController extends FormBasicController {
 		TBEnrollmentStrategyConfig config = getStrategyConfig();
 		if (TBEnrollmentStrategyType.custom == config.getType()) {
 			MaxPrioritiesCriterion criterion = TBEnrollmentStrategyFactory.createMaxPrioritiesCriterion(broker.getMaxSelections(), config);
-			maxPrioritiesCriterionChart.setCriterion(criterion);
+			if(maxPrioritiesCriterionChart != null) {
+				maxPrioritiesCriterionChart.setCriterion(criterion);
+			}
 		}
 	}
 
