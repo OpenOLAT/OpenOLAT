@@ -123,8 +123,7 @@ public class CoursePlannerTest extends Deployments {
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
 			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
-			.assertOnCurriculumInTable(curriculumName)
-			.openCurriculum(curriculumName);
+			.assertOnCurriculumMetada(curriculumName);
 
 		String eid = UUID.randomUUID().toString();
 		String elementName = "Element of course 1 " + eid;
@@ -207,8 +206,7 @@ public class CoursePlannerTest extends Deployments {
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
 			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
-			.assertOnCurriculumInTable(curriculumName)
-			.openCurriculum(curriculumName);
+			.assertOnCurriculumMetada(curriculumName);
 
 		String eid = UUID.randomUUID().toString();
 		String elementName = "Element preparation 1 " + eid;
@@ -308,8 +306,7 @@ public class CoursePlannerTest extends Deployments {
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
 			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
-			.assertOnCurriculumInTable(curriculumName)
-			.openCurriculum(curriculumName);
+			.assertOnCurriculumMetada(curriculumName);
 
 		String eid = UUID.randomUUID().toString();
 		String elementName = "Element 3 " + eid;
@@ -418,8 +415,7 @@ public class CoursePlannerTest extends Deployments {
 		CurriculumPage curriculumPage = coursePlannerPage
 			.openCurriculumBrowser()
 			.addCurriculum(curriculumName, curriculumRef, "OpenOLAT")
-			.assertOnCurriculumInTable(curriculumName)
-			.openCurriculum(curriculumName);
+			.assertOnCurriculumMetada(curriculumName);
 
 		String eid = UUID.randomUUID().toString();
 		String elementName = "Element 4 " + eid;

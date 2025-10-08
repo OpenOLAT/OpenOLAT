@@ -44,9 +44,16 @@ public class CurriculumPage {
 		return this;
 	}
 	
-	public CurriculumPage assertOnCurriculumInTable(String name) {
+	public CurriculumPage assertOnCurriculumInTable2(String name) {
 		By curriculumBy = By.xpath("//div[@class='o_sel_curriculum_management']//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(curriculumBy, browser);
+		return this;
+	}
+	
+	public CurriculumPage assertOnCurriculumMetada(String name) {
+		By titleBy = By.xpath("//fieldset[contains(@class,'o_sel_curriculum_form')]//input[@value='" + name + "'][contains(@class,'o_sel_curriculum_displayname')]");
+		OOGraphene.waitElement(titleBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	
