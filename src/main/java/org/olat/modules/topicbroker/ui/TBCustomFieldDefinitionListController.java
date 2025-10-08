@@ -224,7 +224,7 @@ public class TBCustomFieldDefinitionListController extends FormBasicController {
 		} else if (source == tableEl) {
 			if (event instanceof FlexiTableFilterTabEvent) {
 				loadModel();
-			} else if (event instanceof FlexiTableSearchEvent ftse) {
+			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel();
 			}
 		} else if (source instanceof FormLink link) {
