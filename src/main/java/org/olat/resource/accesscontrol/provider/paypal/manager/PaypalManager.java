@@ -21,18 +21,11 @@
 package org.olat.resource.accesscontrol.provider.paypal.manager;
 
 import java.util.List;
-import java.util.Map;
 
-import org.olat.core.id.Identity;
-import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
-import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;
-
-import com.paypal.svcs.types.ap.PayResponse;
-import com.paypal.svcs.types.ap.PaymentDetailsResponse;
 
 /**
  * 
@@ -44,19 +37,6 @@ import com.paypal.svcs.types.ap.PaymentDetailsResponse;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface PaypalManager {
-	
-	/**
-	 * Return the URL to redirect the customer from OLAT to Paypal
-	 * @param response
-	 * @return
-	 */
-	public String getPayRedirectUrl(PayResponse response);
-	
-	/**
-	 * Return the verification URL for IPN notifications
-	 * @return
-	 */
-	public String getIpnVerificationUrl();
 	
 	public PaypalTransaction loadTransactionByUUID(String uuid);
 	
@@ -71,41 +51,19 @@ public interface PaypalManager {
 	 * @param transaction
 	 * @param status
 	 */
-	public void updateTransaction(PaypalTransaction transaction, PaypalTransactionStatus status);
+	//public void updateTransaction(PaypalTransaction transaction, PaypalTransactionStatus status);
 	
 	/**
 	 * Update the paypal transaction with the uuid (success/cancel)
 	 * @param uuid
 	 */
-	public void updateTransaction(String uuid);
+	//public void updateTransaction(String uuid);
 	
 	/**
 	 * Update the paypal transaction with the informations obtain from IPN Notifications
 	 * @param values
 	 * @param verified
 	 */
-	public void updateTransactionByNotification(Map<String,String> values, boolean verified);
+	//public void updateTransactionByNotification(Map<String,String> values, boolean verified);
 	
-	/**
-	 * Use as test method for login informations
-	 * @return
-	 */
-	public boolean convertCurrency();
-	
-	/**
-	 * Return the payment details from Paypal
-	 * @param key
-	 * @return
-	 */
-	public PaymentDetailsResponse paymentDetails(String key);
-	
-	/**
-	 * Init a payment
-	 * @param delivery
-	 * @param offer
-	 * @param mapperUri
-	 * @param sessionId
-	 * @return
-	 */
-	public PayResponse request(Identity delivery, OfferAccess offer, String mapperUri, String sessionId);
 }

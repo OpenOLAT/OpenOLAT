@@ -78,7 +78,7 @@ import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
-import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -301,9 +301,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Test
 	public void paiedAccesToBusinessGroupWithWaitingList_enoughPlaceButAdmin() {
 		//enable paypal
-		boolean enabled = acModule.isPaypalEnabled();
+		boolean enabled = acModule.isPaypalCheckoutEnabled();
 		if(!enabled) {
-			acModule.setPaypalEnabled(true);
+			acModule.setPaypalCheckoutEnabled(true);
 		}
 
 		//create a group with a free offer
@@ -315,7 +315,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 				Integer.valueOf(0), Integer.valueOf(2), true, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		offer = acService.save(offer);
-		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -346,7 +346,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertFalse(waiting);
 
 		if(!enabled) {
-			acModule.setPaypalEnabled(false);
+			acModule.setPaypalCheckoutEnabled(false);
 		}
 	}
 
@@ -355,7 +355,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
-			acModule.setPaypalEnabled(true);
+			acModule.setPaypalCheckoutEnabled(true);
 		}
 
 		//create a group with a free offer
@@ -367,7 +367,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 				Integer.valueOf(0), Integer.valueOf(2), false, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Free group (waiting)");
 		offer = acService.save(offer);
-		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -385,7 +385,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertFalse(reserved);
 
 		if(!enabled) {
-			acModule.setPaypalEnabled(false);
+			acModule.setPaypalCheckoutEnabled(false);
 		}
 	}
 	
@@ -397,7 +397,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
-			acModule.setPaypalEnabled(true);
+			acModule.setPaypalCheckoutEnabled(true);
 		}
 
 		//create a group with a free offer
@@ -407,7 +407,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 				Integer.valueOf(0), null, true, false, null);
 		Offer offer = acService.createOffer(group.getResource(), "Paypal group (no limit)");
 		offer = acService.save(offer);
-		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -424,7 +424,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
-			acModule.setPaypalEnabled(true);
+			acModule.setPaypalCheckoutEnabled(true);
 		}
 
 		// Create a curriculum with an element and an offer
@@ -437,7 +437,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		
 		Offer offer = acService.createOffer(element.getResource(), "Paypal curriculum element");
 		offer = acService.save(offer);
-		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
@@ -494,7 +494,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
-			acModule.setPaypalEnabled(true);
+			acModule.setPaypalCheckoutEnabled(true);
 		}
 
 		//create curriculum with a free offer

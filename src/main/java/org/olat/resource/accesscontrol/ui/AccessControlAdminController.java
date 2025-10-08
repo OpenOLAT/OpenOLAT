@@ -82,7 +82,6 @@ public class AccessControlAdminController extends FormBasicController {
 			FreeAccessHandler.METHOD_TYPE,
 			TokenAccessHandler.METHOD_TYPE,
 			InvoiceAccessHandler.METHOD_TYPE,
-			PaypalAccessHandler.METHOD_TYPE,
 			PaypalCheckoutAccessHandler.METHOD_TYPE,
 			METHOD_AUTO
 		};
@@ -111,7 +110,6 @@ public class AccessControlAdminController extends FormBasicController {
 		methods.select(FreeAccessHandler.METHOD_TYPE, acModule.isFreeEnabled());
 		methods.select(TokenAccessHandler.METHOD_TYPE, acModule.isTokenEnabled());
 		methods.select(InvoiceAccessHandler.METHOD_TYPE, acModule.isInvoiceEnabled());
-		methods.select(PaypalAccessHandler.METHOD_TYPE, acModule.isPaypalEnabled());
 		methods.select(PaypalCheckoutAccessHandler.METHOD_TYPE, acModule.isPaypalCheckoutEnabled());
 		methods.select(METHOD_AUTO, acModule.isAutoEnabled());
 		methods.setEnabled(acModule.isEnabled());
@@ -167,15 +165,13 @@ public class AccessControlAdminController extends FormBasicController {
 		acModule.setFreeEnabled(selectedMethods.contains(FreeAccessHandler.METHOD_TYPE));
 		acModule.setTokenEnabled(selectedMethods.contains(TokenAccessHandler.METHOD_TYPE));
 		acModule.setInvoiceEnabled(selectedMethods.contains(InvoiceAccessHandler.METHOD_TYPE));
-		boolean paypalEnabled = selectedMethods.contains(PaypalAccessHandler.METHOD_TYPE);
-		acModule.setPaypalEnabled(paypalEnabled);
 		boolean paypalCheckoutEnabled = selectedMethods.contains(PaypalCheckoutAccessHandler.METHOD_TYPE);
 		acModule.setPaypalCheckoutEnabled(paypalCheckoutEnabled);
 		acModule.setAutoEnabled(selectedMethods.contains(METHOD_AUTO));
 		
 		acModule.setOfferOrganisationSelection(OfferOrganisationSelection.valueOf(offerOrgEl.getSelectedKey()));
 
-		boolean homeOverviewEnabled = paypalEnabled || !homeEnabled.getSelectedKeys().isEmpty();
+		boolean homeOverviewEnabled = paypalCheckoutEnabled || !homeEnabled.getSelectedKeys().isEmpty();
 		acModule.setHomeOverviewEnabled(homeOverviewEnabled);
 
 		methods.setEnabled(on);

@@ -145,7 +145,9 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		updateProperties();
 		updateAccessMethods();
 		resetResetAutoStatusToPending();
-		log.info("Access control module is enabled: " + Boolean.toString(enabled));
+		log.info("Access control module is enabled: {}", Boolean.toString(enabled));
+		
+		acMethodManager.enableMethod(PaypalAccessMethod.class, false);
 	}
 
 	@Override
@@ -336,13 +338,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	}
 
 	public boolean isPaypalEnabled() {
-		return paypalEnabled;
-	}
-
-	public void setPaypalEnabled(boolean paypalEnabled) {
-		this.paypalEnabled = paypalEnabled;
-		setStringProperty(PAYPAL_ENABLED, Boolean.toString(paypalEnabled), true);
-		acMethodManager.enableMethod(PaypalAccessMethod.class, paypalEnabled);
+		return false;
 	}
 	
 	public boolean isPaypalCheckoutEnabled() {

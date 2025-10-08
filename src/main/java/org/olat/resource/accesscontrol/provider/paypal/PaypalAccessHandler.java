@@ -46,8 +46,6 @@ import org.olat.resource.accesscontrol.model.AuthorACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
-import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalAccessConfigurationController;
-import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalSubmitController;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalTransactionDetailsController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
@@ -83,13 +81,13 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
+		Translator translator = Util.createPackageTranslator(PaypalTransactionDetailsController.class, locale);
 		return translator.translate("paypal.method");
 	}
 
 	@Override
 	public String getDescription(Locale locale) {
-		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
+		Translator translator = Util.createPackageTranslator(PaypalTransactionDetailsController.class, locale);
 		return translator.translate("paypal.method.description");
 	}
 	
@@ -100,23 +98,21 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
-		return new PaypalSubmitController(ureq, wControl, link);
+		return null;
 	}
 
 	@Override
 	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
 			boolean confirmationByManagerSupported, CatalogInfo catalogInfo) {
-		return new PaypalAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, false, catalogInfo, true);
+		return null;
 	}
 
 	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,
 			boolean confirmationByManagerSupported, CatalogInfo catalogInfo) {
-		return new PaypalAccessConfigurationController(ureq, wControl, link, offerOrganisationsSupported,
-				offerOrganisations, false, catalogInfo, false);
+		return null;
 	}
 	
 	@Override

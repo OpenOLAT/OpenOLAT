@@ -707,7 +707,6 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
 	org.olat.resource.accesscontrol.provider.auto.AutoAccessManagerTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAOTest.class,
-	org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManagerTest.class,
 	org.olat.resource.accesscontrol.provider.paypalcheckout.manager.PaypalCheckoutManagerTest.class,
 	org.olat.resource.accesscontrol.provider.paypalcheckout.manager.PaypalCheckoutTransactionDAOTest.class,
 	org.olat.resource.accesscontrol.ui.PriceFormatTest.class,
