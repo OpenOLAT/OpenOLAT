@@ -78,14 +78,14 @@ public interface AssessmentModeCoordinationService {
 	 * @param identity The assessed identity
 	 * @return The extension time or null
 	 */
-	public Integer getDisadvantageCompensationExtensionTime(TransientAssessmentMode mode, IdentityRef identity);
+	public Integer getDisadvantageCompensationExtensionTimeAndExtraTime(TransientAssessmentMode mode, IdentityRef identity);
 
 	/**
 	 * @param mode The assessment mode
 	 * @param identity The assessed identity
 	 * @return The extension time or null
 	 */
-	public Integer getDisadvantageCompensationExtensionTime(AssessmentMode mode, IdentityRef identity);
+	public Integer getDisadvantageCompensationExtensionTimeAndExtraTime(AssessmentMode mode, IdentityRef identity);
 	
 	/**
 	 * Send events for all assessment modes for the specified course.

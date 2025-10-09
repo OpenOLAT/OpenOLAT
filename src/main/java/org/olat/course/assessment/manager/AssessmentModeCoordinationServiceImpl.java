@@ -647,20 +647,52 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	@Override
-	public Integer getDisadvantageCompensationExtensionTime(TransientAssessmentMode mode, IdentityRef identity) {
+	public Integer getDisadvantageCompensationExtensionTimeAndExtraTime(TransientAssessmentMode mode, IdentityRef identity) {
 		if(isDisadvantageCompensationExtensionTime(mode)) {
 			RepositoryEntryRef entry = new RepositoryEntryRefImpl(mode.getRepositoryEntryKey());
-			return getDisadvantageCompensation(entry, identity, mode.getElementList());
+			return getDisadvantageCompensationExtensionTimeAndExtraTime(entry, mode.getEndStatus(), identity, mode.getElementList());
 		}
 		return null;
 	}
 
 	@Override
-	public Integer getDisadvantageCompensationExtensionTime(AssessmentMode mode, IdentityRef identity) {
+	public Integer getDisadvantageCompensationExtensionTimeAndExtraTime(AssessmentMode mode, IdentityRef identity) {
 		if(isDisadvantageCompensationExtensionTime(mode)) {
-			return getDisadvantageCompensation(mode.getRepositoryEntry(), identity, mode.getElementAsList());
+			return getDisadvantageCompensationExtensionTimeAndExtraTime(mode.getRepositoryEntry(), mode.getEndStatus(), identity, mode.getElementAsList());
 		}
 		return null;
+	}
+	
+	private Integer getDisadvantageCompensationExtensionTimeAndExtraTime(RepositoryEntryRef entry, EndStatus endStatus, IdentityRef identity, List<String> subIdents) {
+		if(endStatus == EndStatus.withoutBoth) {
+			Integer compensation = getDisadvantageCompensation(entry, identity, subIdents);
+			Integer extraTime = getRunningTestSessionExtraTime(entry, identity, subIdents);
+			int total = 0;
+			if(compensation != null && compensation.intValue() > 0) {
+				total += compensation.intValue();
+			}
+			if(extraTime != null && extraTime.intValue() > 0) {
+				total += extraTime.intValue();
+			}
+			return total == 0 ? null : Integer.valueOf(total);
+		} else if(endStatus == EndStatus.withoutExtraTime) {
+			return getRunningTestSessionExtraTime(entry, identity, subIdents);
+		} else if(endStatus == EndStatus.withoutDisadvantage) {
+			return getDisadvantageCompensation(entry, identity, subIdents);
+		}
+		return null;
+	}
+	
+	private Integer getRunningTestSessionExtraTime(RepositoryEntryRef entry, IdentityRef identity, List<String> subIdents) {
+		List<AssessmentTestSession> testSessions = assessmentTestSessionDao
+				.getRunningTestSessionsByIdentityKeys(entry, subIdents, List.of(identity.getKey()));
+		int extraTime = 0;
+		for(AssessmentTestSession testSession:testSessions) {
+			if(testSession.getExtraTime() != null && testSession.getExtraTime().intValue() > 0) {
+				extraTime += testSession.getExtraTime().intValue();
+			}
+		}
+		return Integer.valueOf(extraTime);
 	}
 	
 	private Integer getDisadvantageCompensation(RepositoryEntryRef entry, IdentityRef identity, List<String> subIdents) {
