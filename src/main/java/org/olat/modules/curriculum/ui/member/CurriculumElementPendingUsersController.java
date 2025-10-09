@@ -71,6 +71,7 @@ import org.olat.modules.curriculum.ui.wizard.AddMember1SearchStep;
 import org.olat.modules.curriculum.ui.wizard.AddMemberFinishCallback;
 import org.olat.modules.curriculum.ui.wizard.MembersContext;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;

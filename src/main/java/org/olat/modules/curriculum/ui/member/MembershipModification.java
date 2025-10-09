@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 
 /**
  * 

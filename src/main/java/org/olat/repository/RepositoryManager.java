@@ -103,6 +103,7 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
@@ -1686,7 +1687,7 @@ public class RepositoryManager {
 			Date expiration =  DateUtils.addMonth(new Date(), 6);
 			expiration = DateUtils.getEndOfDay(expiration);
 			Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
-			reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, Boolean.TRUE, re.getOlatResource());
+			reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, ConfirmationByEnum.PARTICIPANT, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identityToAdd,
 					GroupRoles.coach.name(), GroupMembershipStatus.reservation, false, null, null,
 					actor, null);
@@ -1811,7 +1812,7 @@ public class RepositoryManager {
 			Date expiration = DateUtils.addMonth(new Date(), 6);
 			expiration = DateUtils.getEndOfDay(expiration);
 			Group group = repositoryEntryRelationDao.getDefaultGroup(re);
-			reservationDao.createReservation(identity, "repo_participant", expiration, Boolean.TRUE, re.getOlatResource());
+			reservationDao.createReservation(identity, "repo_participant", expiration, ConfirmationByEnum.PARTICIPANT, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(group, identity,
 					GroupRoles.participant.name(), GroupMembershipStatus.reservation, false, null, null,
 					ureqIdentity, null);

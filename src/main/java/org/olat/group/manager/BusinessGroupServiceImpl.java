@@ -107,6 +107,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
@@ -858,7 +859,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		if(olderReservation == null) {
 			Date expiration = acModule.getDefaultExpirationDate(new Date());
 			ResourceReservation reservation =
-					reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, Boolean.TRUE, businessGroup.getResource());
+					reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, ConfirmationByEnum.PARTICIPANT, businessGroup.getResource());
 			if(reservation != null) {
 				// logging
 				log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
@@ -922,7 +923,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			expiration = DateUtils.getEndOfDay(expiration);
 			Group group = businessGroupRelationDAO.getGroup(businesGroup);
 			reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT,
-							expiration, Boolean.TRUE, resource);
+							expiration, ConfirmationByEnum.PARTICIPANT, resource);
 			groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
 					GroupRoles.participant.name(), GroupMembershipStatus.reservation, false, null, null,
 					actor, null);

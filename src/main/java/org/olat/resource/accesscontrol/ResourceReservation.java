@@ -39,10 +39,9 @@ public interface ResourceReservation extends ModifiedInfo {
 	
 	public String getType();
 	
-	public Boolean getUserConfirmable();
+	public ConfirmationByEnum getConfirmableBy();
 	
 	public Identity getIdentity();
 	
 	public OLATResource getResource();
-
 }

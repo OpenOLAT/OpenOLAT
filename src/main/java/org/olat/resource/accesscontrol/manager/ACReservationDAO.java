@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.ResourceReservationImpl;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
@@ -47,7 +48,7 @@ public class ACReservationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public ResourceReservation createReservation(Identity identity, String type, Date expirationDate, Boolean userConfirmable, OLATResource resource) {
+	public ResourceReservation createReservation(Identity identity, String type, Date expirationDate, ConfirmationByEnum confirmableBy, OLATResource resource) {
 		ResourceReservationImpl reservation = new ResourceReservationImpl();
 		reservation.setCreationDate(new Date());
 		reservation.setLastModified(reservation.getCreationDate());
@@ -55,7 +56,9 @@ public class ACReservationDAO {
 		reservation.setResource(resource);
 		reservation.setExpirationDate(expirationDate);
 		reservation.setType(type);
-		reservation.setUserConfirmable(userConfirmable == null ? Boolean.TRUE : userConfirmable);
+		// Only for backwards compatibility, don't use this column
+		reservation.setUserConfirmable(confirmableBy ==  ConfirmationByEnum.ADMINISTRATIVE_ROLE ? Boolean.FALSE : Boolean.TRUE);
+		reservation.setConfirmableBy(confirmableBy);
 		dbInstance.getCurrentEntityManager().persist(reservation);
 		return reservation;
 	}
@@ -89,11 +92,7 @@ public class ACReservationDAO {
 		}
 		
 		if(searchParams.getConfirmationByUser() != null) {
-			if(searchParams.getConfirmationByUser().booleanValue()) {
-				sb.and().append("(reservation.userConfirmable is null or reservation.userConfirmable = true)");
-			} else {
-				sb.and().append("reservation.userConfirmable = false");
-			}
+			sb.and().append("reservation.confirmableBy=:confirmableBy");
 		}
 		
 		if(searchParams.isWithConfirmationDate()) {
@@ -109,6 +108,13 @@ public class ACReservationDAO {
 		}
 		if(searchParams.getIdentities() != null && !searchParams.getIdentities().isEmpty()) {
 			query.setParameter("identityKeys", searchParams.getIdentities().stream().map(IdentityRef::getKey).toList());
+		}
+		if(searchParams.getConfirmationByUser() != null) {
+			if(Boolean.TRUE.equals(searchParams.getConfirmationByUser())) {
+				query.setParameter("confirmableBy", ConfirmationByEnum.PARTICIPANT);
+			} else {
+				query.setParameter("confirmableBy", ConfirmationByEnum.PAYMENT_PROCESSOR);
+			}
 		}
 		
 		return query.getResultList();

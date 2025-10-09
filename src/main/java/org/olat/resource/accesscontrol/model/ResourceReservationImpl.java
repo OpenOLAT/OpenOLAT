@@ -21,18 +21,10 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.Date;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.basesecurity.IdentityImpl;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Persistable;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
-import org.olat.resource.accesscontrol.ResourceReservation;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -43,6 +35,17 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
@@ -82,8 +85,12 @@ public class ResourceReservationImpl implements CreateInfo, Persistable, Resourc
 	private Date expirationDate;
 	@Column(name="reservationtype", nullable=true, insertable=true, updatable=true)
 	private String type;
-	@Column(name="userconfirmable", nullable=false, insertable=true, updatable=true)
+	@Deprecated
+	@Column(name="userconfirmable", nullable=true, insertable=true, updatable=true)
 	private Boolean userConfirmable;
+	@Enumerated(EnumType.STRING)
+	@Column(name="confirmableby", nullable=false, insertable=true, updatable=true)
+	private ConfirmationByEnum confirmableBy;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -156,13 +163,27 @@ public class ResourceReservationImpl implements CreateInfo, Persistable, Resourc
 		this.type = type;
 	}
 
-	@Override
+	/**
+	 * Only for backwards compatibility, don't use this column
+	 */
 	public Boolean getUserConfirmable() {
 		return userConfirmable;
 	}
-
+	
+	/**
+	 * Only for backwards compatibility, don't use this column
+	 */
 	public void setUserConfirmable(Boolean userConfirmable) {
 		this.userConfirmable = userConfirmable;
+	}
+
+	@Override
+	public ConfirmationByEnum getConfirmableBy() {
+		return confirmableBy;
+	}
+
+	public void setConfirmableBy(ConfirmationByEnum confirmableBy) {
+		this.confirmableBy = confirmableBy;
 	}
 
 	@Override

@@ -79,7 +79,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 1);
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", cal.getTime(), Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", cal.getTime(), ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		Assert.assertNotNull(reservation.getKey());
@@ -97,7 +97,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//check by load
@@ -118,7 +118,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		// Load
@@ -137,7 +137,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		dbInstance.commitAndCloseSession();
 
 		Date confirmationDate = DateUtils.addDays(new Date(), 3);
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", confirmationDate, Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", confirmationDate, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		// Positive check
@@ -166,7 +166,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		sleep(3100);
@@ -187,17 +187,17 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation1 = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation1 = acReservationDao.createReservation(id, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal2 = Calendar.getInstance();
 		cal2.add(Calendar.SECOND, +2);
-		ResourceReservation reservation2 = acReservationDao.createReservation(id, "test", cal2.getTime(), Boolean.TRUE, resource);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id, "test", cal2.getTime(), ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal3 = Calendar.getInstance();
 		cal3.add(Calendar.SECOND, +10);
-		ResourceReservation reservation3 = acReservationDao.createReservation(id, "test", cal3.getTime(), Boolean.TRUE, resource);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id, "test", cal3.getTime(), ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		sleep(3100);
@@ -224,11 +224,11 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		Assert.assertNotNull(reservation1);
-		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		Assert.assertNotNull(reservation2);
-		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		Assert.assertNotNull(reservation3);
 		dbInstance.commitAndCloseSession();
 		
@@ -247,11 +247,11 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test_count", null, Boolean.TRUE, resource);
+		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test_count", null, ConfirmationByEnum.PARTICIPANT, resource);
 		Assert.assertNotNull(reservation1);
-		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test_count", null, Boolean.TRUE, resource);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test_count", null, ConfirmationByEnum.PARTICIPANT, resource);
 		Assert.assertNotNull(reservation2);
-		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		Assert.assertNotNull(reservation3);
 		dbInstance.commitAndCloseSession();
 		
@@ -265,7 +265,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		//create 3 identities and 3 reservations
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-4-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//count reservations
@@ -288,7 +288,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		//create 3 identities and 3 reservations
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-5-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, ConfirmationByEnum.PARTICIPANT, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//count reservations
@@ -319,10 +319,10 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-8-");
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation1_1 = acReservationDao.createReservation(id1, "test", null, Boolean.TRUE, resource1);
-		ResourceReservation reservation1_2 = acReservationDao.createReservation(id1, "test", null, Boolean.TRUE, resource2);
-		ResourceReservation reservation2_1 = acReservationDao.createReservation(id2, "test", null, Boolean.TRUE, resource1);
-		ResourceReservation reservation2_2 = acReservationDao.createReservation(id2, "test", null, Boolean.TRUE, resource2);
+		ResourceReservation reservation1_1 = acReservationDao.createReservation(id1, "test", null, ConfirmationByEnum.PARTICIPANT, resource1);
+		ResourceReservation reservation1_2 = acReservationDao.createReservation(id1, "test", null, ConfirmationByEnum.PARTICIPANT, resource2);
+		ResourceReservation reservation2_1 = acReservationDao.createReservation(id2, "test", null, ConfirmationByEnum.PARTICIPANT, resource1);
+		ResourceReservation reservation2_2 = acReservationDao.createReservation(id2, "test", null, ConfirmationByEnum.PARTICIPANT, resource2);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation1_1);
 		Assert.assertNotNull(reservation1_2);
@@ -352,9 +352,9 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-7-");
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation1_1 = acReservationDao.createReservation(id, "test delete 1", null, Boolean.TRUE, resource1);
-		ResourceReservation reservation1_2 = acReservationDao.createReservation(id, "test delete 2", null, Boolean.TRUE, resource1);
-		ResourceReservation reservation2_1 = acReservationDao.createReservation(id, "test delete 3", null, Boolean.TRUE, resource2);
+		ResourceReservation reservation1_1 = acReservationDao.createReservation(id, "test delete 1", null, ConfirmationByEnum.PARTICIPANT, resource1);
+		ResourceReservation reservation1_2 = acReservationDao.createReservation(id, "test delete 2", null, ConfirmationByEnum.PARTICIPANT, resource1);
+		ResourceReservation reservation2_1 = acReservationDao.createReservation(id, "test delete 3", null, ConfirmationByEnum.PARTICIPANT, resource2);
 		dbInstance.commitAndCloseSession();
 
 		acReservationDao.deleteReservations(resource1);

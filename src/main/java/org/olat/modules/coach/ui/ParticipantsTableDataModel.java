@@ -44,7 +44,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
-import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 

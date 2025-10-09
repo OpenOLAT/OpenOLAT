@@ -27,9 +27,11 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.Price;
@@ -69,6 +71,25 @@ public class PaypalCheckoutTransactionDAO {
 		
 		dbInstance.getCurrentEntityManager().persist(transaction);
 		return transaction;
+	}
+	
+	public List<PaypalCheckoutTransaction> loadTransactionByIdentityAndResource(IdentityRef identity, OLATResource resource, Date referenceDate) {
+		String query = """
+				select trx from paypalcheckouttransaction as trx
+				inner join acorder as order on (trx.orderId=order.key)
+				inner join order.delivery as delivery
+				inner join order.parts as orderPart
+				inner join orderPart.lines as orderLine
+				inner join orderLine.offer as offer
+				where offer.resource.key=:resourceKey and trx.creationDate>=:referenceDate
+				and order.delivery.key=:identityKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, PaypalCheckoutTransaction.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("referenceDate", referenceDate)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 	
 	public PaypalCheckoutTransaction loadTransactionBySecureUuid(String uuid) {

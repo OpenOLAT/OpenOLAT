@@ -41,6 +41,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.event.AcceptMembershipEvent;
 import org.olat.modules.curriculum.ui.event.DeclineMembershipEvent;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
@@ -81,7 +82,7 @@ public class ConfirmMembershipCalloutController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String confirmedBy = "Hello world";
 		boolean confirmationByParticipant = reservation != null
-				&& (reservation.getUserConfirmable() == null && reservation.getUserConfirmable().booleanValue());
+				&& reservation.getConfirmableBy() == ConfirmationByEnum.PARTICIPANT;
 		if(confirmationByParticipant) {
 			confirmedBy = translate("confirmation.by.participant");
 		} else {

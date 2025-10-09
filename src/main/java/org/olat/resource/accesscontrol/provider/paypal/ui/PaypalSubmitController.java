@@ -33,6 +33,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
@@ -95,7 +96,7 @@ public class PaypalSubmitController extends FormBasicController implements FormC
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Date expirationDate = DateUtils.addHours(ureq.getRequestTimestamp(), 1);
-		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod(), expirationDate, null, getIdentity(), null)) {
+		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod(), ConfirmationByEnum.PAYMENT_PROCESSOR, expirationDate, null, getIdentity(), null)) {
 			PayResponse response = paypalManager.request(getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());
 			if(response == null) {
 				setFormWarning("paypal.before.redirect.error");

@@ -324,7 +324,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 
 		//id1 start payment process
 		Date expirationDate = DateUtils.addHours(new Date(), 1);
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, null, null, null);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), ConfirmationByEnum.PAYMENT_PROCESSOR, expirationDate, null, null, null);
 		Assert.assertTrue(reserved);
 		dbInstance.commitAndCloseSession();
 
@@ -381,7 +381,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 
 		//id1 try to reserve a place before the payment process
 		Date expirationDate = DateUtils.addHours(new Date(), 1);
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, null, id1, null);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), ConfirmationByEnum.PAYMENT_PROCESSOR, expirationDate, null, id1, null);
 		Assert.assertFalse(reserved);
 
 		if(!enabled) {
@@ -415,7 +415,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), null, null, id, null);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), ConfirmationByEnum.PAYMENT_PROCESSOR, null, null, id, null);
 		Assert.assertTrue(reserved);
 	}
 	
@@ -447,7 +447,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		//id try to reserve a place before the payment process, no problem, no limit
 		MailPackage mailing = new MailPackage(false);
 		Date expirationDate = DateUtils.addDays(new Date(), 2);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, mailing, id, null);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), ConfirmationByEnum.PAYMENT_PROCESSOR, expirationDate, mailing, id, null);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -476,7 +476,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		
 		MailPackage mailing = new MailPackage(true);
 		Date expirationDate = DateUtils.addDays(new Date(), 2);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, mailing, id, null);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), ConfirmationByEnum.PARTICIPANT, expirationDate, mailing, id, null);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -716,7 +716,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		
 		MailPackage mailing = new MailPackage(true);
 		Date expirationDate = DateUtils.addDays(new Date(), -1);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, mailing, id, null);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), ConfirmationByEnum.ADMINISTRATIVE_ROLE, expirationDate, mailing, id, null);
 		Assert.assertTrue(reserved);
 
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -759,7 +759,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		acOrderDao.save(order);
 
 		ResourceReservation reservationWithOrder = acReservationDao.createReservation(orderer, "curriculum_participant",
-				null, Boolean.TRUE, ce1.getResource());
+				null, ConfirmationByEnum.PARTICIPANT, ce1.getResource());
 
 		dbInstance.commitAndCloseSession();
 

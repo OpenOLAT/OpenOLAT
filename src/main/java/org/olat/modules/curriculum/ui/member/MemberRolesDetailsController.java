@@ -314,8 +314,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 				row.addStatus(role, GroupMembershipStatus.active);
 			} else if(reservation != null) {
 				row.addStatus(role, GroupMembershipStatus.reservation);
-				row.addConfirmationBy(role, Boolean.FALSE.equals(reservation.getUserConfirmable())
-						? ConfirmationByEnum.ADMINISTRATIVE_ROLE : ConfirmationByEnum.PARTICIPANT);
+				row.addConfirmationBy(role, reservation.getConfirmableBy());
 				row.addConfirmationUntil(role, reservation.getExpirationDate());
 			} else {
 				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);

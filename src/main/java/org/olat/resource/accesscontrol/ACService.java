@@ -270,7 +270,7 @@ public interface ACService {
 	 * @return
 	 */
 	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method,
-			Date expirationDate, MailPackage mailing, Identity doer, String adminNote);
+			ConfirmationByEnum confirmationBy, Date expirationDate, MailPackage mailing, Identity doer, String adminNote);
 
 	/**
 	 * A user must sometimes explicitly accept a reservation.
@@ -278,6 +278,15 @@ public interface ACService {
 	 * @param reservation
 	 */
 	public void acceptReservationToResource(Identity identity, ResourceReservation reservation);
+	
+	/**
+	 * This is a very special case for payment processor like PayPal. Check if we can
+	 * remove the reservation and start payment process over.
+	 * 
+	 * @param identity The identity
+	 * @param reservation The reservation
+	 */
+	public boolean canReservationBeSkipped(Identity identity, ResourceReservation reservation);
 
 	/**
 	 * Cancel a reservation

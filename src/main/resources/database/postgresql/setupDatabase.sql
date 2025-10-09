@@ -1172,7 +1172,8 @@ create table o_ac_reservation (
    version int4 not null,
    expirationdate timestamp,
    reservationtype varchar(32),
-   userconfirmable bool not null default true,
+   userconfirmable bool default true,
+   confirmableby varchar(32),
    fk_identity int8 not null,
    fk_resource int8 not null,
    primary key (reservation_id)
