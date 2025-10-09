@@ -185,6 +185,17 @@ public class ACReservationDAO {
 			.executeUpdate();
 	}
 	
+	public int deleteReservation(OLATResource resource, IdentityRef identity) {
+		String sb = """
+				delete from resourcereservation as reservation
+				where reservation.resource.key=:resourceKey
+				and reservation.identity.key=:identityKey""";
+		return dbInstance.getCurrentEntityManager().createQuery(sb)
+			.setParameter("resourceKey", resource.getKey())
+			.setParameter("identityKey", identity.getKey())
+			.executeUpdate();
+	}
+	
 	public void deleteReservations(OLATResource resource) {
 		String sb = "delete from resourcereservation as reservation where reservation.resource.key=:resourceKey";
 		dbInstance.getCurrentEntityManager().createQuery(sb)
