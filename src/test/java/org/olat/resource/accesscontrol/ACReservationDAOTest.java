@@ -371,4 +371,31 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		Assert.assertNotNull(deletedReservation2_1);
 		Assert.assertEquals(reservation2_1, deletedReservation2_1);
 	}
+	
+	@Test
+	public void testDeleteReservationByResourceAndIdentity() {
+		//create 3 identities and 3 reservations
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-9-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-10-");
+		OLATResource resource1 = JunitTestHelper.createRandomResource();
+		OLATResource resource2 = JunitTestHelper.createRandomResource();
+		ResourceReservation reservation1_1 = acReservationDao.createReservation(id1, "test delete 1", null, ConfirmationByEnum.PARTICIPANT, resource1);
+		ResourceReservation reservation1_2 = acReservationDao.createReservation(id2, "test delete 2", null, ConfirmationByEnum.PARTICIPANT, resource1);
+		ResourceReservation reservation2_1 = acReservationDao.createReservation(id1, "test delete 3", null, ConfirmationByEnum.PARTICIPANT, resource2);
+		dbInstance.commitAndCloseSession();
+
+		acReservationDao.deleteReservation(resource1, id1);
+		dbInstance.commitAndCloseSession();
+
+		//check the reservation is deleted
+		ResourceReservation deletedReservation1_1 = acReservationDao.loadReservation(reservation1_1.getKey());
+		Assert.assertNull(deletedReservation1_1);
+		
+		//check the third reservation on resource 2 and id2 survive
+		ResourceReservation deletedReservation1_2 = acReservationDao.loadReservation(reservation1_2.getKey());
+		Assert.assertNotNull(deletedReservation1_2);
+		ResourceReservation deletedReservation2_1 = acReservationDao.loadReservation(reservation2_1.getKey());
+		Assert.assertNotNull(deletedReservation2_1);
+		Assert.assertEquals(reservation2_1, deletedReservation2_1);
+	}
 }

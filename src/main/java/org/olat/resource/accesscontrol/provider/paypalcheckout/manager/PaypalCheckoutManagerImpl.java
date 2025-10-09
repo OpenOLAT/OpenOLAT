@@ -409,6 +409,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 			if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity, null)) {
 				log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 				transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
+				reservationDao.deleteReservation(line.getOffer().getResource(), identity);
 			} else {
 				log.error("Paypal Checkout payed access refused for: {} to {}", buildLogMessage(line, method), identity);
 				transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);

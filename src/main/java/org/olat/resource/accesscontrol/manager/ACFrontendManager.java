@@ -979,6 +979,7 @@ public class ACFrontendManager implements ACService, UserDataExportable, Organis
 					if(mailing != null && mailing.isSendEmail()) {
 						RepositoryMailing.sendEmail(doer, identity, entry, RepositoryMailing.Type.addParticipantItself, mailing);
 					}
+					reservationDao.deleteReservation(entry.getOlatResource(), identity);
 				}
 				return true;
 			}
