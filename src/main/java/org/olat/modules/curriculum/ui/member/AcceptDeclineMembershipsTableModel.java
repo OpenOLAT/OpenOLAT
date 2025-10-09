@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
@@ -80,7 +81,7 @@ implements SortableFlexiTableDataModel<AcceptDeclineMembershipRow> {
 	private DualNumber getNumOfModificationsToAccept(AcceptDeclineMembershipRow row) {
 		int countConfirmationByAdmin = 0;
 		for(ResourceReservation reservation:row.getReservations()) {
-			if(Boolean.FALSE.equals(reservation.getUserConfirmable())) {
+			if(reservation.getConfirmableBy() == ConfirmationByEnum.ADMINISTRATIVE_ROLE) {
 				countConfirmationByAdmin++;
 			}
 		}

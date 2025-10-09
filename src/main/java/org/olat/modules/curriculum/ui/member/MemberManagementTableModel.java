@@ -38,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
@@ -157,11 +158,8 @@ implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 		List<ResourceReservation> reservations = row.getReservations();
 		if(reservations != null && !reservations.isEmpty()) {
 			for(ResourceReservation reservation:reservations) {
-				Boolean confirmationByUser = reservation.getUserConfirmable();
-				if(by == ConfirmationByEnum.ADMINISTRATIVE_ROLE && confirmationByUser != null && !confirmationByUser.booleanValue()) {
-					return true;
-				}
-				if(by == ConfirmationByEnum.PARTICIPANT && (confirmationByUser == null || confirmationByUser.booleanValue())) {
+				ConfirmationByEnum confirmationByUser = reservation.getConfirmableBy();
+				if(by == confirmationByUser) {
 					return true;
 				}
 			}

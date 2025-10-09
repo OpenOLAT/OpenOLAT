@@ -69,6 +69,7 @@ import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
 import org.olat.modules.curriculum.ui.member.CancelMembershipsTableModel.CancelCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
@@ -431,7 +432,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 			ResourceReservation reservation = resourceToCurriculumElements.get(curriculumElement.getResource());
 			
 			Date confirmationUntil = reservation == null ? null : reservation.getExpirationDate();
-			ConfirmationByEnum confirmation = ConfirmationByEnum.valueOf(reservation);
+			ConfirmationByEnum confirmation = reservation.getConfirmableBy();
 			
 			MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
 					null, confirmation, confirmationUntil, false, null);

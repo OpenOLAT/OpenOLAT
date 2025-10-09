@@ -32,6 +32,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
@@ -61,10 +62,8 @@ public class PaypalCheckoutSubmitController extends FormBasicController implemen
 	public PaypalCheckoutSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		super(ureq, wControl, "submit");
 		this.link = link;
-
 		String businessPath = wControl.getBusinessControl().getAsString() + "[Payment:0]";
-		mapperUri = registerMapper(ureq, new PaypalCheckoutMapper(businessPath, paypalManager));
-			
+		mapperUri = registerMapper(ureq, new PaypalCheckoutMapper(businessPath, paypalManager));	
 		initForm(ureq);
 	}
 
@@ -95,7 +94,7 @@ public class PaypalCheckoutSubmitController extends FormBasicController implemen
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Date expirationDate = DateUtils.addHours(new Date(), 1);
-		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod(), expirationDate, null, getIdentity(), null)) {
+		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod(), ConfirmationByEnum.PAYMENT_PROCESSOR, expirationDate, null, getIdentity(), null)) {
 			CheckoutRequest response = paypalManager.request(getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());
 			if(response == null) {
 				setFormWarning("paypal.before.redirect.error");

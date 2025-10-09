@@ -67,12 +67,12 @@ import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.member.ChangeApplyToEnum;
-import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.NoteCalloutController;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.modules.curriculum.ui.wizard.RightsCurriculumElementsTableModel.RightsElementsCols;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

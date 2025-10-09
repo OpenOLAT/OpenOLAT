@@ -1206,7 +1206,8 @@ create table o_ac_reservation (
    version number(20) not null,
    expirationdate date,
    reservationtype varchar(32),
-   userconfirmable number(1) default 1 not null,
+   userconfirmable number(1) default 1,
+   confirmableby varchar(32),
    fk_identity number(20) not null,
    fk_resource number(20) not null,
    primary key (reservation_id)

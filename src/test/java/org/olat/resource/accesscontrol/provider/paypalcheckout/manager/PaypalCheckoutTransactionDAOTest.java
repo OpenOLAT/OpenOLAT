@@ -24,11 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
@@ -213,17 +216,55 @@ public class PaypalCheckoutTransactionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadTransactionByIdentityAndResource() {
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
+		AccessMethod checkoutMethod = methods.get(0);
+
+		//create an offer to buy
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-2");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		OLATResource resource = entry.getOlatResource();
+		Offer offer = acService.createOffer(entry.getOlatResource(), "TestSaveTransaction");
+		offer = acService.save(offer);
+		
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-2");
+		dbInstance.commit();
+		
+		//create and save an order
+		Order order = acOrderManager.createOrder(identity);
+		OrderPart orderPart = acOrderManager.addOrderPart(order);
+		OrderLine item = acOrderManager.addOrderLine(orderPart, offer);
+		order = acOrderManager.save(order);
+		dbInstance.commit();
+		Assert.assertNotNull(item);
+		
+		Price amount = new PriceImpl(new BigDecimal("5.00"), "CHF");
+		PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, orderPart, checkoutMethod);
+		dbInstance.commitAndCloseSession();
+
+		List<PaypalCheckoutTransaction> orderedTrxList = transactionDao.loadTransactionByIdentityAndResource(identity, resource, DateUtils.addSeconds(order.getCreationDate(), -5));
+		Assertions.assertThat(orderedTrxList)
+			.hasSize(1)
+			.containsExactly(trx);
+		
+		// Double check reference date
+		List<PaypalCheckoutTransaction> futureOrderedTrxList = transactionDao.loadTransactionByIdentityAndResource(identity, resource, DateUtils.addMinutes(order.getCreationDate(), 10));
+		Assertions.assertThat(futureOrderedTrxList)
+			.isEmpty();
+	}
+	
+	@Test
 	public void loadTransactionByOrders() {
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalCheckoutAccessMethod.class);
 		AccessMethod checkoutMethod = methods.get(0);
 
 		//create an offer to buy
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-1");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-3");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		Offer offer = acService.createOffer(entry.getOlatResource(), "TestSaveTransaction");
 		offer = acService.save(offer);
 		
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-1");
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("customer-3");
 		dbInstance.commit();
 		
 		//create and save an order

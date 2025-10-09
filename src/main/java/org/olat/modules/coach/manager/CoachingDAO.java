@@ -71,6 +71,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -1247,8 +1248,8 @@ public class CoachingDAO {
 		sb.append("select")
 		  .append("  reservation.identity.key,")
 		  .append("  count(reservation.key) as numOfReservations,")
-		  .append("  sum(case when reservation.userConfirmable=true then 1 else 0 end) as confirmedByUser,")
-		  .append("  sum(case when reservation.userConfirmable=false then 1 else 0 end) as confirmedByOther")
+		  .append("  sum(case when reservation.confirmableBy='").append(ConfirmationByEnum.PARTICIPANT.name()).append("' then 1 else 0 end) as confirmedByUser,")
+		  .append("  sum(case when reservation.confirmableBy='").append(ConfirmationByEnum.ADMINISTRATIVE_ROLE.name()).append("' then 1 else 0 end) as confirmedByOther")
 		  .append(" from resourcereservation as reservation")
 		  .append(" inner join reservation.resource as resource")
 		  .append(" inner join repositoryentry as re on (re.olatResource.key=resource.key)")
@@ -1300,8 +1301,8 @@ public class CoachingDAO {
 		sb.append("select")
 		  .append("  reservation.identity.key,")
 		  .append("  count(reservation.key) as numOfReservations,")
-		  .append("  sum(case when reservation.userConfirmable=true then 1 else 0 end) as confirmedByUser,")
-		  .append("  sum(case when reservation.userConfirmable=false then 1 else 0 end) as confirmedByOther")
+		  .append("  sum(case when reservation.confirmableBy='").append(ConfirmationByEnum.PARTICIPANT.name()).append("' then 1 else 0 end) as confirmedByUser,")
+		  .append("  sum(case when reservation.confirmableBy='").append(ConfirmationByEnum.ADMINISTRATIVE_ROLE.name()).append("' then 1 else 0 end) as confirmedByOther")
 		  .append(" from resourcereservation as reservation")
 		  .append(" inner join reservation.resource as resource")
 		  .append(" inner join curriculumelement as curEl on (curEl.resource.key=resource.key)")

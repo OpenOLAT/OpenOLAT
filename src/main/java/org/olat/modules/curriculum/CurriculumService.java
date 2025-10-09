@@ -61,6 +61,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
@@ -487,7 +488,7 @@ public interface CurriculumService {
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor, String note);
 	
 	public void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role, Date expirationDate,
-			Boolean userConfirmation, Identity actor, String note);
+			ConfirmationByEnum confirmationBy, Identity actor, String note);
 	
 	public Date getDefaultReservationExpiration();
 	

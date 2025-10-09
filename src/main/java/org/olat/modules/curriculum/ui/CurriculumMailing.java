@@ -50,7 +50,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
-import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;

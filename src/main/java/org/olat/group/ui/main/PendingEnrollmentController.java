@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,31 +106,29 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculumElementKeys);
 			
 			for(ResourceReservation reservation: resourceReservations) {
-				if(Boolean.FALSE.equals(reservation.getUserConfirmable())) {
-					continue;
-				}
-				
-				OLATResource resource = reservation.getResource();
-				ReservationWrapper wrapper = new ReservationWrapper(reservation);
-				reservations.add(wrapper);
-				
-				for(ACResourceInfo resourceInfo:resourceInfos) {
-					if(resource.equals(resourceInfo.getResource())) {
-						wrapper.setName(resourceInfo.getName());
-						wrapper.setDescription(resourceInfo.getDescription());
-					}
-				}
-	
-				if("BusinessGroup".equals(resource.getResourceableTypeName()) && !relations.isEmpty()) {
-					List<String> courseNames = new ArrayList<>();
-					for(BGRepositoryEntryRelation relation:relations) {
-						courseNames.add(relation.getRepositoryEntryDisplayName());
-					}
-					if(!courseNames.isEmpty()) {
-						wrapper.setCourses(courseNames);
-					}
-				} else if("CurriculumElement".equals(resource.getResourceableTypeName()) && !curriculumElements.isEmpty()) {
+				if(reservation.getConfirmableBy() == ConfirmationByEnum.PARTICIPANT) {
+					OLATResource resource = reservation.getResource();
+					ReservationWrapper wrapper = new ReservationWrapper(reservation);
+					reservations.add(wrapper);
 					
+					for(ACResourceInfo resourceInfo:resourceInfos) {
+						if(resource.equals(resourceInfo.getResource())) {
+							wrapper.setName(resourceInfo.getName());
+							wrapper.setDescription(resourceInfo.getDescription());
+						}
+					}
+		
+					if("BusinessGroup".equals(resource.getResourceableTypeName()) && !relations.isEmpty()) {
+						List<String> courseNames = new ArrayList<>();
+						for(BGRepositoryEntryRelation relation:relations) {
+							courseNames.add(relation.getRepositoryEntryDisplayName());
+						}
+						if(!courseNames.isEmpty()) {
+							wrapper.setCourses(courseNames);
+						}
+					} else if("CurriculumElement".equals(resource.getResourceableTypeName()) && !curriculumElements.isEmpty()) {
+						
+					}
 				}
 			}
 		}

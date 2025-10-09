@@ -51,6 +51,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -175,12 +176,17 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 			} else if(inviteeOnly) {
 				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 			} else if (!isMember && entry.isPublicVisible()) {
+				ResourceReservation reservation = acService.getReservation(getIdentity(), entry.getOlatResource());
 				if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())
-						|| acService.getReservation(getIdentity(), entry.getOlatResource()) != null) {
-					startCtrl.getInitialComponent().setVisible(true);
-					startCtrl.getStartLink().setEnabled(false);
-					
-					showInfoMessage(translate("access.denied.not.accepted.yet"));
+						|| reservation != null) {
+					if(acService.canReservationBeSkipped(getIdentity(), reservation)) {
+						// Has cancelled the payment process and start it again
+						initOffers(ureq, guestOnly, null);
+					} else {
+						startCtrl.getInitialComponent().setVisible(true);
+						startCtrl.getStartLink().setEnabled(false);
+						showInfoMessage(translate("access.denied.not.accepted.yet"));
+					}
 				} else {
 					initOffers(ureq, guestOnly, null);
 				}

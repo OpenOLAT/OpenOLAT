@@ -37,8 +37,8 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
-import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 
 /**
  * 

@@ -134,7 +134,6 @@ import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
-import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureBlock;
@@ -162,6 +161,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
@@ -1251,8 +1251,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			removeMemberReservation(element, member, role, null, null, null);
 			addMember(element, member, role, inheritanceMode, actor, adminNote);
 		} else if(nextStatus == GroupMembershipStatus.reservation) {
-			Boolean confirmBy = confirmationBy == ConfirmationByEnum.PARTICIPANT ? Boolean.TRUE : Boolean.FALSE;
-			addMemberReservation(element, member, role, confirmUntil, confirmBy, actor, adminNote);
+			addMemberReservation(element, member, role, confirmUntil, confirmationBy, actor, adminNote);
 		} else if(nextStatus == GroupMembershipStatus.removed) {
 			removeMember(element, member, role, nextStatus, actor, adminNote);
 		} else if(nextStatus == GroupMembershipStatus.declined) {
@@ -1461,7 +1460,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 	@Override
 	public void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role,
-			Date expirationDate, Boolean confirmBy, Identity actor, String note) {
+			Date expirationDate, ConfirmationByEnum confirmBy, Identity actor, String note) {
 		OLATResource resource = element.getResource();
 		ResourceReservation reservation = reservationDao.loadReservation(member, resource);
 		if(reservation == null) {

@@ -1255,7 +1255,8 @@ create table  if not exists o_ac_reservation (
    version mediumint unsigned not null,
    expirationdate datetime,
    reservationtype varchar(32),
-   userconfirmable bool not null default true,
+   userconfirmable bool default true,
+   confirmableby varchar(32),
    fk_identity bigint not null,
    fk_resource bigint not null,
    primary key (reservation_id)

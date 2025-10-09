@@ -19,10 +19,13 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderPart;
@@ -54,6 +57,17 @@ public interface PaypalCheckoutManager {
 	 * @return The order id or null if the reservation fails
 	 */
 	public CreateSmartOrder createOrder(Identity delivery, OfferAccess offerAccess);
+	
+	/**
+	 * Check if a transaction with PayPal is in a pending status or completed to
+	 * prevent double buy.
+	 * 
+	 * @param delivery The identity
+	 * @param resource The resource
+	 * @param referenceDate A date limit
+	 * @return true if no transaction is in pending or completed state
+	 */
+	public boolean canSkippedReservation(IdentityRef delivery, OLATResource resource, Date referenceDate);
 	
 	/**
 	 * 

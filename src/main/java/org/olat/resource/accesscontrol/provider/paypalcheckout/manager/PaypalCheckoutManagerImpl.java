@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -26,6 +27,7 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -36,6 +38,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -155,7 +158,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		Offer offer = offerAccess.getOffer();
 		Price amount = offer.getPrice();
 		Date expirationDate = DateUtils.addHours(new Date(), 1);
-		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, null, delivery, null)) {
+		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(),
+				ConfirmationByEnum.PAYMENT_PROCESSOR, expirationDate, null, delivery, null)) {
 			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT, null, null, null);
 			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 			trx = checkoutProvider.createOrder(order, trx);
@@ -227,6 +231,26 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		} else {
 			log.error("Paypal Checkout transaction not found for approval: {} (Paypal authorization id)", paypalAuthorizationId);
 		}
+	}
+	
+	@Override
+	public boolean canSkippedReservation(IdentityRef delivery, OLATResource resource, Date referenceDate) {
+		List<PaypalCheckoutTransaction> trxList = transactionDao.loadTransactionByIdentityAndResource(delivery, resource, referenceDate);
+		if(trxList.isEmpty()) {
+			return true;
+		}
+		
+		for(PaypalCheckoutTransaction trx:trxList) {
+			PaypalCheckoutStatus status = trx.getStatus();
+			String payPalOrderStatus = trx.getPaypalOrderStatus();
+			if(status == PaypalCheckoutStatus.PENDING
+					|| status == PaypalCheckoutStatus.COMPLETED
+					|| PaypalCheckoutStatus.PENDING.name().equals(payPalOrderStatus)
+					|| PaypalCheckoutStatus.COMPLETED.name().equals(payPalOrderStatus)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
