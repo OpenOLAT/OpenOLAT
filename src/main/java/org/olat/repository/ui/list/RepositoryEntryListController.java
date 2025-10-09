@@ -134,6 +134,7 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	private FlexiFiltersTab myTab;
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab searchTab;
 	private FlexiFiltersTab bookmarkTab;
 
 	private final String name;
@@ -383,7 +384,7 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		// search
 		if(config.presets().withSearch()) {
-			FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
+			searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
 			searchTab.setElementCssClass("o_sel_mycourses_search");
 			searchTab.setPosition(FlexiFilterTabPosition.right);
 			searchTab.setFiltersExpanded(true);
@@ -497,7 +498,9 @@ public class RepositoryEntryListController extends FormBasicController
 		if(entries != null && !entries.isEmpty()) {
 			ContextEntry entry = entries.get(0);
 			String tabId = entry.getOLATResourceable().getResourceableTypeName();
-			if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(tabId)) {
+			if("Infos".equalsIgnoreCase(tabId)) {
+				doActivateInfos(ureq, entry.getOLATResourceable().getResourceableId());
+			} else if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(tabId)) {
 				FlexiFiltersTab tab = tableEl.getFilterTabById(tabId);
 				if(tab == null) {
 					selectFilterTab(ureq, myTab);
@@ -518,6 +521,18 @@ public class RepositoryEntryListController extends FormBasicController
 			if(se.getSearchEvent() != null) {
 				doSearch(ureq, se.getSearchEvent());
 			}
+		}
+	}
+	
+	private void doActivateInfos(UserRequest ureq, Long key) {
+		tableEl.setSelectedFilterTab(ureq, searchTab);
+		tableEl.quickSearch(ureq, key.toString());
+		RepositoryEntryRow row = model.getLoadedRow(key);
+		if(row != null) {
+			// Need to stay in the list and not try to open the course
+			// because it's a return path for PayPal after a successful
+			// payment
+			doOpenDetailsInList(ureq, row);
 		}
 	}
 
@@ -726,22 +741,26 @@ public class RepositoryEntryListController extends FormBasicController
 			}
 			doOpen(ureq, row, path);
 		} else {
-			removeAsListenerAndDispose(detailsCtrl);
-			
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			doOpenDetailsInList(ureq, row);
+		}
+	}
 
-			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-			if(entry == null) {
-				showWarning("repositoryentry.not.existing");
-			} else {
-				detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
-				listenTo(detailsCtrl);
-				addToHistory(ureq, detailsCtrl);
-				
-				String displayName = row.getDisplayName();
-				stackPanel.pushController(displayName, detailsCtrl);	
-			}
+	private void doOpenDetailsInList(UserRequest ureq, RepositoryEntryRow row) {
+		removeAsListenerAndDispose(detailsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		if(entry == null) {
+			showWarning("repositoryentry.not.existing");
+		} else {
+			detailsCtrl = new RepositoryEntryInfosController(ureq, bwControl, entry, false);
+			listenTo(detailsCtrl);
+			addToHistory(ureq, detailsCtrl);
+			
+			String displayName = row.getDisplayName();
+			stackPanel.pushController(displayName, detailsCtrl);	
 		}
 	}
 	

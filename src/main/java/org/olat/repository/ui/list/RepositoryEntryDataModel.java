@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.List;
+import java.util.Objects;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
@@ -50,6 +53,13 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 	@Override
 	public DefaultRepositoryEntryDataSource getSourceDelegate() {
 		return (DefaultRepositoryEntryDataSource)super.getSourceDelegate();
+	}
+	
+	public RepositoryEntryRow getLoadedRow(Long key) {
+		List<RepositoryEntryRow> rows = this.getObjects();
+		return rows.stream().filter(Objects::nonNull)
+				.filter(row -> key.equals(row.getKey()))
+				.findFirst().orElse(null);
 	}
 
 	@Override
