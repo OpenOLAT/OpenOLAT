@@ -219,7 +219,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		// Check if automatic is out of bounds, disadvantage by manual is controlled by status
 		Integer extraTime = null;
 		if(!mode.isManual()) {
-			extraTime = assessmentModeCoordinationService.getDisadvantageCompensationExtensionTime(mode, getIdentity());
+			extraTime = assessmentModeCoordinationService.getDisadvantageCompensationExtensionTimeAndExtraTime(mode, getIdentity());
 			endWithFollowupTime = addExtraTimeToDate(endWithFollowupTime, extraTime);
 			if(beginWithLeadTime.after(now) || now.after(endWithFollowupTime)) {
 				return null;
@@ -557,7 +557,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Integer extraTime = mode.isManual()
 				? null
-				: assessmentModeCoordinationService.getDisadvantageCompensationExtensionTime(mode, getIdentity());
+				: assessmentModeCoordinationService.getDisadvantageCompensationExtensionTimeAndExtraTime(mode, getIdentity());
 		
 		ureq.getUserSession().setLockRequests(null);
 		OLATResourceable resource = mode.getResource();
