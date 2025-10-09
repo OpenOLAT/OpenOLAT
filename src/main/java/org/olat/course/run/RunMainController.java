@@ -427,7 +427,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				}
 				
 				Integer extraTime = assessmentModeCoordinationService
-						.getDisadvantageCompensationExtensionTime(assessmentMode, getIdentity());
+						.getDisadvantageCompensationExtensionTimeAndExtraTime(assessmentMode, getIdentity());
 				Date endDate = assessmentMode.getEnd();
 				if(extraTime != null && extraTime.intValue() > 0) {
 					endDate = DateUtils.addSeconds(endDate, extraTime.intValue());
