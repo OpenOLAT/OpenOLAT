@@ -678,10 +678,10 @@ public class NotificationsManagerTest extends OlatTestCase {
 			Publisher publisher = notificationManager.getOrCreatePublisher(sc, pd);
 			dbInstance.commit();
 			
-			((NotificationsManagerImpl)notificationManager).doCreateAndPersistSubscriber(publisher, id);
+			notificationManager.doCreateAndPersistSubscriber(publisher, id);
 			dbInstance.commit();
 			
-			((NotificationsManagerImpl)notificationManager).doCreateAndPersistSubscriber(publisher, id);
+			notificationManager.doCreateAndPersistSubscriber(publisher, id);
 			dbInstance.commit();
 		} catch (Exception e) {
 			dbInstance.rollback();
@@ -860,7 +860,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 					Publisher publisher = notificationManager.getPublisher(sc);
 					Subscriber subscriber = notificationManager.getSubscriber(id, publisher);
 					List<Subscriber> subscribersToUpdate = Collections.singletonList(subscriber);
-					((NotificationsManagerImpl)notificationManager).updateSubscriberLatestEmail(subscribersToUpdate);
+					notificationManager.updateSubscriberLatestEmail(subscribersToUpdate);
 					
 					dbInstance.closeSession();
 				}
