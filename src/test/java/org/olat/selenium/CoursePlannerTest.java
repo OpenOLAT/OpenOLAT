@@ -28,7 +28,6 @@ import java.util.UUID;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -39,7 +38,6 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.CoursePageFragment;
-import org.olat.selenium.page.course.MyCoursesPage;
 import org.olat.selenium.page.curriculum.CoursePlannerPage;
 import org.olat.selenium.page.curriculum.CurriculumComposerPage;
 import org.olat.selenium.page.curriculum.CurriculumElementMembersPage;
@@ -371,7 +369,6 @@ public class CoursePlannerTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	@Ignore
 	@RunAsClient
 	public void userBookingFromWebCatalog()
 	throws IOException, URISyntaxException {
@@ -462,10 +459,6 @@ public class CoursePlannerTest extends Deployments {
 			.openCourse(elementName)
 			.login(participant)
 			.startCourse(elementName);
-		
-		new MyCoursesPage(browser)
-			.assertOnMyCourses()
-			.select(courseTitle);
 		
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(browser);
 		participantCourse
