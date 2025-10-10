@@ -39,10 +39,6 @@ public class CurriculumElementListConfig {
 		this.asRoles = asRoles;
 	}
 	
-	public static final CurriculumElementListConfig defaultConfig() {
-		return null;//new CurriculumElementListConfig(false, false);
-	}
-	
 	public static final CurriculumElementListConfig config(boolean preparationWarning, List<GroupRoles> asRoles) {
 		return new CurriculumElementListConfig(preparationWarning, asRoles);
 	}

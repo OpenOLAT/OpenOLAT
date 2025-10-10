@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -187,7 +188,7 @@ public class CurriculumListController extends FormBasicController implements Act
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Curriculum", row.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		CurriculumElementListConfig config = CurriculumElementListConfig.defaultConfig();
+		CurriculumElementListConfig config = CurriculumElementListConfig.config(true, List.of(GroupRoles.participant));
 		elementListCtrl = new CurriculumElementListController(ureq, swControl, stackPanel,
 				assessedIdentity, row, null, secCallback, config);
 		listenTo(elementListCtrl);
