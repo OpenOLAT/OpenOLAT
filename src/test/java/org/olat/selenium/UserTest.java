@@ -661,6 +661,46 @@ public class UserTest extends Deployments {
 	
 	
 	/**
+	 * A user with an actual password can call the URL url/changepw/0 and starts
+	 * the change password workflow by giving its email address.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userChangeItsPasswordWithChangePwLink()
+	throws IOException, URISyntaxException {
+		UserRestClient userWebService = new UserRestClient(deploymentUrl);
+		UserVO user = userWebService.createRandomUser();
+		
+		// The default browser is probably still logged in
+		WebDriver anOtherBrowser = getWebDriver(1);
+		anOtherBrowser.navigate()
+			.to(new URL(deploymentUrl.toString() + "url/changepw/0"));
+		OOGraphene.waitModalDialog(anOtherBrowser);
+		
+		LoginPasswordForgottenPage forgottenPage = new LoginPasswordForgottenPage(anOtherBrowser)
+				.userIdentification(user.getEmail());
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+		String otp = RegistrationPage.extractOtp(messages.get(0));
+		log.info("Registration OTP: {}", otp);
+		
+		String newPassword = "Sel#18HighlySecret";
+		forgottenPage
+			.confirmOtp(otp)
+			.newPassword(newPassword);
+		
+		LoginPage loginPage = LoginPage.load(anOtherBrowser, deploymentUrl);
+		loginPage
+			.loginAs(user.getLogin(), newPassword)
+			.assertLoggedInByLastName(user.getLastName());
+	}
+	
+	
+	/**
 	 * An administrator generate a link to change the password of
 	 * a user. The user uses the link to change its password.
 	 * 
