@@ -686,8 +686,15 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	public Publisher getPublisher(SubscriptionContext subsContext) {
 		return getPublisher(subsContext, null);
 	}
+
+	protected Publisher getPublisher(SubscriptionContext subsContext, PublisherData data) {
+		List<Publisher> res = getInternalPublishers(subsContext, data);
+		if (res.isEmpty()) return null;
+		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
+		return res.get(0);
+	}
 	
-	public Publisher getPublisher(SubscriptionContext subsContext, PublisherData data) {
+	private List<Publisher> getInternalPublishers(SubscriptionContext subsContext, PublisherData data) {
 		QueryBuilder q = new QueryBuilder();
 		q.append("select pub from notipublisher pub ")
 		 .where().append(" pub.resName=:resName and pub.resId=:resId");
@@ -718,10 +725,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 				query.setParameter("data", data.getData());
 			}
 		}
-		List<Publisher> res = query.getResultList();
-		if (res.isEmpty()) return null;
-		if (res.size() != 1) throw new AssertException("only one subscriber per person and publisher!!");
-		return res.get(0);
+		return query.getResultList();
 	}
 
 	@Override
@@ -1215,7 +1219,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 				dbInstance.commit();//commit the select for update
 				updatedPublishers.add(publisher);
 			}
-			if(toUpdate.getChannelType() != PublisherChannel.PULL
+			if(toUpdate != null && toUpdate.getChannelType() != PublisherChannel.PULL
 					&& toUpdate.getParentPublisher() != null && toUpdate.getParentPublisher().getChannelType() == PublisherChannel.PULL) {
 				Publisher parentToUpdate = getPublisherForUpdate(toUpdate.getParentPublisher());
 				if(parentToUpdate != null) {
@@ -1388,18 +1392,20 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 */
 	@Override
 	public void delete(SubscriptionContext scontext) {
-		Publisher p = getPublisher(scontext);
-		// if none found, no one has subscribed yet and therefore no publisher has
-		// been generated lazily.
-		// -> nothing to do
-		if (p == null) return;
-		//first delete all subscribers
-		List<Subscriber> subscribers = getSubscribers(p, false);
-		for (Subscriber subscriber : subscribers) {
-			deleteSubscriber(subscriber);
+		List<Publisher> pList = getInternalPublishers(scontext, null);
+		for(Publisher p:pList) {
+			// if none found, no one has subscribed yet and therefore no publisher has
+			// been generated lazily.
+			// -> nothing to do
+			if (p == null) return;
+			//first delete all subscribers
+			List<Subscriber> subscribers = getSubscribers(p, false);
+			for (Subscriber subscriber : subscribers) {
+				deleteSubscriber(subscriber);
+			}
+			// else:
+			dbInstance.deleteObject(p);
 		}
-		// else:
-		dbInstance.deleteObject(p);
 	}
 
 	/**
