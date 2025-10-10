@@ -207,11 +207,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				doOpenRegistration(ureq);
 			}
 		} else if("changepw".equals(type)) {
-			String email = null;
-			if(entries.size() > 1) {
-				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
+			if(entries.size() == 1) {
+				doOpenChangePassword(ureq);
+			} else if(entries.size() > 1) {
+				String email = entries.get(1).getOLATResourceable().getResourceableTypeName();
+				doOpenChangePassword(ureq, email);
 			}
-			doOpenChangePassword(ureq, email);
 		} else if("invitationregistration".equalsIgnoreCase(type)) {
 			invitation = (Invitation)ureq.getUserSession().getEntry(AuthHelper.ATTRIBUTE_INVITATION);
 			doOpenRegistration(ureq);
