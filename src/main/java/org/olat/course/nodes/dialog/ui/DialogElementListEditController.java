@@ -151,12 +151,12 @@ public class DialogElementListEditController extends FormBasicController {
 			DialogElementRow row = new DialogElementRow(element, userPropertyHandlers, getLocale());
 			VFSLeaf item = dialogElementsManager.getDialogLeaf(element);
 			if(item != null) {
-				DownloadLink downloadLink = uifactory.addDownloadLink("file_" + counter, row.getFilename(), null, item, flc);
+				DownloadLink downloadLink = uifactory.addDownloadLink("file_" + (++counter), row.getFilename(), null, item, flc);
 				row.setDownloadLink(downloadLink);
 			}
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			row.setToolsLink(toolsLink);
-			counter++;
+			toolsLink.setUserObject(row);
 			rows.add(row);
 		}
 		counter = 0;
@@ -198,42 +198,27 @@ public class DialogElementListEditController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == confirmDeletionCtr) {
+		if (confirmDeletionCtr == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doDelete((DialogElementRow)confirmDeletionCtr.getUserObject());
 				loadModel();
 			}
-		} else if (source == dialogFileUploadCtrl) {
+		} else if (dialogFileUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				if (dialogFileUploadCtrl.getActionSelectedKey().equals(DialogFileUploadController.DIALOG_ACTION_UPLOAD)) {
-					VFSLeaf newFile = dialogElementsManager.doUpload(
-							dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
-							dialogFileUploadCtrl.getFileNameValue(),
-							getIdentity());
-
-					if (newFile != null) {
-						doFinalizeUploadFile(newFile);
-						fireEvent(ureq, Event.DONE_EVENT);
-					} else {
-						showError("failed");
-						fireEvent(ureq, Event.FAILED_EVENT);
-					}
+					doFinalizeUpload(ureq);
 				} else {
-					VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-					String filename = dialogFileUploadCtrl.getFileNameValue();
-					String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
-					if(!chosenFile.contains("://")) {
-						DialogElement element = dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
-								getIdentity(), entry, courseNode.getIdent(),
-								dialogFileUploadCtrl.getAuthoredByElValue());
-						if (element != null) {
-							markPublisherNews();
-							loadModel();
-						}
-					}
+					doFinalizeCopy();
 				}
 			}
 			cmc.deactivate();
+			cleanUp();
+		} else if(toolsCtrl == source) {
+			if(event == Event.CLOSE_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUp();
+			}
+		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -269,15 +254,45 @@ public class DialogElementListEditController extends FormBasicController {
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if ("tools".equals(cmd)) {
-				doOpenTools(ureq, link);
+			if ("tools".equals(cmd) && link.getUserObject() instanceof DialogElementRow row) {
+				doOpenTools(ureq, link, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	private void doFinalizeUpload(UserRequest ureq) {
+		VFSLeaf newFile = dialogElementsManager.doUpload(
+				dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
+				dialogFileUploadCtrl.getFileNameValue(),
+				getIdentity());
 
-	private void doOpenTools(UserRequest ureq, FormLink link) {
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), link.getName().replaceAll(".+?_", ""));
+		if (newFile != null) {
+			doFinalizeUploadFile(newFile);
+			fireEvent(ureq, Event.DONE_EVENT);
+		} else {
+			showError("failed");
+			fireEvent(ureq, Event.FAILED_EVENT);
+		}
+	}
+	
+	private void doFinalizeCopy() {
+		VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
+		String filename = dialogFileUploadCtrl.getFileNameValue();
+		String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
+		if(!chosenFile.contains("://")) {
+			DialogElement element = dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
+					getIdentity(), entry, courseNode.getIdent(),
+					dialogFileUploadCtrl.getAuthoredByElValue());
+			if (element != null) {
+				markPublisherNews();
+				loadModel();
+			}
+		}
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink link, DialogElementRow row) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -310,15 +325,13 @@ public class DialogElementListEditController extends FormBasicController {
 		private final Link deleteLink;
 		private final DialogElementRow dialogElementRow;
 
-		public ToolsController(UserRequest ureq, WindowControl wControl, String rowToDelete) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, DialogElementRow dialogElementRow) {
 			super(ureq, wControl);
-			DialogElement element = dialogElementsManager.getDialogElementByKey(Long.valueOf(rowToDelete));
-			this.dialogElementRow = new DialogElementRow(element, userPropertyHandlers, getLocale());
+			this.dialogElementRow = dialogElementRow;
 
 			mainVC = createVelocityContainer("tools");
 
 			List<String> links = new ArrayList<>(2);
-
 			deleteLink = addLink("delete", "o_icon_delete_item", links);
 			mainVC.contextPut("links", links);
 
@@ -336,14 +349,9 @@ public class DialogElementListEditController extends FormBasicController {
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if (deleteLink == source) {
-				close();
+				fireEvent(ureq, Event.CLOSE_EVENT);
 				doConfirmDelete(ureq, dialogElementRow);
 			}
-		}
-
-		private void close() {
-			toolsCalloutCtrl.deactivate();
-			cleanUp();
 		}
 	}
 }
