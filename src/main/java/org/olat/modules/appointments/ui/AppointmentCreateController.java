@@ -559,6 +559,8 @@ public class AppointmentCreateController extends FormBasicController {
 		for (AppointmentWrapper wrapper : startDurationWrappers) {
 			DateChooser startEl = wrapper.getStartEl();
 			if (AppointmentInputType.startDuration == appointmentInputType) {
+				// Ensure updated end date (formInnerEvent is not invoked, if save is immediately clicked after editing start date)
+				doSetEndDate(wrapper);
 				if (wrapper.getStartEl().getDate() != null && !StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
 					startEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
