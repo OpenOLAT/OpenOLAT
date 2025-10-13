@@ -1008,6 +1008,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 
 	private void doCreateAppointment(UserRequest ureq, Date initialStartDate) {
 		if (guardModalController(appointmentEditCtrl)) return;
+		if (!secCallback.canCreateAppointments()) return;
 		
 		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory, project,
 				Set.of(getIdentity()), false, initialStartDate);
