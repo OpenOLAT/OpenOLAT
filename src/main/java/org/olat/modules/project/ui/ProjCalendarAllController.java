@@ -176,6 +176,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private final String avatarUrl;
 	private final Formatter formatter;
 	private String appointmentReadWriteKalendarId;
+	private String appointmentReadOnlyKalendarId;
 	private String milestoneKalendarId;
 	private Boolean calVisible = Boolean.TRUE;
 	private int counter = 0;
@@ -375,6 +376,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 				calendarWrappers.add(appointmentReadWriteWrapper);
 				
+				appointmentReadOnlyKalendarId = appointmentReadOnlyKalendar.getCalendarID();
 				KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
 						translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
 				appointmentReadOnlyWrapper.setPrivateEventsVisible(true);
@@ -895,7 +897,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	
 	private void doOpenPreviewCallout(UserRequest ureq, KalendarEvent kalendarEvent, String targetDomId) {
 		if (kalendarEvent.getCalendar() != null) {
-			if (appointmentReadWriteKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
+			if (appointmentReadWriteKalendarId.equals(kalendarEvent.getCalendar().getCalendarID()) || 
+					appointmentReadOnlyKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
 				doOpenPreviewAppointmentCallout(ureq, kalendarEvent, targetDomId);
 			} else if (milestoneKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
 				doOpenPreviewMilestoneCallout(ureq, kalendarEvent, targetDomId);
@@ -1009,6 +1012,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 
 	private void doCreateAppointment(UserRequest ureq, Date initialStartDate) {
 		if (guardModalController(appointmentEditCtrl)) return;
+		if (!secCallback.canCreateAppointments()) return;
 		
 		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), bcFactory, project,
 				Set.of(getIdentity()), false, initialStartDate);
