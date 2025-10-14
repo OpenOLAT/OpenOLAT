@@ -316,6 +316,8 @@ public class ImportTopicConverter {
 			importTopic.setMessage(translate("import.error.identifier.multi"));
 		} else if (identifier.length() > TBTopic.IDENTIFIER_MAX_LENGTH) {
 			importTopic.setMessage(translate("import.error.identifier.too.long", String.valueOf(TBTopic.IDENTIFIER_MAX_LENGTH)));
+		} else if (!topicBrokerService.isTopicIdentifierValid(identifier)) {
+			importTopic.setMessage(translate("error.identifier.not.available"));
 		} else {
 			topic.setIdentifier(identifier);
 			identifiersInLines.add(identifier);

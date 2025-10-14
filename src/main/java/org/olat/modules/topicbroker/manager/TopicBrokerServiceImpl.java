@@ -509,10 +509,28 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Override
 	public boolean isTopicIdentifierAvailable(TBBrokerRef broker, String identifier) {
+		if (!isTopicIdentifierValid(identifier)) {
+			return false;
+		}
+		
+		// And, of course, it must be unique.
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setBroker(broker);
 		searchParams.setIdentifier(identifier);
 		return topicDao.loadTopics(searchParams).isEmpty();
+	}
+
+	@Override
+	public boolean isTopicIdentifierValid(String identifier) {
+		// The identifier is used as folder name in export.
+		// It must not be changed in order to avoid collisions and to ensure import.
+		// Problematic characters are therefore not permitted.
+		if (!StringHelper.transformDisplayNameToFileSystemName(identifier).equals(identifier)) {
+			log.debug("Topic identifier contains not file system safe chracters: {0}", identifier);
+			return false;
+		}
+		
+		return true;
 	}
 
 	@Override

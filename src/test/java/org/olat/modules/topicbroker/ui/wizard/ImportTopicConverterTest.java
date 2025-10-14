@@ -97,6 +97,19 @@ public class ImportTopicConverterTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldValidateIdentifier_notValid() {
+		String identifier = "Identifer???";
+		String input = identifier + "	B	C	1	2							";
+		
+		ImportTopicConverter converter = createConverter(input);
+		List<TBImportTopic> topics = converter.getTopics();
+		
+		assertThat(topics.get(0).getIdentifier()).isEqualTo(identifier);
+		assertThat(topics.get(0).getTopic().getIdentifier()).isNull();
+		assertThat(topics.get(0).getMessage()).isNotNull();
+	}
+	
+	@Test
 	public void shouldValidateTitle_mandatory() {
 		String input = "A		C	1	2	6/18/25		3/19/29				";
 		
