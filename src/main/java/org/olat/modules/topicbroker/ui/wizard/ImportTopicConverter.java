@@ -92,8 +92,8 @@ public class ImportTopicConverter {
 	private final Translator translator;
 	private final List<DateFormat> dateFormatters = new ArrayList<>();
 	private final List<TBCustomFieldDefinition> definitions;
-	private TBBroker broker;
-	private TBGroupRestrictionCandidates groupRestrictionCandidates;
+	private final Set<String> existingIdentifiers;
+	private final TBGroupRestrictionCandidates groupRestrictionCandidates;
 	private final String input;
 	private File tempFilesDir;
 	
@@ -104,7 +104,6 @@ public class ImportTopicConverter {
 
 	public ImportTopicConverter(Locale locale, TBBroker broker, List<TBCustomFieldDefinition> definitions,
 			TBGroupRestrictionCandidates groupRestrictionCandidates, String input, File tempFilesDir) {
-		this.broker = broker;
 		this.definitions = definitions;
 		this.groupRestrictionCandidates = groupRestrictionCandidates;
 		this.tempFilesDir = tempFilesDir;
@@ -125,7 +124,13 @@ public class ImportTopicConverter {
 		dateFormatters.add(DateFormat.getDateInstance(DateFormat.SHORT, locale));
 		
 		CoreSpringFactory.autowireObject(this);
-	}
+		
+		TBTopicSearchParams searchParams = new TBTopicSearchParams();
+		searchParams.setBroker(broker);
+		existingIdentifiers = topicBrokerService.getTopics(searchParams).stream()
+				.map(TBTopic::getIdentifier)
+				.collect(Collectors.toSet());
+		}
 
 	public List<TBImportTopic> getTopics() {
 		List<TBImportTopic> topics = convertTopics();
@@ -316,7 +321,7 @@ public class ImportTopicConverter {
 			importTopic.setMessage(translate("import.error.identifier.multi"));
 		} else if (identifier.length() > TBTopic.IDENTIFIER_MAX_LENGTH) {
 			importTopic.setMessage(translate("import.error.identifier.too.long", String.valueOf(TBTopic.IDENTIFIER_MAX_LENGTH)));
-		} else if (!topicBrokerService.isTopicIdentifierValid(identifier)) {
+		} else if (!topicBrokerService.isTopicIdentifierValid(identifier, existingIdentifiers)) {
 			importTopic.setMessage(translate("error.identifier.not.available"));
 		} else {
 			topic.setIdentifier(identifier);
@@ -404,11 +409,7 @@ public class ImportTopicConverter {
 				.collect(Collectors.toMap(TBImportTopic::getIdentifier, Function.identity()));
 		
 		Set<String> topicIdentifiers = new HashSet<>(identifierToTopic.keySet());
-		TBTopicSearchParams searchParams = new TBTopicSearchParams();
-		searchParams.setBroker(broker);
-		topicBrokerService.getTopics(searchParams).stream()
-				.map(TBTopic::getIdentifier)
-				.forEach(identifier -> topicIdentifiers.add(identifier));
+		topicIdentifiers.addAll(existingIdentifiers);
 		
 		Set<String> validDirIdentifiers = definitions.stream()
 				.filter(definition -> TBCustomFieldType.file == definition.getType())

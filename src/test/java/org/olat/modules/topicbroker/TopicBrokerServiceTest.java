@@ -99,6 +99,21 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCheckIfIdentifierValid() {
+		assertThat(sut.isTopicIdentifierValid("Identifier", List.of())).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierValid_containsNotFilesystemSafeCharacter() {
+		assertThat(sut.isTopicIdentifierValid("Identifier?", List.of())).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierValid_notUniqueLowercase() {
+		assertThat(sut.isTopicIdentifierValid("Identifier", List.of("identifier"))).isFalse();
+	}
+	
+	@Test
 	public void shouldTopicMoveUp() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		TBTopic topic1 = createRandomTopic(identity);

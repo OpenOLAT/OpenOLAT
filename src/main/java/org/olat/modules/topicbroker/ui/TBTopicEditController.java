@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -308,7 +307,7 @@ public class TBTopicEditController extends FormBasicController {
 		} else if (identifierEl.getValue().length() > TBTopic.IDENTIFIER_MAX_LENGTH) {
 			identifierEl.setErrorKey("form.error.toolong", String.valueOf(TBTopic.IDENTIFIER_MAX_LENGTH));
 			allOk &= false;
-		} else if ((topic == null || !Objects.equals(topic.getIdentifier(), identifierEl.getValue()))
+		} else if ((topic == null || !topic.getIdentifier().equalsIgnoreCase(identifierEl.getValue()))
 				&& !topicBrokerService.isTopicIdentifierAvailable(broker, identifierEl.getValue())) {
 			identifierEl.setErrorKey("error.identifier.not.available");
 			allOk &= false;

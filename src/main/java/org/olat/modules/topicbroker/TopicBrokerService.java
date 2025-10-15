@@ -88,7 +88,7 @@ public interface TopicBrokerService {
 	
 	public boolean isTopicIdentifierAvailable(TBBrokerRef broker, String identifier);
 	
-	public boolean isTopicIdentifierValid(String identifier);
+	public boolean isTopicIdentifierValid(String identifier, Collection<String> existingIdentifiers);
 	
 	public TBTopic updateTopic(Identity doer, TBTopicRef topic, String identifier, String title, String description,
 			Date beginDate, Date endDate, Integer minParticipants, Integer maxParticipants,
