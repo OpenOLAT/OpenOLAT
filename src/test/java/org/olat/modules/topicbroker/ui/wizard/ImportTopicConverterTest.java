@@ -231,7 +231,9 @@ public class ImportTopicConverterTest extends OlatTestCase {
 	}
 	
 	private ImportTopicConverter createConverter(String input) {
-		return new ImportTopicConverter(Locale.ENGLISH, new TBTransientBroker(), List.of(), new TestingGroupRestrictionCandidates(), input, null);
+		TBTransientBroker broker = new TBTransientBroker();
+		broker.setKey(-1l);
+		return new ImportTopicConverter(Locale.ENGLISH, broker, List.of(), new TestingGroupRestrictionCandidates(), input, null);
 	}
 
 
