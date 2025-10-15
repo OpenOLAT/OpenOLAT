@@ -64,6 +64,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.restapi.ui.RestApiKeyController;
@@ -285,7 +286,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, UserAuthenticationRow row) {
-		String fullname = userManager.getUserDisplayName(changeableIdentity);
+		String fullname = StringHelper.escapeHtml(userManager.getUserDisplayName(changeableIdentity));
 		String msg = translate("authedit.delete.confirm", row.getAuthentication().getProvider(), fullname);
 		confirmationDialog = activateYesNoDialog(ureq, null, msg, confirmationDialog);
 		confirmationDialog.setUserObject(row.getAuthentication());
