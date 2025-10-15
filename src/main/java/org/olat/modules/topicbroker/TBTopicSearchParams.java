@@ -66,11 +66,11 @@ public class TBTopicSearchParams {
 	}
 	
 	public void setIdentifier(String identifier) {
-		this.identifiers = List.of(identifier);
+		this.identifiers = List.of(identifier.toLowerCase());
 	}
 
 	public void setIdentifiers(Collection<String> identifiers) {
-		this.identifiers = identifiers;
+		this.identifiers = identifiers != null? identifiers.stream().map(String::toLowerCase).toList(): null;
 	}
 
 	public Boolean getDeleted() {

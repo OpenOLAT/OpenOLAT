@@ -148,7 +148,7 @@ public class TBTopicDAO {
 			sb.and().append("topic.key in :topicKeys");
 		}
 		if (params.getIdentifiers() != null && !params.getIdentifiers().isEmpty()) {
-			sb.and().append("topic.identifier in :identifiers");
+			sb.and().append("lower(topic.identifier) in :identifiers");
 		}
 		if (params.getDeleted() != null) {
 			sb.and().append("topic.deletedDate is ").append("not ", params.getDeleted()).append("null");

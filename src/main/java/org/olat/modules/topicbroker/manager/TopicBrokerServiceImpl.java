@@ -509,10 +509,38 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Override
 	public boolean isTopicIdentifierAvailable(TBBrokerRef broker, String identifier) {
+		// Existing identifiers not compared, its already done in the controller.
+		if (!isTopicIdentifierValid(identifier, List.of())) {
+			return false;
+		}
+		
+		// And, of course, it must be (lower case) unique.
 		TBTopicSearchParams searchParams = new TBTopicSearchParams();
 		searchParams.setBroker(broker);
 		searchParams.setIdentifier(identifier);
 		return topicDao.loadTopics(searchParams).isEmpty();
+	}
+
+	@Override
+	public boolean isTopicIdentifierValid(String identifier, Collection<String> existingIdentifiers) {
+		// The identifier is used as folder name in export.
+		// It must not be changed in order to avoid collisions and to ensure import.
+		// Problematic characters are therefore not permitted.
+		if (!StringHelper.transformDisplayNameToFileSystemName(identifier).equals(identifier)) {
+			log.debug("Topic identifier contains not file system safe chracters: {0}", identifier);
+			return false;
+		}
+		
+		// The identifier is invalid if an identifier already exists that is different but equal in lower case.
+		// May lead to problems in file systems as well.
+		boolean ignoreCaseEqual = existingIdentifiers.stream()
+				.anyMatch(existingIdentifier -> !existingIdentifier.equals(identifier) && existingIdentifier.equalsIgnoreCase(identifier));
+		if (ignoreCaseEqual) {
+			log.debug("Topic identifier is ignoreCaseEqual like exiting identifier: {0}", identifier);
+			return false;
+		}
+		
+		return true;
 	}
 
 	@Override

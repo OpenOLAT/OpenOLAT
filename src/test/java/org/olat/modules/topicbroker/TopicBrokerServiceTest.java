@@ -47,7 +47,72 @@ public class TopicBrokerServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private TopicBrokerService sut;
-
+	
+	@Test
+	public void shouldCheckIfIdentifierAvailable() {
+		Identity identity = JunitTestHelper.getDefaultAuthor();
+		TBBroker broker = createRandomBroker(identity);
+		TBTopic topic = sut.createTopic(identity, broker);
+		topic = sut.updateTopic(identity, topic, "Identifier", random(), random(), null, null, 0, 6, null);
+		dbInstance.commitAndCloseSession();
+		
+		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, "Identifier2");
+		
+		assertThat(identifierAvailable).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierAvailable_notUnique() {
+		Identity identity = JunitTestHelper.getDefaultAuthor();
+		TBBroker broker = createRandomBroker(identity);
+		TBTopic topic = sut.createTopic(identity, broker);
+		topic = sut.updateTopic(identity, topic, random(), random(), random(), null, null, 0, 6, null);
+		dbInstance.commitAndCloseSession();
+		
+		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, topic.getIdentifier());
+		
+		assertThat(identifierAvailable).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierAvailable_notUniqueLowercase() {
+		Identity identity = JunitTestHelper.getDefaultAuthor();
+		TBBroker broker = createRandomBroker(identity);
+		TBTopic topic = sut.createTopic(identity, broker);
+		String identifier = "Identifier";
+		topic = sut.updateTopic(identity, topic, identifier, random(), random(), null, null, 0, 6, null);
+		dbInstance.commitAndCloseSession();
+		
+		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, identifier.toLowerCase());
+		
+		assertThat(identifierAvailable).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierAvailable_containsNotFilesystemSafeCharacter() {
+		Identity identity = JunitTestHelper.getDefaultAuthor();
+		TBBroker broker = createRandomBroker(identity);
+		
+		boolean identifierAvailable = sut.isTopicIdentifierAvailable(broker, "idebtifier?");
+		
+		assertThat(identifierAvailable).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierValid() {
+		assertThat(sut.isTopicIdentifierValid("Identifier", List.of())).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierValid_containsNotFilesystemSafeCharacter() {
+		assertThat(sut.isTopicIdentifierValid("Identifier?", List.of())).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfIdentifierValid_notUniqueLowercase() {
+		assertThat(sut.isTopicIdentifierValid("Identifier", List.of("identifier"))).isFalse();
+	}
+	
 	@Test
 	public void shouldTopicMoveUp() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
