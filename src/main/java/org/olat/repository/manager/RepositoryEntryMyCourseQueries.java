@@ -454,7 +454,7 @@ public class RepositoryEntryMyCourseQueries {
 		List<GroupRoles> inRoles = new ArrayList<>();
 		if(filters != null && !filters.isEmpty()) {
 			for(Filter filter: filters) {
-				if(Filter.asAuthor.equals(filter)) {
+				if(Filter.asOwner.equals(filter)) {
 					inRoles.add(GroupRoles.owner);
 				} else if(Filter.asCoach.equals(filter)) {
 					inRoles.add(GroupRoles.coach);

@@ -318,7 +318,7 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.booked.participant"), Filter.asParticipant.name()));
 		filters.add(new FlexiTableFilter(translate("filter.booked.coach"), Filter.asCoach.name()));
-		filters.add(new FlexiTableFilter(translate("filter.booked.author"), Filter.asAuthor.name()));
+		filters.add(new FlexiTableFilter(translate("filter.booked.owner"), Filter.asOwner.name()));
 		if(!searchParams.isMembershipMandatory() && !searchParams.isMembershipOnly()) {
 			filters.add(new FlexiTableFilter(translate("filter.not.booked"), Filter.notBooked.name()));
 		}
@@ -420,7 +420,7 @@ public class RepositoryEntryListController extends FormBasicController
 		SelectionValues bookingValues = new SelectionValues();
 		bookingValues.add(SelectionValues.entry(Filter.asParticipant.name(), translate("filter.booked.participant")));
 		bookingValues.add(SelectionValues.entry(Filter.asCoach.name(), translate("filter.booked.coach")));
-		bookingValues.add(SelectionValues.entry(Filter.asAuthor.name(), translate("filter.booked.author")));
+		bookingValues.add(SelectionValues.entry(Filter.asOwner.name(), translate("filter.booked.owner")));
 		if(!searchParams.isMembershipMandatory() && !searchParams.isMembershipOnly()) {
 			bookingValues.add(SelectionValues.entry(Filter.notBooked.name(), translate("filter.not.booked")));
 		}
