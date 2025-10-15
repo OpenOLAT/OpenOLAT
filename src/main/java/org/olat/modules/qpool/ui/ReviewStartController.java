@@ -19,20 +19,23 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,9 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReviewStartController extends FormBasicController {
 
-	private static final String NO_TAXONOMY_LEVEL_KEY = "no-tax";
-
-	private SingleSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 
 	private final QuestionItem item;
 	private final boolean ignoreCompetences;
@@ -73,20 +74,14 @@ public class ReviewStartController extends FormBasicController {
 		setFormDescription("process.start.review.description", new String[] {item.getTitle()});
 		
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, ignoreCompetences);
-		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
-				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
+		Collection<TaxonomyLevel> selectedTaxonomyLevels = item.getTaxonomyLevel() != null? List.of(item.getTaxonomyLevel()): List.of();
+		TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+				selectedTaxonomyLevels,
+				() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
+				translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "process.start.review.taxonomy.level",
+				formLayout, getWindowControl(), false, source);
 		taxonomyLevelEl.setMandatory(true);
-		if (item instanceof QuestionItemImpl itemImpl) {
-			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
-			if(selectedTaxonomyLevel != null) {
-				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
-				for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
-					if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
-						taxonomyLevelEl.select(taxonomyKey, true);
-					}
-				}
-			}
-		}
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -98,7 +93,7 @@ public class ReviewStartController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 
-		if (!taxonomyLevelEl.isOneSelected() || NO_TAXONOMY_LEVEL_KEY.equals(taxonomyLevelEl.getSelectedKey())) {
+		if (taxonomyLevelEl.getSelectedKey() == null) {
 			taxonomyLevelEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}

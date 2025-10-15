@@ -156,7 +156,7 @@ public class BadgeSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public ControllerCreator getBrowserCreator() {
+	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return null;
 	}
 

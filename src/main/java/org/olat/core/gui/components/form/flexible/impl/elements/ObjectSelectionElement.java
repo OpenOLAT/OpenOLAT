@@ -43,5 +43,13 @@ public interface ObjectSelectionElement extends FormItem {
 	public void select(String key);
 	
 	public void unselectAll();
+	
+	/**
+	 * Resets the element with a new source and reinitializes it with the default
+	 * values of the source.
+	 * 
+	 * @param source
+	 */
+	public void setSource(ObjectSelectionSource source);
 
 }

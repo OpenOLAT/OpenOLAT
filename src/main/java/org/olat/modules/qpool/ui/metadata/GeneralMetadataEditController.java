@@ -21,6 +21,10 @@ package org.olat.modules.qpool.ui.metadata;
 
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -49,6 +55,7 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
@@ -59,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GeneralMetadataEditController extends FormBasicController {
 
 	private TextElement topicEl;
-	private SingleSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection contextEl;
 	private TextElement keywordsEl;
 	private TextElement coverageEl;
@@ -71,6 +78,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	private final QPoolSecurityCallback qPoolSecurityCallback;
 	private QuestionItem item;
 	private MetadataSecurityCallback securityCallback;
+	private TaxonomyLevelSelectionSource taxonomyLevelSelectionSource;
 	private final boolean ignoreCompetences;
 
 	@Autowired
@@ -100,11 +108,10 @@ public class GeneralMetadataEditController extends FormBasicController {
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, topic, formLayout);
 		topicEl.setElementCssClass("o_sel_qpool_metadata_topic");
 		
-		taxonomyLevelEl = uifactory.addDropdownSingleselect("general.taxonomy.level", formLayout, new String[0],
-				new String[0]);
-		taxonomyLevelEl.setElementCssClass("o_sel_qpool_metadata_taxonomy");
-		buildTaxonomyLevelEl();
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "general.taxonomy.level", formLayout, getWindowControl(), false, null);
 		taxonomyLevelEl.setVisible(qPoolSecurityCallback.canUseTaxonomy());
+		taxonomyLevelEl.addActionListener(FormEvent.ONCHANGE);
+		buildTaxonomyLevelEl();
 		
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
@@ -152,37 +159,26 @@ public class GeneralMetadataEditController extends FormBasicController {
 	}
 
 	private void buildTaxonomyLevelEl() {
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), securityCallback.canRemoveTaxonomy(), ignoreCompetences);
-		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
-		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
-		taxonomyLevelEl.setKeysAndValues(selectableKeys, selectableValues, null);
-
-		TaxonomyLevel selectedTaxonomyLevel = item.getTaxonomyLevel();
-		if(selectedTaxonomyLevel != null) {
-			String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
-			for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
-				if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
-					taxonomyLevelEl.select(taxonomyKey, true);
-				}
-			}
-			if (!taxonomyLevelEl.isOneSelected() && selectedTaxonomyLevel != null) {
-				if (selectableKeys.length == 0) {
-					selectableKeys = new String[] {"dummy"};
-					selectableValues = new String[1];
-				}
-				selectableValues[0] = TaxonomyUIFactory.translateDisplayName(getTranslator(), selectedTaxonomyLevel);
-				taxonomyLevelEl.setEnabled(false);
-			}
+		if (!taxonomyLevelEl.isVisible()) {
+			return;
 		}
-
-		taxonomyLevelEl.addActionListener(FormEvent.ONCHANGE);
+		
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), securityCallback.canRemoveTaxonomy(), ignoreCompetences);
+		
+		List<TaxonomyLevel> selectedTaxonomyLevels = item.getTaxonomyLevel() != null? List.of(item.getTaxonomyLevel()): List.of();
+		taxonomyLevelSelectionSource = new TaxonomyLevelSelectionSource(getLocale(),
+				selectedTaxonomyLevels,
+				() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
+				translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+		taxonomyLevelEl.setSource(taxonomyLevelSelectionSource);
+		
 		setTaxonomicPath();
 	}
 
 	private void setReadOnly() {
 		boolean canEditMetadata = securityCallback.canEditMetadata();
 		topicEl.setEnabled(canEditMetadata);
-		taxonomyLevelEl.setEnabled(canEditMetadata);
+		taxonomyLevelEl.setEnabled(canEditMetadata && isTaxonomyLevelEditable());
 		contextEl.setEnabled(canEditMetadata);
 		keywordsEl.setEnabled(canEditMetadata);
 		coverageEl.setEnabled(canEditMetadata);
@@ -190,6 +186,18 @@ public class GeneralMetadataEditController extends FormBasicController {
 		languageEl.setEnabled(canEditMetadata);
 		assessmentTypeEl.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
+	}
+	
+	private boolean isTaxonomyLevelEditable() {
+		// If user not allowed to select the current taxonomy level,
+		// she is not allowed to change/remove it.
+		taxonomyLevelEl.setEnabled(true);
+		if (taxonomyLevelEl.getSelectedKey() != null) {
+			if (Arrays.stream(qpoolTaxonomyTreeBuilder.getSelectableKeys()).noneMatch(key -> key.equals(taxonomyLevelEl.getSelectedKey()))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public void setItem(QuestionItem item, MetadataSecurityCallback securityCallback) {
@@ -214,11 +222,17 @@ public class GeneralMetadataEditController extends FormBasicController {
 	}
 
 	private void setTaxonomicPath() {
-		String selectedKey = taxonomyLevelEl.isOneSelected()? taxonomyLevelEl.getSelectedKey(): null;
+		String selectedKey = taxonomyLevelEl.getSelectedKey();
+		if (selectedKey == null) {
+			return;
+		}
+		
 		TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
 		String taxonomicPath = "";
 		if (taxonomyLevel != null) {
-			taxonomicPath = StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiers());
+			List<String> displayNamePath = taxonomyLevelSelectionSource.getDisplayNamePath(taxonomyLevel);
+			taxonomicPath = ObjectOption.createFullPath(displayNamePath, Function.identity());
+			taxonomicPath = StringHelper.escapeHtml(taxonomicPath);
 		}
 		taxonomyLevelEl.setExampleKey("general.taxonomy.path", new String[] {taxonomicPath});
 	}
@@ -251,14 +265,16 @@ public class GeneralMetadataEditController extends FormBasicController {
 			
 			itemImpl.setTopic(topicEl.getValue());
 			
-			if (taxonomyLevelEl.isOneSelected()) {
-				String selectedKey = taxonomyLevelEl.getSelectedKey();
-				TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
-				itemImpl.setTaxonomyLevel(taxonomyLevel);
-			} else {
-				itemImpl.setTaxonomyLevel(null);
+			if (taxonomyLevelEl.isEnabled()) {
+				if (taxonomyLevelEl.getSelectedKey() != null) {
+					String selectedKey = taxonomyLevelEl.getSelectedKey();
+					TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
+					itemImpl.setTaxonomyLevel(taxonomyLevel);
+				} else {
+					itemImpl.setTaxonomyLevel(null);
+				}
 			}
-	
+			
 			QEducationalContext context = contextEl.isOneSelected()
 					? MetaUIFactory.getContextByKey(contextEl.getSelectedKey(), qpoolService)
 					: null;

@@ -45,6 +45,6 @@ public interface ObjectSelectionSource {
 	
 	public boolean isBrowserAvailable();
 	
-	public ControllerCreator getBrowserCreator();
+	public ControllerCreator getBrowserCreator(boolean multiSelection);
 
 }

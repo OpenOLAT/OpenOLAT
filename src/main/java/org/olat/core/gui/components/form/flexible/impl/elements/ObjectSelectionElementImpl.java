@@ -66,7 +66,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	
 	private final boolean multiSelection;
 	private String noSelectionText;
-	private final ObjectSelectionSource source;
+	private ObjectSelectionSource source;
 	private Set<String> selectedKeys;
 
 	public ObjectSelectionElementImpl(WindowControl wControl, String name, boolean multiSelection, ObjectSelectionSource source) {
@@ -92,11 +92,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 	protected void rootFormAvailable() {
 		elementTranslator = Util.createPackageTranslator(ObjectSelectionElementImpl.class, getTranslator().getLocale());
 		
-		// Performance optimization: Options loading may be heavy weight.
-		// Therefore, they are initially loaded only when the dialog is opened.
-		// The initial selection is displayed on the button.
-		updateDisplayUI(source.getDefaultDisplayValue());
-		selectedKeys = new HashSet<>(source.getDefaultSelectedKeys());
+		initDefaults();
 	}
 	
 	@Override
@@ -213,6 +209,24 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 		updateDisplayUI();
 	}
 	
+	@Override
+	public void setSource(ObjectSelectionSource source) {
+		this.source = source;
+		initDefaults();
+	}
+	
+	private void initDefaults() {
+		if (source == null) {
+			return;
+		}
+		
+		// Performance optimization: Options loading may be heavy weight.
+		// Therefore, they are initially loaded only when the dialog is opened.
+		// The initial selection is displayed on the button.
+		updateDisplayUI(source.getDefaultDisplayValue());
+		selectedKeys = new HashSet<>(source.getDefaultSelectedKeys());
+	}
+	
 	private void updateDisplayUI() {
 		updateDisplayUI(source.getDisplayValue(selectedKeys));
 	}
@@ -272,7 +286,7 @@ public class ObjectSelectionElementImpl extends FormItemImpl implements ObjectSe
 
 	
 	private void doOpenBrowser(UserRequest ureq) {
-		browseCtrl = source.getBrowserCreator().createController(ureq, wControl);
+		browseCtrl = source.getBrowserCreator(multiSelection).createController(ureq, wControl);
 		browseCtrl.addControllerListener(this);
 		
 		String optionsLabel = source.getOptionsLabel(getTranslator().getLocale());

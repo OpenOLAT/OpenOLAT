@@ -20,9 +20,9 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -99,27 +99,27 @@ public interface ObjectOption {
 		
 	}
 	
-	public static String createShortPath(List<TreeNode> treePath) {
+	public static <T> String createShortPath(List<T> path, Function<T, String> valueExtractor) {
 		StringBuilder sb = new StringBuilder();
-		if (treePath.size() == 1) {
-			sb.append(treePath.get(0).getTitle());
+		if (path.size() == 1) {
+			sb.append(valueExtractor.apply(path.get(0)));
 			sb.append(" /");
-		} else if (treePath.size() == 2) {
-			sb.append(treePath.get(0).getTitle());
+		} else if (path.size() == 2) {
+			sb.append(valueExtractor.apply(path.get(0)));
 			sb.append(" / ");
-			sb.append(treePath.get(1).getTitle());
+			sb.append(valueExtractor.apply(path.get(1)));
 			sb.append(" /");
-		} else if (treePath.size() > 2) {
-			sb.append(treePath.get(0).getTitle());
+		} else if (path.size() > 2) {
+			sb.append(valueExtractor.apply(path.get(0)));
 			sb.append(" / ... / ");
-			sb.append(treePath.get(treePath.size() - 1).getTitle());
+			sb.append(valueExtractor.apply(path.get(path.size() - 1)));
 			sb.append(" /");
 		}
 		return sb.toString();
 	}
 	
-	public static String createFullPath(List<TreeNode> treePath) {
-		String fillPath = treePath.stream().map(TreeNode::getTitle).collect(Collectors.joining(" / "));
+	public static <T> String createFullPath(List<T> path, Function<T, String> valueExtractor) {
+		String fillPath = path.stream().map(t -> valueExtractor.apply(t)).collect(Collectors.joining(" / "));
 		if (StringHelper.containsNonWhitespace(fillPath)) {
 			fillPath += " /";
 		}

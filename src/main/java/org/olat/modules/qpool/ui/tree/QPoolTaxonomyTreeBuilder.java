@@ -154,6 +154,16 @@ public class QPoolTaxonomyTreeBuilder {
 				.map(TaxonomyLevel::getMaterializedPathKeys)
 				.collect(Collectors.toList());
 	}
+	
+	
+
+	public List<TaxonomyLevel> getSelectableTaxonomyLevels() {
+		return selectableTaxonomyLevels;
+	}
+
+	public void setSelectableTaxonomyLevels(List<TaxonomyLevel> selectableTaxonomyLevels) {
+		this.selectableTaxonomyLevels = selectableTaxonomyLevels;
+	}
 
 	public String[] getSelectableKeys() {
 		return selectableKeys;

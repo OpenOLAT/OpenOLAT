@@ -148,8 +148,8 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 			treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
 			
 			String title = createOptionTitle(organisation, totalNodeCount);
-			String subTitle = ObjectOption.createShortPath(treePath);
-			String subTitleFull = ObjectOption.createFullPath(treePath);
+			String subTitle = ObjectOption.createShortPath(treePath, TreeNode::getTitle);
+			String subTitleFull = ObjectOption.createFullPath(treePath, TreeNode::getTitle);
 			OrganisationOption option = new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, subTitleFull, organisation.getDisplayName());
 			
 			options.add(option);
@@ -214,7 +214,7 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public ControllerCreator getBrowserCreator() {
+	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return null;
 	}
 	

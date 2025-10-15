@@ -84,7 +84,7 @@ public class ObjectListSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public ControllerCreator getBrowserCreator() {
+	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return null;
 	}
 

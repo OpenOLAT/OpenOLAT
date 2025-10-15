@@ -76,15 +76,17 @@ public class CompetenceBrowserController extends FormBasicController {
 	private final List<Taxonomy> taxonomies;
 	private final Map<Taxonomy, List<TaxonomyLevel>> taxonomyToLevels;
 	private final boolean withSelection;
+	private final boolean multiSelection;
 	private final String displayNameHeader;
 
 
 	public CompetenceBrowserController(UserRequest ureq, WindowControl wControl, List<Taxonomy> taxonomies,
-			Collection<TaxonomyLevel> taxonomyLevels, boolean withSelection, String displayNameHeader) {
+			Collection<TaxonomyLevel> taxonomyLevels, boolean withSelection, boolean multiSelection, String displayNameHeader) {
 		super(ureq, wControl, "competence_browse");
 		this.taxonomies = taxonomies;
 		this.taxonomyToLevels = taxonomyLevels.stream().collect(Collectors.groupingBy(TaxonomyLevel::getTaxonomy));
 		this.withSelection = withSelection;
+		this.multiSelection = multiSelection;
 		this.displayNameHeader = displayNameHeader;
 		
 		initForm(ureq);
@@ -114,7 +116,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		tableEl.setSearchEnabled(true);
 		tableEl.setPageSize(20);
 		if (withSelection) {
-			tableEl.setMultiSelect(true);
+			tableEl.setSelection(true, multiSelection, false);
 			selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(selectButton);
 		}

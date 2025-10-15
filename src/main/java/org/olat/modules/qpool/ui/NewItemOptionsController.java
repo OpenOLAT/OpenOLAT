@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +45,7 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,7 +60,7 @@ public class NewItemOptionsController extends FormBasicController {
 
 	private TextElement titleEl;
 	private SingleSelection typeEl;
-	private SingleSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 
 	private Map<String,QItemFactory> keyToFactoryMap = new HashMap<>();
 	private TaxonomyLevel selectedTaxonomyLevel;
@@ -117,16 +120,13 @@ public class NewItemOptionsController extends FormBasicController {
 		typeEl.setElementCssClass("o_sel_item_type");
 		
 		//subject
-		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
-				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
-		if(selectedTaxonomyLevel != null) {
-			String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
-			for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
-				if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
-					taxonomyLevelEl.select(taxonomyKey, true);
-				}
-			}
-		}
+		Collection<TaxonomyLevel> selectedTaxonomyLevels = selectedTaxonomyLevel != null? List.of(selectedTaxonomyLevel): List.of();
+		TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+				selectedTaxonomyLevels,
+				() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
+				translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "process.start.review.taxonomy.level",
+				formLayout, getWindowControl(), false, source);
 		taxonomyLevelEl.setVisible(qPoolSecurityCallback.canUseTaxonomy());
 		taxonomyLevelEl.setElementCssClass("o_sel_item_taxonomy_level");
 		
@@ -157,7 +157,7 @@ public class NewItemOptionsController extends FormBasicController {
 		QItemFactory factory = keyToFactoryMap.get(typeKey);
 		String title = titleEl.getValue();
 		TaxonomyLevel taxonomyLevel = null;
-		if (taxonomyLevelEl.isOneSelected()) {
+		if (taxonomyLevelEl.getSelectedKey() != null) {
 			String selectedKey = taxonomyLevelEl.getSelectedKey();
 			taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
 		}

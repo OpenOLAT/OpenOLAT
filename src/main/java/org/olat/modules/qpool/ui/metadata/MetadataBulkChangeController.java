@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -70,6 +71,7 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelectionSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,7 +89,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private TextElement coverageEl;
 	private TextElement addInfosEl;
 	private TextElement languageEl;
-	private SingleSelection taxonomyLevelEl;
+	private ObjectSelectionElement taxonomyLevelEl;
 	private SingleSelection contextEl;
 	private FormLayoutContainer learningTimeContainer;
 	private IntegerElement learningTimeDayElement;
@@ -175,8 +177,12 @@ public class MetadataBulkChangeController extends FormBasicController {
 		
 		if (qpoolSecurityCallback.canUseTaxonomy()) {
 			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), canRemoveTaxonomies(), ignoreCompetences);
-			taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
-					qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
+			TaxonomyLevelSelectionSource source = new TaxonomyLevelSelectionSource(getLocale(),
+					List.of(),
+					() -> qpoolTaxonomyTreeBuilder.getSelectableTaxonomyLevels(),
+					translate("general.taxonomy.level.option.label"), translate("general.taxonomy.level"));
+			taxonomyLevelEl = uifactory.addObjectSelectionElement("general.taxonomy.level", "general.taxonomy.level",
+					generalCont, getWindowControl(), false, source);
 			decorate(taxonomyLevelEl, generalCont);
 		}
 	

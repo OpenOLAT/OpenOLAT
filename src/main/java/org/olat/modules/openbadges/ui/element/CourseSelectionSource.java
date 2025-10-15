@@ -144,7 +144,7 @@ public class CourseSelectionSource implements ObjectSelectionSource {
 	}
 	
 	@Override
-	public ControllerCreator getBrowserCreator() {
+	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return (UserRequest lureq, WindowControl lwControl) -> 
 				new CourseSelectionController(lureq, lwControl);
 	}

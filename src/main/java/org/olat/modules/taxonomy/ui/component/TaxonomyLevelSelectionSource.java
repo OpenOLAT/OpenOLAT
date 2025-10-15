@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.ui.component;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -39,16 +40,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectDisplayVal
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.ObjectOptionValues;
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionSource;
-import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.GenericTreeModelBuilder;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -168,27 +164,16 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	}
 	
 	private List<ObjectOptionValues> toOptions(Collection<TaxonomyLevel> levels) {
-		Function<TaxonomyLevel, String> keyExtractor = level -> level.getKey().toString();
-		Function<TaxonomyLevel, TaxonomyLevel> parentExtractor = TaxonomyLevel::getParent;
-		Function<TaxonomyLevel, GenericTreeNode> toNode = organisation -> {
-			GenericTreeNode newNode = new GenericTreeNode();
-			newNode.setTitle(getDisplayName(organisation));
-			return newNode;
-		};
-		GenericTreeModelBuilder<TaxonomyLevel> treeModelBuilder = new GenericTreeModelBuilder<>(keyExtractor, parentExtractor, toNode);
-		GenericTreeModel treeModel = treeModelBuilder.build(levels);
-		
 		List<ObjectOptionValues> options = new ArrayList<>(levels.size());
 		for (TaxonomyLevel level : levels) {
 			if (optionsFilter.test(level)) {
-				TreeNode treeNode = treeModel.getNodeById(keyExtractor.apply(level));
-				List<TreeNode> treePath = TreeHelper.getTreePath(treeNode);
-				treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
-				
 				String title = getDisplayName(level);
-				String subTitle = ObjectOption.createShortPath(treePath);
-				String subTitleFull = ObjectOption.createFullPath(treePath);
-				ObjectOptionValues option = new ObjectOptionValues(keyExtractor.apply(level), title, subTitle, subTitleFull);
+				
+				List<String> displayNamePath = getDisplayNamePath(level);
+				String subTitle = ObjectOption.createShortPath(displayNamePath, Function.identity());
+				String subTitleFull = ObjectOption.createFullPath(displayNamePath, Function.identity());
+				
+				ObjectOptionValues option = new ObjectOptionValues(level.getKey().toString(), title, subTitle, subTitleFull);
 				
 				options.add(option);
 			}
@@ -199,7 +184,22 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 		return options;
 	}
 	
-	public String getDisplayName(TaxonomyLevel level) {
+	public List<String> getDisplayNamePath(TaxonomyLevel taxonomyLevel) {
+		List<String> displayNamePath = new ArrayList<>();
+		addParent(displayNamePath, taxonomyLevel);
+		Collections.reverse(displayNamePath);
+		return displayNamePath;
+	}
+	
+	private void addParent(List<String> displayNamePath, TaxonomyLevel taxonomyLevel) {
+		TaxonomyLevel parent = taxonomyLevel.getParent();
+		if (parent != null) {
+			displayNamePath.add(getDisplayName(parent));
+			addParent(displayNamePath, parent);
+		}
+	}
+	
+	private String getDisplayName(TaxonomyLevel level) {
 		return TaxonomyUIFactory.translateDisplayName(translator, level, level::getIdentifier);
 	}
 	
@@ -233,9 +233,9 @@ public class TaxonomyLevelSelectionSource implements ObjectSelectionSource {
 	}
 
 	@Override
-	public ControllerCreator getBrowserCreator() {
+	public ControllerCreator getBrowserCreator(boolean multiSelection) {
 		return (UserRequest lureq, WindowControl lwControl) -> 
-				new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, browserTableHeader);
+				new CompetenceBrowserController(lureq, lwControl, allTaxonomies, allTaxonomyLevels, true, multiSelection, browserTableHeader);
 	}
 	
 	public static final TaxonomyLevelRef toRef(String key) {
