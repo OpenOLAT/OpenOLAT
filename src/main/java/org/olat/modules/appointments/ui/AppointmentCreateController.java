@@ -372,7 +372,7 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 		
 		if (appointmentsService.isTeamsEnabled()) {
-			String creatorFullName = userManager.getUserDisplayName(getIdentity());
+			String creatorFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity()));
 			teamsCreatorEl = uifactory.addStaticTextElement("meeting.creator.teams", "meeting.creator", creatorFullName, formLayout);
 			
 			teamsOpenCalLink = uifactory.addFormLink("calendar.open.teams", "calendar.open", null, formLayout, Link.LINK);
