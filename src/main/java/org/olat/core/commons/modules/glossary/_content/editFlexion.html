@@ -1,9 +1,9 @@
 <br/>
 <div style="padding-right:1em; padding-top:0.5em;"></div>
 $r.translate("flexions.intro")
-$r.translate("flexions.intro.ms") <br/><br/>
+$r.translate("flexions.intro.ms")<br><br/>
 $r.translate("choose.morph.service")
-#if ($r.available("morph.service")) $r.render("morph.service") <br/> #end
+#if ($r.available("morph.service")) $r.render("morph.service")<br> #end
 #if ($r.available("flexions.get.button")) $r.render("flexions.get.button") #end
 <br/><br/>
 #if ($r.available("existing.flexions.checkboxes"))
@@ -11,7 +11,7 @@ $r.translate("choose.morph.service")
 	<legend>$r.translate("flexions.to.save")</legend>
 		$r.render("existing.flexions.checkboxes") 
 		<br/>
-		$r.render("flexions.select.all") <br/>
+		$r.render("flexions.select.all")<br>
 		$r.render("flexions.select.none")
 	</fieldset>
 #else
