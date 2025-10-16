@@ -97,18 +97,21 @@ public class RegistrationConfigAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer enableCont = FormLayoutContainer.createDefaultFormLayout("enableCont", getTranslator());
+		enableCont.setRootForm(mainForm);
+		enableCont.setFormTitle(translate("self.reg.config"));
+		enableCont.setFormContextHelp("manual_admin/administration/Login_Self-Registration/");
+		formLayout.add(enableCont);
+		
+		registrationEl = uifactory.addToggleButton("enable.self.registration", "admin.enableRegistration", translate("on"), translate("off"), enableCont);
+		registrationEl.addActionListener(FormEvent.ONCHANGE);
+		registrationEl.toggle(registrationModule.isSelfRegistrationEnabled());
+		
 		//settings
 		settingsContainer = FormLayoutContainer.createDefaultFormLayout("settingsCont", getTranslator());
 		settingsContainer.setRootForm(mainForm);
 		settingsContainer.setFormTitle(translate("admin.registration.title"));
 		formLayout.add(settingsContainer);
-
-		FormLayoutContainer enableCont = FormLayoutContainer.createDefaultFormLayout("enableCont", getTranslator());
-		enableCont.setRootForm(mainForm);
-		formLayout.add(enableCont);
-		registrationEl = uifactory.addToggleButton("enable.self.registration", "admin.enableRegistration", translate("on"), translate("off"), enableCont);
-		registrationEl.addActionListener(FormEvent.ONCHANGE);
-		registrationEl.toggle(registrationModule.isSelfRegistrationEnabled());
 
 		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, new String[]{ translate("admin.enableRegistration.on") });
 		registrationLoginElement.select("on", registrationModule.isSelfRegistrationLoginEnabled());

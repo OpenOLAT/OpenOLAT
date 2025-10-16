@@ -64,6 +64,7 @@ public class ToDoAdminSettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.user.tool.title");
+		setFormContextHelp("manual_admin/administration/Modules_ToDo/");
 		
 		boolean userToolEnabled = userToolsModule.getAvailableUserToolSet().stream()
 				.anyMatch(id -> ToDoExtension.TODO_USER_TOOL_ID.equals(id));

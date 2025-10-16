@@ -62,6 +62,7 @@ public class UsersMembershipsReportController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("report.memberships.title");
+		setFormContextHelp("manual_admin/administration/Reports/#course_memberships");
 		
 		datesEl = uifactory.addDateChooser("dates", "report.memberships.dates", null, formLayout);
 		datesEl.setMandatory(true);

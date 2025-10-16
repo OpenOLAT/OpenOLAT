@@ -95,6 +95,7 @@ public class CreditPointAdminConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer enableCont = uifactory.addDefaultFormLayout("enable", null, formLayout);
+		enableCont.setFormContextHelp("manual_admin/administration/Payment_Credit_Points/");
 		initSettingsForm(enableCont);
 
 		String page = velocity_root + "/systems.html";

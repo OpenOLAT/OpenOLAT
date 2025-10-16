@@ -59,6 +59,7 @@ public class InvoiceAdminConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.defaults");
+		setFormContextHelp("manual_admin/administration/Payment_Invoice/");
 		
 		String deadlineDaysDefault = invoiceModule.getCancellingFeeDeadlineDaysDefault()!= null
 				? String.valueOf(invoiceModule.getCancellingFeeDeadlineDaysDefault())

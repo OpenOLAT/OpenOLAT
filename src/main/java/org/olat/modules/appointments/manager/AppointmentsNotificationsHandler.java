@@ -36,6 +36,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -140,7 +141,7 @@ public class AppointmentsNotificationsHandler implements NotificationsHandler {
 		String desc = translator.translate("notification.new.participation",
 				new String[] { 
 						topicTitle,
-						userManager.getUserDisplayName(participation.getIdentity().getKey()) 
+						StringHelper.escapeHtml(userManager.getUserDisplayName(participation.getIdentity().getKey())) 
 					});
 		
 		String businessPath = publisher.getBusinessPath();

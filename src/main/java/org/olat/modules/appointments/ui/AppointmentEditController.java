@@ -344,7 +344,7 @@ public class AppointmentEditController extends FormBasicController {
 			
 			Identity creator = teamsMeeting == null ? getIdentity() : teamsMeeting.getCreator();
 			if(creator != null) {
-				String creatorFullName = userManager.getUserDisplayName(creator);
+				String creatorFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(creator));
 				teamsCreatorEl = uifactory.addStaticTextElement("meeting.creator.teams", "meeting.creator", creatorFullName, formLayout);
 			}
 			

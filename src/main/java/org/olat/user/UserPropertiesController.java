@@ -46,6 +46,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -120,7 +121,7 @@ public class UserPropertiesController extends BasicController {
 				String actionid = te.getActionId();
 				if (actionid.equals("delete") && identityAdministator) {
 					Property foundProp = tdm.getObject(te.getRowId());
-					String fullName = userManager.getUserDisplayName(displayedIdentity);
+					String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(displayedIdentity));
 					confirmDeleteCtrl = activateYesNoDialog(ureq, translate("propdelete.yesno.title"), translate("propdelete.yesno.text", new String[]{foundProp.getName(), fullName}), confirmDeleteCtrl);
 					confirmDeleteCtrl.setUserObject(foundProp);
 				}

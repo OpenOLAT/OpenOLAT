@@ -315,7 +315,7 @@ public class SearchMyRepositoryEntryViewParams {
 		upcomingCourses,
 		asParticipant,
 		asCoach,
-		asAuthor,
+		asOwner,
 		notBooked,
 		passed,
 		notPassed,
@@ -330,7 +330,7 @@ public class SearchMyRepositoryEntryViewParams {
 				filters.add(Filter.asCoach);
 			}
 			if(roles.contains(GroupRoles.owner)) {
-				filters.add(Filter.asAuthor);
+				filters.add(Filter.asOwner);
 			}
 			return filters;
 		}

@@ -1,3 +1,9 @@
-<div class="o_hint">$r.translate("report.explain")</div>
-$r.render("search")
-$r.render("table")
+<fieldset>
+	<legend>
+		$r.translate("report.title")
+		$r.contextHelpWithWrapper("manual_admin/administration/Reports/#questions_in_tests")
+	</legend>
+	<div class="o_hint">$r.translate("report.explain")</div>
+	$r.render("search")
+	$r.render("table")
+</fieldset>

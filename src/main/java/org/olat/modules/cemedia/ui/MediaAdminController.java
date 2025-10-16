@@ -89,6 +89,7 @@ public class MediaAdminController extends FormBasicController {
 
 	private void initFormLicenseCheck(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("admin.license.title"));
+		formLayout.setFormContextHelp("manual_admin/administration/Modules_Media_Center/");
 
 		forceLicenseCheckEl = uifactory.addCheckboxesHorizontal("admin.license.force", formLayout, new String[] { "xx" },
 				new String[] { translate("admin.license.force.value") });

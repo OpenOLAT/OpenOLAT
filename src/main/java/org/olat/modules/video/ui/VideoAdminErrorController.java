@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -86,7 +87,7 @@ public class VideoAdminErrorController extends FormBasicController {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public VideoAdminErrorController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl,"transcoding_queue");
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		initForm(ureq);
 		loadModel();
 	}
@@ -94,9 +95,7 @@ public class VideoAdminErrorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("number.transcodings");
-		setFormDescription("number.transcodings");
-		setFormContextHelp("manual_user/learningresources/Portfolio_template_Administration_and_editing/");
+		setFormTitle("tab.admin.error");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.resid));
@@ -114,7 +113,12 @@ public class VideoAdminErrorController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		
-		refreshButton = uifactory.addFormLink("button.refresh", flc, Link.BUTTON);
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setElementCssClass("o_button_group o_button_group_top");
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add(buttonsCont);
+		
+		refreshButton = uifactory.addFormLink("button.refresh", buttonsCont, Link.BUTTON);
 		refreshButton.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 	}
 	

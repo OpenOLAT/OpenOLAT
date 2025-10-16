@@ -118,7 +118,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		// configuration which can be overriden in course
 		FormLayoutContainer courseCont = uifactory.addDefaultFormLayout("course", null, formLayout);
 		courseCont.setFormTitle(translate("lecture.admin.course.override.title"));
-		courseCont.setFormContextHelp("manual_admin/administration/Lecture_and_roll_call_management/");
+		courseCont.setFormContextHelp("manual_admin/administration/Modules_Events_and_Absences/");
 		courseCont.setElementCssClass("o_sel_lectures_configuration_form");
 
 		String[] onValues = new String[] { translate("on") };
