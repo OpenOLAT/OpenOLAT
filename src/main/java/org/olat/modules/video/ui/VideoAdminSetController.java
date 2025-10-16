@@ -93,6 +93,7 @@ public class VideoAdminSetController extends FormBasicController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer mainCont = FormLayoutContainer.createDefaultFormLayout("mainCont", getTranslator());
 		mainCont.setFormTitle(translate("admin.config.title"));
+		mainCont.setFormContextHelp("manual_admin/administration/Modules_Video/");
 		mainCont.setRootForm(mainForm);
 
 		formLayout.add(mainCont);

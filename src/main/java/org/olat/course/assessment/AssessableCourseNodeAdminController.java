@@ -75,6 +75,7 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		FormLayoutContainer courseExecCont = FormLayoutContainer.createDefaultFormLayout("courseExec", getTranslator());
 		courseExecCont.setRootForm(mainForm);
 		courseExecCont.setFormTitle(translate("course.execution.period"));
+		courseExecCont.setFormContextHelp("manual_admin/administration/Modules_Course/");
 		formLayout.add(courseExecCont);
 		initCourseExecPeriodOptions(courseExecCont);
 

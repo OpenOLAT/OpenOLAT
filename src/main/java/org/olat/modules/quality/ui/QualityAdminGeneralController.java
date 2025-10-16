@@ -61,6 +61,7 @@ public class QualityAdminGeneralController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.config.title");
+		setFormContextHelp("manual_admin/administration/Modules_Quality_Management/");
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, onKeys, onValues);

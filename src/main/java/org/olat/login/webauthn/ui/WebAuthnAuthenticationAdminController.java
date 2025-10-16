@@ -95,6 +95,7 @@ public class WebAuthnAuthenticationAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer enableCont = uifactory.addDefaultFormLayout("enableCont", null, formLayout);
+		enableCont.setFormContextHelp("manual_admin/administration/Login_Password_and_Authentication/");
 		initEnableForm(enableCont);
 		
 		String levelPage = velocity_root + "/passkey_admin_levels.html";

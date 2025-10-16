@@ -66,12 +66,8 @@ public class SysinfoController extends FormBasicController {
 	@Autowired
 	private SessionStatsManager sessionStatsManager;
 	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 */
 	public SysinfoController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "sysinfo");
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		initForm(ureq);
 	}
 
@@ -81,8 +77,9 @@ public class SysinfoController extends FormBasicController {
 
 		//runtime informations
 		FormLayoutContainer runtimeCont = FormLayoutContainer.createDefaultFormLayout("runtime", getTranslator());
+		runtimeCont.setFormTitle(translate("runtime"));
+		runtimeCont.setFormContextHelp("manual_admin/administration/System/");
 		formLayout.add(runtimeCont);
-		formLayout.add("runtime", runtimeCont);
 
 		String startup = format.formatDateAndTime(new Date(WebappHelper.getTimeOfServerStartup()));
 		uifactory.addStaticTextElement("runtime.startup", "runtime.startup", startup, runtimeCont);
@@ -156,8 +153,8 @@ public class SysinfoController extends FormBasicController {
 
 		//server informations
 		FormLayoutContainer serverCont = FormLayoutContainer.createDefaultFormLayout("server", getTranslator());
+		serverCont.setFormTitle(translate("sysinfo"));
 		formLayout.add(serverCont);
-		formLayout.add("server", serverCont);
 		
 		//version
 		uifactory.addStaticTextElement("version", "sysinfo.version", Settings.getFullVersionInfo(), serverCont);

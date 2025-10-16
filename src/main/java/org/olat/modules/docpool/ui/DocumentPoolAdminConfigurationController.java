@@ -66,7 +66,8 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
+		setFormTitle("document.pool.configuration");
+		setFormContextHelp("manual_admin/administration/Modules_Document_pool/");
 		setFormDescription("admin.description");
 		
 		String[] onValues = new String[] { translate("on") };
