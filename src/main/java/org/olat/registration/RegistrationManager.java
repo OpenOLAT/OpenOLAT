@@ -39,6 +39,7 @@ import jakarta.mail.Address;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.TemporalType;
 
 import org.apache.logging.log4j.Logger;
@@ -400,9 +401,28 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	private TemporaryKey updateTkRegistrationKey(String email) {
 		TemporaryKey tk = loadTemporaryKeyByEmail(email);
 		if (tk != null) {
-			Integer validForMinutes = registrationModule.getValidUntilMinutesGui();
 			tk.setRegistrationKey(createRegistrationToken());
-			Integer validMinutes = validForMinutes != null ? validForMinutes : RegistrationModule.VALID_UNTIL_30_DAYS_IN_MINUTES;
+			// Update date. Fallback is 30 days
+			Integer validMinutes = RegistrationModule.VALID_UNTIL_30_DAYS_IN_MINUTES;
+			// But we try to set it the same as the date of the old token
+			Date creationDate = tk.getCreationDate();
+			Date lastValidUntilDate = tk.getValidUntil();
+			if (creationDate != null && lastValidUntilDate != null) {
+				long diffInMillis = lastValidUntilDate.getTime() - creationDate.getTime();
+				long oldValidMinutes = diffInMillis / (60 * 1000);
+				// Since the creation date will never be updated the lastValidUntilDate grows after each update
+				// To prevent this we make sure the upper boundary is either the REST configuration or the 30 days default
+				// This is a fix to make long lasting tokens not be shortened to a very short GUI time out in case 
+				// the user aborts and tries it again. The link sent via email should be valid until the token expires or
+				// the password has been successfully saved. 
+				Integer maxValidFromConfig = registrationModule.getRESTValidityOfTemporaryKey();
+				if (oldValidMinutes < maxValidFromConfig) {
+					validMinutes = (int) oldValidMinutes;
+				}
+				// Update OTP if older than permitted via config
+				
+				
+			}					
 			Date validUntil = addMinutes(new Date(), validMinutes);
 			tk.setValidUntil(validUntil);
 			dbInstance.getCurrentEntityManager().merge(tk);
@@ -417,10 +437,13 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	
 	public void deleteTemporaryKey(TemporaryKey key) {
 		if (key == null) return;
-		
-		TemporaryKeyImpl reloadedKey = dbInstance.getCurrentEntityManager()
-				.getReference(TemporaryKeyImpl.class, key.getKey());
-		dbInstance.getCurrentEntityManager().remove(reloadedKey);
+		try {
+			TemporaryKeyImpl reloadedKey = dbInstance.getCurrentEntityManager()
+					.getReference(TemporaryKeyImpl.class, key.getKey());
+			dbInstance.getCurrentEntityManager().remove(reloadedKey);			
+		} catch(EntityNotFoundException e) {
+			// already deleted
+		}
 	}
 
 	private void deleteTemporaryKeys(Long identityKey, String action) {
