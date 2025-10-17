@@ -390,7 +390,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		tk.setEmailAddress(email);
 		tk.setIpAddress(ip);
 		tk.setRegistrationKey(createRegistrationToken());
-		Integer validMinutes = validForMinutes != null ? validForMinutes : RegistrationModule.VALID_UNTIL_30_DAYS_IN_MINUTES;
+		Integer validMinutes = validForMinutes != null ? validForMinutes : registrationModule.getRESTValidityOfTemporaryKey();
 		Date validUntil = addMinutes(tk.getCreationDate(), validMinutes);
 		tk.setValidUntil(validUntil);
 		tk.setRegAction(action);
@@ -403,7 +403,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		if (tk != null) {
 			tk.setRegistrationKey(createRegistrationToken());
 			// Update date. Fallback is 30 days
-			Integer validMinutes = RegistrationModule.VALID_UNTIL_30_DAYS_IN_MINUTES;
+			Integer validMinutes = registrationModule.getRESTValidityOfTemporaryKey();
 			// But we try to set it the same as the date of the old token
 			Date creationDate = tk.getCreationDate();
 			Date lastValidUntilDate = tk.getValidUntil();
@@ -415,13 +415,9 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 				// This is a fix to make long lasting tokens not be shortened to a very short GUI time out in case 
 				// the user aborts and tries it again. The link sent via email should be valid until the token expires or
 				// the password has been successfully saved. 
-				Integer maxValidFromConfig = registrationModule.getRESTValidityOfTemporaryKey();
-				if (oldValidMinutes < maxValidFromConfig) {
+				if (oldValidMinutes < validMinutes) {
 					validMinutes = (int) oldValidMinutes;
 				}
-				// Update OTP if older than permitted via config
-				
-				
 			}					
 			Date validUntil = addMinutes(new Date(), validMinutes);
 			tk.setValidUntil(validUntil);
