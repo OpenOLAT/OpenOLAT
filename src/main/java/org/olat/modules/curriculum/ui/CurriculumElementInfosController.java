@@ -92,7 +92,8 @@ public class CurriculumElementInfosController extends BasicController {
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			RepositoryEntry entry, Identity bookedIdentity, boolean preview) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CurriculumElementInfosController.class, ureq.getLocale()));
+		// The translator is explicitly set so that it is also available in the subclasses.
 		this.element = element;
 		this.entry = entry;
 		
