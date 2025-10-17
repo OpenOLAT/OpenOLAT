@@ -3322,7 +3322,7 @@ public class CourseElementTest extends Deployments {
 		Date start = DateUtils.addDays(now, -4);
 		Date end = DateUtils.addDays(now, 2);
 		String topicTitle = "Selenium testing";
-		String topicIdentifier = "SEL-100c";
+		String topicIdentifier = "SEL_100c";
 		
 		TBrokerConfigurationPage tbConfig = new TBrokerConfigurationPage(browser);
 		tbConfig
@@ -3476,7 +3476,7 @@ public class CourseElementTest extends Deployments {
 		Date start = DateUtils.addDays(now, -4);
 		Date end = DateUtils.addDays(now, 2);
 		String topicTitle = "Unfair testing";
-		String topicIdentifier = "SEL-200c";
+		String topicIdentifier = "SEL_200c";
 		
 		TBrokerConfigurationPage tbConfig = new TBrokerConfigurationPage(browser);
 		tbConfig
