@@ -1120,6 +1120,41 @@ ul.o_color_picker_dropdown, ul.o_icon_selector_dropdown {
 	}
 }
 
+/* Search field in selection elements */
+// Overlay of the search field and the reset button
+.o_search_field {
+	display: grid;
+	>* {
+		grid-area: 1/1;
+		z-index: 3;
+		justify-self: end;
+	}
+	.o_search_term {
+		border-radius: 0;
+		// Space for the reset button
+		padding-right: 30px;
+	}
+	.o_reset_search {
+		margin-left: -1px;
+		border: unset;
+		background-color: unset;
+	}
+	>span:has(.o_reset_search) {
+		align-self: center;
+	}
+}
+.o_search_field:not(:has(+ * .o_open_browser)) {
+	.o_search_term {
+		border-top-right-radius: $input-border-radius;
+		border-bottom-right-radius: $input-border-radius;
+	}
+}
+
+/* More shared stuff from the object selection element */
+.o_selection_apply {
+	width: 100%;
+}
+
 /* Object Selection Element */
 dialog {
 	&.popover {
@@ -1129,35 +1164,6 @@ dialog {
 	}
 }
 .o_object_selection {
-	// Overlay of the search field and the reset button
-	.o_object_selection_search_box {
-		display: grid;
-		>* {
-			grid-area: 1/1;
-			z-index: 3;
-			justify-self: end;
-		}
-		.o_search_term {
-			border-radius: 0;
-			// Space for the reset button
-			padding-right: 30px;
-		}
-		.o_reset_search {
-			margin-left: -1px;
-			border: unset;
-			background-color: unset;
-		}
-		>span:has(.o_reset_search) {
-			align-self: center;
-		}
-	}
-	.o_object_selection_search_box:not(:has(+ * .o_open_browser)) {
-		.o_search_term {
-			border-top-right-radius: $input-border-radius;
-			border-bottom-right-radius: $input-border-radius;
-		}
-	}
-	
 	.o_object_selection_actions {
 		display: flex;
 		gap: 20px;
@@ -1266,12 +1272,7 @@ dialog {
 			}
 		}
 	}
-	
-	.o_object_selection_apply {
-		width: 100%;
-	}
 }
-
 
 /* Selection Display Element */
 .o_expand_button {

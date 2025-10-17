@@ -156,7 +156,7 @@ public class ObjectSelectionController extends FormBasicController {
 		nothingFoundEl = uifactory.addStaticTextElement("options.nothing.found", null, "", formLayout);
 		
 		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON);
-		applyButton.setElementCssClass("o_object_selection_apply o_button_primary_light");
+		applyButton.setElementCssClass("o_selection_apply o_button_primary_light");
 	}
 	
 	@Override

@@ -24,14 +24,10 @@
 */
 package org.olat.gui.demo.guidemo;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.color.ColorUIFactory;
-import org.olat.core.commons.services.tag.TagInfo;
-import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -262,20 +258,6 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		AutoCompletionMultiSelection autoCompletionMultiSelection = uifactory.addAutoCompletionMultiSelection(
 				"automultiselect", "advanced_form.automultiselect", form, getWindowControl(), new NameSource());
 		autoCompletionMultiSelection.setSearchPlaceholder(translate("advanced_form.automultiselect.placeholder"));
-		
-		// Tags
-		List<TagInfo> allTags = new ArrayList<>();
-		TagInfoImpl tag1 = new TagInfoImpl(1l, new Date(), translate("select.1"), 3l, true);
-		allTags.add(tag1);
-		allTags.add(new TagInfoImpl(2l, new Date(), translate("select.2"), 2l, false));
-		allTags.add(new TagInfoImpl(3l, new Date(), translate("select.3"), 0l, false));
-		allTags.add(new TagInfoImpl(4l, new Date(), translate("select.4"), 311l, false));
-		allTags.add(new TagInfoImpl(5l, new Date(), translate("select.5"), 0l, false));
-		allTags.add(new TagInfoImpl(6l, new Date(), translate("select.6"), 3l, false));
-		TagInfoImpl tag7 = new TagInfoImpl(7l, new Date(), translate("select.7"), 30l, true);
-		allTags.add(tag7);
-		allTags.add(new TagInfoImpl(8l, new Date(), translate("select.8"), 3l, false));
-		uifactory.addTagSelection("tags", "tags", form, getWindowControl(), allTags);
 		
 		// Horizontal radio buttons. Choice between Yes or No.
 		horizontalRadioButtons = uifactory.addRadiosHorizontal("guidemo.form.radio2", form, yesOrNoKeys,

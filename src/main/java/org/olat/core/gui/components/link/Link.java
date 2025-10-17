@@ -78,6 +78,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	public static final int TOOLENTRY_CLOSE = 8;
 
 	public static final String ARIA_ROLE_BUTTON = "button";
+	public static final String ARIA_ROLE_CHECKBOX = "checkbox";
 
 	/**
 	 * can be added to one of the following:

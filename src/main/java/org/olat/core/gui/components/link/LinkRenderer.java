@@ -179,7 +179,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			// a11y: Firefox triggers click usually only by cmd + enter
 			// Trigger action by enter if it is in a form (not cmd + enter only)
 			// Trigger action by space if it is a button (not enter only)
-			if (flexiformlink || Link.ARIA_ROLE_BUTTON.equals(link.getAriaRole())) {
+			if (Link.ARIA_ROLE_CHECKBOX.equals(link.getAriaRole())) {
+				sb.append(" onkeydown=\"triggerClick(event, false, true);\"");
+			} else if (flexiformlink || Link.ARIA_ROLE_BUTTON.equals(link.getAriaRole())) {
 				sb.append(" onkeydown=\"triggerClick(event, true, ").append(Link.ARIA_ROLE_BUTTON.equals(link.getAriaRole())? "true": "false").append(");\"");
 			}
 			

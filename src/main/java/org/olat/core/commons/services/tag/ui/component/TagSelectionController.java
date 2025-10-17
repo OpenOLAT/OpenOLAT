@@ -37,11 +37,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -58,12 +60,11 @@ public class TagSelectionController extends FormBasicController {
 	private static final String CMD_TOGGLE = "toggle";
 
 	private final Comparator<TagItem> comparator;
-	private FormLink selectButton;
-	private FormLink quickSearchButton;
-	private TextElement quickSearchEl;
-	private FormLink resetQuickSearchButton;
-	private FormLayoutContainer tagsCont;
+	private TextElement searchTermEl;
+	private FormLink searchResetLink;
 	private FormLink createLink;
+	private FormLayoutContainer tagsCont;
+	private FormLink applyButton;
 	
 	private final List<? extends TagInfo> allTags;
 	private final Set<Long> currentSelectionKeys;
@@ -71,16 +72,17 @@ public class TagSelectionController extends FormBasicController {
 	private List<TagItem> tagItems;
 	private int counter;
 
-
 	public TagSelectionController(UserRequest ureq, WindowControl wControl, List<? extends TagInfo> allTags,
 			Set<Long> currentSelectionKeys, Set<String> initialNewTags) {
 		super(ureq, wControl, "tag_selection", Util.createPackageTranslator(TagUIFactory.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(ObjectSelectionController.class, ureq.getLocale(), getTranslator()));
 		this.allTags = allTags;
 		this.currentSelectionKeys = currentSelectionKeys;
 		this.initialNewTags = initialNewTags;
 		this.comparator = createComparator();
 		
 		initForm(ureq);
+		doResetSearch();
 	}
 	
 	private Comparator<TagItem> createComparator() {
@@ -98,41 +100,35 @@ public class TagSelectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout,
-				Link.BUTTON | Link.NONTRANSLATED);
-		quickSearchButton.setElementCssClass("o_indicate_search");
-		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
-		quickSearchButton.setEnabled(false);
-		quickSearchButton.setDomReplacementWrapperRequired(false);
+		searchTermEl = uifactory.addTextElement("search.term", null, 100, "", formLayout);
+		searchTermEl.setDomReplacementWrapperRequired(false);
+		searchTermEl.setElementCssClass("o_search_term");
+		searchTermEl.setAriaLabel(translate("search.term.aria"));
+		searchTermEl.setAriaRole(TextElement.ARIA_ROLE_SEARCHBOX);
+		searchTermEl.setAutocomplete("off");
+		searchTermEl.addActionListener(FormEvent.ONKEYUP);
 		
-		quickSearchEl = uifactory.addTextElement("quicksearch", null, 32, "", formLayout);
-		quickSearchEl.setElementCssClass("o_quick_search");
-		quickSearchEl.setDomReplacementWrapperRequired(false);
-		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
-		quickSearchEl.setFocus(true);
-		
-		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout,
-				Link.BUTTON | Link.NONTRANSLATED);
-		resetQuickSearchButton.setElementCssClass("o_reset_search");
-		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
-		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
-		
-		selectButton = uifactory.addFormLink("select", "apply", null, formLayout, Link.BUTTON_SMALL);
+		searchResetLink = uifactory.addFormLink("search.reset", "", null, formLayout, Link.BUTTON_SMALL | Link.NONTRANSLATED);
+		searchResetLink.setDomReplacementWrapperRequired(true);
+		searchResetLink.setElementCssClass("o_reset_search");
+		searchResetLink.setTitle(translate("search.reset"));
+		searchResetLink.setIconLeftCSS("o_icon o_icon_remove_filters");
 		
 		tagsCont = FormLayoutContainer.createCustomFormLayout("tags", getTranslator(), velocity_root + "/tag_selection_tags.html");
 		tagsCont.setRootForm(mainForm);
 		formLayout.add("tags", tagsCont);
+		searchTermEl.setAriaControls(Renderer.getComponentPrefix(tagsCont.getComponent()));
 		
 		createLink = uifactory.addFormLink("create", CMD_CREATE, "", null, tagsCont,  Link.NONTRANSLATED);
-		createLink.setDomReplacementWrapperRequired(false);
+		createLink.setDomReplacementWrapperRequired(true);
 		createLink.setVisible(false);
 		
-		initTagLinks();
+		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON);
+		applyButton.setElementCssClass("o_selection_apply o_button_primary_light");
 		
-		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getForId());
-		mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+		initTagLinks();
 	}
-
+	
 	private void initTagLinks() {
 		tagItems = new ArrayList<>(allTags.size() + initialNewTags.size());
 		
@@ -148,7 +144,7 @@ public class TagSelectionController extends FormBasicController {
 		tagItems.sort(comparator);
 		tagsCont.contextPut("tags", tagItems);
 	}
-
+	
 	private TagItem createTagItem(TagInfo tagInfo) {
 		TagItem tagItem = new TagItem();
 		tagItem.setKey(tagInfo.getKey());
@@ -156,9 +152,10 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setCount(tagInfo.getCount() != null? tagInfo.getCount().longValue(): 0l);
 		tagItem.setSelected(currentSelectionKeys.contains(tagInfo.getKey()));
 		
-		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont,  Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont, Link.NONTRANSLATED);
+		link.setTitle(getTagLinkTitle(tagItem));
 		link.setElementCssClass(getTagLinkCss(currentSelectionKeys.contains(tagInfo.getKey())));
-		link.setDomReplacementWrapperRequired(false);
+		link.setAriaRole(Link.ARIA_ROLE_CHECKBOX);
 		tagItem.setLink(link);
 		link.setUserObject(tagItem);
 		return tagItem;
@@ -170,9 +167,9 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setCount(1l);
 		tagItem.setSelected(true);
 		
-		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont,  Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont, Link.NONTRANSLATED);
 		link.setElementCssClass(getTagLinkCss(true));
-		link.setDomReplacementWrapperRequired(false);
+		link.setAriaRole(Link.ARIA_ROLE_CHECKBOX);
 		tagItem.setLink(link);
 		link.setUserObject(tagItem);
 		return tagItem;
@@ -182,25 +179,31 @@ public class TagSelectionController extends FormBasicController {
 		return translate("tag.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
 	}
 	
+	private String getTagLinkTitle(TagItem tagItem) {
+		return tagItem.isSelected()
+				? translate("tag.remove", StringHelper.escapeHtml(tagItem.getDisplayValue()))
+				: translate("tag.select", StringHelper.escapeHtml(tagItem.getDisplayValue()));
+	}
+	
 	private String getTagLinkCss(boolean selected) {
 		return selected? "o_tag o_selection_tag o_tag_clickable o_tag_selected": "o_tag o_selection_tag o_tag_clickable";
 	}
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if(source != quickSearchEl && source != quickSearchButton && source != resetQuickSearchButton) {
-			super.propagateDirtinessToContainer(source, fe);
-		}
+		if (source == searchResetLink || source == createLink) {
+ 			super.propagateDirtinessToContainer(source, fe);
+ 		}
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (selectButton == source) {
-			doSelect(ureq);
-		} else if (quickSearchEl == source) {
-			doQuickSearch();
-		} else if (resetQuickSearchButton == source) {
-			doResetQuickSearch();
+		if (applyButton == source) {
+			doApplySelection(ureq);
+		} else if (searchTermEl == source) {
+			doSearch();
+		} else if (searchResetLink == source) {
+			doResetSearch();
 		} else if (source instanceof FormLink link) {
 			if (CMD_CREATE.equals(link.getCmd())) {
 				doCreateTag();
@@ -218,11 +221,11 @@ public class TagSelectionController extends FormBasicController {
 			doCreateTag();
 		} else {
 			//.. or close this selection view.
-			doSelect(ureq);
+			doApplySelection(ureq);
 		}
 	}
 	
-	private void doSelect(UserRequest ureq) {
+	private void doApplySelection(UserRequest ureq) {
 		Set<Long> selectionKeys = tagItems.stream()
 				.filter(item -> item.getKey() != null && item.isSelected())
 				.map(TagItem::getKey)
@@ -235,13 +238,11 @@ public class TagSelectionController extends FormBasicController {
 	}
 	
 	private void doCreateTag() {
-		TagItem tagItem = createNewTagItem(quickSearchEl.getValue());
+		TagItem tagItem = createNewTagItem(searchTermEl.getValue());
 		tagItems.add(tagItem);
 		tagItems.sort(comparator);
 		createLink.setVisible(false);
-		doResetQuickSearch();
-		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getForId());
-		mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+		doResetSearch();
 	}
 	
 	private void doToggleTag(FormLink link) {
@@ -254,20 +255,24 @@ public class TagSelectionController extends FormBasicController {
 				tagItem.setCount(tagItem.getCount() - 1);
 			}
 			link.setI18nKey(getDisplayTag(tagItem));
+			link.setTitle(getTagLinkTitle(tagItem));
 			link.setElementCssClass(getTagLinkCss(selected));
+			
+			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), link.getForId());
+			mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 		}
 	}
 
-	private void doQuickSearch() {
-		String searchText = quickSearchEl.getValue().toLowerCase();
-		quickSearchEl.getComponent().setDirty(false);
+	private void doSearch() {
+		String searchText = searchTermEl.getValue().toLowerCase();
+		searchTermEl.getComponent().setDirty(false);
 		
 		if (StringHelper.containsNonWhitespace(searchText)) {
 			tagItems.forEach(item -> item.getLink().setVisible(item.getDisplayValue().toLowerCase().contains(searchText)));
 			if (isTagExists(searchText)) {
 				createLink.setVisible(false);
 			} else {
-				createLink.setI18nKey(translate("create.new.tag", StringHelper.escapeHtml(quickSearchEl.getValue())));
+				createLink.setI18nKey(translate("create.new.tag", StringHelper.escapeHtml(searchTermEl.getValue())));
 				createLink.setVisible(true);
 			}
 		} else {
@@ -276,15 +281,20 @@ public class TagSelectionController extends FormBasicController {
 		}
 		
 		tagsCont.setDirty(true);
+		
+		searchResetLink.setVisible(StringHelper.containsNonWhitespace(searchText));
 	}
 	
 	private boolean isTagExists(String searchText) {
 		return tagItems.stream().anyMatch(item -> searchText.equals(item.getDisplayValue().toLowerCase()));
 	}
 
-	private void doResetQuickSearch() {
-		quickSearchEl.setValue("");
-		doQuickSearch();
+	private void doResetSearch() {
+		searchTermEl.setValue("");
+		doSearch();
+		
+		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), searchTermEl.getForId());
+		mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 
 	public static final class TagSelectionEvent extends Event {

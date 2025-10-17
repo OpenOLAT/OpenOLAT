@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.commons.services.tag.model.TagRefImpl;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.TagSelectionController.TagSelectionEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,7 +49,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -59,6 +63,7 @@ import org.olat.core.util.StringHelper;
  */
 public class TagSelectionImpl extends FormItemImpl implements TagSelection, ControllerEventListener {
 	
+	private Translator elementTranslator;
 	private Collator collator;
 	private final ExpandButton component;
 	private final WindowControl wControl;
@@ -77,6 +82,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		this.allTags = allTags;
 		this.selectedKeys = new HashSet<>(allTags.stream().filter(TagInfo::isSelected).map(TagInfo::getKey).collect(Collectors.toSet()));
 		component = ExpandButtonFactory.createSelectionDisplay(this);
+		component.setAriaHasPopup(ExpandButton.ARIA_HASPOPUP_DIALOG);
 		component.setEscapeMode(EscapeMode.none);
 	}
 
@@ -128,6 +134,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 
 	@Override
 	protected void rootFormAvailable() {
+		elementTranslator = Util.createPackageTranslator(TagUIFactory.class, getTranslator().getLocale());
 		collator = Collator.getInstance(getTranslator().getLocale());
 		updateDisplayUI();
 	}
@@ -138,40 +145,58 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 	}
 	
 	@Override
-	public void evalFormRequest(UserRequest ureq) {
+	public void doDispatchFormRequest(UserRequest ureq) {
+		if (getRootForm().hasAlreadyFired()) {
+			return;
+		}
+		
 		Form form = getRootForm();
 		String dispatchuri = form.getRequestParameter("dispatchuri");
 		if (getFormDispatchId().equals(dispatchuri)) {
 			doOpenSelection(ureq);
 		}
 	}
-
+	
+	@Override
+	public void evalFormRequest(UserRequest ureq) {
+		//
+	}
+	
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(selectionCtrl == source) {
-			if (event instanceof TagSelectionEvent) {
-				TagSelectionEvent se = (TagSelectionEvent)event;
-				selectedKeys = se.getKeys();
-				newTags = se.getNewTags();
-				calloutCtrl.deactivate();
-				updateDisplayUI();
-				component.setExpanded(false);
-				if (dirtyCheck) {
-					Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
-					wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+			if (event instanceof TagSelectionEvent selectionEvent) {
+				if (!selectedKeys.equals(selectionEvent.getKeys()) || !newTags.equals(selectionEvent.getNewTags())) {
+					selectedKeys = selectionEvent.getKeys();
+					newTags = selectionEvent.getNewTags();
+					updateDisplayUI();
+					
+					if (dirtyCheck) {
+						Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+						wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+					}
+					
+					if (getAction() == FormEvent.ONCHANGE) {
+						getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
+					}
 				}
-				if (getAction() == FormEvent.ONCHANGE)
-					getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
+				calloutCtrl.deactivate();
+				cleanUp();
 			}
 		} else if (calloutCtrl == source) {
 			cleanUp();
-			component.setExpanded(false);
 		}
 	}
 
 	private void cleanUp() {
 		calloutCtrl = cleanUp(calloutCtrl);
 		selectionCtrl = cleanUp(selectionCtrl);
+		
+		component.setExpanded(false);
+		component.setAriaControls(null);
+		
+		Command focusCommand = FormJSHelper.getFormFocusCommand(getRootForm().getFormName(), getFormDispatchId());
+		getRootForm().getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {
@@ -186,6 +211,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		List<String> displayNames = getDisplayNames();
 		displayNames.sort((t1, t2) -> collator.compare(t1, t2));
 		
+		
 		String value = displayNames.stream()
 				.map(this::toLabel)
 				.collect(Collectors.joining());
@@ -194,6 +220,15 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		}
 		value = "<span class=\"o_tag_selection_button_tags o_tag_selection_tags\">" + value + "</span>";
 		component.setText(value);
+		
+		
+		String ariaValue = displayNames.stream().collect(Collectors.joining(", "));
+		
+		if (StringHelper.containsNonWhitespace(ariaValue)) {
+			component.setAriaLabel(elementTranslator.translate("tags.aria.change", ariaValue));
+		} else {
+			component.setAriaLabel(elementTranslator.translate("tags.aria.add"));
+		}
 	}
 	
 	private String toLabel(String displayName) {
@@ -205,11 +240,13 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Cont
 		selectionCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectionCtrl.getInitialComponent(),
-				getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, false, null));
+				getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottomOrTop, false, null));
 		calloutCtrl.addControllerListener(this);
 		calloutCtrl.activate();
 		
 		component.setExpanded(true);
+		// see ObjectSelectionElementImpl
+		component.setAriaControls(Renderer.getComponentPrefix(selectionCtrl.getInitialComponent()));
 	}
 
 }

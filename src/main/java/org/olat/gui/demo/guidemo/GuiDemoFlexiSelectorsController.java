@@ -19,9 +19,12 @@
  */
 package org.olat.gui.demo.guidemo;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.model.OrganisationImpl;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -33,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ObjectOption.Obj
 import org.olat.core.gui.components.form.flexible.impl.elements.ObjectSelectionElement;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Organisation;
 
 /**
  * Initial date: 2025-04-03<br>
@@ -43,19 +45,20 @@ import org.olat.core.id.Organisation;
 public class GuiDemoFlexiSelectorsController extends FormBasicController {
 
 	public GuiDemoFlexiSelectorsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initOrgSelectorSection(formLayout);
+		initObjectSection(formLayout);
+		initTagSection(formLayout);
 	}
 
-	private void initOrgSelectorSection(FormItemContainer formLayout) {
-		FormLayoutContainer sectionContainer = uifactory.addDefaultFormLayout("selectorSection", null, formLayout);
-		sectionContainer.setFormTitle(translate("guidemo_flexi_form_selectors"));
+	private void initObjectSection(FormItemContainer formLayout) {
+		FormLayoutContainer sectionContainer = uifactory.addDefaultFormLayout("objectSection", null, formLayout);
+		sectionContainer.setFormTitle(translate("selection.objects"));
 		
 		ObjectListSource organisationSource = createOrganisationSource();
 		uifactory.addObjectSelectionElement("objects.single", "selection.objects.single", sectionContainer,
@@ -110,36 +113,27 @@ public class GuiDemoFlexiSelectorsController extends FormBasicController {
 				translate("selection.objects.load.more.options"));
 	}
 
+	private void initTagSection(FormItemContainer formLayout) {
+		FormLayoutContainer sectionContainer = uifactory.addDefaultFormLayout("selctionTags", null, formLayout);
+		sectionContainer.setFormTitle(translate("selection.tags"));
+		
+		List<TagInfo> allTags = new ArrayList<>();
+		TagInfoImpl tag1 = new TagInfoImpl(1l, new Date(), translate("select.1"), 3l, true);
+		allTags.add(tag1);
+		allTags.add(new TagInfoImpl(2l, new Date(), translate("select.2"), 2l, false));
+		allTags.add(new TagInfoImpl(3l, new Date(), translate("select.3"), 0l, false));
+		allTags.add(new TagInfoImpl(4l, new Date(), translate("select.4"), 311l, false));
+		allTags.add(new TagInfoImpl(5l, new Date(), translate("select.5"), 0l, false));
+		allTags.add(new TagInfoImpl(6l, new Date(), translate("select.6"), 3l, false));
+		TagInfoImpl tag7 = new TagInfoImpl(7l, new Date(), translate("select.7"), 30l, true);
+		allTags.add(tag7);
+		allTags.add(new TagInfoImpl(8l, new Date(), translate("select.8"), 3l, false));
+		uifactory.addTagSelection("tags", "tags", sectionContainer, getWindowControl(), allTags);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
 	
-	class OrgBuilder {
-		OrganisationImpl org;
-		
-		public OrgBuilder(Long key) {
-			org = new OrganisationImpl();
-			org.setKey(key);
-		}
-		
-		public OrgBuilder name(String name) {
-			org.setDisplayName(name);
-			return this;
-		}
-		
-		public OrgBuilder path(String path) {
-			org.setMaterializedPathKeys(path);
-			return this;
-		}
-		
-		public OrgBuilder location(String location) {
-			org.setLocation(location);
-			return this;
-		}
-		
-		public Organisation build() {
-			return org;
-		}
-	}
 }

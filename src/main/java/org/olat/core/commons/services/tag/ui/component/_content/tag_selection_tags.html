@@ -1,5 +1,5 @@
 <div class="o_tag_selection_results">
-	#if($r.available("create"))
+	#if($r.available("create") && $r.visible("create"))
 		<div class="o_tag_selection_create">
 			$r.render("create")
 		</div>
