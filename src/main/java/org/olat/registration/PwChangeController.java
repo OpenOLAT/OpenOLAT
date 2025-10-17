@@ -25,7 +25,6 @@
 
 package org.olat.registration;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -57,6 +56,9 @@ public class PwChangeController extends BasicController {
 
 	@Autowired
 	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private RegistrationManager registrationManager;
+	
 
 	/**
 	 * Controller to change a user's password.
@@ -95,6 +97,12 @@ public class PwChangeController extends BasicController {
 							showError("password.failed");
 						}
 						return StepsMainRunController.DONE_UNCHANGED;
+					} else {
+						String temporaryRegKey = (String) runContext.get(PwChangeWizardConstants.TEMPORARYREGKEY);
+						// Now finally remove the temp key, pwd successfully saved
+						if (temporaryRegKey != null) {
+							registrationManager.deleteTemporaryKeyWithId(temporaryRegKey);
+						}
 					}
 					showInfo("step4.pw.text");
 					return StepsMainRunController.DONE_MODIFIED;
@@ -134,11 +142,11 @@ public class PwChangeController extends BasicController {
 	private static class CancelCallback implements StepRunnerCallback {
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-			String temporaryRegKey = (String) runContext.get(PwChangeWizardConstants.TEMPORARYREGKEY);
-			// remove temporaryKey entry, if process gets canceled
-			if (temporaryRegKey != null) {
-				CoreSpringFactory.getImpl(RegistrationManager.class).deleteTemporaryKeyWithId(temporaryRegKey);
-			}
+			// Do not remove temporaryKey entry, if process gets canceled. 
+			// User might have a long lasting token that was created via REST to initiate the password reset workflow
+			// because the user has no OpenOlat password yet. He might had some issues, e.g. did not receive the OTP
+			// and might try it again within the time frame of the temp key validity period. 
+			// The temp key will be removed automatically when expired. 
 			return Step.NOSTEP;
 		}
 	}

@@ -320,11 +320,11 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		// to prevent validation problems in last step
 		// since there is no way to get back to this step, this is okay to bypass the validation
 		done = true;
-		if (temporaryKey != null) {
-			// previously the delete process was handled in PwChangeForm
-			// to keep it simple: Now delete temporaryKey as soon as validation is completed
-			registrationManager.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
-		}
+		// Do not remove temporaryKey entry yet. The user might still not add and save a password and the 
+		// user might have a long lasting token that was created via REST to initiate the password reset workflow
+		// because the user has no OpenOlat password. He might had some issues, e.g. did not receive the OTP
+		// and might try it again within the time frame of the temp key validity period. 
+		// The temp key will be removed automatically when expired. 
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
