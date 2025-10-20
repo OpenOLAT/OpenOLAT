@@ -605,13 +605,21 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
 
 		if (userModule.isAnyPasswordChangeAllowed() && StringHelper.containsNonWhitespace(initialEmail)
-				&& registrationManager.hasTemporaryKeyByEmail(initialEmail, RegistrationManager.PW_CHANGE)) {
+				&& canChangePasswordWithEmail(initialEmail)) {
 			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, false);
 			listenTo(pwChangeCtrl);
 			getWindowControl().pushAsModalDialog(pwChangeCtrl.getInitialComponent());
 		} else {
 			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
 		}
+	}
+	
+	private boolean canChangePasswordWithEmail(String initialEmail) {
+		if(registrationManager.hasTemporaryKeyByEmail(initialEmail, RegistrationManager.PW_CHANGE)) {
+			return true;
+		}
+		List<Identity> ids = userManager.findIdentitiesByEmail(List.of(initialEmail));
+		return ids != null && ids.size() == 1 && userModule.isPwdChangeAllowed(ids.get(0));
 	}
 
 	private static class RegCancelCallback implements StepRunnerCallback {

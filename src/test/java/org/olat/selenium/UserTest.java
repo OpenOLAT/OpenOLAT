@@ -75,7 +75,7 @@ import com.dumbster.smtp.SmtpMessage;
 /**
  * 
  * Initial date: 19.06.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @RunWith(Arquillian.class)
@@ -697,6 +697,69 @@ public class UserTest extends Deployments {
 		loginPage
 			.loginAs(user.getLogin(), newPassword)
 			.assertLoggedInByLastName(user.getLastName());
+	}
+	
+	/**
+	 * This is a slight variant of the test above. The URL with email must
+	 * allows to change the password too, if a password is set.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userChangeItsPasswordWithLinkWithEmail()
+	throws IOException, URISyntaxException {
+		UserRestClient userWebService = new UserRestClient(deploymentUrl);
+		UserVO user = userWebService.createRandomUser();
+		
+		// The default browser is probably still logged in
+		WebDriver anOtherBrowser = getWebDriver(1);
+		anOtherBrowser.navigate()
+			.to(new URL(deploymentUrl.toString() + "url/changepw/0/" + user.getEmail() + "/0"));
+		OOGraphene.waitModalDialog(anOtherBrowser);
+		
+		LoginPasswordForgottenPage forgottenPage = new LoginPasswordForgottenPage(anOtherBrowser)
+				.assertUserIdentificationAndNext(user.getEmail());
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+		String otp = RegistrationPage.extractOtp(messages.get(0));
+		log.info("Registration OTP: {}", otp);
+		
+		String newPassword = "Sel#23HighlyHidden";
+		forgottenPage
+			.confirmOtp(otp)
+			.newPassword(newPassword);
+		
+		LoginPage loginPage = LoginPage.load(anOtherBrowser, deploymentUrl);
+		loginPage
+			.loginAs(user.getLogin(), newPassword)
+			.assertLoggedInByLastName(user.getLastName());
+	}
+	
+	
+	/**
+	 * A user without a password or a token isn't allowed to change its
+	 * password from the login screen. It's a security feature.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userChangePasswordForbiden()
+	throws IOException, URISyntaxException {
+		UserRestClient userWebService = new UserRestClient(deploymentUrl);
+		UserVO user = userWebService.createRandomUserWithoutPassword("Alicia");
+		
+		// The default browser is probably still logged in
+		WebDriver anOtherBrowser = getWebDriver(1);
+		anOtherBrowser.navigate()
+			.to(new URL(deploymentUrl.toString() + "url/changepw/0/" + user.getEmail() + "/0"));
+		
+		By warningBy = By.cssSelector(".o-modal-alert-warning .alert.alert-warning");
+		OOGraphene.waitElement(warningBy, anOtherBrowser);
 	}
 	
 	
