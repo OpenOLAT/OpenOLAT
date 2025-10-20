@@ -107,6 +107,16 @@ public class FormToggleImpl extends FormItemImpl implements FormToggle {
 	}
 	
 	@Override
+	public void setToggleOnText(String toggleOnText) {
+		component.setToggleOnText(toggleOnText);
+	}
+	
+	@Override
+	public void setToggleOffText(String toggleOffText) {
+		component.setToggleOffText(toggleOffText);
+	}
+	
+	@Override
 	public void setTitle(String title) {
 		component.setTitle(title);
 	}

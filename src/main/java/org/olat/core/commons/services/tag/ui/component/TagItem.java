@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.tag.ui.component;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 
 /**
  * 
@@ -34,6 +35,7 @@ public class TagItem {
 	private long count;
 	private boolean selected;
 	private FormLink link;
+	private FormToggle toggle;
 	
 	public Long getKey() {
 		return key;
@@ -77,6 +79,18 @@ public class TagItem {
 	
 	public String getLinkName() {
 		return link != null? link.getComponent().getComponentName(): null;
+	}
+	
+	public FormToggle getToggle() {
+		return toggle;
+	}
+
+	public void setToggle(FormToggle toggle) {
+		this.toggle = toggle;
+	}
+
+	public String getToggleName() {
+		return toggle != null? toggle.getComponent().getComponentName(): null;
 	}
 	
 }

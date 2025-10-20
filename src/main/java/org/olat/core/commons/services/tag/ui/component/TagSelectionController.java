@@ -32,6 +32,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle.Presentation;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -57,7 +59,6 @@ import org.olat.core.util.Util;
 public class TagSelectionController extends FormBasicController {
 	
 	private static final String CMD_CREATE = "create";
-	private static final String CMD_TOGGLE = "toggle";
 
 	private final Comparator<TagItem> comparator;
 	private TextElement searchTermEl;
@@ -152,12 +153,8 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setCount(tagInfo.getCount() != null? tagInfo.getCount().longValue(): 0l);
 		tagItem.setSelected(currentSelectionKeys.contains(tagInfo.getKey()));
 		
-		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont, Link.NONTRANSLATED);
-		link.setTitle(getTagLinkTitle(tagItem));
-		link.setElementCssClass(getTagLinkCss(currentSelectionKeys.contains(tagInfo.getKey())));
-		link.setAriaRole(Link.ARIA_ROLE_CHECKBOX);
-		tagItem.setLink(link);
-		link.setUserObject(tagItem);
+		createToggle(tagItem);
+		
 		return tagItem;
 	}
 	
@@ -167,22 +164,30 @@ public class TagSelectionController extends FormBasicController {
 		tagItem.setCount(1l);
 		tagItem.setSelected(true);
 		
-		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont, Link.NONTRANSLATED);
-		link.setElementCssClass(getTagLinkCss(true));
-		link.setAriaRole(Link.ARIA_ROLE_CHECKBOX);
-		tagItem.setLink(link);
-		link.setUserObject(tagItem);
+		createToggle(tagItem);
+		
 		return tagItem;
+	}
+
+	private void createToggle(TagItem tagItem) {
+		FormToggle toggle = uifactory.addToggleButton("tag_" + counter++, null, null, null, tagsCont);
+		toggle.setPresentation(Presentation.CHECK_CUSTOM);
+		tagItem.setToggle(toggle);
+		toggle.setUserObject(tagItem);
+		updateToggleUI(toggle, tagItem);
+	}
+	
+	private void updateToggleUI(FormToggle toggle, TagItem tagItem) {
+		toggle.toggle(tagItem.isSelected());
+		
+		String displayTag = getDisplayTag(tagItem);
+		toggle.setToggleOnText(displayTag);
+		toggle.setToggleOffText(displayTag);
+		toggle.setElementCssClass(getTagLinkCss(tagItem.isSelected()));
 	}
 	
 	private String getDisplayTag(TagItem tagItem) {
 		return translate("tag.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
-	}
-	
-	private String getTagLinkTitle(TagItem tagItem) {
-		return tagItem.isSelected()
-				? translate("tag.remove", StringHelper.escapeHtml(tagItem.getDisplayValue()))
-				: translate("tag.select", StringHelper.escapeHtml(tagItem.getDisplayValue()));
 	}
 	
 	private String getTagLinkCss(boolean selected) {
@@ -204,11 +209,11 @@ public class TagSelectionController extends FormBasicController {
 			doSearch();
 		} else if (searchResetLink == source) {
 			doResetSearch();
+		} else if (source instanceof FormToggle toggle) {
+			doToggleTag(toggle);
 		} else if (source instanceof FormLink link) {
 			if (CMD_CREATE.equals(link.getCmd())) {
 				doCreateTag();
-			} else if (CMD_TOGGLE.equals(link.getCmd())) {
-				doToggleTag(link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -245,8 +250,8 @@ public class TagSelectionController extends FormBasicController {
 		doResetSearch();
 	}
 	
-	private void doToggleTag(FormLink link) {
-		if (link.getUserObject() instanceof TagItem tagItem) {
+	private void doToggleTag(FormToggle toggle) {
+		if (toggle.getUserObject() instanceof TagItem tagItem) {
 			boolean selected = !tagItem.isSelected();
 			tagItem.setSelected(selected);
 			if (selected) {
@@ -254,11 +259,9 @@ public class TagSelectionController extends FormBasicController {
 			} else {
 				tagItem.setCount(tagItem.getCount() - 1);
 			}
-			link.setI18nKey(getDisplayTag(tagItem));
-			link.setTitle(getTagLinkTitle(tagItem));
-			link.setElementCssClass(getTagLinkCss(selected));
+			updateToggleUI(toggle, tagItem);
 			
-			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), link.getForId());
+			Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), toggle.getForId());
 			mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 		}
 	}
@@ -268,7 +271,7 @@ public class TagSelectionController extends FormBasicController {
 		searchTermEl.getComponent().setDirty(false);
 		
 		if (StringHelper.containsNonWhitespace(searchText)) {
-			tagItems.forEach(item -> item.getLink().setVisible(item.getDisplayValue().toLowerCase().contains(searchText)));
+			tagItems.forEach(item -> item.getToggle().setVisible(item.getDisplayValue().toLowerCase().contains(searchText)));
 			if (isTagExists(searchText)) {
 				createLink.setVisible(false);
 			} else {
@@ -276,7 +279,7 @@ public class TagSelectionController extends FormBasicController {
 				createLink.setVisible(true);
 			}
 		} else {
-			tagItems.forEach(item -> item.getLink().setVisible(true));
+			tagItems.forEach(item -> item.getToggle().setVisible(true));
 			createLink.setVisible(false);
 		}
 		

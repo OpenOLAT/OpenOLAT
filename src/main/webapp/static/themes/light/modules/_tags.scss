@@ -106,6 +106,13 @@
 		margin: 0;
 	}
 }
+
+.o_tag_selection {
+	.o_tag_selection_tags {
+		padding: 2px 0px; // for focus indicator
+	}
+}
+
 .o_tag.o_selection_tag {
 	border-color: $o-tag-selection-border-color;
 	background-color: $o-tag-selection-background-color;

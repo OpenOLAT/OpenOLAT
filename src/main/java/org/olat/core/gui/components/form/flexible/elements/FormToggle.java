@@ -54,6 +54,10 @@ public interface FormToggle extends FormItem {
 	 */
 	public void toggleOff();
 	
+	public void setToggleOnText(String toggleOnText);
+	
+	public void setToggleOffText(String toggleOffText);
+	
 	public void setTitle(String title);
 	
 	/**
@@ -75,6 +79,6 @@ public interface FormToggle extends FormItem {
 	
 	public void setPresentation(Presentation presentation);
 	
-	public enum Presentation { SWITCH, CHECK, BUTTON_LARGE, BUTTON, BUTTON_SMALL, BUTTON_XSMALL }
-
+	public enum Presentation { SWITCH, CHECK, CHECK_CUSTOM, BUTTON_LARGE, BUTTON, BUTTON_SMALL, BUTTON_XSMALL }
+	
 }

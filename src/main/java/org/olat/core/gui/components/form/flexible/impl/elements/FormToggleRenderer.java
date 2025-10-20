@@ -110,6 +110,12 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 			} else {
 				sb.append("<i class=\"o_icon o_icon_toggle_check_off\"></i>");
 			}
+		} else if (Presentation.CHECK_CUSTOM == cmp.getPresentation()) {
+			if (cmp.isOn()) {
+				sb.append(cmp.getToggleOnText());
+			} else {
+				sb.append(cmp.getToggleOffText());
+			}
 		} else if (Presentation.BUTTON_LARGE == cmp.getPresentation()
 				|| Presentation.BUTTON == cmp.getPresentation()
 				|| Presentation.BUTTON_SMALL == cmp.getPresentation()
@@ -158,6 +164,8 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 				return "o_toggle_check btn btn-primary o_button_printed";
 			}
 			return "o_toggle_check btn btn-default o_button_printed";
+		} else if (Presentation.CHECK_CUSTOM == cmp.getPresentation()) {
+			return "";
 		} else if (Presentation.BUTTON_LARGE == cmp.getPresentation()) {
 			return "o_toggle_button btn btn-lg";
 		} else if (Presentation.BUTTON == cmp.getPresentation()) {

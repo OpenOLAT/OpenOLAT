@@ -126,6 +126,7 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 
 	public void setToggleOnText(String toggleOnText) {
 		this.toggleOnText = toggleOnText;
+		setDirty(true);
 	}
 
 	public String getToggleOffText() {
@@ -134,6 +135,7 @@ public class FormToggleComponent extends FormBaseComponentImpl {
 
 	public void setToggleOffText(String toggleOffText) {
 		this.toggleOffText = toggleOffText;
+		setDirty(true);
 	}
 
 	public String getTitle() {
