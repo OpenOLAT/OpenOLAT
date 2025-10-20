@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -156,12 +157,12 @@ public class FileElementImpl extends FormItemImpl
 				deleteTempUploadFiles();
 			}
 			
-			List<File> tempUploadFileList = new ArrayList<>(list.size());
-			for(MultipartFileInfos fileInfos:list) {
-				File tempUploadFile = evaluateFile(fileInfos, ureq.getUserSession());
-				tempUploadFileList.add(tempUploadFile);
-			}
-
+			long uploadLimit = multiFileUpload? Long.MAX_VALUE: Long.valueOf(1);
+			List<File> tempUploadFileList = list.stream()
+				.limit(uploadLimit)
+				.map(fileInfos -> evaluateFile(fileInfos, ureq.getUserSession()))
+				.collect(Collectors.toList());
+			
 			// Mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
 			validate();
