@@ -201,7 +201,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				doCloseTaxonomyAdmin();
 			}
 		} else if (source == stackPanel) {
-			if (event instanceof PopEvent) {
+			if (event instanceof PopEvent pe) {
 				if (stackPanel.getLastController() == stackPanel.getRootController()) {
 					// Clicked on root breadcrumb
 					doOpenSearchHeader();
@@ -210,6 +210,13 @@ public class CatalogMainController extends BasicController implements Activateab
 					TaxonomyLevel taxonomyLevel = ((CatalogEntryListController)stackPanel.getLastController()).getTaxonomyLevel();
 					if (taxonomyLevel != null) {
 						doOpenTaxonomyHeader(ureq, taxonomyLevel);
+					}
+				}
+				
+				if(pe.getController() instanceof CatalogEntryListController celc) {
+					removeAsListenerAndDispose(celc);
+					if(celc == catalogRepositoryEntryListCtrl) {
+						catalogRepositoryEntryListCtrl = null;
 					}
 				}
 			}
