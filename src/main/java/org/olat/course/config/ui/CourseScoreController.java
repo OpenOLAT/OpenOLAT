@@ -121,6 +121,7 @@ public class CourseScoreController extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	private final boolean editable;
 	private final boolean mandatoryNodesAvailable;
+	private CourseElementsInfos infos;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -251,7 +252,7 @@ public class CourseScoreController extends FormBasicController {
 		passedByProgressEl.setVisible(passedEnableEl.isOn());
 		passedByProgressEl.select(STCourseNode.CONFIG_PASSED_PROGRESS, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS));
 		
-		CourseElementsInfos infos = loadElementsInfos(course);
+		infos = loadElementsInfos(course);
 
 		String page = velocity_root + "/with_show_elements.html";
 		passedByProgressElCont = uifactory.addCustomFormLayout("options.passed.by.progress.cont", null, page, settingsCont);
@@ -329,8 +330,6 @@ public class CourseScoreController extends FormBasicController {
 		passedPointsCutOverviewButton.setIconLeftCSS("o_icon o_icon_preview");
 		passedPointsCutOverviewCont.setElementCssClass("o_block_move_up");
 		passedPointsCutOverviewCont.contextPut("linkId", "points.rightAddOn");
-		String maxScore = AssessmentHelper.getRoundedScore(infos.getMaxScore());
-		passedPointsCutOverviewCont.contextPut("msg", translate("options.passed.points.cut.explain", maxScore));
 		
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -382,6 +381,11 @@ public class CourseScoreController extends FormBasicController {
 				&& passedByPassedEl.isOneSelected() && STCourseNode.CONFIG_PASSED_NUMBER.equals(passedByPassedEl.getSelectedKey());
 		passedNumberCutEl.setVisible(passedNumber);
 		passedNumberCutOverviewCont.setVisible(passedEnabled);
+		
+		String cutExplain = weighted
+				? translate("options.passed.points.cut.explain.weighted", AssessmentHelper.getRoundedScore(infos.getWeightedMaxScore()))
+				: translate("options.passed.points.cut.explain", AssessmentHelper.getRoundedScore(infos.getMaxScore()));
+		passedPointsCutOverviewCont.contextPut("msg", cutExplain);
 		
 		boolean passedPoints = passedEnabled && passedByScoreEl.isKeySelected(STCourseNode.CONFIG_PASSED_POINTS);
 		passedPointsCutEl.setVisible(passedPoints);
@@ -669,6 +673,7 @@ public class CourseScoreController extends FormBasicController {
 		private int numOfOptionalPassedElements = 0;
 		
 		private double maxScore = 0.0d;
+		private double weightedMaxScore = 0.0d;
 		
 		public int getNumOfMandatoryElements() {
 			return numOfMandatoryElements;
@@ -686,6 +691,10 @@ public class CourseScoreController extends FormBasicController {
 			return maxScore;
 		}
 
+		public double getWeightedMaxScore() {
+			return weightedMaxScore;
+		}
+		
 		public void visit(CourseNode courseNode, LearningPathConfigs learningPathConfigs, AssessmentConfig assessmentConfig) {
 			AssessmentObligation obligation = learningPathConfigs.getObligation();
 			if (AssessmentObligation.mandatory.equals(obligation)) {
@@ -703,6 +712,7 @@ public class CourseScoreController extends FormBasicController {
 				
 				if (Mode.none != assessmentConfig.getScoreMode() && !(courseNode instanceof STCourseNode)) {
 					maxScore += assessmentConfig.getMaxScore() != null ? assessmentConfig.getMaxScore().doubleValue(): 0.0d;
+					weightedMaxScore  += assessmentConfig.getWeightedMaxScore() != null ? assessmentConfig.getWeightedMaxScore().doubleValue(): 0.0d;
 				}
 			}
 		}

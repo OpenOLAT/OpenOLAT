@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.MinimalBaseFullWebappController;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -233,6 +234,9 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion version, RenderingHints hints) {
+		if (version == null) {
+			return new MinimalBaseFullWebappController.EmptyController(ureq, wControl);
+		}
 		if (version.hasUrl()) {
 			return urlDelegate.getMediaController(ureq, wControl, pageElement, version, hints);
 		}

@@ -36,6 +36,8 @@ import org.olat.course.nodes.practice.PracticeService;
 import org.olat.course.nodes.practice.model.PracticeItem;
 import org.olat.course.nodes.practice.model.SearchPracticeItemParameters;
 import org.olat.ims.qti21.repository.handlers.QTI21AssessmentTestHandler;
+import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.manager.PoolDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.test.ArquillianDeployments;
@@ -58,6 +60,8 @@ public class PracticeServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private PracticeService practiceService;
+	@Autowired
+	private PoolDAO poolDao;
 	@Autowired
 	private QTI21AssessmentTestHandler testHandler;
 	
@@ -98,5 +102,26 @@ public class PracticeServiceTest extends OlatTestCase {
 		Assertions.assertThat(items)
 			.isNotNull()
 			.hasSize(10);
+	}
+	
+	@Test
+	public void copyResources() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("author-2");
+		RepositoryEntry copiedCourse = JunitTestHelper.deployBasicCourse(author);
+		String subIdent = UUID.randomUUID().toString();
+		Pool pool = poolDao.createPool(null, "pool-1", false);
+		practiceService.createResource(courseEntry, subIdent, testEntry);
+		practiceService.createResource(courseEntry, subIdent, pool);
+		dbInstance.commitAndCloseSession();
+
+		practiceService.copyResources(courseEntry, copiedCourse);
+		
+		List<PracticeResource> practiceResources = practiceService.getResources(copiedCourse, subIdent);
+		
+		Assertions.assertThat(practiceResources).isNotNull().hasSize(2);
+		List<PracticeResource> poolResources = practiceService.getResources(copiedCourse, subIdent).stream().filter(resource -> pool.equals(resource.getPool())).toList();
+		List<PracticeResource> testResources = practiceService.getResources(copiedCourse, subIdent).stream().filter(resource -> testEntry.equals(resource.getTestEntry())).toList();
+		Assertions.assertThat(poolResources).hasSize(1);
+		Assertions.assertThat(testResources).hasSize(1);
 	}
 }
