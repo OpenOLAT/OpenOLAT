@@ -115,12 +115,13 @@ public class QuestionPoolTest extends Deployments {
 			.enableReviews()
 			.reviewsConfiguration(1, 2);
 		// configure the taxonomy
+		String taxonomyElement = "At least one";
 		administration
 			.openTaxonomy()
 			.selectTaxonomy("QPOOL")
 			.assertOnTaxonomyTree()
-			.atLeastOneLevel("at-least-one", "At least one")
-			.selectTaxonomyLevel("at-least-one", "At least one")
+			.atLeastOneLevel("at-least-one", taxonomyElement)
+			.selectTaxonomyLevel("at-least-one", taxonomyElement)
 			.selectCompetence()
 			.addCompetence(reviewer, TaxonomyCompetenceTypes.teach);
 		
@@ -140,7 +141,7 @@ public class QuestionPoolTest extends Deployments {
 		questionPool
 			.selectMyQuestions()
 			.newQuestion(questionTitle, QTI21QuestionType.sc)
-			.startReviewProcess()
+			.startReviewProcess(taxonomyElement)
 			.clickToolbarBack()
 			.assertQuestionInList(questionTitle, QTI21QuestionType.sc.name());
 		// author log out

@@ -87,6 +87,12 @@ public class CatalogV2Page {
 		return this;
 	}
 	
+	public CatalogV2Page bookCourse(String title) {
+		By courseBy = By.xpath("//div[contains(@class,'o_repo_details')]//div[@class='o_meta_wrapper'][div/h2[text()[contains(.,'" + title + "')]]]//button[contains(@class,'btn-primary') and contains(@class,'o_button_call_to_action')]");		
+		OOGraphene.waitElement(courseBy, browser).click();
+		return this;
+	}
+	
 	public CatalogV2Page startCourse(String title) {
 		By courseBy = By.xpath("//div[contains(@class,'o_repo_details')]//div[@class='o_meta_wrapper'][div/h2[text()[contains(.,'" + title + "')]]]//a[contains(@class,'o_start') and contains(@class,'o_button_call_to_action')]");		
 		OOGraphene.waitElement(courseBy, browser).click();

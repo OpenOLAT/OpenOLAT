@@ -78,9 +78,19 @@ public class QuestionMetadataPage {
 		}
 		
 		if(taxonomy != null) {
-			By taxonomyBy = By.cssSelector("div.o_sel_qpool_metadata_taxonomy select");
-			new Select(browser.findElement(taxonomyBy)).selectByVisibleText(taxonomy);
-			OOGraphene.waitBusy(browser);
+			By taxonomyBy = By.cssSelector(".o_sel_qpool_metadata_general button.o_selection_display");
+			OOGraphene.waitElement(taxonomyBy, browser).click();
+			OOGraphene.waitCallout(browser, ".o_object_selection");
+			
+			By taxonomyElementBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio']");
+			browser.findElement(taxonomyElementBy).click();
+			
+			By taxonomyElementCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio'][@checked='checked']");
+			OOGraphene.waitElement(taxonomyElementCheckedBy, browser);
+			
+			By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
+			OOGraphene.waitElement(transferBy, browser).click();
+			OOGraphene.waitCalloutDisappears(browser, ".o_object_selection");
 		}
 		
 		if(level != null) {
@@ -190,7 +200,7 @@ public class QuestionMetadataPage {
 	}
 	
 	public QuestionMetadataPage assertTaxonomy(String taxonomy) {
-		By taxonomyBy = By.xpath("//div[contains(@class,'o_sel_qpool_metadata_taxonomy')]//select/option[@selected='selected'][text()[contains(.,'" + taxonomy + "')]]");
+		By taxonomyBy = By.xpath("//div[contains(@class,'o_sel_qpool_metadata_general')]//span[@class='o_taxonomy_selection_tags']/span[@class='o_taxonomy_tags']/span[text()[contains(.,'" + taxonomy + "')]]");
 		OOGraphene.waitElement(taxonomyBy, browser);
 		return this;
 	}

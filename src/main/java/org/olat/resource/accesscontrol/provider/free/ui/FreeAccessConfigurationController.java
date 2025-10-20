@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.resource.accesscontrol.CatalogInfo;
@@ -36,11 +37,11 @@ import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 /**
  * 
  * Description:<br>
- * Configuration for a free acces
+ * Configuration for a free access
  * 
  * <P>
  * Initial Date:  31 mai 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class FreeAccessConfigurationController extends AbstractConfigurationMethodController {
 	
@@ -55,11 +56,15 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 		initForm(ureq);
 		updateAutoBookingUI();
 	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_accesscontrol_free_form");
+		super.initForm(formLayout, listener, ureq);
+	}
 
 	@Override
 	protected void initCustomMembershipElements(FormItemContainer formLayout) {
-		formLayout.setElementCssClass("o_sel_accesscontrol_free_form");
-		
 		if (catalogInfo.isAutoBookingSupported()) {
 			String[] autoValues = new String[]{ translate("auto.booking.option") };
 			autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);

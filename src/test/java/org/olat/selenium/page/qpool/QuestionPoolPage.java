@@ -134,19 +134,32 @@ public class QuestionPoolPage {
 	 * 
 	 * @return Itself
 	 */
-	public QuestionPoolPage startReviewProcess() {
-		try {
-			By startProcessBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'process.activate.start.review')]");
-			OOGraphene.waitElement(startProcessBy, browser).click();
-			OOGraphene.waitModalDialog(browser);
+	public QuestionPoolPage startReviewProcess(String taxonomy) {
+
+		By startProcessBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'process.activate.start.review')]");
+		OOGraphene.waitElement(startProcessBy, browser).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		if(taxonomy != null) {
+			By taxonomyBy = By.cssSelector(".o_sel_qpool_confirm_start_form button.o_selection_display");
+			OOGraphene.waitElement(taxonomyBy, browser).click();
+			OOGraphene.waitCallout(browser, ".o_object_selection");
 			
-			By confirmBy = By.cssSelector("fieldset.o_sel_qpool_confirm_start_form button.btn.btn-primary");
-			OOGraphene.waitElement(confirmBy, browser).click();
-			OOGraphene.waitModalDialogDisappears(browser);
-		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Start review process", browser);
-			throw e;
+			By taxonomyElementBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio']");
+			browser.findElement(taxonomyElementBy).click();
+			
+			By taxonomyElementCheckedBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//label[div/div/div[contains(text(),'" + taxonomy + "')]]/input[@type='radio'][@checked='checked']");
+			OOGraphene.waitElement(taxonomyElementCheckedBy, browser);
+			
+			By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
+			OOGraphene.waitElement(transferBy, browser).click();
+			OOGraphene.waitCalloutDisappears(browser, ".o_object_selection");
 		}
+		
+		By confirmBy = By.cssSelector("fieldset.o_sel_qpool_confirm_start_form button.btn.btn-primary");
+		OOGraphene.waitElement(confirmBy, browser).click();
+		OOGraphene.waitModalDialogDisappears(browser);
+
 		return this;
 	}
 	

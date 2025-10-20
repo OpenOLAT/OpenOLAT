@@ -54,7 +54,7 @@ public class ProjectPage {
 		By updateBy = By.xpath("//div[contains(@class,'popover')]//div[@class='o_object_selection']//span[contains(@class,'o_expand_button_text')][text()[contains(.,'(1)')]]");
 		OOGraphene.waitElement(updateBy, browser);
 		
-		By transferBy = By.cssSelector(".popover .o_object_selection a.o_object_selection_apply"); 
+		By transferBy = By.cssSelector(".popover .o_object_selection a.o_selection_apply"); 
 		OOGraphene.waitElement(transferBy, browser).click();
 		OOGraphene.waitElementDisappears(openOlatOrgBy, 5, browser);
 		
