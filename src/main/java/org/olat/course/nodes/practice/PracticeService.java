@@ -53,6 +53,8 @@ public interface PracticeService {
 	
 	public PracticeResource createResource(RepositoryEntry courseEntry, String subIdent, OLATResource sharedResource);
 	
+	public void copyResources(RepositoryEntry source, RepositoryEntry target);
+
 	public void deleteResource(PracticeResource resource);
 	
 	

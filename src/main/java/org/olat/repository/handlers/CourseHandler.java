@@ -92,6 +92,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.practice.PracticeService;
 import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
@@ -608,6 +609,7 @@ public class CourseHandler implements RepositoryHandler {
 		
 		cloneReminders(author, envMapper, source, target);
 		cloneConfigurations(source, target, author);
+		clonePracticeResources(source, target);
 		
 		return target;
 	}
@@ -636,6 +638,7 @@ public class CourseHandler implements RepositoryHandler {
 		
 		cloneReminders(context.getExecutingIdentity(), envMapper, context.getSourceRepositoryEntry(), target, context);
 		cloneConfigurations(context.getSourceRepositoryEntry(), target, context.getExecutingIdentity());
+		clonePracticeResources(context.getSourceRepositoryEntry(), target);
 		
 		return target;
 	}
@@ -747,6 +750,11 @@ public class CourseHandler implements RepositoryHandler {
 			clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
 			reminderService.save(clonedReminder);
 		}
+	}
+
+	private void clonePracticeResources(RepositoryEntry source, RepositoryEntry target) {
+		PracticeService practiceService = CoreSpringFactory.getImpl(PracticeService.class);
+		practiceService.copyResources(source, target);
 	}
 
 	@Override

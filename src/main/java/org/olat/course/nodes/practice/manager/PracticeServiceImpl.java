@@ -144,6 +144,49 @@ public class PracticeServiceImpl implements PracticeService, RepositoryEntryData
 	public PracticeResource createResource(RepositoryEntry courseEntry, String subIdent, OLATResource sharedResource) {
 		return practiceResourceDao.createResource(courseEntry, subIdent, null, null, null, sharedResource);
 	}
+	
+	public void copyResources(RepositoryEntry source, RepositoryEntry target) {
+		List<PracticeResource> sourcePracticeResources = practiceResourceDao.getAllCourseResources(source);
+		for (PracticeResource sourcePracticeResource : sourcePracticeResources) {
+			if (validateResource(sourcePracticeResource, target)) {
+				practiceResourceDao.createResource(target, sourcePracticeResource.getSubIdent(), 
+						sourcePracticeResource.getTestEntry(), sourcePracticeResource.getPool(), 
+						sourcePracticeResource.getItemCollection(), sourcePracticeResource.getResourceShare());
+			}
+		}
+	}
+
+	private boolean validateResource(PracticeResource sourcePracticeResource, RepositoryEntry target) {
+		if (sourcePracticeResource == null) {
+			return false;
+		}
+		if (sourcePracticeResource.getRepositoryEntry() == null) {
+			return false;
+		}
+		if (target == null) {
+			return false;
+		}
+		if (target.equals(sourcePracticeResource.getRepositoryEntry())) {
+			return false;
+		}
+		if (!StringHelper.containsNonWhitespace(sourcePracticeResource.getSubIdent())) {
+			return false;
+		}
+		int referenceCounter = 0;
+		if (sourcePracticeResource.getTestEntry() != null) {
+			referenceCounter++;
+		}
+		if (sourcePracticeResource.getPool() != null) {
+			referenceCounter++;
+		}
+		if (sourcePracticeResource.getItemCollection() != null) {
+			referenceCounter++;
+		}
+		if (sourcePracticeResource.getResourceShare() != null) {
+			referenceCounter++;
+		}
+		return referenceCounter == 1;
+	}
 
 	@Override
 	public void deleteResource(PracticeResource resource) {
