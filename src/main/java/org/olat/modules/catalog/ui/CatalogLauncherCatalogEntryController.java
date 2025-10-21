@@ -47,6 +47,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
@@ -93,6 +96,8 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
@@ -177,6 +182,13 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
+			if( StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
+				NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
+				String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
+						? translate("CourseModule")
+						: nodeAccessService.getNodeAccessTypeName(type, getLocale());
+				item.setTranslatedTechnicalType(translatedType);
+			}
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.teaserText)) {
 			item.setTeaser(entry.getTeaser());
@@ -297,6 +309,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	public static final class LauncherItem {
 		private Long key;
 		private String externalRef;
+		private String translatedTechnicalType;
 		private String teaser;
 		private String language;
 		private String location;
@@ -326,6 +339,14 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 
 		public void setExternalRef(String externalRef) {
 			this.externalRef = externalRef;
+		}
+
+		public String getTranslatedTechnicalType() {
+			return translatedTechnicalType;
+		}
+
+		public void setTranslatedTechnicalType(String translatedTechnicalType) {
+			this.translatedTechnicalType = translatedTechnicalType;
 		}
 
 		public String getTeaser() {
