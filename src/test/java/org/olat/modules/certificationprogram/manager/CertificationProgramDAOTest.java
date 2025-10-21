@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -275,7 +274,6 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 	 * Test different cases at once
 	 */
 	@Test
-	@Ignore
 	public void getEligibleForRecertificationsWithCreditPoints() {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4");
@@ -326,36 +324,13 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		Assert.assertNotNull(relation);
 
 		Date now = new Date();
-		CertificateConfig config = CertificateConfig.builder().build();
-
-		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "");
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
-		certificate.setNextRecertificationDate(DateUtils.addDays(now, -5));
-		((CertificateImpl)certificate).setRecertificationWindowDate(DateUtils.addDays(now, 15));
-		certificatesDao.updateCertificate(certificate);
-
-		CertificateInfos outOfProgramCertificateInfos = new CertificateInfos(outOfProgramParticipant, null, null, null, null, "");
-		Certificate outOfProgramCertificate = certificatesManager.generateCertificate(outOfProgramCertificateInfos, program, null, config);
-		outOfProgramCertificate.setNextRecertificationDate(DateUtils.addDays(now, -60));
-		((CertificateImpl)outOfProgramCertificate).setRecertificationWindowDate(DateUtils.addDays(now, -30));
-		certificatesDao.updateCertificate(outOfProgramCertificate);
-
-		CertificateInfos notParticipantCertificateInfos = new CertificateInfos(notParticipant, null, null, null, null, "");
-		Certificate notParticipantCertificate = certificatesManager.generateCertificate(notParticipantCertificateInfos, program, null, config);
-		notParticipantCertificate.setNextRecertificationDate(DateUtils.addDays(now, -5));
-		((CertificateImpl)notParticipantCertificate).setRecertificationWindowDate(DateUtils.addDays(now, 15));
-		certificatesDao.updateCertificate(notParticipantCertificate);
-		
-		CertificateInfos poorParticipantCertificateInfos = new CertificateInfos(poorParticipant, null, null, null, null, "");
-		Certificate poorParticipantCertificate = certificatesManager.generateCertificate(poorParticipantCertificateInfos, program, null, config);
-		poorParticipantCertificate.setNextRecertificationDate(DateUtils.addDays(now, -5));
-		((CertificateImpl)poorParticipantCertificate).setRecertificationWindowDate(DateUtils.addDays(now, 15));
-		certificatesDao.updateCertificate(poorParticipantCertificate);
+		generateCertificate(participant, program, now, -5, 15);
+		generateCertificate(outOfProgramParticipant, program, now, -60, -30);
+		generateCertificate(notParticipant, program, now, -5, 15);
+		generateCertificate(poorParticipant, program, now, -5, 15);
 		
 		dbInstance.commitAndCloseSession();
-		
-		// Wait event processing
-		waitMessageAreConsumed();
+
 		
 		List<Identity> eligibleIdentities = certificationProgramDao.getEligibleForRecertificationsWithCreditPoints(program, now);
 		Assertions.assertThat(eligibleIdentities)
@@ -363,14 +338,12 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 			.containsExactlyInAnyOrder(participant)
 			.doesNotContain(outOfProgramParticipant, notParticipant, poorParticipant);
 	}
-
 	
 
 	/**
 	 * Test different cases at once in case there is not payment involved.
 	 */
 	@Test
-	@Ignore
 	public void getEligibleForRecertifications() {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-8");
@@ -408,35 +381,25 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		Assert.assertNotNull(relation);
 
 		Date now = new Date();
-		CertificateConfig config = CertificateConfig.builder().build();
-
-		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "");
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
-		certificate.setNextRecertificationDate(DateUtils.addDays(now, -5));
-		((CertificateImpl)certificate).setRecertificationWindowDate(DateUtils.addDays(now, 15));
-		certificatesDao.updateCertificate(certificate);
-
-		CertificateInfos outOfProgramCertificateInfos = new CertificateInfos(outOfProgramParticipant, null, null, null, null, "");
-		Certificate outOfProgramCertificate = certificatesManager.generateCertificate(outOfProgramCertificateInfos, program, null, config);
-		outOfProgramCertificate.setNextRecertificationDate(DateUtils.addDays(now, -60));
-		((CertificateImpl)outOfProgramCertificate).setRecertificationWindowDate(DateUtils.addDays(now, -30));
-		certificatesDao.updateCertificate(outOfProgramCertificate);
-
-		CertificateInfos notParticipantCertificateInfos = new CertificateInfos(notParticipant, null, null, null, null, "");
-		Certificate notParticipantCertificate = certificatesManager.generateCertificate(notParticipantCertificateInfos, program, null, config);
-		notParticipantCertificate.setNextRecertificationDate(DateUtils.addDays(now, -5));
-		((CertificateImpl)notParticipantCertificate).setRecertificationWindowDate(DateUtils.addDays(now, 15));
-		certificatesDao.updateCertificate(notParticipantCertificate);
-		
-		dbInstance.commitAndCloseSession();
-		
-		// Wait event processing
-		waitMessageAreConsumed();
+		generateCertificate(participant, program, now, -5, 15);
+		generateCertificate(outOfProgramParticipant, program, now, -60, -30);
+		generateCertificate(notParticipant, program, now, -5, 15);
 		
 		List<Identity> eligibleIdentities = certificationProgramDao.getEligibleForRecertifications(program, now);
 		Assertions.assertThat(eligibleIdentities)
 			.hasSize(1)
 			.containsExactlyInAnyOrder(participant)
 			.doesNotContain(outOfProgramParticipant, notParticipant);
+	}
+	
+	private Certificate generateCertificate(Identity participant, CertificationProgram program, Date now, int nextRecertification, int window) {
+		CertificateConfig config = CertificateConfig.builder().build();
+		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "");
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		waitMessageAreConsumed();
+		certificate.setNextRecertificationDate(DateUtils.addDays(now, nextRecertification));
+		((CertificateImpl)certificate).setRecertificationWindowDate(DateUtils.addDays(now, window));
+		certificate = certificatesDao.updateCertificate(certificate);
+		return certificate;
 	}
 }
