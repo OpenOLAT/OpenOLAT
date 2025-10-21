@@ -268,8 +268,8 @@ public class AdministrationPage {
 	public BadgesAdminPage openBadges() {
 		selectAssessment();
 		
-		By poolBy = By.cssSelector(".o_sel_openBadges span.o_tree_level_label_leaf>a");
-		browser.findElement(poolBy).click();
+		By badgesBy = By.cssSelector(".o_sel_openBadges span.o_tree_level_label_leaf>a");
+		OOGraphene.clickAndWait(badgesBy, browser);
 		By configBy = By.cssSelector("fieldset.o_sel_openbadges_admin_form");
 		OOGraphene.waitElement(configBy, browser);
 		
