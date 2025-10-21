@@ -88,7 +88,8 @@ public class PasswordAndAuthenticationAdminPage {
 		OOGraphene.waitElement(calloutBy, browser);
 
 		By applyLevel = By.cssSelector("ul.o_sel_passkey_level_all_roles li>a.o_sel_passkey_" + level.name());
-		browser.findElement(applyLevel).click();
+		OOGraphene.waitElement(applyLevel, browser);
+		OOGraphene.click(applyLevel, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		By adminLevelBy = By.cssSelector("input[type='radio'][checked='checked'][value='administrator." + level.name() + "']");
