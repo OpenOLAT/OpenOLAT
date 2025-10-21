@@ -181,12 +181,14 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
-			if( StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
+			if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
 				NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
 				String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
 						? translate("CourseModule")
 						: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 				item.setTranslatedTechnicalType(translatedType);
+			} else if (StringHelper.containsNonWhitespace(entry.getCurriculumElementTypeName())) {
+				item.setTranslatedTechnicalType(entry.getCurriculumElementTypeName());
 			}
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.teaserText)) {

@@ -536,6 +536,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 					? translate("CourseModule")
 					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 			row.setTranslatedTechnicalType(translatedType);
+		} else if (StringHelper.containsNonWhitespace(catalogEntry.getCurriculumElementTypeName())) {
+			row.setTranslatedTechnicalType(catalogEntry.getCurriculumElementTypeName());
 		}
 		
 		row.setInfoUrl(CatalogBCFactory.get(searchParams.isWebPublish()).getOfferUrl(row.getOlatResource()));
