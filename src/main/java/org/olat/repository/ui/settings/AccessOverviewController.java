@@ -127,7 +127,7 @@ public class AccessOverviewController extends BasicController {
 		mainVC.put("open.members.management", openMemberManagementLink);
 		
 		// Admin access
-		String authors = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.reviewToClosed())
+		String authors = RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.reviewToClosed()) && authorsHaveAtLeastOneRight()
 				? ICON_ACTIVE
 				: ICON_INACTIVE;
 		Long authorsCount = roleToCountMemebers.getOrDefault(OrganisationRoles.author.name(), Long.valueOf(0));
@@ -153,7 +153,7 @@ public class AccessOverviewController extends BasicController {
 		Long principalsCount = roleToCountMemebers.getOrDefault(OrganisationRoles.principal.name(), Long.valueOf(0));
 		String principals = ICON_ACTIVE + translate("access.overview.principals", 
 				principalsCount.toString(),
-				translate("access.overview.right", translate("access.overview.right.read")));
+				translate("access.overview.right", translate("access.overview.right.read.content.and.assessment.data")));
 		mainVC.contextPut("principals", principals);
 		
 		Long administratorsCount = roleToCountMemebers.getOrDefault(OrganisationRoles.administrator.name(), Long.valueOf(0));
@@ -188,6 +188,10 @@ public class AccessOverviewController extends BasicController {
 		return sb.toString();
 	}
 
+	private boolean authorsHaveAtLeastOneRight() {
+		return entry.getCanReference() || entry.getCanCopy() || entry.getCanDownload();
+	}
+	
 	public static String createAuthorsText(Translator translator, Long authorsCount, boolean canReference, boolean canCopy, boolean canDownload) {
 		List<String> authorRightsList = new ArrayList<>(3);
 		if (canReference) {
@@ -200,7 +204,9 @@ public class AccessOverviewController extends BasicController {
 			authorRightsList.add(translator.translate("access.overview.right.export"));
 		}
 		if (authorRightsList.isEmpty()) {
-			authorRightsList.add(translator.translate("access.overview.right.none"));
+			authorRightsList.add(translator.translate("access.overview.right.no.access"));
+		} else {
+			authorRightsList.add(0, translator.translate("access.overview.right.read.content.author"));
 		}
 		String authorRights = authorRightsList.stream().collect(Collectors.joining(", "));
 		String authorsText = translator.translate("access.overview.authors",
