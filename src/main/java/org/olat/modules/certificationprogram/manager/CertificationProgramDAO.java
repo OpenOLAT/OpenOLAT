@@ -312,6 +312,6 @@ public class CertificationProgramDAO {
 				.setParameter("recertificationMode", RecertificationMode.automatic)
 				.setParameter("programStatus", CertificationProgramStatusEnum.active)
 				.setParameter("programKey", program.getKey())
-				.setParameter("referenceDate", referenceDate);
+				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP);
 	}
 }

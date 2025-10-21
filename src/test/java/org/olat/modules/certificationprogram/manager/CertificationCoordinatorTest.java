@@ -107,7 +107,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 			.hasSize(1);
 		
 		CreditPointWallet unchangedWallet = creditPointService.getOrCreateWallet(participant, system);
-		Assert.assertEquals(new BigDecimal("30"), unchangedWallet.getBalance());
+		Assert.assertTrue(unchangedWallet.getBalance().compareTo(new BigDecimal("30")) == 0);
 	}
 	
 	/**
