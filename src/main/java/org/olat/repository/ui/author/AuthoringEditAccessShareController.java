@@ -256,7 +256,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		SelectionValues canSV = new SelectionValues();
 		if (notTemplateRuntimeType) {
-			canSV.add(SelectionValues.entry(KEY_REFERENCE, translate("cif.canReference")));
+			canSV.add(SelectionValues.entry(KEY_REFERENCE, isCourse() ? translate("cif.canReference.course") : translate("cif.canReference")));
 		}
 		canSV.add(SelectionValues.entry(KEY_COPY, translate("cif.canCopy")));
 		if (supportsDownload) {
@@ -320,12 +320,16 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	private boolean isCurricularCourse() {
-		if (!entry.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
+		if (!isCourse()) {
 			return false;
 		}
 		return RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType());
 	}
 
+	private boolean isCourse() {
+		return entry.getOlatResource().getResourceableTypeName().equals("CourseModule");
+	}
+	
 	private void updateCanUI() {
 		List<Group> organisationGroups = organisationService.getOrganisation(getSelectedOrganisations()).stream()
 				.map(Organisation::getGroup)
