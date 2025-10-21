@@ -82,8 +82,13 @@ public class CatalogV2Page {
 	public CatalogV2Page login(UserVO user) {
 		new LoginPage(browser).loginAs(user.getLogin(), user.getPassword());
 
-		By landingPointBy = By.cssSelector(".o_navbar_button a>i.o_icon_login");
-		OOGraphene.waitElementDisappears(landingPointBy, 5, browser);
+		try {
+			By landingPointBy = By.cssSelector(".o_navbar_button a>i.o_icon_login");
+			OOGraphene.waitElementDisappears(landingPointBy, 10, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Login catalog", browser);
+			throw e;
+		}
 		return this;
 	}
 	

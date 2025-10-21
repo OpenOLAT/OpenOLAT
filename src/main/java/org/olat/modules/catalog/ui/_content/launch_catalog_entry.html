@@ -52,8 +52,14 @@
 						#end
 						<div class="o_meta">
 							<div class="o_ext_ref">
-								#if ($row.getExternalRef())
+								#if ($r.isNotEmpty($row.getExternalRef()))
 									$r.escapeHtml($row.getExternalRef())
+									#if($r.isNotEmpty($row.translatedTechnicalType))
+										<span class="o_spacer">&middot;</span>
+									#end
+								#end
+								#if($r.isNotEmpty($row.translatedTechnicalType))
+									$r.escapeHtml($row.translatedTechnicalType)
 								#end
 							</div>
 							<h4 class="o_title o_card_title">$r.render("$row.getDisplayNameLinkName()")</h4>

@@ -47,12 +47,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
+import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -91,7 +96,13 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private NodeAccessService nodeAccessService;
+	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private CreditPointModule creditPointModule;
 
 	public CatalogLauncherCatalogEntryController(UserRequest ureq, WindowControl wControl,
 			List<CatalogEntry> entries, String title, boolean showMore, boolean webCatalog,
@@ -162,21 +173,32 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 
 	private void appendMetadata(LauncherItem item, CatalogEntry entry) {
 		item.setKey(entry.getOlatResource().getKey());
-		item.setEducationalType(entry.getEducationalType());
-		item.setCertificate(entry.isHasCertificate());
-		item.setCreditPointAmount(entry.getCreditPointAmount());
+		if (catalogModule.getCardView().contains(CatalogCardView.certificate)) {
+			item.setCertificate(entry.isHasCertificate());
+		}
+		if (creditPointModule.isEnabled() && catalogModule.getCardView().contains(CatalogCardView.creditPoints)) {
+			item.setCreditPointAmount(entry.getCreditPointAmount());
+		}
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
+			if( StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
+				NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
+				String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
+						? translate("CourseModule")
+						: nodeAccessService.getNodeAccessTypeName(type, getLocale());
+				item.setTranslatedTechnicalType(translatedType);
+			}
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.teaserText)) {
 			item.setTeaser(entry.getTeaser());
 		}
-		if (catalogModule.getCardView().contains(CatalogCardView.taxonomyLevels)) {
+		if (taxonomyModule.isEnabled() && catalogModule.getCardView().contains(CatalogCardView.taxonomyLevels)) {
 			String taxonomyLevelTags = TaxonomyUIFactory.getTags(getTranslator(), entry.getTaxonomyLevels(), " ");
 			item.setTaxonomyLevelTags(taxonomyLevelTags);
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.educationalType)) {
 			if (entry.getEducationalType() != null) {
+				item.setEducationalType(entry.getEducationalType());
 				String educationalTypeName = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
 				item.setEducationalTypeName(educationalTypeName);
 			}
@@ -286,6 +308,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	public static final class LauncherItem {
 		private Long key;
 		private String externalRef;
+		private String translatedTechnicalType;
 		private String teaser;
 		private String language;
 		private String location;
@@ -315,6 +338,14 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 
 		public void setExternalRef(String externalRef) {
 			this.externalRef = externalRef;
+		}
+
+		public String getTranslatedTechnicalType() {
+			return translatedTechnicalType;
+		}
+
+		public void setTranslatedTechnicalType(String translatedTechnicalType) {
+			this.translatedTechnicalType = translatedTechnicalType;
 		}
 
 		public String getTeaser() {

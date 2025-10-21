@@ -52,7 +52,11 @@ import org.springframework.stereotype.Service;
 public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff {
 	
 	public enum CatalogV1Migration { pending, running, done }
-	public enum CatalogCardView { externalRef, teaserText, taxonomyLevels, educationalType, mainLanguage, location, executionPeriod, authors, expenditureOfWork }
+	public enum CatalogCardView {
+		externalRef, teaserText, taxonomyLevels, educationalType, mainLanguage, location, executionPeriod, authors,
+		expenditureOfWork, certificate, creditPoints
+	}
+
 	public static final Set<String> HEADER_BG_IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE = "rectangle";
 	public static final String TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE = "square";
