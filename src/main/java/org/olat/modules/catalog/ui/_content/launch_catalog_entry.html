@@ -23,19 +23,20 @@
 			#foreach($row in $items)
 				<div class="swiper-slide">
 					<div class="o_repo_entry_card o_card #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
-						<div class="o_visual">
-							#if($row.isThumbnailAvailable())
-								<img src="${row.getThumbnailRelPath()}" alt="" />
-							#else
-								<div class="o_visual_not_available"></div>
+						<div class="o_entry_card_image">
+							<div class="o_visual">
+								#if($row.isThumbnailAvailable())
+									<img src="${row.getThumbnailRelPath()}" alt="" />
+								#else
+									<div class="o_visual_not_available"></div>
+								#end
+							</div>
+							#if($row.educationalTypeName)
+								<div class="o_educational_type">
+									<span>$r.escapeHtml($row.educationalTypeName)</span>
+								</div>
 							#end
 						</div>
-						#if($row.educationalTypeName)
-							<div class="o_educational_type">
-								<span>$r.escapeHtml($row.educationalTypeName)</span>
-							</div>
-						#end
-						
 						#if(${row.isCertificate()} || $r.isNotEmpty($row.creditPointAmount))
 							<div class="o_benefits">
 							#if(${row.isCertificate()})

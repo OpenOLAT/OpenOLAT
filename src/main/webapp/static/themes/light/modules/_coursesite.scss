@@ -437,6 +437,14 @@
 		display: flex;
 		flex-direction: column;
 		
+		.o_entry_card_image {
+			display: grid;
+			grid-template: "card-image";
+			>div {
+				grid-area: card-image;
+			}
+		}
+		
 		.o_visual {
 			box-sizing: content-box;
 			border-radius: ($o-coursesite-rowelem-border-radius - 1px) ($o-coursesite-rowelem-border-radius - 1px) 0px 0px;
@@ -450,15 +458,24 @@
 		}
 		
 		.o_educational_type {
-			margin-top: -28px;
-			margin-bottom: 11px;
-			margin-right: 10px;
-			margin-left: auto;
+			@extend %o_nowrap;
+			max-width: calc(100% - 2 * $o-cat2-card-meta-padding);
+			
+			margin: $o-cat2-card-meta-padding;
+			place-self: end end;
+			
 			background: $o-coursesite-rowelem-bg;
 		}
 		
 		.o_benefits {
-			margin: 0 5px;
+			margin: $o-cat2-card-meta-padding;
+			
+			display: flex;
+			flex-wrap: wrap;
+			gap: 5px;
+			.o_with_creditpoint {
+				@extend %o_nowrap;
+			}
 		}
 		
 		.o_title {
@@ -481,7 +498,7 @@
 		.o_meta {
 			display: flex;
 			flex-direction: column;
-			padding: 10px;
+			padding: $o-cat2-card-meta-padding;
 			gap: 5px;
 			.o_ext_ref {
 				color: $text-muted;
