@@ -42,7 +42,7 @@ public class ResourceTypeRenderer extends TypeRenderer {
 				super.render(renderer, target, cellValue, row, source, ubu, translator);
 			} else {
 				target.append("<div class='o_nowrap o_repoentry_type'>");
-				target.append("<i class='o_icon o_icon-lg o_icon_curriculum_element").append("' title=\"")
+				target.append("<i class='o_icon o_icon-lg o_icon_curriculum_implementations").append("' title=\"")
 					.appendHtmlAttributeEscaped(catalogEntryRow.getCurriculumElementTypeName()).append("\"> </i>");
 				target.append("</div>");
 			}

@@ -131,7 +131,7 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 							filterType,
 							StringHelper.escapeHtml(catalogEntry.getCurriculumElementTypeName()),
 							null, 
-							"o_icon o_icon-fw o_icon_curriculum_element",
+							"o_icon o_icon-fw o_icon_curriculum_implementations",
 							null,
 							true));
 				}
