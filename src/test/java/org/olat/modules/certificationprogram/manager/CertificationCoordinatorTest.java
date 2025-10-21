@@ -66,11 +66,12 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	
 	@Test
 	public void processCertificateOfSimpleProgram() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-4", "Program to curriculum", null);
 		dbInstance.commitAndCloseSession();
 
-		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date());
+		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), actor);
 		Assert.assertTrue(allOk);
 		
 		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
@@ -79,11 +80,12 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	}
 	
 	/**
-	 * Certificate program costs 20 credits, participant has 30. It can become
-	 * successfully the certificate.
+	 * The first certificate is paid by the course. The certificate will not
+	 * touch the wallet.
 	 */
 	@Test
-	public void processCertificateOfProgramWithCreditPoints() {
+	public void processCertificateOfProgramWithCreditPointsFirstFree() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-4", "Program to curriculum", null);
 		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
@@ -96,12 +98,16 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("30"), null, "Give away", wallet, participant, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
-		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date());
+		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), actor);
+		dbInstance.commitAndCloseSession();
 		Assert.assertTrue(allOk);
-		
+
 		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(certificates)
 			.hasSize(1);
+		
+		CreditPointWallet unchangedWallet = creditPointService.getOrCreateWallet(participant, system);
+		Assert.assertEquals(new BigDecimal("30"), unchangedWallet.getBalance());
 	}
 	
 	/**
@@ -115,19 +121,41 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
+		program.setPrematureRecertificationByUserEnabled(true);
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(30);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationMode(RecertificationMode.automatic);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(30);
+		program.setRecertificationWindowUnit(DurationType.day);
 		certificationProgramService.updateCertificationProgram(program);
 		dbInstance.commit();
+		
+		boolean coursePaidOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), null);
+		Assert.assertTrue(coursePaidOk);
+		
+		List<Certificate> coursePaidCertificate = certificationProgramService.getCertificates(participant, program);
+		Assertions.assertThat(coursePaidCertificate)
+			.hasSize(1);
 		
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(participant, system);
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("15"), null, "Give away", wallet, participant, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
-		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date());
+		Certificate currentCertificate = certificatesDao.getLastCertificate(participant, program);
+		currentCertificate.setNextRecertificationDate(DateUtils.addDays(new Date(), -32));
+		((CertificateImpl)currentCertificate).setRecertificationWindowDate(DateUtils.addDays(new Date(), 15));
+		currentCertificate = certificatesDao.updateCertificate(currentCertificate);
+		dbInstance.commitAndCloseSession();
+		
+		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), null);
 		Assert.assertFalse(allOk);
 		
 		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(certificates)
-			.isEmpty();
+			.hasSize(1)
+			.containsExactlyInAnyOrderElementsOf(coursePaidCertificate);
 	}
 	
 	/**
@@ -157,7 +185,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("100"), null, "Give away", wallet, participant, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
-		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date());
+		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), null);
 		Assert.assertTrue(allOk);
 		
 		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
@@ -170,7 +198,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		currentCertificate = certificatesDao.updateCertificate(currentCertificate);
 		dbInstance.commitAndCloseSession();
 		
-		boolean recertOk = certificationCoordinator.processCertificationDemand(participant, program, new Date());
+		boolean recertOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), null);
 		Assert.assertTrue(recertOk);
 		
 		List<Certificate> recertificates = certificationProgramService.getCertificates(participant, program);
@@ -181,4 +209,53 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assert.assertNotEquals(currentCertificate, reCertificate);
 	}
 	
+	/**
+	 * Negative test of the recertification window 
+	 */
+	@Test
+	public void processRecertificationNotAllowed() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-6");
+		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-6", "Program to curriculum", null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT6", null, null);
+		program.setCreditPoints(new BigDecimal("20"));
+		program.setCreditPointSystem(system);
+		program.setPrematureRecertificationByUserEnabled(true);
+		program.setRecertificationEnabled(true);
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(30);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationMode(RecertificationMode.automatic);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(30);
+		program.setRecertificationWindowUnit(DurationType.day);
+		certificationProgramService.updateCertificationProgram(program);
+		dbInstance.commit();
+		
+		CreditPointWallet wallet = creditPointService.getOrCreateWallet(participant, system);
+		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("100"), null, "Give away", wallet, participant, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		boolean allOk = certificationCoordinator.processCertificationDemand(participant, program, new Date(), null);
+		Assert.assertTrue(allOk);
+		
+		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
+		Assertions.assertThat(certificates)
+			.hasSize(1);
+		
+		Certificate currentCertificate = certificatesDao.getLastCertificate(participant, program);
+		currentCertificate.setNextRecertificationDate(DateUtils.addDays(new Date(), -65));
+		((CertificateImpl)currentCertificate).setRecertificationWindowDate(DateUtils.addDays(new Date(), -35));
+		currentCertificate = certificatesDao.updateCertificate(currentCertificate);
+		dbInstance.commitAndCloseSession();
+		
+		boolean recertNok = certificationCoordinator.processCertificationDemand(participant, program, new Date(), null);
+		Assert.assertFalse(recertNok);
+		
+		List<Certificate> recertificates = certificationProgramService.getCertificates(participant, program);
+		Assertions.assertThat(recertificates)
+			.hasSize(1);
+		
+		Certificate afterRecertificationTryCertificate = certificatesDao.getLastCertificate(participant, program);
+		Assert.assertEquals(currentCertificate, afterRecertificationTryCertificate);
+	}
 }

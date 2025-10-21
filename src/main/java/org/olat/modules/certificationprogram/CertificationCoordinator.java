@@ -42,7 +42,7 @@ public interface CertificationCoordinator {
 	 * @param referenceDate
 	 * @return
 	 */
-	boolean processCertificationDemand(Identity identity, CertificationProgram certificationProgram, Date referenceDate);
+	boolean processCertificationDemand(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer);
 	
 	boolean processCertification(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer);
 	

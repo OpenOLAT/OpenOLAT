@@ -56,7 +56,7 @@ public class RecertificationJob extends JobWithDB {
 		for(CertificationProgram program:programs) {
 			List<Identity> eligiblesIdentities = certificationProgramService.getEligiblesIdentitiesToRecertification(program, now);
 			for(Identity identity:eligiblesIdentities) {
-				certificationCoordinator.processCertificationDemand(identity, program, now);
+				certificationCoordinator.processCertificationDemand(identity, program, now, null);
 			}
 		}
 	}

@@ -1161,20 +1161,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String certUrl = sb.toString();
 		
 		if(template == null) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, null, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, null, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else if (pdfModule.isEnabled()) {
-			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, 2.0f, 10.0f, true,
+			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, null, entry, 2.0f, 10.0f, true,
 					0.4, new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager,
 					this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, 10.0f, true, 0.4,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, null, entry, 2.0f, 10.0f, true, 0.4,
 					new Date(), new Date(), new Date(), custom1, custom2, custom3, "", new BigDecimal(4), "", certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		}
@@ -1317,10 +1317,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			template = getTemplateById(workUnit.getTemplateKey());
 		}
 		OLATResource resource = certificate.getOlatResource();
+		CertificationProgram certificationProgram = certificate.getCertificationProgram();
+		
 		Identity identity = certificate.getIdentity();
 		RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
-		// retrieve subIdent for retrieving gradeSystem
-		String subIdent = CourseFactory.loadCourse(entry).getRunStructure().getRootNode().getIdent();
 		
 		String dir = usersStorage.generateDir();
 		File dirFile = new File(getCertificateRoot(), dir);
@@ -1337,29 +1337,36 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Date dateCertificateValidUntil = certificate.getNextRecertificationDate();
 		
 		// Grades
-		GradeSystem gradeSystem = gradeService.getGradeSystem(entry, subIdent);
 		String grade = workUnit.getGrade();
 		BigDecimal gradeCutValue = null;
 		String gradeLabel = null;
-		if(gradeSystem != null) {
-			if (gradeSystem.getIdentifier().contains("percent")) {
-				grade += "%";
+		if(entry != null) {
+			// retrieve subIdent for retrieving gradeSystem
+			String subIdent = CourseFactory.loadCourse(entry).getRunStructure().getRootNode().getIdent();
+			GradeSystem gradeSystem = gradeService.getGradeSystem(entry, subIdent);
+			if(gradeSystem != null) {
+				if (gradeSystem.getIdentifier().contains("percent")) {
+					grade += "%";
+				}
+				gradeCutValue =  gradeSystem.getCutValue();
+				gradeLabel = GradeUIFactory.translateGradeSystemLabel(Util.createPackageTranslator(GradeSystemListController.class, locale), gradeSystem);
 			}
-			gradeCutValue =  gradeSystem.getCutValue();
-			gradeLabel = GradeUIFactory.translateGradeSystemLabel(Util.createPackageTranslator(GradeSystemListController.class, locale), gradeSystem);
 		}
 		
 		// Custom fields
 		String custom1 = workUnit.getConfig().getCustom1();
 		String custom2 = workUnit.getConfig().getCustom2();
 		String custom3 = workUnit.getConfig().getCustom3();
+		String name = entry == null
+				? certificationProgram.getDisplayName()
+				: entry.getDisplayname();
 		
 		File certificateFile;
 		// File name with user name
 		StringBuilder sb = new StringBuilder();
 		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
 		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_")
-		  .append(entry.getDisplayname()).append("_")
+		  .append(name).append("_")
 		  .append(Formatter.formatShortDateFilesystem(dateCertification));
 		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
 		// External URL to certificate as short as possible for QR-Code
@@ -1369,7 +1376,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String certUrl = sb.toString();
 		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
-			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, maxScore, passed,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, certificationProgram, entry, score, maxScore, passed,
 					completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1, custom2,
 					custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
@@ -1380,7 +1387,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 		} else {
 			if(pdfModule.isEnabled()) {
-				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, maxScore,
+				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, certificationProgram, entry, score, maxScore,
 						passed, completion, dateCertification, dateFirstCertification, dateCertificateValidUntil, custom1,
 						custom2, custom3, grade, gradeCutValue, gradeLabel, certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
@@ -1404,7 +1411,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			//not the first certification, reset the last of the others certificates
 			certificatesDao.removeLastFlag(identity, resource.getKey());
 		}
-		MailerResult result = sendCertificate(identity, entry, certificate, certificateFile, workUnit.getConfig());
+		MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, certificateFile, workUnit.getConfig());
 		if(result.isSuccessful()) {
 			certificate.setEmailStatus(EmailStatus.ok);
 		} else {
@@ -1417,36 +1424,50 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, ORES_CERTIFICATE_EVENT);
 	}
 	
-	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, CertificateImpl certificate, File certificateFile, CertificateConfig config) {
+	private MailerResult sendCertificate(Identity to, CertificationProgram certificationProgram, RepositoryEntry entry,
+			CertificateImpl certificate, File certificateFile, CertificateConfig config) {
 		String userLanguage = to.getUser().getPreferences().getLanguage();
 		Locale locale = i18nManager.getLocaleOrDefault(userLanguage);
 		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
-		String[] args = createMailArgs(to, entry, certificate, translator);
+		String[] args = createMailArgs(to, certificationProgram, entry, certificate, translator);
 		
 		MailerResult mailerResult = sendCertificate(to, certificateFile, translator, args);
-		sendCertificateCopies(to, entry, certificate, certificateFile, config, translator, args);
+		sendCertificateCopies(to, certificationProgram, entry, certificate, certificateFile, config, translator, args);
 		return mailerResult;
 	}
 
-	private String[] createMailArgs(Identity certificateIdentity, RepositoryEntry entry, CertificateImpl certificate,
+	private String[] createMailArgs(Identity certificateIdentity, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateImpl certificate,
 			Translator translator) {
-		String displayName = translator.translate("certification.email.displayname", entry.getDisplayname());
-		String externalRef = StringHelper.containsNonWhitespace(entry.getExternalRef())
-				? translator.translate("certification.email.external.ref", entry.getExternalRef())
+		String sourceDisplayName = entry != null
+				? entry.getDisplayname()
+				: certificationProgram.getDisplayName();
+		String sourceExternalRef = entry != null
+				? entry.getExternalRef()
+				: certificationProgram.getIdentifier();
+		String sourceDescription = entry != null
+				? entry.getDescription()
+				: certificationProgram.getDescription();
+		
+		String displayName = translator.translate("certification.email.displayname", sourceDisplayName);
+		String externalRef = StringHelper.containsNonWhitespace(sourceExternalRef)
+				? translator.translate("certification.email.external.ref", sourceExternalRef)
 				: "";
-		String descriptionFiltered = FilterFactory.getHtmlTagAndDescapingFilter().filter(entry.getDescription());
+		String descriptionFiltered = FilterFactory.getHtmlTagAndDescapingFilter().filter(sourceDescription);
 		String description = StringHelper.containsNonWhitespace(descriptionFiltered)
 				? translator.translate("certification.email.description", descriptionFiltered)
 				: "";
-		String entryUrlStr = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
-		String entryUrl = translator.translate("certification.email.entry.url", entryUrlStr);
+		String entryUrl = null;
+		if(entry != null) {
+			String entryUrlStr = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			entryUrl = translator.translate("certification.email.entry.url", entryUrlStr);
+		}
 		String certificateUrl = Settings.createServerURI() + DownloadCertificateCellRenderer.getUrl(certificate);
 		String downloadButton = translator.translate("certification.email.download.button", certificateUrl);
 		String institutionalName = StringHelper.blankIfNull(
 				StringHelper.escapeHtml(certificateIdentity.getUser().getProperty(UserConstants.INSTITUTIONALNAME)));
 		
 		return new String[] {
-			entry.getDisplayname(),                              // pos0: Maybe used in custom translations
+			sourceDisplayName,                              	 // pos0: Maybe used in custom translations
 			userManager.getUserDisplayName(certificateIdentity), // pos1: Maybe used in custom translations
 			displayName,
 			externalRef,
@@ -1468,7 +1489,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return mailManager.sendMessage(bundle);
 	}
 	
-	private void sendCertificateCopies(Identity to, RepositoryEntry entry, CertificateImpl certificate,
+	private void sendCertificateCopies(Identity to, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateImpl certificate,
 			File certificateFile, CertificateConfig config, Translator translator, String[] args) {
 		List<MailBundle> mailBundles = new ArrayList<>();
 		List<String> bccs = certificatesModule.getCertificatesBccEmails();
@@ -1497,7 +1518,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			String copyToLanguage = copyTo.getUser().getPreferences().getLanguage();
 			Locale copyToLocale = i18nManager.getLocaleOrDefault(copyToLanguage);
 			Translator copyToTranslator = Util.createPackageTranslator(CertificateController.class, copyToLocale);
-			String[] copyToArgs = createMailArgs(to, entry, certificate, copyToTranslator);
+			String[] copyToArgs = createMailArgs(to, certificationProgram, entry, certificate, copyToTranslator);
 			MailBundle bundle = createCopyMailBundle(certificateFile, copyToTranslator, copyToArgs);
 			bundle.setToId(copyTo);
 			mailBundles.add(bundle);

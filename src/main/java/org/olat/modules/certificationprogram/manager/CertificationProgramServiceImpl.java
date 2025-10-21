@@ -95,6 +95,10 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	@Override
 	public CertificationProgram updateCertificationProgram(CertificationProgram program, List<Organisation> organisations) {
 		program = certificationProgramDao.updateCertificationProgram(program);
+		if(program.getTemplate() != null) {
+			// Fetch template
+			program.getTemplate().getName();
+		}
 		
 		List<Organisation> currentOrganisations = certificationProgramToOrganisationDao.getOrganisations(program);
 		List<Organisation> organisationsToRemove = new ArrayList<>();

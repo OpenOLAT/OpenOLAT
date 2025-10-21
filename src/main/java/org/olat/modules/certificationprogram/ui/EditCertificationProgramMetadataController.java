@@ -103,6 +103,7 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 		organisationsEl = uifactory.addObjectSelectionElement("organisations", "certification.admin.access", formLayout,
 				getWindowControl(), true, organisationSource);
 		organisationsEl.setVisible(organisationModule.isEnabled());
+		organisationsEl.setMandatory(true);
 	}
 
 	@Override
@@ -122,6 +123,14 @@ public class EditCertificationProgramMetadataController extends FormBasicControl
 		if(identifierEl.getValue() != null && identifierEl.getValue().length() > 128) {
 			identifierEl.setErrorKey("form.error.toolong", "128");
 			allOk &= true;
+		}
+		
+		if(organisationsEl != null) {
+			organisationsEl.clearError();
+			if(organisationsEl.getSelectedKeys().isEmpty()) {
+				organisationsEl.setErrorKey("form.legende.mandatory");
+				allOk &= true;
+			}
 		}
 		
 		return allOk;

@@ -52,7 +52,7 @@ public class ConfirmRenewController extends ConfirmationController {
 	@Override
 	protected void doAction(UserRequest ureq) {
 		boolean produced = certificationOrchestrator
-				.processCertification(certifiedIdentity, certificationProgram, ureq.getRequestTimestamp(), getIdentity());
+				.processCertificationDemand(certifiedIdentity, certificationProgram, ureq.getRequestTimestamp(), getIdentity());
 		if(produced) {
 			getLogger().info("Renew certificate of {} in certification program {}", certifiedIdentity.getKey(), certificationProgram.getKey());
 			fireEvent(ureq, Event.DONE_EVENT);

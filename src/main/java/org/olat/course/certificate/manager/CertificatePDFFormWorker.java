@@ -48,6 +48,7 @@ import org.olat.core.util.pdf.PdfDocument;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -71,6 +72,7 @@ public class CertificatePDFFormWorker {
 	private final Double completion;
 	private final Identity identity;
 	private final RepositoryEntry entry;
+	private final CertificationProgram certificationProgram;
 
 	private final Date dateCertification;
 	private final Date dateFirstCertification;
@@ -87,10 +89,11 @@ public class CertificatePDFFormWorker {
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
-	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
+	public CertificatePDFFormWorker(Identity identity, CertificationProgram certificationProgram, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
 									Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
 									String custom2, String custom3, String grade, BigDecimal gradeCutValue, String gradeLabel, String certificateURL,
 									Locale locale, UserManager userManager, CertificatesManagerImpl certificatesManager) {
+		this.certificationProgram = certificationProgram;
 		this.entry = entry;
 		this.score = score;
 		this.maxScore = maxScore;
@@ -130,6 +133,7 @@ public class CertificatePDFFormWorker {
 			PDAcroForm acroForm = docCatalog.getAcroForm();
 			if (acroForm != null) {
 				fillUserProperties(acroForm);
+				fillCertificationProgram(acroForm);
 				fillRepositoryEntry(acroForm);
 				fillCertificationInfos(acroForm);
 				fillAssessmentInfos(acroForm);
@@ -201,8 +205,19 @@ public class CertificatePDFFormWorker {
 		}
 		return FilterFactory.getHtmlTagAndDescapingFilter().filter(text);
 	}
+	
+	private void fillCertificationProgram(PDAcroForm acroForm) throws IOException {
+		if(certificationProgram == null) return;
+		
+		String title = certificationProgram.getDisplayName();
+		fillField("title", title, acroForm);
+		String description = certificationProgram.getDescription();
+		fillField("description", filterHtml(description), acroForm);
+	}
 
 	private void fillRepositoryEntry(PDAcroForm acroForm) throws IOException {
+		if(entry == null) return;
+		
 		String title = entry.getDisplayname();
 		fillField("title", title, acroForm);
 		String description = entry.getDescription();

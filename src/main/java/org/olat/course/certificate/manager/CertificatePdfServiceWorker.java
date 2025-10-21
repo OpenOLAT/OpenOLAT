@@ -55,6 +55,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -79,6 +80,7 @@ public class CertificatePdfServiceWorker {
 	private final Identity identity;
 	private final RepositoryEntry entry;
 	private final String certificateURL;
+	private final CertificationProgram certificationProgram;
 
 	private final Date dateCertification;
 	private final Date dateFirstCertification;
@@ -95,10 +97,11 @@ public class CertificatePdfServiceWorker {
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
-	public CertificatePdfServiceWorker(Identity identity, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
+	public CertificatePdfServiceWorker(Identity identity, CertificationProgram certificationProgram, RepositoryEntry entry, Float score, Float maxScore, Boolean passed,
 									   Double completion, Date dateCertification, Date dateFirstCertification, Date dateCertificateValidUntil, String custom1,
 									   String custom2, String custom3, String grade, BigDecimal gradeCutValue, String gradeLabel,
 									   String certificateURL, Locale locale, UserManager userManager, CertificatesManagerImpl certificatesManager, PdfService pdfService) {
+		this.certificationProgram = certificationProgram;
 		this.entry = entry;
 		this.score = score;
 		this.maxScore = maxScore;
@@ -214,6 +217,7 @@ public class CertificatePdfServiceWorker {
 	private VelocityContext getContext() {
 		VelocityContext context = new VelocityContext();
 		fillUserProperties(context);
+		fillCertificationProgram(context);
 		fillRepositoryEntry(context);
 		fillCertificationInfos(context);
 		fillAssessmentInfos(context);
@@ -255,7 +259,18 @@ public class CertificatePdfServiceWorker {
 		context.put("lastNameFirstName", lastNameFirstName.toString());
 	}
 	
+	private void fillCertificationProgram(VelocityContext context) {
+		if(certificationProgram == null) return;
+		
+		String title = certificationProgram.getDisplayName();
+		context.put("title", title);
+		String description = certificationProgram.getDescription();
+		context.put("description", description);
+	}
+	
 	private void fillRepositoryEntry(VelocityContext context) {
+		if(entry == null) return;
+		
 		String title = entry.getDisplayname();
 		context.put("title", title);
 		String description = entry.getDescription();

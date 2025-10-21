@@ -131,7 +131,7 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 		if(enableEl == source) {
 			updateUI();
 			doUpdateCertificationProgram();
-		} else if(programsEl == null) {
+		} else if(programsEl == source) {
 			updateUI();
 			doUpdateCertificationProgram();
 		}

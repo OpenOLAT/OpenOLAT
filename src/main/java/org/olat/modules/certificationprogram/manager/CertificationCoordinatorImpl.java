@@ -93,33 +93,47 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 
 	@Override
-	public boolean processCertificationDemand(Identity identity, CertificationProgram certificationProgram, Date referenceDate) {
+	public boolean processCertificationDemand(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer) {
 		if(identity == null || certificationProgram == null || certificationProgram.getKey() == null) return false;
 		
+		boolean accepted = false;
 		certificationProgram = certificationProgramDao.loadCertificationProgram(certificationProgram.getKey());
 		if(certificationProgram != null && certificationProgram.getStatus() == CertificationProgramStatusEnum.active) {
-			BigDecimal amount = certificationProgram.getCreditPoints();
-			CreditPointSystem system = certificationProgram.getCreditPointSystem();
-			Certificate certificate = certificatesManager. getLastCertificate(identity, certificationProgram.getResource().getKey());
-
-			boolean allowed = isCertificationAllowedByDate(certificate, certificationProgram, referenceDate);
-
-			if(allowed && system != null && amount != null) {
-				BigDecimal amountToRemove = amount.negate();
-				String note = "Certification \"" + certificationProgram.getDisplayName() + "\"";
-				CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
-				if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
-					allowed = false;
-				} else {
-					creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
-							note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
-				}
-			}
-			
-			if(allowed) {
+			Certificate certificate = certificatesManager.getLastCertificate(identity, certificationProgram.getResource().getKey());
+			if(certificate == null) {
+				//First certificate is free (paid by the course fee)
+				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
 				generateCertificate(identity, certificationProgram);
-				return true;
+				accepted = true;
+			} else {
+				accepted = processRecertificationDemand(identity, certificationProgram, certificate, referenceDate, doer);
 			}
+		}
+		return accepted;
+	}
+	
+	private boolean processRecertificationDemand(Identity identity, CertificationProgram certificationProgram, Certificate certificate, Date referenceDate, Identity doer) {
+		BigDecimal amount = certificationProgram.getCreditPoints();
+		CreditPointSystem system = certificationProgram.getCreditPointSystem();
+
+		boolean allowed = isCertificationAllowedByDate(certificate, certificationProgram, referenceDate);
+
+		if(allowed && system != null && amount != null) {
+			BigDecimal amountToRemove = amount.negate();
+			String note = "Certification \"" + certificationProgram.getDisplayName() + "\"";
+			CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
+			if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
+				allowed = false;
+			} else {
+				creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
+						note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
+			}
+		}
+		
+		if(allowed) {
+			log.info("Generate paid certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
+			generateCertificate(identity, certificationProgram);
+			return true;
 		}
 		return false;
 	}
@@ -145,9 +159,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				}
 			}
 			
-			allowed = certificationProgram.isPrematureRecertificationByUserEnabled()
+			allowed = (certificationProgram.isPrematureRecertificationByUserEnabled()
+						&& nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) >= 0)
 					|| ((nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) <= 0
-					&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0)));
+						&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0)));
 		} else {
 			allowed = false;
 		}

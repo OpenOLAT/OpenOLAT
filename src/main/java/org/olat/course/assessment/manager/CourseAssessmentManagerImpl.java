@@ -501,7 +501,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		transfertCreditPoint(userCourseEnvironment, nodeAssessment);
-		generateCertificate(userCourseEnvironment);
+		generateCertificate(userCourseEnvironment, null);
 		awardBadge(userCourseEnvironment, nodeAssessment.getCoach());
 	}
 
@@ -638,7 +638,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnv);
 		transfertCreditPoint(userCourseEnv, assessmentEntry);
-		generateCertificate(userCourseEnv);
+		generateCertificate(userCourseEnv, identity);
 		awardBadge(userCourseEnv, assessmentEntry.getCoach());
 	}
 	
@@ -687,7 +687,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
-		generateCertificate(userCourseEnvironment);
+		generateCertificate(userCourseEnvironment, null);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
 
 		return assessmentEntry.getPassedOverridable();
@@ -728,7 +728,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
-		generateCertificate(userCourseEnvironment);
+		generateCertificate(userCourseEnvironment, coach);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
 
 		return assessmentEntry.getPassedOverridable();
@@ -792,10 +792,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry);
 	}
 
-	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {
+	private void generateCertificate(UserCourseEnvironment userCourseEnvironment, Identity doer) {
 		RepositoryEntry courseEntry = cgm.getCourseEntry();
 		if(certificationProgramService.isInCertificationProgram(courseEntry)) {
-			generateCertificateOfCertificationProgram(userCourseEnvironment, courseEntry);
+			generateCertificateOfCertificationProgram(userCourseEnvironment, courseEntry, doer);
 		} else if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
 			generateCertificateOfCourse(userCourseEnvironment, courseEntry);
 		}
@@ -832,7 +832,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	 * @param userCourseEnvironment The user course environment
 	 * @param courseEntry The course
 	 */
-	private void generateCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry) {
+	private void generateCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry, Identity doer) {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
@@ -841,7 +841,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CertificationProgram certificationProgram = getUniqueActiveCertificationProgram(certificationPrograms);
 		if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 				&& certificationProgram != null) {
-			certificationOrchestrator.processCertificationDemand(assessedIdentity, certificationProgram, new Date());
+			certificationOrchestrator.processCertificationDemand(assessedIdentity, certificationProgram, new Date(), doer);
 		}
 	}
 	
