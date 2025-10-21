@@ -50,9 +50,11 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
+import org.olat.modules.creditpoint.CreditPointModule;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -93,6 +95,10 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private CreditPointModule creditPointModule;
 
 	public CatalogLauncherCatalogEntryController(UserRequest ureq, WindowControl wControl,
 			List<CatalogEntry> entries, String title, boolean showMore, boolean webCatalog,
@@ -163,21 +169,25 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 
 	private void appendMetadata(LauncherItem item, CatalogEntry entry) {
 		item.setKey(entry.getOlatResource().getKey());
-		item.setEducationalType(entry.getEducationalType());
-		item.setCertificate(entry.isHasCertificate());
-		item.setCreditPointAmount(entry.getCreditPointAmount());
+		if (catalogModule.getCardView().contains(CatalogCardView.certificate)) {
+			item.setCertificate(entry.isHasCertificate());
+		}
+		if (creditPointModule.isEnabled() && catalogModule.getCardView().contains(CatalogCardView.creditPoints)) {
+			item.setCreditPointAmount(entry.getCreditPointAmount());
+		}
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.teaserText)) {
 			item.setTeaser(entry.getTeaser());
 		}
-		if (catalogModule.getCardView().contains(CatalogCardView.taxonomyLevels)) {
+		if (taxonomyModule.isEnabled() && catalogModule.getCardView().contains(CatalogCardView.taxonomyLevels)) {
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), entry.getTaxonomyLevels());
 			item.setTaxonomyLevels(taxonomyLevels);
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.educationalType)) {
 			if (entry.getEducationalType() != null) {
+				item.setEducationalType(entry.getEducationalType());
 				String educationalTypeName = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
 				item.setEducationalTypeName(educationalTypeName);
 			}

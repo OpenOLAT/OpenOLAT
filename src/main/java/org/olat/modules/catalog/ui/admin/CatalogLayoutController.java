@@ -61,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogLayoutController extends FormBasicController {
 	
+	private final static String KEY_TITLE = "title";
+	
 	private StaticTextElement titleEl;
 	private FormLink titleLink;
 	private FileElement headerBgImageEl;
@@ -74,19 +76,22 @@ public class CatalogLayoutController extends FormBasicController {
 	private CatalogV2Module catalogModule;
 
 	public CatalogLayoutController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale()));
+		super(ureq, wControl, LAYOUT_VERTICAL, Util.createPackageTranslator(CatalogV2UIFactory.class, ureq.getLocale()));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.layout");
+		FormLayoutContainer headerCont = FormLayoutContainer.createDefaultFormLayout("header", getTranslator());
+		headerCont.setFormTitle(translate("admin.layout.header"));
+		headerCont.setRootForm(mainForm);
+		formLayout.add(headerCont);
 		
 		FormLayoutContainer nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
 		nameCont.setLabel("admin.header.search.title", null);
 		nameCont.setElementCssClass("o_inline_cont");
 		nameCont.setRootForm(mainForm);
-		formLayout.add(nameCont);
+		headerCont.add(nameCont);
 		
 		String translateLauncherName = translate("header.search.title");
 		translateLauncherName = StringHelper.escapeHtml(translateLauncherName);
@@ -94,7 +99,7 @@ public class CatalogLayoutController extends FormBasicController {
 		
 		titleLink = uifactory.addFormLink("admin.header.search.title.edit", nameCont);
 		
-		headerBgImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "admin.header.bg.image", "admin.header.bg.image", formLayout);
+		headerBgImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "admin.header.bg.image", "admin.header.bg", headerCont);
 		headerBgImageEl.setExampleKey("admin.header.bg.image.example", null);
 		headerBgImageEl.limitToMimeType(HEADER_BG_IMAGE_MIME_TYPES, "error.mimetype", null);
 		headerBgImageEl.setMaxUploadSizeKB(2048, null, null);
@@ -106,10 +111,15 @@ public class CatalogLayoutController extends FormBasicController {
 			headerBgImageEl.setInitialFile(catalogModule.getHeaderBgImage());
 		}
 		
+		FormLayoutContainer launchersCont = FormLayoutContainer.createDefaultFormLayout("launchers", getTranslator());
+		launchersCont.setFormTitle(translate("admin.layout.launchers"));
+		launchersCont.setRootForm(mainForm);
+		formLayout.add(launchersCont);
+		
 		SelectionValues styleSV = new SelectionValues();
 		styleSV.add(entry(TAXONOMY_LEVEL_LAUNCHER_STYLE_RECTANGLE, translate("admin.launcher.taxonomy.level.rectangle")));
 		styleSV.add(entry(TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE, translate("admin.launcher.taxonomy.level.square")));
-		launcherTaxonomyLevelStyleEl = uifactory.addRadiosVertical("admin.launcher.taxonomy.level.style", formLayout, styleSV.keys(), styleSV.values());
+		launcherTaxonomyLevelStyleEl = uifactory.addRadiosVertical("admin.launcher.taxonomy.level.style", launchersCont, styleSV.keys(), styleSV.values());
 		launcherTaxonomyLevelStyleEl.addActionListener(FormEvent.ONCHANGE);
 		if (TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE.equals(catalogModule.getLauncherTaxonomyLevelStyle())) {
 			launcherTaxonomyLevelStyleEl.select(TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE, true);
@@ -118,18 +128,23 @@ public class CatalogLayoutController extends FormBasicController {
 		}
 		
 		SelectionValues cardViewSV = new SelectionValues();
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.externalRef.name(), translate("admin.card.view.external.ref")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.teaserText.name(), translate("admin.card.view.teaser.text")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.taxonomyLevels.name(), translate("admin.card.view.taxonomy.levels")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.educationalType.name(), translate("admin.card.view.educational.type")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.mainLanguage.name(), translate("admin.card.view.main.language")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.location.name(), translate("admin.card.view.location")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.executionPeriod.name(), translate("admin.card.view.execution.period")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.certificate.name(), translate("admin.card.view.certificate")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.creditPoints.name(), translate("admin.card.view.credit.points")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.externalRef.name(), translate("admin.card.view.external.ref.type")));
+		cardViewSV.add(SelectionValues.entry(KEY_TITLE, translate("admin.card.view.title")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.teaserText.name(), translate("admin.card.view.teaser.text")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.authors.name(), translate("admin.card.view.authors")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.executionPeriod.name(), translate("admin.card.view.execution.period")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.mainLanguage.name(), translate("admin.card.view.main.language")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.expenditureOfWork.name(), translate("admin.card.view.expenditure.of.work")));
-		cardViewEl = uifactory.addCheckboxesVertical("admin.card.view", formLayout, cardViewSV.keys(), cardViewSV.values(), 1);
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.location.name(), translate("admin.card.view.location")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.taxonomyLevels.name(), translate("admin.card.view.taxonomy.levels")));
+		cardViewEl = uifactory.addCheckboxesVertical("card.view", "admin.card.view.label", launchersCont, cardViewSV.keys(), cardViewSV.values(), 1);
 		cardViewEl.addActionListener(FormEvent.ONCHANGE);
 		catalogModule.getCardView().stream().map(CatalogCardView::name).forEach(key -> cardViewEl.select(key, true));
+		cardViewEl.select(KEY_TITLE, true);
+		cardViewEl.setEnabled(KEY_TITLE, false);
 	}
 	
 	@Override
@@ -158,7 +173,10 @@ public class CatalogLayoutController extends FormBasicController {
 		} else if (launcherTaxonomyLevelStyleEl == source) {
 			catalogModule.setLauncherTaxonomyLevelStyle(launcherTaxonomyLevelStyleEl.getSelectedKey());
 		} else if (cardViewEl == source) {
-			Set<CatalogCardView> cardView = cardViewEl.getSelectedKeys().stream().map(CatalogCardView::valueOf).collect(Collectors.toSet());
+			Set<CatalogCardView> cardView = cardViewEl.getSelectedKeys().stream()
+					.filter(key -> !KEY_TITLE.equals(key))
+					.map(CatalogCardView::valueOf)
+					.collect(Collectors.toSet());
 			catalogModule.setCardView(cardView);
 		}
 		super.formInnerEvent(ureq, source, event);
