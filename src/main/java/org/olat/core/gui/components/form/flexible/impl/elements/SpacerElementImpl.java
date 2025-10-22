@@ -74,4 +74,14 @@ public class SpacerElementImpl extends FormItemImpl implements SpacerElement {
 	public String getSpacerCssClass() {
 		return component.getSpacerCssClass();
 	}
+
+	@Override
+	public void setWithWrapper(boolean withWrapper) {
+		component.setWithWrapper(withWrapper);
+	}
+
+	@Override
+	public boolean isWithWrapper() {
+		return component.isWithWrapper();
+	}
 }

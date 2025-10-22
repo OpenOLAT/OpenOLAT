@@ -43,4 +43,17 @@ public interface SpacerElement extends FormItem {
 	 */
 	public String getSpacerCssClass();
 
+	/**
+	 * Sets whether the spacer element should be wrapped within an additional wrapper div.
+	 *
+	 * @param withWrapper true if the spacer element should be wrapped; false otherwise
+	 */
+	public void setWithWrapper(boolean withWrapper);
+
+	/**
+	 * Checks whether the spacer element is wrapped within an additional wrapper div.
+	 *
+	 * @return true if the spacer element is wrapped within a wrapper; false otherwise
+	 */
+	public boolean isWithWrapper();
 }

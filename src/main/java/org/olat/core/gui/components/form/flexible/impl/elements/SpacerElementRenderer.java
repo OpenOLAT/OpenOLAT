@@ -43,6 +43,9 @@ public class SpacerElementRenderer extends DefaultComponentRenderer {
 
 		SpacerElementComponent cmp = (SpacerElementComponent) source;
 		
+		if (cmp.isWithWrapper()) {
+			sb.append("<div class=\"o_spacer_wrapper\">");
+		}
 		sb.append("<hr class=\"o_spacer ");
 		// add layout css if available
 		if (args != null && args.length > 0) {
@@ -54,5 +57,8 @@ public class SpacerElementRenderer extends DefaultComponentRenderer {
 			sb.append(" ").append(customCSS);
 		}
 		sb.append("\">");
+		if (cmp.isWithWrapper()) {
+			sb.append("</div>");
+		}
 	}
 }

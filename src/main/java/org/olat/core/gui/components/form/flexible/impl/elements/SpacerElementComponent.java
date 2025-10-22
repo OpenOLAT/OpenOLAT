@@ -34,6 +34,7 @@ public class SpacerElementComponent extends FormBaseComponentImpl {
 	
 	private String spacerCssClass;
 	private final SpacerElementImpl element;
+	private boolean withWrapper;
 	
 	public SpacerElementComponent(String name) {
 		this(name, null);
@@ -60,5 +61,13 @@ public class SpacerElementComponent extends FormBaseComponentImpl {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+
+	public boolean isWithWrapper() {
+		return withWrapper;
+	}
+
+	public void setWithWrapper(boolean withWrapper) {
+		this.withWrapper = withWrapper;
 	}
 }

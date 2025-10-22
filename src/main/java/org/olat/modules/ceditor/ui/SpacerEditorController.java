@@ -46,7 +46,7 @@ public class SpacerEditorController extends FormBasicController implements PageE
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String cmpId = "spacer-" + CodeHelper.getRAMUniqueID() + "hr";
-		uifactory.addSpacerElement(cmpId + "_static", formLayout, false);
+		uifactory.addSpacerElement(cmpId + "_static", formLayout, false).setWithWrapper(true);
 		flc.getFormItemComponent().contextPut("cmpId", cmpId);
 	}
 

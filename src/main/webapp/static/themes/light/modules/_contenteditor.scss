@@ -2501,6 +2501,20 @@ table.o_ce_table {
 .o_page_content_editor {
 	.o_page_fragment_edit {
 		.o_page_layout {
+			div.o_spacer_wrapper {
+				padding-top: 20px;
+				padding-bottom: 20px;
+
+				hr.o_spacer {
+					margin: 0;
+				}
+			}
+			div.o_spacer_wrapper:hover {
+				hr.o_spacer, hr.o_spacer:hover {
+					border-color: darken($hr-border, 10);
+				}
+			}
+
 			&:not(.o_alert_box_active) {
 
 				/* Padding and margin overrides for the outside edges while editing */

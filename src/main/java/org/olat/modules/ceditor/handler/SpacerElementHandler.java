@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.CloneElementHandler;
@@ -73,7 +72,10 @@ public class SpacerElementHandler implements PageElementHandler,
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof SpacerPart) {
-			Component cmp = new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+			SpacerElementComponent cmp = new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+			if (options.isEditable()) {
+				cmp.setWithWrapper(true);
+			}
 			return new PageRunComponent(cmp);
 		}
 		return null;
