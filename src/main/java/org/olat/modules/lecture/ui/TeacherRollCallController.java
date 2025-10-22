@@ -704,9 +704,7 @@ public class TeacherRollCallController extends FormBasicController {
 			row.getAuthorizedAbsenceCont().setDirty(true);
 		}
 
-		if(row.getReasonLink() != null) {
-			row.getReasonLink().setVisible(false);
-		}
+		row.setReasonLinkVisible(false);
 		row.getRollCallStatusEl().getComponent().setDirty(true);
 		recalculateNumOfAbsences(row);
 		tableEl.reloadData();
@@ -753,10 +751,10 @@ public class TeacherRollCallController extends FormBasicController {
 		if(authorizedAbsenceEnabled && row.getAuthorizedAbsence() != null) {
 			if(rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue()) {
 				row.getAuthorizedAbsence().select(onKeys[0], true);
-				row.getReasonLink().setVisible(true);
+				row.setReasonLinkVisible(true);
 			} else {
 				row.getAuthorizedAbsence().uncheckAll();
-				row.getReasonLink().setVisible(false);
+				row.setReasonLinkVisible(false);
 			}
 			row.getAuthorizedAbsenceCont().setDirty(true);
 		}
@@ -779,7 +777,7 @@ public class TeacherRollCallController extends FormBasicController {
 					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), null, row.getIdentity(), getIdentity());
 		}
 
-		row.getReasonLink().setVisible(authorized);
+		row.setReasonLinkVisible(authorized);
 		row.getAuthorizedAbsenceCont().setDirty(true);
 		row.getAuthorizedAbsence().clearError();
 		row.setRollCall(rollCall);
