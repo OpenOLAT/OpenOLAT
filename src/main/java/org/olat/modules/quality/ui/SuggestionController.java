@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -48,6 +49,15 @@ public class SuggestionController extends BasicController {
 	public SuggestionController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		VelocityContainer mainVC = createVelocityContainer("suggestion");
+		putInitialPanel(mainVC);
+		
+		QualityTitleController titleCtrl = new QualityTitleController(ureq, getWindowControl(),
+				"suggestion.title",
+				"manual_user/area_modules/Quality_Management_Improvement/");
+		listenTo(titleCtrl);
+		mainVC.put("title", titleCtrl.getInitialComponent());
+		
 		ContactMessage contactMessage = new ContactMessage(ureq.getIdentity());
 
 		ContactList contactList = new ContactList(translate("suggstion.recipients"));
@@ -64,10 +74,10 @@ public class SuggestionController extends BasicController {
 		contactMessage.setBodyText(emailBody);
 
 		contactFormCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage);
-		contactFormCtrl.setContactFormTitle(translate("suggestion.title"));
+		contactFormCtrl.setContactFormTitle(null);
 		contactFormCtrl.setContactFormDescription(translate("suggestion.description"));
 		listenTo(contactFormCtrl);
-		putInitialPanel(contactFormCtrl.getInitialComponent());
+		mainVC.put("form", contactFormCtrl.getInitialComponent());
 	}
 
 	@Override
