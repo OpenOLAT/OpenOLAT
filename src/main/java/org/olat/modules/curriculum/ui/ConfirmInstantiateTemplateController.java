@@ -146,7 +146,7 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		boolean displaynameOk = RepositoyUIFactory.validateTextElement(displayNameEl, true, 110);
+		boolean displaynameOk = RepositoyUIFactory.validateTextElement(displayNameEl, true, 100);
 		if (displaynameOk) {
 			validateDisplaynameUnique(ureq);
 		} else {
