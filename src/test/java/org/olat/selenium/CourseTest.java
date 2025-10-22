@@ -33,7 +33,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -1217,7 +1216,7 @@ public class CourseTest extends Deployments {
 			.assertFirstNameInList(ryomou);
 	}
 	
-
+	
 	/**
 	 * An author creates a course, make it visible for
 	 * members and add an access control by free booking
@@ -1233,7 +1232,6 @@ public class CourseTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	@Ignore
 	@RunAsClient
 	public void courseFreeBooking()
 	throws IOException, URISyntaxException {
@@ -1284,7 +1282,9 @@ public class CourseTest extends Deployments {
 			.openMyCourses()
 			.openSearch()
 			.extendedSearch(title)
-			.book(title);//book the course
+			//book the course
+			.book(title)
+			.confirmBookCourse();
 		//check the course
 		CoursePageFragment bookedCourse = CoursePageFragment.getCourse(userBrowser);
 		bookedCourse

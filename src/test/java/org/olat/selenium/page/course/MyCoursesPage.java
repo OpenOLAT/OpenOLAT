@@ -138,16 +138,17 @@ public class MyCoursesPage {
 	 * 
 	 * @param title
 	 */
-	public void book(String title) {
+	public MyCoursesPage book(String title) {
 		By bookBy = By.xpath("//div[contains(@class,'o_repo_entry_list_item')][div/h3/a/span[text()[contains(.,'" + title + "')]]]/div/div/a[contains(@class,'o_book')]");
 		OOGraphene.waitElement(bookBy, browser).click();
 		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
-	public MyCoursesPage selectCatalogEntry(String shortTitle) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div[contains(@class,'o_meta')]/h4/a[span[contains(.,'" + shortTitle + "')]]");
-		OOGraphene.waitElement(titleBy, browser).click();
-		OOGraphene.waitBusy(browser);
+	
+	public MyCoursesPage confirmBookCourse() {
+		By courseBy = By.xpath("//div[contains(@class,'o_ac_offer_custom')]//div[contains(@class,'o_method_')]//button[contains(@class,'btn-primary') and contains(@class,'o_button_call_to_action')]");		
+		OOGraphene.waitElement(courseBy, browser).click();
 		return this;
 	}
 	
