@@ -163,6 +163,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.TaxonomyLevelRenderer;
 import org.olat.repository.ui.author.TaxonomyPathsRenderer;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -266,6 +267,8 @@ public class MediaCenterController extends FormBasicController
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSTranscodingService vfsTranscodingService;
+	@Autowired
+	private UserManager userManager;
 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MediaCenterConfig config) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
@@ -319,7 +322,8 @@ public class MediaCenterController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.type, new MediaTypeCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.title, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.collectionDate, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.createdBy));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.createdOn, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.tags, new CategoriesCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.taxonomyLevels, new TaxonomyLevelRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.taxonomyLevelsPaths, new TaxonomyPathsRenderer(getLocale())));
@@ -455,7 +459,7 @@ public class MediaCenterController extends FormBasicController
 		List<FlexiTableSort> sorters = new ArrayList<>(14);
 		sorters.add(new FlexiTableSort(translate(MediaCols.key.i18nHeaderKey()), MediaCols.key.name()));
 		sorters.add(new FlexiTableSort(translate(MediaCols.title.i18nHeaderKey()), MediaCols.title.name()));
-		sorters.add(new FlexiTableSort(translate(MediaCols.collectionDate.i18nHeaderKey()), MediaCols.collectionDate.name()));
+		sorters.add(new FlexiTableSort(translate(MediaCols.createdOn.i18nHeaderKey()), MediaCols.createdOn.name()));
 		sorters.add(new FlexiTableSort(translate(MediaCols.tags.i18nHeaderKey()), MediaCols.tags.name()));
 		sorters.add(new FlexiTableSort(translate(MediaCols.taxonomyLevels.i18nHeaderKey()), MediaCols.taxonomyLevels.name()));
 
@@ -689,7 +693,8 @@ public class MediaCenterController extends FormBasicController
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
 				openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
 				openLink.setEnabled(withMediaSelection);
-				MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass);
+				String createdBy = userManager.getUserDisplayName(media.getAuthor());
+				MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass, createdBy);
 				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
 				openLink.setUserObject(row);
 				rows.add(row);
@@ -1260,6 +1265,10 @@ public class MediaCenterController extends FormBasicController
 	
 	private Activateable2 doOpenMedia(UserRequest ureq, Long mediaKey) {
 		Media media = mediaService.getMediaByKey(mediaKey);
+		if (media.getVersions() == null || media.getVersions().isEmpty()) {
+			showWarning("warning.file.not.found");
+			return null;
+		}
 		MediaVersion currentVersion = media.getVersions().get(0);
 		return doOpenMedia(ureq, media, currentVersion);
 	}

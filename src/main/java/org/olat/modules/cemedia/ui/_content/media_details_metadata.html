@@ -8,11 +8,11 @@
 	#end
 	
 	#if($r.isNotEmpty($author))
-	<tr><th id="oo-media-author">$r.translate("author")</th>
+	<tr><th id="oo-media-author">$r.translate("created.by")</th>
 		<td aria-labelledby="oo-media-author">$r.escapeHtml($author)</td></tr>
 	#end
 	#if($r.isNotEmpty($collectionDate))
-	<tr><th id="oo-media-collection-date">$r.translate("artefact.collect.date")</th>
+	<tr><th id="oo-media-collection-date">$r.translate("created.on")</th>
 		<td aria-labelledby="oo-media-collection-date">$r.escapeHtml($collectionDate)</td></tr>
 	#end
 	#if($r.isNotEmpty($fileSize))

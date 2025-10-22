@@ -77,7 +77,8 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 		switch(COLS[col]) {
 			case key: return media.getKey();
 			case title: return media.getTitle();
-			case collectionDate: return media.getCollectionDate();
+			case createdBy: return media.getCreatedBy();
+			case createdOn: return media.getCollectionDate();
 			case tags: return media.getTags();
 			case taxonomyLevels, taxonomyLevelsPaths: return media.getTaxonomyLevels();
 			case type: return media;
@@ -106,7 +107,8 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 	public enum MediaCols implements FlexiSortableColumnDef {
 		key("table.header.key", true),
 		title("table.header.title", true),
-		collectionDate("table.header.collection.date", true),
+		createdBy("table.header.created.by", true),
+		createdOn("table.header.created.on", true),
 		tags("table.header.tags", true),
 		type("table.header.type", true),
 		taxonomyLevels("table.header.taxonomy.levels", true),

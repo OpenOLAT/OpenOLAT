@@ -107,7 +107,7 @@ public class MediaLogController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaLogCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaLogCols.comment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaLogCols.version));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaLogCols.author));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaLogCols.user));
 		
 		model = new MediaLogTableModel(columnsModel, getLocale());
 		

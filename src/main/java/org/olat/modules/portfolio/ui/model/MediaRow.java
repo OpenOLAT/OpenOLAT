@@ -48,17 +48,19 @@ public class MediaRow implements MediaLight {
 	private boolean versioned;
 	private boolean hasThumbnail;
 	private final String thumbnailName;
+	private final String createdBy;
 	
 	private List<String> tags;
 	private List<String> taxonomyLevelsNames;
 	private List<TaxonomyLevel> taxonomyLevels;
 	
-	public MediaRow(MediaLight media, MediaVersion version, boolean hasThumbnail, FormLink openFormLink, String cssClass) {
+	public MediaRow(MediaLight media, MediaVersion version, boolean hasThumbnail, FormLink openFormLink, String cssClass, String createdBy) {
 		this.media = media;
 		this.version = version;
 		this.cssClass = cssClass;
 		this.hasThumbnail = hasThumbnail;
 		this.openFormLink = openFormLink;
+		this.createdBy = createdBy;
 		if(version == null) {
 			thumbnailName = "";
 		} else {
@@ -94,6 +96,10 @@ public class MediaRow implements MediaLight {
 	@Override
 	public Date getCollectionDate() {
 		return version == null ? null : version.getCollectionDate();
+	}
+	
+	public String getCreatedBy() {
+		return createdBy;
 	}
 
 	@Override
