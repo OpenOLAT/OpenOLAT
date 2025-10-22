@@ -184,6 +184,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 				new String[] { translate("booking.receipt.option") });
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
 		
+		initCustomMembershipElements(formLayout);
+		
 		customSpacerEl = uifactory.addSpacerElement("others", formLayout, false);
 		
 		// Custom
@@ -211,10 +213,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		
 		updateUI();
-	}
-	
-	protected boolean isConfirmationByManagerSupported() {
-		return false;
 	}
 	
 	/**
