@@ -64,7 +64,7 @@ implements SortableFlexiTableDataModel<MediaLogRow> {
 	@Override
 	public Object getValueAt(MediaLogRow row, int col) {
 		switch(COLS[col]) {
-			case author: return row.fullName();
+			case user: return row.fullName();
 			case creationDate: return row.mediaLog().getCreationDate();
 			case comment: return row.action();
 			case version: return row.versionName();
@@ -74,7 +74,7 @@ implements SortableFlexiTableDataModel<MediaLogRow> {
 	
 	public enum MediaLogCols implements FlexiSortableColumnDef {
 		
-		author("table.header.author"),
+		user("table.header.user"),
 		creationDate("table.header.creation.date"),
 		comment("table.header.comment"),
 		version("table.header.version");
