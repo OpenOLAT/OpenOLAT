@@ -328,6 +328,10 @@ public class InPreparationListController extends FormBasicController implements 
 		forgeSelectLink(row);
 		forgeMarkLink(row);
 		
+		if (element.element().getType() != null) {
+			row.setTranslatedTechnicalType(element.element().getType().getDisplayName());
+		}
+		
 		String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
 				row::getCurriculumElementKey, CurriculumElementFileType.teaserImage);
 		if (imageUrl != null) {

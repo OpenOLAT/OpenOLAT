@@ -104,7 +104,11 @@ public class ImplementationHeaderController extends FormBasicController {
 			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 			markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 			row.setMarkLink(markLink);
-
+			
+			if (element.getType() != null) {
+				row.setTranslatedTechnicalType(element.getType().getDisplayName());
+			}
+			
 			OLATResourceable item = OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey());
 			boolean marked = markManager.isMarked(item, getIdentity(), null);
 			decoratedMarkLink(marked);
