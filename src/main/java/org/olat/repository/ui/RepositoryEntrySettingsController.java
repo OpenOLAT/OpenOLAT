@@ -278,7 +278,7 @@ public class RepositoryEntrySettingsController extends BasicController implement
 				cleanUp();
 				doCloseResource(ureq);
 			}
-		} else if(accessCtrl == source && event == Event.CHANGED_EVENT) {
+		} else if(accessCtrl == source && (event == Event.CHANGED_EVENT || event instanceof ReloadSettingsEvent)) {
 			entry = repositoryService.loadByKey(entry.getKey());
 			updateUI();
 			fireEvent(ureq, event);

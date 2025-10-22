@@ -158,7 +158,7 @@ public class AuthoringEditAccessController extends BasicController {
 		initAccessShare(ureq, mainVC);
 		initAccessOverview(ureq, mainVC);
 		updateUI();
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));
 	}
 	
 	private void doSaveAccessShare(UserRequest ureq) {

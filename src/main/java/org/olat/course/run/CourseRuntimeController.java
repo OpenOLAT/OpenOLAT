@@ -971,13 +971,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			}
 			
-			saveAsTemplateLink = LinkFactory.createToolLink("save.as.template", translate("tools.save.as.template"), this, "o_icon o_icon-fw o_icon_template");
-			Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
-			Integer copyWithWizardIndex = toolsDropdown.getComponentIndex(copyWithWizardLink);
-			if (copyWithWizardIndex != null) {
-				toolsDropdown.addComponent(copyWithWizardIndex + 1, saveAsTemplateLink);
-			} else if (copyIndex != null) {
-				toolsDropdown.addComponent(copyIndex + 1, saveAsTemplateLink);
+			if (!RepositoryEntryRuntimeType.template.equals(re.getRuntimeType())) {
+				saveAsTemplateLink = LinkFactory.createToolLink("save.as.template", translate("tools.save.as.template"), this, "o_icon o_icon-fw o_icon_template");
+				Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
+				Integer copyWithWizardIndex = toolsDropdown.getComponentIndex(copyWithWizardLink);
+				if (copyWithWizardIndex != null) {
+					toolsDropdown.addComponent(copyWithWizardIndex + 1, saveAsTemplateLink);
+				} else if (copyIndex != null) {
+					toolsDropdown.addComponent(copyIndex + 1, saveAsTemplateLink);
+				}
 			}
 		}
 	}
