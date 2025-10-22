@@ -38,7 +38,7 @@ public class CreditPointModule extends AbstractSpringModule implements ConfigOnO
 
 	private static final String KEY_ENABLED = "credit.point.enabled";
 	
-	@Value("${credit.point.enabled:true}")
+	@Value("${credit.point.enabled:false}")
 	private boolean enabled;
 	
 	@Autowired
