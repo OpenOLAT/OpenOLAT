@@ -22,7 +22,6 @@ package org.olat.modules.creditpoint;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.PriceAmountFormat;
@@ -47,9 +46,16 @@ public class CreditPointFormat {
 		return i18nModule;
 	}
 	
+	/**
+	 * @param points The points
+	 * @return A value for UI (not input field)
+	 */
 	public static final String format(BigDecimal points) {
 		PriceAmountFormat priceAmountFormat = getI18nModule().getPriceAmountFormat();
-		DecimalFormat decimalFormat = new DecimalFormat("#,##0", new DecimalFormatSymbols(Locale.ENGLISH));
+		DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+		decimalFormatSymbols.setDecimalSeparator('.');
+		decimalFormatSymbols.setGroupingSeparator(',');
+		DecimalFormat decimalFormat = new DecimalFormat("#,###.###", decimalFormatSymbols);
 		String formatted = decimalFormat.format(points);
 		return formatted
 				.replace(',', 'G').replace('.', 'D')
@@ -59,5 +65,12 @@ public class CreditPointFormat {
 	public static final String format(BigDecimal points, CreditPointSystem system) {
 		String formattedPoints = format(points);
 		return formattedPoints + " " + system.getLabel();
+	}
+	
+	public static final String formatForInputField(BigDecimal points) {
+		DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+		decimalFormatSymbols.setDecimalSeparator('.');
+		DecimalFormat decimalFormat = new DecimalFormat("##.###", decimalFormatSymbols);
+		return decimalFormat.format(points);
 	}
 }

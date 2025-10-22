@@ -29,6 +29,7 @@ import org.olat.core.util.Util;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
+import org.olat.modules.creditpoint.CreditPointFormat;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.creditpoint.ui.CreditPointRepositoryEntryConfigController;
@@ -71,7 +72,7 @@ public class RepositoryEntryDetailsBenefitsController extends BasicController {
 		if(creditPointConfig != null && creditPointConfig.isEnabled()) {
 			mainVC.contextPut("hasCreditPoints", Boolean.TRUE);
 			
-			String amount = creditPointConfig.getCreditPoints().toString() + " " + creditPointConfig.getCreditPointSystem().getLabel();
+			String amount = CreditPointFormat.format(creditPointConfig.getCreditPoints(), creditPointConfig.getCreditPointSystem());
 			mainVC.contextPut("amount", amount);
 			
 			if(creditPointConfig.getExpiration()  != null && creditPointConfig.getExpiration().intValue() > 0) {
