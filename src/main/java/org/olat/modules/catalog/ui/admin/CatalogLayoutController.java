@@ -135,9 +135,9 @@ public class CatalogLayoutController extends FormBasicController {
 		cardViewSV.add(SelectionValues.entry(KEY_TITLE, translate("admin.card.view.title")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.teaserText.name(), translate("admin.card.view.teaser.text")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.authors.name(), translate("admin.card.view.authors")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.executionPeriod.name(), translate("admin.card.view.execution.period")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.mainLanguage.name(), translate("admin.card.view.main.language")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.expenditureOfWork.name(), translate("admin.card.view.expenditure.of.work")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.mainLanguage.name(), translate("admin.card.view.main.language")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.executionPeriod.name(), translate("admin.card.view.execution.period")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.location.name(), translate("admin.card.view.location")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.taxonomyLevels.name(), translate("admin.card.view.taxonomy.levels")));
 		cardViewEl = uifactory.addCheckboxesVertical("card.view", "admin.card.view.label", launchersCont, cardViewSV.keys(), cardViewSV.values(), 1);
