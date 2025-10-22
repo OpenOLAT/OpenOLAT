@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -93,6 +94,7 @@ import org.olat.modules.quality.generator.QualityPreview;
 import org.olat.modules.quality.generator.QualityPreviewStatus;
 import org.olat.modules.quality.generator.ui.PreviewDataModel.PreviewCols;
 import org.olat.modules.quality.ui.DataCollectionController;
+import org.olat.modules.quality.ui.QualityTitleController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.repository.LifecycleModule;
 import org.olat.repository.RepositoryEntry;
@@ -176,6 +178,12 @@ public abstract class AbstractPreviewListController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		QualityTitleController titleCtrl = new QualityTitleController(ureq, getWindowControl(),
+				"breadcrumb.previews",
+				"manual_user/area_modules/Quality_Management_Data_Collection_Preview/");
+		listenTo(titleCtrl);
+		formLayout.add(new ComponentWrapperElement(titleCtrl.getInitialComponent()));
+		
 		List<DateScope> scopes = ScopeFactory.dateScopesBuilder(getLocale())
 				.nextMonths(1)
 				.nextMonths(3)

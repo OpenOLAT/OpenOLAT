@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -148,11 +148,11 @@ public class QualityToDoListController extends ToDoTaskListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		
-		FormLayoutContainer headerCont = FormLayoutContainer.createVerticalFormLayout("header", getTranslator());
-		headerCont.setRootForm(mainForm);
-		formLayout.add(headerCont);
-		headerCont.setFormTitle(translate("data.collection.todos"));
-		headerCont.setFormInfo(translate("data.collection.todos.info"));
+		QualityTitleController titleCtrl = new QualityTitleController(ureq, getWindowControl(),
+				"data.collection.todos",
+				"manual_user/area_modules/Quality_Management_To-dos/");
+		listenTo(titleCtrl);
+		formLayout.add("title", new ComponentWrapperElement(titleCtrl.getInitialComponent()));
 		
 		createLink = uifactory.addFormLink("todo.create", formLayout, Link.BUTTON);
 		createLink.setIconLeftCSS("o_icon o_icon_add");

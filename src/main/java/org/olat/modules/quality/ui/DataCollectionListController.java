@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -177,6 +178,12 @@ public class DataCollectionListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		QualityTitleController titleCtrl = new QualityTitleController(ureq, getWindowControl(),
+				"breadcrumb.data.collections",
+				"manual_user/area_modules/Quality_Management_Data_Collections/");
+		listenTo(titleCtrl);
+		formLayout.add(new ComponentWrapperElement(titleCtrl.getInitialComponent()));
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.status, new DataCollectionStatusCellRenderer()));

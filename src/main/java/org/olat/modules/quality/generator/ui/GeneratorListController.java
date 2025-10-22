@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -60,6 +61,7 @@ import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorView;
 import org.olat.modules.quality.generator.ui.GeneratorDataModel.GeneratorCols;
+import org.olat.modules.quality.ui.QualityTitleController;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,6 +105,12 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		QualityTitleController titleCtrl = new QualityTitleController(ureq, getWindowControl(),
+				"breadcrumb.generators",
+				"manual_user/area_modules/Quality_Management_Data_Collection_Generators/");
+		listenTo(titleCtrl);
+		formLayout.add(new ComponentWrapperElement(titleCtrl.getInitialComponent()));
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		FlexiCellRenderer enabledRenderer = new BooleanCSSCellRenderer(getTranslator(),
 				"o_icon o_icon-lg o_icon_qual_gen_enabled", "o_icon o_icon-lg o_icon_qual_gen_disabled",
