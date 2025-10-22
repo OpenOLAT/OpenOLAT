@@ -388,6 +388,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.ceditor.manager.PageReferenceDAOTest.class,
 	org.olat.modules.ceditor.manager.PageToTaxonomyCompetenceDAOTest.class,
 	org.olat.modules.ceditor.manager.PageServiceTest.class,
+	org.olat.modules.creditpoint.CreditPointFormatTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointSystemDAOTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointWalletDAOTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointTransactionDAOTest.class,

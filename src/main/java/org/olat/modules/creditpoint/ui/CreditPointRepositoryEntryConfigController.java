@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
+import org.olat.modules.creditpoint.CreditPointFormat;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
@@ -115,7 +116,9 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		systemEl.setEnabled(editable && !managedCP);
 		systemEl.setMandatory(true);
 		
-		String points = creditPointConfig.getCreditPoints() == null ? null : creditPointConfig.getCreditPoints().toString();
+		String points = creditPointConfig.getCreditPoints() == null
+				? null
+				: CreditPointFormat.formatForInputField(creditPointConfig.getCreditPoints());
 		creditPointEl = uifactory.addTextElement("options.creditpoint.award", 8, points, formLayout);
 		creditPointEl.setEnabled(editable && !managedCP);
 		creditPointEl.setMandatory(true);
@@ -207,9 +210,12 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 			
 			if(StringHelper.containsNonWhitespace(creditPointEl.getValue())) {
 				try {
-					int val = Integer.valueOf(creditPointEl.getValue());
-					if(val <= 0) {
+					BigDecimal val = new BigDecimal(creditPointEl.getValue());
+					if(val.compareTo(BigDecimal.ZERO) < 0) {
 						creditPointEl.setErrorKey("form.error.positive.integer");
+						allOk &= false;
+					} else if(val.compareTo(new BigDecimal(Long.toString(val.longValue()))) != 0) {
+						creditPointEl.setErrorKey("form.error.nointeger");
 						allOk &= false;
 					}
 				} catch (NumberFormatException e) {

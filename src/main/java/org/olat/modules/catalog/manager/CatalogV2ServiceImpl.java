@@ -59,6 +59,7 @@ import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.model.CatalogEntryImpl;
 import org.olat.modules.catalog.model.RepositoryEntryInfos;
+import org.olat.modules.creditpoint.CreditPointFormat;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -217,7 +218,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			RepositoryEntryCreditPointConfiguration creditPointConf = repositoryEntryInfos.creditPointConfiguration();
 			String amount = creditPointConf == null || creditPointConf.getCreditPoints() == null
 					? null
-					: creditPointConf.getCreditPoints().toString() + " " + creditPointConf.getCreditPointSystem().getLabel();
+					: CreditPointFormat.format(creditPointConf.getCreditPoints(), creditPointConf.getCreditPointSystem());
 			catalogEntry.setCreditPointAmount(amount);
 		}
 		
