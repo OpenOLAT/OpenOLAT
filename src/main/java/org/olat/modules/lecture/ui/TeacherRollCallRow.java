@@ -174,6 +174,12 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 	public void setReasonLink(FormLink reasonLink) {
 		this.reasonLink = reasonLink;
 	}
+	
+	public void setReasonLinkVisible(boolean visible) {
+		if(reasonLink != null) {
+			reasonLink.setVisible(visible);
+		}
+	}
 
 	public FormLink getNoticeLink() {
 		return noticeLink;
