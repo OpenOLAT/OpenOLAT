@@ -454,7 +454,6 @@ public class CoursePlannerTest extends Deployments {
 			.exploreOffers()
 			.openCourse(elementName)
 			.login(participant)
-			.bookCourse(elementName)
 			.startCourse(elementName);
 		
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(browser);

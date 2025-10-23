@@ -1283,8 +1283,7 @@ public class CourseTest extends Deployments {
 			.openSearch()
 			.extendedSearch(title)
 			//book the course
-			.book(title)
-			.confirmBookCourse();
+			.book(title);
 		//check the course
 		CoursePageFragment bookedCourse = CoursePageFragment.getCourse(userBrowser);
 		bookedCourse
