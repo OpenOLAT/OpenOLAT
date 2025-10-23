@@ -103,7 +103,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 					? translate("CourseModule")
 					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 		}
-		return null;
+		return translate(entry.getOlatResource().getResourceableTypeName());
 	}
 
 	@Override

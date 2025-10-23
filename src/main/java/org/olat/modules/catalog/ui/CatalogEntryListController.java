@@ -536,6 +536,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 					? translate("CourseModule")
 					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 			row.setTranslatedTechnicalType(translatedType);
+		} else if (catalogEntry.getRepositoryEntryKey() != null) {
+			row.setTranslatedTechnicalType(translate(row.getOlatResource().getResourceableTypeName()));
 		} else if (StringHelper.containsNonWhitespace(catalogEntry.getCurriculumElementTypeName())) {
 			row.setTranslatedTechnicalType(catalogEntry.getCurriculumElementTypeName());
 		}

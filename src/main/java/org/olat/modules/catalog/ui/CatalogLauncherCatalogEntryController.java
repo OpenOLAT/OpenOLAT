@@ -187,6 +187,8 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 						? translate("CourseModule")
 						: nodeAccessService.getNodeAccessTypeName(type, getLocale());
 				item.setTranslatedTechnicalType(translatedType);
+			} else if (entry.getRepositoryEntryKey() != null) {
+				item.setTranslatedTechnicalType(translate(entry.getOlatResource().getResourceableTypeName()));
 			} else if (StringHelper.containsNonWhitespace(entry.getCurriculumElementTypeName())) {
 				item.setTranslatedTechnicalType(entry.getCurriculumElementTypeName());
 			}
