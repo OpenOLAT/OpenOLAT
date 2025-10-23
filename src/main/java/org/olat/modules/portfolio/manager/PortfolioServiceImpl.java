@@ -71,6 +71,7 @@ import org.olat.modules.ceditor.AssignmentStatus;
 import org.olat.modules.ceditor.AssignmentType;
 import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.CategoryToElement;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.ContentElement;
 import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.ceditor.ContentRoles;
@@ -86,7 +87,10 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.manager.PageSearchOptions;
 import org.olat.modules.ceditor.manager.PageToTaxonomyCompetenceDAO;
+import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
+import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.cemedia.Media;
@@ -1094,6 +1098,23 @@ public class PortfolioServiceImpl implements PortfolioService {
 			groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, ContentRoles.owner.name());
 		}
 		return page;
+	}
+
+	@Override
+	public void addContainerWithDefaultLayout(PageBody pageBody) {
+		if (pageBody == null || pageBody.getKey() == null) {
+			return;
+		}
+		PageBody reloadedPageBody = pageDao.loadPageBodyByKey(pageBody.getKey());
+
+		ContainerSettings containerSettings = new ContainerSettings();
+		ContainerLayout containerLayout = ContainerLayout.block_1col;
+		containerSettings.setType(containerLayout);
+		containerSettings.setNumOfColumns(containerLayout.numberOfBlocks());
+		ContainerPart containerPart = new ContainerPart();
+		containerPart.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
+		
+		pageDao.persistPart(reloadedPageBody, containerPart);
 	}
 
 	@Override

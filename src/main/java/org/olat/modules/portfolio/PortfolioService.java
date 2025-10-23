@@ -569,7 +569,14 @@ public interface PortfolioService {
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section);
 	
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section, Page pageDelegate);
-	
+
+	/**
+	 * Adds a container with the default layout to the provided page body.
+	 *
+	 * @param pageBody the PageBody object to which the container with the default layout will be added
+	 */
+	public void addContainerWithDefaultLayout(PageBody pageBody);
+
 	/**
 	 * Load a page with its primary key.
 	 * 

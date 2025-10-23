@@ -106,6 +106,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode implements Cour
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 			String pageTitle = StringHelper.containsNonWhitespace(getLongTitle()) ? getLongTitle() : getShortTitle();
 			Page page = portfolioService.appendNewPage(null, pageTitle, null, null, null, null);
+			portfolioService.addContainerWithDefaultLayout(page.getBody());
 			
 			PageService pageService = CoreSpringFactory.getImpl(PageService.class);
 			pageService.createLog(page, doer);
