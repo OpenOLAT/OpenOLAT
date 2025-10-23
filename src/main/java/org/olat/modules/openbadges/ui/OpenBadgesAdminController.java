@@ -39,7 +39,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.openbadges.OpenBadgesModule;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -184,7 +183,7 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		removeAsListenerAndDispose(globalBadgesCtrl);
 		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(TYPE_GLOBAL_BADGES, 0L), null);
 		globalBadgesCtrl = new BadgeClassesController(ureq, windowControl, null, null, null,
-				stackPanel, "manual_admin/administration/e-Assessment_openBadges/",
+				stackPanel, "manual_admin/administration/e-Assessment_openBadges/#global_badges",
 				"form.create.new.badge");
 		listenTo(globalBadgesCtrl);
 

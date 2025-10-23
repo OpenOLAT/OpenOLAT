@@ -109,7 +109,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("bigbluebutton.title");
 		setFormInfo("bigbluebutton.intro");
-		setFormContextHelp("manual_admin/administration/BigBlueButton_module/");
+		setFormContextHelp("manual_admin/administration/BigBlueButton_module/#tab_config");
 		formLayout.setElementCssClass("o_sel_bbb_admin_configuration");
 		String[] enabledValues = new String[]{ translate("enabled") };
 		

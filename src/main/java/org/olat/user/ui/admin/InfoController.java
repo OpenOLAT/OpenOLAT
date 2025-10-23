@@ -34,11 +34,12 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 class InfoController extends BasicController {
 	
-	public InfoController(UserRequest ureq, WindowControl wControl, String title, String description) {
+	public InfoController(UserRequest ureq, WindowControl wControl, String title, String description, String helpUrl) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("infos");
 		mainVC.contextPut("title", translate(title));
 		mainVC.contextPut("description", translate(description));
+		mainVC.contextPut("helpUrl", helpUrl);
 		putInitialPanel(mainVC);
 	}
 
