@@ -50,7 +50,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.forms.EvaluationFormDispatcher;
 import org.olat.modules.forms.EvaluationFormEmailExecutor;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -176,6 +179,20 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 			}
 		}
 		return uncontainerizedElements;
+	}
+
+	@Override
+	public void addContainerWithDefaultLayout(Form form) {
+		ContainerSettings containerSettings = new ContainerSettings();
+		ContainerLayout containerLayout = ContainerLayout.block_1col;
+		containerSettings.setType(containerLayout);
+		containerSettings.setNumOfColumns(containerLayout.numberOfBlocks());
+		
+		Container container = new Container();
+		container.setId(UUID.randomUUID().toString());
+		container.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
+		
+		form.addElement(container);
 	}
 
 	@Override

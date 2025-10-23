@@ -139,6 +139,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		}
 
 		Form form = new Form();
+		evaluationFormManager.addContainerWithDefaultLayout(form);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		XStreamHelper.writeObject(FormXStream.getXStream(), formFile, form);
 		return re;

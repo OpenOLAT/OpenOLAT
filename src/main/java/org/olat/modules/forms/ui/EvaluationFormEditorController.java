@@ -51,6 +51,7 @@ import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.event.ContainerRuleLinkEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.ContainerHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
@@ -104,6 +105,8 @@ public class EvaluationFormEditorController extends BasicController implements T
 	
 	@Autowired
 	private HelpModule helpModule;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			File formFile, DataStorage storage, boolean restrictedEdit, boolean restrictedEditWeight) {
@@ -118,6 +121,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 			form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		} else {
 			form = new Form();
+			evaluationFormManager.addContainerWithDefaultLayout(form);
 			persistForm();
 		}
 		

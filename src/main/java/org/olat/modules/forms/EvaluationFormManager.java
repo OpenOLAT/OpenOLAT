@@ -62,6 +62,13 @@ public interface EvaluationFormManager {
 	 */
 	public List<AbstractElement> getUncontainerizedElements(Form form);
 
+	/**
+	 * Adds a container with the default layout to the provided form.
+	 *
+	 * @param form the form to which the container with the default layout will be added
+	 */
+	public void addContainerWithDefaultLayout(Form form);
+
 	public EvaluationFormSurvey createSurvey(EvaluationFormSurveyIdentifier identifier, RepositoryEntry formEntry);
 	
 	public EvaluationFormSurveyRef createSurvey(EvaluationFormSurveyIdentifier identifier, EvaluationFormSurvey previous);
