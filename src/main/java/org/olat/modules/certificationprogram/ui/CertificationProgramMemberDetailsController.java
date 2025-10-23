@@ -152,6 +152,8 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	}
 	
 	private void loadRecertificationModel(UserRequest ureq) {
+		if(recertificationTableModel == null) return;// Nothing to do
+		
 		Date referencedate = DateUtils.getEndOfDay(ureq.getRequestTimestamp());
 		List<Certificate> certificates = certificationProgramService.getCertificates(assessedIdentity, certificationProgram);
 		List<CertificationProgramRecertificationRow> rows = certificates.stream()
