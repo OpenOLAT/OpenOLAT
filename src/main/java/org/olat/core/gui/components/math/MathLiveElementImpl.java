@@ -34,7 +34,8 @@ public class MathLiveElementImpl extends FormItemImpl implements MathLiveElement
 	
 	private boolean sendOnBlur;
 	private final MathLiveComponent component;
-	
+	private String placeholderText;
+
 	public MathLiveElementImpl(String name) {
 		super(name);
 		component = new MathLiveComponent(name, this);
@@ -68,6 +69,16 @@ public class MathLiveElementImpl extends FormItemImpl implements MathLiveElement
 	@Override
 	public void setValue(String value) {
 		component.setValue(value);
+	}
+
+	@Override
+	public String getPlaceholderText() {
+		return placeholderText;
+	}
+
+	@Override
+	public void setPlaceholderText(String placeholderText) {
+		this.placeholderText = placeholderText;
 	}
 
 	@Override

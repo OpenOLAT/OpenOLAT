@@ -78,6 +78,7 @@ public class MathLiveEditorController extends FormBasicController implements Pag
 		mathItem = uifactory.addMathLiveElement(cmpId, null, content, formLayout);
 		mathItem.setVirtualKeyboardMode(MathLiveVirtualKeyboardMode.onfocus);
 		mathItem.setSendOnBlur(true);
+		mathItem.setPlaceholderText(translate("math.placeholder"));
 		
 		((FormLayoutContainer)formLayout).contextPut("mathCmpId", cmpId);
 	}

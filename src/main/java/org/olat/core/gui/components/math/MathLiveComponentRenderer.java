@@ -63,8 +63,14 @@ public class MathLiveComponentRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(element.getValue())) {
 			sb.append(element.getValue());
 		}
-		sb.append("</textarea>")
-		  .append("<math-field id='o_mlive_").append(dispatchId).append("' virtual-keyboard-mode='").append(mode.name()).append("'>");
+		sb.append("</textarea>");
+		sb.append("<math-field ");
+		if (StringHelper.containsNonWhitespace(element.getPlaceholderText())) {
+			sb.append("placeholder=\"\\text{");
+			sb.append(element.getPlaceholderText());
+			sb.append("}\" ");
+		}
+		sb.append("id='o_mlive_").append(dispatchId).append("' virtual-keyboard-mode='").append(mode.name()).append("'>");
 		if(StringHelper.containsNonWhitespace(element.getValue())) {
 			sb.append(element.getValue());
 		}

@@ -41,4 +41,7 @@ public interface MathLiveElement extends FormItem {
 
 	public void setValue(String value);
 
+	public String getPlaceholderText();
+	
+	public void setPlaceholderText(String placeholderText);
 }
