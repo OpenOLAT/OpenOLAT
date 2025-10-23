@@ -97,7 +97,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("adobeconnect.title");
 		setFormInfo("adobeconnect.intro");
-		setFormContextHelp("manual_user/learningresources/Course_Element_OpenMeetings/");
+		setFormContextHelp("manual_user/learningresources/Course_Element_Adobe_Connect/");
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("adobeconnect.module.enabled", formLayout, enabledKeys, enabledValues);
 		moduleEnabled.select(enabledKeys[0], adobeConnectModule.isEnabled());

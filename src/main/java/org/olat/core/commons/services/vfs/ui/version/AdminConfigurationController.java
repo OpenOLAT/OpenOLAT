@@ -113,7 +113,7 @@ public class AdminConfigurationController extends FormBasicController implements
 		confCont.setRootForm(mainForm);
 		formLayout.add(confCont);
 		confCont.setFormTitle(translate("version.title"));
-		confCont.setFormContextHelp("manual_admin/administration/Files_and_Folders/");
+		confCont.setFormContextHelp("manual_admin/administration/Files_and_Folders/#files_and_folders_configuration");
 
 		enabledEl = uifactory.addToggleButton("version.enabled", "version.enabled", translate("on"), translate("off"),
 				confCont);

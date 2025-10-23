@@ -13,7 +13,7 @@
 	<legend>
 		<i class="o_icon o_icon_badge"> </i>
 		$title
-		#if($r.isNull(contextHelp)) $r.contextHelpWithWrapper($contextHelp) #end
+		#if($r.isNotNull($contextHelp)) $r.contextHelpWithWrapper($contextHelp) #end
 	</legend>
 	<div class="o_button_group">
 		#if($r.available("create") && $r.visible("create"))

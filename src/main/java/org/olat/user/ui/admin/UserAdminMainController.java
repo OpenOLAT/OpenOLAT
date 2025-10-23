@@ -440,7 +440,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private Controller createInfoController(UserRequest ureq, WindowControl bwControl, Presentation template) {
-		return new InfoController(ureq, bwControl, template.getTitleKey(), template.getDescriptionKey());
+		return new InfoController(ureq, bwControl, template.getTitleKey(), template.getDescriptionKey(), template.getHelpUrl());
 	}
 
 	private UsermanagerUserSearchController createUserSearchControllerAfterDate(UserRequest ureq, WindowControl bwControl, int unit, int amount) {
@@ -570,49 +570,57 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		// Sub menu with organizations
 		organisationsNode = appendNode("menu.organisations", "menu.organisations.alt",
-				new Presentation("menu.organisations", "organisations.intro"), "o_sel_useradmin_organisations", root);
+				new Presentation("menu.organisations", "organisations.intro", "manual_admin/usermanagement/Search_Users/#organizations"),
+				"o_sel_useradmin_organisations", root);
 		buildTreeOrganisationSubMenu(organisationsNode);
 
 		// Sub menu organizations roles
 		GenericTreeNode organisationsRolesNode = appendNode("menu.organisations.roles", "menu.organisations.roles.alt",
-				new Presentation("menu.organisations.roles", "menu.organisations.roles.intro"), "o_sel_useradmin_organisationsroles", root);
+				new Presentation("menu.organisations.roles", "menu.organisations.roles.intro", "manual_admin/usermanagement/Search_Users/#organizational-roles"),
+				"o_sel_useradmin_organisationsroles", root);
 		buildTreeOrganisationsRoles(organisationsRolesNode);
 		// Sub menu course roles
 		GenericTreeNode resourcesRolesNode = appendNode("menu.resources.roles", "menu.resources.roles.alt",
-				new Presentation("menu.resources.roles", "menu.resources.roles.intro"), "o_sel_useradmin_resourcesroles", root);
+				new Presentation("menu.resources.roles", "menu.resources.roles.intro", "manual_admin/usermanagement/Search_Users/#course-roles"),
+				"o_sel_useradmin_resourcesroles", root);
 		buildTreeResourcesRoles(resourcesRolesNode);
 		// Sub menu groups roles
 		GenericTreeNode groupsRolesNode = appendNode("menu.groups.roles", "menu.groups.roles.alt",
-				new Presentation("menu.groups.roles", "menu.groups.roles.intro"), "o_sel_useradmin_groupsroles", root);
+				new Presentation("menu.groups.roles", "menu.groups.roles.intro", "manual_admin/usermanagement/Search_Users/#group-roles"),
+				"o_sel_useradmin_groupsroles", root);
 		buildTreeBusinessGroupsRoles(groupsRolesNode);
 		//Sub menu curriculum roles
 		if(curriculumModule.isEnabled()) {
 			GenericTreeNode curriculumsRolesNode = appendNode("menu.curriculums.roles", "menu.curriculums.roles.alt",
-					new Presentation("menu.curriculums.roles", "menu.curriculums.roles.intro"), "o_sel_useradmin_curriculumsroles", root);
+					new Presentation("menu.curriculums.roles", "menu.curriculums.roles.intro", "manual_admin/usermanagement/Search_Users/#course-planner-roles"),
+					"o_sel_useradmin_curriculumsroles", root);
 			buildTreeCurriculumsRoles(curriculumsRolesNode);
 		}
 		// Sub menu identity to identity relations
 		if(securityModule.isRelationRoleEnabled()) {
 			List<RelationRole> roles = relationshipService.getAvailableRoles();
 			if(!roles.isEmpty()) {
-			
 				GenericTreeNode relationsNode = appendNode("menu.relations", "menu.relations.alt",
-						new Presentation("menu.relations", "menu.relations.intro"), "o_sel_useradmin_relations", root);
+						new Presentation("menu.relations", "menu.relations.intro", "manual_admin/usermanagement/Search_Users/"),
+						"o_sel_useradmin_relations", root);
 				buildTreeRelationsSubMenu(relationsNode, roles);
 			}
 		}
 		// User type
 		GenericTreeNode typeNode = appendNode("menu.user.type", "menu.user.type.alt",
-				new Presentation("menu.user.type", "menu.user.type.intro"), "o_sel_useradmin_user_type", root);
+				new Presentation("menu.user.type", "menu.user.type.intro", "manual_admin/usermanagement/Search_Users/#account-types")
+				, "o_sel_useradmin_user_type", root);
 		buildTreeUserTypeSubMenu(typeNode);
 		
 		// Sub menu status
 		GenericTreeNode statusNode = appendNode("menu.status", "menu.status.alt",
-				new Presentation("menu.status", "menu.status.intro"), "o_sel_useradmin_status", root);
+				new Presentation("menu.status", "menu.status.intro", "manual_admin/usermanagement/Search_Users/#status"),
+				"o_sel_useradmin_status", root);
 		buildTreeStatusSubMenu(statusNode);
 		// Sub menu queries
 		GenericTreeNode queriesNode = appendNode("menu.menuqueries", "menu.menuqueries.alt",
-				new Presentation("menu.menuqueries", "queries.intro"), "o_sel_useradmin_menuqueries", root);
+				new Presentation("menu.menuqueries", "queries.intro", "manual_admin/usermanagement/Search_Users/#predefined-search-queries"),
+				"o_sel_useradmin_menuqueries", root);
 		buildTreeQueriesSubMenu(queriesNode);
 		buildTreeExtensionsSubMenu(ureq, queriesNode);
 		return gtm;
@@ -855,10 +863,12 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private static class Presentation {
 		private final String titleKey;
 		private final String descriptionKey;
+		private final String helpUrl;
 		
-		public Presentation(String titleKey, String descriptionKey) {
+		public Presentation(String titleKey, String descriptionKey, String helpUrl) {
 			this.titleKey = titleKey;
 			this.descriptionKey = descriptionKey;
+			this.helpUrl = helpUrl;
 		}
 
 		public String getTitleKey() {
@@ -867,6 +877,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 		public String getDescriptionKey() {
 			return descriptionKey;
+		}
+
+		public String getHelpUrl() {
+			return helpUrl;
 		}
 	}
 	

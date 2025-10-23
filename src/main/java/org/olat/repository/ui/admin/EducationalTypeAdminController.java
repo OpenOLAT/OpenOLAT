@@ -89,7 +89,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("educational.types");
-		setFormContextHelp("manual_user/learningresources/Set_up_info_page/#metadata");
+		setFormContextHelp("manual_admin/administration/Modules_Course/#implementation_formats");
 		
 		dummyCont = FormLayoutContainer.createBareBoneFormLayout("dummy", getTranslator());
 		dummyCont.setRootForm(mainForm);
