@@ -2019,6 +2019,12 @@ table.o_ce_table {
 			color: $input-color-placeholder;
 		}
 	}
+	
+	.o_ce_math_run {
+		.o_math_placeholder {
+			color: $input-color-placeholder;
+		}
+	}
 
 	.o_ce_layout_predefined,
 	.o_ce_layout_zero,

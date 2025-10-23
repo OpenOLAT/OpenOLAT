@@ -19,13 +19,25 @@
  */
 package org.olat.modules.ceditor.ui;
 
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.math.MathLiveComponent;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.model.MathElement;
+import org.olat.modules.ceditor.model.MathSettings;
+import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
 /**
@@ -35,8 +47,10 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
  *
  */
 public class MathLiveRunComponent extends PageRunComponent {
-	
-	public MathLiveRunComponent(MathLiveComponent component) {
+
+	private static final AtomicInteger idGenerator = new AtomicInteger();
+
+	public MathLiveRunComponent(Component component) {
 		super(component);
 	}
 	
@@ -45,11 +59,48 @@ public class MathLiveRunComponent extends PageRunComponent {
 		if ((source instanceof ModalInspectorController || source instanceof PageElementEditorController)
 				&& event instanceof ChangePartEvent changePartEvent) {
 			PageElement element = changePartEvent.getElement();
-			if (element instanceof MathElement mathElement &&
-					getComponent() instanceof MathLiveComponent mathLiveComponent) {
-				mathLiveComponent.setValue(mathElement.getContent());
-				mathLiveComponent.setOuterWrapperClass(MathElement.toCssClass(mathElement.getMathSettings()));
+			if (element instanceof MathElement mathElement) {
+				if (getComponent() instanceof MathLiveComponent mathLiveComponent) {
+					if (StringHelper.containsNonWhitespace(mathElement.getContent())) {
+						mathLiveComponent.setValue(mathElement.getContent());
+						mathLiveComponent.setOuterWrapperClass(MathElement.toCssClass(mathElement.getMathSettings()));
+					} else {
+						setComponent(getPlaceholderComponent(mathElement, ureq.getLocale()));
+					}
+				}
+				if (getComponent() instanceof TextComponent) {
+					if (StringHelper.containsNonWhitespace(mathElement.getContent())) {
+						setComponent(getReadOnlyComponent(mathElement));
+					}
+				}
 			}
 		}
+	}
+	
+	public static Component getEditableComponent(MathPart mathPart, Locale locale) {
+		if (StringHelper.containsNonWhitespace(mathPart.getContent())) {
+			return getReadOnlyComponent(mathPart);
+		} else {
+			return getPlaceholderComponent(mathPart, locale);
+		}
+	}
+	
+	public static MathLiveComponent getReadOnlyComponent(MathElement mathElement) {
+		MathLiveComponent cmp = new MathLiveComponent("mathCmp" + CodeHelper.getRAMUniqueID());
+		String outerWrapperClass = MathElement.toCssClass(mathElement.getMathSettings());
+		cmp.setOuterWrapperClass(outerWrapperClass);
+		cmp.setDomWrapperElement(DomWrapperElement.span);
+		cmp.setValue(mathElement.getContent());
+		cmp.setElementCssClass("o_ce_math");
+		return cmp;
+	}
+	
+	public static TextComponent getPlaceholderComponent(MathElement mathElement, Locale locale) {
+		String placeholder = Util.createPackageTranslator(TextRunComponent.class, locale).translate("math.placeholder");
+		String htmlContent = MathElement.toHtmlPlaceholder(placeholder);
+		MathSettings mathSettings = mathElement.getMathSettings();
+		String cssClass = MathElement.toCssClassWithMarkerClass(mathSettings);
+		return TextFactory.createTextComponentFromString("math_" + idGenerator.incrementAndGet(),
+				htmlContent, cssClass, false, null);
 	}
 }

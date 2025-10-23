@@ -66,4 +66,12 @@ public interface MathElement extends PageElement {
 		}
 		return css + BlockLayoutSettings.getPredefined().getCssClass(false);
 	}
+	
+	public static String toHtmlPlaceholder(String placeholder) {
+		return "<span class=\"o_math_placeholder\"><i class=\"o_icon o_icon-fw o_icon_math\"> </i> " + placeholder + "</span>";
+	}
+	
+	public static String toCssClassWithMarkerClass(MathSettings mathSettings) {
+		return toCssClass(mathSettings);
+	}
 }

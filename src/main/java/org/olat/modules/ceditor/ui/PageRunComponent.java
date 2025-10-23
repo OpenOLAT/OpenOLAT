@@ -36,7 +36,7 @@ import org.olat.modules.ceditor.PageRunElement;
  */
 public class PageRunComponent implements PageRunElement, ControllerEventListener {
 	
-	private final Component component;
+	private Component component;
 	
 	public PageRunComponent(Component component) {
 		this.component = component;
@@ -47,6 +47,10 @@ public class PageRunComponent implements PageRunElement, ControllerEventListener
 		return component;
 	}
 
+	public void setComponent(Component component) {
+		this.component = component;
+	}
+	
 	@Override
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
 		return true;
