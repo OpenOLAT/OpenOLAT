@@ -1,0 +1,88 @@
+/* The bento box layout */
+
+$o-bento-width-without-gap: $o-page-width-max - ($o-bento-cols * $o-bento-gap) + $o-bento-gap;
+$o-bento-row-min-height: math.div($o-bento-width-without-gap, $o-bento-cols);
+$o-bento-half-columns-width: math.div($o-page-width-max, 2);
+$o-bento-half-columns: math.div($o-bento-cols, 2);
+
+.o_bento_container {
+	container-type: inline-size;
+}
+.o_bento {
+	// Grid variables
+	--o-bento-cols: #{$o-bento-cols};
+
+	// Only half as much columns on small screens
+	@container (width < #{$o-bento-half-columns-width}) {
+		--o-bento-cols: #{$o-bento-half-columns}
+	}
+	
+	// The entire default width of OpenOlat is filled with 8 1x1 squares.
+	--o-bento-row-min-height: #{$o-bento-row-min-height};
+	
+	display: grid;
+	gap: #{$o-bento-gap};
+	
+	// Regular grid with columns of equal width.
+	// The entire default width of OpenOlat is filled with 8 1x1 squares.
+	grid-template-columns: repeat(var(--o-bento-cols), minmax(0, 1fr));
+	grid-auto-rows: minmax(var(--o-bento-row-min-height), auto);
+	
+	// This tells the grid algorithm to fill in gaps where possible with smaller grid items.
+	// grid-auto-flow: dense;
+	
+	// Never wider than the available space and no wider than the default OpenOlat width
+	max-width: min($o-page-width-max, 100%);
+}
+
+.o_bento_box {
+	padding: #{$o-bento-box-padding};
+	min-height: var(--o-bento-row-min-height);
+	border-radius: #{$o-bento-border-radius};
+	
+	&.o_bento_box_1_1 {
+		// no settings yet
+	}
+	&.o_bento_box_1_2 {
+		grid-column: span 1;
+		grid-row: span 2;
+		min-height: calc(2 * var(--o-bento-row-min-height));
+	}
+	&.o_bento_box_1_4 {
+		grid-column: span 1;
+		grid-row: span 4;
+		min-height: calc(4 * var(--o-bento-row-min-height));
+	}
+	&.o_bento_box_2_1 {
+		grid-column: span 2;
+	}
+	&.o_bento_box_2_2 {
+		grid-column: span 2;
+		grid-row: span 2;
+		min-height: calc(2 * var(--o-bento-row-min-height));
+	}
+	&.o_bento_box_2_4 {
+		grid-column: span 2;
+		grid-row: span 4;
+		min-height: calc(4 * var(--o-bento-row-min-height));
+	}
+	&.o_bento_box_4_1 {
+		grid-column: span 4;
+	}
+	&.o_bento_box_4_2 {
+		grid-column: span 4;
+		grid-row: span 2;
+		min-height: calc(2 * var(--o-bento-row-min-height));
+	}
+	&.o_bento_box_4_4 {
+		grid-column: span 4;
+		grid-row: span 4;
+		min-height: calc(4 * var(--o-bento-row-min-height));
+	}
+}
+
+.o_bento_gui_demo {
+	.o_bento_box {
+		border: 2px solid $brand-primary;
+	}
+}

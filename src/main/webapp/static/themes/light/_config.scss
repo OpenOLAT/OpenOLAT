@@ -514,6 +514,12 @@ $o-button-primary-light-hover-bg			: $btn-primary-bg !default;
 $o-button-primary-light-hover-color		: o-a11y-color($btn-primary-color, $o-button-primary-light-hover-bg) !default;
 $o-button-primary-light-hover-border		: $o-button-primary-light-hover-bg !default;
 
+/* Bento layout */
+$o-bento-cols							: 8 !default;
+$o-bento-gap							: 10px !default;
+$o-bento-border-radius					: $panel-border-radius !default;
+$o-bento-box-padding					: $panel-body-padding !default;
+
 /* Login page */
 $o-login-header-color			: $brand-primary !default;
 $o-login-bg-color				: rgba(255,255,255,0.95) !default;
