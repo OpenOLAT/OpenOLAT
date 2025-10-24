@@ -19,9 +19,13 @@
  */
 package org.olat.modules.lecture.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -29,6 +33,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -39,11 +44,16 @@ import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.restapi.BigBlueButtonMeetingVO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -73,7 +83,8 @@ public class LectureBlockWebService {
 	private static final Logger log = Tracing.createLoggerFor(LectureBlockWebService.class);
 	
 	private final RepositoryEntry entry;
-	private final LectureBlock lectureBlock;
+	private final boolean administrator;
+	private LectureBlock lectureBlock;
 	
 	@Autowired
 	private DB dbInstance;
@@ -82,17 +93,22 @@ public class LectureBlockWebService {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private LectureBlockDAO lectureBlockDao;
+	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
-	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry) {
+	public LectureBlockWebService(LectureBlock lectureBlock, RepositoryEntry entry, boolean administrator) {
 		this.entry = entry;
 		this.lectureBlock = lectureBlock;
+		this.administrator = administrator;
 	}
 	
 	/**
@@ -109,7 +125,7 @@ public class LectureBlockWebService {
 	@ApiResponse(responseCode = "404", description = "Not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getLectureBlock() {
-		return Response.ok(new LectureBlockVO(lectureBlock, entry.getKey())).build();
+		return Response.ok(LectureBlockVO.valueOf(lectureBlock, entry.getKey())).build();
 	}
 	
 	@POST
@@ -127,7 +143,7 @@ public class LectureBlockWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		LectureBlock movedLectureBlock = lectureService.moveLectureBlock(lectureBlock, newEntry);
-		return Response.ok(new LectureBlockVO(movedLectureBlock, movedLectureBlock.getEntry().getKey())).build();
+		return Response.ok(LectureBlockVO.valueOf(movedLectureBlock, movedLectureBlock.getEntry().getKey())).build();
 	}
 	
 
@@ -327,6 +343,128 @@ public class LectureBlockWebService {
 		
 		Status status = changed ? Status.OK : Status.NOT_MODIFIED;
 		return Response.ok(status).build();
+	}
+
+	@GET
+	@Path("bigbluebuttonmeeting")
+	@Operation(summary = "Return the BigBlueButton meeting of the lecture block if any",
+			description = "Return the BigBlueButton meeting of the lecture block if any")
+	@ApiResponse(responseCode = "200", description = "The BigBlueButton meeting", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = BigBlueButtonMeetingVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = BigBlueButtonMeetingVO.class)) })
+	@ApiResponse(responseCode = "204", description = "The lecture block don't have an online meeting")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getBigBlueButtonMeeting() {
+		BigBlueButtonMeeting meeting = lectureBlock.getBBBMeeting();
+		if(meeting == null) {
+			return Response.noContent().status(Status.NO_CONTENT).build();
+		}
+		return Response.ok(BigBlueButtonMeetingVO.valueOf(meeting)).build();
+	}
+	
+	/**
+	 * Create or update a BigBlueButton meeting.
+	 * 
+	 * @param block The meeting
+	 * @return The updated / created meeting.
+	 */
+	@PUT
+	@Path("bigbluebuttonmeeting")
+	@Operation(summary = "Create or update a BigBlueButton meeting", description = "Create or update a BigBlueButton meeting")
+	@ApiResponse(responseCode = "200", description = "The updated online meeting",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = BigBlueButtonMeetingVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = BigBlueButtonMeetingVO.class))
+				})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
+	@ApiResponse(responseCode = "406", description = "Template is missing or slot is not available")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putBigBlueButtonMeeting(BigBlueButtonMeetingVO meeting, @Context HttpServletRequest httpRequest) {
+		return saveBigBlueButtonMeeting(meeting, httpRequest);
+	}
+	
+	/**
+	 * Create or update a BigBlueButton meeting.
+	 * 
+	 * @param block The meeting
+	 * @return The updated / created meeting.
+	 */
+	@POST
+	@Path("bigbluebuttonmeeting")
+	@Operation(summary = "Create or update a BigBlueButton meeting", description = "Create or update a BigBlueButton meeting")
+	@ApiResponse(responseCode = "200", description = "The updated online meeting",
+			content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = BigBlueButtonMeetingVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = BigBlueButtonMeetingVO.class))
+				})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
+	@ApiResponse(responseCode = "406", description = "Template is missing or slot is not available")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postBigBlueButtonMeeting(BigBlueButtonMeetingVO meeting, @Context HttpServletRequest httpRequest) {
+		return saveBigBlueButtonMeeting(meeting, httpRequest);
+	}
+	
+	private Response saveBigBlueButtonMeeting(BigBlueButtonMeetingVO meetingVo, HttpServletRequest httpRequest) {
+		if(!administrator) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		if(meetingVo.getKey() == null && meetingVo.getTemplateKey() == null) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
+		
+		Identity doer = getIdentity(httpRequest);
+		if(lectureBlock.getBBBMeeting() != null && lectureBlock.getBBBMeeting().getKey().equals(meetingVo.getKey())) {
+			BigBlueButtonMeeting bigBlueButtonMeeting = lectureBlock.getBBBMeeting();
+			if(meetingVo.getName() != null) {
+				bigBlueButtonMeeting.setName(meetingVo.getName());
+			}
+			lectureBlock = lectureService.save(lectureBlock, null);
+			return Response.ok(BigBlueButtonMeetingVO.valueOf(lectureBlock.getBBBMeeting())).build();
+		} else if(lectureBlock.getBBBMeeting() == null && meetingVo.getKey() == null) {
+			BigBlueButtonMeetingTemplate template = bigBlueButtonManager.getTemplate(meetingVo.getTemplateKey());
+			if(template == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			
+			boolean slotAvailable = bigBlueButtonManager.isSlotAvailable(null, template,
+					lectureBlock.getStartDate(), meetingVo.getLeadTime(), lectureBlock.getEndDate(), meetingVo.getFollowupTime());
+			if(slotAvailable) {
+				BigBlueButtonMeeting bigBlueButtonMeeting = bigBlueButtonManager.createAndPersistMeeting(meetingVo.getName(), entry, null, null, doer);
+				bigBlueButtonMeeting.setLeadTime(meetingVo.getLeadTime());
+				bigBlueButtonMeeting.setFollowupTime(meetingVo.getFollowupTime());
+				bigBlueButtonMeeting.setTemplate(template);
+				lectureBlock.setBBBMeeting(bigBlueButtonMeeting);
+				lectureBlock = lectureService.save(lectureBlock, null);
+				return Response.ok(BigBlueButtonMeetingVO.valueOf(lectureBlock.getBBBMeeting())).build();
+			}
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
+		return Response.ok().status(Status.NO_CONTENT).build();
+	}
+	
+	@DELETE
+	@Path("bigbluebuttonmeeting")
+	@Operation(summary = "Delete BigBlueButton meeting", description = "Delete BigBlueButton meeting")
+	@ApiResponse(responseCode = "200", description = "Meeting deleted successfully")
+	@ApiResponse(responseCode = "304", description = "No meeting to delete")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "Not found")
+	public Response deleteBigBlueButtonMeeting() {
+		BigBlueButtonMeeting bigBlueButtonMeeting = lectureBlock.getBBBMeeting();
+		if(bigBlueButtonMeeting != null) {
+			lectureBlock.setBBBMeeting(null);
+			lectureBlock = lectureBlockDao.update(lectureBlock);
+			bigBlueButtonManager.deleteMeeting(bigBlueButtonMeeting, null);
+			dbInstance.commit();
+			return Response.ok().build();
+		}
+		return Response.ok(Status.NOT_MODIFIED).build();
 	}
 	
 	@GET

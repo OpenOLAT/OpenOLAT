@@ -23,7 +23,6 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.parseDate;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +68,6 @@ public class LectureBlocksRootWebService {
 	@Autowired
 	private LectureService lectureService;
 	
-	
 	/**
 	 * Return the lecture blocks of the specified course or repository entry.
 	 * 
@@ -103,11 +101,11 @@ public class LectureBlocksRootWebService {
 		}
 		searchParams.setManager(getIdentity(httpRequest));
 		List<LectureBlock> blockList = lectureService.getLectureBlocks(searchParams, -1, null);
-		List<LectureBlockVO> voList = new ArrayList<>(blockList.size());
-		for(LectureBlock block:blockList) {
-			voList.add(new LectureBlockVO(block, block.getEntry().getKey()));
+		LectureBlockVO[] voes = new LectureBlockVO[blockList.size()];
+		for(int i=blockList.size(); i-->0; ) {
+			LectureBlock block = blockList.get(i); 
+			voes[i] = LectureBlockVO.valueOf(block, block.getEntry().getKey());
 		}
-		LectureBlockVO[] voes = voList.toArray(new LectureBlockVO[voList.size()]);
 		return Response.ok(voes).build();
 	}
 

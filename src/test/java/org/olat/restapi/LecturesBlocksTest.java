@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -51,6 +54,10 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.restapi.BigBlueButtonMeetingVO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -83,9 +90,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 /**
  * 
  * 
@@ -111,6 +115,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
@@ -158,6 +164,87 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlockVO blockVo = voList.get(0);
 		Assert.assertEquals(block.getKey(), blockVo.getKey());
 		Assert.assertEquals(entry.getKey(), blockVo.getRepoEntryKey());
+	}
+	
+	
+	/**
+	 * Get the list of lecture block with meetings
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getLectureBlockWithBigBlueButtonMeeting()
+	throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		LectureBlock block = createLectureBlock(entry);
+
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
+		BigBlueButtonMeetingTemplate template = templates.get(0);
+		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting("Big blue button 1", entry, null, null, author);
+		meeting.setTemplate(template);
+		block.setBBBMeeting(meeting);
+		block = lectureService.save(block, null);
+
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("lectureblocks").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<LectureBlockVO> voList = parseLectureBlockArray(response.getEntity());
+		Assert.assertNotNull(voList);
+		Assert.assertEquals(1, voList.size());
+		LectureBlockVO blockVo = voList.get(0);
+		Assert.assertEquals(block.getKey(), blockVo.getKey());
+		Assert.assertEquals(entry.getKey(), blockVo.getRepoEntryKey());
+		
+		Long meetingKey = blockVo.getBigBlueButtonMeetingKey();
+		Assert.assertEquals(meeting.getKey(), meetingKey);
+	}
+	
+	
+	/**
+	 * Get the meeting of a specific of lecture block
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getBigBlueButtonMeetingOfLectureBlock()
+	throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		LectureBlock block = createLectureBlock(entry);
+
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
+		BigBlueButtonMeetingTemplate template = templates.get(0);
+		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting("Big blue button 2", entry, null, null, author);
+		meeting.setTemplate(template);
+		block.setBBBMeeting(meeting);
+		block = lectureService.save(block, null);
+		meeting = block.getBBBMeeting();
+
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("lectureblocks").path(block.getKey().toString()).path("bigbluebuttonmeeting").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		BigBlueButtonMeetingVO meetingVo = conn.parse(response, BigBlueButtonMeetingVO.class);
+		Assert.assertNotNull(meetingVo);
+		Assert.assertEquals(meeting.getKey(), meetingVo.getKey());
 	}
 	
 	/**
@@ -250,6 +337,100 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		Assert.assertEquals(externalId, dbBlock.getExternalId());
 		Assert.assertNotNull(dbBlock.getStartDate());
 		Assert.assertNotNull(dbBlock.getEndDate());
+	}
+	
+	@Test
+	public void putLecturesBlockInCourseWithBigBlueButtonMeeting()
+	throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		BigBlueButtonMeetingTemplate template = bigBlueButtonManager.createAndPersistTemplate("Lectures-" + random());
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		String externalId = UUID.randomUUID().toString();
+		LectureBlockVO lectureBlockVo = new LectureBlockVO();
+		lectureBlockVo.setTitle("New block");
+		lectureBlockVo.setDescription("A little description");
+		lectureBlockVo.setPlannedLectures(4);
+		lectureBlockVo.setExternalId(externalId);
+		lectureBlockVo.setExternalRef("lot-of-0001");
+		lectureBlockVo.setStartDate(new Date());
+		lectureBlockVo.setEndDate(new Date());
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString()).path("lectureblocks").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, lectureBlockVo);
+		HttpResponse response = conn.execute(method);
+		// check the response
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+		// Check the lecture block
+		LectureBlockVO blockVo = conn.parse(response.getEntity(), LectureBlockVO.class);
+		
+		// Set an online meeting
+		BigBlueButtonMeetingVO meetingVo = new BigBlueButtonMeetingVO();
+		meetingVo.setName("New block meeting");
+		meetingVo.setLeadTime(15);
+		meetingVo.setFollowupTime(20);
+		meetingVo.setTemplateKey(template.getKey());
+		
+		URI meetingUri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString()).path("lectureblocks")
+				.path(blockVo.getKey().toString()).path("bigbluebuttonmeeting").build();
+		HttpPut meetingMethod = conn.createPut(meetingUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(meetingMethod, meetingVo);
+		HttpResponse meetingResponse = conn.execute(meetingMethod);
+		// check the response
+		Assertions.assertThat(meetingResponse.getStatusLine().getStatusCode()).isIn(200, 201);
+		
+		BigBlueButtonMeetingVO persistedMeetingVo = conn.parse(meetingResponse, BigBlueButtonMeetingVO.class);
+		Assert.assertNotNull(persistedMeetingVo);
+		Assert.assertNotNull(persistedMeetingVo.getKey());
+		Assert.assertNotNull(persistedMeetingVo.getStartDate());
+		Assert.assertNotNull(persistedMeetingVo.getEndDate());
+		Assert.assertEquals(15, persistedMeetingVo.getLeadTime());
+		Assert.assertEquals(20, persistedMeetingVo.getFollowupTime());
+	}
+	
+	
+	/**
+	 * Get the list of lecture block with meetings
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void deleteBigBlueButtonMeetingInLectureBlock()
+	throws IOException, URISyntaxException {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		LectureBlock block = createLectureBlock(entry);
+
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
+		BigBlueButtonMeetingTemplate template = templates.get(0);
+		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting("Big blue button 1", entry, null, null, author);
+		meeting.setTemplate(template);
+		block.setBBBMeeting(meeting);
+		block = lectureService.save(block, null);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("lectureblocks")
+				.path(block.getKey().toString()).path("bigbluebuttonmeeting").build();
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(block.getKey()));
+		Assert.assertNull(reloadedBlock.getBBBMeeting());
 	}
 	
 	/**

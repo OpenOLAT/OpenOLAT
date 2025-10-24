@@ -59,6 +59,39 @@ public class BigBlueButtonTemplatesWebService {
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	
+	
+	/**
+	 * Return the list of available templates
+	 * 
+	 * @param httpRequest  The HTTP request
+	 * @return An entity with templates
+	 */
+	@GET
+	@Operation(summary = "Return the list of meeting templates",
+		description = "Return the list of meeting templates")
+	@ApiResponse(responseCode = "200", description = "An array of BigBlueButton meeting templates",
+			content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = BigBlueButtonMeetingTemplateVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = BigBlueButtonMeetingTemplateVO.class)))
+				})
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@Path("")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getTemplates(@Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();
+		BigBlueButtonMeetingTemplateVO[] voes = new BigBlueButtonMeetingTemplateVO[templates.size()];
+		for(int i=templates.size(); i-->0; ) {
+			BigBlueButtonMeetingTemplate template = templates.get(i);
+			voes[i] = BigBlueButtonMeetingTemplateVO.valueOf(template);
+		}
+		return Response.ok(voes).build();
+	}
+	
 	/**
 	 * Return the curriculums a manager user is allowed to see.
 	 * 
@@ -68,10 +101,10 @@ public class BigBlueButtonTemplatesWebService {
 	@GET
 	@Operation(summary = "Return some statistics about used templates",
 		description = "Return some statistics about used templates")
-	@ApiResponse(responseCode = "200", description = "An array of BigBlueButton servers",
+	@ApiResponse(responseCode = "200", description = "An object with some statistics",
 			content = {
-					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = BigBlueButtonServerVO.class))),
-					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = BigBlueButtonServerVO.class)))
+					@Content(mediaType = "application/json", schema = @Schema(implementation = BigBlueButtonTemplatesStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = BigBlueButtonTemplatesStatisticsVO.class))
 				})
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@Path("statistics")

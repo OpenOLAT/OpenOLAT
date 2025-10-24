@@ -162,6 +162,8 @@ public interface BigBlueButtonManager {
 	public List<BigBlueButtonMeetingTemplate> getTemplates();
 	
 	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonTemplatePermissions> permissions);
+	
+	public BigBlueButtonMeetingTemplate getTemplate(Long key);
 
 	/**
 	 * Calculate the permissions of the specified identity for the repository entry or business group.

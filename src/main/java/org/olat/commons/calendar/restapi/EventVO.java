@@ -32,6 +32,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.util.DateUtils;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "eventVO")
@@ -55,7 +56,7 @@ public class EventVO {
 	
 	private EventLinkVO[] links;
 	
-	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
+	@Schema(requiredMode = RequiredMode.REQUIRED, description = "Action to be performed on managedFlags", allowableValues = { 
 			"all",
 			"details(all)",
 			"subject(details, all)",
