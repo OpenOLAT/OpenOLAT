@@ -110,7 +110,6 @@ public class LecturesListController extends FormBasicController implements Expor
 		this.userPropertyHandlers = userPropertyHandlers;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceNoticeEnabled = lectureModule.isAbsenceNoticeEnabled();
-		lectureModule.isAbsenceNoticeEnabled();
 		initForm(ureq);
 	}
 

@@ -38,6 +38,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
@@ -105,12 +106,15 @@ public class CurriculumElementLecturesController extends BasicController {
 		
 		Identity checkByIdentity = all ? null : getIdentity();
 		List<RepositoryEntry> entries;
+		List<CurriculumElement> elements;
 		if(element != null) {
 			entries = curriculumService
 					.getRepositoryEntriesWithLectures(element, checkByIdentity, withDescendants);
+			elements = List.of(element);
 		} else {
 			entries = curriculumService
 					.getRepositoryEntriesWithLectures(curriculum, checkByIdentity);
+			elements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
 		}
 		
 		List<RepositoryEntryRef> filterByEntry = new ArrayList<>(entries);
@@ -119,6 +123,7 @@ public class CurriculumElementLecturesController extends BasicController {
 		} else {
 			LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
 			params.setEntries(entries);
+			params.setCurriculumElements(List.copyOf(elements));
 			List<LectureBlockIdentityStatistics> rawStatistics = lectureService
 					.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
 			List<LectureBlockIdentityStatistics> aggregatedStatistics = lectureService.groupByIdentity(rawStatistics);

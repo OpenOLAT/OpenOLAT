@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
@@ -838,6 +839,11 @@ public class LectureBlockRollCallDAO {
 		if(params.hasEntries()) {
 			sb.append(" and re.key in (:repoEntryKeys)");
 		}
+		if(params.hasCurriculumElements()) {
+			sb.append(" and exists (select curElMember.key from curriculumelement as curElMember")
+			  .append("  where curElMember.group.key=bGroup.key and curElMember.key in (:curriculumElementKeys)")
+			  .append(")");
+		}
 		
 		Long curriculumKey = null;
 		String curriculumRef = null;
@@ -906,6 +912,12 @@ public class LectureBlockRollCallDAO {
 					.map(RepositoryEntryRef::getKey).collect(Collectors.toList());
 			rawQuery.setParameter("repoEntryKeys", repoEntryKeys);
 		}
+		if(params.hasCurriculumElements()) {
+			List<Long> elementKeys = params.getCurriculumElements().stream()
+					.map(CurriculumElementRef::getKey).collect(Collectors.toList());
+			rawQuery.setParameter("curriculumElementKeys", elementKeys);
+		}
+		
 		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
 			rawQuery.setParameter(entry.getKey(), entry.getValue());
 		}
