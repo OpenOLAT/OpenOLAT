@@ -47,6 +47,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.restapi.BigBlueButtonMeetingVO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -100,6 +101,8 @@ public class LectureBlockWebService {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
 	@Autowired
@@ -411,6 +414,9 @@ public class LectureBlockWebService {
 	}
 	
 	private Response saveBigBlueButtonMeeting(BigBlueButtonMeetingVO meetingVo, HttpServletRequest httpRequest) {
+		if(!bigBlueButtonModule.isEnabled() || !bigBlueButtonModule.isLecturesEnabled()) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
 		if(!administrator) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
@@ -421,9 +427,7 @@ public class LectureBlockWebService {
 		Identity doer = getIdentity(httpRequest);
 		if(lectureBlock.getBBBMeeting() != null && lectureBlock.getBBBMeeting().getKey().equals(meetingVo.getKey())) {
 			BigBlueButtonMeeting bigBlueButtonMeeting = lectureBlock.getBBBMeeting();
-			if(meetingVo.getName() != null) {
-				bigBlueButtonMeeting.setName(meetingVo.getName());
-			}
+			BigBlueButtonMeetingVO.transfer(meetingVo, bigBlueButtonMeeting);
 			lectureBlock = lectureService.save(lectureBlock, null);
 			return Response.ok(BigBlueButtonMeetingVO.valueOf(lectureBlock.getBBBMeeting())).build();
 		} else if(lectureBlock.getBBBMeeting() == null && meetingVo.getKey() == null) {
@@ -436,8 +440,7 @@ public class LectureBlockWebService {
 					lectureBlock.getStartDate(), meetingVo.getLeadTime(), lectureBlock.getEndDate(), meetingVo.getFollowupTime());
 			if(slotAvailable) {
 				BigBlueButtonMeeting bigBlueButtonMeeting = bigBlueButtonManager.createAndPersistMeeting(meetingVo.getName(), entry, null, null, doer);
-				bigBlueButtonMeeting.setLeadTime(meetingVo.getLeadTime());
-				bigBlueButtonMeeting.setFollowupTime(meetingVo.getFollowupTime());
+				BigBlueButtonMeetingVO.transfer(meetingVo, bigBlueButtonMeeting);
 				bigBlueButtonMeeting.setTemplate(template);
 				lectureBlock.setBBBMeeting(bigBlueButtonMeeting);
 				lectureBlock = lectureService.save(lectureBlock, null);
