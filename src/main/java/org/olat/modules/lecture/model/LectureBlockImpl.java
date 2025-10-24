@@ -66,9 +66,18 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="lectureblock")
 @Table(name="o_lecture_block")
-@NamedQuery(name="lectureBlocksByRepositoryEntry", query="select block from lectureblock block where block.entry.key=:repoEntryKey")
+@NamedQuery(name="lectureBlocksByRepositoryEntry", query="""
+		select block from lectureblock block
+		left join fetch block.bbbMeeting as bigBlueButtonMeeting
+		where block.entry.key=:repoEntryKey""")
 @NamedQuery(name="lectureBlocksByCurriculumElement", query="select block from lectureblock block where block.curriculumElement.key=:curriculumElementKey")
-@NamedQuery(name="lectureBlockByKey", query = "select block from lectureblock block left join fetch block.reasonEffectiveEnd reason left join fetch block.entry entry left join fetch block.curriculumElement element where block.key=:blockKey")
+@NamedQuery(name="lectureBlockByKey", query = """
+		select block from lectureblock block
+		left join fetch block.reasonEffectiveEnd reason
+		left join fetch block.entry entry
+		left join fetch block.curriculumElement element
+		left join fetch block.bbbMeeting bbbMeeting
+		where block.key=:blockKey""")
 public class LectureBlockImpl implements Persistable, LectureBlock {
 
 	private static final long serialVersionUID = -1010006683915268916L;

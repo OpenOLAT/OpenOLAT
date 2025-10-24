@@ -563,6 +563,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	public List<BigBlueButtonMeetingTemplate> getTemplates() {
 		return bigBlueButtonMeetingTemplateDao.getTemplates();
 	}
+	
+	@Override
+	public BigBlueButtonMeetingTemplate getTemplate(Long key) {
+		return bigBlueButtonMeetingTemplateDao.getTemplate(key);
+	}
 
 	@Override
 	public List<BigBlueButtonMeetingTemplate> getTemplates(List<BigBlueButtonTemplatePermissions> permissions) {

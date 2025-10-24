@@ -67,13 +67,18 @@ public class BigBlueButtonMeetingTemplateDAO {
 	}
 	
 	public BigBlueButtonMeetingTemplate getTemplate(BigBlueButtonMeetingTemplate template) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select template from bigbluebuttontemplate as template")
-		  .append(" where template.key=:templateKey");
+		if(template == null || template.getKey() == null) return null;
+		return getTemplate(template.getKey());
+	}
+	
+	public BigBlueButtonMeetingTemplate getTemplate(Long templateKey) {
+		String sb = """
+				select template from bigbluebuttontemplate as template
+				where template.key=:templateKey""";
 
 		List<BigBlueButtonMeetingTemplate> templates = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), BigBlueButtonMeetingTemplate.class)
-				.setParameter("templateKey", template.getKey())
+				.createQuery(sb, BigBlueButtonMeetingTemplate.class)
+				.setParameter("templateKey", templateKey)
 				.getResultList();
 		return templates == null || templates.isEmpty() ? null : templates.get(0);
 	}

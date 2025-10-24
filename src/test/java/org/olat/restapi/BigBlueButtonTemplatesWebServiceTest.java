@@ -22,24 +22,60 @@ package org.olat.restapi;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.UUID;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.manager.BigBlueButtonMeetingTemplateDAO;
+import org.olat.modules.bigbluebutton.restapi.BigBlueButtonMeetingTemplateVO;
 import org.olat.modules.bigbluebutton.restapi.BigBlueButtonTemplatesStatisticsVO;
 import org.olat.test.OlatRestTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 29 oct. 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BigBlueButtonTemplatesWebServiceTest extends OlatRestTestCase {
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BigBlueButtonMeetingTemplateDAO bigBlueButtonMeetingTemplateDao;
+	
+	@Test
+	public void getTemplates()
+	throws IOException, URISyntaxException  {
+		String externalId = UUID.randomUUID().toString();
+		BigBlueButtonMeetingTemplate template = bigBlueButtonMeetingTemplateDao.createTemplate("A new template to update", externalId, false);
+		dbInstance.commit();
+		Assert.assertNotNull(template);
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("bigbluebutton").path("templates").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		List<BigBlueButtonMeetingTemplateVO> templates = conn
+				.parseList(response, BigBlueButtonMeetingTemplateVO.class);
+		Assertions.assertThat(templates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.map(BigBlueButtonMeetingTemplateVO::getExternalId)
+			.containsAnyOf(externalId);
+	}
 	
 	@Test
 	public void getStatistics()

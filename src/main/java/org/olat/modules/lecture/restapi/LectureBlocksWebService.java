@@ -21,7 +21,6 @@ package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -107,11 +106,10 @@ public class LectureBlocksWebService {
 		}
 		
 		List<LectureBlock> blockList = lectureService.getLectureBlocks(entry);
-		List<LectureBlockVO> voList = new ArrayList<>(blockList.size());
-		for(LectureBlock block:blockList) {
-			voList.add(new LectureBlockVO(block, entry.getKey()));
+		LectureBlockVO[] voes = new LectureBlockVO[blockList.size()];
+		for(int i=blockList.size(); i-->0; ) {
+			voes[i] = LectureBlockVO.valueOf(blockList.get(i), entry.getKey());
 		}
-		LectureBlockVO[] voes = voList.toArray(new LectureBlockVO[voList.size()]);
 		return Response.ok(voes).build();
 	}
 
@@ -138,7 +136,7 @@ public class LectureBlocksWebService {
 		}
 		Identity doer = getIdentity(httpRequest);
 		LectureBlock updatedBlock = saveLectureBlock(block, doer);
-		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
+		return Response.ok(LectureBlockVO.valueOf(updatedBlock, entry.getKey())).build();
 	}
 	
 	/**
@@ -169,7 +167,7 @@ public class LectureBlocksWebService {
 		}
 		Identity doer = getIdentity(httpRequest);
 		LectureBlock updatedBlock = saveLectureBlock(block, doer);
-		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
+		return Response.ok(LectureBlockVO.valueOf(updatedBlock, entry.getKey())).build();
 	}
 	
 	private LectureBlock saveLectureBlock(LectureBlockVO blockVo, Identity doer) {
@@ -241,7 +239,7 @@ public class LectureBlocksWebService {
 				block.setEffectiveLecturesNumber(block.getPlannedLecturesNumber());
 			}
 		}
-		
+
 		LectureBlock savedLectureBlock = lectureService.save(block, null);
 		if(currentPlannedLectures > 0 && currentPlannedLectures != savedLectureBlock.getPlannedLecturesNumber()) {
 			lectureService.adaptRollCalls(savedLectureBlock);
@@ -355,7 +353,7 @@ public class LectureBlocksWebService {
 		if(lectureBlock == null || !lectureBlock.getEntry().equals(entry)) {
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
-		LectureBlockWebService ws = new LectureBlockWebService(lectureBlock, entry);
+		LectureBlockWebService ws = new LectureBlockWebService(lectureBlock, entry, administrator);
 		CoreSpringFactory.autowireObject(ws);
 		return ws;
 	}
@@ -405,7 +403,7 @@ public class LectureBlocksWebService {
 	@Operation(summary = "Adapt all roll call to the effective number of lectures", description = "Adapt all roll call to the effective number of lectures. Use with caution!")
 	@ApiResponse(responseCode = "200", description = "The adaptation is successful")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	public Response adapatation(@Context HttpServletRequest httpRequest) {
+	public Response adaptation(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}

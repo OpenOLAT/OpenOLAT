@@ -29,6 +29,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 /**
@@ -77,6 +78,9 @@ public class LectureBlockVO implements LectureBlockRef {
 	
 	private String meetingTitle;
 	private String meetingUrl;
+	
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "Signal the presence of a BigBlueButton meeting")
+	private Long bigBlueButtonMeetingKey;
 
 	private Long repoEntryKey;
 	
@@ -84,28 +88,37 @@ public class LectureBlockVO implements LectureBlockRef {
 		//make jaxb happy
 	}
 	
-	public LectureBlockVO(LectureBlock block, Long repoEntryKey) {
-		key = block.getKey();
-		externalId = block.getExternalId();
-		externalRef = block.getExternalRef();
-		managedFlagsString = block.getManagedFlagsString();
-		title = block.getTitle();
-		description = block.getDescription();
-		preparation = block.getPreparation();
-		location = block.getLocation();
-		comment = block.getComment();
+	public static final LectureBlockVO valueOf(LectureBlock block, Long repoEntryKey) {
+		LectureBlockVO vo = new LectureBlockVO();
+		vo.setKey(block.getKey());
+		vo.setExternalId(block.getExternalId());
+		vo.setExternalRef(block.getExternalRef());
+		vo.setManagedFlagsString(block.getManagedFlagsString());
+		vo.setTitle(block.getTitle());
+		vo.setDescription(block.getDescription());
+		vo.setPreparation(block.getPreparation());
+		vo.setLocation(block.getLocation());
+		vo.setComment(block.getComment());
 		
-		startDate = block.getStartDate();
-		endDate = block.getEndDate();
-		compulsory = block.isCompulsory(); 
-		plannedLectures = block.getPlannedLecturesNumber();
-		this.repoEntryKey = repoEntryKey;
+		vo.setStartDate(block.getStartDate());
+		vo.setEndDate(block.getEndDate());
+		vo.setCompulsory(block.isCompulsory()); 
+		vo.setPlannedLectures(block.getPlannedLecturesNumber());
+		vo.setRepoEntryKey(repoEntryKey);
 		
-		meetingTitle = block.getMeetingTitle();
-		meetingUrl = block.getMeetingUrl();
+		vo.setMeetingTitle(block.getMeetingTitle());
+		vo.setMeetingUrl(block.getMeetingUrl());
 		
-		status = block.getStatus() == null ? null : block.getStatus().name();
-		rollCallStatus = block.getRollCallStatus() == null ? null : block.getRollCallStatus().name();
+		if(block.getStatus() != null) {
+			vo.setStatus(block.getStatus().name());
+		}
+		if(block.getRollCallStatus() != null) {
+			vo.setRollCallStatus(block.getRollCallStatus().name());
+		}
+		if(block.getBBBMeeting() != null) {
+			vo.setBigBlueButtonMeetingKey(block.getBBBMeeting().getKey());
+		}
+		return vo;
 	}
 
 	@Override
@@ -251,5 +264,34 @@ public class LectureBlockVO implements LectureBlockRef {
 
 	public void setMeetingUrl(String meetingUrl) {
 		this.meetingUrl = meetingUrl;
+	}
+
+	public Long getBigBlueButtonMeetingKey() {
+		return bigBlueButtonMeetingKey;
+	}
+
+	public void setBigBlueButtonMeetingKey(Long bigBlueButtonMeetingKey) {
+		this.bigBlueButtonMeetingKey = bigBlueButtonMeetingKey;
+	}
+	
+	@Override
+	public String toString() {
+		return "LectureBlockVO[key=" + key + ":name=" + title + "]";
+	}
+	
+	@Override
+	public int hashCode() {
+		return key == null ? -64582123 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof LectureBlockVO block) {
+			return key != null && key.equals(block.key);
+		}
+		return false;
 	}
 }
