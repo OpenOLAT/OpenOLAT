@@ -386,6 +386,15 @@ public interface OrganisationService {
 	public List<RightProvider> getAllOrganisationRights(OrganisationRoles roles);
 
 	/**
+	 * Checks if the given identity has the specified organizational right.
+	 *
+	 * @param identity the reference to the identity whose rights are to be checked
+	 * @param right the name of the organizational right to be verified
+	 * @return true if the identity has the specified organizational right, false otherwise
+	 */
+	public boolean hasOrganisationRight(IdentityRef identity, String right);
+
+	/**
 	 * Save the given rights for a specific role in an organisation
 	 *
 	 * @param organisation

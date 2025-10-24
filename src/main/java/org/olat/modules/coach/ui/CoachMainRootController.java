@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,6 +42,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.model.CoachingSecurity;
+import org.olat.modules.coach.security.PendingAccountActivationRightProvider;
 import org.olat.modules.coach.ui.component.SearchEvent;
 import org.olat.modules.coach.ui.component.SearchStateEntry;
 import org.olat.modules.coach.ui.manager.CoachReportsController;
@@ -51,6 +53,7 @@ import org.olat.modules.grading.GradingSecurityCallbackFactory;
 import org.olat.modules.grading.model.GradingSecurity;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.ui.list.ImplementationsListController;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,6 +71,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	private Link reportsButton;
 	private Link lecturesButton;
 	private Link ordersAdminButton;
+	private Link pendingConfirmationsButton;
 	private Link businessGroupsButton;
 	private Link implementationsButton;
 	
@@ -78,6 +82,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	private CoachingSecurity coachingSec;
 	private final boolean showPeopleView;
 	private final boolean coachAssignmentsAvailable;
+	private final boolean showPendingConfirmations;
 	
 	private GroupListController groupListCtrl;
 	private LecturesMainController lecturesCtrl;
@@ -99,6 +104,10 @@ public class CoachMainRootController extends BasicController implements Activate
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
+	@Autowired
+	private AccessControlModule accessControlModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public CoachMainRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel content,
 			CoachingSecurity coachingSec, GradingSecurity gradingSec) {
@@ -111,7 +120,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
 		showPeopleView = coachingSec.coach() || coachingSec.owner() || roles.isPrincipal() || roles.isLineManager() ||roles.isEducationManager()
 				|| !identityRelationsService.getRelationsAsSource(getIdentity()).isEmpty();
-		
+		showPendingConfirmations = curriculumModule.isEnabled() && accessControlModule.isInvoiceEnabled() && canActivatePendingAccounts();
 		mainVC = createVelocityContainer("coaching");
 		
 		searchFieldCtrl = new CoachMainSearchHeaderController(ureq, getWindowControl());
@@ -122,7 +131,16 @@ public class CoachMainRootController extends BasicController implements Activate
 		initButtons();
 	}
 	
+	private boolean canActivatePendingAccounts() {
+		return organisationService.hasOrganisationRight(getIdentity(), PendingAccountActivationRightProvider.RELATION_RIGHT);
+	}
+
 	private void initButtons() {
+		pendingConfirmationsButton = LinkFactory.createLink("pending.confirmations.menu.title", "pending.confirmations.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		pendingConfirmationsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_pending_confirmations");
+		pendingConfirmationsButton.setElementCssClass("btn btn-default o_button_mega");
+		pendingConfirmationsButton.setVisible(showPendingConfirmations);
+
 		lecturesButton = LinkFactory.createLink("lectures.menu.title", "lectures.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		lecturesButton.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
 		lecturesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_lectures");
@@ -215,6 +233,8 @@ public class CoachMainRootController extends BasicController implements Activate
 			doLectures(ureq);
 		} else if(implementationsButton == source) {
 			doImplementations(ureq);
+		} else if (pendingConfirmationsButton == source) {
+			doPendingConfirmations(ureq);
 		}
 	}
 	
@@ -379,5 +399,10 @@ public class CoachMainRootController extends BasicController implements Activate
 		userSearchCtrl = new UserSearchController(ureq, bwControl, content);
 		listenTo(userSearchCtrl);
 		content.pushController(translate("search.menu.title"), userSearchCtrl);
+	}
+	
+	private void doPendingConfirmations(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
 	}
 }

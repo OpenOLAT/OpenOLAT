@@ -24,10 +24,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoleRight;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.OrganisationRoleRightImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +86,22 @@ public class OrganisationRoleRightDAO {
                 .setParameter("orgRole", orgRole)
                 .getResultList();
     }
+	
+	public boolean hasRoleRight(IdentityRef identity, String roleRight) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(gm)");
+		sb.append(" from bgroupmember gm");
+		sb.append(" inner join organisationroleright or2r on or2r.role = gm.role");
+		sb.where().append("gm.identity.key =: identityKey");
+		sb.and().append("or2r.right = :roleRight");
+		
+		Long count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("roleRight", roleRight)
+				.setParameter("identityKey", identity.getKey()).getSingleResult();
+		
+		return count > 0;
+	}
 
     public void deleteGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> deleteRights) {
         StringBuilder sb = new StringBuilder(128);

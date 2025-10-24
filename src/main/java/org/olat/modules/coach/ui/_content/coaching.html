@@ -22,10 +22,13 @@ $r.render("searchField")
 	</fieldset>
 	#end
 	
-	#if($r.visible("lectures.menu.title") || $r.visible("orders.menu.title") || $r.visible("reports.menu.title"))
+	#if($r.visible("pending.confirmations.menu.title") || $r.visible("lectures.menu.title") || $r.visible("orders.menu.title") || $r.visible("reports.menu.title"))
 	<fieldset>
 		<legend>$r.translate("coaching.assignments.title")</legend>
 		<ul class="o_mega_buttons">
+			#if($r.visible("pending.confirmations.menu.title"))
+				<li>$r.render("pending.confirmations.menu.title")</li>
+			#end
 			#if($r.visible("lectures.menu.title"))
 				<li>$r.render("lectures.menu.title")</li>
 			#end

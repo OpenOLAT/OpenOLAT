@@ -913,6 +913,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public boolean hasOrganisationRight(IdentityRef identity, String right) {
+		return organisationRoleRightDAO.hasRoleRight(identity, right);
+	}
+
+	@Override
 	public void setGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> rights) {
 		// Get all rights
 		List<String> grantedRights = organisationRoleRightDAO.getGrantedOrganisationRights(organisation, role);
