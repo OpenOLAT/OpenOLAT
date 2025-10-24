@@ -27,6 +27,7 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
@@ -48,6 +49,7 @@ public class LectureStatisticsSearchParameters {
 	private List<OrganisationRef> organisations;
 	private List<RepositoryEntryRef> entries;
 	private List<IdentityRef> participants;
+	private List<CurriculumElementRef> curriculumElements;
 	
 	private String curriculumSearchString;
 	private OrganisationRoles limitToRole;
@@ -107,6 +109,24 @@ public class LectureStatisticsSearchParameters {
 		} else {
 			this.entries = new ArrayList<>(entries);
 		}
+	}
+	
+	public boolean hasCurriculumElements() {
+		return curriculumElements != null && !curriculumElements.isEmpty();
+	}
+
+	public List<CurriculumElementRef> getCurriculumElements() {
+		return curriculumElements;
+	}
+
+	/**
+	 * The parameter will enforce the member of the lecture block to be
+	 * a member of the curriculum elements list.
+	 * 
+	 * @param curriculumElements A list of curriculum elements
+	 */
+	public void setCurriculumElements(List<CurriculumElementRef> curriculumElements) {
+		this.curriculumElements = curriculumElements;
 	}
 
 	public Map<String, String> getUserProperties() {
