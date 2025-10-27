@@ -23,6 +23,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+
 /**
  * 
  * Initial date: 26.11.2014<br>
@@ -36,6 +39,8 @@ public class ManagedUserVO {
 	private Long key;
 	private String login;
 	private String externalId;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "Status of the user")
+	private Integer status;
 
 	public ManagedUserVO() {
 		//make JAXB happy
@@ -63,6 +68,14 @@ public class ManagedUserVO {
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
 	}
 
 	@Override
