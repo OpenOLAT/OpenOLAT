@@ -1,0 +1,16 @@
+<style>
+	.o_coach_pending_memberships_wrapper {
+		margin-top: 20px;
+		margin-bottom: 20px;
+	}
+</style>
+
+<div class="o_coach_pending_confirmations">
+	<h2><i class="o_icon o_icon_pending_confirmations"> </i> $r.translate("pending.confirmations")</h2>
+
+	<div class="o_coach_pending_memberships_wrapper">
+		#if($r.available("pending.memberships") && $r.visible("pending.memberships"))
+			$r.render("pending.memberships")
+		#end
+	</div>
+</div>

@@ -95,6 +95,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	private CoachParticipantsListController quickSearchCtrl;
 	private ImplementationsListController implementationsCtrl;
 	private final CoachMainSearchHeaderController searchFieldCtrl;
+	private PendingConfirmationsController pendingConfirmationsCtrl;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -404,5 +405,12 @@ public class CoachMainRootController extends BasicController implements Activate
 	private void doPendingConfirmations(UserRequest ureq) {
 		content.popUpToController(this);
 		cleanUp();
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("PendingConfirmations", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		pendingConfirmationsCtrl = new PendingConfirmationsController(ureq, bwControl);
+		listenTo(pendingConfirmationsCtrl);
+		content.pushController(translate("pending.confirmations"), pendingConfirmationsCtrl);
 	}
 }
