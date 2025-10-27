@@ -272,7 +272,7 @@ function o_getMainWin() {
 			o_logerr('Exception while getting main window. rror::"'+showerror(e));
 		}
 		if (window.console) { // add ajax logger
-			console.log('Exception while getting main window. rror::"'+showerror(e), "functions.js");
+			console.log('Exception while getting main window. error::"'+showerror(e), "functions.js");
 			console.log(e);
 		}	
 	}
@@ -1339,7 +1339,6 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			fileInputElement.parentNode.parentNode.appendChild(errorEl);
 		}
 		errorEl.textContent = errorMsg;
-		console.log(errorMsg);
 	}
 	
 	function o_handleFilesValidate(files) {
@@ -1813,7 +1812,6 @@ function o_QRCodePopup(id, text, loc, containerSelector) {
 	if(typeof(containerSelector) === 'undefined') {
 		containerSelector = 'body';
 	}
-	console.log(containerSelector);
 	const elem = jQuery('#' + id);
 	elem.popover({
     	placement : loc,
@@ -3269,7 +3267,6 @@ function o_copyToClipboard(selector) {
 	var els = jQuery(selector);
 	var copyText = "";
 	for(var i=0; i<els.length; i++) {
-		console.log(els.get(i));
 		copyText += jQuery(els.get(i)).text() + "\n";
 	}
 	navigator.clipboard.writeText(copyText);
@@ -3333,7 +3330,6 @@ function o_doEscapeDispatch(event) {
 	// Check if we are in a lightbox
 	var lightbox = jQuery('.basicLightbox');
 	if (lightbox.length > 0) {
-	console.log('LIGHTBOX ESC');
 		event.stopPropagation();
 		lightbox[0].click();
 		return;
