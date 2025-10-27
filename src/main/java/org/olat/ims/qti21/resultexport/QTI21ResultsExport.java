@@ -213,7 +213,30 @@ public class QTI21ResultsExport {
 		}
 	}
 	
+	/**
+	 * For the course archive, works with the list of identities and show
+	 * non-members.
+	 * 
+	 * @param zout The ZIP output stream
+	 */
+	public void archiveExcelResults(ZipOutputStream zout) {
+		int count = 1;
+		List<RepositoryEntry> testEntriesList = repositoryEntriesToExport();
+		for(RepositoryEntry testEntry:testEntriesList) {
+			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(null, testEntry, entry, courseNode.getIdent());
+			exportExcelResults(testEntry, searchParams, count++, zout);
+		}
+	}
+	
 	public void exportExcelResults(ZipOutputStream zout) {
+		int count = 1;
+		List<RepositoryEntry> testEntriesList = repositoryEntriesToExport();
+		for(RepositoryEntry testEntry:testEntriesList) {
+			exportExcelResults(testEntry, count++, zout);
+		}
+	}
+	
+	private List<RepositoryEntry> repositoryEntriesToExport() {
 		List<RepositoryEntry> testEntriesList = new ArrayList<>();
 		RepositoryEntry currentTestEntry = courseNode.getReferencedRepositoryEntry();
 		if(currentTestEntry != null) {
@@ -227,11 +250,7 @@ public class QTI21ResultsExport {
 				testEntriesList.add(testEntry);
 			}
 		}
-		
-		int count = 1;
-		for(RepositoryEntry testEntry:testEntriesList) {
-			exportExcelResults(testEntry, count++, zout);
-		}
+		return testEntriesList;
 	}
 	
 	private void exportStaticMaterials(ZipOutputStream zout) {
@@ -257,7 +276,10 @@ public class QTI21ResultsExport {
 		} else {
 			searchParams.setLimitToIdentities(identities);
 		}
-		
+		exportExcelResults( testEntry, searchParams, pos, zout);
+	}
+
+	private void exportExcelResults(RepositoryEntry testEntry, QTI21StatisticSearchParams searchParams, int pos, ZipOutputStream zout) {
 		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(translator.getLocale(), searchParams);
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + testEntry.getDisplayname())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
