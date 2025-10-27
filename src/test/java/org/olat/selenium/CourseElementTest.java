@@ -2715,7 +2715,7 @@ public class CourseElementTest extends Deployments {
 		SurveyEditorPage surveyEditor = survey
 			.edit();
 		surveyEditor
-			.addLayout(ContainerLayout.block_3rows)
+			.changeLayout(ContainerLayout.block_3rows, 1)
 			.openElementsChooser(1, 1)
 			.addTitle("My survey")
 			.setTitleSize(2, true)

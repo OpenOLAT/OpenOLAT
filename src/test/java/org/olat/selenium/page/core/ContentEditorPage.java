@@ -61,6 +61,23 @@ public class ContentEditorPage extends ContentViewPage {
 		return this;
 	}
 	
+	public ContentEditorPage changeLayout(ContainerLayout layout, int layoutPos) {
+		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + layoutPos + "]//a[contains(@class,'o_sel_elementinspector')]");
+		OOGraphene.waitElement(addBy, browser).click();
+
+		By newLayoutBy = By.xpath("//div[@class='o_ceditor_inspector_content']//div[@class='o_inspector_layouts']//a/span/div[contains(@class,'" + layout.cssClass() + "')]");
+		browser.findElement(newLayoutBy).click();
+		By activeLayoutBy = By.xpath("//div[@class='o_ceditor_inspector_content']//div[@class='o_inspector_layouts']//a[contains(@class,'active')]/span/div[contains(@class,'" + layout.cssClass() + "')]");
+		OOGraphene.waitElement(activeLayoutBy, browser);
+		
+		By closeInspectorBy = By.cssSelector(".o_ceditor_inspector > .o_ceditor_inspector_header > a.close");
+		OOGraphene.waitElement(closeInspectorBy, browser).click();
+		By inspectorBy = By.cssSelector(".o_ceditor_inspector > .o_ceditor_inspector_content");
+		OOGraphene.waitElementDisappears(inspectorBy, 5, browser);
+
+		return this;
+	}
+	
 	public ContentEditorPage openElementsChooser(int container, int slot) {
 		By addBy = By.xpath("//div[contains(@class,'o_page_container_edit')][" + container + "]//div[contains(@class,'o_page_container_slot')][" + slot + "]//a[contains(@class,'btn')][contains(@class,'o_page_add_in_container')]");
 		OOGraphene.waitElement(addBy, browser).click();
