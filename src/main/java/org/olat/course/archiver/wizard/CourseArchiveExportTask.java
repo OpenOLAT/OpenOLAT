@@ -268,7 +268,7 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 						task.getCreator(), new WindowControlMocker());
 
 				export.exportTestResults(zout, progress);
-				export.exportExcelResults(zout);
+				export.archiveExcelResults(zout);
 			} else {
 				courseNode.archiveNodeData(locale, course, nodeOptions, zout, nodePath, encoding);
 			}
