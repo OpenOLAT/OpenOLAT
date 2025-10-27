@@ -212,7 +212,9 @@ public class UserWebService {
 		if(!roles.isAdministrator() && !roles.isUserManager() && !roles.isRolesManager() && !roles.isAuthor()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		
+
+		boolean allProperties = StringHelper.containsNonWhitespace(externalId) || StringHelper.containsNonWhitespace(login);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		MultivaluedMap<String,String> params = uriInfo.getQueryParameters();
 		List<Identity> identities;
 		//make only a search by authUsername
@@ -221,12 +223,10 @@ public class UserWebService {
 			if(auth == null) {
 				identities = Collections.emptyList();
 			} else {
-				identities = Collections.singletonList(auth.getIdentity());
+				identities = List.of(auth.getIdentity());
 			}
+			allProperties |= true;
 		} else {
-
-			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-			
 			AuthProviders authProviders = null;
 			if(StringHelper.containsNonWhitespace(authProvider)) {
 				authProviders = AuthProviders.valueOfPovider(authProvider);
@@ -240,6 +240,12 @@ public class UserWebService {
 						.getUserPropertyHandlersFor(PROPERTY_HANDLER_IDENTIFIER, isAdministrativeUser);
 				for(UserPropertyHandler handler:propertyHandlers) {
 					if(!params.containsKey(handler.getName())) continue;
+					
+					if(UserConstants.EMAIL.equals(handler.getName())
+							|| UserConstants.INSTITUTIONALEMAIL.equals(handler.getName())
+							|| UserConstants.NICKNAME.equals(handler.getName())) {
+						allProperties |= true;
+					}
 					
 					List<String> values = params.get(handler.getName());
 					if(!values.isEmpty()) {
@@ -266,10 +272,11 @@ public class UserWebService {
 			identities = securityManager.getIdentitiesByPowerSearch(searchParams, 0, -1);
 		}
 		
+		
 		int count = 0;
 		UserVO[] userVOs = new UserVO[identities.size()];
 		for(Identity identity:identities) {
-			userVOs[count++] = get(identity);
+			userVOs[count++] = get(identity, allProperties, isAdministrativeUser);
 		}
 		return Response.ok(userVOs).build();
 	}

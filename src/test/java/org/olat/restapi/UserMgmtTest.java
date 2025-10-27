@@ -325,16 +325,16 @@ public class UserMgmtTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<UserVO> vos = parseUserArray(response.getEntity());
-		assertNotNull(vos);
-		assertFalse(vos.isEmpty());
+		Assert.assertNotNull(vos);
+		Assert.assertFalse(vos.isEmpty());
 		int voSize = vos.size();
 		vos = null;
 		
 		List<Identity> identities = securityManager
 				.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		assertEquals(voSize, identities.size());
+		Assert.assertEquals(voSize, identities.size());
 
 		conn.shutdown();
 	}
@@ -348,7 +348,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 				.queryParam("authProvider","OLAT").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<UserVO> vos = parseUserArray(response.getEntity());
 		
 		String[] authProviders = new String[]{"OLAT"};
@@ -414,6 +414,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//there is user-rest-...
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-external-id");
 		Assert.assertNotNull(id);
+		
 		String externalId = UUID.randomUUID().toString();
 		Identity identity = securityManager.setExternalId(id.getIdentity(), externalId);
 		dbInstance.commitAndCloseSession();
@@ -433,6 +434,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		Assert.assertNotNull(vos);
 		Assert.assertEquals(1, vos.size());
 		Assert.assertEquals(identity.getKey(), vos.get(0).getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, vos.get(0).getStatus());
+		Assert.assertFalse(vos.get(0).getProperties().isEmpty());
 		Assert.assertNull(vos.get(0).getLogin());
 		conn.shutdown();
 	}
@@ -828,13 +831,14 @@ public class UserMgmtTest extends OlatRestTestCase {
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		UserVO vo = conn.parse(response, UserVO.class);
 
-		assertNotNull(vo);
-		assertEquals(vo.getKey(), id1.getKey());
+		Assert.assertNotNull(vo);
+		Assert.assertEquals(vo.getKey(), id1.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, vo.getStatus());
 		//are the properties there?
-		assertFalse(vo.getProperties().isEmpty());
+		Assert.assertFalse(vo.getProperties().isEmpty());
 		conn.shutdown();
 	}
 	
@@ -876,8 +880,10 @@ public class UserMgmtTest extends OlatRestTestCase {
 			if(managedUser.getKey().equals(managedId.getKey())) {
 				found = true;
 				Assert.assertEquals(externalId, managedUser.getExternalId());
+				Assert.assertEquals(Identity.STATUS_ACTIV, managedUser.getStatus());
 			}
 			Assert.assertNotNull(managedUser.getExternalId());
+			Assert.assertNotNull(managedUser.getStatus());
 		}
 		Assert.assertTrue(found);
 		
@@ -963,12 +969,13 @@ public class UserMgmtTest extends OlatRestTestCase {
 		UserVO savedVo = conn.parse(response, UserVO.class);
 		Identity savedIdent = securityManager.loadIdentityByKey(savedVo.getKey());
 
-		assertNotNull(savedVo);
-		assertNotNull(savedIdent);
-		assertEquals(savedVo.getKey(), savedIdent.getKey());
-		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
-		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
-		assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedIdent);
+		Assert.assertEquals(savedVo.getKey(), savedIdent.getKey());
+		Assert.assertEquals(Identity.STATUS_ACTIV, savedVo.getStatus());
+		Assert.assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
+		Assert.assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
+		Assert.assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
 		conn.shutdown();
 	}
 	
@@ -1048,16 +1055,17 @@ public class UserMgmtTest extends OlatRestTestCase {
 		method.addHeader("Accept-Language", "en");
 		
 		HttpResponse response = conn.execute(method);
-		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		Assert.assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		UserVO savedVo = conn.parse(response, UserVO.class);
 		Identity savedIdent = securityManager.loadIdentityByKey(savedVo.getKey());
 
-		assertNotNull(savedVo);
-		assertNotNull(savedIdent);
-		assertEquals(savedVo.getKey(), savedIdent.getKey());
-		assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
-		assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
-		assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedIdent);
+		Assert.assertEquals(Identity.STATUS_ACTIV, savedVo.getStatus());
+		Assert.assertEquals(savedVo.getKey(), savedIdent.getKey());
+		Assert.assertEquals("Female", savedIdent.getUser().getProperty("gender", Locale.ENGLISH));
+		Assert.assertEquals("39847592", savedIdent.getUser().getProperty("telPrivate", Locale.ENGLISH));
+		Assert.assertEquals("12/12/2009", savedIdent.getUser().getProperty("birthDay", Locale.ENGLISH));
 		conn.shutdown();
 	}
 	

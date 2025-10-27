@@ -28,6 +28,9 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+
 /**
  * 
  * 
@@ -40,6 +43,9 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 public class UserVO {
 
 	private Long key;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "Status of the user")
+	private Integer status;
+	
 	private String login;
 	private String externalId;
 	private String password;
@@ -62,6 +68,14 @@ public class UserVO {
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
 	}
 
 	public String getLogin() {
