@@ -181,6 +181,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
 	private final WindowedResourceableList resourceList;
+	private final Integer extraTime;
 	private final DisadvantageCompensation compensation;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 
@@ -259,6 +260,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		DisadvantageCompensation c = disadvantageCompensationService
 				.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
 		compensation = (c != null && c.getExtraTime() != null) ? c : null;
+		
+		AssessmentTestSession lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), null, courseEntry, courseNode.getIdent(), testEntry, false);
+		extraTime = lastSession != null ? lastSession.getExtraTime() : null;
 
 		deliveryOptions = getDeliveryOptions();
 		overrideOptions = getOverrideOptions();
@@ -510,12 +514,23 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		Long timeLimitInSeconds = getAssessmentTestMaxTimeLimit();
 		
 		int extraMinutes = 0;
-		if(courseNode != null && userCourseEnv != null && compensation != null ) {
-			extraMinutes = compensation.getExtraTime().intValue() / 60;
-			mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
-					Integer.toString(extraMinutes)));
-			if(timeLimitInSeconds != null) {
-				timeLimitInSeconds += compensation.getExtraTime().longValue();
+		if(courseNode != null && userCourseEnv != null ) {
+			if(compensation != null) {
+				extraMinutes = compensation.getExtraTime().intValue() / 60;
+				mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
+						Integer.toString(extraMinutes)));
+				if(timeLimitInSeconds != null) {
+					timeLimitInSeconds += compensation.getExtraTime().longValue();
+				}
+			}
+			
+			if(extraTime != null) {
+				extraMinutes = extraTime.intValue() / 60;
+				mainVC.contextPut("extraTimeMessage", translate("block.extra.time",
+						Integer.toString(extraMinutes)));
+				if(timeLimitInSeconds != null) {
+					timeLimitInSeconds += extraTime.longValue();
+				}
 			}
 		}
 		
@@ -553,7 +568,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						int extraSeconds = compensation.getExtraTime().intValue();
 						endTestDate = DateUtils.addSeconds(endTestDate, extraSeconds);
 					}
-					
+					if(extraTime != null) {
+						int extraSeconds = extraTime.intValue();
+						endTestDate = DateUtils.addSeconds(endTestDate, extraSeconds);
+					}
 					end = formatter.formatDateAndTime(endTestDate);
 					mainVC.contextPut("endTestDate", end);
 				}

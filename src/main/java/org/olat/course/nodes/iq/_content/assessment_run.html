@@ -64,7 +64,10 @@ $r.render("disclaimer")
 			<p><i class="o_icon o_icon-fw o_icon_timelimit_start"> </i> $timeLimitMessage</p>
 			#end
 			#if($r.isNotEmpty($disadvantageCompensationMessage))
-			<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage </p>
+			<p><i class="o_icon o_icon-fw o_icon_disadvantage_compensation"> </i> $disadvantageCompensationMessage</p>
+			#end
+			#if($r.isNotEmpty($extraTimeMessage))
+			<p><i class="o_icon o_icon-fw o_icon_extra_time"> </i> $extraTimeMessage</p>
 			#end
 			#if($r.isNotEmpty($maxAttemptsMsg))
 			<p><i class="o_icon o_icon-fw o_icon_attempts"> </i> $maxAttemptsMsg #if($r.isNotEmpty($attemptsMsg))| $attemptsMsg#end</p>
