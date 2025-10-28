@@ -20,6 +20,7 @@
 package org.olat.core.util.filter.impl;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.olat.core.util.CodeHelper;
@@ -29,7 +30,6 @@ import org.owasp.html.HtmlStreamEventReceiver;
 import org.owasp.html.HtmlStreamEventReceiverWrapper;
 import org.owasp.html.PolicyFactory;
 
-import com.google.common.base.Predicate;
 
 /**
  * The policy allow very specific onclicks values. It has a pre and
@@ -384,20 +384,11 @@ public class OpenOLATPolicy {
 	private static class OnClickValues implements Predicate<String> {
 		
 		@Override
-		public boolean apply(String s) {
+		public boolean test(String s) {
 			if("o_XHRWikiEvent(this);".equals(s) || "o_XHRWikiEvent(this);return(false);".equals(s)) {
 				return true;
 			}
 			return OLATINTERNALURL.matcher(s).matches();
-		}
-		
-		// Needed for Java8 compat with later Guava that extends
-		// java.util.function.Predicate.
-		// For some reason the default test method implementation that calls
-		// through to apply is not assumed here.
-		@Override
-		public boolean test(String s) {
-			return apply(s);
 		}
 	}
 	
@@ -412,13 +403,8 @@ public class OpenOLATPolicy {
 		}
 		
 		@Override
-		public boolean apply(String s) {
-			return a.apply(s) || b.apply(s);
-		}
-		
-		@Override
 		public boolean test(String s) {
-			return apply(s);
+			return a.test(s) || b.test(s);
 		}
 	}
 	
@@ -431,22 +417,13 @@ public class OpenOLATPolicy {
 		}
 		
 		@Override
-		public boolean apply(String s) {
+		public boolean test(String s) {
 			for(int i=strings.length; i-->0; ) {
 				if(strings[i].equalsIgnoreCase(s)) {
 					return true;
 				}
 			}
 			return false;
-		}
-		
-		// Needed for Java8 compat with later Guava that extends
-		// java.util.function.Predicate.
-		// For some reason the default test method implementation that calls
-		// through to apply is not assumed here.
-		@Override
-		public boolean test(String s) {
-			return apply(s);
 		}
 	}
 	
@@ -471,21 +448,12 @@ public class OpenOLATPolicy {
 		}
 
 		@Override
-		public boolean apply(String s) {
+		public boolean test(String s) {
 			return a.matcher(s).matches()
 					|| b.matcher(s).matches()
 					|| c == null || c.matcher(s).matches()
 					|| d == null || d.matcher(s).matches()
 					|| e == null || e.matcher(s).matches();
-		}
-		
-		// Needed for Java8 compat with later Guava that extends
-		// java.util.function.Predicate.
-		// For some reason the default test method implementation that calls
-		// through to apply is not assumed here.
-		@Override
-		public boolean test(String s) {
-			return apply(s);
 		}
 	}
 }

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -51,7 +52,6 @@ import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.util.StringHelper;
 
-import com.google.common.base.Objects;
 
 /**
  * 
@@ -284,7 +284,7 @@ public class ObjectSelectionController extends FormBasicController {
 		sb.append(StringHelper.escapeHtml(option.getTitle()));
 		sb.append("</div>");
 		sb.append("<div class=\"o_nowrap o_muted\"");
-		if (StringHelper.containsNonWhitespace(option.getSubTitleFull()) && !Objects.equal(option.getSubTitle(), option.getSubTitleFull())) {
+		if (StringHelper.containsNonWhitespace(option.getSubTitleFull()) && !Objects.equals(option.getSubTitle(), option.getSubTitleFull())) {
 			sb.append("title=\"");
 			sb.append(StringHelper.escapeForHtmlAttribute(option.getSubTitleFull()));
 			sb.append("\"");
