@@ -107,8 +107,8 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 	public enum MediaCols implements FlexiSortableColumnDef {
 		key("table.header.key", true),
 		title("table.header.title", true),
-		createdBy("table.header.created.by", true),
-		createdOn("table.header.created.on", true),
+		createdBy("created.by", true),
+		createdOn("created.date", true),
 		tags("table.header.tags", true),
 		type("table.header.type", true),
 		taxonomyLevels("table.header.taxonomy.levels", true),
