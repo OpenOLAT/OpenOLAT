@@ -582,7 +582,7 @@ The "important!" avoids hiding the image by bootstrap.
 		padding-left: $line-height-computed * 2 + $padding-base-horizontal;
 	}
 	.o_info_msg_head {
-		height: 50px;
+		min-height: 50px;
 	}
 	.o_datecomp {
 		position: absolute;
