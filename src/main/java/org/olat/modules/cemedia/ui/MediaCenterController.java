@@ -521,8 +521,8 @@ public class MediaCenterController extends FormBasicController
 		filters.add(sharedWithFilter);
 
 		SelectionValues withoutAuthorKeyValue = new SelectionValues();
-		withoutAuthorKeyValue.add(SelectionValues.entry("withoutAuthor", translate("filter.without.author")));
-		FlexiTableOneClickSelectionFilter withoutAuthorFilter = new FlexiTableOneClickSelectionFilter(translate("filter.without.author"),
+		withoutAuthorKeyValue.add(SelectionValues.entry("withoutAuthor", translate("filter.without.creator")));
+		FlexiTableOneClickSelectionFilter withoutAuthorFilter = new FlexiTableOneClickSelectionFilter(translate("filter.without.creator"),
 				FILTER_WITHOUT_AUTHOR, withoutAuthorKeyValue, true);
 		filters.add(withoutAuthorFilter);
 
