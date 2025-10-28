@@ -25,6 +25,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
+
 /**
  * Value object representing an individual user's results on an
  * {@link org.olat.course.nodes.AssessableCourseNode}.
@@ -40,29 +43,40 @@ public class AssessableResultsVO {
 	private Long identityKey;
 	private String identityExternalId;
 	private String nodeIdent;
+
+	private Boolean passed;
 	
 	private Float score;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The weighted score will be calculated from the score")
 	private Float weightedScore;
-	private Boolean passed;
 	private Float maxScore;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The weighted max. score will be calculated from the score")
 	private Float weightedMaxScore;
 	
 	private Boolean userVisible;
 
+	@Schema(accessMode = AccessMode.AUTO, description = "The grade will be calculated from the score if course element is in auto mode")
 	private String grade;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The class will be calculated from the score")
 	private String performanceClassIdent;
 	
 	private Double completion;
 	private Integer attempts;
 	private String assessmentStatus;
-	
+
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The date will be automatically updated")
 	private Date lastModifiedDate;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The date will be automatically updated")
 	private Date lastUserModified;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The date will be automatically updated")
 	private Date lastCoachModified;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The date will be automatically updated")
 	private Date assessmentDone;
 	private Boolean fullyAssessed;
 	private Date fullyAssessedDate;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The date will be automatically updated")
 	private Date firstVisit;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The date will be automatically updated")
 	private Date lastVisit;
 
 	public AssessableResultsVO() {
