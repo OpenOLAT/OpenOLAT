@@ -42,7 +42,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.model.CoachingSecurity;
-import org.olat.modules.coach.security.PendingAccountActivationRightProvider;
+import org.olat.modules.coach.security.PendingCourseBookingsRightProvider;
 import org.olat.modules.coach.ui.component.SearchEvent;
 import org.olat.modules.coach.ui.component.SearchStateEntry;
 import org.olat.modules.coach.ui.manager.CoachReportsController;
@@ -121,7 +121,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
 		showPeopleView = coachingSec.coach() || coachingSec.owner() || roles.isPrincipal() || roles.isLineManager() ||roles.isEducationManager()
 				|| !identityRelationsService.getRelationsAsSource(getIdentity()).isEmpty();
-		showPendingConfirmations = curriculumModule.isEnabled() && accessControlModule.isInvoiceEnabled() && canActivatePendingAccounts();
+		showPendingConfirmations = curriculumModule.isEnabled() && accessControlModule.isInvoiceEnabled() && canViewPendingCourseBookings();
 		mainVC = createVelocityContainer("coaching");
 		
 		searchFieldCtrl = new CoachMainSearchHeaderController(ureq, getWindowControl());
@@ -132,8 +132,8 @@ public class CoachMainRootController extends BasicController implements Activate
 		initButtons();
 	}
 	
-	private boolean canActivatePendingAccounts() {
-		return organisationService.hasOrganisationRight(getIdentity(), PendingAccountActivationRightProvider.RELATION_RIGHT);
+	private boolean canViewPendingCourseBookings() {
+		return organisationService.hasOrganisationRight(getIdentity(), PendingCourseBookingsRightProvider.RELATION_RIGHT);
 	}
 
 	private void initButtons() {

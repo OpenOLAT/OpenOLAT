@@ -57,6 +57,7 @@ import org.olat.resource.accesscontrol.model.OrderLineImpl;
 import org.olat.resource.accesscontrol.model.OrderPartImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.UserOrder;
+import org.olat.resource.accesscontrol.model.UserResourceReservation;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -660,6 +661,50 @@ public class ACOrderDAO {
 				.createQuery(sb.toString(), ResourceReservation.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
+	}
+	
+	public List<UserResourceReservation> getReservationsWithOrders(IdentityRef identity, String right, List<UserPropertyHandler> userPropertyHandlers) {
+		QueryBuilder sb = new QueryBuilder();
+
+		sb.append("select distinct reservation");
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
+		}
+		sb.append(" from resourcereservation as reservation");
+		sb.append(" inner join bgroupmember membership on membership.identity.key = reservation.identity.key");
+		sb.append(" inner join bgroupmember managerMembership on membership.group.key = managerMembership.group.key");
+		sb.append(" inner join organisation org on org.group.key = membership.group.key");
+		sb.append(" inner join organisationroleright or2r on (or2r.organisation.key = org.key and or2r.role = managerMembership.role)");
+		sb.append(" inner join acorder o on o.delivery.key = reservation.identity.key");
+		sb.append(" inner join o.parts orderPart");
+		sb.append(" inner join orderPart.lines orderLine");
+		sb.append(" inner join orderLine.offer offer");
+		sb.append(" inner join o.delivery.user user");
+		sb.and().append("managerMembership.identity.key = :identityKey");
+		sb.and().append("or2r.right = :right");
+		sb.and().append("reservation.resource.key = offer.resource.key");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("right", right)
+				.getResultList().stream()
+				.map(objects -> mapToUserResourceReservation(objects, userPropertyHandlers)).toList();
+	}
+
+	private UserResourceReservation mapToUserResourceReservation(Object[] objects, List<UserPropertyHandler> userPropertyHandlers) {
+		UserResourceReservation userResourceReservation = new UserResourceReservation();
+		int srcIdx = 0;
+		if (objects[srcIdx++] instanceof ResourceReservation resourceReservation) {
+			userResourceReservation.setResourceReservation(resourceReservation);
+		}
+
+		for (int dstIdx = 0; dstIdx < userPropertyHandlers.size() && srcIdx < objects.length; dstIdx++, srcIdx++) {
+			if (objects[srcIdx] instanceof String sourceString) {
+				userResourceReservation.setIdentityProp(dstIdx, sourceString);
+			}
+		}
+		return userResourceReservation;
 	}
 	
 	public List<UserOrder> getUserBookings(BookingOrdersSearchParams params, List<UserPropertyHandler> userPropertyHandlers) {

@@ -19,9 +19,11 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -31,19 +33,54 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class PendingMembershipRow extends UserPropertiesRow {
-	
-	private String a;
+	private final ResourceReservation resourceReservation;
+	private final String title;
+	private final String extRef;
+	private final Date begin;
+	private final Date end;
+	private final String type;
+	private final Date confirmationUntil;
 
-	public PendingMembershipRow(Long identityKey, String externalId, List<UserPropertyHandler> userPropertyHandlers, 
+	public PendingMembershipRow(Long identityKey, String title, String extRef,
+								Date begin, Date end, String type, Date confirmationUntil, 
+								ResourceReservation resourceReservation, 
+								List<UserPropertyHandler> userPropertyHandlers,
 								String[] identityProps, Locale locale) {
-		super(identityKey, externalId, userPropertyHandlers, identityProps, locale);
+		super(identityKey, extRef, userPropertyHandlers, identityProps, locale);
+		this.title = title;
+		this.extRef = extRef;
+		this.type = type;
+		this.confirmationUntil = confirmationUntil;
+		this.resourceReservation = resourceReservation;
+		this.begin = begin;
+		this.end = end;
 	}
 
-	public String getA() {
-		return a;
+	public ResourceReservation getResourceReservation() {
+		return resourceReservation;
 	}
 
-	public void setA(String a) {
-		this.a = a;
+	public String getTitle() {
+		return title;
+	}
+
+	public String getExtRef() {
+		return extRef;
+	}
+
+	public Date getBegin() {
+		return begin;
+	}
+
+	public Date getEnd() {
+		return end;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public Date getConfirmationUntil() {
+		return confirmationUntil;
 	}
 }

@@ -69,7 +69,12 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 	public Object getValueAt(PendingMembershipRow row, int col) {
 		if (col >= 0 && col < COLS.length) {
 			return switch (COLS[col]) {
-				case a -> row.getA();
+				case title -> row.getTitle();
+				case extRef -> row.getExtRef();
+				case begin ->  row.getBegin();
+				case end -> row.getEnd();
+				case type -> row.getType();
+				case confirmationUntil -> row.getConfirmationUntil();
 			};
 		}
 		
@@ -78,7 +83,12 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 	}
 	
 	public enum PendingMembershipsCols implements FlexiSortableColumnDef {
-		a("table.header.a");
+		title("table.header.title"),
+		extRef("table.header.ext.ref"),
+		begin("table.header.lifecycle.start"),
+		end("table.header.lifecycle.end"),
+		type("table.header.type"),
+		confirmationUntil("table.header.confirmation.until");
 		
 		private final String i18nKey;
 		
