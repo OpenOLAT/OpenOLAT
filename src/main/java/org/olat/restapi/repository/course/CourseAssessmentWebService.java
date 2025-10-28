@@ -26,11 +26,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.NavigableSet;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -43,28 +47,33 @@ import jakarta.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
-import org.olat.course.CourseFactory;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
-import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.AssessableResultsVO;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -90,11 +99,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class CourseAssessmentWebService {
 	
 	private static final String VERSION  = "1.0";
-	
+
+	@Autowired
+	private GradeService gradeService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * Retrieves the version of the Course Assessment Web Service.
@@ -241,7 +254,7 @@ public class CourseAssessmentWebService {
 	 */
 	@POST
 	@Path("{nodeId}")
-	@Operation(summary = "Import results (NOT TESTED, USE WITH CAUTIOUS)", description = "Imports results for an assessable course node for the authenticated student")
+	@Operation(summary = "Import results use with caution", description = "Imports results for an assessable course node for the specified student. The end point respect the setting of the element for the grades if configured.")
 	@ApiResponse(responseCode = "200", description = "A result to import", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
@@ -250,44 +263,115 @@ public class CourseAssessmentWebService {
 	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response postAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			AssessableResultsVO resultsVO, @Context HttpServletRequest request) {
-		ICourse course = CourseFactory.openCourseEditSession(courseId);
+		return attachAssessableResults(courseId, nodeId, resultsVO, request);
+	}
+	
+	@PUT
+	@Path("{nodeId}")
+	@Operation(summary = "Import results, use with caution", description = "Imports results for an assessable course node for the specified student. The end point respect the setting of the element for the grades if configured.")
+	@ApiResponse(responseCode = "200", description = "A result to import", content = {
+		@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+		@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The course not found")
+	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response putAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			AssessableResultsVO resultsVO, @Context HttpServletRequest request) {
+		return attachAssessableResults(courseId, nodeId, resultsVO, request);
+	}
+	
+	private Response attachAssessableResults(Long courseId, String nodeId, AssessableResultsVO resultsVO, HttpServletRequest request) {
+		Identity identity = getUserRequest(request).getIdentity();
+		if(identity == null) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		if(!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-
-		Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
-		if(identity == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
 		attachAssessableResults(course, nodeId, identity, resultsVO);
 		return Response.ok().build();
 	}
 	
 	private void attachAssessableResults(ICourse course, String nodeKey, Identity requestIdentity, AssessableResultsVO resultsVO) {
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CourseNode courseNode = getCourseNode(course, nodeKey);
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(course));
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(courseNode));
+		
 		Identity userIdentity = securityManager.loadIdentityByKey(resultsVO.getIdentityKey());
+		// Initialize the user course environment of the assessed identity
+		UserCourseEnvironment userCourseEnv = AssessmentHelper
+				.createAndInitUserCourseEnvironment(userIdentity, course.getCourseEnvironment());
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 
-		// create an identenv with no roles, no attributes, no locale
-		IdentityEnvironment ienv = new IdentityEnvironment();
-		ienv.setIdentity(userIdentity);
-		UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		scoreEval = scoreEval == null ? AssessmentEvaluation.EMPTY_EVAL : scoreEval;
 
-		// Fetch all score and passed and calculate score accounting for the
-		// entire course
-		userCourseEnvironment.getScoreAccounting().evaluateAll();
-
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
-		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(resultsVO.getScore(), scoreScale);
-		ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), weightedScore, scoreScale, null, null, null, Boolean.TRUE, null,
-				null, null, null, null, Long.valueOf(nodeKey));// not directly pass this key
-		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
-
-		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		Float score = resultsVO.getScore();
+		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
+		
+		Boolean passed = resultsVO.getPassed() == null
+				? scoreEval.getPassed()
+				: resultsVO.getPassed();
+		Boolean userVisible = resultsVO.getUserVisible() == null
+				? scoreEval.getUserVisible()
+				: resultsVO.getUserVisible();
+		AssessmentEntryStatus status = AssessmentEntryStatus.isValueOf(resultsVO.getAssessmentStatus())
+				? AssessmentEntryStatus.valueOf(resultsVO.getAssessmentStatus())
+				: scoreEval.getAssessmentStatus();
+		
+		String grade = null;
+		String gradeSystemIdent = null;
+		String performanceClassIdent = null;
+		if(score != null) {
+			if(assessmentConfig.hasGrade()) {
+				if(assessmentConfig.isAutoGrade()) {
+					GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+					NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, Locale.ENGLISH);
+					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+					grade = gradeScoreRange.getGrade();
+					gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+					passed = gradeScoreRange.getPassed();
+				} else {
+					grade = StringHelper.containsNonWhitespace(resultsVO.getGrade())
+							? resultsVO.getGrade()
+							: scoreEval.getGrade();
+				}
+			} else if(assessmentConfig.getCutValue() != null) {
+				Float cutConfig = assessmentConfig.getCutValue();
+				if (cutConfig != null) {
+					boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
+					passed = Boolean.valueOf(aboveCutValue);
+				}
+			}
+		}
+		
+		ScoreEvaluation restScoreEval = new ScoreEvaluation(score, weightedScore, scoreScale,
+				grade, gradeSystemIdent, performanceClassIdent,
+				passed, status, userVisible, scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), null);
+		courseAssessmentService.updateScoreEvaluation(courseNode, restScoreEval, userCourseEnv, requestIdentity, false, Role.coach);
+		
+		if(resultsVO.getAttempts() != null && !Objects.equals(resultsVO.getAttempts(), scoreEval.getAttempts())) {
+			Integer attempts = resultsVO.getAttempts();
+			courseAssessmentService.updateAttempts(courseNode, attempts, null, userCourseEnv, requestIdentity, Role.coach);
+		}
+		
+		if(resultsVO.getCompletion() != null && !Objects.equals(resultsVO.getCompletion(), scoreEval.getCompletion())) {
+			courseAssessmentService.updateCompletion(courseNode, userCourseEnv, resultsVO.getCompletion(), status, Role.coach);
+		}
+		
+		if(resultsVO.getFullyAssessed() != null && !Objects.equals(resultsVO.getFullyAssessed(), scoreEval.getFullyAssessed())
+				&& LearningPathNodeAccessProvider.TYPE.equals(userCourseEnv.getCourseEnvironment().getCourseConfig().getNodeAccessType().getType())) {
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv, resultsVO.getFullyAssessed(), status);
+		}
 	}
 
 
@@ -353,14 +437,10 @@ public class CourseAssessmentWebService {
 		results.setNodeIdent(courseNode.getIdent());
 		
 		// create an identenv with no roles, no attributes, no locale
-		IdentityEnvironment ienv = new IdentityEnvironment();
-		ienv.setIdentity(identity);
-		UserCourseEnvironment userCourseEnvironment = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-		
+		UserCourseEnvironment userCourseEnvironment = AssessmentHelper.createInitAndUpdateUserCourseEnvironment(identity, course);
 		// Fetch all score and passed and calculate score accounting for the entire course
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
-		scoreAccounting.evaluateAll();
-		
+	
 		AssessmentEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 		results.setScore(scoreEval.getScore());
 		results.setMaxScore(scoreEval.getMaxScore());
