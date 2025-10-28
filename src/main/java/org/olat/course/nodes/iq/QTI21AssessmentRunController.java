@@ -173,6 +173,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final UserCourseEnvironment userCourseEnv;
 	private final QTICourseNode courseNode;
 	private final RepositoryEntry testEntry;
+	private final RepositoryEntry courseEntry;
 	private final AssessmentConfig assessmentConfig;
 	private final PanelInfo panelInfo;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -180,7 +181,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
 	private final WindowedResourceableList resourceList;
-	private final Integer extraTime;
+	private Integer extraTime;
 	private final DisadvantageCompensation compensation;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 
@@ -228,7 +229,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		config = courseNode.getModuleConfiguration();
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
-		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		panelInfo = new PanelInfo(QTI21AssessmentRunController.class,
 				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
@@ -260,9 +261,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
 		compensation = (c != null && c.getExtraTime() != null) ? c : null;
 		
-		AssessmentTestSession lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), null, courseEntry, courseNode.getIdent(), testEntry, false);
-		extraTime = lastSession != null ? lastSession.getExtraTime() : null;
-
 		deliveryOptions = getDeliveryOptions();
 		overrideOptions = getOverrideOptions();
 
@@ -346,6 +344,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
 		
+		AssessmentTestSession lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), null, courseEntry, courseNode.getIdent(), testEntry, false);
+		extraTime = lastSession != null ? lastSession.getExtraTime() : null;
+		
 		// configure date period
 		boolean blockedBasedOnDate = blockedBasedOnDate(ureq);
 		mainVC.contextPut("blockDate", Boolean.valueOf(blockedBasedOnDate));
@@ -413,7 +414,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					if(session != null) {
 						File signature = qtiService.getAssessmentResultSignature(session);
 						if(signature != null && signature.exists()) {
-							Widget widget = craeteWidget(session, signature);
+							Widget widget = createWidget(session, signature);
 							assessmentParticipantViewCtrl.addCustomWidget(widget);
 						}
 					}
@@ -424,7 +425,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 
-	private Widget craeteWidget(AssessmentTestSession session, File signature) {
+	private Widget createWidget(AssessmentTestSession session, File signature) {
 		VelocityContainer contentCont = createVelocityContainer("assessment_widgtes_content");
 		
 		contentCont.contextPut("filename", signature.getName());
