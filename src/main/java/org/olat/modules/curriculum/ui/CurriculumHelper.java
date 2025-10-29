@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -140,5 +141,9 @@ public class CurriculumHelper {
 			}
 		}
 		return true;
+	}
+
+	public static boolean isMoreThanCurriculumManager(Roles roles) {
+		return roles.isAdministrator() || roles.isSystemAdmin() || roles.isLearnResourceManager();
 	}
 }

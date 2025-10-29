@@ -65,6 +65,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.ConfirmInstantiateTemplateController;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetDataModel.EntriesCols;
@@ -363,7 +364,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
-		if (roles.isCurriculumManager() && !isMoreThanCurriculumManager(roles)) {
+		if (roles.isCurriculumManager() && !CurriculumHelper.isMoreThanCurriculumManager(roles)) {
 			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.curricular));
 		} else {
 			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
@@ -383,10 +384,6 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 				true, translate("add.resource"));
 		listenTo(cmc);
 		cmc.activate();
-	}
-
-	private boolean isMoreThanCurriculumManager(Roles roles) {
-		return roles.isAdministrator() || roles.isSystemAdmin() || roles.isLearnResourceManager();
 	}
 
 	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {
