@@ -55,6 +55,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -313,12 +314,33 @@ public class CourseAssessmentWebService {
 		scoreEval = scoreEval == null ? AssessmentEvaluation.EMPTY_EVAL : scoreEval;
 
 		BigDecimal scoreScale = ScoreScalingHelper.getScoreScale(courseNode);
-		Float score = resultsVO.getScore();
-		Float weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 		
-		Boolean passed = resultsVO.getPassed() == null
-				? scoreEval.getPassed()
-				: resultsVO.getPassed();
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		
+		Float score = null;
+		Float weightedScore = null;
+		if(hasScore) {
+			score = resultsVO.getScore();
+			
+			Float min = assessmentConfig.getMinScore();
+			Float max = assessmentConfig.getMaxScore();
+			if(score != null && min != null && score.floatValue() < min.floatValue()) {
+				score = min;
+			}
+			if(score != null && max != null && score.floatValue() > max.floatValue()) {
+				score = max;
+			}
+			weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);	
+		}
+		
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
+		Boolean passed = null;
+		if(hasPassed) {
+			passed = resultsVO.getPassed() == null
+					? scoreEval.getPassed()
+					: resultsVO.getPassed();
+		}
+
 		Boolean userVisible = resultsVO.getUserVisible() == null
 				? scoreEval.getUserVisible()
 				: resultsVO.getUserVisible();
@@ -329,7 +351,7 @@ public class CourseAssessmentWebService {
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
-		if(score != null) {
+		if(hasScore && score != null) {
 			if(assessmentConfig.hasGrade()) {
 				if(assessmentConfig.isAutoGrade()) {
 					GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
