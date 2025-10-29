@@ -517,13 +517,13 @@ public class MediaCenterController extends FormBasicController
 		sharedWithKV.add(SelectionValues.entry(MediaToGroupRelationType.REPOSITORY_ENTRY.name(), translate("filter.shared.with.entry")));
 		sharedWithKV.add(SelectionValues.entry(MediaToGroupRelationType.ORGANISATION.name(), translate("filter.shared.with.organisation")));
 		FlexiTableMultiSelectionFilter sharedWithFilter = new FlexiTableMultiSelectionFilter(translate("filter.shared.with"),
-				FILTER_SHARED_WITH, sharedWithKV, true);
+				FILTER_SHARED_WITH, sharedWithKV, false);
 		filters.add(sharedWithFilter);
 
 		SelectionValues withoutAuthorKeyValue = new SelectionValues();
 		withoutAuthorKeyValue.add(SelectionValues.entry("withoutAuthor", translate("filter.without.creator")));
 		FlexiTableOneClickSelectionFilter withoutAuthorFilter = new FlexiTableOneClickSelectionFilter(translate("filter.without.creator"),
-				FILTER_WITHOUT_AUTHOR, withoutAuthorKeyValue, true);
+				FILTER_WITHOUT_AUTHOR, withoutAuthorKeyValue, false);
 		filters.add(withoutAuthorFilter);
 
 		filters.add(new FlexiTableTextFilter(translate("filter.source"), FILTER_SOURCE, false));
