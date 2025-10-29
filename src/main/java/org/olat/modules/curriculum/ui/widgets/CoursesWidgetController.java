@@ -363,7 +363,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		tableConfig.setBatchSelect(true);
 		tableConfig.setImportRessources(false);
 		tableConfig.setCreateRessources(false);
-		if (roles.isCurriculumManager()) {
+		if (roles.isCurriculumManager() && !isMoreThanCurriculumManager(roles)) {
 			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.curricular));
 		} else {
 			tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
@@ -384,7 +384,11 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
+
+	private boolean isMoreThanCurriculumManager(Roles roles) {
+		return roles.isAdministrator() || roles.isSystemAdmin() || roles.isLearnResourceManager();
+	}
+
 	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {
 		RepositoryEntry entry = repositoryService.loadBy(entryRef);
 		if(entry != null) {
