@@ -173,7 +173,7 @@ public class EditCurriculumController extends FormBasicController {
 				currentOrganisation =managedOrganisations.stream()
 						.filter(organisation -> organisationKey.equals(organisation.getKey().toString()))
 						.findFirst()
-						.orElseGet(null);
+						.orElse(null);
 			}
 		}
 		List<Organisation> currentOrganisations = currentOrganisation != null? List.of(currentOrganisation): List.of();
