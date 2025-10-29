@@ -500,6 +500,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_slide_forward { @include o-add-icon('forward-step');}
 .o_icon_slide_up { @include o-add-icon('chevron-up');}
 .o_icon_spacer { @include o-add-icon('arrows-h');}
+.o_icon_statement { @include o-add-icon('medal');}
 .o_icon_radar_chart { @include o-add-icon('chart-line');}
 .o_icon_split { @include o-add-icon('unlink');}
 .o_icon_sort { @include o-add-icon('sort');}
@@ -997,14 +998,14 @@ $fa-css-prefix: "o_icon" !default;
 .o_membership_status_removed { @include o-add-icon('circle-xmark', true);}
 
 /* Certification */
-.o_icon_certification_status_active { @include o-add-icon('check', false); }
-.o_icon_certification_status_inactive { @include o-add-icon('pause', false); }
-.o_icon_certification_status_valid { @include o-add-icon('check', false); }
-.o_icon_certification_status_expired { @include o-add-icon('clock-rotate-left', false); }
-.o_icon_certification_status_paused { @include o-add-icon('pause', false); }
-.o_icon_certification_status_not_renewable { @include o-add-icon('ban', false); }
-.o_icon_certification_status_revoked { @include o-add-icon('ban', false); }
-.o_icon_certification_status_archived { @include o-add-icon('box-archive', false); }
+.o_icon_certification_status_active { @include o-add-icon('check'); }
+.o_icon_certification_status_inactive { @include o-add-icon('pause'); }
+.o_icon_certification_status_valid { @include o-add-icon('check'); }
+.o_icon_certification_status_expired { @include o-add-icon('clock-rotate-left'); }
+.o_icon_certification_status_paused { @include o-add-icon('pause'); }
+.o_icon_certification_status_not_renewable { @include o-add-icon('ban'); }
+.o_icon_certification_status_revoked { @include o-add-icon('ban'); }
+.o_icon_certification_status_archived { @include o-add-icon('box-archive'); }
 
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}
