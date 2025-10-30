@@ -25,6 +25,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.Identity;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
+import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,7 +53,7 @@ public class ConfirmRenewController extends ConfirmationController {
 	@Override
 	protected void doAction(UserRequest ureq) {
 		boolean produced = certificationOrchestrator
-				.processCertificationDemand(certifiedIdentity, certificationProgram, ureq.getRequestTimestamp(), getIdentity());
+				.processCertificationRequest(certifiedIdentity, certificationProgram, RequestMode.COACH, ureq.getRequestTimestamp(), getIdentity());
 		if(produced) {
 			getLogger().info("Renew certificate of {} in certification program {}", certifiedIdentity.getKey(), certificationProgram.getKey());
 			fireEvent(ureq, Event.DONE_EVENT);

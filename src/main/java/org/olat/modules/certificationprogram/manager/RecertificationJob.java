@@ -25,10 +25,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.id.Identity;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
+import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
-import org.olat.modules.certificationprogram.RecertificationMode;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -49,14 +49,13 @@ public class RecertificationJob extends JobWithDB {
 		
 		List<CertificationProgram> programs = certificationProgramService.getCertificationPrograms().stream()
 				.filter(program -> program.getStatus() == CertificationProgramStatusEnum.active)
-				.filter(program -> program.getRecertificationMode() == RecertificationMode.automatic)
 				.toList();
 		
 		Date now = new Date();
 		for(CertificationProgram program:programs) {
 			List<Identity> eligiblesIdentities = certificationProgramService.getEligiblesIdentitiesToRecertification(program, now);
 			for(Identity identity:eligiblesIdentities) {
-				certificationCoordinator.processCertificationDemand(identity, program, now, null);
+				certificationCoordinator.processCertificationRequest(identity, program, RequestMode.AUTOMATIC, now, null);
 			}
 		}
 	}

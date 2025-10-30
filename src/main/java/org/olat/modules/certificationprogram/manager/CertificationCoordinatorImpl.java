@@ -32,6 +32,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
+import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.certificationprogram.ui.component.Duration;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -61,39 +62,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	private CertificationProgramDAO certificationProgramDao;
 	@Autowired
 	private CertificatesManager certificatesManager;
-	
-	@Override
-	public boolean processCertification(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer) {
-		if(identity == null || certificationProgram == null || certificationProgram.getKey() == null) return false;
-		
-		certificationProgram = certificationProgramDao.loadCertificationProgram(certificationProgram.getKey());
-		if(certificationProgram != null && certificationProgram.getStatus() == CertificationProgramStatusEnum.active) {
-			BigDecimal amount = certificationProgram.getCreditPoints();
-			CreditPointSystem system = certificationProgram.getCreditPointSystem();
-			
-			boolean allowed = true;
-			if(system != null && amount != null) {
-				BigDecimal amountToRemove = amount.negate();
-				String note = "Certification \"" + certificationProgram.getDisplayName() + "\"";
-				CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
-				if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
-					allowed = false;
-				} else {
-					creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
-							note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
-				}
-			}
-			
-			if(allowed) {
-				log.info("Generate certificate for {} in certification program {}", identity.getKey(), certificationProgram.getKey());
-				generateCertificate(identity, certificationProgram);
-			}
-		}
-		return false;
-	}
 
 	@Override
-	public boolean processCertificationDemand(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer) {
+	public boolean processCertificationRequest(Identity identity, CertificationProgram certificationProgram,
+			RequestMode requestMode, Date referenceDate, Identity doer) {
 		if(identity == null || certificationProgram == null || certificationProgram.getKey() == null) return false;
 		
 		boolean accepted = false;
@@ -105,32 +77,40 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
 				generateCertificate(identity, certificationProgram);
 				accepted = true;
-			} else {
-				accepted = processRecertificationDemand(identity, certificationProgram, certificate, referenceDate, doer);
+			} else if(certificate.getNextRecertificationDate() != null
+					// Exclude use case 1 (eternal certificates)
+					&& certificationProgram.isValidityEnabled()
+					// Exclude use case 2 (certificates expire without renewal)
+					&& certificationProgram.isRecertificationEnabled()) {
+				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
 			}
 		}
 		return accepted;
 	}
-	
-	private boolean processRecertificationDemand(Identity identity, CertificationProgram certificationProgram, Certificate certificate, Date referenceDate, Identity doer) {
+
+	private boolean processRecertificationRequest(Identity identity, CertificationProgram certificationProgram, Certificate certificate,
+			RequestMode requestMode, Date referenceDate, Identity doer) {
 		BigDecimal amount = certificationProgram.getCreditPoints();
 		CreditPointSystem system = certificationProgram.getCreditPointSystem();
+		boolean allowedAccessWallet = isCertificationAllowedByRequestMode(certificationProgram, system, amount, requestMode);
+		if(!allowedAccessWallet) {
+			// Credit points are configured and the requester cannot access the wallet (automatic / manual option)
+			return false;
+		}
 
 		boolean allowed = isCertificationAllowedByDate(certificate, certificationProgram, referenceDate);
-
-		if(allowed && system != null && amount != null) {
-			BigDecimal amountToRemove = amount.negate();
-			String note = "Certification \"" + certificationProgram.getDisplayName() + "\"";
-			CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
-			if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
-				allowed = false;
-			} else {
-				creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
-						note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
-			}
-		}
-		
 		if(allowed) {
+			if(system != null && amount != null) {
+				BigDecimal amountToRemove = amount.negate();
+				String note = "Certification \"" + certificationProgram.getDisplayName() + "\"";
+				CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
+				if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
+					allowed = false;
+				} else {
+					creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
+							note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
+				}
+			}
 			log.info("Generate paid certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
 			generateCertificate(identity, certificationProgram);
 			return true;
@@ -138,7 +118,15 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		return false;
 	}
 	
-	public boolean isCertificationAllowedByDate(Certificate certificate, CertificationProgram certificationProgram, Date referenceDate) {
+	private boolean isCertificationAllowedByRequestMode(CertificationProgram certificationProgram, CreditPointSystem system, BigDecimal amount, RequestMode requestMode) {
+		return (system == null && amount == null)
+				|| (system != null && amount != null && (
+						(certificationProgram.getRecertificationMode() == RecertificationMode.automatic) //if automatic, participant, cron job and coach are allowed to renew the certificate
+						|| (certificationProgram.getRecertificationMode() == RecertificationMode.manual && requestMode == RequestMode.COACH)
+					));
+	}
+	
+	private boolean isCertificationAllowedByDate(Certificate certificate, CertificationProgram certificationProgram, Date referenceDate) {
 		boolean allowed;
 		if(certificate == null) {
 			allowed = true;
@@ -182,5 +170,12 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withSendEmailIdentityRelations(true)
 				.build();
 		certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
+	}
+	
+	public enum Permission {
+		FIRST,
+		DO_NOTHING, // Don't renew the certificate
+		RENEW,
+		REVOKED
 	}
 }

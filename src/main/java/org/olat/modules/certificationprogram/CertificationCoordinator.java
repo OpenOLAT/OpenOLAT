@@ -37,15 +37,31 @@ public interface CertificationCoordinator {
 	
 	/**
 	 * 
-	 * @param identity The identity who get the certificate
-	 * @param certificationProgram The certification program
-	 * @param referenceDate
-	 * @return
+	 * @param identity The user which will receive the certificate
+	 * @param certificationProgram The certification request
+	 * @param requestMode Request mode (automatic or manual through a coach)
+	 * @param referenceDate The date
+	 * @param doer Which user are acting
+	 * @return true if delivered
 	 */
-	boolean processCertificationDemand(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer);
-	
-	boolean processCertification(Identity identity, CertificationProgram certificationProgram, Date referenceDate, Identity doer);
+	boolean processCertificationRequest(Identity identity, CertificationProgram certificationProgram,
+			RequestMode requestMode, Date referenceDate, Identity doer);
 	
 	void generateCertificate(Identity identity, CertificationProgram certificationProgram);
 
+	
+	public enum RequestMode {
+		/**
+		 * The cron job checks the recertification dates and try to renew them
+		 */
+		AUTOMATIC,
+		/**
+		 * A manager/coach renew manually a certificate
+		 */
+		COACH,
+		/**
+		 * The participant triggers a request by completing a course
+		 */
+		COURSE
+	}
 }

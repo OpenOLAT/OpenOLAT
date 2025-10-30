@@ -86,10 +86,10 @@ import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
+import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
-import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
@@ -841,14 +841,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CertificationProgram certificationProgram = getUniqueActiveCertificationProgram(certificationPrograms);
 		if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 				&& certificationProgram != null) {
-			certificationOrchestrator.processCertificationDemand(assessedIdentity, certificationProgram, new Date(), doer);
+			certificationOrchestrator.processCertificationRequest(assessedIdentity, certificationProgram, RequestMode.COURSE, new Date(), doer);
 		}
 	}
 	
 	private CertificationProgram getUniqueActiveCertificationProgram(List<CertificationProgram> certificationPrograms) {
 		List<CertificationProgram> certificationActivePrograms = certificationPrograms.stream()
 				.filter(program -> program.getStatus() == CertificationProgramStatusEnum.active)
-				.filter(program -> program.getRecertificationMode() == RecertificationMode.automatic)
 				.toList();
 		return certificationActivePrograms.size() == 1
 				? certificationActivePrograms.get(0)
