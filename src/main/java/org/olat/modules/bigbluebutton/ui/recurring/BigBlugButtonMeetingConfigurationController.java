@@ -170,7 +170,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		publishingEl = uifactory.addCheckboxesHorizontal("meeting.publishing", "meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
 		publishingEl.setHelpTextKey("meeting.publishing.hint", null);
 		BigBlueButtonRecordingsPublishedRoles[] publishedRoles = meetingsContext.getRecordingsPublishing() == null
-				? defaultPublishValues() :  meetingsContext.getRecordingsPublishing();
+				? bigBlueButtonModule.defaultPublishValues() :  meetingsContext.getRecordingsPublishing();
 		for(BigBlueButtonRecordingsPublishedRoles publish:publishedRoles) {
 			publishingEl.select(publish.name(), true);
 		}
@@ -250,10 +250,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		String followup = Long.toString(meetingsContext.getFollowupTime());
 		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
-	}
-
-	private BigBlueButtonRecordingsPublishedRoles[] defaultPublishValues() {
-		return bigBlueButtonModule.getDefaultRecordingPublicationSettings().toArray(new BigBlueButtonRecordingsPublishedRoles[]{});
 	}
 
 	private void updatePasswordElement() {

@@ -43,7 +43,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -64,6 +64,8 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 	private AppointmentsService appointmentsService;
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	
 	@Test
 	public void shouldDuplicate() {
@@ -218,7 +220,7 @@ public class DuplicateTopicCallbackTest extends OlatTestCase {
 				.findFirst()
 				.get()
 				.getBBBMeeting();
-		softly.assertThat(meeting.getRecordingsPublishingEnum()).isEqualTo(BigBlueButtonRecordingsPublishedRoles.defaultValues());
+		softly.assertThat(meeting.getRecordingsPublishingEnum()).isEqualTo(bigBlueButtonModule.defaultPublishValues());
 		softly.assertThat(meeting.getName()).as("Name").isEqualTo(title);
 		softly.assertThat(meeting.getDescription()).as("Description").isEqualTo(description);
 		softly.assertThat(meeting.getStartDate()).as("StartDate").isCloseTo(start, 1000);

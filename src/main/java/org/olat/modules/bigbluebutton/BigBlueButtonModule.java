@@ -447,6 +447,10 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		return stringToPublicationEnumSet(defaultRecordingPublicationSettings);
 	}
 
+	public BigBlueButtonRecordingsPublishedRoles[] defaultPublishValues() {
+		return getDefaultRecordingPublicationSettings().toArray(new BigBlueButtonRecordingsPublishedRoles[]{});
+	}
+
 	private Set<BigBlueButtonRecordingsPublishedRoles> stringToPublicationEnumSet(String value) {
 		if (!StringHelper.containsNonWhitespace(value)) {
 			return Set.of();
