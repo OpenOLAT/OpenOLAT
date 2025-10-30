@@ -21,6 +21,8 @@ package org.olat.modules.bigbluebutton.ui;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.UserRequest;
@@ -50,6 +52,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonNativeRecordingsHandler;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonConfigurationServersTableModel.ConfigServerCols;
@@ -77,6 +80,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 	private MultipleSelectionElement avatarEl;
 	private SingleSelection recordingsHandlerEl;
 	private MultipleSelectionElement recordingPermanentEl;
+	private MultipleSelectionElement publishingDefaultEl;
 	private FormLayoutContainer meetingDeletionCont;
 	private TextElement meetingDeletionDaysEl;
 	private TextElement slidesUploadLimitEl;
@@ -171,6 +175,16 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		if(bigBlueButtonModule.isRecordingsPermanent()) {
 			recordingPermanentEl.select(ENABLED_KEY[0], true);
 		}
+
+		SelectionValues publishingDefaultKV = new SelectionValues();
+		publishingDefaultKV.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.coach.name(), translate("publish.to.coach")));
+		publishingDefaultKV.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.participant.name(), translate("publish.to.participant")));
+		publishingDefaultKV.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.all.name(), translate("publish.to.all")));
+		publishingDefaultKV.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.guest.name(), translate("publish.to.guest")));
+		publishingDefaultEl = uifactory.addCheckboxesVertical("meeting.publishing.default", formLayout, publishingDefaultKV.keys(), publishingDefaultKV.values(), 1);
+		for (BigBlueButtonRecordingsPublishedRoles publishedRole : bigBlueButtonModule.getDefaultRecordingPublicationSettings()) {
+			publishingDefaultEl.select(publishedRole.name(), true);
+		}
 		
 		meetingDeletionCont = FormLayoutContainer.createButtonLayout("auto.delete", getTranslator());
 		meetingDeletionCont.setLabel("meeting.deletion.auto", null);
@@ -203,6 +217,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		addServerButton.setVisible(enabled);
 		recordingsHandlerEl.setVisible(enabled);
 		slidesUploadLimitEl.setVisible(enabled);
+		publishingDefaultEl.setVisible(enabled);
 		
 		boolean allowPermanentRecordings = false;
 		for(BigBlueButtonRecordingsHandler recordingsHandler:recordingsHandlers) {
@@ -331,10 +346,22 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			bigBlueButtonModule.setMeetingDeletionDays(meetingDeletionDays);
 			bigBlueButtonModule.setMaxUploadSize(Integer.valueOf(slidesUploadLimitEl.getValue()));
 			bigBlueButtonModule.setRecordingsPermanent(recordingPermanentEl.isVisible() && recordingPermanentEl.isAtLeastSelected(1));
+			bigBlueButtonModule.setDefaultRecordingPublicationSettings(toPublicationEnumSet(publishingDefaultEl.getSelectedKeys()));
 		}
 		CollaborationToolsFactory.getInstance().initAvailableTools();
 	}
-	
+
+	private Set<BigBlueButtonRecordingsPublishedRoles> toPublicationEnumSet(Collection<String> selectedKeys) {
+		if (selectedKeys == null || selectedKeys.isEmpty()) {
+			return Set.of();
+		}
+		try {
+			return selectedKeys.stream().map(BigBlueButtonRecordingsPublishedRoles::valueOf).collect(Collectors.toSet());
+		} catch (IllegalArgumentException e) {
+			return Set.of();
+		}
+	}
+
 	private void addServer(UserRequest ureq) {
 		if(guardModalController(editServerCtlr)) return;
 

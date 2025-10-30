@@ -20,7 +20,9 @@
 package org.olat.modules.bigbluebutton;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.ws.rs.core.UriBuilder;
 
@@ -62,6 +64,7 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_MAX_UPLOAD_SIZE = "vc.bigbluebutton.max.upload.size";
 	private static final String PROP_RECORDINGS_DEF_PERMANENT = "vc.bigbluebutton.recordings.permanent";
 	private static final String PROP_MEETING_DELETION_DAYS = "vc.bigbluebutton.meeting.deletion.days";
+	private static final String PROP_DEFAULT_RECORDING_PUBLICATION_SETTINGS = "vc.bigbluebutton.default.recording.publication.settings";
 	
 	public static final Set<String> SLIDES_MIME_TYPES = Set.of("image/jpg", "image/jpeg", "image/png", "application/pdf",
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -120,7 +123,9 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 	private String recordingsPermanent;
 	@Value("${vc.bigbluebutton.meeting.deletion.days}")
 	private Integer meetingDeletionDays;
-	
+	@Value("${vc.bigbluebutton.default.recording.publication.settings}")
+	private String defaultRecordingPublicationSettings;
+
 	@Autowired
 	public BigBlueButtonModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -169,6 +174,8 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 		if(StringHelper.containsNonWhitespace(meetingDeletionDaysObj)) {
 			meetingDeletionDays = Integer.valueOf(meetingDeletionDaysObj);
 		}
+
+		defaultRecordingPublicationSettings = getStringPropertyValue(PROP_DEFAULT_RECORDING_PUBLICATION_SETTINGS, defaultRecordingPublicationSettings);
 	}
 	
 	@Override
@@ -434,5 +441,37 @@ public class BigBlueButtonModule extends AbstractSpringModule implements ConfigO
 
 	public int getHttpSocketTimeout() {
 		return httpSocketTimeout;
+	}
+	
+	public Set<BigBlueButtonRecordingsPublishedRoles> getDefaultRecordingPublicationSettings() {
+		return stringToPublicationEnumSet(defaultRecordingPublicationSettings);
+	}
+
+	public BigBlueButtonRecordingsPublishedRoles[] defaultPublishValues() {
+		return getDefaultRecordingPublicationSettings().toArray(new BigBlueButtonRecordingsPublishedRoles[]{});
+	}
+
+	private Set<BigBlueButtonRecordingsPublishedRoles> stringToPublicationEnumSet(String value) {
+		if (!StringHelper.containsNonWhitespace(value)) {
+			return Set.of();
+		}
+		try {
+			return Arrays.stream(value.split(",")).map(BigBlueButtonRecordingsPublishedRoles::valueOf)
+					.collect(Collectors.toSet());
+		}  catch (IllegalArgumentException e) {
+			return Set.of();
+		}
+	}
+
+	public void setDefaultRecordingPublicationSettings(Set<BigBlueButtonRecordingsPublishedRoles> value) {
+		this.defaultRecordingPublicationSettings = publicationEnumSetToString(value);
+		setStringProperty(PROP_DEFAULT_RECORDING_PUBLICATION_SETTINGS, this.defaultRecordingPublicationSettings, true);
+	}
+
+	private String publicationEnumSetToString(Set<BigBlueButtonRecordingsPublishedRoles> value) {
+		if (value == null || value.isEmpty()) {
+			return "";
+		}
+		return value.stream().map(BigBlueButtonRecordingsPublishedRoles::name).collect(Collectors.joining(","));
 	}
 }

@@ -38,10 +38,6 @@ public enum BigBlueButtonRecordingsPublishedRoles {
 	none,
 	all;
 	
-	public static final BigBlueButtonRecordingsPublishedRoles[] defaultValues() {
-		return new BigBlueButtonRecordingsPublishedRoles[] { BigBlueButtonRecordingsPublishedRoles.all };
-	}
-	
 	public static final boolean has(BigBlueButtonRecordingsPublishedRoles[] roles, BigBlueButtonRecordingsPublishedRoles roleToHave) {
 		if(roles == null || roles.length == 0) return false;
 		

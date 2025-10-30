@@ -362,7 +362,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		publishingEl = uifactory.addCheckboxesHorizontal("meeting.publishing", "meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
 		publishingEl.setHelpTextKey("meeting.publishing.hint", null);
 		BigBlueButtonRecordingsPublishedRoles[] publishedRoles = meeting == null
-				? BigBlueButtonRecordingsPublishedRoles.defaultValues() : meeting.getRecordingsPublishingEnum();
+				? bigBlueButtonModule.defaultPublishValues() : meeting.getRecordingsPublishingEnum();
 		for(BigBlueButtonRecordingsPublishedRoles publish:publishedRoles) {
 			publishingEl.select(publish.name(), true);
 		}
