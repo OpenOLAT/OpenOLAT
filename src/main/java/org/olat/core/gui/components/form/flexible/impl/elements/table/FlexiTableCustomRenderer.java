@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate.Data;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -123,9 +124,24 @@ class FlexiTableCustomRenderer extends AbstractFlexiCustomRenderer {
 			}
 		}
 		sb.append(">");
-
+		
+		FlexiTableComponentDelegate compDelegate = ftC.getFormItem().getComponentDelegate();
+		if (compDelegate != null && compDelegate.isRowClickEnabled()) {
+			NameValuePair pair = new NameValuePair("tt-row-clicked", Integer.toString(row));
+			String jsCode = FormJSHelper.getXHRFnCallFor(ftC.getFormItem().getRootForm(), ftC.getFormDispatchId(), 1, false, true, true, pair);
+			sb.append("<a class=\"o_row_link ");
+			sb.append(compDelegate.getRowClickCss(), StringHelper.containsNonWhitespace(compDelegate.getRowClickCss()));
+			sb.append("\" href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false;\"");
+			sb.append(FormJSHelper.triggerClickOnKeyDown(compDelegate.isRowClickButton()));
+			sb.append(" draggable=\"false\">");
+		}
+		
 		renderRowContent(renderer, sb, ftC, rowIdPrefix, row, ubu, translator, renderResult);
-
+		
+		if (compDelegate != null && compDelegate.isRowClickEnabled()) {
+			sb.append("</a>");
+		}
+		
 		sb.append("</div>");
 	}
 }

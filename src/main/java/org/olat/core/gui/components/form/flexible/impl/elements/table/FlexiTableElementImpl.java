@@ -1258,6 +1258,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String openCloseAll = form.getRequestParameter("tt-openclose");
 		String selectAllColumn = form.getRequestParameter("cc-selectall");
 		String deselectAllColumn = form.getRequestParameter("cc-deselectall");
+		String rowClicked = form.getRequestParameter("tt-row-clicked");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox) && matchDispatchUri(dispatchuri)) {
@@ -1329,6 +1330,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doSelectAllColumn(ureq, Integer.parseInt(selectAllColumn));
 		} else if(dispatchuri != null && StringHelper.isLong(deselectAllColumn)) {
 			doUnSelectAllColumn(ureq, Integer.parseInt(deselectAllColumn));
+		} else if(StringHelper.isLong(rowClicked) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+			getRootForm().fireFormEvent(ureq, new SelectionEvent(FlexiTableElement.ROW_CLICK_EVENT, Integer.parseInt(rowClicked), this, FormEvent.ONCLICK));
 		} else if(sortOrderButton != null
 				&& sortOrderButton.getFormDispatchId().equals(dispatchuri)) {
 			doSetSortOrder(ureq);

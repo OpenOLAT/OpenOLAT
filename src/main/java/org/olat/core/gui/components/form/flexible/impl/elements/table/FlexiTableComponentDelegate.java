@@ -34,7 +34,21 @@ public interface FlexiTableComponentDelegate {
 		return false;
 	}
 	
-	public Iterable<Component> getComponents(int row, Object rowObject);
+	@SuppressWarnings("unused")
+	public default Iterable<Component> getComponents(int row, Object rowObject) {
+		return null;
+	}
 	
+	public default boolean isRowClickEnabled() {
+		return false;
+	}
+	
+	public default String getRowClickCss() {
+		return "o_link_uncolored";
+	}
+	
+	public default boolean isRowClickButton() {
+		return false;
+	}
 
 }

@@ -33,12 +33,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.indicators.IndicatorsFactory;
 import org.olat.core.gui.components.indicators.IndicatorsItem;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.util.StringHelper;
@@ -52,7 +55,7 @@ import org.olat.gui.demo.guidemo.dashboard.GuiDemoIndicatorsController.LabelFigu
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class GuiDemoTableWidgetController extends TableWidgetController {
+public class GuiDemoTableWidgetController extends TableWidgetController implements FlexiTableComponentDelegate {
 	
 	private static final String CMD_INDICATOR = "indicator";
 	
@@ -63,13 +66,15 @@ public class GuiDemoTableWidgetController extends TableWidgetController {
 	private final String title;
 	private final boolean showHeader;
 	private final boolean linkCells;
+	private final boolean listView;
 
-	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, boolean showHeader, boolean linkCells) {
+	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, boolean showHeader, boolean linkCells, boolean listView) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
 		this.title = title;
 		this.showHeader = showHeader;
 		this.linkCells = linkCells;
+		this.listView = listView;
 		
 		initForm(ureq);
 	}
@@ -131,8 +136,24 @@ public class GuiDemoTableWidgetController extends TableWidgetController {
 		if (!showHeader) {
 			tableEl.setCssDelegate(new HideHeaderDelegate());
 		}
+		if (listView) {
+			tableEl.setRendererType(FlexiTableRendererType.custom);
+			VelocityContainer rowVC = createVelocityContainer("table_row");
+			rowVC.setDomReplacementWrapperRequired(false);
+			tableEl.setRowRenderer(rowVC, this);
+		}
 		
 		return tableEl.getComponent().getComponentName();
+	}
+
+	@Override
+	public boolean isRowClickEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isRowClickButton() {
+		return true;
 	}
 
 	@Override
@@ -190,7 +211,7 @@ public class GuiDemoTableWidgetController extends TableWidgetController {
 		}
 	}
 	
-	private class Row {
+	public class Row {
 		
 		private final String col1;
 		private final String col2;

@@ -41,21 +41,27 @@ public class GuiDemoTableWidgetsController extends BasicController {
 		
 		GuiDemoTableWidgetController table1Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title"),
-				true, false);
+				true, false, false);
 		listenTo(table1Ctrl);
 		mainVC.put("table1", table1Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table2Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.without.header"),
-				false, false);
+				false, false, false);
 		listenTo(table2Ctrl);
 		mainVC.put("table2", table2Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table3Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.with.cell.links"),
-				true, true);
+				true, true, false);
 		listenTo(table3Ctrl);
 		mainVC.put("table3", table3Ctrl.getInitialComponent());
+		
+		GuiDemoTableWidgetController table4Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
+				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.list.view"),
+				true, false, true);
+		listenTo(table4Ctrl);
+		mainVC.put("table4", table4Ctrl.getInitialComponent());
 	}
 
 	@Override

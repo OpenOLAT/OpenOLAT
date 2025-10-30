@@ -52,6 +52,7 @@ import org.olat.core.util.prefs.Preferences;
  */
 public interface FlexiTableElement extends FormItem, FormItemCollection {
 
+	public static final String ROW_CLICK_EVENT = "rClick";
 	public static final String ROW_SELECT_EVENT = "rSelect";
 	public static final String ROW_CHECKED_EVENT = "rChecked";
 	public static final String ROW_UNCHECKED_EVENT = "rUnchecked";

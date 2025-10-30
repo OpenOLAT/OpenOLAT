@@ -1024,6 +1024,25 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
+/* Helper classes to display a custom row as a table */
+@mixin row-flex($index) {
+	padding: $table-condensed-cell-padding;
+	flex: $index $index 0%;
+}
 
-
+.o_row_link {
+	display: flex;
+	width: 100%;
+	align-items: center;
+}
+.o_row_flex {
+	display: flex;
+	width: 100%;
+	align-items: center;
 	
+	.o_row_flex_1 {@include row-flex(1); }
+	.o_row_flex_2 {@include row-flex(2); }
+	.o_row_flex_3 {@include row-flex(3); }
+	
+	
+}
