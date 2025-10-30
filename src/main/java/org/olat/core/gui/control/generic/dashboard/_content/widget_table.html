@@ -1,0 +1,22 @@
+<div class="o_dashboard_widget o_dashboard_table_widget o_bento_content">
+	<div class="o_dashboard_widget_header">
+		<div class="o_dashboard_widget_title">
+			<h3>$title<h3>
+		</div>
+	</div>
+	#if($r.available($indicatorsComponentName) && $r.visible($indicatorsComponentName))
+		<div class="o_dashboard_widget_indicators">
+			$r.render($indicatorsComponentName)
+		</div>
+	#end
+	#if($r.available($tableComponentName) && $r.visible($tableComponentName))
+		<div class="o_dashboard_widget_table">
+			$r.render($tableComponentName)
+		</div>
+	#end
+	#if($r.available($showAllComponentName) && $r.visible($showAllComponentName))
+		<div class="o_dashboard_widget_footer">
+			$r.render($showAllComponentName)
+		</div>
+	#end
+</div>

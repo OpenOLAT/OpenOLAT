@@ -380,10 +380,13 @@
 }
 
 
-/* Link without color */
+/* Link without color and decoration */
 .o_link_plain, .o_link_plain:link, .o_link_plain:hover {
 	color: inherit;
 	text-decoration: inherit;
+}
+.o_link_uncolored, .o_link_uncolored:link, .o_link_uncolored:hover  {
+	color: inherit;
 }
 
 .panel-imagebg {

@@ -81,6 +81,14 @@ $o-bento-half-columns: math.div($o-bento-cols, 2);
 	}
 }
 
+// Vertical stretch off all divs, forms, etc until the real content of the box
+.o_bento_box {
+	:has(.o_bento_content):is(div, form),
+	.o_bento_content {
+		height: 100%;
+	}
+}
+
 .o_bento_gui_demo {
 	.o_bento_box {
 		border: 2px solid $brand-primary;

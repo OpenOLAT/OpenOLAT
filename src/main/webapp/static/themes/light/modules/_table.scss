@@ -122,7 +122,7 @@
 			text-decoration: none;
 		}
 	}
-	td a:not(.btn):not(.o_practice_play) {
+	td a:not(.btn):not(.o_practice_play):not(.o_link_uncolored) {
 		/* fix a11y contrast on stipped and non-stryped cols */
 		color: $o-table-link-color;
 	}
@@ -211,7 +211,7 @@
 		}
 		/* fix a11y contrast on stipped cols */
  	 	> tbody > tr:nth-of-type(odd) {
-			a:not(.btn):not(.o_practice_play) {
+			a:not(.btn):not(.o_practice_play):not(.o_link_uncolored) {
 				color: o-a11y-color($link-color, $table-bg-accent);
 			}
  	 	}
@@ -409,6 +409,16 @@ table.table.o_table_nowrap>tbody>tr>td {
 // Add this class to the cells of a column which should fill out the remaining space.
 .o_cell_stretch {
 	width: 100%;
+}
+.table > tbody > tr > td {
+	&:has(>.o_cell_stretch_full) {
+		padding: 0;
+	}
+	.o_cell_stretch_full {
+		display: grid;
+		align-items: center;
+		padding: $table-condensed-cell-padding;
+	}
 }
 
 .o_table_tabs {
@@ -896,6 +906,11 @@ a.o_orderby, a.o_orderby:hover {
 
 .o_table_header_fw {
 	width: 40px;
+}
+.o_thead_sr_only {
+	thead {
+		@extend %sr-only;
+	}
 }
 
 .o_table_filters_and_settings {

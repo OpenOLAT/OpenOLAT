@@ -1949,3 +1949,87 @@ ul.o_list_narrow {
 	display: flex;
 	align-items: baseline;
 }
+
+/* Indicators component */
+.o_indicators_container {
+	container-type: inline-size;
+}
+.o_indicators {
+	display: grid;
+	gap: $o-indicator-indicators-gap;
+	
+	grid-template-columns: 1fr;
+	.o_indicators_separator {
+		border-top: $o-indicator-separator-border;
+		margin: 0 $o-indicator-separator-margin;
+	}
+	
+	$o-indicators-brake: $o-indicator-indicator-max-width + $o-indicator-indicators-gap + 2 * ($o-indicator-indicator-max-width + $o-indicator-focus-gap);
+	@container (width > #{$o-indicators-brake}) {
+		grid-template-columns: minmax(min-content, $o-indicator-indicator-max-width) 2px 1fr;
+		.o_indicators_separator {
+			border-top: none;
+			border-left: $o-indicator-separator-border;
+			margin: $o-indicator-separator-margin 0;
+		}
+	}
+	
+	.o_indicators_key {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: $o-indicator-key-padding;
+		min-width: $o-indicator-key-min-width;
+		
+		> a {
+			flex-grow: 1;
+		}
+	}
+	
+	.o_indicators_focus {
+		container-type: inline-size;
+		
+		display: grid;
+		align-content: center;
+		
+		ul {
+			display: grid;
+			grid-template-columns: repeat(1, minmax(0, 1fr));
+			gap: $o-indicator-focus-gap;
+			margin: 0;
+			width: 100%;
+			
+			// Number of rows is depending from the container width
+			@for $o-index from 1 through 5 {
+				$o-indicators-focus-width: $o-index * ($o-indicator-indicator-max-width + $o-indicator-focus-gap);
+				@container (width > #{$o-indicators-focus-width}) {
+					grid-template-columns: repeat(($o-index + 1), minmax(0, 1fr));
+				}
+			}
+		}
+	}
+	
+	.o_indicator {
+		display: flex;
+		flex-direction: column-reverse;
+		align-items: center;
+		gap: $o-indicator-indicator-gap;
+	}
+	
+	.o_indicator_figure {
+		font-size: $o-indicator-figure-font-size;
+		&:is(.o_indicators_focus *) {
+			font-size: $o-indicator-focus-figure-font-size;
+		}
+		
+		&.o_indicator_figure_text {
+			margin-bottom: -$o-indicator-indicator-gap;
+		}
+	}
+	
+	.o_indicator_label {
+		font-size: $o-indicator-label-font-size;
+		color: $o-indicator-label-color;
+	}
+	
+}

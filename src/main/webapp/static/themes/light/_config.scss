@@ -1779,7 +1779,7 @@ $o-card-border-radius						: 4px !default;
 $o-card-hover-color							: $brand-primary !default;
 $o-card-title-color							: $o-coursesite-meta-title-color !default;
 
-/* Widget */
+/* Performance Widget */
 $o-widget-min-width							: 260px !default;
 $o-widget-height							: 135px !default;
 $o-widget-padding							: 20px !default;
@@ -1803,6 +1803,15 @@ $o-widget-figure-desc-font-size				: 14px !default;
 $o-widget-figure-desc-font-weight			: normal !default;
 $o-widget-figure-desc-color					: #2d2926 !default;
 $o-widgets-gap								: 10px !default;
+
+/* Dashboard Widget */
+$o-dashboard-widget-padding						: 0 !default;
+$o-dashboard-widget-base-margin					: 15px !default;
+$o-dashboard-widget-content-margin				: 0 $o-dashboard-widget-base-margin !default;
+$o-dashboard-widget-border						: 1px solid #e7e7e7 !default;
+$o-dashboard-widget-border-radius				: 4px !default;
+$o-dashboard-widget-bg-color						: $panel-bg !default;
+$o-dashboard-widget-title-font-size				: 30px !default;
 
 /* Course Quota */
 $o-course-quota-progress-iq-bg-color		: $o-cn-style-cat-light-blue-color;
@@ -1880,3 +1889,16 @@ $o-o_speedometer-success-border-color	: $o-labeled-green-border-color !default;
 $o-o_speedometer-warning-border-color	: $o-labeled-yellow-border-color !default;
 $o-o_speedometer-danger-border-color	: $o-labeled-red-border-color !default;
 
+/* Indicators */
+$o-indicator-indicators-gap					: 20px !default;
+$o-indicator-separator-border				: 1px solid $o-dialog-cn-box-border-color !default;
+$o-indicator-separator-margin				: 20px !default;
+$o-indicator-key-min-width					: 100px !default;
+$o-indicator-key-padding						: 0 5px !default;
+$o-indicator-focus-gap						: 10px !default;
+$o-indicator-indicator-max-width				: 165px !default;
+$o-indicator-indicator-gap					: 10px !default;
+$o-indicator-label-font-size					: 14px !default;
+$o-indicator-label-color						: $text-muted !default;
+$o-indicator-figure-font-size				: 40px !default;
+$o-indicator-focus-figure-font-size			: 0.85 * $o-indicator-figure-font-size !default;
