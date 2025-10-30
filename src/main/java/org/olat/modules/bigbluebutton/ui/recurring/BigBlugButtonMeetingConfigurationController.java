@@ -45,6 +45,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
@@ -86,6 +87,8 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	
 	@Autowired
 	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	
 	public BigBlugButtonMeetingConfigurationController(UserRequest ureq, WindowControl wControl,
 			RecurringMeetingsContext meetingsContext, StepsRunContext runContext, Form form) {
@@ -167,7 +170,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		publishingEl = uifactory.addCheckboxesHorizontal("meeting.publishing", "meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
 		publishingEl.setHelpTextKey("meeting.publishing.hint", null);
 		BigBlueButtonRecordingsPublishedRoles[] publishedRoles = meetingsContext.getRecordingsPublishing() == null
-				? BigBlueButtonRecordingsPublishedRoles.defaultValues() :  meetingsContext.getRecordingsPublishing();
+				? defaultPublishValues() :  meetingsContext.getRecordingsPublishing();
 		for(BigBlueButtonRecordingsPublishedRoles publish:publishedRoles) {
 			publishingEl.select(publish.name(), true);
 		}
@@ -248,7 +251,11 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		String followup = Long.toString(meetingsContext.getFollowupTime());
 		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
 	}
-	
+
+	private BigBlueButtonRecordingsPublishedRoles[] defaultPublishValues() {
+		return bigBlueButtonModule.getDefaultRecordingPublicationSettings().toArray(new BigBlueButtonRecordingsPublishedRoles[]{});
+	}
+
 	private void updatePasswordElement() {
 		boolean externalInkenabled = externalLinkEl.isVisible() && externalLinkEl.isAtLeastSelected(1);
 		passwordEnableEl.setVisible(externalInkenabled);
