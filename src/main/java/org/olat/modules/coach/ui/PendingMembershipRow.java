@@ -23,7 +23,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -33,31 +36,34 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class PendingMembershipRow extends UserPropertiesRow {
-	private final ResourceReservation resourceReservation;
 	private final String title;
 	private final String extRef;
 	private final Date begin;
 	private final Date end;
 	private final String type;
 	private final Date confirmationUntil;
+	private final Long curriculumElementKey;
+	private final Long reservationKey;
+	
+	private FormLink toolsLink;
+	private FormLink acceptLink;
+	private FormLink declineLink;
+	private MemberDetailsController detailsCtrl;
 
-	public PendingMembershipRow(Long identityKey, String title, String extRef,
-								Date begin, Date end, String type, Date confirmationUntil, 
-								ResourceReservation resourceReservation, 
+	public PendingMembershipRow(Identity identity, String title, String extRef,
+								Date begin, Date end, String type, Date confirmationUntil,
+								Long curriculumElementKey, Long reservationKey,
 								List<UserPropertyHandler> userPropertyHandlers,
-								String[] identityProps, Locale locale) {
-		super(identityKey, extRef, userPropertyHandlers, identityProps, locale);
+								Locale locale) {
+		super(identity, userPropertyHandlers, locale);
 		this.title = title;
 		this.extRef = extRef;
-		this.type = type;
-		this.confirmationUntil = confirmationUntil;
-		this.resourceReservation = resourceReservation;
 		this.begin = begin;
 		this.end = end;
-	}
-
-	public ResourceReservation getResourceReservation() {
-		return resourceReservation;
+		this.type = type;
+		this.confirmationUntil = confirmationUntil;
+		this.curriculumElementKey = curriculumElementKey;
+		this.reservationKey = reservationKey;
 	}
 
 	public String getTitle() {
@@ -82,5 +88,79 @@ public class PendingMembershipRow extends UserPropertiesRow {
 
 	public Date getConfirmationUntil() {
 		return confirmationUntil;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
+	}
+
+	public FormLink getAcceptLink() {
+		return acceptLink;
+	}
+
+	public void setAcceptLink(FormLink acceptLink) {
+		this.acceptLink = acceptLink;
+	}
+
+	public FormLink getDeclineLink() {
+		return declineLink;
+	}
+
+	public void setDeclineLink(FormLink declineLink) {
+		this.declineLink = declineLink;
+	}
+
+	public MemberDetailsController getDetailsController() {
+		return detailsCtrl;
+	}
+
+	public void setDetailsController(MemberDetailsController detailsCtrl) {
+		this.detailsCtrl = detailsCtrl;
+	}
+	
+	public String getDetailsControllerName() {
+		if (detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().getComponent().getComponentName();
+		}
+		return null;
+	}
+
+	public boolean isDetailsControllerAvailable() {
+		if (detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().isVisible();
+		}
+		return false;
+	}
+
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
+	}
+
+
+	public Long getReservationKey() {
+		return reservationKey;
+	}
+
+	public boolean matchesSearchString(String searchString) {
+		if (!StringHelper.containsNonWhitespace(searchString)) {
+			return true;
+		}
+		searchString = searchString.toLowerCase();
+		if (StringHelper.containsNonWhitespace(getTitle()) && getTitle().toLowerCase().contains(searchString)) {
+			return true;
+		}
+		if (StringHelper.containsNonWhitespace(getExtRef()) && getExtRef().toLowerCase().contains(searchString)) {
+			return true;
+		}
+		for (String identityProp : getIdentityProps()) {
+			if (identityProp.toLowerCase().contains(searchString)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

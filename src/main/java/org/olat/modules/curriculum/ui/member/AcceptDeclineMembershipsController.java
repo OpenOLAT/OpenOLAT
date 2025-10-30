@@ -102,6 +102,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	private List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private Object userObject;
 	
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;
@@ -430,5 +431,13 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 
 	public CurriculumElement getSelectedCurriculumElement() {
 		return selectedCurriculumElement;
+	}
+
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
 	}
 }

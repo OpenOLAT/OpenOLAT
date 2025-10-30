@@ -39,7 +39,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<PendingMembershipRow> 
 		implements SortableFlexiTableDataModel<PendingMembershipRow> {
 
-	private static final PendingMembershipsCols[] COLS = PendingMembershipsCols.values();
+	private static final PendingMembershipsCol[] COLS = PendingMembershipsCol.values();
 	private final UserManager userManager;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Locale locale;
@@ -75,6 +75,9 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 				case end -> row.getEnd();
 				case type -> row.getType();
 				case confirmationUntil -> row.getConfirmationUntil();
+				case accept -> row.getAcceptLink();
+				case decline -> row.getDeclineLink();
+				case tools ->  row.getToolsLink();
 			};
 		}
 		
@@ -82,17 +85,20 @@ public class PendingMembershipsTableModel extends DefaultFlexiTableDataModel<Pen
 		return row.getIdentityProp(propPos);
 	}
 	
-	public enum PendingMembershipsCols implements FlexiSortableColumnDef {
+	public enum PendingMembershipsCol implements FlexiSortableColumnDef {
 		title("table.header.title"),
 		extRef("table.header.ext.ref"),
 		begin("table.header.lifecycle.start"),
 		end("table.header.lifecycle.end"),
 		type("table.header.type"),
-		confirmationUntil("table.header.confirmation.until");
+		confirmationUntil("table.header.confirmation.until"), 
+		accept("accept"),
+		decline("decline"), 
+		tools("toolbox.actions");
 		
 		private final String i18nKey;
 		
-		private PendingMembershipsCols(String i18nKey) {
+		private PendingMembershipsCol(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 

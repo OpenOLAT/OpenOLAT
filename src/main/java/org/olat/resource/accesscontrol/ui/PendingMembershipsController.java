@@ -367,7 +367,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		if (rowObject instanceof PendingMembershipRow pendingMembershipRow && 
 				pendingMembershipRow.getDetailsController() != null) {
 			components.add(pendingMembershipRow.getDetailsController().getInitialFormItem().getComponent());
-		};
+		}
 		return components;
 	}
 	
