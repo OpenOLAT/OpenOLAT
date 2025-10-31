@@ -721,6 +721,17 @@ public class CourseListController extends FormBasicController implements Activat
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && !entries.isEmpty()) {
+			ContextEntry entry = entries.get(0);
+			String tabName = entry.getOLATResourceable().getResourceableTypeName();
+			if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(tabName)) {
+				FlexiFiltersTab tab = tableEl.getFilterTabById(tabName);
+				if(tab != null) {
+					tableEl.setSelectedFilterTab(ureq, tab);
+				}
+			}
+		}
+		
 		// Load only on activation
 		loadModel();
 	}

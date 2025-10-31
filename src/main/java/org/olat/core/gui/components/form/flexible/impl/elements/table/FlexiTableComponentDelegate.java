@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
+
 import org.olat.core.gui.components.Component;
 
 /**
@@ -36,7 +38,7 @@ public interface FlexiTableComponentDelegate {
 	
 	@SuppressWarnings("unused")
 	public default Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
+		return List.of();
 	}
 	
 	public default boolean isRowClickEnabled() {

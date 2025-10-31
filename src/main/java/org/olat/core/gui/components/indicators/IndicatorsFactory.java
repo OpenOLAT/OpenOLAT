@@ -54,14 +54,14 @@ public class IndicatorsFactory {
 	}
 
 	public static Link createIndicatorLink(String name, String cmd, String label, String figure, ComponentEventListener listener) {
-		String linkText = createLinkText(figure, label);
+		String linkText = createLinkText(label, figure);
 		Link link = LinkFactory.createCustomLink(name, cmd, linkText, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setElementCssClass("o_indicator_link");
 		return link;
 	}
 
 	public static FormLink createIndicatorFormLink(String name, String cmd, String label, String figure, FormItemContainer formLayout) {
-		String linkText = createLinkText(figure, label);
+		String linkText = createLinkText(label, figure);
 		FormLink link = FormUIFactory.getInstance().addFormLink(name, cmd, linkText, null, formLayout, Link.LINK + Link.NONTRANSLATED);
 		link.setElementCssClass("o_indicator_link");
 		return link;
@@ -79,7 +79,7 @@ public class IndicatorsFactory {
 		return indicatorComp;
 	}
 	
-	private static String createLinkText(String figure, String label) {
+	public static String createLinkText(String label, String figure) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div class='o_indicator'>");
 		if (StringHelper.containsNonWhitespace(label)) {

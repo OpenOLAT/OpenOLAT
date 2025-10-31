@@ -74,8 +74,8 @@ public class IndicatorsComponent extends FormBaseComponentImpl implements Compon
 
 	@Override
 	public Iterable<Component> getComponents() {
-		if (keyIndicator == null) {
-			return focusIndicators;
+		if (keyIndicator != null) {
+			return List.of(keyIndicator);
 		}
 		
 		List<Component> componenets = new ArrayList<>();

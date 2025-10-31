@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -45,6 +46,7 @@ import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.security.PendingCourseBookingsRightProvider;
 import org.olat.modules.coach.ui.component.SearchEvent;
 import org.olat.modules.coach.ui.component.SearchStateEntry;
+import org.olat.modules.coach.ui.dashboard.CoachDashboardController;
 import org.olat.modules.coach.ui.manager.CoachReportsController;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.grading.GradingModule;
@@ -96,6 +98,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	private ImplementationsListController implementationsCtrl;
 	private final CoachMainSearchHeaderController searchFieldCtrl;
 	private PendingConfirmationsController pendingConfirmationsCtrl;
+	private CoachDashboardController dashboardCtrl;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -114,6 +117,7 @@ public class CoachMainRootController extends BasicController implements Activate
 			CoachingSecurity coachingSec, GradingSecurity gradingSec) {
 		super(ureq, wControl);
 		this.content = content;
+		content.addListener(this);
 		this.gradingSec = gradingSec;
 		this.coachingSec = coachingSec;
 
@@ -123,13 +127,18 @@ public class CoachMainRootController extends BasicController implements Activate
 				|| !identityRelationsService.getRelationsAsSource(getIdentity()).isEmpty();
 		showPendingConfirmations = curriculumModule.isEnabled() && accessControlModule.isInvoiceEnabled() && canViewPendingCourseBookings();
 		mainVC = createVelocityContainer("coaching");
+		putInitialPanel(mainVC);
 		
 		searchFieldCtrl = new CoachMainSearchHeaderController(ureq, getWindowControl());
 		listenTo(searchFieldCtrl);
 		mainVC.put("searchField", searchFieldCtrl.getInitialComponent());
 		
-		putInitialPanel(mainVC);
 		initButtons();
+		
+		dashboardCtrl = new CoachDashboardController(ureq, wControl, coachingSec);
+		dashboardCtrl.reload();
+		listenTo(dashboardCtrl);
+		mainVC.put("dashboard", dashboardCtrl.getInitialComponent());
 	}
 	
 	private boolean canViewPendingCourseBookings() {
@@ -184,6 +193,14 @@ public class CoachMainRootController extends BasicController implements Activate
 	}
 	
 	@Override
+	protected void doDispose() {
+		if (content != null) {
+			content.removeListener(this);
+		}
+		super.doDispose();
+	}
+
+	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		content.popUpToController(this);
 		cleanUp();
@@ -236,6 +253,12 @@ public class CoachMainRootController extends BasicController implements Activate
 			doImplementations(ureq);
 		} else if (pendingConfirmationsButton == source) {
 			doPendingConfirmations(ureq);
+		} else if (content == source) {
+			if (event instanceof PopEvent pe) {
+				if (content.getLastController() == content.getRootController()) {
+					dashboardCtrl.reload();
+				}
+			}
 		}
 	}
 	

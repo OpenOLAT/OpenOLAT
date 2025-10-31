@@ -1,0 +1,30 @@
+<div class="o_coaching_widget_course_row">
+	<div class="o_row_course">
+		<div class="o_course">
+			<div class="o_visual">
+				#if($row.isThumbnailAvailable())
+					<img src="${row.getThumbnailRelPath()}" alt="" />
+				#else
+					<div class="o_visual_not_available"></div>
+				#end
+			</div>
+			
+			<div class="o_meta">
+				#if($r.isNotEmpty($row.externalRef))
+					<div class="o_ext_ref">
+						#if($r.isNotEmpty($row.externalRef))
+							$r.escapeHtml($row.externalRef)
+						#end
+					</div>
+				#end
+				<h4 class="o_title o_nowrap">$r.escapeHtml($row.displayName)</h4>
+			</div>
+		</div>
+	</div>
+	<div class="o_row_completion">
+		$row.completion
+	</div>
+	<div class="o_row_success_status">
+		$row.successStatus
+	</div>
+</div>

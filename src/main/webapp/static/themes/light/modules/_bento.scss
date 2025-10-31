@@ -35,8 +35,7 @@ $o-bento-half-columns: math.div($o-bento-cols, 2);
 	max-width: min($o-page-width-max, 100%);
 }
 
-.o_bento_box {
-	padding: #{$o-bento-box-padding};
+.o_bento_box {	
 	min-height: var(--o-bento-row-min-height);
 	border-radius: #{$o-bento-border-radius};
 	
@@ -92,5 +91,6 @@ $o-bento-half-columns: math.div($o-bento-cols, 2);
 .o_bento_gui_demo {
 	.o_bento_box {
 		border: 2px solid $brand-primary;
+		padding: $panel-body-padding;
 	}
 }

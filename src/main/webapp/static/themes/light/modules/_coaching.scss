@@ -93,3 +93,55 @@
 
 }
 
+/* Dashboard */
+.o_coaching_widget_course_row {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	padding: 5px;
+	gap: 10px;
+	
+	.o_row_course {
+		flex-grow: 1;
+		
+		overflow: hidden;
+		div {
+			overflow: hidden;
+		}
+		
+		.o_course {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			.o_visual {
+				height: 50px;
+				width: 75px;
+				flex-shrink: 0;
+			}
+			.o_meta {
+				display: flex;
+				flex-direction: column;
+				.o_ext_ref {
+					color: $text-muted;
+					font-size: 10px;
+					line-height: 12px;
+					height: 12px;
+					@include text-overflow();
+				}
+				.o_title {
+					line-height: 1.2;
+					font-size: 21px;
+					margin: 0;
+				}
+			}
+		}
+	}
+	.o_row_completion {
+		width: 60px;
+		flex-shrink: 0; 
+	}
+	.o_row_success_status {
+		width: 170px;
+		flex-shrink: 0; 
+	}
+}

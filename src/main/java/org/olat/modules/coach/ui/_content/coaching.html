@@ -51,3 +51,9 @@ $r.render("searchField")
 	</fieldset>
 	#end
 </div>
+	
+#if($r.visible("dashboard"))
+	<div class="o_block">
+		$r.render("dashboard")
+	</div>
+#end
