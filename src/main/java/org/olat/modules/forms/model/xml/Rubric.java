@@ -37,6 +37,8 @@ public class Rubric extends AbstractElement {
 	private static final long serialVersionUID = -8486210445435845568L;
 	
 	public static final String TYPE = "formrubric";
+	
+	public static final int MAX_COMMENT_LENGTH = 2000;
 
 	private boolean mandatory;
 	private SliderType sliderType;
