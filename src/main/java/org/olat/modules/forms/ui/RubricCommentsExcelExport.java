@@ -134,7 +134,7 @@ public class RubricCommentsExcelExport {
 					
 					String text = response.getStringuifiedResponse();
 					if (StringHelper.containsNonWhitespace(text)) {
-						text = text.replaceAll("\n", "");
+						text = text.replaceAll("\n", " ");
 						row.addCell(col++, text, workbook.getStyles().getTopAlignStyle());
 					}
 				}
