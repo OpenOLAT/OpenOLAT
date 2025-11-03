@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.model.BlockLayoutSettings;
 import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
@@ -271,7 +272,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		if (element.isSliderCommentsEnabled()) {
 			sliderCommentEl = uifactory.addTextAreaElement("o_slider_comment_" + CodeHelper.getRAMUniqueID(),
 					"slider.comment", Rubric.MAX_COMMENT_LENGTH, 3, 72, 
-					false, false, true, null, flc);
+					true, false, true, null, flc);
 			sliderCommentEl.setDomReplacementWrapperRequired(false);
 		}
 		return sliderCommentEl;
@@ -536,7 +537,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 		
 		EvaluationFormResponse commentResponse = commentResponses.get(sliderWrapper.getSliderCommentId());
 		if (sliderWrapper.isSliderCommentEnabled()) {
-			String comment = sliderWrapper.getSliderCommentEl().getValue();
+			String comment = prepareComment(sliderWrapper.getSliderCommentEl().getValue());
 			if (StringHelper.containsNonWhitespace(comment)) {
 				if (commentResponse == null) {
 					commentResponse = evaluationFormManager.createStringResponse(sliderWrapper.getSliderCommentId(), session, comment);
@@ -551,6 +552,15 @@ public class RubricController extends FormBasicController implements EvaluationF
 			evaluationFormManager.deleteResponse(commentResponse);
 			commentResponses.remove(sliderWrapper.getSliderCommentId());
 		}
+	}
+
+	private String prepareComment(String value) {
+		String strippedValue = FilterFactory.getHtmlTagsFilter().filter(value);
+		String unescapedValue = StringHelper.unescapeHtml(strippedValue);
+		if (unescapedValue.length() > Rubric.MAX_COMMENT_LENGTH) {
+			return unescapedValue.substring(0, Rubric.MAX_COMMENT_LENGTH);
+		}
+		return unescapedValue;
 	}
 
 	private BigDecimal getValue(SliderWrapper sliderWrapper) {
