@@ -100,7 +100,7 @@ public class CourseArchiveListController extends ExportsListController implement
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("off_info", translate("course.archive.infos", courseModule.getCourseArchiveRetention().toString()));
-			layoutCont.contextPut("off_info_help_url", "manual_user/learningresources/Data_archiving");
+			layoutCont.contextPut("off_info_help_url", "manual_user/learningresources/Course_Archiving/");
 			
 			if (webDAVModule.isEnabled() && webDAVModule.isLinkEnabled()) {
 				layoutCont.contextPut("webdavhttp", FolderManager.getWebDAVHttp());
