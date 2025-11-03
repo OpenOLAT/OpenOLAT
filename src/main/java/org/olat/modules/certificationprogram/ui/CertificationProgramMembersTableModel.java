@@ -181,6 +181,13 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		return null; 
 	}
 	
+	public List<Long> getIdentitiesKeys() {
+		List<CertificationProgramMemberRow> memberRows = this.getObjects();
+		return memberRows.stream()
+				.map(CertificationProgramMemberRow::getIdentityKey)
+				.toList();
+	}
+	
 	@Override
 	public Object getValueAt(int row, int col) {
 		CertificationProgramMemberRow memberRow = getObject(row);

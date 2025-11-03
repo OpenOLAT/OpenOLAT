@@ -28,9 +28,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallbackFactory;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
@@ -42,11 +45,11 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * The root controller of the curriculum mamangement site
+ * The root controller of the curriculum management site
  * which holds the list controller and the bread crump / toolbar
  * 
  * Initial date: 15 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumManagerController extends BasicController implements Activateable2 {
@@ -57,6 +60,7 @@ public class CurriculumManagerController extends BasicController implements Acti
 	
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -69,8 +73,10 @@ public class CurriculumManagerController extends BasicController implements Acti
 		CurriculumSearchParameters params = new CurriculumSearchParameters();
 		params.setCurriculumAdmin(getIdentity());
 		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
-		secCallback = CurriculumSecurityCallbackFactory.createCallback(usess.getRoles(), ownedCurriculums);
+		Roles roles = usess.getRoles();
+		secCallback = CurriculumSecurityCallbackFactory.createCallback(roles, ownedCurriculums);
 		lecturesSecCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
+		certificationSecCallback = CertificationProgramSecurityCallbackFactory.getSecurityCallback(roles);
 
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setShowCloseLink(false, false);
@@ -79,7 +85,7 @@ public class CurriculumManagerController extends BasicController implements Acti
 		putInitialPanel(toolbarPanel);
 		
 		rootCtrl = new CurriculumManagerRootController(ureq, getWindowControl(), toolbarPanel,
-				secCallback, lecturesSecCallback);
+				secCallback, lecturesSecCallback, certificationSecCallback);
 		listenTo(rootCtrl);
 		toolbarPanel.pushController(translate("curriculum.overview"), rootCtrl);
 	}

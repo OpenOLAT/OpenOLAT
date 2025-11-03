@@ -41,6 +41,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.certificationprogram.CertificationModule;
 import org.olat.modules.certificationprogram.ui.CertificationProgramListController;
+import org.olat.modules.certificationprogram.ui.CertificationProgramSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -71,8 +72,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final Link certificationProgramsLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
+	
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
+	private  final CertificationProgramSecurityCallback certificationSecCallback;
 	
 	private CurriculumReportsController reportsCtrl;
 	private CurriculumDashboardController overviewCtrl;
@@ -92,11 +95,13 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CertificationModule certificationProgramModule;
 	
 	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback,
+			CertificationProgramSecurityCallback certificationSecCallback) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.lecturesSecCallback = lecturesSecCallback;
+		this.certificationSecCallback = certificationSecCallback;
 		
 		mainVC = createVelocityContainer("manager_overview");
 		
@@ -304,7 +309,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Certification", 0L);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		certificationProgramListCtrl = new CertificationProgramListController(ureq, bwControl, toolbarPanel);
+		certificationProgramListCtrl = new CertificationProgramListController(ureq, bwControl, toolbarPanel, certificationSecCallback);
 		listenTo(certificationProgramListCtrl);
 		toolbarPanel.pushController(translate("certification.programs"), certificationProgramListCtrl);
 		return certificationProgramListCtrl;

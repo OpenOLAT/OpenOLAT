@@ -59,8 +59,8 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 	private CloseableCalloutWindowController calloutCtrl;
 	
 	public CertificationProgramRemovedMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CertificationProgram certificationProgram) {
-		super(ureq, wControl, toolbarPanel, certificationProgram);
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
+		super(ureq, wControl, toolbarPanel, certificationProgram, secCallback);
 		
 		initForm(ureq);
 		tableEl.setSelectedFilterTab(ureq, allTab);

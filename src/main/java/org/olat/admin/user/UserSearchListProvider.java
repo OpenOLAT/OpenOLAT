@@ -50,15 +50,18 @@ public class UserSearchListProvider implements ListProvider {
 	private final List<Organisation> searchableOrganisations;
 	private final GroupRoles repositoryEntryRole;
 	private final OrganisationRoles[] excludedRoles;
+	private final List<Long> excludedIdentityKeys;
 	
 	public UserSearchListProvider(List<Organisation> searchableOrganisations) {
-		this(searchableOrganisations, null, null);
+		this(searchableOrganisations, null, null, null);
 	}
 	
-	public UserSearchListProvider(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles) {
+	public UserSearchListProvider(List<Organisation> searchableOrganisations,
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, List<Long> excludedIdentityKeys) {
 		this.searchableOrganisations = searchableOrganisations;
 		this.repositoryEntryRole = repositoryEntryRole;
 		this.excludedRoles = excludedRoles;
+		this.excludedIdentityKeys = excludedIdentityKeys;
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
@@ -73,6 +76,10 @@ public class UserSearchListProvider implements ListProvider {
 	
 	public OrganisationRoles[] getExcludedRoles() {
 		return excludedRoles;
+	}
+	
+	public List<Long> getExcludedIdentityKeys() {
+		return excludedIdentityKeys;
 	}
 
 	@Override
@@ -92,7 +99,7 @@ public class UserSearchListProvider implements ListProvider {
 
 		int maxEntries = MAX_ENTRIES;
 		List<IdentityShort> res = securityManager.searchIdentityShort(searchValue, searchableOrganisations,
-				repositoryEntryRole, excludedRoles, maxEntries);
+				repositoryEntryRole, excludedRoles, excludedIdentityKeys, maxEntries);
 
 		boolean hasMore = false;
 		for (Iterator<IdentityShort> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {

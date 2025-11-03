@@ -178,7 +178,7 @@ public class UserSearchController extends BasicController {
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		if (autoCompleteAllowed) {
 			// insert a autocompleter search
-			ListProvider provider = new UserSearchListProvider(searchableOrganisations, null, excludeRoles);
+			ListProvider provider = new UserSearchListProvider(searchableOrganisations, null, excludeRoles, null);
 			autocompleterC = new AutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, 60, 3);
 			listenTo(autocompleterC);
 			myContent.put("autocompletionsearch", autocompleterC.getInitialComponent());

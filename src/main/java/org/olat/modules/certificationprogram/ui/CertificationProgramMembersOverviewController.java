@@ -61,6 +61,7 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	private final TooledStackedPanel toolbarPanel;
 	
 	private CertificationProgram certificationProgram;
+	private final CertificationProgramSecurityCallback secCallback;
 	
 	private CertificationProgramRemovedMembersController removedMembersCtrl;
 	private CertificationProgramCertifiedMembersController certifiedMembersCtrl;
@@ -69,8 +70,9 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	private CertificationProgramService certificationProgramService;
 	
 	public CertificationProgramMembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CertificationProgram certificationProgram) {
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
+		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.certificationProgram = certificationProgram;
 
@@ -142,7 +144,8 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	private void doOpenCertifiedMembersList(UserRequest ureq) {
 		removeAsListenerAndDispose(certifiedMembersCtrl);
 		
-		certifiedMembersCtrl = new CertificationProgramCertifiedMembersController(ureq, getWindowControl(), toolbarPanel, certificationProgram);
+		certifiedMembersCtrl = new CertificationProgramCertifiedMembersController(ureq, getWindowControl(), toolbarPanel,
+				certificationProgram, secCallback);
 		listenTo(certifiedMembersCtrl);
 		mainVC.put("component", certifiedMembersCtrl.getInitialComponent());
 	}
@@ -150,7 +153,8 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	private void doOpenRemovedMembersList(UserRequest ureq) {
 		removeAsListenerAndDispose(removedMembersCtrl);
 		
-		removedMembersCtrl = new CertificationProgramRemovedMembersController(ureq, getWindowControl(), toolbarPanel, certificationProgram);
+		removedMembersCtrl = new CertificationProgramRemovedMembersController(ureq, getWindowControl(), toolbarPanel,
+				certificationProgram, secCallback);
 		listenTo(removedMembersCtrl);
 		mainVC.put("component", removedMembersCtrl.getInitialComponent());
 	}

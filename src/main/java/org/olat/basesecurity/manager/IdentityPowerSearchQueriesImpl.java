@@ -261,7 +261,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	
 	private boolean hasWhereClause(SearchIdentityParams params) {
 		return params.getLogin() != null || params.getSearchString() != null
-				|| params.hasUserProperties() || params.hasIdentityKeys()
+				|| params.hasUserProperties() || params.hasIdentityKeys() || params.hasExcludedIdentityKeys()
 				|| params.getCreatedAfter() != null	|| params.getCreatedBefore() != null
 				|| params.getUserLoginAfter() != null || params.getUserLoginBefore() != null
 				|| params.hasAuthProviders() || params.getManaged() != null
@@ -390,6 +390,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		if(params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append("ident.key in (:identityKeys)");
+		}
+		
+		if(params.getExcludedIdentityKeys() != null && !params.getExcludedIdentityKeys().isEmpty()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append("ident.key not in (:excludedIdentityKeys)");
 		}
 		
 		if(params.getIdAndExternalIds() != null) {
@@ -686,6 +691,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		
 		if(params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
 			dbq.setParameter("identityKeys", params.getIdentityKeys());
+		}
+		
+		if(params.getExcludedIdentityKeys() != null && !params.getExcludedIdentityKeys().isEmpty()) {
+			dbq.setParameter("excludedIdentityKeys", params.getExcludedIdentityKeys());
 		}
 
 		//	 add user properties attributes

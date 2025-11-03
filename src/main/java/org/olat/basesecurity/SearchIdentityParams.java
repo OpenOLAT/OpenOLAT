@@ -65,6 +65,7 @@ public class SearchIdentityParams {
 	private List<Integer> exactStatusList;
 	private List<Integer> excludeStatusList;
 	private Collection<Long> identityKeys;
+	private Collection<Long> excludedIdentityKeys;
 	private Boolean managed;
 	private boolean withoutBusinessGroup;
 	private boolean withoutResources;
@@ -405,6 +406,18 @@ public class SearchIdentityParams {
 	
 	public void setIdentityKeys(Collection<Long> identityKeys) {
 		this.identityKeys = identityKeys;
+	}
+	
+	public boolean hasExcludedIdentityKeys() {
+		return excludedIdentityKeys != null && !excludedIdentityKeys.isEmpty();
+	}
+
+	public Collection<Long> getExcludedIdentityKeys() {
+		return excludedIdentityKeys;
+	}
+
+	public void setExcludedIdentityKeys(Collection<Long> excludedIdentityKeys) {
+		this.excludedIdentityKeys = excludedIdentityKeys;
 	}
 
 	public boolean isWithoutBusinessGroup() {

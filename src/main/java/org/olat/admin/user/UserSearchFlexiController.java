@@ -138,21 +138,21 @@ public class UserSearchFlexiController extends FormBasicController {
 	private IdentityPowerSearchQueries identitySearchQueries;
 
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
-		this(ureq, wControl, rootForm, null, null, true, false);
+		this(ureq, wControl, rootForm, null, null, null, true, false, true);
 	}
 	
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles,
 			boolean multiSelection, boolean showSelectButton) {
-		this(ureq, wControl, rootForm, repositoryEntryRole, excludedRoles, multiSelection, showSelectButton, true);
+		this(ureq, wControl, rootForm, repositoryEntryRole, excludedRoles, null, multiSelection, showSelectButton, true);
 	}
 	
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles,
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, List<Long> excludedIdentityKeys,
 			boolean multiSelection, boolean showSelectButton, boolean showTable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		
-		init(ureq, null, repositoryEntryRole, excludedRoles, multiSelection, showSelectButton, showTable);
+		init(ureq, null, repositoryEntryRole, excludedRoles, excludedIdentityKeys, multiSelection, showSelectButton, showTable);
 
 		initForm(ureq);
 	}
@@ -160,7 +160,7 @@ public class UserSearchFlexiController extends FormBasicController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, null, repositoryEntryRole, null, multiSelection, true, true);
+		init(ureq, null, repositoryEntryRole, null, null,  multiSelection, true, true);
 		
 		initForm(ureq);
 	}
@@ -168,13 +168,13 @@ public class UserSearchFlexiController extends FormBasicController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, UserSearchProvider searchProvider, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, searchProvider, null, null, multiSelection, true, true);
+		init(ureq, searchProvider, null, null, null, multiSelection, true, true);
 
 		initForm(ureq);
 	}
 	
 	private void init(UserRequest ureq, UserSearchProvider searchProvider, GroupRoles repositoryEntryRole,
-			OrganisationRoles[] excludedRoles, boolean multiSelect, boolean showSelectButton, boolean showTable) {
+			OrganisationRoles[] excludedRoles, List<Long> excludedIdentityKeys, boolean multiSelect, boolean showSelectButton, boolean showTable) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
@@ -193,7 +193,7 @@ public class UserSearchFlexiController extends FormBasicController {
 		} else {
 			List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 					OrganisationRoles.valuesWithoutGuestAndInvitee());
-			search = new UserSearchQueries(searchableOrganisations, repositoryEntryRole, excludedRoles);
+			search = new UserSearchQueries(searchableOrganisations, repositoryEntryRole, excludedRoles, excludedIdentityKeys);
 		}
 		
 		this.showSelectUsersButton = showSelectButton;
@@ -545,8 +545,8 @@ public class UserSearchFlexiController extends FormBasicController {
 	private class UserSearchQueries extends UserSearchListProvider implements UserSearchProvider {
 		
 		public UserSearchQueries(List<Organisation> searchableOrganisations, GroupRoles repositoryEntryRole,
-				OrganisationRoles[] excludedRoles) {
-			super(searchableOrganisations, repositoryEntryRole, excludedRoles);
+				OrganisationRoles[] excludedRoles, List<Long> excludedIdentityKeys) {
+			super(searchableOrganisations, repositoryEntryRole, excludedRoles, excludedIdentityKeys);
 		}
 		
 		/**
@@ -563,6 +563,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			params.setOrganisations(getSearchableOrganisations());
 			params.setRepositoryEntryRole(getRepositoryEntryRole(), false);
 			params.setExcludedRoles(getExcludedRoles());
+			params.setExcludedIdentityKeys(getExcludedIdentityKeys());
 			return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
 		}
 	}

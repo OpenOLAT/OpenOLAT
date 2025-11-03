@@ -64,6 +64,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 	
 	private boolean canChangeStatus;
 	private CertificationProgram certificationProgram;
+	private final CertificationProgramSecurityCallback secCallback;
 	
 	private CertificationProgramOwnersController ownersCtrl;
 	private EditCertificationProgramController settingsCtrl;
@@ -75,8 +76,9 @@ public class CertificationProgramDetailsController extends BasicController imple
 	private CertificationProgramService certificationProgramService;
 	
 	public CertificationProgramDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CertificationProgram certificationProgram) {
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl);
+		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.certificationProgram = certificationProgram;
 		canChangeStatus = certificationProgram != null; //TODO certification
@@ -137,7 +139,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 		membersTab = tabPane.addTab(ureq, translate("certification.program.members"), "o_sel_certification_program_members", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_MEMBERS), null);
-			membersCtrl = new CertificationProgramMembersOverviewController(uureq, subControl, toolbarPanel, certificationProgram);
+			membersCtrl = new CertificationProgramMembersOverviewController(uureq, subControl, toolbarPanel, certificationProgram, secCallback);
 			listenTo(membersCtrl);
 
 			return membersCtrl.getInitialComponent();

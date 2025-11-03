@@ -101,6 +101,7 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 	
 	protected final CertificationProgram certificationProgram;
 	protected final List<UserPropertyHandler> userPropertyHandlers;
+	protected final CertificationProgramSecurityCallback secCallback;
 	
 	private ContactFormController contactCtrl;
 	
@@ -114,9 +115,10 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 	protected CertificationProgramService certificationProgramService;
 	
 	public AbstractCertificationProgramMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CertificationProgram certificationProgram) {
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl, "members_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		this.certificationProgram = certificationProgram;
 		

@@ -27,8 +27,12 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -73,8 +77,11 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	protected static final String EXPIRING_SOON_ID = "ExpiringSoon";
 	protected static final String INSUFFICIENT_CREDIT_POINTS_ID = "InsufficientCreditPoints";
 	
+	private FormLink addMemberButton;
+	
 	private ToolsController	toolsCtrl;
 	private CloseableModalController cmc;
+	private AddProgramMemberController addMemberCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmRenewController renewConfirmationCtrl;
 	private ConfirmRevokeController revokeConfirmationCtrl;
@@ -83,12 +90,21 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	private DB dbInstance;
 	
 	public CertificationProgramCertifiedMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CertificationProgram certificationProgram) {
-		super(ureq, wControl, toolbarPanel, certificationProgram);
+			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
+		super(ureq, wControl, toolbarPanel, certificationProgram, secCallback);
 		
 		initForm(ureq);
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		loadModel(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(secCallback.canAddMember()) {
+			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
+			addMemberButton.setIconLeftCSS("o_icon o_icon_add_member");
+		}
+		super.initForm(formLayout, listener, ureq);
 	}
 
 	@Override
@@ -184,7 +200,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
         	}
         	cmc.deactivate();
         	cleanUp();
-        } else if(revokeConfirmationCtrl == source) {
+        } else if(revokeConfirmationCtrl == source || addMemberCtrl == source) {
         	if(event == Event.DONE_EVENT) {
         		loadModel(ureq);
         		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -212,6 +228,25 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		cmc = null;
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(addMemberButton == source) {
+			doAddMember(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doAddMember(UserRequest ureq) {
+		List<Long> currentMembers = tableModel.getIdentitiesKeys();
+		addMemberCtrl = new AddProgramMemberController(ureq, getWindowControl(), certificationProgram, currentMembers);
+		listenTo(addMemberCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addMemberCtrl.getInitialComponent(),
+				true, translate("renew.confirm.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
 	private void doConfirmRenew(UserRequest ureq, CertificationProgramMemberRow row) {
 		BigDecimal balance = row.getWalletBalance();
 		BigDecimal price = certificationProgram.getCreditPoints();

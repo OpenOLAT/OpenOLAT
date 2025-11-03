@@ -101,11 +101,12 @@ public class CertificationProgramListController extends FormBasicController impl
 	private CertificationProgramListTableModel tableModel;
 	private final TooledStackedPanel toolbarPanel;
 
-	private CloseableModalController cmc;
-	private AddCertificationProgramController addCertificationProgramCtrl;
 	
 	private final List<CreditPointSystem> creditPointSystems;
-	
+	private final CertificationProgramSecurityCallback secCallback;
+
+	private CloseableModalController cmc;
+	private AddCertificationProgramController addCertificationProgramCtrl;
 	private CertificationProgramDetailsController certificationProgramDetailsCtrl;
 	
 	@Autowired
@@ -113,8 +114,10 @@ public class CertificationProgramListController extends FormBasicController impl
 	@Autowired
 	private CertificationProgramService certificationProgramService;
 	
-	public CertificationProgramListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {
+	public CertificationProgramListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			CertificationProgramSecurityCallback secCallback) {
 		super(ureq, wControl, "program_list");
+		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
 		
 		creditPointSystems = creditPointService.getCreditPointSystems();
@@ -329,7 +332,7 @@ public class CertificationProgramListController extends FormBasicController impl
 	private CertificationProgramDetailsController doOpenCertificationProgram(UserRequest ureq, CertificationProgramRow row) {
 		CertificationProgram program = certificationProgramService.getCertificationProgram(row);
 		WindowControl swControl	= addToHistory(ureq, OresHelper.createOLATResourceableInstance(CertificationProgram.class, program.getKey()), null);
-		certificationProgramDetailsCtrl = new CertificationProgramDetailsController(ureq, swControl, toolbarPanel, program);
+		certificationProgramDetailsCtrl = new CertificationProgramDetailsController(ureq, swControl, toolbarPanel, program, secCallback);
 		listenTo(certificationProgramDetailsCtrl);
 		
 		toolbarPanel.pushController(program.getDisplayName(), certificationProgramDetailsCtrl);

@@ -390,7 +390,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String login = id.getLogin().substring(0, 12);
 		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world",
 				organisations, GroupRoles.participant, new OrganisationRoles[] { OrganisationRoles.guest },
-				32000);
+				List.of(), 32000);
 		assertThat(identities)
 			.isNotNull();
 	}
@@ -404,7 +404,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 
 		String login = id.getLogin().substring(0, 12);
 		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " and    () <!>",
-				Collections.singletonList(defOrganisation), null, null, 32000);
+				Collections.singletonList(defOrganisation), null, null, null, 32000);
 		assertThat(identities)
 			.isNotNull()
 			.extracting(IdentityShort::getKey)
@@ -413,13 +413,13 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	
 	@Test
 	public void searchIdentityShortLongEmpty() {
-		List<IdentityShort> identities = securityManager.searchIdentityShort(null, null, null, null, 32000);
+		List<IdentityShort> identities = securityManager.searchIdentityShort(null, null, null, null, null, 32000);
 		Assert.assertTrue(identities.isEmpty());
 
-		identities = securityManager.searchIdentityShort("", null, null, null, 32000);
+		identities = securityManager.searchIdentityShort("", null, null, null, null, 32000);
 		Assert.assertTrue(identities.isEmpty());
 		
-		identities = securityManager.searchIdentityShort(" ", null, null, null, 32000);
+		identities = securityManager.searchIdentityShort(" ", null, null, null, null, 32000);
 		Assert.assertTrue(identities.isEmpty());
 	}
 	

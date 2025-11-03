@@ -605,12 +605,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public List<IdentityShort> searchIdentityShort(String search, int maxResults) {
-		return searchIdentityShort(search, null, null, null, maxResults);
+		return searchIdentityShort(search, null, null, null, null, maxResults);
 	}
 
 	@Override
 	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searcheableOrgnisations,
-			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, int maxResults) {
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, List<Long> excludedIdentityKeys, int maxResults) {
 		if(!StringHelper.containsNonWhitespace(search)) return new ArrayList<>();
 		
 		String[] searchArr = search.split(" ");
@@ -662,6 +662,10 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			  .append("  where membership.role in (:excludedRoles))");
 		}
 		
+		if(excludedIdentityKeys != null && !excludedIdentityKeys.isEmpty()) {
+			sb.append(" and ident.key not in (:excludedIdentityKeys)");
+		}
+
 		TypedQuery<IdentityShort> searchQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityShort.class);
 		for(int i=searchArrList.size(); i-->0; ) {
@@ -683,6 +687,10 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 				roleList.add(role.name());
 			}
 			searchQuery.setParameter("excludedRoles", roleList);
+		}
+
+		if(excludedIdentityKeys != null && !excludedIdentityKeys.isEmpty()) {
+			searchQuery.setParameter("excludedIdentityKeys", excludedIdentityKeys);
 		}
 
 		return searchQuery

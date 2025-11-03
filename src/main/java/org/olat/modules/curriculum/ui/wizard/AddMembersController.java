@@ -156,7 +156,7 @@ public class AddMembersController extends StepFormBasicController {
 		importController = null;
 		
 		searchController = new UserSearchFlexiController(ureq, getWindowControl(), mainForm, null,
-				new OrganisationRoles[] { OrganisationRoles.invitee, OrganisationRoles.guest }, true, false, false);
+				new OrganisationRoles[] { OrganisationRoles.invitee, OrganisationRoles.guest }, null, true, false, false);
 		listenTo(searchController);
 
 		flc.add("search", searchController.getInitialFormItem());

@@ -213,7 +213,7 @@ public interface BaseSecurity {
 	 * @return A list of identities (short version)
 	 */
 	public List<IdentityShort> searchIdentityShort(String search, List<? extends OrganisationRef> searchableOrganisations,
-			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, int maxResults);
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles, List<Long> excludedIdentityKeys, int maxResults);
 
 	public IdentityShort loadIdentityShortByKey(Long identityKey);
 	
