@@ -1902,6 +1902,7 @@ create table o_cer_certificate (
    fk_identity bigint not null,
    fk_metadata bigint,
    fk_certification_program bigint,
+   fk_uploaded_by bigint,
    primary key (id)
 );
 
@@ -6175,6 +6176,7 @@ alter table o_cer_entry_config add constraint cer_entry_config_entry_idx foreign
 alter table o_cer_entry_config add constraint template_config_entry_idx foreign key (fk_template) references o_cer_template (id);
 
 alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
+alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
 
 -- certification program
 alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);

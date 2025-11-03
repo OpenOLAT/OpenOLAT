@@ -1,3 +1,144 @@
+.o_certificates_cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-right: -10px;
+	
+	>div {
+		width: calc(percentage(math.div(1, 5)) - 10px);
+		@media (max-width: $screen-md-max) {
+			min-width: calc(percentage(math.div(1, 4)) - 7px);
+		}
+		@media (max-width: $screen-sm-max) {
+			min-width: calc(percentage(math.div(1, 3)) - 7px);
+		}
+		@media (max-width: $screen-xs-max) {
+			min-width: 100%;
+		}
+	}
+}
+
+.o_certificate_card {
+	background: #ffffff;
+	height: 100%;
+}
+
+.o_certificates_list {
+	&.o_rendertype_custom {
+		.o_certificates_rows {
+			.o_certificate_card {
+				box-sizing: border-box;
+				overflow: hidden;
+				position: relative;
+				
+				.o_certificate_thumbnail {
+					cursor: pointer;
+					height: 172px;
+					position: relative;
+					background-color: $o-card-bg-color;
+					border-bottom: $o-card-border;
+					
+					.o_certificate_img {
+						left: -0.5%;
+						overflow: hidden;
+						position: absolute;
+						text-align: center;
+						top: 0;
+						transition: opacity 200ms ease-in-out;
+						width: calc(101% - 40px);
+						height: calc(100% - 30px);
+						margin: 15px 20px;
+						
+						
+						img {
+							position: absolute;
+							top: 50%;
+							left: 50%;
+							-ms-transform: translate(-50%, -50%);
+							transform: translate(-50%, -50%);
+							width: auto;
+							height: auto;
+							max-width: 100%;
+						}
+					}
+					.o_visual_not_available {
+						height: 172px;
+						background-image:url('#{$o-images-path}no_preview.png');
+						background-repeat:no-repeat;
+						background-position:50% 50%;	
+						background-size: contain;
+					}
+					
+					.o_certificate_card_label {
+						position: absolute;
+						margin-top: 7px;
+						margin-left: 10px;
+					}
+				}
+				
+				.o_certificate_meta {
+					padding: 10px;
+					width: 100%;
+					height: 100%;
+					
+					.o_card_title:not(:first-child) {
+						margin-top: 5px;
+					}
+				}
+			}
+		}
+	}
+}
+
+.basicLightbox .o_certificate_details {
+	&.o_lightbox_modal_form {
+		max-width: 90dvw;
+		min-width: 50dvw;
+		width: auto;
+	}
+
+}
+
+.o_certificate_details {
+	.o_certificate_details_wrapper {
+		display: grid;
+		grid-template-columns: auto 4fr;
+		column-gap: 20px;
+	}
+	
+	.o_certificate_infos {
+		display: grid;
+		grid-template-columns: calc(50% - 10px) calc(50% - 10px);
+		column-gap: 20px;
+		row-gap: 15px;
+	}
+
+	.o_table_body.container-fluid {
+		margin-top: 0;
+	}	
+}
+
+@media (max-width: 1400px) {
+	.o_certificate_details .o_certificate_multi .o_table_body {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: $screen-xs-max) {
+	.o_certificate_details_wrapper {
+		grid-template-columns: 1fr;
+		
+		.o_certificate_thumbnail {
+			text-align: center;
+		}
+		.o_button_group_right {
+			text-align: left;
+		}
+	}
+	.o_certificate_details_wrapper .o_certificate_infos {
+		grid-template-columns: 1fr;
+	}
+}
 
 .o_certification_dashboard_title {
 	display: flex;
@@ -11,7 +152,6 @@
 		padding: 0;
 	}
 }
-
 
 .o_labeled {
 	&.o_certification_status_active,

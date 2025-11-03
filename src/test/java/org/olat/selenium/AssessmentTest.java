@@ -916,9 +916,11 @@ public class AssessmentTest extends Deployments {
 		UserToolsPage reiUserTools = new UserToolsPage(browser);
 		reiUserTools
 			.openUserToolsMenu()
-			.openMyEfficiencyStatement()
-			.assertOnEfficiencyStatmentPage()
-			.assertOnCertificate(courseTitle);
+			.openMyCertificates()
+			.assertOnCertificatesOverviewPage()
+			.assertOnCertificate(courseTitle)
+			.assertOnValidCertificate(courseTitle)
+			.assertOnCertificateThumbnail(courseTitle);
 	}
 	
 	/**

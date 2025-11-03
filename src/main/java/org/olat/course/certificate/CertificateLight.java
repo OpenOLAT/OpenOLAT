@@ -31,22 +31,24 @@ import org.olat.core.id.CreateInfo;
  */
 public interface CertificateLight extends CreateInfo {
 	
-	public Long getKey();
+	Long getKey();
 	
-	public CertificateStatus getStatus();
+	CertificateStatus getStatus();
 	
-	public String getExternalId();
+	String getExternalId();
 
-	public CertificateManagedFlag[] getManagedFlags();
+	CertificateManagedFlag[] getManagedFlags();
 	
-	public String getUuid();
+	String getUuid();
+	
+	String getPath();
 
-	public Date getNextRecertificationDate();
+	Date getNextRecertificationDate();
 	
-	public String getCourseTitle();
+	String getCourseTitle();
 	
-	public Long getIdentityKey();
+	Long getIdentityKey();
 	
-	public Long getOlatResourceKey();
+	Long getOlatResourceKey();
 
 }

@@ -33,21 +33,21 @@ import org.olat.core.id.Identity;
  */
 public interface Certificate extends CreateInfo {
 	
-	public Long getKey();
+	Long getKey();
 	
-	public CertificateStatus getStatus();
+	CertificateStatus getStatus();
 	
-	public boolean isLast();
+	boolean isLast();
 	
-	public String getUuid();
+	String getUuid();
 	
-	public String getExternalId();
+	String getExternalId();
 	
-	public CertificateManagedFlag[] getManagedFlags();
+	CertificateManagedFlag[] getManagedFlags();
 	
-	public Date getNextRecertificationDate();
+	Date getNextRecertificationDate();
 
-	public void setNextRecertificationDate(Date nextRecertificationDate);
+	void setNextRecertificationDate(Date nextRecertificationDate);
 	
 	Long getRecertificationCount();
 
@@ -62,6 +62,8 @@ public interface Certificate extends CreateInfo {
 	Long getArchivedResourceKey();
 	
 	Identity getIdentity();
+	
+	Identity getUploadedBy();
 	
 	VFSMetadata getMetadata();
 

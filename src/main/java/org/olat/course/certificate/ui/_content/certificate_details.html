@@ -1,0 +1,69 @@
+<div class="o_certificate_details o_lightbox_modal_form">
+	<div class="o_certificate_details_wrapper">
+		<div class="o_certificate_thumbnail">
+			<img src="${mapperThumbnailUrl}/${row.key}/${row.filename}.png" alt=""/>
+		</div>
+		<div>
+			<div class="o_certificate_infos">
+				<div>
+					<span class="o_certificate_card_label o_labeled o_certification_status_${row.getStatusString()}">
+						<i class="o_icon o_icon-fw o_icon_certification_status_${row.getStatusString()}"> </i> ${row.getStatusExplained()}</span>
+				</div>
+				<div class="o_button_group_right">$r.render("download.button")</div>
+
+				#if($r.isNotEmpty($row.getAwardedBy()))
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
+					#if($r.available("courselink"))
+						$r.render("courselink")
+					#else
+					<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())</span>
+					#end
+				</div>
+				#end
+
+				#if($r.isNotEmpty($row.getOrigin()))
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("table.header.origin")</strong>
+					<span>$row.getOrigin()</span>
+				</div>
+				#end
+				
+				#if(${row.hasNextRecertificationDate()})
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("table.header.validity")</strong>
+					<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getNextRecertificationDate())}</span>
+				</div>
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
+					<span>$r.formatDate($row.getNextRecertificationDate())</span>
+				</div>
+				#else
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
+					<span>$r.formatDate($row.getCreationDate())</span>
+				</div>
+				<div class="o_flex_first_grow_vertical">
+					<strong class="o_card_title">$r.translate("table.header.validity")</strong>
+					<span>&ndash;</span>
+				</div>
+				#end
+			</div>
+		</div>
+	</div>
+	#if($r.available("recertification.start"))
+	<fieldset class="o_certificate_recertification_wrapper">
+		<legend>$r.translate("recertification.title")</legend>
+		<div class="o_certificate_infos">
+			<div class="o_flex_first_grow_vertical">
+				<strong class="o_card_title">$r.translate("recertification.date")</strong>
+				<span>$r.formatDate($row.getCreationDate())</span>
+			</div>
+			<div class="o_button_group_right">$r.render("recertification.start")</div>
+		</div>
+	</fieldset>
+	#end
+	#if($r.available("certificates"))
+		$r.render("certificates")
+	#end
+</div>

@@ -37,6 +37,7 @@ import org.olat.course.ICourse;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -138,12 +139,16 @@ public interface CertificatesManager {
 	
 	public VFSLeaf getCertificateLeaf(Certificate certificate);
 	
+	public VFSLeaf getCertificateLeaf(CertificateLight certificate);
+	
 	/**
 	 * Return the last certificates of the user.
 	 * @param identity
 	 * @return A list of certificates
 	 */
 	public List<CertificateLight> getLastCertificates(IdentityRef identity);
+	
+	public List<CertificateWithInfos> getCertificatesWithInfos(IdentityRef identity);
 	
 	/**
 	 * List the certificates of a user or a learn resource.
@@ -259,7 +264,7 @@ public interface CertificatesManager {
 	
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
 			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
-			Date nextRecertificationDate, File certificateFile);
+			Date nextRecertificationDate, File certificateFile, Identity doer);
 	
 	public void generateCertificates(List<CertificateInfos> infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 

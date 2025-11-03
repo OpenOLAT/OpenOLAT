@@ -38,7 +38,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateStatus;
-import org.olat.course.certificate.model.CertificateLightPack;
 import org.olat.user.UserManager;
 
 /**
@@ -67,8 +66,6 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 		if(renderer == null) {
 			if(cellValue instanceof CertificateLight certificate) {
 				renderExcel(target, certificate);
-			} else if(cellValue instanceof CertificateLightPack pack) {
-				renderExcel(target, pack.getCertificate());
 			}
 		} else if(cellValue instanceof CertificateLight certificate) {
 			if(assessedIdentity == null) {
@@ -77,8 +74,6 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 			} else {
 				render(target, certificate, assessedIdentity, translator.getLocale());
 			}
-		} else if(cellValue instanceof CertificateLightPack pack) {
-			render(target, pack.getCertificate(), pack.getIdentity(), translator.getLocale());	
 		}
 	}
 	

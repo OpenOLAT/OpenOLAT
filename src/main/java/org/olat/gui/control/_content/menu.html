@@ -14,6 +14,16 @@
 				</ul>
 			</li>
 		#end
+		#if($achievements && $achievements.size() > 0)
+			<li>
+				<h2 id="o_navbar_cagegory_tools" class="o_navbar_category">$r.translate("topnav.my.menu.achievements")</h2>				
+				<ul class="list-unstyled">
+				#foreach($achievement in $achievements)
+				 	<li>$r.render($achievement)</li>
+				#end
+				</ul>
+			</li>
+		#end
 		#if($configs && $configs.size() > 0)
 			<li>
 				<h2 id="o_navbar_cagegory_configurations" class="o_navbar_category">$r.translate("topnav.my.menu.configurations")</h2>				

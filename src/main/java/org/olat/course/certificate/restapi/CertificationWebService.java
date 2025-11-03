@@ -354,8 +354,9 @@ public class CertificationWebService {
 			
 			OLATResource resource = resourceManager.findResourceById(resourceKey);
 			if(resource == null) {
+				Identity identity = getUserRequest(request).getIdentity();
 				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate,
-						externalId, managedFlags, courseTitle, resourceKey, nextRecertificationDate, tmpFile);
+						externalId, managedFlags, courseTitle, resourceKey, nextRecertificationDate, tmpFile, identity);
 			} else {
 				certificatesManager.uploadCertificate(assessedIdentity, creationDate,
 						externalId, managedFlags, resource, nextRecertificationDate, tmpFile);

@@ -19,20 +19,16 @@
  */
 package org.olat.selenium.page.user;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Drive the list of efficiency statements and certificates
  * 
  * Initial date: 05.03.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EfficiencyStatementPage {
@@ -45,20 +41,7 @@ public class EfficiencyStatementPage {
 	
 	public EfficiencyStatementPage assertOnEfficiencyStatmentPage() {
 		By certificatesBy = By.className("o_sel_certificates_table");
-		List<WebElement> certifiatesTable = browser.findElements(certificatesBy);
-		Assert.assertFalse(certifiatesTable.isEmpty());
-		return this;
-	}
-	
-	public EfficiencyStatementPage assertOnCertificate(String courseTitle) {
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a[contains(text(),'" + courseTitle + "')]]");
-		List<WebElement> certifiatesTable = browser.findElements(courseCertificateBy);
-		Assert.assertFalse(certifiatesTable.isEmpty());
-		
-		WebElement rowEl = certifiatesTable.get(0);
-		By certificateDownloadBy = By.cssSelector("a i.o_icon.o_filetype_pdf");
-		List<WebElement> certificateDownloadEls = rowEl.findElements(certificateDownloadBy);
-		Assert.assertFalse(certificateDownloadEls.isEmpty());
+		OOGraphene.waitElement(certificatesBy, browser);
 		return this;
 	}
 	

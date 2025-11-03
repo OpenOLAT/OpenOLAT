@@ -1956,6 +1956,7 @@ create table o_cer_certificate (
    fk_identity number(20) not null,
    fk_metadata number(20),
    fk_certification_program number(20),
+   fk_uploaded_by number(20),
    primary key (id)
 );
 
@@ -6274,6 +6275,8 @@ create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
 
 alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
 create index idx_cer_to_cprog_idx on o_cer_certificate (fk_certification_program);
+alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
+create index idx_cer_to_upload_idx on o_cer_certificate (fk_uploaded_by);
 
 -- Certification program
 alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);

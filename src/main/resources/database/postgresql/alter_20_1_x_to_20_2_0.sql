@@ -71,9 +71,13 @@ alter table o_cer_certificate add column c_recertification_count int8;
 alter table o_cer_certificate add column c_recertification_win_date timestamp;
 alter table o_cer_certificate add column c_recertification_paused bool default false not null;
 alter table o_cer_certificate add column fk_certification_program int8;
+alter table o_cer_certificate add column fk_uploaded_by int8;
 
 alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
 create index idx_cer_to_cprog_idx on o_cer_certificate (fk_certification_program);
+
+alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
+create index idx_cer_to_upload_idx on o_cer_certificate (fk_uploaded_by);
 
 
 

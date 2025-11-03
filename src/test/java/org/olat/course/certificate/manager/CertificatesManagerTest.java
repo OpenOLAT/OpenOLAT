@@ -352,6 +352,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Test
 	public void uploadStandalone() throws URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -371,7 +372,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		File certificateFile = new File(certificateUrl.toURI());
 		
 		Certificate certificate = certificatesManager
-				.uploadStandaloneCertificate(identity, creationDate, "OO-23647826", null, courseTitle, resourceKey, nextCertificationDate, certificateFile);
+				.uploadStandaloneCertificate(identity, creationDate, "OO-23647826", null,
+						courseTitle, resourceKey, nextCertificationDate, certificateFile, actor);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
@@ -379,6 +381,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(identity, certificate.getIdentity());
 		Assert.assertEquals(nextCertificationDate, certificate.getNextRecertificationDate());
 		Assert.assertEquals("OO-23647826", certificate.getExternalId());
+		Assert.assertEquals(actor, certificate.getUploadedBy());
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -390,6 +393,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(identity, reloadedCertificate.getIdentity());
 		Assert.assertEquals(resourceKey, reloadedCertificate.getArchivedResourceKey());
 		Assert.assertEquals(creationDate, reloadedCertificate.getCreationDate());
+		Assert.assertEquals(actor, reloadedCertificate.getUploadedBy());
 		
 		//load last
 		Certificate lastCertificate = certificatesManager.getLastCertificate(identity, resourceKey);

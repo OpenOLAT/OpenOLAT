@@ -22,6 +22,7 @@ package org.olat.modules.certificationprogram;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.course.certificate.Certificate;
 
 
 /**
@@ -48,6 +49,8 @@ public interface CertificationCoordinator {
 			RequestMode requestMode, Date referenceDate, Identity doer);
 	
 	void generateCertificate(Identity identity, CertificationProgram certificationProgram);
+	
+	boolean isRecertificationAllowed(CertificationProgram certificationProgram, Certificate certificate, Date referenceDate);
 
 	
 	public enum RequestMode {

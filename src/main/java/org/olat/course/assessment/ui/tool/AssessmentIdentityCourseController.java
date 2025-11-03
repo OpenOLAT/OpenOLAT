@@ -166,8 +166,8 @@ public class AssessmentIdentityCourseController extends BasicController
 
 		certificateConfig = certificatesManager.getConfiguration(courseEntry);
 		if(certificateConfig.isAutomaticCertificationEnabled() || certificateConfig.isManualCertificationEnabled()) {
-			certificateCtrl = new IdentityCertificatesController(ureq, wControl, courseEntry, certificateConfig,
-					assessedIdentity, coachCourseEnv.isAdmin(), coachCourseEnv.isCourseReadOnly());
+			certificateCtrl = new IdentityCertificatesController(ureq, wControl, courseEntry, certificateConfig, null,
+					assessedIdentity, null, coachCourseEnv.isAdmin(), coachCourseEnv.isCourseReadOnly());
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
 			listenTo(certificateCtrl);
 		}

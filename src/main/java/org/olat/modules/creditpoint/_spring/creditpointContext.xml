@@ -30,8 +30,9 @@
 	
 	<!--  Credit point user tool -->
 	<bean class="org.olat.modules.creditpoint.CreditPointToolExtension" init-method="initExtensionPoints">
-		<property name="order" value="108" />
+		<property name="order" value="220" />
 		<property name="navigationKey" value="creditpoint" />
+		<property name="category" value="achievements" />
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_coins" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">

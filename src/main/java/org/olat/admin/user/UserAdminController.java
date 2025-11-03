@@ -65,6 +65,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
+import org.olat.course.certificate.ui.CertificatesListOverviewController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.creditpoint.CreditPointModule;
@@ -139,6 +140,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_PROJECTS		= "view.projects";
 	private static final String NLS_VIEW_ACCESS			= "view.access";
 	private static final String NLS_VIEW_EFF_STATEMENTS	= "view.effStatements";
+	private static final String NLS_VIEW_CERTIFICATES	= "view.certificates";
 	private static final String NLS_VIEW_BADGES 		= "view.badges";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
@@ -186,6 +188,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private CompetencesOverviewController competencesCtrl;
 	private ConfirmDeleteUserController confirmDeleteUserCtlr;
 	private ParticipantLecturesOverviewController lecturesCtrl;
+	private CertificatesListOverviewController certificatesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 	private BadgesController badgesCtrl;
 	private UserProfileInfoController userProfileInfoCtrl;
@@ -624,13 +627,19 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(ureq, translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
 				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(),
-						identity, true, canModify, true, null);
+						identity, true, canModify, true, Boolean.FALSE);
 				listenTo(efficicencyCtrl);
 				BreadcrumbedStackedPanel efficiencyPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
 				efficiencyPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
 				efficicencyCtrl.setBreadcrumbPanel(efficiencyPanel);
 				efficiencyPanel.setInvisibleCrumb(1);
 				return efficiencyPanel;
+			});
+			
+			userTabP.addTab(ureq, translate(NLS_VIEW_CERTIFICATES),  uureq -> {
+				certificatesCtrl = new CertificatesListOverviewController(uureq, getWindowControl(), identity, null);
+				listenTo(certificatesCtrl);
+				return certificatesCtrl.getInitialComponent();
 			});
 
 			userTabP.addTab(ureq, translate(NLS_VIEW_BADGES), uureq -> {

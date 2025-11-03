@@ -73,6 +73,10 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 	private CertificateAndEfficiencyStatementRow parent;
 	
 	private FormLink toolsLink;
+	
+	public CertificateAndEfficiencyStatementRow() {
+		//
+	}
 
 	public String getDisplayName() {
 		return displayName;

@@ -1,0 +1,9 @@
+<fieldset class="o_certificates_overview_list">
+	<legend><i class="o_icon o_icon-fw o_icon_certificate"> </i>$r.translate("overview.certificates.title")</legend>
+	#if($r.available("upload.certificate"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("upload.certificate")
+	</div>
+	#end
+	$r.render("certificates")
+</fieldset>

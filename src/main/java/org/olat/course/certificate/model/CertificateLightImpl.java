@@ -77,6 +77,9 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	private String uuid;
 	@Column(name="c_next_recertification", nullable=true, insertable=true, updatable=true)
 	private Date nextRecertificationDate;
+	
+	@Column(name="c_path", nullable=true, insertable=true, updatable=true)
+	private String path;
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
 	@Column(name="c_course_title", nullable=true, insertable=true, updatable=false)
@@ -86,6 +89,8 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	
 	@Column(name="fk_identity", nullable=false, insertable=true, updatable=false)
 	private Long identityKey;
+	@Column(name="fk_certification_program", nullable=true, insertable=true, updatable=false)
+	private Long certificationProgramKey;
 
 	@Override
 	public Long getKey() {
@@ -157,6 +162,15 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
+	
+	@Override
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
 
 	@Override
 	public String getCourseTitle() {
@@ -183,6 +197,14 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public Long getCertificationProgramKey() {
+		return certificationProgramKey;
+	}
+
+	public void setCertificationProgramKey(Long certificationProgramKey) {
+		this.certificationProgramKey = certificationProgramKey;
 	}
 
 	@Override

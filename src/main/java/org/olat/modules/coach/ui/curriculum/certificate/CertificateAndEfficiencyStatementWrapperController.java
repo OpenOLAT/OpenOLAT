@@ -35,15 +35,14 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
-import org.olat.modules.coach.RoleSecurityCallback;
 
 public class CertificateAndEfficiencyStatementWrapperController extends BasicController implements Activateable2, GenericEventListener {
 
     private static final String WITHOUT_CURRICULM = "List";
 
     private final TooledStackedPanel stackPanel;
+    
     private final Identity mentee;
-    private final RoleSecurityCallback roleSecurityCallback;
 
     private CertificateAndEfficiencyStatementListController certificateListController;
 
@@ -51,13 +50,11 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
     private boolean showCurriculum;
     private VelocityContainer content;
 
-    public CertificateAndEfficiencyStatementWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-    		Identity mentee, RoleSecurityCallback roleSecurityCallback) {
+    public CertificateAndEfficiencyStatementWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee) {
         super(ureq, wControl);
 
         this.stackPanel = stackPanel;
         this.mentee = mentee;
-        this.roleSecurityCallback = roleSecurityCallback;
 
         content = createVelocityContainer("certificate_list_wrapper");
 
@@ -92,7 +89,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
 
         if (certificateListController == null) {
             WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITHOUT_CURRICULM), null);
-            certificateListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, false, false, false, false, roleSecurityCallback);
+            certificateListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, false, false, false, false);
             certificateListController.setBreadcrumbPanel(stackPanel);
             listenTo(certificateListController);
         }

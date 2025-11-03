@@ -126,6 +126,14 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 					));
 	}
 	
+	@Override
+	public boolean isRecertificationAllowed(CertificationProgram certificationProgram, Certificate certificate, Date referenceDate) {
+		if(certificationProgram.isRecertificationEnabled()) {
+			return isCertificationAllowedByDate(certificate, certificationProgram, referenceDate);
+		}
+		return false;
+	}
+
 	private boolean isCertificationAllowedByDate(Certificate certificate, CertificationProgram certificationProgram, Date referenceDate) {
 		boolean allowed;
 		if(certificate == null) {

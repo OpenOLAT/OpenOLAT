@@ -28,6 +28,7 @@ package org.olat.admin.user.tools;
 public enum UserToolCategory {
 	search,
 	personal,
+	achievements,
 	config,
 	system,
 	help

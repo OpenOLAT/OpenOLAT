@@ -1,0 +1,31 @@
+<div class="o_card o_certificate_card">
+	<div class="o_certificate_thumbnail">
+		<div class="o_certificate_img" onclick="javascript:${f.ffXHREvent("select_row","$row.key")}">
+			#if($row.isThumbnailAvailable())
+				<img src="${mapperThumbnailUrl}/${row.key}/${row.filename}.png" alt=""/>
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+		<div class="o_certificate_card_label o_labeled_light o_certification_status_${row.getStatusString()}">
+			<i class="o_icon o_icon-fw o_icon_certification_status_${row.getStatusString()}"> </i> ${row.getStatusExplained()}</div>
+	</div>
+	<div class="o_certificate_meta">
+		<div class="o_flex_first_grow_vertical">
+			#if($r.isNotEmpty($row.getAwardedBy()))
+				<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
+				<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())</span>
+			#end
+			#if(${row.hasNextRecertificationDate()}) 
+				<strong class="o_card_title">$r.translate("table.header.validity")</strong>
+				<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getNextRecertificationDate())}</span>
+			
+				<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
+				<span>$r.formatDate($row.getNextRecertificationDate())</span>
+			#else
+				<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
+				<span>$r.formatDate($row.getCreationDate())</span>
+			#end
+		</div>
+	</div>
+</div>

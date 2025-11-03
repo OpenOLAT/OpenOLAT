@@ -66,8 +66,11 @@ alter table o_cer_certificate add column c_recertification_count bigint;
 alter table o_cer_certificate add column c_recertification_win_date datetime;
 alter table o_cer_certificate add column c_recertification_paused bool default false not null;
 alter table o_cer_certificate add column fk_certification_program bigint;
+alter table o_cer_certificate add column fk_uploaded_by bigint;
 
 alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
+
+alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
 
 
 

@@ -87,6 +87,7 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		List<String> searchLinksName = new ArrayList<>();
 		List<String> systemLinksName = new ArrayList<>();
 		List<String> helpLinksName = new ArrayList<>();
+		List<String> achievementsName = new ArrayList<>();
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		String selectedTools = userToolsModule.getUserTools(prefs);
@@ -114,6 +115,7 @@ public class UserToolsMenuController extends BasicController implements Lockable
 					switch(category) {
 						case search: searchLinksName.add(linkName); break;
 						case personal: linksName.add(linkName); break;
+						case achievements: achievementsName.add(linkName); break;
 						case config: configLinksName.add(linkName); break;
 						case system: systemLinksName.add(linkName); break;
 						case help: 
@@ -138,6 +140,7 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		
 		menuVC.contextPut("helpPlugins", helpLinksName);
 		menuVC.contextPut("personalTools", linksName);
+		menuVC.contextPut("achievements", achievementsName);
 		menuVC.contextPut("configs", configLinksName);
 		menuVC.contextPut("systems", systemLinksName);
 		menuVC.contextPut("searchs", searchLinksName);

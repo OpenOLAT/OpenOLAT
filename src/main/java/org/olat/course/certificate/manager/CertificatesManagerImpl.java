@@ -126,6 +126,7 @@ import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateStandalone;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
+import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.course.certificate.model.JmsCertificateWork;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateController;
@@ -411,6 +412,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return cerItem instanceof VFSLeaf cerLeaf ? cerLeaf : null;
 	}
 	
+	@Override
+	public VFSLeaf getCertificateLeaf(CertificateLight certificate) {
+		VFSContainer cerContainer = getCertificateRootContainer();
+		VFSItem cerItem = null;
+		if(StringHelper.containsNonWhitespace(certificate.getPath())) {
+			cerItem = cerContainer.resolve(certificate.getPath());
+		}
+		return cerItem instanceof VFSLeaf cerLeaf ? cerLeaf : null;
+	}
+	
 	private File getCertificateFile(Certificate certificate) {
 		File file = getCertificateRoot();
 		if(StringHelper.containsNonWhitespace(certificate.getPath())) {
@@ -499,13 +510,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public List<CertificateLight> getLastCertificates(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select cer from certificatelight cer")
-		  .append(" where cer.identityKey=:identityKey and cer.last=true");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CertificateLight.class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList();
+		return certificatesDao.getLastCertificates(identity);
+	}
+
+	@Override
+	public List<CertificateWithInfos> getCertificatesWithInfos(IdentityRef identity) {
+		return certificatesDao.getCertificatesWithInfos(identity);
 	}
 
 	@Override
@@ -948,11 +958,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return null;
 	}
 	
-	private Date getDateNextRecertification(Certificate certificate, CertificationProgram certificateConfig) {
-		if(certificateConfig.isValidityEnabled() && certificate != null) {
+	private Date getDateNextRecertification(Certificate certificate, CertificationProgram certificateProgram) {
+		if(certificateProgram.isValidityEnabled() && certificate != null) {
 			Date date = certificate.getCreationDate();
-			int time = certificateConfig.getValidityTimelapse();
-			DurationType timeUnit = certificateConfig.getValidityTimelapseUnit();
+			int time = certificateProgram.getValidityTimelapse();
+			DurationType timeUnit = certificateProgram.getValidityTimelapseUnit();
 			Date nextRecertification = timeUnit.toDate(date, time);
 			nextRecertification = CalendarUtils.endOfDay(nextRecertification);
 			return nextRecertification;
@@ -960,9 +970,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return null;
 	}
 	
-	private Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateConfig) {
-		DurationType durationUnit = certificateConfig.getRecertificationWindowUnit();
-		int duration = certificateConfig.getRecertificationWindow();
+	private Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateProgram) {
+		DurationType durationUnit = certificateProgram.getRecertificationWindowUnit();
+		int duration = certificateProgram.getRecertificationWindow();
 		if(nextCertificationDate != null && durationUnit != null && duration > 0) {
 			return durationUnit.toDate(nextCertificationDate, duration);
 		}
@@ -1088,7 +1098,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Override
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate,
 			String externalId, CertificateManagedFlag[] managedFlags, String courseTitle, Long resourceKey,
-			Date nextRecertificationDate, File certificateFile) {
+			Date nextRecertificationDate, File certificateFile, Identity doer) {
 		CertificateStandalone certificate = new CertificateStandalone();
 		certificate.setArchivedResourceKey(resourceKey);
 		if(creationDate != null) {
@@ -1106,6 +1116,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setLast(true);
 		certificate.setCourseTitle(courseTitle);
 		certificate.setStatus(CertificateStatus.ok);
+		certificate.setUploadedBy(doer);
 
 		String dir = usersStorage.generateDir();
 		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,35 +14,20 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.course.certificate.model;
 
-import org.olat.core.id.Identity;
-import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.Certificate;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 18.11.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 28 oct. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificateLightPack {
-	
-	private final CertificateLight certificate;
-	private final Identity identity;
-	
-	public CertificateLightPack(CertificateLight certificate, Identity identity) {
-		this.certificate = certificate;
-		this.identity = identity;
-	}
-
-	public CertificateLight getCertificate() {
-		return certificate;
-	}
-
-	public Identity getIdentity() {
-		return identity;
-	}
+public record CertificateWithInfos(Certificate certificate, RepositoryEntry repositoryEntry) {
+	//
 }

@@ -61,6 +61,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.CertificatesListOverviewController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -106,6 +107,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private static final String CMD_BOOKINGS = "Bookings";
 	private static final String CMD_LECTURES = "Lectures";
 	private static final String CMD_STATEMENTS = "Statements";
+	private static final String CMD_CERTIFICATES = "Certificates";
 	private static final String CMD_BADGES = "Badges";
 	private static final String CMD_GROUPS = "Groups";
 	private static final String CMD_PROFILE = "Profile";
@@ -117,6 +119,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private int orderTabIndex;
 	private int courseTabIndex;
 	private int lecturesTabIndex;
+	private int statementsTabIndex;
 	private int certificatesTabIndex;
 	private int badgesTabIndex;
 	private int groupTabIndex;
@@ -142,6 +145,7 @@ public class UserOverviewController extends BasicController implements NextPrevi
 	private ParticipantLecturesOverviewController lecturesController;
 	private WeeklyCalendarController calendarController;
 	private CourseListWrapperController courseListWrapperController;
+	private CertificatesListOverviewController certificatesCtrl;
 	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
 	private BadgesController badgesController;
 	private BookOnBehalfOfController bookOnBehalfOfController;
@@ -327,12 +331,19 @@ public class UserOverviewController extends BasicController implements NextPrevi
 		}
 
 		if (roleSecurityCallback.canViewEfficiencyStatements()) {
-			certificatesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("statements"), uureq -> {
+			statementsTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("statements"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_STATEMENTS), null);
 				certificateAndEfficiencyStatementWrapperController = new CertificateAndEfficiencyStatementWrapperController(uureq, bwControl, stackPanel,
-						mentee, roleSecurityCallback);
+						mentee);
 				listenTo(certificateAndEfficiencyStatementWrapperController);
 				return certificateAndEfficiencyStatementWrapperController;
+			});
+			
+			certificatesTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("certificates"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_CERTIFICATES), null);
+				certificatesCtrl = new CertificatesListOverviewController(uureq, bwControl, mentee, roleSecurityCallback.canUploadExternalCertificate());
+				listenTo(certificatesCtrl);
+				return certificatesCtrl;
 			});
 		}
 
@@ -494,10 +505,15 @@ public class UserOverviewController extends BasicController implements NextPrevi
 			if(calendarController != null) {
 				calendarController.activate(ureq, entries.subList(1, entries.size()), null);
 			}
-		} else if(CMD_STATEMENTS.equalsIgnoreCase(type) && certificatesTabIndex >= 0) {
-			functionsTabbedPane.setSelectedPane(ureq, certificatesTabIndex);
+		} else if(CMD_STATEMENTS.equalsIgnoreCase(type) && statementsTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, statementsTabIndex);
 			if (certificateAndEfficiencyStatementWrapperController != null) {
 				certificateAndEfficiencyStatementWrapperController.activate(ureq, entries.subList(1, entries.size()), null);
+			}
+		} else if(CMD_CERTIFICATES.equalsIgnoreCase(type) && certificatesTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, certificatesTabIndex);
+			if (certificatesCtrl != null) {
+				certificatesCtrl.activate(ureq, entries.subList(1, entries.size()), null);
 			}
 		} else if (CMD_BADGES.equalsIgnoreCase(type) && badgesTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, badgesTabIndex);

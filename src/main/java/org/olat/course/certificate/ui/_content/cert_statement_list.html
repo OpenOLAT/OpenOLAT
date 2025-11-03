@@ -1,15 +1,10 @@
 <fieldset>
 	<legend>
-		<i class="o_icon o_icon o_icon-fw o_icon_certificate"> </i>$r.translate("certificates.and.statements.title")
+		<i class="o_icon o_icon o_icon-fw o_icon_statement"> </i>$r.translate("statements.title")
 	</legend>
-	#if($uploadCertificate || $linkToCoachingTool)
+	#if($r.available("coaching.tool"))
 	<div class="o_button_group o_button_group_right">
-		#if($uploadCertificate)
-			$r.render("upload.certificate")
-		#end
-		#if($linkToCoachingTool)
-			$r.render("coaching.tool")
-		#end
+		$r.render("coaching.tool")
 	</div>
 	#end
 	#if($r.available("curriculumSelection"))

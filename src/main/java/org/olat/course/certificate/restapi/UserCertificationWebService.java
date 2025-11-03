@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.io.File;
@@ -334,10 +335,10 @@ public class UserCertificationWebService {
 			if(!isAdminOf(assessedIdentity, request)) {
 				return Response.serverError().status(Status.FORBIDDEN).build();
 			}
-
+			Identity actor = getIdentity(request);
 			certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate,
 					externalId, managedFlags, courseTitle, archivedResourceKey,
-					nextRecertificationDate, tmpFile);
+					nextRecertificationDate, tmpFile, actor);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

@@ -101,6 +101,10 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
 	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_uploaded_by", nullable=false, insertable=true, updatable=false)
+	private Identity uploadedBy;
+	
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_metadata", nullable=true, insertable=true, updatable=true)
 	private VFSMetadata metadata;
@@ -243,6 +247,15 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+	
+	@Override
+	public Identity getUploadedBy() {
+		return uploadedBy;
+	}
+
+	public void setUploadedBy(Identity uploadedBy) {
+		this.uploadedBy = uploadedBy;
 	}
 
 	public VFSMetadata getMetadata() {
