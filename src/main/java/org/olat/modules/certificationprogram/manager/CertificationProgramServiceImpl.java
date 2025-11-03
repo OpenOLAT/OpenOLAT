@@ -89,17 +89,17 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	
 	@Override
 	public CertificationProgram updateCertificationProgram(CertificationProgram program) {
-		return certificationProgramDao.updateCertificationProgram(program);
-	}
-	
-	@Override
-	public CertificationProgram updateCertificationProgram(CertificationProgram program, List<Organisation> organisations) {
 		program = certificationProgramDao.updateCertificationProgram(program);
 		if(program.getTemplate() != null) {
 			// Fetch template
 			program.getTemplate().getName();
 		}
-		
+		return program;
+	}
+	
+	@Override
+	public CertificationProgram updateCertificationProgram(CertificationProgram program, List<Organisation> organisations) {
+		program = updateCertificationProgram(program);
 		List<Organisation> currentOrganisations = certificationProgramToOrganisationDao.getOrganisations(program);
 		List<Organisation> organisationsToRemove = new ArrayList<>();
 		for(Organisation organisation:organisations) {

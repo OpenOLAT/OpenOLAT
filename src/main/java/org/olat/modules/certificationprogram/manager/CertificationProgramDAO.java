@@ -95,6 +95,7 @@ public class CertificationProgramDAO {
 				inner join fetch program.group as bGroup
 				inner join fetch program.resource as rsrc
 				left join fetch program.creditPointSystem as system
+				left join fetch program.template as template
 				where program.key=:programKey""";
 		
 		List<CertificationProgram> programs = dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
@@ -113,7 +114,8 @@ public class CertificationProgramDAO {
 				select program from certificationprogram as program
 				inner join fetch program.group as bGroup
 				inner join fetch program.resource as rsrc
-				left join fetch program.creditPointSystem as system""";
+				left join fetch program.creditPointSystem as system
+				left join fetch program.template as template""";
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
 			.getResultList();
@@ -125,6 +127,7 @@ public class CertificationProgramDAO {
 				inner join fetch program.group as bGroup
 				inner join fetch program.resource as rsrc
 				left join fetch program.creditPointSystem as system
+				left join fetch program.template as template
 				where exists (select rel.key from certificationprogramtoorganisation as rel
 					where rel.certificationProgram.key=program.key and rel.organisation.key in (:organisationsKeys)
 				)""";
