@@ -305,6 +305,8 @@ public class OpenOLATPolicy {
 			.allowWithoutAttributes("basefont")
 		.allowElements("col")
 			.allowWithoutAttributes("col")
+		.allowElements("colgroup")
+			.allowWithoutAttributes("colgroup")
 		.allowElements("span")
 			.allowWithoutAttributes("span")
 		.allowElements("center")
