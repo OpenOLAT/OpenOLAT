@@ -213,6 +213,7 @@ public class MSStatisticController extends FormBasicController {
 				for (SliderWrapper slider : rubric.getSliders()) {
 					DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("tool.stats.table.title.blank", rubricIndex++);
 					columnModel.setHeaderLabel(slider.getLabelCode());
+					columnModel.setHeaderTooltip(slider.getLabel());
 					columnModel.setAlwaysVisible(true);
 					columnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 					columnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -225,6 +226,7 @@ public class MSStatisticController extends FormBasicController {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("tool.stats.table.title.blank",
 					rubricIndex++, new CssCellRenderer(cssClass));
 			columnModel.setHeaderLabel(rubric.getLabelCode());
+			columnModel.setHeaderTooltip(rubric.getLabel());
 			columnModel.setAlwaysVisible(true);
 			columnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 			columnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -242,7 +244,7 @@ public class MSStatisticController extends FormBasicController {
 		columnModel.setSortable(true);
 		columnsModel.addFlexiColumnModel(columnModel);
 		
-		dataModel = new MSStatisticDataModel(columnsModel, translate("tool.stats.table.footer"), getLocale());
+		dataModel = new MSStatisticDataModel(columnsModel, translate("tool.stats.table.footer"), getTranslator());
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
 		tableEl.setEmptyTableMessageKey("tool.stats.empty");
@@ -336,9 +338,7 @@ public class MSStatisticController extends FormBasicController {
 	private Double getTotal(Map<Rubric, RubricStatistic> rubricStatistics) {
 		Float value = null;
 		if (rubricStatistics != null) {
-			Function<Rubric, RubricStatistic> rubricFunction = rubric -> {
-				return rubricStatistics.get(rubric);
-			};
+			Function<Rubric, RubricStatistic> rubricFunction = rubric -> rubricStatistics.get(rubric);
 			if (sum) {
 				value = msService.calculateScoreBySum(form, rubricFunction);
 			} else {

@@ -19,15 +19,20 @@
  */
 package org.olat.course.nodes.ms;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 
 /**
@@ -37,21 +42,21 @@ import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
  *
  */
 public class MSStatisticDataModel extends DefaultFlexiTableDataModel<MSStatisticRow>
-implements FlexiTableFooterModel, SortableFlexiTableDataModel<MSStatisticRow> {
+		implements FlexiTableFooterModel, SortableFlexiTableDataModel<MSStatisticRow>, ExportableFlexiTableDataModel {
 
 	private static final String FORMAT_THREE_DECIMALS = "%.3f";
 	private static final String FORMAT_TWO_DECIMALS = "%.2f";
 	private static final String FORMAT_NO_DECIMALS = "%.0f";
 	
-	private final Locale locale;
+	private final Translator translator;
 	private final String footerHeader;
 	private List<Double> footerValues;
 	private String valueFormat = FORMAT_THREE_DECIMALS;
 	
-	MSStatisticDataModel(FlexiTableColumnModel columnsModel, String footerHeader, Locale locale) {
+	MSStatisticDataModel(FlexiTableColumnModel columnsModel, String footerHeader, Translator translator) {
 		super(columnsModel);
 		this.footerHeader = footerHeader;
-		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
@@ -83,8 +88,22 @@ implements FlexiTableFooterModel, SortableFlexiTableDataModel<MSStatisticRow> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<MSStatisticRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<MSStatisticRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 		super.setObjects(rows);
+	}
+	
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		FlexiTableColumnModel columnModel = getTableColumnModel();
+		int numOfColumns = columnModel.getColumnCount();
+		List<FlexiColumnModel> columns = new ArrayList<>();
+		for(int i=0; i<numOfColumns; i++) {
+			FlexiColumnModel column = columnModel.getColumnModel(i);
+			if(column.isExportable()) {
+				columns.add(column);
+			}
+		}
+		return new MSStatisticsExport().export(ftC, columns, translator);
 	}
 	
 	@Override

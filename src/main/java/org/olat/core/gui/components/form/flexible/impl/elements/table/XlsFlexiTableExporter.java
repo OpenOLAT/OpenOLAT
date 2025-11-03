@@ -96,11 +96,15 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 		Row headerRow = sheet.newRow();
 		for (int c=0; c<columns.size(); c++) {
 			FlexiColumnModel cd = columns.get(c);
-			
-			String headerVal = cd.getHeaderLabel() == null ?
-					translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
-			headerRow.addCell(c, headerVal, workbook.getStyles().getHeaderStyle());
+			createHeaderCell(cd, headerRow, c, translator, workbook);
 		}
+	}
+	
+	protected void createHeaderCell(FlexiColumnModel cd, Row headerRow, int col, Translator translator,
+			OpenXMLWorkbook workbook) {
+		String headerVal = cd.getHeaderLabel() == null ?
+				translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
+		headerRow.addCell(col, headerVal, workbook.getStyles().getHeaderStyle());
 	}
 
 	protected void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator,
