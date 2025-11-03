@@ -116,7 +116,7 @@ public class BCCourseNodeConfigController extends FormBasicController {
 		FormLayoutContainer pathCont = FormLayoutContainer.createDefaultFormLayout("path", getTranslator());
 		formLayout.add(pathCont);
 		pathCont.setFormTitle(translate("info.select"));
-		pathCont.setFormContextHelp("manual_user/learningresources/Course_Element_Folder/#config");
+		pathCont.setFormContextHelp("manual_user/learningresources/Course_Element_Folder/#tab_folder_config");
 		
 		String[] keys = {"autoPath", "pathChoose"};
 		String[] values= {translate("pathChoose.auto"), translate("pathChoose.custom")};
