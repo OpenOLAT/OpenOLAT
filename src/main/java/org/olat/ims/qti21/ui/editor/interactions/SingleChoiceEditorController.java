@@ -108,6 +108,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		mainForm.setMultipartEnabled(true);
+		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout_2_10("metadata", getTranslator());
 		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
 		metadata.setRootForm(mainForm);
@@ -202,7 +204,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		choiceEl.setVisible(!readOnly);
 		choiceEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		choiceEl.setUserObject(choice);
-		answersCont.add("choiceId", choiceEl);
 		
 		String choiceRoId = "answerro" + count++;
 		FlowFormItem choiceReadOnlyEl = new FlowFormItem(choiceRoId, itemFile);
@@ -254,7 +255,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		
 		answersCont.clearError();
 		if(!restrictedEdit) {
-			String correctAnswer = ureq.getParameter("correct");
+			String correctAnswer = getCorrectAnswer(ureq);
 			if(choiceWrappers.isEmpty()) {
 				allOk &= false;
 				answersCont.setErrorKey("error.atleast.one.answer");
@@ -267,6 +268,14 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		
 		
 		return allOk;
+	}
+	
+	private String getCorrectAnswer(UserRequest ureq) {
+		String correctAnswer = ureq.getParameter("correct");
+		if(!StringHelper.containsNonWhitespace(correctAnswer)) {
+			correctAnswer = mainForm.getRequestParameter("correct");
+		}
+		return correctAnswer;
 	}
 	
 	private void validateScoreOfCorrectAnswer() {
@@ -295,7 +304,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		Identifier correctAnswerIdentifier = null;
 		if(!restrictedEdit) {
 			//correct response
-			String correctAnswer = ureq.getParameter("correct");
+			String correctAnswer = getCorrectAnswer(ureq);
 			correctAnswerIdentifier = Identifier.parseString(correctAnswer);
 			itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
 			//shuffle
@@ -348,7 +357,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void updateCorrectAnswer(UserRequest ureq) {
-		String correctAnswer = ureq.getParameter("correct");
+		String correctAnswer = getCorrectAnswer(ureq);
 		if(StringHelper.containsNonWhitespace(correctAnswer)) {
 			Identifier correctAnswerIdentifier = Identifier.parseString(correctAnswer);
 			itemBuilder.setCorrectAnswer(correctAnswerIdentifier);

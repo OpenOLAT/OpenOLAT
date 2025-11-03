@@ -100,6 +100,8 @@ public class KPrimEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		mainForm.setMultipartEnabled(true);
+		
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
 		metadata.setFormContextHelp("manual_user/learningresources/Configure_test_questions/");
 		metadata.setRootForm(mainForm);
@@ -182,7 +184,6 @@ public class KPrimEditorController extends FormBasicController {
 		choiceEl.setUserObject(choice);
 		choiceEl.setEnabled(!readOnly);
 		choiceEl.setVisible(!readOnly);
-		answersCont.add("choiceId", choiceEl);
 		
 		String choiceRoId = "answerro" + count++;
 		FlowFormItem choiceReadOnlyEl = new FlowFormItem(choiceRoId, itemFile);
