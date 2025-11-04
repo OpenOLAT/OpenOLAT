@@ -218,11 +218,13 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		super.cleanUp();
 		removeAsListenerAndDispose(revokeConfirmationCtrl);
 		removeAsListenerAndDispose(renewConfirmationCtrl);
+		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		revokeConfirmationCtrl = null;
 		renewConfirmationCtrl = null;
+		addMemberCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
