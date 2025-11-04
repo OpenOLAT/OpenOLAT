@@ -36,6 +36,7 @@ import org.olat.repository.RepositoryEntry;
 public class CertificateRow {
 
 	private final String origin;
+	private final String points;
 	private final String filename;
 	private final String uploadedByName;
 	private final String statusExplained;
@@ -47,8 +48,9 @@ public class CertificateRow {
 	
 	public CertificateRow(Certificate certificate, RepositoryEntry course, CertificationProgram certificationProgram,
 			String uploadedByName, CertificationStatus status, String statusExplained,
-			RecertificationInDays recertificationInDays, String filename, String origin) {
+			RecertificationInDays recertificationInDays, String filename, String origin, String points) {
 		this.status = status;
+		this.points = points;
 		this.course = course;
 		this.origin = origin;
 		this.filename = filename;
@@ -111,6 +113,10 @@ public class CertificateRow {
 		return null;
 	}
 	
+	public boolean isRecertificationPaused() {
+		return certificate.isRecertificationPaused();
+	}
+	
 	public boolean isUploaded() {
 		return StringHelper.containsNonWhitespace(uploadedByName);
 	}
@@ -158,6 +164,21 @@ public class CertificateRow {
 	
 	public RecertificationInDays getRecertificationInDays() {
 		return recertificationInDays;
+	}
+	
+	public boolean isRecertificationWindowOpen() {
+		return recertificationInDays != null && recertificationInDays.windowOpen() != null
+				&& recertificationInDays.windowOpen().booleanValue();
+	}
+	
+	public Date getEndDateOfRecertificationWindow() {
+		return recertificationInDays == null
+				? null
+				: recertificationInDays.endDateOfRecertificationWindow();
+	}
+	
+	public String getPoints() {
+		return points;
 	}
 
 	public boolean isThumbnailAvailable() {

@@ -31,7 +31,22 @@ import org.olat.modules.certificationprogram.CertificationProgram;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record RecertificationInDays(Date nextRecertificationDate, Long days) {
+public record RecertificationInDays(Date nextRecertificationDate, Long days, Date endDateOfRecertificationWindow,
+		Boolean windowOpen) {
+	
+	public boolean isBeforeRecertification(Date referenceDate) {
+		return nextRecertificationDate() != null && nextRecertificationDate().compareTo(referenceDate) > 0;
+	}
+	
+	public boolean isRecertificationOpen(Date referenceDate) {
+		return nextRecertificationDate() != null && nextRecertificationDate().compareTo(referenceDate) <= 0
+				&& (endDateOfRecertificationWindow() == null || (endDateOfRecertificationWindow().compareTo(referenceDate) >= 0));
+	}
+	
+	public boolean isRecertificationWindowClosed(Date referenceDate) {
+		return nextRecertificationDate() != null && nextRecertificationDate().compareTo(referenceDate) > 0
+				&& (endDateOfRecertificationWindow() != null && (endDateOfRecertificationWindow().compareTo(referenceDate) < 0));
+	}
 	
 	public static RecertificationInDays valueOf(Certificate certificate, CertificationProgram program, Date referenceDate) {
 		// Eternal
@@ -42,10 +57,14 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days) {
 		}
 		
 		Long days = null;
+		Date endOfWindow = null;
+		Boolean windowOpen = null;
 		if(program.isRecertificationEnabled()) {
 			if(program.getRecertificationWindowUnit() != null && program.getRecertificationWindow() > 0) {
 				// Check if the certificate can be renewed
-				Date endOfWindow = program.getRecertificationWindowUnit().toDate(certificate.getNextRecertificationDate(), program.getRecertificationWindow());
+				endOfWindow = program.getRecertificationWindowUnit().toDate(certificate.getNextRecertificationDate(), program.getRecertificationWindow());
+				windowOpen = certificate.getNextRecertificationDate().compareTo(referenceDate) <= 0
+						&& endOfWindow.compareTo(referenceDate) >= 0;
 				if(endOfWindow.compareTo(referenceDate) > 0) {
 					days = DateUtils.countDays(referenceDate, certificate.getNextRecertificationDate());
 				}
@@ -53,6 +72,6 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days) {
 				days = DateUtils.countDays(referenceDate, certificate.getNextRecertificationDate());
 			}
 		}
-		return new RecertificationInDays(certificate.getNextRecertificationDate(), days);
+		return new RecertificationInDays(certificate.getNextRecertificationDate(), days, endOfWindow, windowOpen);
 	}
 }

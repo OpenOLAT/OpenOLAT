@@ -21,7 +21,15 @@
 				<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getNextRecertificationDate())}</span>
 			
 				<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
+				#if(${row.isRecertificationWindowOpen()})
+					#if($r.isNotEmpty($row.points))
+					<span>$r.translate("certificate.points.required",$r.escapeHtml($row.points))</span>
+					#else
+					<span>$r.translate("certificate.end.window",$r.formatDate($row.getEndDateOfRecertificationWindow()))</span>
+					#end
+				#else
 				<span>$r.formatDate($row.getNextRecertificationDate())</span>
+				#end
 			#else
 				<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
 				<span>$r.formatDate($row.getCreationDate())</span>

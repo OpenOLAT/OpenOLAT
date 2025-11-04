@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.certificationprogram.ui.CertificationStatus;
 
 /**
  * 
@@ -129,8 +130,13 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 	
 	private boolean acceptStatus(List<String> refs, CertificateRow row) {
 		if(refs == null || refs.isEmpty()) return true;
-		return refs.stream()
-				.anyMatch(ref -> row.getStatus() != null && ref.equals(row.getStatus().name()));
+		
+		// Filter doesn't nuance expired
+		CertificationStatus status = row.getStatus();
+		if(status == CertificationStatus.EXPIRED_RENEWABLE) {
+			status = CertificationStatus.EXPIRED;
+		}
+		return refs.contains(status.name());
 	}
 	
 	public CertificateRow getObjectByCertificateKey(Long certificateKey) {

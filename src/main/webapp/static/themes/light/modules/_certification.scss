@@ -112,10 +112,23 @@
 		column-gap: 20px;
 		row-gap: 15px;
 	}
+	
+	.o_recertification_infos {
+		display: flex;
+		flex-direction: row;
+		gap: 10px;
+		justify-content: space-between;
+	}
 
 	.o_table_body.container-fluid {
 		margin-top: 0;
 	}	
+}
+
+.o_certificate_recertification_wrapper {
+	.o_warning_with_icon {
+		margin: 0 0 20px 0;
+	}
 }
 
 @media (max-width: 1400px) {
@@ -161,11 +174,10 @@
 	}
 	
 	&.o_certification_status_inactive,
-	&.o_certification_status_expired {
+	&.o_certification_status_expired,
+	&.o_certification_status_expired_renewable {
 		font-weight: normal;
-		background-color: #fff;
-	    border-color: $o-curriculum-status-deleted-color;
-	    color: $o-curriculum-status-deleted-color;
+		@extend %o_labeled_yellow;
 	}
 	
 	&.o_certification_status_paused,
@@ -193,7 +205,8 @@
 	}
 	
 	&.o_certification_status_inactive,
-	&.o_certification_status_expired {
+	&.o_certification_status_expired,
+	&.o_certification_status_expired_renewable {
 		font-weight: normal;
 		@extend %o_labeled_light_yellow;
 	}

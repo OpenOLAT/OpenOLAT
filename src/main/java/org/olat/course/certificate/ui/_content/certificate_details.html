@@ -1,47 +1,47 @@
 <div class="o_certificate_details o_lightbox_modal_form">
 	<div class="o_certificate_details_wrapper">
 		<div class="o_certificate_thumbnail">
-			<img src="${mapperThumbnailUrl}/${row.key}/${row.filename}.png" alt=""/>
+			<img src="${mapperThumbnailUrl}/${certificateKey}/${filename}.png" alt=""/>
 		</div>
 		<div>
 			<div class="o_certificate_infos">
 				<div>
-					<span class="o_certificate_card_label o_labeled o_certification_status_${row.getStatusString()}">
-						<i class="o_icon o_icon-fw o_icon_certification_status_${row.getStatusString()}"> </i> ${row.getStatusExplained()}</span>
+					<span class="o_certificate_card_label o_labeled o_certification_status_$status">
+						<i class="o_icon o_icon-fw o_icon_certification_status_$status"> </i> $statusExplained</span>
 				</div>
 				<div class="o_button_group_right">$r.render("download.button")</div>
 
-				#if($r.isNotEmpty($row.getAwardedBy()))
+				#if($r.isNotEmpty($awardedBy))
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
 					#if($r.available("courselink"))
 						$r.render("courselink")
 					#else
-					<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())</span>
+					<span><i class="o_icon o_icon-fw $awardedByIconCss"> </i> $awardedBy</span>
 					#end
 				</div>
 				#end
 
-				#if($r.isNotEmpty($row.getOrigin()))
+				#if($r.isNotEmpty($origin))
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.origin")</strong>
-					<span>$row.getOrigin()</span>
+					<span>$origin</span>
 				</div>
 				#end
 				
-				#if(${row.hasNextRecertificationDate()})
+				#if($r.isNotNull($nextRecertificationDate))
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.validity")</strong>
-					<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getNextRecertificationDate())}</span>
+					<span>${r.formatDate($creationDate)} &ndash; ${r.formatDate($nextRecertificationDate)}</span>
 				</div>
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
-					<span>$r.formatDate($row.getNextRecertificationDate())</span>
+					<span>$r.formatDate($nextRecertificationDate)</span>
 				</div>
 				#else
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
-					<span>$r.formatDate($row.getCreationDate())</span>
+					<span>$r.formatDate($creationDate)</span>
 				</div>
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.validity")</strong>
@@ -51,15 +51,39 @@
 			</div>
 		</div>
 	</div>
-	#if($r.available("recertification.start"))
+	#if($r.isTrue($recertificationEnable))
 	<fieldset class="o_certificate_recertification_wrapper">
 		<legend>$r.translate("recertification.title")</legend>
-		<div class="o_certificate_infos">
+		#if($r.isTrue($recertificationWindowClosed))
+		<div class="o_warning_with_icon">$r.translate("warning.certification.window.closed")</div>
+		#end
+		#if($r.isNotEmpty($requirementWarningMsg))
+		<div class="o_warning_with_icon">$requirementWarningMsg</div>
+		#end
+		<div class="o_recertification_infos">
 			<div class="o_flex_first_grow_vertical">
 				<strong class="o_card_title">$r.translate("recertification.date")</strong>
-				<span>$r.formatDate($row.getCreationDate())</span>
+				<span>$recertificationDate</span>
 			</div>
-			<div class="o_button_group_right">$r.render("recertification.start")</div>
+			#if($r.isNotEmpty($requiredPoints))
+			<div class="o_flex_first_grow_vertical">
+				<strong class="o_card_title">$r.translate("recertification.requirement")</strong>
+				<span>#if($r.isNotEmpty($requirementWarningCssIcon))
+					<i class="o_icon $requirementWarningCssIcon"> </i>#end
+				$r.translate("recertification.requirement.infos",$requiredPoints,$balancePoints)</span>
+			</div>
+			#end
+			<div class="o_button_group_right">
+			#if($r.available("recertification.pause"))
+				$r.render("recertification.pause")
+			#end	
+			#if($r.available("recertification.resume"))
+				$r.render("recertification.resume")
+			#end	
+			#if($r.available("recertification.start"))
+				$r.render("recertification.start")
+			#end
+			</div>
 		</div>
 	</fieldset>
 	#end

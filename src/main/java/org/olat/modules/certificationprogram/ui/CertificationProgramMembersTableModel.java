@@ -120,6 +120,12 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 	
 	private boolean acceptStatus(Set<CertificationStatus> status, CertificationProgramMemberRow memberRow) {
 		if(status == null || status.isEmpty()) return true;
+		
+		// We group both EXPIRED status under one
+		CertificationStatus rStatus = memberRow.getStatus();
+		if(rStatus == CertificationStatus.EXPIRED_RENEWABLE) {
+			rStatus = CertificationStatus.EXPIRED;
+		}
 		return status.contains(memberRow.getStatus());
 	}
 	

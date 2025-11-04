@@ -21,6 +21,8 @@ package org.olat.modules.certificationprogram.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
 
 /**
@@ -35,6 +37,8 @@ public enum CertificationStatus {
 	VALID,
 	/** Flag last=true on certificate but next certification date */
 	EXPIRED,
+	/** Flag last=true on certificate but next certification date */
+	EXPIRED_RENEWABLE,
 	/** Flag paused on certificate */
 	PAUSED,
 	/** Flag last=true on certificate but next certification date, and window for recertification */
@@ -56,11 +60,26 @@ public enum CertificationStatus {
 				return VALID;
 			}
 			
-			if(recertificationWindowDate != null && recertificationWindowDate.compareTo(referenceDate) < 0) {
-				return NOT_RENEWABLE;
+			if(recertificationWindowDate != null) {
+				if(recertificationWindowDate.compareTo(referenceDate) < 0) {
+					return NOT_RENEWABLE;
+				}
+				return EXPIRED_RENEWABLE;
 			}
 			return EXPIRED;
 		}
 		return REVOKED;
+	}
+	
+	public String asLabelExplained(Certificate certificate, Date referenceDate, Translator translator) {
+		if(this == CertificationStatus.EXPIRED) {
+			if(certificate.getNextRecertificationDate() != null
+					&& certificate.getNextRecertificationDate().compareTo(referenceDate) < 0) {
+				long overdueDays = DateUtils.countDays(certificate.getNextRecertificationDate(), referenceDate);
+				return translator.translate("certification.status.expired.days", Long.toString(Math.abs(overdueDays)));
+			}
+			return translator.translate("certification.status.".concat(name().toLowerCase()));
+		}
+		return translator.translate("certification.status.".concat(name().toLowerCase()));
 	}
 }

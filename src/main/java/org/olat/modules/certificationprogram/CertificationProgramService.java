@@ -93,9 +93,9 @@ public interface CertificationProgramService {
 	List<AssessmentEntry> getAssessmentEntries(CertificationProgram program, IdentityRef identity, List<RepositoryEntryStatusEnum> status);
 	
 	
-	void pauseRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
+	Certificate pauseRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
 	
-	void continueRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
+	Certificate continueRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
 	
 	void revokeRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
 	

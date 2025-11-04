@@ -432,6 +432,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_readonly { @include o-add-icon('edit'); color:red;}
 .o_icon_readwrite { @include o-add-icon('edit');}
 .o_icon_recertification { @include o-add-icon('arrow-rotate-right');}
+.o_icon_recertification_error { @include o-add-icon('circle-exclamation'); color: $brand-danger; }
+.o_icon_recertification_warning { @include o-add-icon('triangle-exclamation'); color: $brand-warning; }
 .o_icon_recycle { @include o-add-icon('recycle');}
 .o_icon_rectangle { @include o-add-icon('square', false);}
 .o_icon_redo { @include o-add-icon('repeat');}
@@ -998,10 +1000,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_membership_status_removed { @include o-add-icon('circle-xmark', true);}
 
 /* Certification */
+.o_icon_certification_resume { @include o-add-icon('play'); }
 .o_icon_certification_status_active { @include o-add-icon('check'); }
 .o_icon_certification_status_inactive { @include o-add-icon('pause'); }
 .o_icon_certification_status_valid { @include o-add-icon('check'); }
 .o_icon_certification_status_expired { @include o-add-icon('clock-rotate-left'); }
+.o_icon_certification_status_expired_renewable { @include o-add-icon('triangle-exclamation'); }
 .o_icon_certification_status_paused { @include o-add-icon('pause'); }
 .o_icon_certification_status_not_renewable { @include o-add-icon('ban'); }
 .o_icon_certification_status_revoked { @include o-add-icon('ban'); }

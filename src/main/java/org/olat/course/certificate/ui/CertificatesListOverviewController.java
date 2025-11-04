@@ -70,7 +70,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -83,6 +82,7 @@ import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.course.certificate.ui.CertificatesListDataModel.CertificateCols;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramCertifiedMembersController;
 import org.olat.modules.certificationprogram.ui.CertificationStatus;
 import org.olat.modules.certificationprogram.ui.component.CertificationStatusCellRenderer;
@@ -278,36 +278,30 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		CertificationProgram program = certificate instanceof CertificateImpl impl
 				? impl.getCertificationProgram()
 				: null;
+		String points = program != null && program.getCreditPointSystem() != null
+				? CertificationHelper.creditPointsToString(program)
+				: null;
 		
 		Identity uploadedBy = certificate.getUploadedBy();
 		String uploadedByName = certificate.getUploadedBy() == null
 				? null
 				: userManager.getUserDisplayName(uploadedBy);
-		String origin = uploadedBy != null 
-				? translate("origin.upload.manual")
-				: translate("origin.course");
+		String origin;
+		if(program != null) {
+			origin = translate("origin.certification.program");
+		} else if(uploadedBy != null) {
+			origin = translate("origin.upload.manual");
+		} else {
+			origin = translate("origin.course");
+		}
 		
 		String filename = DownloadCertificateCellRenderer.getName(certificate);
 		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
 		RecertificationInDays recertificationInDays = RecertificationInDays.valueOf(certificate, program, referenceDate);
-		String statusString = getStatusLabelAsString(certificate, status, ureq);
+		String statusString = status.asLabelExplained(certificate, referenceDate, getTranslator());
 		
-		CertificateRow row = new CertificateRow(certificate, infos.repositoryEntry(), program, uploadedByName,
-				status, statusString, recertificationInDays, filename, origin);
-		
-		return row;
-	}
-	
-	private String getStatusLabelAsString(Certificate certificate, CertificationStatus status, UserRequest ureq) {
-		if(status == CertificationStatus.EXPIRED) {
-			if(certificate.getNextRecertificationDate() != null
-					&& certificate.getNextRecertificationDate().compareTo(ureq.getRequestTimestamp()) < 0) {
-				long overdueDays = DateUtils.countDays(certificate.getNextRecertificationDate(), ureq.getRequestTimestamp());
-				return translate("certification.status.expired.days", Long.toString(Math.abs(overdueDays)));
-			}
-			return translate("certification.status.".concat(status.name().toLowerCase()));
-		}
-		return translate("certification.status.".concat(status.name().toLowerCase()));
+		return new CertificateRow(certificate, infos.repositoryEntry(), program, uploadedByName,
+				status, statusString, recertificationInDays, filename, origin, points);
 	}
 	
 	@Override
@@ -324,8 +318,13 @@ public class CertificatesListOverviewController extends FormBasicController impl
 			cmc.deactivate();
 			cleanUp();
 		} else if(detailsCtrl == source) {
-			lightboxCtrl.deactivate();
-			cleanUp();
+			if(event == Event.CHANGED_EVENT) {
+				loadModel(ureq);
+				filterModel();
+			} else {
+				lightboxCtrl.deactivate();
+				cleanUp();
+			}
 		} else if(cmc == source || lightboxCtrl == source) {
 			cleanUp();
 		}
