@@ -284,13 +284,13 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
+	public Integer incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
 		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
-			return;
+			return null;
 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(courseNode, assessedIdentity, userCourseEnvironment, by);
+		return am.incrementNodeAttempts(courseNode, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	@Override

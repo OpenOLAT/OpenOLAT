@@ -258,7 +258,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 				ScormAPIandDisplayController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
 						showMenu, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
-						ScormConstants.SCORM_MODE_NOCREDIT, null, true, fullWindow, true, null);				
+						ScormConstants.SCORM_MODE_NOCREDIT, null, true, false, fullWindow, true, null);				
 				// configure some display options
 				boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 				previewController.showNavButtons(showNavButtons);

@@ -125,16 +125,16 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * @param courseIdNodeId The course ID and optional the course node ID combined with "-". Example: 77554952047098-77554952047107
 	 * @param lessonMode add null for the default value or "normal", "browse" or "review"
 	 * @param creditMode add null for the default value or "credit", "no-credit"
-	 * @param attemptsIncremented Is the attempts counter already incremented
 	 * @param assessableType
 	 * @param activate Open the layout
+	 * @param attemptsAlreadyIncremented Is the attempts counter already incremented
 	 * @param fullWindow Open in full window
 	 * @param radomizeDelivery Randomize delivery for development
 	 * @param deliveryOptions This delivery options can override the default from the SCORM module
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu,
 			File cpRoot, Long scormResourceId, String courseIdNodeId, String lessonMode, String creditMode,
-			String assessableType, boolean activate, ScormDisplayEnum fullWindow,
+			String assessableType, boolean activate,  boolean attemptsAlreadyIncremented, ScormDisplayEnum fullWindow,
 			boolean radomizeDelivery, DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 		
@@ -174,7 +174,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		
 		// init SCORM adapter
 		try {
-			sessionController = new ScormSessionController(getIdentity(), assessableType);
+			sessionController = new ScormSessionController(getIdentity(), assessableType, attemptsAlreadyIncremented);
 			String fullname = UserManager.getInstance().getUserDisplayName(getIdentity());
 			String scormResourceIdStr = scormResourceId == null ? null : scormResourceId.toString();
 			sessionController.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lessonMode, creditMode, hashCode());

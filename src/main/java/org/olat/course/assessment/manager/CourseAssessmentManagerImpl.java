@@ -356,7 +356,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public void incrementNodeAttempts(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv, Role by) {
+	public int incrementNodeAttempts(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		Boolean entryRoot = isEntryRoot(course, courseNode);
@@ -389,6 +389,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				getClass(), 
 				LoggingResourceable.wrap(assessedIdentity), 
 				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiAttempts, "", String.valueOf(attempts)));
+		
+		return attempts;
 	}
 	
 	@Override

@@ -156,7 +156,7 @@ public interface CourseAssessmentService {
 	 * @param userCourseEnvironment
 	 * @param doneBy
 	 */
-	public void incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role doneBy);
+	public Integer incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role doneBy);
 
 	/**
 	 * Updates the users attempts for this node and this user.
