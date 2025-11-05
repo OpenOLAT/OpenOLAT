@@ -282,7 +282,7 @@ public class LectureListDetailsController extends FormBasicController {
 		}
 
 		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
-		if (taxonomyRefs.isEmpty()) {
+		if (taxonomyRefs.isEmpty() || row.getSubjects() == null || row.getSubjects().isEmpty()) {
 			return;
 		}
 		

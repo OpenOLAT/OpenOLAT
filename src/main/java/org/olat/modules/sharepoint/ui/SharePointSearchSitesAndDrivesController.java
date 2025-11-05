@@ -113,18 +113,21 @@ public class SharePointSearchSitesAndDrivesController extends FormBasicControlle
 			OAuth2Tokens tokens = ureq.getUserSession().getOAuth2Tokens();
 			TokenCredential tokenProvider = microsoftGraphDao.getTokenProvider(tokens);
 			List<MicrosoftSite> sites = sharePointDao.getSites(tokenProvider, searchString);
-			
-			for(MicrosoftSite site:sites) {
-				SiteAndDriveRow siteRow = new SiteAndDriveRow(site);
-				rows.add(siteRow);
-				getLogger().debug("Site: {} ({})", site.name(), site.id());
-	
-				List<MicrosoftDrive> drives = sharePointDao.getDrives(site.id(), tokenProvider);
-				for(MicrosoftDrive drive:drives) {
-					SiteAndDriveRow driveRow = new SiteAndDriveRow(site, drive);
-					driveRow.setParent(siteRow);
-					rows.add(driveRow);
-					getLogger().debug("Drive: {} ({})", drive.name(), drive.id());
+			if(sites == null) {
+				showWarning("error.sharepoint.search");
+			} else {
+				for(MicrosoftSite site:sites) {
+					SiteAndDriveRow siteRow = new SiteAndDriveRow(site);
+					rows.add(siteRow);
+					getLogger().debug("Site: {} ({})", site.name(), site.id());
+		
+					List<MicrosoftDrive> drives = sharePointDao.getDrives(site.id(), tokenProvider);
+					for(MicrosoftDrive drive:drives) {
+						SiteAndDriveRow driveRow = new SiteAndDriveRow(site, drive);
+						driveRow.setParent(siteRow);
+						rows.add(driveRow);
+						getLogger().debug("Drive: {} ({})", drive.name(), drive.id());
+					}
 				}
 			}
 		}
