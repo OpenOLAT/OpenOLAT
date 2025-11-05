@@ -106,16 +106,17 @@ public class ScormMainManager {
 	 * @param resourceId
 	 * @param lessonMode add null for the default value or "normal", "browse" or
 	 *          "review"
+	 * @param attemptsAlreadyIncremented The attempts don't need to be incremented
 	 * @param creditMode add null for the default value or "credit", "no-credit"
 	 */
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
-			boolean showMenu, File cpRoot, Long scormResourceId, String courseId,
-			String lessonMode, String creditMode, String assessableType, boolean activate,
+			boolean showMenu, File cpRoot, Long scormResourceId, String courseId, String lessonMode,
+			String creditMode, String assessableType, boolean activate, boolean attemptsAlreadyIncremented,
 			ScormDisplayEnum fullWindow, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		
 		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, cpRoot,
-				scormResourceId, courseId, lessonMode, creditMode, assessableType, activate, fullWindow,
-				randomizeDelivery, deliveryOptions);
+				scormResourceId, courseId, lessonMode, creditMode, assessableType, activate, attemptsAlreadyIncremented,
+				fullWindow, randomizeDelivery, deliveryOptions);
 		
 		DeliveryOptions config = ctrl.getDeliveryOptions();
 		boolean configAllowRawContent = (config == null || config.rawContent());

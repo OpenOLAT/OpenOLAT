@@ -208,26 +208,26 @@ public class CoachMainRootController extends BasicController implements Activate
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("People".equalsIgnoreCase(type)) {
+		if("People".equalsIgnoreCase(type) && peopleButton.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doPeople(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-		} else if("Events".equalsIgnoreCase(type) || "Lectures".equalsIgnoreCase(type)) {
+		} else if(("Events".equalsIgnoreCase(type) || "Lectures".equalsIgnoreCase(type)) && lecturesButton.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doLectures(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-		} else if("Groups".equalsIgnoreCase(type)) {
+		} else if("Groups".equalsIgnoreCase(type) && businessGroupsButton.isVisible()) {
 			doBusinessGroups(ureq);
-		} else if("Courses".equalsIgnoreCase(type)) {
+		} else if("Courses".equalsIgnoreCase(type) && coursesButton.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doCourses(ureq).activate(ureq, subEntries, null);
-		} else if("Orders".equalsIgnoreCase(type)) {
+		} else if("Orders".equalsIgnoreCase(type) && ordersButton.isVisible()) {
 			doAssignmentOrders(ureq);
-		} else if("OrdersAdmin".equalsIgnoreCase(type)) {
+		} else if("OrdersAdmin".equalsIgnoreCase(type) && ordersAdminButton.isVisible()) {
 			doAdminAssignmentOrders(ureq);
-		} else if("Reports".equalsIgnoreCase(type)) {
+		} else if("Reports".equalsIgnoreCase(type) && reportsButton.isVisible()) {
 			doReport(ureq);
 		} else if("UserSearch".equalsIgnoreCase(type) || "UsersSearch".equalsIgnoreCase(type)) {
 			doUserSearch(ureq);
-		} else if("Implementations".equalsIgnoreCase(type)) {
+		} else if("Implementations".equalsIgnoreCase(type) && implementationsButton.isVisible()) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doImplementations(ureq).activate(ureq, subEntries, null);
 		}

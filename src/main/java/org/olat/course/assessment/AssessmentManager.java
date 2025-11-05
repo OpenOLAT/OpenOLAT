@@ -166,7 +166,7 @@ public interface AssessmentManager {
 	 * @param courseNode
 	 * @param identity
 	 */
-	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by);
+	public int incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by);
 	
 	/**
 	 * @param courseNode The course node

@@ -152,7 +152,7 @@ public class QualityToDoListController extends ToDoTaskListController {
 				"data.collection.todos",
 				"manual_user/area_modules/Quality_Management_To-dos/");
 		listenTo(titleCtrl);
-		formLayout.add("title", new ComponentWrapperElement(titleCtrl.getInitialComponent()));
+		formLayout.add("header", new ComponentWrapperElement(titleCtrl.getInitialComponent()));
 		
 		createLink = uifactory.addFormLink("todo.create", formLayout, Link.BUTTON);
 		createLink.setIconLeftCSS("o_icon o_icon_add");

@@ -134,12 +134,13 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	}
 
 	@Override
-	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by) {
+	public int incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
 		if (attempts == null) attempts = Integer.valueOf(0);
 		int iAttempts = attempts.intValue();
 		iAttempts++;
 		nodeAttempts.put(courseNode.getIdent(), Integer.valueOf(iAttempts));
+		return iAttempts;
 	}
 
 	@Override

@@ -104,9 +104,10 @@ public class ScormSessionController {
 	/**
 	 * creates a new API adapter
 	 */
-	public ScormSessionController (Identity identity, String assessableType) {
+	public ScormSessionController (Identity identity, String assessableType, boolean attemptsIncremented) {
 		this.identity = identity;
 		this.assessableType = assessableType;
+		this.attemptsIncremented = attemptsIncremented;
 	}
 
 	/**

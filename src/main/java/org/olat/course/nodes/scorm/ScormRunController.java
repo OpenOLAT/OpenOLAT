@@ -56,6 +56,7 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
+import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
@@ -314,12 +315,13 @@ public class ScormRunController extends BasicController implements GenericEventL
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)
 
+		boolean attemptsIncremented = false;
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
 		final ScormDisplayEnum fullWindow = ScormDisplayEnum.fromConfiguration(config);
 		if (isPreview) {
 			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 					cpRoot, null, null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-					null, doActivate, fullWindow, true, deliveryOptions);
+					null, doActivate, attemptsIncremented, fullWindow, true, deliveryOptions);
 		} else {
 			if (userCourseEnv.isParticipant()) {
 				// Set status in Progress
@@ -338,7 +340,13 @@ public class ScormRunController extends BasicController implements GenericEventL
 				//increment user attempts only once!
 				if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 						|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-					courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
+					Integer attempts = courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
+					attemptsIncremented = true;
+					
+					if(attempts != null) {
+						UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+						am.appendToUserNodeLog(scormNode, getIdentity(), getIdentity(), "ATTEMPTS set to: " + attempts, Role.user);
+					}
 				}
 			}
 			
@@ -347,19 +355,19 @@ public class ScormRunController extends BasicController implements GenericEventL
 				// When a SCORE is transfered, the run mode is hardcoded 
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
+						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, attemptsIncremented, fullWindow,
 						false, deliveryOptions);
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				// When not assessible users can choose between normal mode where data is stored...
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
-						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
+						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, attemptsIncremented, fullWindow,
 						false, deliveryOptions);
 			} else {
 				// ... and preview mode where no data is stored
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-						assessableType, doActivate, fullWindow, false, deliveryOptions);
+						assessableType, doActivate, attemptsIncremented, fullWindow, false, deliveryOptions);
 			}
 			
 		}

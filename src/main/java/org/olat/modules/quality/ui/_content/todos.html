@@ -1,9 +1,6 @@
-$r.render("title")
-<div class="o_hint">
-	$r.translate("data.collection.todos.info")
-</div>
+$r.render("header")
 #if($r.available("todo.create") && $r.visible("todo.create"))
-	<div class="o_button_group o_button_group_right">
+	<div class="o_button_group o_button_group_right o_button_group_top">
 			$r.render("todo.create")
 	</div>
 #end
