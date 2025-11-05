@@ -281,15 +281,11 @@ public class LectureListDetailsController extends FormBasicController {
 		}
 
 		Collection<TaxonomyRef> taxonomyRefs = getTaxonomyRefs();
-		if (taxonomyRefs.isEmpty()) {
+		if (taxonomyRefs.isEmpty() || row.getSubjects() == null || row.getSubjects().isEmpty()) {
 			return;
 		}
 
 		Set<TaxonomyLevel> allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
-
-		if (row.getLectureBlock().getTaxonomyLevels() == null || row.getLectureBlock().getTaxonomyLevels().isEmpty()) {
-			return;
-		}
 		allTaxonomyLevels.addAll(row.getSubjects());
 
 		TaxonomyLevelSelection taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("lecture.subjects", 
