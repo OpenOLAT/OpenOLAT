@@ -149,6 +149,16 @@ public interface VFSRepositoryService {
 
 	public void unmarkFromDeleted(Identity doer, VFSMetadata deletedMetadata, File restoredFile);
 	
+	/**
+	 * Clean up the trash structures for every folder in the items.
+	 * The clean up process moves the sub-trashes to the parent of folder.
+	 * before: dir1/FOLDER/dir2/dir3/.ootrash/file1.txt
+	 * after: dir1/.ootrash/FOLDER/dir2/dir3/file1.txt
+	 * @param author The user which started to clean the trash
+	 * @param targetFile The items (folders) to clean
+	 */
+	public void cleanTrash(List<VFSItem> items);
+	
 	public void cleanTrash(Identity identity, VFSMetadata vfsMetadata);
 	
 	public List<VFSMetadata> getDeletedDateBeforeMetadatas(Date reference);
@@ -361,5 +371,5 @@ public interface VFSRepositoryService {
 			String trashed, String locked,
 			Integer downloadCount, Long revisionCount,
 			Integer Size);
-	
+
 }
