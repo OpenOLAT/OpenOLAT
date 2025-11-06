@@ -1035,7 +1035,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new IQTESTAssessmentConfig(courseEntry, this));
+		AssessmentReminderProvider provider = new AssessmentReminderProvider(getIdent(), new IQTESTAssessmentConfig(courseEntry, this));
+		provider.setContextHelpUrl("manual_user/learningresources/Course_Element_Test/#tab_reminders");
+		return provider;
 	}
 	
 	@Override

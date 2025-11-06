@@ -207,7 +207,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer evaluationFormContainer = uifactory.addDefaultFormLayout("enable.evaluation", null, formLayout);
 		evaluationFormContainer.setFormTitle(translate("form.evalutation.title"));
-		evaluationFormContainer.setFormContextHelp("manual_user/learningresources/Course_Element_Task/");
+		evaluationFormContainer.setFormContextHelp("manual_user/learningresources/Course_Element_Task/#grading");
 		initEvaluationFormForm(evaluationFormContainer);
 		evaluationFormContainer.setVisible(individualTask);
 

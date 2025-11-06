@@ -27,6 +27,7 @@ package org.olat.course.learningpath;
  */
 public class LearningPathEditConfigsBuilder {
 	
+	private String contextHelpUrl = "manual_user/learningresources/Learning_path_course_Course_editor/";
 	private boolean triggerNodeVisited;
 	private boolean triggerConfirmed;
 	private boolean triggerScore;
@@ -38,6 +39,11 @@ public class LearningPathEditConfigsBuilder {
 	
 	LearningPathEditConfigsBuilder() {
 		this.translationsBuilder = new LearningPathTranslationsBuilder(this);
+	}
+	
+	public LearningPathEditConfigsBuilder setCustomContextHelpUrl(String contextHelpUrl) {
+		this.contextHelpUrl = contextHelpUrl;
+		return this;
 	}
 	
 	public LearningPathEditConfigsBuilder enableNodeVisited() {
@@ -87,6 +93,7 @@ public class LearningPathEditConfigsBuilder {
 	
 	private final static class LearningPathEditConfigsImpl implements LearningPathEditConfigs {
 		
+		private final String contextHelpUrl;
 		private final boolean triggerNodeVisited;
 		private final boolean triggerConfirmed;
 		private final boolean triggerScore;
@@ -97,6 +104,7 @@ public class LearningPathEditConfigsBuilder {
 		private final LearningPathTranslations translations;
 
 		private LearningPathEditConfigsImpl(LearningPathEditConfigsBuilder builder) {
+			this.contextHelpUrl = builder.contextHelpUrl;
 			this.triggerNodeVisited = builder.triggerNodeVisited;
 			this.triggerConfirmed = builder.triggerConfirmed;
 			this.triggerScore = builder.triggerScore;
@@ -105,6 +113,11 @@ public class LearningPathEditConfigsBuilder {
 			this.triggerStatusDone = builder.triggerStatusDone;
 			this.triggerNodeCompleted = builder.triggerNodeCompleted;
 			this.translations = builder.translationsBuilder.build();
+		}
+
+		@Override
+		public String getContextHelpUrl() {
+			return contextHelpUrl;
 		}
 
 		@Override

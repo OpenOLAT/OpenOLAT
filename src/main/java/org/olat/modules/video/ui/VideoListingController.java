@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -109,6 +110,12 @@ public class VideoListingController extends FormBasicController implements Activ
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAuthor = roles.isAuthor() || roles.isAdministrator() || roles.isLearnResourceManager();
+		if (isAuthor) {
+			setFormContextHelp("manual_user/area_modules/Video_Collection/");
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 
@@ -119,7 +126,6 @@ public class VideoListingController extends FormBasicController implements Activ
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_video_listing");
-		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		tableEl.setEmptyTableSettings("video.site.empty", isAuthor ? "video.site.empty.hint" : null, "o_icon_video");
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("video_cell");

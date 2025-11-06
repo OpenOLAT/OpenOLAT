@@ -28,6 +28,8 @@ package org.olat.course.learningpath;
  */
 public interface LearningPathEditConfigs {
 	
+	public String getContextHelpUrl();
+	
 	public boolean isTriggerNodeVisited();
 	
 	public boolean isTriggerConfirmed();

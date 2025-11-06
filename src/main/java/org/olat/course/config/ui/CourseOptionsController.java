@@ -210,6 +210,8 @@ public class CourseOptionsController extends FormBasicController {
 
 		//glossary
 		FormLayoutContainer glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
+		glossaryCont.setFormTitle(translate("details.options.title"));
+		glossaryCont.setFormContextHelp("manual_user/learningresources/Course_Settings_Options/");
 		glossaryCont.setRootForm(mainForm);
 		formLayout.add(glossaryCont);
 

@@ -169,7 +169,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
-		setFormContextHelp("manual_user/learningresources/Learning_path_course_Course_editor/");
+		setFormContextHelp(editConfigs.getContextHelpUrl());
 		formLayout.setElementCssClass("o_lp_config_edit");
 		
 		if (selectionCourseNodeChild) {

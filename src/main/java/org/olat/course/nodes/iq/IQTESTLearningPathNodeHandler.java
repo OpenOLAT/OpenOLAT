@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 public class IQTESTLearningPathNodeHandler implements LearningPathNodeHandler {
 	
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
+			.setCustomContextHelpUrl("manual_user/learningresources/Course_Element_Test/#tab_learning_path")
 			.enableNodeVisited()
 			.enableConfirmed()
 			.enableScore()

@@ -134,6 +134,11 @@ public class CourseReminderListController extends FormBasicController
 		formLayout.setElementCssClass("o_sel_course_reminder_list");
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			initInformations(layoutCont);
+			if (StringHelper.containsNonWhitespace(reminderProvider.getContextHelpUrl())) {
+				layoutCont.setFormContextHelp(reminderProvider.getContextHelpUrl());
+			} else {
+				layoutCont.setFormContextHelp("manual_user/learningresources/Course_Reminders/");
+			}
 		}
 		
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
