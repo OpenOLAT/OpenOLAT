@@ -108,6 +108,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.VFSSuccess;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.RevisionFileImpl;
 import org.olat.core.util.vfs.version.VersionsFileImpl;
@@ -907,6 +908,118 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 		}
 	}
+	
+	@Override
+	public void cleanTrash(List<VFSItem> items) {
+		for (VFSItem vfsItem : items) {
+			if (vfsItem.canMeta() == VFSStatus.YES) {
+				if (vfsItem instanceof VFSContainer toCleanContainer) {
+					VFSContainer targetContainer = toCleanContainer.getParentContainer();
+					if (targetContainer != null && targetContainer.canMeta() == VFSStatus.YES) {
+						VFSMetadata vfsMetadata = getMetadataFor(toCleanContainer);
+						if (vfsMetadata != null) {
+							List<VFSMetadata> descendants = getDescendants(vfsMetadata, null);
+							// Deepest sub-folder first to be sure it does not contain sub-trashes.
+							descendants.sort((m1, m2) -> Integer.compare(m2.getRelativePath().length(), m1.getRelativePath().length()));
+							for (VFSMetadata descendantMetadata : descendants) {
+								if (descendantMetadata.isDeleted()) {
+									VFSItem toDeleteItem = getItemFor(descendantMetadata);
+									moveToTrash(toDeleteItem, targetContainer);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Move a single item to the trash of the targetContainer.
+	 * If the item is a container it must not contain items. 
+	 */
+	private VFSSuccess moveToTrash(VFSItem toDeleteItem, VFSContainer targetContainer) {
+		if (VFSRepositoryService.TRASH_NAME.equals(toDeleteItem.getName())) {
+			// Trashes do not need to be moved.
+			return VFSSuccess.SUCCESS;
+		}
+		
+		VFSContainer targetTrash = getOrCreateTrash(targetContainer);
+		if (targetTrash == null) {
+			return VFSSuccess.ERROR_FAILED;
+		}
+		
+		String toDeletePath = toDeleteItem.getRelPath().replace(VFSRepositoryService.TRASH_NAME + "/", "");
+		String targetPath = targetContainer.getRelPath().replace(VFSRepositoryService.TRASH_NAME + "/", "");
+		if (toDeletePath.startsWith(targetPath)) {
+			String[] subpathes = toDeletePath.substring(targetPath.length()).split("/");
+			File parentFile = toFile(targetTrash);
+			int subpathesLengts = subpathes.length;
+			if (toDeleteItem instanceof VFSLeaf) {
+				// Last subpath is the name of the file
+				subpathesLengts--;
+			}
+			for (int i = 0; i < subpathesLengts; i++) {
+				String path = subpathes[i];
+				if (StringHelper.containsNonWhitespace(path)) {
+					parentFile = getOrCreateDeletedDirectory(parentFile, path);
+				}
+			}
+			targetTrash = new LocalFolderImpl(parentFile);
+		}
+		
+		VFSMetadata toDeleteMetadata = toDeleteItem.getMetaInfo();
+		File trashFile = toFile(targetTrash);
+		File toDeleteFile = toFile(toDeleteItem);
+		
+		String filenameInTrash = VFSManager.similarButNonExistingName(targetTrash, toDeleteItem.getName(), "_");
+		File fileInTrash = new File(trashFile, filenameInTrash);
+		boolean renamed = toDeleteFile.renameTo(fileInTrash);
+		
+		if (renamed && toDeleteMetadata instanceof VFSMetadataImpl toDeleteMetadataImpl) {
+			toDeleteMetadataImpl.setParent(targetTrash.getMetaInfo());
+			// Move the revisions before the relative path is updated
+			moveRevisionsFromTrash(toDeleteMetadataImpl, fileInTrash);
+			
+			String relativePath = getRelativePath(trashFile);
+			toDeleteMetadataImpl.setRelativePath(relativePath);
+			
+			dbInstance.commit();
+			
+			return VFSSuccess.SUCCESS;
+		}
+		
+		return VFSSuccess.ERROR_FAILED;
+	}
+
+	private VFSContainer getOrCreateTrash(VFSContainer targetContainer) {
+		// Just to be really sure
+		File targetFile = toFile(targetContainer);
+		if (targetFile == null || !targetFile.exists()) {
+			return null;
+		}
+		
+		if (targetContainer.getName().equals(VFSRepositoryService.TRASH_NAME)) {
+			// The container is already the trash
+			return targetContainer;
+		} else if (targetContainer.getRelPath() != null && targetContainer.getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
+			// The container is in the trash of a parent folder
+			return targetContainer;
+		}
+		
+		File trashFile = getOrCreateDeletedDirectory(targetFile, VFSRepositoryService.TRASH_NAME);
+		return new LocalFolderImpl(trashFile);
+	}
+
+	private File getOrCreateDeletedDirectory(File parentFile, String path) {
+		File trashFile = new File(parentFile, path);
+		if (!trashFile.exists()) {
+			trashFile.mkdirs();
+			getMetadataFor(trashFile);
+			dbInstance.intermediateCommit();
+		}
+		return trashFile;
+	}
 
 	@Override
 	public void cleanTrash(Identity identity, VFSMetadata trashMetadata) {
@@ -1009,6 +1122,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public VFSMetadata rename(VFSItem item, String newName) {
+		cleanTrash(List.of(item));
+		
 		VFSMetadata metadata = getMetadataFor(item);
 		
 		// Is there already a metadata from an other file with the same name

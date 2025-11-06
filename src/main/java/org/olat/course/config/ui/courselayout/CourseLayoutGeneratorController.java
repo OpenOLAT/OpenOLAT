@@ -229,6 +229,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("course.layout", getTranslator());
 		layoutCont.setFormTitle(translate("tab.layout.title"));
+		layoutCont.setFormContextHelp("manual_user/learningresources/Design_possibilities_of_courses_and_course_elements/#tab-layout_1");
 		layoutCont.setRootForm(mainForm);
 		formLayout.add("course.layout", layoutCont);
 		

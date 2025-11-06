@@ -30,6 +30,10 @@ import java.util.List;
  */
 public interface CourseNodeReminderProvider {
 	
+	public default String getContextHelpUrl() {
+		return null;
+	}
+	
 	public String getCourseNodeIdent();
 	
 	public boolean filter(Collection<String> ruleNodeIdents, Collection<String> ruleTypes);

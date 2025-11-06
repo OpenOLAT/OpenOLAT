@@ -261,7 +261,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		stepsCont.setFormDescription(translate("task.steps.description"));
 		stepsCont.setElementCssClass("o_sel_course_gta_steps");
 		stepsCont.setRootForm(mainForm);
-		stepsCont.setFormContextHelp("manual_user/learningresources/Course_Element_Task/#configurations");
+		stepsCont.setFormContextHelp("manual_user/learningresources/Course_Element_Task/#workflow");
 		formLayout.add(stepsCont);
 
 		String[] optionalValues = new String[] {

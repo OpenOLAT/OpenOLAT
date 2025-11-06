@@ -44,6 +44,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -78,6 +79,8 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseCleaner licenseCleaner;
+	@Autowired
+	private VFSVersionModule versionModule;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
@@ -559,6 +562,166 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		deletedMetadata = deletedDescendants.stream().filter(metadata -> imageLeaf2.getName().equals(metadata.getFilename())).findFirst().get();
 		Assert.assertTrue(deletedMetadata.isDeleted());
 		Assert.assertTrue(deletedMetadata.getRelativePath().endsWith(VFSRepositoryService.TRASH_NAME + "/" + container1.getName() + "/" + container1Sub2.getName()));
+	}
+	
+	@Test
+	public void shouldCleanTrash_oneFile() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSContainer container1Sub1 = container1.createChildContainer("container1Sub1");
+		VFSContainer container1Sub1Sub1 = container1Sub1.createChildContainer("container1Sub1Sub1");
+		VFSLeaf imageLeaf1 = container1Sub1Sub1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+		
+		// Delete file
+		imageLeaf1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> deletedDescendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.TRUE);
+		VFSMetadata deletedMetadata = deletedDescendants.stream().filter(metadata -> imageLeaf1.getName().equals(metadata.getFilename())).findFirst().get();
+		String relativePath = deletedMetadata.getRelativePath();
+		String expectedEnd = container1Sub1Sub1.getName() + "/" +
+				VFSRepositoryService.TRASH_NAME;
+		Assert.assertTrue(relativePath.endsWith(expectedEnd));
+		
+		// Clean trash of parent container
+		vfsRepositoryService.cleanTrash(List.of(container1));
+		dbInstance.commitAndCloseSession();
+		
+		deletedDescendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.TRUE);
+		deletedMetadata = deletedDescendants.stream().filter(metadata -> imageLeaf1.getName().equals(metadata.getFilename())).findFirst().get();
+		relativePath = deletedMetadata.getRelativePath();
+		expectedEnd = container.getName() + "/" +
+				VFSRepositoryService.TRASH_NAME +  "/" +
+				container1.getName() + "/" +
+				container1Sub1.getName() + "/" +
+				container1Sub1Sub1.getName();
+		Assert.assertTrue(relativePath.endsWith(expectedEnd));
+	}
+	
+	@Test
+	public void shouldCleanTrash_oneDirectory() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSContainer container1Sub1 = container1.createChildContainer("container1Sub1");
+		VFSContainer container1Sub1Sub1 = container1Sub1.createChildContainer("container1Sub1Sub1");
+		VFSLeaf imageLeaf1 = container1Sub1Sub1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+		
+		// Delete file
+		container1Sub1Sub1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> deletedDescendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.TRUE);
+		
+		VFSMetadata deletedMetadata = deletedDescendants.stream().filter(metadata -> container1Sub1Sub1.getName().equals(metadata.getFilename())).findFirst().get();
+		String relativePath = deletedMetadata.getRelativePath();
+		String expectedEnd = container1Sub1.getName() + "/" +
+				VFSRepositoryService.TRASH_NAME;
+		Assert.assertTrue(relativePath.endsWith(expectedEnd));
+		
+		deletedMetadata = deletedDescendants.stream().filter(metadata -> imageLeaf1.getName().equals(metadata.getFilename())).findFirst().get();
+		relativePath = deletedMetadata.getRelativePath();
+		expectedEnd = container1Sub1.getName() + "/" +
+				VFSRepositoryService.TRASH_NAME + "/" +
+				container1Sub1Sub1.getName();
+		Assert.assertTrue(relativePath.endsWith(expectedEnd));
+		
+		// Clean trash of parent container
+		vfsRepositoryService.cleanTrash(List.of(container1));
+		dbInstance.commitAndCloseSession();
+		
+		deletedDescendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.TRUE);
+		deletedMetadata = deletedDescendants.stream().filter(metadata -> imageLeaf1.getName().equals(metadata.getFilename())).findFirst().get();
+		relativePath = deletedMetadata.getRelativePath();
+		expectedEnd = container.getName() + "/" + 
+				VFSRepositoryService.TRASH_NAME +  "/" +
+				container1.getName() + "/" +
+				container1Sub1.getName() + "/" +
+				container1Sub1Sub1.getName();
+		Assert.assertTrue(relativePath.endsWith(expectedEnd));
+	}
+	
+	@Test
+	public void shouldCleanTrash_multiDirectories() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSLeaf imageLeaf1 = container1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		VFSContainer container1Sub1 = container1.createChildContainer("container1Sub1");
+		VFSLeaf imageLeafSub1 = container1Sub1.createChildLeaf("imageToDeleteSub1.jpg");
+		copyTestTxt(imageLeafSub1, "IMG_1491.jpg");
+		VFSContainer container1Sub1Sub1 = container1Sub1.createChildContainer("container1Sub1Sub1");
+		VFSLeaf imageLeafSub1Sub1 = container1Sub1Sub1.createChildLeaf("imageToDeleteSub1Sub1.jpg");
+		copyTestTxt(imageLeafSub1Sub1, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+		
+		// Delete file
+		imageLeafSub1Sub1.delete();
+		dbInstance.commitAndCloseSession();
+		container1Sub1.delete();
+		dbInstance.commitAndCloseSession();
+		imageLeaf1.delete();
+		dbInstance.commitAndCloseSession();
+		container1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadata> deletedDescendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), Boolean.TRUE);
+		VFSMetadata deletedMetadata = deletedDescendants.stream().filter(metadata -> imageLeafSub1Sub1.getName().equals(metadata.getFilename())).findFirst().get();
+		String relativePath = deletedMetadata.getRelativePath();
+		String expectedEnd = 
+				container.getName() + "/" +
+				VFSRepositoryService.TRASH_NAME +  "/" +
+				container1.getName() + "/" +
+				container1Sub1.getName() + "/" +
+				container1Sub1Sub1.getName();
+		Assert.assertTrue(relativePath.endsWith(expectedEnd));
+	}
+	
+	@Test
+	public void shouldCleanTrash_revision() {
+		versionModule.setMaxNumberOfVersions(3);
+		
+		Identity identity = JunitTestHelper.getDefaultAuthor();
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSContainer container1Sub1 = container1.createChildContainer("container1Sub1");
+		VFSContainer container1Sub1Sub1 = container1Sub1.createChildContainer("container1Sub1Sub1");
+		VFSLeaf imageLeaf1 = container1Sub1Sub1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		vfsRepositoryService.addVersion(imageLeaf1, identity, false, null, VFSRepositoryServiceTest.class.getResourceAsStream("test.txt"));
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSItem> items = container1Sub1Sub1.getItems(null);
+		Assert.assertTrue(items.size() == 2); // File and revision
+		
+		// Delete file
+		imageLeaf1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		VFSItem trashCont = container1Sub1Sub1.getItems(null).get(0);
+		List<VFSItem> trashItems = ((VFSContainer)trashCont).getItems(null);
+		Assert.assertTrue(trashItems.size() == 2);
+		
+		// Clean trash of parent container
+		vfsRepositoryService.cleanTrash(List.of(container1));
+		dbInstance.commitAndCloseSession();
+		
+		trashCont = container.getItems(null).stream().filter(item -> item.getName().equals(VFSRepositoryService.TRASH_NAME)).findFirst().get();
+		VFSItem containerItem = ((VFSContainer)trashCont).getItems(null).get(0);
+		VFSItem container1Item = ((VFSContainer)containerItem).getItems(null).get(0);
+		VFSItem container1Sub1Item = ((VFSContainer)container1Item).getItems(null).get(0);
+		List<VFSItem> container1Sub1Sub1Items = ((VFSContainer)container1Sub1Item).getItems(null);
+		
+		Assert.assertTrue(container1Sub1Sub1Items.size() == 2);
+		
+		versionModule.setMaxNumberOfVersions(0);
 	}
 	
 	private VFSLeaf createFile() {

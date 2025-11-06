@@ -40,11 +40,21 @@ public class AssessmentReminderProvider implements CourseNodeReminderProvider {
 	
 	private final String nodeIdent;
 	private final AssessmentConfig assessmentConfig;
+	private String contextHelpUrl;
 	private List<String> mainTypes;
 	
 	public AssessmentReminderProvider(String nodeIdent, AssessmentConfig assessmentConfig) {
 		this.nodeIdent = nodeIdent;
 		this.assessmentConfig = assessmentConfig;
+	}
+
+	@Override
+	public String getContextHelpUrl() {
+		return contextHelpUrl;
+	}
+
+	public void setContextHelpUrl(String contextHelpUrl) {
+		this.contextHelpUrl = contextHelpUrl;
 	}
 
 	@Override

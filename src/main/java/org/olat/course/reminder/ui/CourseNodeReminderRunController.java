@@ -49,7 +49,8 @@ public class CourseNodeReminderRunController extends BasicController {
 		stackPanel.setCssClass("o_segment_toolbar o_block_top");
 		putInitialPanel(stackPanel);
 		
-		remindersCtrl = new CourseNodeReminderController(ureq, getWindowControl(), stackPanel, repositoryEntry, reminderProvider, false);
+		remindersCtrl = new CourseNodeReminderController(ureq, getWindowControl(), stackPanel, repositoryEntry,
+				reminderProvider, false);
 		listenTo(remindersCtrl);
 		
 		stackPanel.pushController(translate("reminders"), remindersCtrl);

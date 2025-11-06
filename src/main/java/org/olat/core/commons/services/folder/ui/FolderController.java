@@ -2427,6 +2427,10 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void doCopyMoveValidated(UserRequest ureq, CopyMoveParams params) {
 		boolean versioning = versionsEnabled && !params.isSuppressVersion() && (params.getOverwrite() == null || params.getOverwrite().booleanValue());
 		
+		if (params.isMove()) {
+			vfsRepositoryService.cleanTrash(params.getItemsToCopy());
+		}
+		
 		FolderAddEvent addEvent = new FolderAddEvent();
 		VFSSuccess vfsStatus = VFSSuccess.SUCCESS;
 		ListIterator<VFSItem> listIterator = params.itemsToCopy.listIterator();
