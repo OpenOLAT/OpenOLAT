@@ -66,7 +66,7 @@ public class ContentEditorPage extends ContentViewPage {
 		OOGraphene.waitElement(addBy, browser).click();
 
 		By newLayoutBy = By.xpath("//div[@class='o_ceditor_inspector_content']//div[@class='o_inspector_layouts']//a/span/div[contains(@class,'" + layout.cssClass() + "')]");
-		browser.findElement(newLayoutBy).click();
+		OOGraphene.waitElement(newLayoutBy, browser).click();
 		By activeLayoutBy = By.xpath("//div[@class='o_ceditor_inspector_content']//div[@class='o_inspector_layouts']//a[contains(@class,'active')]/span/div[contains(@class,'" + layout.cssClass() + "')]");
 		OOGraphene.waitElement(activeLayoutBy, browser);
 		
