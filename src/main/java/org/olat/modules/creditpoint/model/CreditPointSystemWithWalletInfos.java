@@ -19,17 +19,14 @@
  */
 package org.olat.modules.creditpoint.model;
 
-import java.util.List;
-
-import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.modules.creditpoint.CreditPointSystem;
 
 /**
  * 
- * Initial date: 9 juil. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 7 nov. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record CreditPointSystemInfos(CreditPointSystem system, long usage, List<OrganisationWithParents> organisations) {
-	//
+public record CreditPointSystemWithWalletInfos(CreditPointSystem system, long usage) {
+
 }

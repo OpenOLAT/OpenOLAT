@@ -285,7 +285,7 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployCourse(actor, "QTI 2.1 Course", courseUrl);
 		dbInstance.commitAndCloseSession();
 		
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null, false, false);
 		CreditPointWallet participantWallet = creditPointService.getOrCreateWallet(participant, system);
 		creditPointService.createCreditPointTransaction(CreditPointTransactionType.deposit, new BigDecimal("30"), null, "Testing", participantWallet, actor, null, null, null, null, null);
 		

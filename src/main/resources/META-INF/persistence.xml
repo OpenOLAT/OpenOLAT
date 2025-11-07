@@ -240,6 +240,7 @@
 		<class>org.olat.modules.creditpoint.model.CreditPointWalletImpl</class>
 		<class>org.olat.modules.creditpoint.model.CreditPointTransactionImpl</class>
 		<class>org.olat.modules.creditpoint.model.CreditPointTransactionDetailsImpl</class>
+		<class>org.olat.modules.creditpoint.model.CreditPointSystemToOrganisationImpl</class>
 		<class>org.olat.modules.creditpoint.model.CurriculumElementCreditPointConfigurationImpl</class>
 		<class>org.olat.modules.creditpoint.model.RepositoryEntryCreditPointConfigurationImpl</class>
 		<class>org.olat.upgrade.model.UpgradeMedia</class>

@@ -59,7 +59,7 @@ public class CurriculumElementCreditPointConfigurationDAOTest extends OlatTestCa
 	
 	@Test
 	public void createConfiguration() {
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("config-coin-el-1", "CCEL1", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("config-coin-el-1", "CCEL1", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for points", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-points-1", "1. Element with points",

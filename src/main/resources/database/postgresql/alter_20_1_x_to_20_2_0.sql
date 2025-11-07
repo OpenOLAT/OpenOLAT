@@ -79,5 +79,21 @@ create index idx_cer_to_cprog_idx on o_cer_certificate (fk_certification_program
 alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
 create index idx_cer_to_upload_idx on o_cer_certificate (fk_uploaded_by);
 
+-- Credit point
+alter table o_cp_system add column c_org_restrictions bool default false not null;
+alter table o_cp_system add column c_roles_restrictions bool default false not null;
+
+create table o_cp_system_to_organisation (
+  id bigserial,
+  creationdate timestamp not null,
+  fk_cp_system int8 not null,
+  fk_organisation int8 not null,
+  primary key (id)
+);
+
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx foreign key (fk_cp_system) references o_cp_system(id);
+create index idx_rel_cpo_to_cp_sys_idx on o_cp_system_to_organisation (fk_cp_system);
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_cpo_to_org_idx on o_cp_system_to_organisation (fk_organisation);
 
 

@@ -65,7 +65,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 		BigDecimal remainingAmount = new BigDecimal("100");
 		
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-1");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-1", "TRX-1", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-1", "TRX-1", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 
 		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(transactionType, amount, remainingAmount,
@@ -83,7 +83,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 		
 		BigDecimal amount = new BigDecimal("100");
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-6");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-6", "TRX-6", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-6", "TRX-6", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 
 		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(transactionType, amount, null,
@@ -102,7 +102,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 		
 		BigDecimal amount = new BigDecimal("100");
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-6");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-6", "TRX-6", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-6", "TRX-6", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 
 		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(transactionType, amount, null,
@@ -123,7 +123,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 		
 		BigDecimal amount = new BigDecimal("100");
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-1");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-1", "TRX-1", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-1", "TRX-1", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 
 		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(transactionType, amount, null,
@@ -150,7 +150,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 		
 		BigDecimal amount = new BigDecimal("100");
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-1");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-1", "TRX-1", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-1", "TRX-1", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 
 		Date expirationDatePast = DateUtils.addDays(new Date(), -2);
@@ -178,7 +178,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 	public void hasTransaction() {
 		BigDecimal amount = new BigDecimal("100");
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-4");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-4", "TRX-4", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-4", "TRX-4", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(identity, cpSystem);
 		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
 		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(CreditPointTransactionType.deposit,
@@ -194,7 +194,7 @@ public class CreditPointTransactionDAOTest extends OlatTestCase {
 	public void hasNotTransaction() {
 		BigDecimal amount = new BigDecimal("100");
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-5");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-5", "TRX-5", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-5", "TRX-5", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(identity, cpSystem);
 		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
 		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(CreditPointTransactionType.deposit,

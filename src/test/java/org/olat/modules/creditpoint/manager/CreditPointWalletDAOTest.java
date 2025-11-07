@@ -55,7 +55,7 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-1");
 		String name = "wall-1-coin";
 		String label = "W1C";
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(owner, cpSystem);
@@ -63,13 +63,12 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 		Assert.assertNotNull(wallet);
 	}
 	
-	
 	@Test
 	public void getWallet() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-2");
 		String name = "wall-2-coin";
 		String label = "W2C";
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(owner, cpSystem);
@@ -88,7 +87,7 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-4");
 		String name = "wall-3-coin";
 		String label = "W3C";
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		Date now = new Date();

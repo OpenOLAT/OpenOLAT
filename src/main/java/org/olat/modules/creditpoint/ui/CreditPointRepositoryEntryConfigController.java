@@ -22,6 +22,8 @@ package org.olat.modules.creditpoint.ui;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointFormat;
@@ -45,6 +48,7 @@ import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.creditpoint.ui.component.ExpirationFormItem;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,21 +68,36 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 	private ExpirationFormItem expirationEl;
 	private SingleSelection overrideExpirationEl;
 
-	private final boolean editable;
+	private boolean editable;
 	private final RepositoryEntry entry;
 	private final List<CreditPointSystem> systems;
 	private RepositoryEntryCreditPointConfiguration creditPointConfig;
 	
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private CreditPointService creditPointService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public CreditPointRepositoryEntryConfigController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean editable) {
 		super(ureq, wControl);
 		this.entry = entry;
-		this.editable = editable;
-		creditPointConfig = creditPointService.getOrCreateConfiguration(entry);
-		systems = creditPointService.getCreditPointSystems();
 		
+		Roles roles = ureq.getUserSession().getRoles();
+		creditPointConfig = creditPointService.getOrCreateConfiguration(entry);
+		if(organisationModule.isEnabled()) {
+			systems = creditPointService.getCreditPointSystems(roles);
+		} else {
+			systems = creditPointService.getCreditPointSystems();
+		}
+
+		this.editable = editable
+				// Need to be author
+				&& repositoryService.hasRoleExpanded(getIdentity(), entry, OrganisationRoles.author.name(), OrganisationRoles.learnresourcemanager.name(), OrganisationRoles.administrator.name())
+				// Need to be able to select the configured credit point system
+				&& (creditPointConfig == null || creditPointConfig.getCreditPointSystem() == null || systems.contains(creditPointConfig.getCreditPointSystem()));
+
 		initForm(ureq);
 		updateUI();
 		updateOverrideExpirationUI();
@@ -91,19 +110,22 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 		formLayout.setElementCssClass("o_sel_creditpoint_settings");
 		
 		boolean managedCP = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.creditpoints);
-		
+
 		enabledEl = uifactory.addToggleButton("enabled", "options.creditpoint.enable", translate("on"), translate("off"), formLayout);
 		enabledEl.addActionListener(FormEvent.ONCLICK);
 		enabledEl.setEnabled(editable && !managedCP);
 		enabledEl.toggle(creditPointConfig.isEnabled());
-		
-		// System
+
+		// Load systems
 		CreditPointSystem selectedSystem = creditPointConfig == null ? null : creditPointConfig.getCreditPointSystem();
 		SelectionValues systemPK = new SelectionValues();
 		for(CreditPointSystem system:systems) {
 			if(system.getStatus() == CreditPointSystemStatus.active || system.equals(selectedSystem)) {
 				systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName()));
 			}
+		}
+		if(selectedSystem != null && systemPK.containsKey(selectedSystem.getKey().toString())) {
+			systemPK.add(SelectionValues.entry(selectedSystem.getKey().toString(), selectedSystem.getName()));
 		}
 		
 		systemEl = uifactory.addDropdownSingleselect("options.creditpoint.system", formLayout, systemPK.keys(), systemPK.values());

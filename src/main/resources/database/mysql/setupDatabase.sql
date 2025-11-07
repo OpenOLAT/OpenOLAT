@@ -3831,7 +3831,17 @@ create table o_cp_system (
    c_def_expiration bigint,
    c_def_expiration_unit varchar(16),
    c_status varchar(16) not null,
+   c_org_restrictions bool default false not null,
+   c_roles_restrictions bool default false not null,
    primary key (id)
+);
+
+create table o_cp_system_to_organisation (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_cp_system bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
 );
 
 create table o_cp_wallet (
@@ -6181,6 +6191,9 @@ alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_u
 -- certification program
 alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);
 alter table o_cer_program add constraint cer_progr_to_credsys_idx foreign key (fk_credit_point_system) references o_cp_system (id);
+
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx foreign key (fk_cp_system) references o_cp_system(id);
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 
 alter table o_cer_program add constraint cer_progr_to_template_idx foreign key (fk_template) references o_cer_template (id);
 

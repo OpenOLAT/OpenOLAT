@@ -17,19 +17,23 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.creditpoint.model;
+package org.olat.modules.creditpoint;
 
-import java.util.List;
-
-import org.olat.basesecurity.model.OrganisationWithParents;
-import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Organisation;
 
 /**
  * 
- * Initial date: 9 juil. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 6 nov. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record CreditPointSystemInfos(CreditPointSystem system, long usage, List<OrganisationWithParents> organisations) {
-	//
+public interface CreditPointSystemToOrganisation extends CreateInfo {
+
+	Long getKey();
+	
+	CreditPointSystem getCreditPointSystem();
+
+	Organisation getOrganisation();
+	
 }

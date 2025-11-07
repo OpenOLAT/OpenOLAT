@@ -20,14 +20,18 @@
 package org.olat.modules.creditpoint.model;
 
 import java.util.Date;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -36,6 +40,7 @@ import org.olat.core.id.Persistable;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
+import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
 
 /**
  * 
@@ -77,6 +82,15 @@ public class CreditPointSystemImpl implements Persistable, CreditPointSystem {
 	@Enumerated(EnumType.STRING)
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	private CreditPointSystemStatus status;
+	
+	@Column(name="c_roles_restrictions", nullable=true, insertable=true, updatable=true)
+	private boolean rolesRestrictions;
+	@Column(name="c_org_restrictions", nullable=true, insertable=true, updatable=true)
+	private boolean organisationsRestrictions;
+	
+	@OneToMany(targetEntity=CreditPointSystemToOrganisationImpl.class, fetch=FetchType.LAZY)
+	@JoinColumn(name="fk_cp_system")
+	private Set<CreditPointSystemToOrganisation> organisations;
 	
 	@Override
 	public Long getKey() {
@@ -164,6 +178,35 @@ public class CreditPointSystemImpl implements Persistable, CreditPointSystem {
 	@Override
 	public void setStatus(CreditPointSystemStatus status) {
 		this.status = status;
+	}
+
+	@Override
+	public boolean isOrganisationsRestrictions() {
+		return organisationsRestrictions;
+	}
+
+	@Override
+	public void setOrganisationsRestrictions(boolean organisationsRestrictions) {
+		this.organisationsRestrictions = organisationsRestrictions;
+	}
+
+	@Override
+	public boolean isRolesRestrictions() {
+		return rolesRestrictions;
+	}
+
+	@Override
+	public void setRolesRestrictions(boolean rolesRestrictions) {
+		this.rolesRestrictions = rolesRestrictions;
+	}
+
+	@Override
+	public Set<CreditPointSystemToOrganisation> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(Set<CreditPointSystemToOrganisation> organisations) {
+		this.organisations = organisations;
 	}
 
 	@Override

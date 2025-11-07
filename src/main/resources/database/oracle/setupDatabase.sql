@@ -3903,7 +3903,17 @@ create table o_cp_system (
    c_def_expiration number(20),
    c_def_expiration_unit varchar(16),
    c_status varchar(16) not null,
+   c_org_restrictions number default 0 not null,
+   c_roles_restrictions number default 0 not null,
    primary key (id)
+);
+
+create table o_cp_system_to_organisation (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  fk_cp_system number(20) not null,
+  fk_organisation number(20) not null,
+  primary key (id)
 );
 
 create table o_cp_wallet (
@@ -6283,6 +6293,11 @@ alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_
 create index idx_cer_progr_to_group_idx on o_cer_program (fk_group);
 alter table o_cer_program add constraint cer_progr_to_credsys_idx foreign key (fk_credit_point_system) references o_cp_system (id);
 create index idx_cer_progr_to_credsys_idx on o_cer_program (fk_credit_point_system);
+
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx foreign key (fk_cp_system) references o_cp_system(id);
+create index idx_rel_cpo_to_cp_sys_idx on o_cp_system_to_organisation (fk_cp_system);
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_cpo_to_org_idx on o_cp_system_to_organisation (fk_organisation);
 
 alter table o_cer_program add constraint cer_progr_to_template_idx foreign key (fk_template) references o_cer_template (id);
 create index idx_cer_progr_to_template_idx on o_cer_program(fk_template);

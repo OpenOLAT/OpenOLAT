@@ -89,7 +89,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-4", "Program to curriculum", null);
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
 		certificationProgramService.updateCertificationProgram(program);
@@ -119,7 +119,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	public void processCertificateOfProgramWithNotEnoughCreditPoints() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-4", "Program to curriculum", null);
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
 		program.setPrematureRecertificationByUserEnabled(true);
@@ -167,7 +167,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	public void processRecertification() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-5", "Program to curriculum", null);
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
 		program.setPrematureRecertificationByUserEnabled(true);
@@ -217,7 +217,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	public void processRecertificationNotAllowedBecauseWindow() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-6");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-6", "Program to curriculum", null);
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT6", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT6", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
 		program.setPrematureRecertificationByUserEnabled(true);
@@ -268,7 +268,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	public void processRecertificationManualOnly() {
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-7");
 		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-7", "Program to curriculum", null);
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT7", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT7", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
 		program.setPrematureRecertificationByUserEnabled(true);

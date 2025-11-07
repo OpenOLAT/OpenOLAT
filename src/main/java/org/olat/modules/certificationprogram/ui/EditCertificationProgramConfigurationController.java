@@ -22,6 +22,7 @@ package org.olat.modules.certificationprogram.ui;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
@@ -76,12 +78,19 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 	@Autowired
 	private CreditPointService creditPointService;
 	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
 	private CertificationProgramService certificationProgramService;
 	
 	public EditCertificationProgramConfigurationController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
 		super(ureq, wControl);
 		this.certificationProgram = certificationProgram;
-		systems = creditPointService.getCreditPointSystems();
+		if(organisationModule.isEnabled()) {
+			Roles roles = ureq.getUserSession().getRoles();
+			systems = creditPointService.getCreditPointSystems(roles);
+		} else {
+			systems = creditPointService.getCreditPointSystems();
+		}
 		
 		initForm(ureq);
 		updateUI();
@@ -158,6 +167,9 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			if(system.getStatus() == CreditPointSystemStatus.active || system.equals(selectedSystem)) {
 				systemPK.add(SelectionValues.entry(system.getKey().toString(), system.getName()));
 			}
+		}
+		if(selectedSystem != null && !systemPK.containsKey(selectedSystem.getKey().toString())) {
+			systemPK.add(SelectionValues.entry(selectedSystem.getKey().toString(), selectedSystem.getName()));
 		}
 		
 		systemEl = uifactory.addDropdownSingleselect("credit.point.system", formLayout, systemPK.keys(), systemPK.values());

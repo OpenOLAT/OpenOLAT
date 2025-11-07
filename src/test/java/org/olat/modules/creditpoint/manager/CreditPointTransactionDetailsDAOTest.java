@@ -59,7 +59,7 @@ public class CreditPointTransactionDetailsDAOTest extends OlatTestCase {
 	@Test
 	public void createTransactionDetails() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-details-1");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-DETAILS-1", "TRD-1", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-DETAILS-1", "TRD-1", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 		
 		BigDecimal amount = new BigDecimal("100");
@@ -89,7 +89,7 @@ public class CreditPointTransactionDetailsDAOTest extends OlatTestCase {
 	@Test
 	public void loadTransactionDetails() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("trx-1");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-DETAILS-2", "TRD-2", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("TRX-DETAILS-2", "TRD-2", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		CreditPointWallet wallet = creditPointWalletDao.createWallet(creator, cpSystem);
 		
 		BigDecimal amount = new BigDecimal("50");

@@ -3851,7 +3851,17 @@ create table o_cp_system (
    c_def_expiration int8,
    c_def_expiration_unit varchar(16),
    c_status varchar(16) not null,
+   c_org_restrictions bool default false not null,
+   c_roles_restrictions bool default false not null,
    primary key (id)
+);
+
+create table o_cp_system_to_organisation (
+  id bigserial,
+  creationdate timestamp not null,
+  fk_cp_system int8 not null,
+  fk_organisation int8 not null,
+  primary key (id)
 );
 
 create table o_cp_wallet (
@@ -6351,6 +6361,11 @@ alter table o_cp_wallet add constraint cp_wallet_to_identity_idx foreign key (fk
 create index idx_cp_wallet_to_identity_idx on o_cp_wallet (fk_identity);
 alter table o_cp_wallet add constraint cp_wallet_to_system_idx foreign key (fk_system) references o_cp_system (id);
 create index idx_cp_wallet_to_system_idx on o_cp_wallet (fk_system);
+
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx foreign key (fk_cp_system) references o_cp_system(id);
+create index idx_rel_cpo_to_cp_sys_idx on o_cp_system_to_organisation (fk_cp_system);
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_cpo_to_org_idx on o_cp_system_to_organisation (fk_organisation);
 
 alter table o_cp_transaction add constraint cp_trx_to_wallet_idx foreign key (fk_wallet) references o_cp_wallet (id);
 create index idx_cp_trx_to_wallet_idx on o_cp_transaction (fk_wallet);

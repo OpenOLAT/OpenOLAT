@@ -57,7 +57,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void addAndRemoveTransaction() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-1");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 		
@@ -87,7 +87,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void reversealTransaction() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-1");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 		
@@ -114,7 +114,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void calculateSimpleBalance() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-3");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT3", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT3", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 
@@ -134,7 +134,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void calculateBalanceWithAnExpiredDeposit() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-4");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT4", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT4", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 
@@ -173,7 +173,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void filterTransactionsSetToExpire() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-5");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 
@@ -216,7 +216,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void removeCreditPointTransaction() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-5");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 
@@ -257,7 +257,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void cancelCreditPointTransaction() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-7");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT7", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT7", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 
@@ -280,7 +280,7 @@ public class CreditPointServiceTest extends OlatTestCase {
 	@Test
 	public void cancelCreditPointTransactionToNegative() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-8");
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT8", null, null);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT8", null, null, false, false);
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(user, system);
 		dbInstance.commitAndCloseSession();
 		

@@ -49,7 +49,7 @@ public class RepositoryEntryCreditPointConfigurationDAOTest extends OlatTestCase
 	@Test
 	public void createConfiguration() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("config-1");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("config-coin-1", "CC1", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("config-coin-1", "CC1", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commitAndCloseSession();
 		
@@ -64,7 +64,7 @@ public class RepositoryEntryCreditPointConfigurationDAOTest extends OlatTestCase
 	@Test
 	public void loadConfiguration() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("config-2");
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("config-coin-2", "CC2", Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("config-coin-2", "CC2", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commitAndCloseSession();
 		

@@ -20,11 +20,14 @@
 package org.olat.modules.creditpoint;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
 import org.olat.modules.creditpoint.model.CreditPointTransactionAndWallet;
 import org.olat.modules.creditpoint.model.CreditPointTransactionWithInfos;
@@ -35,7 +38,7 @@ import org.olat.resource.OLATResource;
 /**
  * 
  * Initial date: 3 juil. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public interface CreditPointService {
@@ -48,13 +51,18 @@ public interface CreditPointService {
 	 * @return A persisted credit point system
 	 */
 	CreditPointSystem createCreditPointSystem(String name, String label,
-			Integer defaultExpiration, CreditPointExpirationType defaultExpirationType);
+			Integer defaultExpiration, CreditPointExpirationType defaultExpirationType,
+			boolean rolesRestrictions, boolean organisationsRestrictions);
 	
 	CreditPointSystem updateCreditPointSystem(CreditPointSystem creditPointSystem);
+	
+	void updateCreditPointSystemOrganisations(CreditPointSystem creditPointSystem, Collection<Organisation> organisations);
 	
 	CreditPointSystem loadCreditPointSystem(CreditPointSystem creditPointSystem);
 	
 	List<CreditPointSystem> getCreditPointSystems();
+	
+	List<CreditPointSystem> getCreditPointSystems(Roles roles);
 	
 	List<CreditPointSystemInfos> getCreditPointSystemsWithInfos();
 	

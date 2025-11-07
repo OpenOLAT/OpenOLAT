@@ -72,5 +72,20 @@ alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_ce
 
 alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
 
+-- Credit point
+alter table o_cp_system add column c_org_restrictions bool default false not null;
+alter table o_cp_system add column c_roles_restrictions bool default false not null;
+
+create table o_cp_system_to_organisation (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_cp_system bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
+);
+
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx foreign key (fk_cp_system) references o_cp_system(id);
+alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+
 
 

@@ -19,17 +19,20 @@
  */
 package org.olat.modules.creditpoint.manager;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
+import jakarta.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.model.CreditPointSystemImpl;
-import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
+import org.olat.modules.creditpoint.model.CreditPointSystemWithWalletInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +50,8 @@ public class CreditPointSystemDAO {
 	private DB dbInstance;
 	
 	public CreditPointSystem createSystem(String name, String label,
-			Integer defaultExpiration, CreditPointExpirationType defaultExpirationType) {
+			Integer defaultExpiration, CreditPointExpirationType defaultExpirationType,
+			boolean rolesRestrictions, boolean organisationsRestrictions) {
 		CreditPointSystemImpl system = new CreditPointSystemImpl();
 		system.setCreationDate(new Date());
 		system.setLastModified(system.getCreationDate());
@@ -56,6 +60,9 @@ public class CreditPointSystemDAO {
 		system.setDefaultExpiration(defaultExpiration);
 		system.setDefaultExpirationUnit(defaultExpirationType);
 		system.setStatus(CreditPointSystemStatus.active);
+		system.setRolesRestrictions(rolesRestrictions);
+		system.setOrganisationsRestrictions(organisationsRestrictions);
+		system.setOrganisations(new HashSet<>());
 		dbInstance.getCurrentEntityManager().persist(system);
 		return system;
 	}
@@ -71,6 +78,38 @@ public class CreditPointSystemDAO {
 				.getResultList();
 	}
 	
+	public List<CreditPointSystem> loadCreditPointSystemsFor(List<OrganisationRef> organisations, List<OrganisationRef> restrictedOrganisations) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select sys from creditpointsystem sys")
+		  .append(" where sys.organisationsRestrictions=false");
+		if(organisations != null && !organisations.isEmpty()) {
+			sb.append(" or exists (select rel.key from creditpointsystemtoorganisation as rel")
+			  .append("  where sys.rolesRestrictions=false and rel.creditPointSystem.key=sys.key and rel.organisation.key in (:organisationsKeys)")
+			  .append(" )");
+		}
+		if(restrictedOrganisations != null && !restrictedOrganisations.isEmpty()) {
+			sb.append(" or exists (select restrictedRel.key from creditpointsystemtoorganisation as restrictedRel")
+			  .append("  where sys.rolesRestrictions=true and restrictedRel.creditPointSystem.key=sys.key and restrictedRel.organisation.key in (:restrictedOrganisationsKeys)")
+			  .append(" )");
+		}
+
+		TypedQuery<CreditPointSystem> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), CreditPointSystem.class);
+		if(organisations != null && !organisations.isEmpty()) {
+			List<Long> organisationsKeys = organisations.stream()
+					.map(OrganisationRef::getKey)
+					.toList();
+			query.setParameter("organisationsKeys", organisationsKeys);
+		}
+		if(restrictedOrganisations != null && !restrictedOrganisations.isEmpty()) {
+			List<Long> restrictedOrganisationsKeys = restrictedOrganisations.stream()
+					.map(OrganisationRef::getKey)
+					.toList();
+			query.setParameter("restrictedOrganisationsKeys", restrictedOrganisationsKeys);
+		}
+
+		return query.getResultList();
+	}
+	
 	public CreditPointSystem loadCreditPointSystem(Long systemKey) {
 		String query = "select sys from creditpointsystem sys where sys.key=:systemKey";
 		List<CreditPointSystem> systems = dbInstance.getCurrentEntityManager().createQuery(query, CreditPointSystem.class)
@@ -79,22 +118,15 @@ public class CreditPointSystemDAO {
 		return systems == null || systems.isEmpty() ? null : systems.get(0);
 	}
 	
-	public List<CreditPointSystemInfos> loadCreditPointSystemsWithInfos() {
+	public List<CreditPointSystemWithWalletInfos> loadCreditPointSystemsWithInfos() {
 		String query = """
-			select sys,
+			select new CreditPointSystemWithWalletInfos(sys,
 			(select count(wallet.key) from creditpointwallet as wallet
 			  where wallet.creditPointSystem.key=sys.key
-			) as numOfWallets
+			))
 			from creditpointsystem sys""";
 		
-		List<Object[]> rawObjectsList = dbInstance.getCurrentEntityManager().createQuery(query, Object[].class)
+		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointSystemWithWalletInfos.class)
 				.getResultList();
-		List<CreditPointSystemInfos> infos = new ArrayList<>(rawObjectsList.size());
-		for(Object[] rawObjects:rawObjectsList) {
-			CreditPointSystem system = (CreditPointSystem)rawObjects[0];
-			long usage = PersistenceHelper.extractLong(rawObjects, 1);
-			infos.add(new CreditPointSystemInfos(system, usage));
-		}
-		return infos;
 	}
 }

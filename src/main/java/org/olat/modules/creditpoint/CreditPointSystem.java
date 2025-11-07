@@ -19,6 +19,8 @@
  */
 package org.olat.modules.creditpoint;
 
+import java.util.Set;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -61,5 +63,15 @@ public interface CreditPointSystem extends ModifiedInfo, CreateInfo {
 	CreditPointSystemStatus getStatus();
 
 	void setStatus(CreditPointSystemStatus status);
+	
+	boolean isOrganisationsRestrictions();
+
+	void setOrganisationsRestrictions(boolean organisationsRestrictions);
+	
+	boolean isRolesRestrictions();
+
+	void setRolesRestrictions(boolean rolesRestrictions);
+	
+	Set<CreditPointSystemToOrganisation> getOrganisations();
 
 }

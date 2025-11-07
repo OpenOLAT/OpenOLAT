@@ -398,6 +398,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.creditpoint.manager.CreditPointSystemDAOTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointWalletDAOTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointTransactionDAOTest.class,
+	org.olat.modules.creditpoint.manager.CreditPointSystemToOrganisationDAOTest.class,
 	org.olat.modules.creditpoint.manager.CreditPointTransactionDetailsDAOTest.class,
 	org.olat.modules.creditpoint.manager.CurriculumElementCreditPointConfigurationDAOTest.class,
 	org.olat.modules.creditpoint.manager.RepositoryEntryCreditPointConfigurationDAOTest.class,

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -58,6 +59,9 @@ import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
 import org.olat.modules.creditpoint.ui.CreditPointSystemTableModel.SystemCols;
 import org.olat.modules.creditpoint.ui.component.CreditPointExpirationCellRenderer;
 import org.olat.modules.creditpoint.ui.component.CreditPointSystemStatusRenderer;
+import org.olat.modules.creditpoint.ui.component.RolesRestrictionsCellRenderer;
+import org.olat.user.ui.admin.IdentityOrganisationsCellRenderer;
+import org.olat.user.ui.organisation.OrganisationsSmallListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,6 +82,7 @@ public class CreditPointAdminConfigController extends FormBasicController {
 	private CloseableModalController cmc;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CreditPointSystemEditController systemEditCtrl;
+	private OrganisationsSmallListController organisationsSmallListCtrl;
 	
 	@Autowired
 	private CreditPointModule creditPointModule;
@@ -123,6 +128,10 @@ public class CreditPointAdminConfigController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.label));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.expiration,
 				new CreditPointExpirationCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.rolesRestrictions,
+				new RolesRestrictionsCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.organisations,
+				new IdentityOrganisationsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.usage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.status,
 				new CreditPointSystemStatusRenderer(getTranslator())));
@@ -195,6 +204,10 @@ public class CreditPointAdminConfigController extends FormBasicController {
 					String targetId = ActionsCellRenderer.getId(se.getIndex());
 					CreditPointSystemRow selectedRow = tableModel.getObject(se.getIndex());
 					doOpenTools(ureq, selectedRow, targetId);
+				} else if(IdentityOrganisationsCellRenderer.CMD_OTHER_ORGANISATIONS.equals(se.getCommand())) {
+					String targetId = IdentityOrganisationsCellRenderer.getOtherOrganisationsId(se.getIndex());
+					CreditPointSystemRow selectedRow = tableModel.getObject(se.getIndex());
+					doShowOrganisations(ureq, targetId, selectedRow);
 				}
 			}
 		}
@@ -222,6 +235,7 @@ public class CreditPointAdminConfigController extends FormBasicController {
 	}
 	
 	private void doEditCreditPointSystem(UserRequest ureq, CreditPointSystem creditPointSystem) {
+		creditPointSystem = creditPointService.loadCreditPointSystem(creditPointSystem);
 		systemEditCtrl = new CreditPointSystemEditController(ureq, getWindowControl(), creditPointSystem);
 		listenTo(systemEditCtrl);
 		
@@ -229,6 +243,17 @@ public class CreditPointAdminConfigController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), systemEditCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	protected void doShowOrganisations(UserRequest ureq, String elementId, CreditPointSystemRow row) {
+		List<OrganisationWithParents> organisations = row.getOrganisations();
+		organisationsSmallListCtrl = new OrganisationsSmallListController(ureq, getWindowControl(), organisations);
+		listenTo(organisationsSmallListCtrl);
+		
+		String title = translate("num.of.organisations", Integer.toString(organisations.size()));
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), organisationsSmallListCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doOpenTools(UserRequest ureq, CreditPointSystemRow creditPointSystem, String targetId) {

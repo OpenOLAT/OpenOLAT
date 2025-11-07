@@ -20,7 +20,9 @@
 package org.olat.modules.creditpoint.ui;
 
 import java.util.Date;
+import java.util.List;
 
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
@@ -34,44 +36,56 @@ import org.olat.modules.creditpoint.model.CreditPointExpiration;
  */
 public class CreditPointSystemRow {
 	
-	private final CreditPointSystemInfos system;
+	private final long walletUsage;
+	private final CreditPointSystem system;
+	private final List<OrganisationWithParents> organisations;
 	
-	public CreditPointSystemRow(CreditPointSystemInfos system) {
-		this.system = system;
+	public CreditPointSystemRow(CreditPointSystemInfos infos) {
+		system = infos.system();
+		walletUsage = infos.usage();
+		organisations = infos.organisations();
 	}
 	
 	public Long getKey() {
-		return system.system().getKey();
+		return system.getKey();
 	}
 
 	public long getUsage() {
-		return system.usage();
+		return walletUsage;
 	}
 	
 	public String getName() {
-		return system.system().getName();
+		return system.getName();
 	}
 	
 	public Date getCreationDate() {
-		return system.system().getCreationDate();
+		return system.getCreationDate();
 	}
 	
 	public CreditPointExpiration getExpiration() {
-		if(system.system().getDefaultExpiration() != null && system.system().getDefaultExpirationUnit() != null) {
-			return new CreditPointExpiration(system.system().getDefaultExpiration(), system.system().getDefaultExpirationUnit());
+		if(system.getDefaultExpiration() != null && system.getDefaultExpirationUnit() != null) {
+			return new CreditPointExpiration(system.getDefaultExpiration(), system.getDefaultExpirationUnit());
 		}
 		return null;
 	}
 
 	public String getLabel() {
-		return system.system().getLabel();
+		return system.getLabel();
 	}
 
 	public CreditPointSystemStatus getStatus() {
-		return system.system().getStatus();
+		return system.getStatus();
+	}
+	
+	public boolean isRolesRestrictions() {
+		return system.isRolesRestrictions();
 	}
 
 	public CreditPointSystem getSystem() {
-		return system.system();
+		return system;
+	}
+
+	public List<OrganisationWithParents> getOrganisations() {
+		return organisations;
 	}
 }

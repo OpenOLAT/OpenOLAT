@@ -20,6 +20,8 @@
 package org.olat.modules.creditpoint.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,13 +31,20 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.manager.OrganisationOrderedTreeCache;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
 import org.olat.modules.creditpoint.CreditPointTransaction;
 import org.olat.modules.creditpoint.CreditPointTransactionDetails;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
@@ -43,6 +52,7 @@ import org.olat.modules.creditpoint.CreditPointWallet;
 import org.olat.modules.creditpoint.CurriculumElementCreditPointConfiguration;
 import org.olat.modules.creditpoint.RepositoryEntryCreditPointConfiguration;
 import org.olat.modules.creditpoint.model.CreditPointSystemInfos;
+import org.olat.modules.creditpoint.model.CreditPointSystemWithWalletInfos;
 import org.olat.modules.creditpoint.model.CreditPointTransactionAndWallet;
 import org.olat.modules.creditpoint.model.CreditPointTransactionWithInfos;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -71,7 +81,11 @@ public class CreditPointServiceImpl implements CreditPointService {
 	@Autowired
 	private CreditPointTransactionDAO transactionDao;
 	@Autowired
+	private OrganisationOrderedTreeCache organisationTree;
+	@Autowired
 	private CreditPointTransactionDetailsDAO transactionDetailsDao;
+	@Autowired
+	private CreditPointSystemToOrganisationDAO creditPointSystemToOrganisationDao;
 	@Autowired
 	private RepositoryEntryCreditPointConfigurationDAO repositoryEntryConfigurationDao;
 	@Autowired
@@ -79,13 +93,38 @@ public class CreditPointServiceImpl implements CreditPointService {
 
 	@Override
 	public CreditPointSystem createCreditPointSystem(String name, String label,
-			Integer defaultExpiration, CreditPointExpirationType defaultExpirationType) {
-		return creditPointSystemDao.createSystem(name, label, defaultExpiration, defaultExpirationType);
+			Integer defaultExpiration, CreditPointExpirationType defaultExpirationType,
+			boolean rolesRestrictions, boolean organisationsRestrictions) {
+		return creditPointSystemDao.createSystem(name, label, defaultExpiration, defaultExpirationType,
+				rolesRestrictions, organisationsRestrictions);
 	}
 
 	@Override
 	public CreditPointSystem updateCreditPointSystem(CreditPointSystem creditPointSystem) {
 		return creditPointSystemDao.updateSystem(creditPointSystem);
+	}
+	
+	@Override
+	public void updateCreditPointSystemOrganisations(CreditPointSystem creditPointSystem, Collection<Organisation> organisations) {
+		if (organisations == null || organisations.isEmpty()) {
+			creditPointSystemToOrganisationDao.deleteRelations(creditPointSystem);
+			return;
+		}
+		
+		List<CreditPointSystemToOrganisation> currentRelations = creditPointSystemToOrganisationDao.loadRelations(creditPointSystem);
+		List<Organisation> currentOrganisations = currentRelations.stream()
+				.map(CreditPointSystemToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		
+		// Create relation for new organisations
+		organisations.stream()
+				.filter(org -> !currentOrganisations.contains(org))
+				.forEach(org -> creditPointSystemToOrganisationDao.createRelation(creditPointSystem, org));
+
+		// Remove relation
+		currentRelations.stream()
+				.filter(rel -> !organisations.contains(rel.getOrganisation()))
+				.forEach(rel -> creditPointSystemToOrganisationDao.deleteRelation(rel));
 	}
 	
 	@Override
@@ -97,11 +136,48 @@ public class CreditPointServiceImpl implements CreditPointService {
 	@Override
 	public List<CreditPointSystem> getCreditPointSystems() {
 		return creditPointSystemDao.loadCreditPointSystems();
-	}	
+	}
+
+	@Override
+	public List<CreditPointSystem> getCreditPointSystems(Roles roles) {
+		// Without roles restrictions
+		List<OrganisationRef> organisations = roles
+				.getOrganisationsWithRoles(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator);
+		// With roles restrictions
+		List<OrganisationRef> restrictedOrganisations = roles
+				.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator);
+		return creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+	}
 
 	@Override
 	public List<CreditPointSystemInfos> getCreditPointSystemsWithInfos() {
-		return creditPointSystemDao.loadCreditPointSystemsWithInfos();
+		final List<CreditPointSystemWithWalletInfos> systems = creditPointSystemDao.loadCreditPointSystemsWithInfos();
+		final List<Long> systemsKeys = systems.stream()
+				.map( sys -> sys.system().getKey())
+				.toList();
+		final Map<Long,List<Long>> systemsToOrganisationsMap = creditPointSystemToOrganisationDao.getOrganisationsMap(systemsKeys);
+		final List<OrganisationWithParents> organisations = organisationTree.getOrderedOrganisationsWithParents();
+		final Map<Long,OrganisationWithParents> organisationsMap = organisations.stream()
+				.collect(Collectors.toMap(OrganisationWithParents::getKey, org -> org, (u,v) -> u));
+		
+		return systems.stream()
+				.map(sys -> {
+						List<Long> organisationsKeysList = systemsToOrganisationsMap.get(sys.system().getKey());
+						List<OrganisationWithParents> orgs;
+						if(organisationsKeysList == null || organisationsKeysList.isEmpty()) {
+							orgs = List.of();
+						} else {
+							orgs = new ArrayList<>(organisationsKeysList.size());
+							for(Long organisationKey:organisationsKeysList) {
+								orgs.add(organisationsMap.get(organisationKey));
+							}
+							if(orgs.size() > 1) {
+								Collections.sort(orgs);
+							}
+						}
+						return new CreditPointSystemInfos(sys.system(), sys.usage(), orgs);
+					})
+				.toList();
 	}
 
 	@Override

@@ -24,10 +24,19 @@ import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
+import org.olat.modules.creditpoint.CreditPointWallet;
+import org.olat.modules.creditpoint.model.CreditPointSystemWithWalletInfos;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,13 +51,29 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private CreditPointWalletDAO creditPointWalletDao;
+	@Autowired
 	private CreditPointSystemDAO creditPointSystemDao;
+	@Autowired
+	private CreditPointSystemToOrganisationDAO creditPointSystemToOrganisationDao;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Credit-point-unit-test", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		}
+	}
 	
 	@Test
 	public void createNewSystem() {
 		String name = "OpenOlat coin";
 		String label = "OOC";
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(cpSystem);
@@ -59,9 +84,9 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadCreditPointSystems() {
-		String name = "frentix coin";
+		String name = "frentix coin three";
 		String label = "FXC";
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		List<CreditPointSystem> allCpSystems = creditPointSystemDao.loadCreditPointSystems();
@@ -71,9 +96,9 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadCreditPointSystem() {
-		final String name = "OLAT coin";
+		final String name = "OLAT coin two";
 		final String label = "OLATC";
-		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(192), CreditPointExpirationType.DAY);
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(192), CreditPointExpirationType.DAY, true, false);
 		dbInstance.commitAndCloseSession();
 		
 		CreditPointSystem reloadedSystem = creditPointSystemDao.loadCreditPointSystem(cpSystem.getKey());
@@ -82,6 +107,104 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		Assert.assertEquals(name, reloadedSystem.getName());
 		Assert.assertEquals(label, reloadedSystem.getLabel());
 		Assert.assertEquals(Integer.valueOf(192), reloadedSystem.getDefaultExpiration());
+		Assert.assertTrue(reloadedSystem.isRolesRestrictions());
+		Assert.assertFalse(reloadedSystem.isOrganisationsRestrictions());
+	}
+	
+	@Test
+	public void loadCreditPointSystemsWithInfos() {
+		final String name = "OLAT coin one";
+		final String label = "OLATC";
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(192), CreditPointExpirationType.DAY, true, false);
+		dbInstance.commitAndCloseSession();
 		
+		List<CreditPointSystemWithWalletInfos> systems = creditPointSystemDao.loadCreditPointSystemsWithInfos();
+		Assertions.assertThat(systems)
+			.hasSizeGreaterThanOrEqualTo(1);
+		
+		CreditPointSystemWithWalletInfos systemWithInfos = systems.stream()
+				.filter(infos -> infos.system().equals(cpSystem))
+				.findFirst()
+				.orElse(null);
+		
+		Assert.assertNotNull(systemWithInfos);
+		Assert.assertEquals(cpSystem, systemWithInfos.system());
+		Assert.assertEquals(0, systemWithInfos.usage());
+	}
+	
+	@Test
+	public void loadCreditPointSystemsWithUsageInfos() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cps-1");
+		final String name = "OLAT coin one";
+		final String label = "OLATC";
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, label, Integer.valueOf(192), CreditPointExpirationType.DAY, true, false);
+		CreditPointWallet wallet = creditPointWalletDao.createWallet(owner, cpSystem);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(wallet);
+		
+		List<CreditPointSystemWithWalletInfos> systems = creditPointSystemDao.loadCreditPointSystemsWithInfos();
+		Assertions.assertThat(systems)
+			.hasSizeGreaterThanOrEqualTo(1);
+		
+		CreditPointSystemWithWalletInfos systemWithInfos = systems.stream()
+				.filter(infos -> infos.system().equals(cpSystem))
+				.findFirst()
+				.orElse(null);
+		
+		Assert.assertNotNull(systemWithInfos);
+		Assert.assertEquals(cpSystem, systemWithInfos.system());
+		Assert.assertEquals(1, systemWithInfos.usage());
+	}
+	
+	@Test
+	public void getOrganisationsMap() {
+		String name = "CPS-6";
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem(name, "R6", Integer.valueOf(180), CreditPointExpirationType.DAY, true, true);
+		CreditPointSystemToOrganisation relation = creditPointSystemToOrganisationDao.createRelation(cpSystem, defaultUnitTestOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		List<OrganisationRef> organisations = List.of(defaultOrganisation);
+		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		Assertions.assertThat(systemList)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(cpSystem);
+	}
+	
+	@Test
+	public void getOrganisationsMapForbidden() {
+		Organisation forbiddenOrganisation = organisationService
+				.createOrganisation("Credit-point-forbidden-2", "Credit-point-forbidden-2", "", null, null, JunitTestHelper.getDefaultActor());
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("CSP-7", "R7", Integer.valueOf(180), CreditPointExpirationType.DAY, true, true);
+		CreditPointSystemToOrganisation relation = creditPointSystemToOrganisationDao.createRelation(cpSystem, forbiddenOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		List<OrganisationRef> organisations = List.of(defaultOrganisation, defaultUnitTestOrganisation);
+		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		Assertions.assertThat(systemList)
+			.doesNotContain(cpSystem);
+	}
+	
+	@Test
+	public void getOrganisationsMapNoRestriction() {
+		Organisation forbiddenOrganisation = organisationService
+				.createOrganisation("Credit-point-forbidden-3", "Credit-point-forbidden-3", "", null, null, JunitTestHelper.getDefaultActor());
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("CSP-8", "R8", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
+		CreditPointSystemToOrganisation relation = creditPointSystemToOrganisationDao.createRelation(cpSystem, forbiddenOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		List<OrganisationRef> organisations = List.of(defaultOrganisation, defaultUnitTestOrganisation);
+		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
+		Assertions.assertThat(systemList)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(cpSystem);
 	}
 }

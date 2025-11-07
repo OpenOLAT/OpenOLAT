@@ -69,6 +69,8 @@ implements SortableFlexiTableDataModel<CreditPointSystemRow> {
 			case label -> row.getLabel();
 			case expiration -> row.getExpiration();
 			case usage -> Long.valueOf(row.getUsage());
+			case rolesRestrictions -> row.isRolesRestrictions();
+			case organisations -> row.getOrganisations();
 			case status -> row.getStatus();
 			case creationDate -> row.getCreationDate();
 			case tools -> Boolean.TRUE;
@@ -82,6 +84,8 @@ implements SortableFlexiTableDataModel<CreditPointSystemRow> {
 		label("table.header.label"),
 		expiration("table.header.validity"),
 		usage("table.header.usage"),
+		rolesRestrictions("table.header.roles.restrictions"),
+		organisations("table.header.organisations"),
 		status("table.header.status"),
 		creationDate("table.header.creation.date"),
 		tools("action.more");
