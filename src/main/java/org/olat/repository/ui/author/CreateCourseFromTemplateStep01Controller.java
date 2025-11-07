@@ -67,6 +67,7 @@ public class CreateCourseFromTemplateStep01Controller extends StepFormBasicContr
 		config.setImportRessources(false);
 		config.setCreateRessources(false);
 		config.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
+		config.setOnlyFavoritesFilter(true);
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.setCanCopy(true);
 		searchParams.addResourceTypes("CourseModule");

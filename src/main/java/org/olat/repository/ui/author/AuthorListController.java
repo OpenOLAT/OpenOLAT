@@ -846,6 +846,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"),
 				AuthorSourceFilter.USAGE.name(), usageValues, false));
 
+		if (configuration.isOnlyFavoritesFilter()) {
+			filters = filters.stream().filter(f -> {
+				return AuthorSourceFilter.MARKED.name().equals(f.getFilter());
+			}).toList();
+		}
 		tableEl.setFilters(true, filters, true, false);
 	}
 	
