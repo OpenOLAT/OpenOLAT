@@ -191,12 +191,12 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		educationalType("table.header.educational.type"),
 		externalId("table.header.externalid"),
 		externalRef("table.header.externalref"),
-		displayName("cif.displayname"),
+		displayName("cif.displayname", "cif.title"),
 		author("table.header.author"),
 		authors("table.header.authors"),
 		license("table.header.license"),
 		location("table.header.location"),
-		access("table.header.access"),
+		access("table.header.access", "cif.resources.status"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
 		references("table.header.references"),
@@ -214,11 +214,21 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		runtimeType("table.header.runtime.type");
 		
 		private final String i18nKey;
+		private String templateI18nKey;
 		
-		private Cols(String i18nKey) {
+		Cols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		
+		Cols(String i18nKey, String templateI18nKey) {
+			this.i18nKey = i18nKey;
+			this.templateI18nKey = templateI18nKey;
+		}
+		
+		public static Cols[] templateValues() {
+			return new Cols[] {mark, displayName, externalId, externalRef, author, access, infos, creationDate};	
+		}
+
 		public String i18nKey() {
 			return i18nKey;
 		}
@@ -226,6 +236,10 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		public String templateI18nKey() {
+			return templateI18nKey;
 		}
 	}
 }

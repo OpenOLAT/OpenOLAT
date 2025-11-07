@@ -23,7 +23,9 @@ import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -208,6 +210,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory, FlexiTableCssDelegate {
 
 	private static final Logger log = Tracing.createLoggerFor(AuthorListController.class);
+
+	private static final Cols[] COLS = Cols.values();
+	private static final Set<Cols> templateColumnSet = new HashSet<>(Arrays.asList(Cols.templateValues()));
 
 	private FlexiTableElement tableEl;
 	
@@ -513,101 +518,115 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
+		List<FlexiColumnModel> columnModelList = new ArrayList<>();
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(configuration.isDefaultBookmark(),
 				Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
 		markColumn.setExportable(false);
 		markColumn.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
-		columnsModel.addFlexiColumnModel(markColumn);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
+		columnModelList.add(markColumn);
+		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
 				Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		DefaultFlexiColumnModel technicalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.technicalType.i18nKey(), Cols.technicalType.ordinal(),
 				true, OrderBy.technicalType.name());
 		technicalTypeColumnModel.setCellRenderer(new TechnicalTypeRenderer());
-		columnsModel.addFlexiColumnModel(technicalTypeColumnModel);
+		columnModelList.add(technicalTypeColumnModel);
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(), "select",
-				true, OrderBy.displayname.name(), renderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(
+				configuration.isTemplatesMode() ? Cols.displayName.templateI18nKey() : Cols.displayName.i18nKey(), 
+				Cols.displayName.ordinal(), "select", true, OrderBy.displayname.name(), renderer));
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
 				true, OrderBy.authors.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
 		if(repositoryModule.isManagedRepositoryEntries()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
 					true, OrderBy.externalId.name()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultExternalRef(), Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
 				true, OrderBy.externalRef.name()));
 		if (lifecycleModule.isEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
+			columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
 					true, OrderBy.lifecycleSoftkey.name()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
 					true, OrderBy.lifecycleLabel.name()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
 				true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
 				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		
 		if (taxonomyEnabled) {
 			DefaultFlexiColumnModel taxonomyLevelColumnModel = new DefaultFlexiColumnModel(true, Cols.taxonomyLevels.i18nKey(),
 					Cols.taxonomyLevels.ordinal(), false, null);
 			taxonomyLevelColumnModel.setCellRenderer(new TaxonomyLevelRenderer(getLocale()));
-			columnsModel.addFlexiColumnModel(taxonomyLevelColumnModel);
+			columnModelList.add(taxonomyLevelColumnModel);
 			DefaultFlexiColumnModel taxonomyLevelPathColumnModel = new DefaultFlexiColumnModel(configuration.isDefaultTaxonomyPath(),
 					Cols.taxonomyPaths.i18nKey(), Cols.taxonomyPaths.ordinal(), false, null);
 			taxonomyLevelPathColumnModel.setCellRenderer(new TaxonomyPathsRenderer(getLocale()));
-			columnsModel.addFlexiColumnModel(taxonomyLevelPathColumnModel);
+			columnModelList.add(taxonomyLevelPathColumnModel);
 		}
 		DefaultFlexiColumnModel educationalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.educationalType.i18nKey(),
 				Cols.educationalType.ordinal(), false, null);
 		educationalTypeColumnModel.setCellRenderer(new EducationalTypeRenderer());
-		columnsModel.addFlexiColumnModel(educationalTypeColumnModel);
+		columnModelList.add(educationalTypeColumnModel);
 		DefaultFlexiColumnModel runtimeTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.runtimeType.i18nKey(),
 				Cols.runtimeType.ordinal(), false, null);
 		runtimeTypeColumnModel.setCellRenderer(new RuntimeTypeRenderer());
-		columnsModel.addFlexiColumnModel(runtimeTypeColumnModel);
+		columnModelList.add(runtimeTypeColumnModel);
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.author.i18nKey(), Cols.author.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(true, Cols.author.i18nKey(), Cols.author.ordinal(),
 				true, OrderBy.author.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.access.i18nKey(), Cols.access.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(true, 
+				configuration.isTemplatesMode() ? Cols.access.templateI18nKey() : Cols.access.i18nKey(), Cols.access.ordinal(),
 				true, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(configuration.isDefaultAccessControl(),
+		columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultAccessControl(),
 				Cols.ac.i18nKey(), Cols.ac.ordinal(), true, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer()));
 		if(loginModule.isGuestLoginEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(configuration.isDefaultGuest(),
+			columnModelList.add(new DefaultFlexiColumnModel(configuration.isDefaultGuest(),
 					Cols.guests.i18nKey(), Cols.guests.ordinal(), true, OrderBy.guests.name(), FlexiColumnModel.ALIGNMENT_LEFT,
 					new GuestAccessRenderer(getLocale())));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
 				true, OrderBy.creationDate.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
 				true, OrderBy.lastUsage.name()));
 		if(!configuration.isOnlyAllowedResourceType("CourseModule")) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
+			columnModelList.add(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
 					true, OrderBy.references.name()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
 				true, OrderBy.oer.name(), FlexiColumnModel.ALIGNMENT_LEFT,
 				new OerPubRenderer(getLocale())));
 		if(lectureModule.isEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
+			columnModelList.add(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
 				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
 		}
 		if (licenseModule.isEnabled(licenseHandler)) {
-			columnsModel.addFlexiColumnModel(
+			columnModelList.add(
 					new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(),
 							"license", false, null, FlexiColumnModel.ALIGNMENT_LEFT, new LicenseRenderer(getLocale())));
 		}
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
+
+		columnModelList.add(new DefaultFlexiColumnModel(false, Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
 				true, OrderBy.deletedBy.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.deletionDate.i18nKey(), null,
+		columnModelList.add(new DefaultFlexiColumnModel(false, false, Cols.deletionDate.i18nKey(), null,
 				Cols.deletionDate.ordinal(), null, true, OrderBy.deletionDate.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		for (FlexiColumnModel columnModel : columnModelList) {
+			if (configuration.isTemplatesMode()) {
+				Cols col = COLS[columnModel.getColumnIndex()];
+				if (templateColumnSet.contains(col)) {
+					columnsModel.addFlexiColumnModel(columnModel);
+				}
+			} else {
+				columnsModel.addFlexiColumnModel(columnModel);
+			}
+		}
+
 		initActionsColumns(columnsModel);
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel, getIdentity(), ureq.getUserSession().getRoles());
@@ -846,7 +865,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"),
 				AuthorSourceFilter.USAGE.name(), usageValues, false));
 
-		if (configuration.isOnlyFavoritesFilter()) {
+		if (configuration.isTemplatesMode()) {
 			filters = filters.stream().filter(f -> {
 				return AuthorSourceFilter.MARKED.name().equals(f.getFilter());
 			}).toList();

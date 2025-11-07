@@ -54,7 +54,7 @@ public class AuthorListConfiguration {
 	private boolean defaultExternalRef = false;
 	private boolean defaultBookmark = true;
 	private boolean defaultIconType = true;
-	private boolean onlyFavoritesFilter = false;
+	private boolean templatesMode = false;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -86,7 +86,7 @@ public class AuthorListConfiguration {
 		config.setDefaultExternalRef(true);
 		config.setDefaultIconType(false);
 		config.setDefaultBookmark(false);
-		config.setOnlyFavoritesFilter(false);
+		config.setTemplatesMode(false);
 		return config;
 	}
 	
@@ -257,12 +257,12 @@ public class AuthorListConfiguration {
 		return defaultIconType;
 	}
 
-	public boolean isOnlyFavoritesFilter() {
-		return onlyFavoritesFilter;
+	public boolean isTemplatesMode() {
+		return templatesMode;
 	}
 
-	public void setOnlyFavoritesFilter(boolean onlyFavoritesFilter) {
-		this.onlyFavoritesFilter = onlyFavoritesFilter;
+	public void setTemplatesMode(boolean templatesMode) {
+		this.templatesMode = templatesMode;
 	}
 
 	public void setDefaultIconType(boolean defaultIconType) {
