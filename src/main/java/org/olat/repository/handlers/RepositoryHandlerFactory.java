@@ -60,12 +60,15 @@ public class RepositoryHandlerFactory {
 
 	private static Map<String, RepositoryHandler> handlerMap;
 	private static List<OrderedRepositoryHandler> handlerList;
+	private static List<OrderedRepositoryHandler> forCreationOnlyHandlerList;
 	static {
 		handlerMap = new HashMap<>(21);
 		handlerList = new ArrayList<>(21);
+		forCreationOnlyHandlerList = new ArrayList<>();
 
 		// 0-9 Most important resources = 0-9
 		registerHandler(new CourseHandler(), 0);
+		registerHandler(new CourseTemplateHandler(), 1, true);
 		// 10-19 Assessment modules
 		// 20-29 Content modules
 		registerHandler(new SCORMCPHandler(), 20);
@@ -98,12 +101,24 @@ public class RepositoryHandlerFactory {
 	}
 
 	public static void registerHandler(RepositoryHandler handler, int order) {
+		registerHandler(handler, order, false);
+	}
+
+	public static void registerHandler(RepositoryHandler handler, int order, boolean forCreationOnly) {
 		handlerMap.put(handler.getSupportedType(), handler);
 		OrderedRepositoryHandler oHandler = new OrderedRepositoryHandler(handler, order);
-		if(handlerList.contains(oHandler)) {
-			handlerList.remove(oHandler);
+
+		if (forCreationOnly) {
+			if (forCreationOnlyHandlerList.contains(oHandler)) {
+				forCreationOnlyHandlerList.remove(oHandler);
+			}
+			forCreationOnlyHandlerList.add(oHandler);
+		} else {
+			if (handlerList.contains(oHandler)) {
+				handlerList.remove(oHandler);
+			}
+			handlerList.add(oHandler);
 		}
-		handlerList.add(oHandler);
 	}
 	
 	public static RepositoryHandlerFactory getInstance() {
@@ -134,6 +149,13 @@ public class RepositoryHandlerFactory {
 		List<OrderedRepositoryHandler> ordered = new ArrayList<>(handlerList);
 		Collections.sort(ordered);
 		return ordered;
+	}
+	
+	public List<OrderedRepositoryHandler> getOrderedRepositoryHandlersForCreation() {
+		List<OrderedRepositoryHandler> extended = new ArrayList<>(handlerList);
+		extended.addAll(forCreationOnlyHandlerList);
+		Collections.sort(extended);
+		return extended;
 	}
 	
 	/**

@@ -36,7 +36,9 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -223,6 +225,14 @@ public interface RepositoryHandler {
 	 */
 	default CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, boolean wizardsEnabled) {
 		return new CreateRepositoryEntryController(ureq, wControl, this, wizardsEnabled);
+	}
+	
+	default boolean hasCreateWizard() {
+		return false;
+	}
+	
+	default StepsMainRunController startCreateWizard(UserRequest ureq, WindowControl windowControl, Translator translator) {
+		return null;
 	}
 
 	/**

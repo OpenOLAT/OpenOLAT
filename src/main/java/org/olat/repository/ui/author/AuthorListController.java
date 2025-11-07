@@ -243,6 +243,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private MigrationSelectionController migrationSelectionCtrl;
 	private ModifyRuntimeTypeController modifyRuntimeTypeCtrl;
 	private StepsMainRunController coursesArchivesWizard;
+	private StepsMainRunController createWizard;
 	
 	private final Roles roles;
 	private final boolean isGuestOnly;
@@ -456,7 +457,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private List<OrderedRepositoryHandler> getAllowedRepositoryHandlers() {
 		List<OrderedRepositoryHandler> allowedHandlers = new ArrayList<>();
-		List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+		List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderedRepositoryHandlersForCreation();
 		for(OrderedRepositoryHandler orderedHandler:handlers) {
 			RepositoryHandler handler = orderedHandler.getHandler();
 			if(handler != null && configuration.isResourceTypeAllowed(handler.getSupportedType())) {
@@ -999,6 +1000,15 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				cleanUp();
 			}
+		} else if (createWizard == source) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					reloadRows();
+					ContextEntry myCoursesEntry = BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType("MyCourses"));
+					activate(ureq, List.of(myCoursesEntry), null);
+				}
+			}
 		} else if(copyCtrl == source) {
 			if (event == Event.CLOSE_EVENT) {
 				if(cmc != null) {
@@ -1314,7 +1324,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else if ("references".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow row) {
 				doOpenReferences(ureq, row, link);
 			} else if (link.getUserObject() instanceof RepositoryHandler handler) {
-				doCreate(ureq, handler);
+				if (handler.hasCreateWizard()) {
+					doCreateInWizard(ureq, handler);
+				} else {
+					doCreate(ureq, handler);
+				}
 			}
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent se) {
@@ -1460,6 +1474,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doCreateInWizard(UserRequest ureq, RepositoryHandler handler) {
+		removeAsListenerAndDispose(createWizard);
+		createWizard = handler.startCreateWizard(ureq, getWindowControl(), getTranslator());
+		listenTo(createWizard);
+
+		getWindowControl().pushAsModalDialog(createWizard.getInitialComponent());
 	}
 	
 	private void doCreate(UserRequest ureq, RepositoryHandler handler) {
