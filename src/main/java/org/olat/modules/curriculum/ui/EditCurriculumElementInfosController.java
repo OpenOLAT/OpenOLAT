@@ -221,7 +221,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			showBenefitsEl = uifactory.addCheckboxesVertical("show.benefits", "curriculum.element.show.benefits", formLayout,
 					benefitsPK.keys(), benefitsPK.values(), 1);
 			showBenefitsEl.addActionListener(FormEvent.ONCLICK);
-			showBenefitsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.all));
+			showBenefitsEl.setEnabled(canEdit);
 			boolean showCertificate = element !=null && element.isShowCertificateBenefit();
 			showBenefitsEl.select(CERTIFICATE_KEY, showCertificate);
 			boolean showCreditPoints = element != null && element.isShowCreditPointsBenefit();
