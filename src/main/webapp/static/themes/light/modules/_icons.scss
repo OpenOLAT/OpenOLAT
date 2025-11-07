@@ -558,7 +558,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table_large { @include o-add-icon('th-large');}
 .o_icon_tag { @include o-add-icon('tag');}
 .o_icon_tags { @include o-add-icon('tags');}
-.o_icon_template { @include o-add-icon('object-group');}
+.o_icon_template, .o_CourseModuleTemplate_icon { @include o-add-icon('object-group');}
 .o_icon_text { @include o-add-icon('font');}
 .o_icon_textinput { @include o-add-icon('align-left');}
 .o_icon_thumbtack { @include o-add-icon('thumbtack');}
