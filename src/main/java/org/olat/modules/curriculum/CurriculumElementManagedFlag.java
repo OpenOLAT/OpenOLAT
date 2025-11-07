@@ -151,7 +151,7 @@ public enum CurriculumElementManagedFlag {
 	}
 
 	private static boolean contains(CurriculumElementManagedFlag[] flags, CurriculumElementManagedFlag... markers) {
-		if(flags == null || flags.length == 0) return false;
+		if(flags == null || flags.length == 0 || markers == null) return false;
 
 		for(CurriculumElementManagedFlag flag:flags) {
 			for(CurriculumElementManagedFlag marker:markers) {

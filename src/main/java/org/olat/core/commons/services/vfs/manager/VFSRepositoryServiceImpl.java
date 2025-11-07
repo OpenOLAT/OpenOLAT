@@ -809,6 +809,20 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				log.debug("File unmarked from deleted {} {}", deletedMetadata, restoredFile);
 			}
 			
+			if (metadata.isDirectory()) {
+				List<VFSMetadata> descendants = metadataDao.getDescendants(metadata, Boolean.TRUE);
+				for(VFSMetadata descendant : descendants) {
+					if (descendant instanceof VFSMetadataImpl descendantImpl) {
+						descendantImpl.setDeletedBy(null);
+						descendantImpl.setDeleted(false);
+						descendantImpl.setDeletedDate(null);
+						descendantImpl = (VFSMetadataImpl)metadataDao.updateMetadata(descendantImpl);
+						log.debug("Descendant file unmarked from deleted {}", descendantImpl);
+						dbInstance.intermediateCommit();
+					}
+				}
+			}
+			
 			updateParent(metadata, restoredFile);
 			dbInstance.intermediateCommit();
 		}

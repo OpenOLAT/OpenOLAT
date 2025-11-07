@@ -102,6 +102,8 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		mainForm.setMultipartEnabled(true);
+		
 		DropdownItem dropdownEl = uifactory.addDropdownMenu("add.feedback.menu", null, formLayout, getTranslator());
 		dropdownEl.setOrientation(DropdownOrientation.right);
 		dropdownEl.setElementCssClass("o_sel_add_feedbacks");
