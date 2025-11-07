@@ -373,15 +373,18 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		
 		// Not in trash
 		if (!getRelPath().contains(VFSRepositoryService.TRASH_NAME)) {
-			return VFSSuccess.ERROR_FAILED;
+			// Not deleted. Maybe restored with parent folder
+			return VFSSuccess.SUCCESS;
 		}
 		
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-		Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
 		
 		VFSMetadata vfsMetadata = vfsRepositoryService.getMetadataFor(this);
-		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
+		if (vfsMetadata == null) {
 			return VFSSuccess.ERROR_FAILED;
+		} else if (!vfsMetadata.isDeleted()) {
+			// Not deleted. Maybe restored with parent folder
+			return VFSSuccess.SUCCESS;
 		}
 		
 		long usage = VFSManager.getUsageKB(this);
@@ -399,12 +402,8 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			if (renamed) {
 				super.setBasefile(new File(fileRestored.getAbsolutePath()));
 			}
+			Identity doer = ThreadLocalUserActivityLogger.getLoggedIdentity();
 			vfsRepositoryService.unmarkFromDeleted(doer, vfsMetadata, fileRestored);
-			
-			List<VFSItem> children = getItems();
-			for (VFSItem child : children) {
-				child.restore(targetContainer);
-			}
 			
 			return VFSSuccess.SUCCESS;
 		}

@@ -724,6 +724,104 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		versionModule.setMaxNumberOfVersions(0);
 	}
 	
+	@Test
+	public void shouldRestore_oneFile() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSLeaf imageLeaf1 = container1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+		
+		// Delete file
+		imageLeaf1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		// Restore
+		imageLeaf1.restore(container);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSItem> containerItems = container.getItems();
+		Assert.assertTrue(containerItems.size() == 2);
+		
+		VFSItem restoredItem = containerItems.stream().filter(item -> item.getName().equals(imageLeaf1.getName())).findFirst().get();
+		Assert.assertNotNull(restoredItem);
+	}
+	
+	@Test
+	public void shouldRestore_folderAndSubfolders() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSContainer container1Sub1 = container1.createChildContainer("container1Sub1");
+		VFSContainer container1Sub1Sub1 = container1Sub1.createChildContainer("container1Sub1Sub1");
+		VFSLeaf imageLeaf1 = container1Sub1Sub1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+		
+		// Delete file and folder
+		imageLeaf1.delete();
+		dbInstance.commitAndCloseSession();
+		container1Sub1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		// Restore
+		container1Sub1.restore(container);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSItem> containerItems = container.getItems();
+		Assert.assertTrue(containerItems.size() == 2);
+		
+		VFSItem restoredContainer = containerItems.stream().filter(item -> item.getName().equals(container1Sub1.getName())).findFirst().get();
+		Assert.assertNotNull(restoredContainer);
+		
+		VFSItem restoredSubContainer = ((VFSContainer)restoredContainer).getItems().get(0);
+		VFSItem retoredFile = ((VFSContainer)restoredSubContainer).getItems().get(0);
+		Assert.assertNotNull(retoredFile);
+		List<VFSMetadata> descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), null);
+		VFSMetadata restoredMetadata = descendants.stream().filter(metadata -> imageLeaf1.getName().equals(metadata.getFilename())).findFirst().get();
+		Assert.assertFalse(restoredMetadata.isDeleted());
+	}
+	
+	@Test
+	public void shouldRestore_folderAndSubfoldersMulti() {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSContainer container = testContainer.createChildContainer(UUID.randomUUID().toString());
+		VFSContainer container1 = container.createChildContainer("container1");
+		VFSContainer container1Sub1 = container1.createChildContainer("container1Sub1");
+		VFSContainer container1Sub1Sub1 = container1Sub1.createChildContainer("container1Sub1Sub1");
+		VFSLeaf imageLeaf1 = container1Sub1Sub1.createChildLeaf("imageToDelete1.jpg");
+		copyTestTxt(imageLeaf1, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+		
+		// Delete file and folder
+		imageLeaf1.delete();
+		dbInstance.commitAndCloseSession();
+		container1Sub1Sub1.delete();
+		dbInstance.commitAndCloseSession();
+		container1Sub1.delete();
+		dbInstance.commitAndCloseSession();
+		
+		// Restore
+		container1Sub1.restore(container);
+		dbInstance.commitAndCloseSession();
+		container1Sub1Sub1.restore(container);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSItem> containerItems = container.getItems();
+		Assert.assertTrue(containerItems.size() == 2);
+		
+		VFSItem restoredContainer = containerItems.stream().filter(item -> item.getName().equals(container1Sub1.getName())).findFirst().get();
+		Assert.assertNotNull(restoredContainer);
+		
+		VFSItem restoredSubContainer = ((VFSContainer)restoredContainer).getItems().get(0);
+		VFSItem retoredFile = ((VFSContainer)restoredSubContainer).getItems().get(0);
+		Assert.assertNotNull(retoredFile);
+		List<VFSMetadata> descendants = vfsRepositoryService.getDescendants(container.getMetaInfo(), null);
+		VFSMetadata restoredMetadata = descendants.stream().filter(metadata -> imageLeaf1.getName().equals(metadata.getFilename())).findFirst().get();
+		Assert.assertFalse(restoredMetadata.isDeleted());
+	}
+	
 	private VFSLeaf createFile() {
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		return createFile(testContainer);
