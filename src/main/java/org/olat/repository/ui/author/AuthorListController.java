@@ -676,7 +676,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(configuration.isResourceTypeAllowed("CourseModule")) {
-			myCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyCourses", translate("search.my.courses"),
+			String filterKey = configuration.isOnlyAllowedRuntimeType(RepositoryEntryRuntimeType.template) ? 
+					"search.my.templates" : "search.my.courses";
+			myCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyCourses", translate(filterKey),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned"),
 							FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
 			myCoursesTab.setElementCssClass("o_sel_author_courses");

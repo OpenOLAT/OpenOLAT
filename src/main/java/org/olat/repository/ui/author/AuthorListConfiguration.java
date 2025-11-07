@@ -206,6 +206,10 @@ public class AuthorListConfiguration {
 		return allowedRuntimeTypes == null || allowedRuntimeTypes.isEmpty()
 				|| allowedRuntimeTypes.contains(type);
 	}
+	
+	public boolean isOnlyAllowedRuntimeType(RepositoryEntryRuntimeType type) {
+		return allowedRuntimeTypes != null && allowedRuntimeTypes.size() == 1 && allowedRuntimeTypes.contains(type);
+	}
 
 	public boolean isDefaultAccessControl() {
 		return defaultAccessControl;
