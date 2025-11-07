@@ -446,7 +446,14 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				loadModel(tableEl.getQuickSearchString(), true);
 				if(newCurriculumCtrl.getCurriculum() != null) {
 					CurriculumRow row = tableModel.getRow(newCurriculumCtrl.getCurriculum().getKey());
-					doOpenCurriculumMetadata(ureq, row);
+					if(row == null) {
+						tableEl.setFiltersValues(null, List.of(), List.of());
+						loadModel(null, true);
+						row = tableModel.getRow(newCurriculumCtrl.getCurriculum().getKey());
+					}
+					if(row != null) {
+						doOpenCurriculumMetadata(ureq, row);
+					}
 				}
 			}
 			cmc.deactivate();
