@@ -3278,15 +3278,27 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		List<Long> restoreMetadataKeys = itemsToCopy.stream()
+				.map(VFSItem::getMetaInfo)
+				.map(VFSMetadata::getKey)
+				.toList();
+		
 		FolderAddEvent addEvent = new FolderAddEvent();
 		VFSSuccess vfsStatus = VFSSuccess.SUCCESS;
-		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
-		while (listIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
-			VFSItem vfsItemToCopy = listIterator.next();
+		ListIterator<Long> metadataKeysIterator = restoreMetadataKeys.listIterator();
+		while (metadataKeysIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
+			Long metadataKey = metadataKeysIterator.next();
 			if (VFSSuccess.SUCCESS == vfsStatus) {
-				vfsStatus = vfsItemToCopy.restore((VFSContainer)reloadedTarget);
-				if (VFSSuccess.SUCCESS == vfsStatus) {
-					addEvent.addFilename(vfsItemToCopy.getName());
+				// Reload. Maybe restored by previous vfsItemToRestore
+				VFSMetadata restoreMetadata = vfsRepositoryService.getMetadata(() -> metadataKey);
+				if (restoreMetadata != null) {
+					VFSItem vfsItemToRestore = vfsRepositoryService.getItemFor(restoreMetadata);
+					if (vfsItemToRestore != null) {
+						vfsStatus = vfsItemToRestore.restore((VFSContainer)reloadedTarget);
+						if (VFSSuccess.SUCCESS == vfsStatus) {
+							addEvent.addFilename(vfsItemToRestore.getName());
+						}
+					}
 				}
 			}
 		}
