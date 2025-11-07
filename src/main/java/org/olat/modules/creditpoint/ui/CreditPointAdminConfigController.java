@@ -293,20 +293,18 @@ public class CreditPointAdminConfigController extends FormBasicController {
 		
 		private VelocityContainer mainVC;
 		
-		private final CreditPointSystemRow creditPointSystem;
+		private final CreditPointSystemRow creditPointSystemRow;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, CreditPointSystemRow creditPointSystem) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, CreditPointSystemRow creditPointSystemRow) {
 			super(ureq, wControl);
-			this.creditPointSystem = creditPointSystem;
+			this.creditPointSystemRow = creditPointSystemRow;
 			
 			mainVC = createVelocityContainer("systems_tools");
 			
-			if(creditPointSystem.getUsage() == 0) {
-				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
-				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			}
+			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			
-			CreditPointSystemStatus status = creditPointSystem.getStatus();
+			CreditPointSystemStatus status = creditPointSystemRow.getStatus();
 			if(status == CreditPointSystemStatus.inactive) {
 				reactivateLink = LinkFactory.createLink("activate", "activate", getTranslator(), mainVC, this, Link.LINK);
 				reactivateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check");
@@ -329,16 +327,16 @@ public class CreditPointAdminConfigController extends FormBasicController {
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(editLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doEditCreditPointSystem(ureq, creditPointSystem.getSystem());
+				doEditCreditPointSystem(ureq, creditPointSystemRow.getSystem());
 			} else if(inactivateLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doUpdateStatus(creditPointSystem, CreditPointSystemStatus.inactive);
+				doUpdateStatus(creditPointSystemRow, CreditPointSystemStatus.inactive);
 			} else if(reactivateLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doUpdateStatus(creditPointSystem, CreditPointSystemStatus.active);
+				doUpdateStatus(creditPointSystemRow, CreditPointSystemStatus.active);
 			} else if(deleteLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doUpdateStatus(creditPointSystem, CreditPointSystemStatus.deleted);
+				doUpdateStatus(creditPointSystemRow, CreditPointSystemStatus.deleted);
 			}
 		}
 	}
