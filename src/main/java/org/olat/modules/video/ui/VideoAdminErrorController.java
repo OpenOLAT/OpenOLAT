@@ -109,7 +109,7 @@ public class VideoAdminErrorController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.delete));
 		tableModel = new TranscodingQueueTableModel(columnsModel);
 		
-		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), flc);
+		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		
@@ -129,12 +129,12 @@ public class VideoAdminErrorController extends FormBasicController {
 		for (VideoTranscoding videoTranscoding : videoTranscodings) {
 			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
 			String resid = String.valueOf(videoTranscoding.getVideoResource().getResourceableId());
-			FormLink resourceLink = uifactory.addFormLink("res_" + counter++, "viewResource", resid, null, flc, Link.LINK | Link.NONTRANSLATED);
+			FormLink resourceLink = uifactory.addFormLink("res_" + counter++, "viewResource", resid, null, null, Link.LINK | Link.NONTRANSLATED);
 			resourceLink.setUserObject(videoTranscoding);
-			FormLink deleteLink = uifactory.addFormLink("del_" + counter++, "deleteQuality", "quality.delete", "quality.delete", flc, Link.LINK);
+			FormLink deleteLink = uifactory.addFormLink("del_" + counter++, "deleteQuality", "quality.delete", "quality.delete", null, Link.LINK);
 			deleteLink.setUserObject(videoTranscoding);
 			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item o_icon-fw");
-			FormLink retranscodeLink = uifactory.addFormLink("trans_" + counter++, "retranscode", "queue.retranscode", "queue.retranscode", flc, Link.LINK);
+			FormLink retranscodeLink = uifactory.addFormLink("trans_" + counter++, "retranscode", "queue.retranscode", "queue.retranscode", null, Link.LINK);
 			retranscodeLink.setUserObject(videoTranscoding);
 			retranscodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 
@@ -156,7 +156,7 @@ public class VideoAdminErrorController extends FormBasicController {
 			String initialAuthor = videoRe.getInitialAuthor();
 			String fullName = userManager.getUserDisplayName(initialAuthor);
 			FormLink authorLink = uifactory.addFormLink("author_" + counter++, "viewAuthor",
-					StringHelper.escapeHtml(fullName), null, flc, Link.LINK | Link.NONTRANSLATED);
+					StringHelper.escapeHtml(fullName), null, null, Link.LINK | Link.NONTRANSLATED);
 			authorLink.setUserObject(initialAuthor);
 			Date creationDate = videoTranscoding.getCreationDate();
 			TranscodingQueueTableRow transcodingrow = new TranscodingQueueTableRow(resourceLink, displayname, creationDate, authorLink,
