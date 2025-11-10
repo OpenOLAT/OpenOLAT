@@ -1736,6 +1736,7 @@ create table o_as_entry (
    fk_identity_end_date_mod number(20),
    fk_identity_obligation_mod number(20),
    fk_identity_status_done number(20),
+   a_user_display_identifier varchar(16),
    a_anon_identifier varchar2(128 char) default null,
    a_coach_assignment_date date default null,
    fk_coach number(20) default null,

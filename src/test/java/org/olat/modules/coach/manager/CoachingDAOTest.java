@@ -1224,30 +1224,30 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Override assessments participant 1
-		AssessmentEntry aeParticipant1Course1 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course1 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course1.setCompletion(Double.valueOf(1));
 		assessmentService.updateAssessmentEntry(aeParticipant1Course1);
-		AssessmentEntry aeParticipant1Course1a = assessmentService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null);
+		AssessmentEntry aeParticipant1Course1a = assessmentService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null, false);
 		aeParticipant1Course1a.setCompletion(Double.valueOf(1));
 		assessmentService.updateAssessmentEntry(aeParticipant1Course1a);
-		AssessmentEntry aeParticipant1Course2 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course2 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course2.setCompletion(Double.valueOf(0.2));
 		assessmentService.updateAssessmentEntry(aeParticipant1Course2);
-		AssessmentEntry aeParticipant1Course3 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course3 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course3.setCompletion(null);
 		assessmentService.updateAssessmentEntry(aeParticipant1Course3);
-		AssessmentEntry aeParticipant1Course4 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course4 = assessmentService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course4.setCompletion(Double.valueOf(0.6));
 		assessmentService.updateAssessmentEntry(aeParticipant1Course4);
 		dbInstance.commitAndCloseSession();
 		
 		// Override assessments participant 2
-		AssessmentEntry aeParticipant2Course3 = assessmentService.getOrCreateAssessmentEntry(participant2, null, re3, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant2Course3 = assessmentService.getOrCreateAssessmentEntry(participant2, null, re3, random(), Boolean.TRUE, null, false);
 		aeParticipant2Course3.setCompletion(null);
 		assessmentService.updateAssessmentEntry(aeParticipant2Course3);
 		
 		// Override assessments participant 3
-		AssessmentEntry aeParticipant3Course1 = assessmentService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant3Course1 = assessmentService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null, false);
 		aeParticipant3Course1.setCompletion(Double.valueOf(0.4));
 		assessmentService.updateAssessmentEntry(aeParticipant3Course1);
 		dbInstance.commitAndCloseSession();

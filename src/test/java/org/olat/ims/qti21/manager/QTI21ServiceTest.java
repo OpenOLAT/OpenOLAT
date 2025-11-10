@@ -63,7 +63,7 @@ public class QTI21ServiceTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("service-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, false);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);

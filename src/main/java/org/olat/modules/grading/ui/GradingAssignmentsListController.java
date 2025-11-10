@@ -67,14 +67,12 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
@@ -596,9 +594,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 				Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 				testSessionStates.put(assessedIdentity, testSessionState);
 				
-				Translator translator = Util.createPackageTranslator(CorrectionOverviewModel.class, getLocale(), getTranslator());
 				CorrectionOverviewModel model = new CorrectionOverviewModel(entry, courseNode, referenceEntry,
-						resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates, translator);
+						resolvedAssessmentTest, manifestBuilder, lastSessions, testSessionStates);
 				GradingTimeRecordRef record = gradingService.getCurrentTimeRecord(assignment, ureq.getRequestTimestamp());
 				
 				correctionCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,

@@ -143,7 +143,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("label", assessmentEntry.getLabel());
+			layoutCont.contextPut("label", assessmentEntry.getLabelWithType());
 			layoutCont.contextPut("labelCssClass", assessmentEntry.getLabelCssClass());
 			if(StringHelper.containsNonWhitespace(assessmentEntry.getTitle())) {
 				layoutCont.contextPut("title", assessmentEntry.getTitle());

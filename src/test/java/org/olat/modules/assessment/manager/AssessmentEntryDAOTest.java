@@ -1361,6 +1361,25 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertTrue(identityKeys.contains(assessedIdentity2.getKey()));
 	}
 	
+	@Test
+	public void isUserDisplayIdentifierInUse() {
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-27a");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		dbInstance.commitAndCloseSession();
+		
+		String userDisplayIdentifier = JunitTestHelper.miniRandom();
+		
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, null);
+		nodeAssessmentId1.setUserDisplayIdentifier(userDisplayIdentifier);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId1);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(assessmentEntryDao.isUserDisplayIdentifierInUse(entry.getKey(), subIdent, userDisplayIdentifier));
+		Assert.assertFalse(assessmentEntryDao.isUserDisplayIdentifierInUse(entry.getKey(), subIdent, JunitTestHelper.miniRandom()));
+	}
+	
 	private CourseElement createCourseElement(RepositoryEntry entry, String subIdent) {
 		CourseNode courseNode = new SPCourseNode();
 		courseNode.setIdent(subIdent);

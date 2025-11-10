@@ -130,7 +130,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 
 		String subIdent = courseNode == null ? null : courseNode.getIdent();
 		Boolean entryRoot = courseNode == null? Boolean.TRUE: Boolean.FALSE;
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry, subIdent, entryRoot, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry, subIdent, entryRoot, videoEntry, false);
 		
 		QTI21DeliveryOptions options = QTI21DeliveryOptions.defaultSettings();
 		options.setEnableAssessmentItemBack(question.getBegin().getTime() > 0);
@@ -190,7 +190,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		String subIdent = courseNode == null ? null : courseNode.getIdent();
 		Boolean entryRoot = courseNode == null? Boolean.TRUE: Boolean.FALSE;
 		AssessmentEntry assessmentEntry = assessmentService
-				.getOrCreateAssessmentEntry(getIdentity(), null, entry, subIdent, entryRoot, videoEntry);
+				.getOrCreateAssessmentEntry(getIdentity(), null, entry, subIdent, entryRoot, videoEntry, false);
 
 		int itemsCompleted = 0;
 		BigDecimal totalScore = BigDecimal.ZERO;

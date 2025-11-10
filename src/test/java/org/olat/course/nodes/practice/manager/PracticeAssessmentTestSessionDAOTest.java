@@ -58,7 +58,7 @@ public class PracticeAssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, false);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);

@@ -111,7 +111,7 @@ public class QuizRunController extends BasicController implements PageRunElement
 
 		if (this.entry != null && StringHelper.containsNonWhitespace(this.subIdent)) {
 			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, entry,
-					this.subIdent, Boolean.FALSE, entry);
+					this.subIdent, Boolean.FALSE, entry, false);
 		}
 
 		mainVC = createVelocityContainer("quiz_run");

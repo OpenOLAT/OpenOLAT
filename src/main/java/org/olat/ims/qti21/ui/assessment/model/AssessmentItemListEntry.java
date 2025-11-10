@@ -36,6 +36,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 public class AssessmentItemListEntry {
 	
 	private final String label;
+	private final String labelWithType;
 	private String labelCssClass;
 	private String title;
 	private String titleCssClass;
@@ -47,11 +48,12 @@ public class AssessmentItemListEntry {
 	
 	public AssessmentItemListEntry(Identity assessedIdentity, 
 			AssessmentTestSession testSession, AssessmentItemSession itemSession, 
-			AssessmentItemRef itemRef, String label, String labelCssClass) {
+			AssessmentItemRef itemRef, String label, String labelWithType, String labelCssClass) {
 		this.itemSession = itemSession;
 		this.testSession = testSession;
 		this.itemRef = itemRef;
 		this.label = label;
+		this.labelWithType = labelWithType;
 		this.labelCssClass = labelCssClass;
 		this.assessedIdentity = assessedIdentity;
 	}
@@ -60,6 +62,10 @@ public class AssessmentItemListEntry {
 		return label;
 	}
 	
+	public String getLabelWithType() {
+		return labelWithType;
+	}
+
 	public String getLabelCssClass() {
 		return labelCssClass;
 	}

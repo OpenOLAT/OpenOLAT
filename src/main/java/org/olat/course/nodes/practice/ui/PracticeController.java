@@ -173,7 +173,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		
 		AssessmentEntry assessmentEntry;
 		if(authorMode) {
-			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, courseEntry, courseNode.getIdent(), Boolean.FALSE, null);
+			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, courseEntry, courseNode.getIdent(), Boolean.FALSE, null, false);
 		} else {
 			assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 		}
@@ -498,7 +498,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		
 		if(resolvedAssessmentItem != null && resolvedAssessmentItem.getRootNodeLookup().wasSuccessful()) {
 			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null,
-					courseEntry, courseNode.getIdent(), Boolean.FALSE, courseEntry);
+					courseEntry, courseNode.getIdent(), Boolean.FALSE, courseEntry, false);
 
 			assessmentItemCtrl = new PracticeAssessmentItemController(ureq, getWindowControl(),
 					courseEntry, courseNode.getIdent(), courseEntry,

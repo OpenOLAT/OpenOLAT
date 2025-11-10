@@ -65,7 +65,7 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		VideoTaskSession taskSession = videoAssessmentService.createTaskSession(assessedIdentity, null, assessmentEntry, videoEntry, null, videoEntry, true);
@@ -86,7 +86,7 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		String subIdent = "sub-ident-" + assessedIdentity.getKey();
@@ -106,7 +106,7 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		String subIdent = "sub-ident-" + assessedIdentity.getKey();
@@ -125,7 +125,7 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-5");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		String subIdent = "sub-ident-" + assessedIdentity.getKey();

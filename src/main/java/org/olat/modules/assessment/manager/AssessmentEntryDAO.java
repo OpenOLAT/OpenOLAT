@@ -778,6 +778,25 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 	
+	public boolean isUserDisplayIdentifierInUse(Long key, String subIdent, String userDisplayIdentifier) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae.key from assessmententry ae");
+		sb.and().append("ae.userDisplayIdentifier = :userDisplayIdentifier");
+		sb.and().append("ae.repositoryEntry.key=:entryKey");
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			sb.and().append("ae.subIdent=:subIdent");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("userDisplayIdentifier", userDisplayIdentifier)
+				.setParameter("entryKey", key);
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		return !query.getResultList().isEmpty();
+	}
+	
 	/**
 	 * Delete all the entry where the specified repository entry is
 	 * referenced as a test.

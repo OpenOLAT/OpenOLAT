@@ -166,6 +166,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 			}
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCols.lastSession));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.answered));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCols.notAnswered));
@@ -416,7 +417,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 	private void doOpenCorrection(UserRequest ureq, CorrectionIdentityRow row) {
 		Identity assessedIdentity = row.getIdentity();
 		boolean assessmentEntryDone = model.isAssessmentEntryDone(assessedIdentity);
-		String title = anonymous ? row.getUser() : userManager.getUserDisplayName(row.getIdentity());
+		String title = anonymous ? translate("participant.name", row.getUser()) : userManager.getUserDisplayName(row.getIdentity());
 		identityItemListCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
 				model, assessedIdentity, title, assessmentEntryDone);
 		listenTo(identityItemListCtrl);

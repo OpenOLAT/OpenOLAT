@@ -61,7 +61,7 @@ public class VideoTaskSegmentSelectionDAOTest extends OlatTestCase {
 		// Prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 
 		VideoTaskSession taskSession = taskSessionDao.createAndPersistTaskSession(videoEntry, videoEntry,
 				"-", assessmentEntry, assessedIdentity, null, 1, true);
@@ -86,7 +86,7 @@ public class VideoTaskSegmentSelectionDAOTest extends OlatTestCase {
 		// Prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 
 		VideoTaskSession taskSession = taskSessionDao.createAndPersistTaskSession(videoEntry, videoEntry,
 				"-", assessmentEntry, assessedIdentity, null, 1, true);

@@ -446,7 +446,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 					} else {
 						title = userManager.getUserDisplayName(assessedIdentity);
 					}
-					AssessmentItemListEntry entry = new AssessmentItemListEntry(assessedIdentity, testSession, itemSession, itemRef, title, "o_icon_user");
+					String labelWithType = translate("participant.name", title);
+					AssessmentItemListEntry entry = new AssessmentItemListEntry(assessedIdentity, testSession, itemSession, itemRef, title, labelWithType, "o_icon_user");
 					if(filter.test(entry)) {
 						reorderItemSessions.add(entry);
 					}
@@ -526,11 +527,9 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			
 			int index = selectedItemSessions.indexOf(itemSession);
 			if(index - 1 >= 0 && selectedItemSessions.size() > index - 1) {
-				previousText = selectedItemSessions.get(index - 1).getLabel();
 				previousEnable = true;
 			}
 			if(index + 1 >= 0 && selectedItemSessions.size() > index + 1) {
-				nextText = selectedItemSessions.get(index + 1).getLabel();
 				nextEnable = true;
 			}
 			identityItemCtrl.updatePreviousNext(previousText, previousEnable, nextText, nextEnable);
