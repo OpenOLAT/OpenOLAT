@@ -29,6 +29,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.core.commons.persistence.DB;
@@ -67,6 +69,7 @@ import org.olat.course.run.scoring.ScoreScalingHelper;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.LTIModule;
+import org.olat.ims.lti13.LTI13Constants;
 import org.olat.ims.lti13.LTI13ContentItem;
 import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Module;
@@ -234,10 +237,9 @@ public class LTIConfigForm extends FormBasicController {
 	
 	/**
 	 * Constructor for the tunneling configuration form
-	 * @param name
+	 *
 	 * @param config
 	 * @param nodeAccessType 
-	 * @param withCancel
 	 */
 	public LTIConfigForm(UserRequest ureq, WindowControl wControl, ICourse course, ModuleConfiguration config,
 			NodeAccessType nodeAccessType, RepositoryEntry courseEntry, String subIdent) {
@@ -673,13 +675,13 @@ public class LTIConfigForm extends FormBasicController {
 		
 		authorRoleEl = uifactory.addCheckboxesHorizontal("author", "author.roles", formLayout, ltiRolesKeys, ltiRolesValues);
 		String authorDeploymentRoles = ltiContext == null ? null : ltiContext.getAuthorRoles();
-		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, authorDeploymentRoles, "Instructor,Administrator,TeachingAssistant,ContentDeveloper,Mentor"); 
+		udpateRoles(authorRoleEl, BasicLTICourseNode.CONFIG_KEY_AUTHORROLE, authorDeploymentRoles, ownerDefaultRoles()); 
 		coachRoleEl = uifactory.addCheckboxesHorizontal("coach", "coach.roles", formLayout, ltiRolesKeys, ltiRolesValues);
 		String coachDeploymentRoles = ltiContext == null ? null : ltiContext.getCoachRoles();
-		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, coachDeploymentRoles, "Instructor,TeachingAssistant,Mentor");
+		udpateRoles(coachRoleEl, BasicLTICourseNode.CONFIG_KEY_COACHROLE, coachDeploymentRoles, coachDefaultRoles());
 		participantRoleEl = uifactory.addCheckboxesHorizontal("participant", "participant.roles", formLayout, ltiRolesKeys, ltiRolesValues);
 		String participantsDeploymentRoles = ltiContext == null ? null : ltiContext.getParticipantRoles();
-		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, participantsDeploymentRoles, "Learner"); 
+		udpateRoles(participantRoleEl, BasicLTICourseNode.CONFIG_KEY_PARTICIPANTROLE, participantsDeploymentRoles, participantDefaultRoles()); 
 		
 		uifactory.addSpacerElement("scoring", formLayout, false);
 		
@@ -836,7 +838,29 @@ public class LTIConfigForm extends FormBasicController {
 		}
 	}
 	
+	private String ownerDefaultRoles() {
+		return rolesToString(lti13Module.getDefaultRoleSettingsForOwners());
+	}
+	
+	private String coachDefaultRoles() {
+		return rolesToString(lti13Module.getDefaultRoleSettingsForCoaches());
+	}
+	
+	private String participantDefaultRoles() {
+		return rolesToString(lti13Module.getDefaultRoleSettingsForParticipants());
+	}
+	
+	private String rolesToString(Set<LTI13Constants.Roles> roles) {
+		return roles.stream().map(LTI13Constants.Roles::editor).collect(Collectors.joining(","));
+	}
+	
 	private void udpateRoles(MultipleSelectionElement roleEl, String configKey, String deploymentRoles, String defaultRoles) {
+		Set<LTI13Constants.Roles> ltiRolesConfigurableByCourseOwner = lti13Module.getLtiRolesConfigurableByCourseOwner();
+		roleEl.setEnabled(roleEl.getKeys(), false);
+		for (LTI13Constants.Roles role : ltiRolesConfigurableByCourseOwner) {
+			roleEl.setEnabled(role.editor(), true);
+		}
+		
 		Object configRoles = config.get(configKey);
 		String roles = defaultRoles;
 		if(StringHelper.containsNonWhitespace(deploymentRoles)) {
