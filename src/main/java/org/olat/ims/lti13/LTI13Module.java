@@ -19,8 +19,11 @@
  */
 package org.olat.ims.lti13;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -54,6 +57,10 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	private static final String PROP_DEPLOYMENT_BUSINESS_GROUP_ROLE = "lti13.deployment.business.group.role";
 	private static final String PROP_DEPLOYMENT_BUSINESS_GROUP_COACH_PERMISSION = "lti13.deployment.business.group.owner.permission";
 	
+	private static final String PROP_ROLES_CONFIGURABLE_BY_COURSE_OWNER = "lti13.roles.configurable.by.course.owner";
+	private static final String PROP_DEFAULT_ROLE_SETTINGS_FOR_OWNERS = "lti13.default.role.settings.for.owners";
+	private static final String PROP_DEFAULT_ROLE_SETTINGS_FOR_COACHES = "lti13.default.role.settings.for.coaches";
+	private static final String PROP_DEFAULT_ROLE_SETTINGS_FOR_PARTICIPANTS = "lti13.default.role.settings.for.participants";
 	
 	@Value("${lti13.enabled}")
 	private boolean enabled;
@@ -76,6 +83,15 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	private String deploymentBusinessGroupRolesConfiguration;
 	@Value("${lti13.deployment.business.group.owner.permission:perResource}")
 	private String deploymentBusinessGroupCoachPermission;
+
+	@Value("${lti13.roles.configurable.by.course.owner}")
+	private String ltiRolesConfigurableByCourseOwner;
+	@Value("${lti13.default.role.settings.for.owners}")
+	private String defaultRoleSettingsForOwners;
+	@Value("${lti13.default.role.settings.for.coaches}")
+	private String defaultRoleSettingsForCoaches;
+	@Value("${lti13.default.role.settings.for.participants}")
+	private String defaultRoleSettingsForParticipants;
 	
 	@Autowired
 	public LTI13Module(CoordinatorManager coordinatorManager) {
@@ -96,6 +112,11 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 		deploymentRepositoryEntryOwnerPermission = getStringPropertyValue(PROP_DEPLOYMENT_REPOSITORY_ENTRY_OWNER_PERMISSION, deploymentRepositoryEntryOwnerPermission);
 		deploymentBusinessGroupRolesConfiguration = getStringPropertyValue(PROP_DEPLOYMENT_BUSINESS_GROUP_ROLE, deploymentBusinessGroupRolesConfiguration);
 		deploymentBusinessGroupCoachPermission = getStringPropertyValue(PROP_DEPLOYMENT_BUSINESS_GROUP_COACH_PERMISSION, deploymentBusinessGroupCoachPermission);
+		
+		ltiRolesConfigurableByCourseOwner = getStringPropertyValue(PROP_ROLES_CONFIGURABLE_BY_COURSE_OWNER, ltiRolesConfigurableByCourseOwner);
+		defaultRoleSettingsForOwners = getStringPropertyValue(PROP_DEFAULT_ROLE_SETTINGS_FOR_OWNERS, defaultRoleSettingsForOwners);
+		defaultRoleSettingsForCoaches = getStringPropertyValue(PROP_DEFAULT_ROLE_SETTINGS_FOR_COACHES, defaultRoleSettingsForCoaches);
+		defaultRoleSettingsForParticipants = getStringPropertyValue(PROP_DEFAULT_ROLE_SETTINGS_FOR_PARTICIPANTS, defaultRoleSettingsForParticipants);
 	}
 
 	@Override
@@ -235,5 +256,59 @@ public class LTI13Module extends AbstractSpringModule implements ConfigOnOff {
 	
 	public String getToolLoginRedirectUri() {
 		return Settings.getServerContextPathURI() + LTI13Dispatcher.LTI_LOGIN_REDIRECT_PATH;
+	}
+	
+	public Set<LTI13Constants.Roles> getLtiRolesConfigurableByCourseOwner() {
+		return stringToRolesSet(ltiRolesConfigurableByCourseOwner);
+	}
+	
+	private Set<LTI13Constants.Roles> stringToRolesSet(String value) {
+		if (!StringHelper.containsNonWhitespace(value)) {
+			return Set.of();
+		}
+		try {
+			return Arrays.stream(value.split(",")).map(LTI13Constants.Roles::valueOf).collect(Collectors.toSet());
+		}  catch (IllegalArgumentException e) {
+			return Set.of();
+		}
+	}
+	
+	public void setLtiRolesConfigurableByCourseOwner(Set<LTI13Constants.Roles> value) {
+		this.ltiRolesConfigurableByCourseOwner = rolesSetToString(value);
+		setStringProperty(PROP_ROLES_CONFIGURABLE_BY_COURSE_OWNER, this.ltiRolesConfigurableByCourseOwner, true);
+	}
+
+	private String rolesSetToString(Set<LTI13Constants.Roles> value) {
+		if (value == null || value.isEmpty()) {
+			return "";
+		}
+		return value.stream().map(LTI13Constants.Roles::name).collect(Collectors.joining(","));
+	}
+
+	public Set<LTI13Constants.Roles> getDefaultRoleSettingsForOwners() {
+		return stringToRolesSet(defaultRoleSettingsForOwners);
+	}
+	
+	public void setDefaultRoleSettingsForOwners(Set<LTI13Constants.Roles> value) {
+		this.defaultRoleSettingsForOwners = rolesSetToString(value);
+		setStringProperty(PROP_DEFAULT_ROLE_SETTINGS_FOR_OWNERS, this.defaultRoleSettingsForOwners, true);
+	}
+	
+	public Set<LTI13Constants.Roles> getDefaultRoleSettingsForCoaches() {
+		return stringToRolesSet(defaultRoleSettingsForCoaches);
+	}
+	
+	public void setDefaultRoleSettingsForCoaches(Set<LTI13Constants.Roles> value) {
+		this.defaultRoleSettingsForCoaches = rolesSetToString(value);
+		setStringProperty(PROP_DEFAULT_ROLE_SETTINGS_FOR_COACHES, this.defaultRoleSettingsForCoaches, true);
+	}
+	
+	public Set<LTI13Constants.Roles> getDefaultRoleSettingsForParticipants() {
+		return stringToRolesSet(defaultRoleSettingsForParticipants);
+	}
+	
+	public void setDefaultRoleSettingsForParticipants(Set<LTI13Constants.Roles> value) {
+		this.defaultRoleSettingsForParticipants = rolesSetToString(value);
+		setStringProperty(PROP_DEFAULT_ROLE_SETTINGS_FOR_PARTICIPANTS, this.defaultRoleSettingsForParticipants, true);
 	}
 }

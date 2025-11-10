@@ -45,15 +45,17 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class LTI13AdminController extends BasicController implements Activateable2 {
 	
-	private Link platformsLink;
-	private Link configurationLink;
-	private Link externalToolsLink;
+	private final Link configurationLink;
+	private final Link platformsLink;
+	private final Link externalToolsLink;
+	private final Link roleMappingLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
-	private LTI13AdminExternalToolsController toolsCtrl;
 	private LTI13AdminConfigurationController configCtrl;
 	private LTI13AdminPlatformsController platformsCtrl;
+	private LTI13AdminExternalToolsController toolsCtrl;
+	private LTI13AdminRoleMappingController roleMappingCtrl;
 	
 	public LTI13AdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -67,6 +69,8 @@ public class LTI13AdminController extends BasicController implements Activateabl
 		segmentView.addSegment(platformsLink, false);
 		externalToolsLink = LinkFactory.createLink("lti13.external.tools", mainVC, this);
 		segmentView.addSegment(externalToolsLink, false);
+		roleMappingLink = LinkFactory.createLink("lti13.role.mapping", mainVC, this);
+		segmentView.addSegment(roleMappingLink, false);
 
 		doOpenConfiguration(ureq);
 		
@@ -87,6 +91,9 @@ public class LTI13AdminController extends BasicController implements Activateabl
 		} else if("Tools".equalsIgnoreCase(type)) {
 			doOpenTools(ureq);
 			segmentView.select(externalToolsLink);
+		} else if ("RoleMapping".equalsIgnoreCase(type)) {
+			doOpenRoleMapping(ureq);
+			segmentView.select(roleMappingLink);
 		}
 	}
 
@@ -103,6 +110,8 @@ public class LTI13AdminController extends BasicController implements Activateabl
 					doOpenPlatforms(ureq);
 				} else if (clickedLink == externalToolsLink) {
 					doOpenTools(ureq);
+				} else if (clickedLink == roleMappingLink) {
+					doOpenRoleMapping(ureq);
 				}
 			}
 		}
@@ -138,5 +147,16 @@ public class LTI13AdminController extends BasicController implements Activateabl
 			addToHistory(ureq, toolsCtrl);
 		}
 		mainVC.put("segmentCmp", toolsCtrl.getInitialComponent());
+	}
+
+	private void doOpenRoleMapping(UserRequest ureq) {
+		if (roleMappingCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("RoleMapping", 0l), null);
+			roleMappingCtrl = new LTI13AdminRoleMappingController(ureq, bwControl);
+			listenTo(roleMappingCtrl);
+		}  else {
+			addToHistory(ureq, roleMappingCtrl);
+		}
+		mainVC.put("segmentCmp", roleMappingCtrl.getInitialComponent());
 	}
 }
