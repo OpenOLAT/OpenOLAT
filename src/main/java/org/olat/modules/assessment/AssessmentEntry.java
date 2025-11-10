@@ -205,6 +205,13 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public void setReferenceEntry(RepositoryEntry entry);
 	
 	/**
+	 * @return A (short) user identifier intended for display in the GUI
+	 */
+	public String getUserDisplayIdentifier();
+	
+	public void setUserDisplayIdentifier(String userDisplayIdentifier);
+
+	/**
 	 * @return The unique identifier for anonymous user (guest)
 	 */
 	public String getAnonymousIdentifier();

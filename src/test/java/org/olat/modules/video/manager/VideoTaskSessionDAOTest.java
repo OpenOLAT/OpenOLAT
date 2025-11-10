@@ -62,7 +62,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		VideoTaskSession taskSession = taskSessionDao.createAndPersistTaskSession(videoEntry, videoEntry, "-", assessmentEntry, assessedIdentity, null, 1, true);
@@ -83,7 +83,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		VideoTaskSession taskSession = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, "263478236478", assessmentEntry, assessedIdentity, null, 1, true);
@@ -105,7 +105,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, false);
 		VideoTaskSession taskSession = taskSessionDao.createAndPersistTaskSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, 2, false);
 		dbInstance.commit();
 		
@@ -123,7 +123,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, videoEntry, false);
 		dbInstance.commit();
 		
 		VideoTaskSession taskSession1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, 1, false);
@@ -150,7 +150,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, videoEntry, false);
 		dbInstance.commit();
 		
 		VideoTaskSession taskSession1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, 1, false);
@@ -171,7 +171,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-6");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry, false);
 		dbInstance.commit();
 		
 		final String subIdent = "263478236480";
@@ -203,8 +203,8 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-7");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-8");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, null, videoEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, null, videoEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, null, videoEntry, false);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, null, videoEntry, false);
 		dbInstance.commit();
 		
 		VideoTaskSession taskSession1_1 = taskSessionDao.createAndPersistTaskSession(videoEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, 1, false);

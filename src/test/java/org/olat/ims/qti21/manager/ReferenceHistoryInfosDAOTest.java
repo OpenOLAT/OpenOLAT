@@ -63,7 +63,7 @@ public class ReferenceHistoryInfosDAOTest extends OlatTestCase {
 		String subIdent = "ref-history-qti-21";
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, false);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, 300, false);

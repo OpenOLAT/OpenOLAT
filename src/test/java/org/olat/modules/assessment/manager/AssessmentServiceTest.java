@@ -111,7 +111,7 @@ public class AssessmentServiceTest extends OlatTestCase {
 		public void run() {
 			try {
 				sleep(10);
-				AssessmentEntry nodeAssessment = assessmentService.getOrCreateAssessmentEntry(participant, null, re, "39485349775", Boolean.TRUE, re);
+				AssessmentEntry nodeAssessment = assessmentService.getOrCreateAssessmentEntry(participant, null, re, "39485349775", Boolean.TRUE, re, false);
 				dbInstance.commitAndCloseSession();
 				ok = nodeAssessment != null;
 			} catch (InterruptedException e) {
@@ -121,5 +121,21 @@ public class AssessmentServiceTest extends OlatTestCase {
 			}
 		}
 	}
-
+	
+	@Test
+	public void getOrCreateAssessmentEntryCreateUserDisplayIdentifer() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, entry, JunitTestHelper.random(), Boolean.TRUE, null, false);
+		dbInstance.commitAndCloseSession();
+		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, entry, assessmentEntry.getSubIdent(), Boolean.TRUE, null, false);
+		Assert.assertNull(assessmentEntry.getUserDisplayIdentifier());
+		
+		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, entry, JunitTestHelper.random(), Boolean.TRUE, null, true);
+		dbInstance.commitAndCloseSession();
+		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, entry, assessmentEntry.getSubIdent(), Boolean.TRUE, null, false);
+		Assert.assertNotNull(assessmentEntry.getUserDisplayIdentifier());
+	}
+	
 }

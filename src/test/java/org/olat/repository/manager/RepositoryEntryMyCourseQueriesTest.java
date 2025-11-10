@@ -796,12 +796,12 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		repositoryManager.setStatus(re, RepositoryEntryStatusEnum.published);
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		
-		AssessmentEntry rootAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.TRUE, null);
+		AssessmentEntry rootAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.TRUE, null, false);
 		rootAE.setPassed(Boolean.TRUE);
 		rootAE.setScore(BigDecimal.valueOf(0.9));
 		rootAE.setCompletion(Double.valueOf(0.8));
 		rootAE = assessmentService.updateAssessmentEntry(rootAE);
-		AssessmentEntry childAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.FALSE, null);
+		AssessmentEntry childAE = assessmentService.getOrCreateAssessmentEntry(id, null, re, random(), Boolean.FALSE, null, false);
 		childAE.setPassed(Boolean.TRUE);
 		childAE.setScore(BigDecimal.valueOf(0.3));
 		childAE.setCompletion(Double.valueOf(0.2));

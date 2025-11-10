@@ -1599,6 +1599,7 @@ create table o_as_entry (
    fk_identity_end_date_mod bigint,
    fk_identity_obligation_mod bigint,
    fk_identity_status_done bigint,
+   a_user_display_identifier varchar(16),
    a_anon_identifier varchar(128) default null,
    a_coach_assignment_date datetime default null,
    fk_coach bigint default null,

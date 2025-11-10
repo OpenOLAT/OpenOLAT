@@ -69,6 +69,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -131,11 +132,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, Boolean entryRoot) {
-		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), entryRoot, courseNode.getReferencedRepositoryEntry());
+		boolean withUserDisplayIdentifer = IQTESTCourseNode.TYPE.equals(courseNode.getType());
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(),
+				courseNode.getIdent(), entryRoot, courseNode.getReferencedRepositoryEntry(), withUserDisplayIdentifer);
 	}
 	
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry) {
-		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), subIdent, entryRoot, referenceEntry);
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), subIdent, entryRoot, referenceEntry, false);
 	}
 
 	@Override

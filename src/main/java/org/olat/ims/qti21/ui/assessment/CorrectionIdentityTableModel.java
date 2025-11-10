@@ -65,6 +65,7 @@ implements SortableFlexiTableDataModel<CorrectionIdentityRow> {
 		if(col < CorrectionIdentityListController.USER_PROPS_OFFSET) {
 			switch(IdentityCols.values()[col]) {
 				case user: return row.getUser();
+				case lastSession: return row.getCandidateSession() != null? row.getCandidateSession().getKey(): null;
 				case score: return row.getCandidateSession().getFinalScore();
 				case answered: return row.getNumAnswered();
 				case notAnswered: return row.getNumNotAnswered();
@@ -81,7 +82,8 @@ implements SortableFlexiTableDataModel<CorrectionIdentityRow> {
 	}
 	
 	public enum IdentityCols implements FlexiSortableColumnDef {
-		user("table.header.user"),
+		user("table.header.user.identifier"),
+		lastSession("table.header.run.id"),
 		score("table.header.score"),
 		answered("table.header.answered"),
 		notAnswered("table.header.notAnswered"),

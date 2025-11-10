@@ -1620,6 +1620,7 @@ create table o_as_entry (
    fk_identity_end_date_mod int8,
    fk_identity_obligation_mod int8,
    fk_identity_status_done int8,
+   a_user_display_identifier varchar(16),
    a_anon_identifier varchar(128) default null,
    a_coach_assignment_date timestamp default null,
    fk_coach int8 default null,

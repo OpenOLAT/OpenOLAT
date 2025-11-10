@@ -844,31 +844,31 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//make assessments participant 1
-		AssessmentEntry aeParticipant1Course1 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course1 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course1.setCompletion(Double.valueOf(1));
 		assessmnetService.updateAssessmentEntry(aeParticipant1Course1);
-		AssessmentEntry aeParticipant1Course1a = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null);
+		AssessmentEntry aeParticipant1Course1a = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null, false);
 		aeParticipant1Course1a.setCompletion(Double.valueOf(1));
 		assessmnetService.updateAssessmentEntry(aeParticipant1Course1a);
-		AssessmentEntry aeParticipant1Course2 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course2 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course2.setCompletion(Double.valueOf(0.2));
 		assessmnetService.updateAssessmentEntry(aeParticipant1Course2);
-		AssessmentEntry aeParticipant1Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course3.setCompletion(null);
 		assessmnetService.updateAssessmentEntry(aeParticipant1Course3);
-		AssessmentEntry aeParticipant1Course4 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant1Course4 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null, false);
 		aeParticipant1Course4.setCompletion(Double.valueOf(0.6));
 		assessmnetService.updateAssessmentEntry(aeParticipant1Course4);
 		dbInstance.commitAndCloseSession();
 		
 		//make assessments participant 2
-		AssessmentEntry aeParticipant2Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant2Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null, false);
 		aeParticipant2Course3.setCompletion(null);
 		assessmnetService.updateAssessmentEntry(aeParticipant2Course3);
 		dbInstance.commitAndCloseSession();
 		
 		//make assessments participant 3
-		AssessmentEntry aeParticipant3Course1 = assessmnetService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null);
+		AssessmentEntry aeParticipant3Course1 = assessmnetService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null, false);
 		aeParticipant3Course1.setCompletion(Double.valueOf(0.4));
 		assessmnetService.updateAssessmentEntry(aeParticipant3Course1);
 		dbInstance.commitAndCloseSession();

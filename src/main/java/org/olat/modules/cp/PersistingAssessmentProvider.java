@@ -73,7 +73,7 @@ public class PersistingAssessmentProvider implements CPAssessmentProvider {
 	
 	@Override
 	public AssessmentEntryStatus onPageVisited(String itemIdentifier) {
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, cpEntry, itemIdentifier, false, null);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, cpEntry, itemIdentifier, false, null, false);
 		if (!AssessmentEntryStatus.done.equals(assessmentEntry.getAssessmentStatus())) {
 			assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.done);
 			assessmentService.updateAssessmentEntry(assessmentEntry);

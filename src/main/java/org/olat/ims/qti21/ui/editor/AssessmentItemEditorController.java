@@ -231,7 +231,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 			initItemEditor(ureq);
 
 			if (settings.isWithPreview()) {
-				AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, Boolean.TRUE, testEntry);
+				AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, Boolean.TRUE, testEntry, true);
 				displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
 						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 				listenTo(displayCtrl);
@@ -690,7 +690,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				removeAsListenerAndDispose(displayCtrl);
 
 				if(testEntry != null) {
-					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, Boolean.TRUE, testEntry);
+					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, Boolean.TRUE, testEntry, true);
 					displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
 						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 				} else {

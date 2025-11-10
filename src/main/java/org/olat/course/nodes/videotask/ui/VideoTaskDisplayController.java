@@ -184,7 +184,7 @@ public class VideoTaskDisplayController extends BasicController {
 	private void initAssessment() {
 		Boolean rootEntry = subIdent == null? Boolean.TRUE: Boolean.FALSE;
 		AssessmentEntry assessmentEntry = assessmentService
-				.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, rootEntry, videoEntry);
+				.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, rootEntry, videoEntry, false);
 		
 		VideoTaskSession lastSession = videoAssessmentService
 				.getResumableTaskSession(assessedIdentity, anonymousIdentifier, entry, subIdent, videoEntry, authorMode);

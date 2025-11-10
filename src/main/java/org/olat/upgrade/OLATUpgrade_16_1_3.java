@@ -133,7 +133,7 @@ public class OLATUpgrade_16_1_3 extends OLATUpgrade {
 	private void initializeAssessmentEntries(RepositoryEntry repositoryEntry) {
 		List<Identity> participants = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 		for(Identity participant:participants) {
-			assessmentService.getOrCreateAssessmentEntry(participant, null, repositoryEntry, null, Boolean.TRUE, repositoryEntry);
+			assessmentService.getOrCreateAssessmentEntry(participant, null, repositoryEntry, null, Boolean.TRUE, repositoryEntry, false);
 		}
 		dbInstance.commitAndCloseSession();
 		
