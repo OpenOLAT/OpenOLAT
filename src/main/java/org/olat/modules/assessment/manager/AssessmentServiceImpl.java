@@ -32,11 +32,13 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.UserDisplayIdentifierGenerator;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -64,7 +66,7 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry) {
+			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry, boolean withUserDisplayIdentifer) {
 		AssessmentEntry assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);
 		if(assessmentEntry == null) {
 			try {
@@ -81,7 +83,31 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 				}
 			}
 		}
+		
+		if (withUserDisplayIdentifer) {
+			assessmentEntry = addUserDisplayIdentifier(entry, assessmentEntry);
+		}
+		
 		return assessmentEntry;
+	}
+	
+	private AssessmentEntry addUserDisplayIdentifier(RepositoryEntry repositoryEntry, AssessmentEntry assessmentEntry) {
+		if (StringHelper.containsNonWhitespace(assessmentEntry.getUserDisplayIdentifier())) {
+			return assessmentEntry;
+		}
+		
+		String userDisplayIdentifier = null;
+		while (userDisplayIdentifier == null) {
+			userDisplayIdentifier = UserDisplayIdentifierGenerator.generate();
+			
+			boolean inUse = assessmentEntryDao.isUserDisplayIdentifierInUse(repositoryEntry.getKey(), assessmentEntry.getSubIdent(), userDisplayIdentifier);
+			if (inUse) {
+				userDisplayIdentifier = null;
+			}
+		}
+		
+		assessmentEntry.setUserDisplayIdentifier(userDisplayIdentifier);
+		return assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
 	}
 
 	@Override

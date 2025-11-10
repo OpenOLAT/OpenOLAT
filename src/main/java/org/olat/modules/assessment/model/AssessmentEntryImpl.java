@@ -214,6 +214,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@JoinColumn(name="fk_reference_entry", nullable=true, insertable=true, updatable=true)
     private RepositoryEntry referenceEntry;
 
+	@Column(name="a_user_display_identifier", nullable=true, insertable=true, updatable=true)
+	private String userDisplayIdentifier;
     @Column(name="a_anon_identifier", nullable=true, insertable=true, updatable=false)
 	private String anonymousIdentifier;
 
@@ -824,6 +826,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setReferenceEntry(RepositoryEntry referenceEntry) {
 		this.referenceEntry = referenceEntry;
+	}
+
+	@Override
+	public String getUserDisplayIdentifier() {
+		return userDisplayIdentifier;
+	}
+
+	@Override
+	public void setUserDisplayIdentifier(String userDisplayIdentifier) {
+		this.userDisplayIdentifier = userDisplayIdentifier;
 	}
 
 	@Override

@@ -48,7 +48,7 @@ public class CorrectionIdentityAssessmentItemRow extends AssessmentItemListEntry
 	public CorrectionIdentityAssessmentItemRow(Identity assessedIdentity, AssessmentItem item, AssessmentItemRef itemRef,
 			ManifestMetadataBuilder metadata, AssessmentTestSession testSession, AssessmentItemSession itemSession,
 			ItemSessionState itemSessionState, boolean manualCorrection) {
-		super(assessedIdentity, testSession, itemSession, itemRef, item.getTitle(), null);
+		super(assessedIdentity, testSession, itemSession, itemRef, item.getTitle(), item.getTitle(), null);
 		this.item = item;
 		this.itemRef = itemRef;
 		this.metadata = metadata;

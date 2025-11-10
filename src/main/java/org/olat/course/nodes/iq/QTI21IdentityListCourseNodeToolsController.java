@@ -474,7 +474,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		Map<Identity, TestSessionState> testSessionStates = new HashMap<>();
 		testSessionStates.put(assessedIdentity, testSessionState);
 		CorrectionOverviewModel model = new CorrectionOverviewModel(courseEntry, testCourseNode, testEntry,
-				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates, getTranslator());
+				resolvedAssessmentTest, manifestBuilder, lastSessionMap, testSessionStates);
 		
 		boolean assessmentEntryDone = isAssessementEntryDone();
 		boolean running = lastSession.getFinishTime() == null && lastSession.getTerminationTime() == null;

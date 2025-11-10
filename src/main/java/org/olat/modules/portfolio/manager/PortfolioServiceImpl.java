@@ -1394,7 +1394,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			for(Identity assessedIdentity:assessedIdentities) {
 				AssessmentEntry assessmentEntry = assessmentService
-						.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
+						.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry, false);
 				if(by == Role.coach) {
 					assessmentEntry.setLastCoachModified(new Date());
 				} else if(by == Role.user) {
@@ -1507,7 +1507,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry, false);
 			assessmentEntry.setScore(totalScore);
 			assessmentEntry.setWeightedScore(totalScore);
 			assessmentEntry.setPassed(totalPassed);
@@ -1532,7 +1532,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry, false);
 			status = assessmentEntry.getAssessmentStatus();
 		}
 		return status;
@@ -1562,7 +1562,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry, false);
 			assessmentEntry.setFullyAssessed(fullyAssessed);
 			assessmentEntry.setAssessmentStatus(status);
 			assessmentService.updateAssessmentEntry(assessmentEntry);

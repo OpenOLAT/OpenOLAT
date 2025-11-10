@@ -48,10 +48,12 @@ public interface AssessmentService {
 	 * @param subIdent An additional reference for the course element
 	 * @param entryRoot 
 	 * @param referenceEntry The test repository entry 
+	 * @param withUserDisplayIdentifer 
 	 * @return
 	 */
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry);
+			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry,
+			boolean withUserDisplayIdentifer);
 	
 	/**
 	 * 

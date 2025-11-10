@@ -82,7 +82,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "-", assessmentEntry, assessedIdentity, null, 300, true);
@@ -97,7 +97,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -112,7 +112,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
 		dbInstance.commit();
 		
@@ -130,7 +130,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
 		dbInstance.commit();
 		
@@ -150,7 +150,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, 360, false);
 		dbInstance.commit();
 		
@@ -171,7 +171,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-22");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
 		dbInstance.commit();
 		
@@ -192,7 +192,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, true);
@@ -212,7 +212,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
 		Assert.assertNotNull(testSession);
@@ -253,7 +253,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -280,7 +280,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -311,7 +311,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -329,7 +329,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry, assessedIdentity, null, null, false);
@@ -348,7 +348,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -365,7 +365,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-21");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry, assessedIdentity, null, null, false);
@@ -385,8 +385,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4a");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4b");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, null, false);
@@ -406,7 +406,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-14");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-15");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -435,7 +435,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-24");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-25");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -460,7 +460,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-31");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		// Create only one assessment test session with extratime
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -487,8 +487,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-17");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-18");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		// Create only one assessment test session with extratime
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, null, false);
@@ -512,8 +512,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-17");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-18");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, null, false);
@@ -532,7 +532,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-40");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -551,7 +551,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-41");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -577,7 +577,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-41");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -603,8 +603,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-42");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-43");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, null, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity1, null, courseEntry, subIdent, null, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity2, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity1, null, null, false);
@@ -641,7 +641,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-44");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, null, testEntry, true);
 		dbInstance.commit();
 		
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, null, false);
@@ -660,7 +660,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-14");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-15");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry, assessedIdentity, null, null, false);
@@ -688,7 +688,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-30");
 		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-31");
 		String subIdent = "OO-1234";
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		
 		//create an assessment test session
@@ -710,7 +710,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-46");
 		String subIdent = "OO-1234";
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, subIdent, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, subIdent, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		
 		//create an assessment test session
@@ -736,8 +736,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-20");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, Boolean.FALSE, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, Boolean.FALSE, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry1, assessedIdentity, null, null, false);
@@ -755,7 +755,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry, assessedIdentity, null, null, false);
@@ -772,7 +772,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-5");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry, assessedIdentity, null, null, true);
@@ -791,9 +791,9 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-6");
 		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-7");
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-8");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(author1, null, testEntry, null, null, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(author2, null, testEntry, null, null, testEntry);
-		AssessmentEntry assessmentEntry3 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(author1, null, testEntry, null, null, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(author2, null, testEntry, null, null, testEntry, true);
+		AssessmentEntry assessmentEntry3 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry1, author1, null, null, true);
@@ -816,7 +816,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		// prepare a test and 2 users
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-9");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, null, testEntry, true);
 		dbInstance.commit();
 		repositoryEntryRelationDao.addRole(assessedIdentity, testEntry, GroupRoles.participant.name());
 		Group testDefaultGroup = repositoryEntryRelationDao.getDefaultGroup(testEntry);
@@ -857,8 +857,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-10");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-11");
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(id1, null, testEntry, null, null, testEntry);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(id2, null, testEntry, null, null, testEntry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(id1, null, testEntry, null, null, testEntry, true);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(id2, null, testEntry, null, null, testEntry, true);
 		dbInstance.commit();
 		//create an assessment test session
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry1, id1, null, null, false);

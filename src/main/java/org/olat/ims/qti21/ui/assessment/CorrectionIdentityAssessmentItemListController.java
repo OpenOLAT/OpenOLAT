@@ -151,7 +151,9 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.saveEnabled = !readOnly;
 		this.assignment = assignment;
 		this.gradingTimeRecord = gradingTimeRecord;
-		title = anonymous ? translate("anonymous.user") : userManager.getUserDisplayName(assessedIdentity);
+		title = anonymous 
+				? translate("participant.name", assignment.getAssessmentEntry().getUserDisplayIdentifier())
+				: userManager.getUserDisplayName(assessedIdentity);
 		initForm(ureq);
 		loadModel(true);
 	}

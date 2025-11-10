@@ -111,12 +111,12 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-4-");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		// Test
-		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry1, id1, null, 300, true);
 		testSession1.setFinishTime(new Date());
 		testSession1.setTerminationTime(new Date());
 		testSessionDao.update(testSession1);
-		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(id2, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(id2, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry2, id2, null, 300, true);
 		testSession2.setFinishTime(new Date());
 		testSession2.setTerminationTime(new Date());
@@ -150,7 +150,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-5-");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		// Test
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id, null, 300, true);
 		testSession.setFinishTime(new Date());
 		testSession.setTerminationTime(new Date());
@@ -179,7 +179,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("inspect-10-");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		// Test
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id1, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id1, null, 300, false);
 		testSession.setFinishTime(new Date());
 		testSession.setTerminationTime(new Date());
@@ -204,7 +204,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		config = inspectionConfigurationDao.saveConfiguration(config);
 		
 		// Test
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntry, id, null, 300, false);
 		testSession.setFinishTime(new Date());
 		testSession.setTerminationTime(new Date());
@@ -321,7 +321,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		config = inspectionConfigurationDao.saveConfiguration(config);
 		
 		// Test for id1
-		AssessmentEntry assessmentEntryId = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntryId = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSessionId = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntryId, id, null, 300, false);
 		testSessionId.setFinishTime(new Date());
 		testSessionId.setTerminationTime(new Date());
@@ -348,7 +348,7 @@ public class AssessmentInspectionDAOTest extends OlatTestCase {
 		config = inspectionConfigurationDao.saveConfiguration(config);
 		
 		// Test for id1
-		AssessmentEntry assessmentEntryId = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry);
+		AssessmentEntry assessmentEntryId = assessmentService.getOrCreateAssessmentEntry(id, null, entry, subIdent, null, entry, false);
 		AssessmentTestSession testSessionId = testSessionDao.createAndPersistTestSession(entry, entry, subIdent, assessmentEntryId, id, null, 300, false);
 		testSessionId.setFinishTime(new Date());
 		testSessionId.setTerminationTime(new Date());

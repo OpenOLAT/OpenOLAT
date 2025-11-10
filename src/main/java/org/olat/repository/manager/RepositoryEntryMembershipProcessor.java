@@ -178,7 +178,8 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			if (entry != null && (ImsQTI21Resource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName())
 							|| BinderTemplateResource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName()))) {
 				Identity identity = securityManager.loadIdentityByKey(identityKey);
-				assessmentService.getOrCreateAssessmentEntry(identity, null, entry, null, Boolean.TRUE, entry);
+				boolean withUserDisplayIdentifer = ImsQTI21Resource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName());
+				assessmentService.getOrCreateAssessmentEntry(identity, null, entry, null, Boolean.TRUE, entry, withUserDisplayIdentifer);
 			}
 		} catch (Exception e) {
 			log.warn("Error when processing Identity {} added to RepositoryEntry {}",

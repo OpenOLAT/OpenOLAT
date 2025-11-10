@@ -69,7 +69,7 @@ public class PersistingAssessmentProvider implements WikiAssessmentProvider {
 
 	@Override
 	public void setStatusDone(String pageId) {
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, wikiEntry, pageId, false, null);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, wikiEntry, pageId, false, null, false);
 		if (!AssessmentEntryStatus.done.equals(assessmentEntry.getAssessmentStatus())) {
 			assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.done);
 			assessmentService.updateAssessmentEntry(assessmentEntry);

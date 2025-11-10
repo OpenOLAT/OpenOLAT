@@ -108,7 +108,7 @@ public class CorrectionOverviewController extends BasicController implements Too
 		assessmentItemsLink = LinkFactory.createLink("correction.assessment.items", getTranslator(), this);
 		assessmentItemsLink.setElementCssClass("o_sel_correction_assessment_items");
 		segmentButtonsCmp.addButton(assessmentItemsLink, true);
-		identitiesLink = LinkFactory.createLink("correction.assessed.identities", getTranslator(), this);
+		identitiesLink = LinkFactory.createLink("correction.assessment.participants", getTranslator(), this);
 		identitiesLink.setElementCssClass("o_sel_correction_identities");
 		segmentButtonsCmp.addButton(identitiesLink, false);
 
@@ -138,7 +138,7 @@ public class CorrectionOverviewController extends BasicController implements Too
 
 		List<Identity> assessedIdentities = initializeAssessedIdentities();
 		model = new CorrectionOverviewModel(courseEntry, courseNode, testEntry,
-				resolvedAssessmentTest, manifestBuilder, assessedIdentities, getTranslator());
+				resolvedAssessmentTest, manifestBuilder, assessedIdentities);
 	}
 	
 	@Override

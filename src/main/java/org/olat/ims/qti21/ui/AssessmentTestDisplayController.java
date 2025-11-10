@@ -376,7 +376,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private void initOrResumeAssessmentTestSession(UserRequest ureq, boolean authorMode) {
 		Boolean rootEntry = subIdent == null? Boolean.TRUE: Boolean.FALSE;
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, rootEntry, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, rootEntry, testEntry, false);
 		if(outcomesListener == null) {
 			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
 			outcomesListener = new AssessmentEntryOutcomesListener(entry, testEntry, assessmentEntry, scoreScale, manualCorrections, assessmentService, authorMode);

@@ -64,7 +64,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", null, testEntry, false);
 		dbInstance.commit();
 		
 		String itemIdentifier = UUID.randomUUID().toString();
@@ -87,7 +87,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-2");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", Boolean.FALSE, testEntry, false);
 		dbInstance.commit();
 
 		//make test, item and response
@@ -111,7 +111,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-3");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", Boolean.FALSE, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", Boolean.FALSE, testEntry, false);
 		dbInstance.commit();
 
 		//make test, item and response

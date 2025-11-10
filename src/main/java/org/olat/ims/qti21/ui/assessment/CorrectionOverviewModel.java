@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -46,6 +46,8 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,12 +92,13 @@ public class CorrectionOverviewModel {
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
+	private AssessmentService assessmentService;
+	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, IQTESTCourseNode courseNode, RepositoryEntry testEntry,
 			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
-			Map<Identity,AssessmentTestSession> lastSessions, Map<Identity, TestSessionState> testSessionStates,
-			Translator translator) {
+			Map<Identity,AssessmentTestSession> lastSessions, Map<Identity, TestSessionState> testSessionStates) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
@@ -111,12 +114,12 @@ public class CorrectionOverviewModel {
 			reversedLastSessions.put(entry.getValue(), entry.getKey());
 		}
 		
-		anomyzedNamed = anonymize(translator);
+		anomyzedNamed = anonymize();
 	}
 	
 	public CorrectionOverviewModel(RepositoryEntry courseEntry, IQTESTCourseNode courseNode, RepositoryEntry testEntry,
 			ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder,
-			List<Identity> assessedIdentities, Translator translator) {
+			List<Identity> assessedIdentities) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
@@ -129,7 +132,7 @@ public class CorrectionOverviewModel {
 		lastSessions = loadLastSessions();
 		testSessionStates = getTestSessionStates(lastSessions);
 		
-		anomyzedNamed = anonymize(translator);
+		anomyzedNamed = anonymize();
 	}
 	
 	protected String getAnonymizedName(Identity identity) {
@@ -140,17 +143,21 @@ public class CorrectionOverviewModel {
 		return name;
 	}
 	
-	private Map<Identity,String> anonymize(Translator translator) {
-		int count = 0;
-
+	private Map<Identity,String> anonymize() {
+		Map<Long, String> identityKeyToDisplayIdentifier = assessmentService
+				.loadAssessmentEntriesBySubIdent(courseEntry, courseNode.getIdent())
+				.stream()
+				.collect(Collectors.toMap(entry -> entry.getIdentity().getKey(), AssessmentEntry::getUserDisplayIdentifier));
+		
 		Map<Identity,String> names = new HashMap<>();
 		for(Identity assessedIdentity:assessedIdentities) {
 			if(lastSessions.containsKey(assessedIdentity)) {
-				String title = translator.translate("number.assessed.identity", Integer.toString(++count));
-				names.put(assessedIdentity, title);
+				String title = identityKeyToDisplayIdentifier.get(assessedIdentity.getKey());
+				if(StringHelper.containsNonWhitespace(title)) {
+					names.put(assessedIdentity, title);
+				}
 			} else {
-				String title = translator.translate("number.assessed.identity", "ERR");
-				names.put(assessedIdentity, title);
+				names.put(assessedIdentity, "ERR");
 			}
 		}
 		return Map.copyOf(names);
