@@ -132,6 +132,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	private final boolean overrideManaged;
 	private final boolean extendedCurriculumRoles;
 	private final boolean curriculumEditable;
+	private final boolean exclusiveResource;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
 	private final Curriculum curriculum;
@@ -156,6 +157,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		super(ureq, wControl, "edit_member");
 		this.member = member;
 		this.members = null;
+		exclusiveResource = false;
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		if(organisationService.hasRole(member, OrganisationRoles.invitee)) {
@@ -204,6 +206,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		this.member = member;
 		this.members = null;
 		this.allowedRoles = null;
+		exclusiveResource = false;
 		repoEntry = null;
 		businessGroup = null;
 		this.curriculum = curriculum;
@@ -235,6 +238,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 			allowedRoles = null;
 		}
 		this.members = (members == null ? null : new ArrayList<>(members));
+		exclusiveResource = false;
 		repoEntry = membersContext.getRepoEntry();
 		businessGroup = membersContext.getGroup();
 		curriculum = membersContext.getCurriculum();
@@ -256,6 +260,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		
 		member = null;
 		members = null;
+		exclusiveResource = true;
 		allowedRoles = List.of(GroupRoles.coach.name(), GroupRoles.participant.name());
 		repoEntry = membersContext.getRepoEntry();
 		businessGroup = membersContext.getBusinessGroup();
@@ -284,7 +289,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		}
 
 		List<StatisticsBusinessGroupRow> groups;
-		if(repoEntry != null || businessGroup != null) {
+		// Load business groups of the repository entry only if not exclusively memberships of repository entry
+		if((repoEntry != null && !exclusiveResource) || businessGroup != null) {
 			groups = businessGroupService.findBusinessGroupsStatistics(params);
 			if(groups.size() > 1) {
 				Collections.sort(groups, new BusinessGroupRowComparator(getLocale()));
@@ -372,15 +378,13 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		if(curriculum != null) {
 			curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
 			curriculumElements = orderCurriculumElements(curriculumElements);
-		} else if (repoEntry != null) {
+		} else if (repoEntry != null && !exclusiveResource) {
 			curriculumElements = curriculumService.getCurriculumElements(repoEntry);
 		} else {
 			curriculumElements = Collections.emptyList();
 		}
 		return curriculumElements;
 	}
-
-
 	
 	private List<CurriculumElement> orderCurriculumElements(List<CurriculumElement> curriculumElements) {
 		try {
