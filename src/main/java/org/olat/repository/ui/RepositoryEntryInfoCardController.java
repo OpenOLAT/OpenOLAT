@@ -127,12 +127,12 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 		
 		String executionPeriod = getExecutionPeriod();
 		if (StringHelper.containsNonWhitespace(executionPeriod)) {
-			uifactory.addStaticTextElement("cif.dates", executionPeriod, itemsCont);
+			uifactory.addStaticTextElement("cif.dates", StringHelper.escapeHtml(executionPeriod), itemsCont);
 		}
 		
 		String location = entry.getLocation();
 		if (StringHelper.containsNonWhitespace(location)) {
-			uifactory.addStaticTextElement("cif.location", location, itemsCont);
+			uifactory.addStaticTextElement("cif.location", StringHelper.escapeHtml(location), itemsCont);
 		}
 	}
 	
