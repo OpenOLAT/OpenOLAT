@@ -156,30 +156,40 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 
 	@Override
 	protected void initFiltersPresets(List<FlexiFiltersTab> tabs) {
-		FlexiFiltersTab validTab = FlexiFiltersTabFactory.tabWithImplicitFilters(VALID_TAB_ID, translate("filter.valid"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.VALID.name())));
-		tabs.add(validTab);
+		if(certificationProgram.isValidityEnabled()) {
+			FlexiFiltersTab validTab = FlexiFiltersTabFactory.tabWithImplicitFilters(VALID_TAB_ID, translate("filter.valid"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.VALID.name())));
+			tabs.add(validTab);
 		
-		FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRED_TAB_ID, translate("filter.expired"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.EXPIRED.name())));
-		tabs.add(expiredTab);
+			FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRED_TAB_ID, translate("filter.expired"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.EXPIRED.name())));
+			tabs.add(expiredTab);
+		}
 		
-		FlexiFiltersTab pausedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAUSED_TAB_ID, translate("filter.paused"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.PAUSED.name())));
-		tabs.add(pausedTab);
+		if(certificationProgram.isRecertificationEnabled()) {
+			FlexiFiltersTab pausedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAUSED_TAB_ID, translate("filter.paused"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.PAUSED.name())));
+			tabs.add(pausedTab);
+		}
 		
-		FlexiFiltersTab expiringSoonTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRING_SOON_ID, translate("filter.expiring.soon"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.VALID.name()),
-						FlexiTableFilterValue.valueOf(FILTER_EXPIRE_SOON, FILTER_EXPIRE_SOON)));
-		tabs.add(expiringSoonTab);
+		if(certificationProgram.isValidityEnabled()) {
+			FlexiFiltersTab expiringSoonTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRING_SOON_ID, translate("filter.expiring.soon"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.VALID.name()),
+							FlexiTableFilterValue.valueOf(FILTER_EXPIRE_SOON, FILTER_EXPIRE_SOON)));
+			tabs.add(expiringSoonTab);
+		}
 		
-		FlexiFiltersTab creditPointsTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INSUFFICIENT_CREDIT_POINTS_ID, translate("filter.insufficient.credit.points"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_NOT_ENOUGH_CREDIT_POINTS, FILTER_NOT_ENOUGH_CREDIT_POINTS)));
-		tabs.add(creditPointsTab);
+		if(certificationProgram.getCreditPointSystem() != null && certificationProgram.getCreditPoints() != null) {
+			FlexiFiltersTab creditPointsTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INSUFFICIENT_CREDIT_POINTS_ID, translate("filter.insufficient.credit.points"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_NOT_ENOUGH_CREDIT_POINTS, FILTER_NOT_ENOUGH_CREDIT_POINTS)));
+			tabs.add(creditPointsTab);
+		}
 		
-		FlexiFiltersTab recertifiedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RECERTIFIED_ID, translate("filter.recertified"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_RECERTIFIED, FILTER_RECERTIFIED)));
-		tabs.add(recertifiedTab);
+		if(certificationProgram.isRecertificationEnabled()) {
+			FlexiFiltersTab recertifiedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RECERTIFIED_ID, translate("filter.recertified"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_RECERTIFIED, FILTER_RECERTIFIED)));
+			tabs.add(recertifiedTab);
+		}
 	}
 	
 	@Override
@@ -345,8 +355,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			contactLink = LinkFactory.createLink("contact", "contact", getTranslator(), mainVC, this, Link.LINK);
 			contactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			
-			if(certificationProgram.isRecertificationEnabled()
-					&& (certificationProgram.isPrematureRecertificationByUserEnabled() || status == CertificationStatus.EXPIRED)) {
+			if(certificationProgram.isRecertificationEnabled()) {
 				renewLink = LinkFactory.createLink("renew", "renew", getTranslator(), mainVC, this, Link.LINK);
 				renewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_recycle");
 			}
@@ -356,7 +365,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_revoked");
 			}
 			
-			if(status != CertificationStatus.PAUSED) {
+			if(status != CertificationStatus.PAUSED && certificationProgram.isRecertificationEnabled()) {
 				pauseLink = LinkFactory.createLink("pause", "pause", getTranslator(), mainVC, this, Link.LINK);
 				pauseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_paused");
 			}
