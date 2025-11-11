@@ -503,7 +503,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				boolean readOnly = model.isAssessmentEntryDone(assessedIdentity) || running;
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model, null, readOnly, running, true);
+						selectedItemSessions, model, null, readOnly, running);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				
@@ -520,8 +520,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		if(identityItemCtrl != null) {
 			AssessmentItemListEntry itemSession = identityItemCtrl.getAssessmentItemSession();
 			List<? extends AssessmentItemListEntry> selectedItemSessions = identityItemCtrl.getAssessmentEntryList();
-			String previousText = translate("previous.user");
-			String nextText = translate("next.user");
 			boolean previousEnable = false;
 			boolean nextEnable = false;
 			
@@ -532,7 +530,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			if(index + 1 >= 0 && selectedItemSessions.size() > index + 1) {
 				nextEnable = true;
 			}
-			identityItemCtrl.updatePreviousNext(previousText, previousEnable, nextText, nextEnable);
+			identityItemCtrl.updatePreviousNext(previousEnable, nextEnable);
 		}
 	}
 	

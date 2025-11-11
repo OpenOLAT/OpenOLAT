@@ -418,7 +418,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
-						tableModel.getObjects(), model, gradingTimeRecord, readOnly || running, running, false);
+						tableModel.getObjects(), model, gradingTimeRecord, readOnly || running, running);
 				listenTo(identityItemCtrl);
 				stackPanel.pushController(assessmentItem.getTitle(), identityItemCtrl);
 				updatePreviousNext();
@@ -450,7 +450,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				nextEnable = true;
 			}
 
-			identityItemCtrl.updatePreviousNext(previousText, previousEnable, nextText, nextEnable);
+			identityItemCtrl.updatePreviousNext(previousEnable, nextEnable);
 		}
 	}
 }

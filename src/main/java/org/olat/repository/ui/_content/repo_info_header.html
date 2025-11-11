@@ -1,0 +1,25 @@
+<div class="o_repo_info_header">
+	<div class="o_repo_info_header_content">
+		<div class="o_visual">
+			#if($r.isNotEmpty($teaserUrl))
+				<img src="$teaserUrl" alt="" />
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+		<div class="o_meta">
+			<div class="o_ext_ref">
+				#if($r.isNotEmpty($externalRef))
+					$r.escapeHtml($externalRef)
+					#if($r.isNotEmpty($type))
+						<span class="o_spacer">&middot;</span>
+					#end
+				#end
+				#if($r.isNotEmpty($type))
+					$r.escapeHtml($type)
+				#end
+			</div>
+			<h4 class="o_title">$r.escapeHtml($title)</h4>
+		</div>
+	</div>
+</div>
