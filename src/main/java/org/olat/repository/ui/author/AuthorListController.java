@@ -218,6 +218,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private FlexiFiltersTab myTab;
 	private FlexiFiltersTab myCoursesTab;
+	private FlexiFiltersTab coursesSharedWithMeTab;
 	private FlexiFiltersTab bookmarkTab;
 	private FlexiFiltersTab searchTab;
 	private FlexiFiltersTab deletedTab;
@@ -703,6 +704,15 @@ public class AuthorListController extends FormBasicController implements Activat
 			myCoursesTab.setElementCssClass("o_sel_author_courses");
 			myCoursesTab.setFiltersExpanded(true);
 			tabs.add(myCoursesTab);
+			
+			if (configuration.isShowSharedWithMeFilter()) {
+				coursesSharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("CoursesSharedWithMe", 
+						translate("search.shared.with.me"),
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, ""),
+								FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
+				coursesSharedWithMeTab.setFiltersExpanded(true);
+				tabs.add(coursesSharedWithMeTab);
+			}
 		}
 		
 		if(!configuration.isOnlyAllowedResourceType("CourseModule")) {
@@ -867,7 +877,13 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		if (configuration.isTemplatesMode()) {
 			filters = filters.stream().filter(f -> {
-				return AuthorSourceFilter.MARKED.name().equals(f.getFilter());
+				if (AuthorSourceFilter.MARKED.name().equals(f.getFilter())) {
+					return true;
+				}
+				if (AuthorSourceFilter.OWNED.name().equals(f.getFilter())) {
+					return true;
+				}
+				return false;
 			}).toList();
 		}
 		tableEl.setFilters(true, filters, true, false);
