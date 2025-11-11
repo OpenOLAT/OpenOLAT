@@ -109,13 +109,17 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 
 	@Override
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.nextRecertificationDays,
+		if(certificationProgram.isRecertificationEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.nextRecertificationDays,
 				new NextRecertificationInDaysFlexiCellRenderer(getTranslator())));
+		}
 		
-		DefaultFlexiColumnModel balanceColModel = new DefaultFlexiColumnModel(CertificationProgramMembersCols.walletBalance,
-				new WalletBalanceCellRenderer(certificationProgram.getCreditPointSystem()));
-		balanceColModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
-		columnsModel.addFlexiColumnModel(balanceColModel);
+		if(certificationProgram.getCreditPointSystem() != null && certificationProgram.getCreditPoints() != null) {
+			DefaultFlexiColumnModel balanceColModel = new DefaultFlexiColumnModel(CertificationProgramMembersCols.walletBalance,
+					new WalletBalanceCellRenderer(certificationProgram.getCreditPointSystem()));
+			balanceColModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			columnsModel.addFlexiColumnModel(balanceColModel);
+		}
 	}
 
 	@Override

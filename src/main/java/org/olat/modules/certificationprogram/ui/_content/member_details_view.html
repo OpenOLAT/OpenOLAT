@@ -4,13 +4,13 @@ $r.render("portrait")
 #end
 #if($r.available("recertificationTable"))
 <fieldset class="o_block">
-	<legend>$r.translate("recertification.title")</legend>
+	<legend>$r.translate("details.certificate.title")</legend>
 	$r.render("recertificationTable")
 </fieldset>
 #end
 #if($r.available("statementTable"))
 <fieldset class="o_block">
-	<legend>$r.translate("efficiency.statements.title")</legend>
+	<legend>$r.translate("details.assessment.entries.title")</legend>
 	$r.render("statementTable")
 </fieldset>
 #end

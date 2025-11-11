@@ -153,7 +153,6 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.recertificationCount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.nextRecertificationDate,
 				new DateFlexiCellRenderer(getLocale())));
-		
 		initColumns(columnsModel);
 		
         ActionsColumnModel actionsCol = new ActionsColumnModel(CertificationProgramMembersCols.tools);

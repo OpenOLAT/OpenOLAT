@@ -66,10 +66,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificationProgramMemberDetailsController extends FormBasicController {
 
-	private FlexiTableElement recertificationTableEl;
-	private FlexiTableElement efficiencyStatementTableEl;
-	private CertificationProgramRecertificationTableModel recertificationTableModel;
-	private CertificationProgramEfficiencyStatementTableModel efficiencyStatementTableModel;
+	private FlexiTableElement certificatesTableEl;
+	private FlexiTableElement assessmentEntriesTableEl;
+	private CertificationProgramRecertificationTableModel certificatesTableModel;
+	private CertificationProgramEfficiencyStatementTableModel assessmentEntriesTableModel;
 	
 	private Object userObject;
 	private final Identity assessedIdentity;
@@ -90,8 +90,8 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		this.certificationProgram = certificationProgram;
 		
 		initForm(ureq);
-		loadRecertificationModel(ureq);
-		loadEfficiencyStatementModel();
+		loadCertificatesModel(ureq);
+		loadAssessmentEntriesModel();
 	}
 	
 	public Object getUserObject() {
@@ -105,13 +105,11 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initPortraitForm(formLayout, ureq);
-		if(certificationProgram.isRecertificationEnabled()) {
-			if(nextRecertification != null && nextRecertification.isNotRenewable()
-					&& formLayout instanceof FormLayoutContainer layoutCont) {
-				layoutCont.contextPut("warningNotRenewable", Boolean.TRUE);
-			}
-			initRecertificationForm(formLayout, ureq);
+		if(certificationProgram.isRecertificationEnabled() && nextRecertification != null && nextRecertification.isNotRenewable()
+				&& formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("warningNotRenewable", Boolean.TRUE);
 		}
+		initCertificatesForm(formLayout, ureq);
 		initEfficiencyStatementForm(formLayout, ureq);
 	}
 	
@@ -123,7 +121,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		formLayout.add("portrait", profile.getInitialFormItem());
 	}
 	
-	private void initRecertificationForm(FormItemContainer formLayout, UserRequest ureq) {
+	private void initCertificatesForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RecertificationCols.key));
 		DefaultFlexiColumnModel recertificationCountCol = new DefaultFlexiColumnModel(RecertificationCols.recertificationCount);
@@ -145,28 +143,28 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		recertificationTableModel = new CertificationProgramRecertificationTableModel(columnsModel);
-		recertificationTableEl = uifactory.addTableElement(getWindowControl(), "recertificationTable", recertificationTableModel, 10, true, getTranslator(), formLayout);
+		certificatesTableModel = new CertificationProgramRecertificationTableModel(columnsModel);
+		certificatesTableEl = uifactory.addTableElement(getWindowControl(), "recertificationTable", certificatesTableModel, 10, true, getTranslator(), formLayout);
 		
-		recertificationTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1");
+		certificatesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1");
 	}
 	
-	private void loadRecertificationModel(UserRequest ureq) {
-		if(recertificationTableModel == null) return;// Nothing to do
+	private void loadCertificatesModel(UserRequest ureq) {
+		if(certificatesTableModel == null) return;// Nothing to do
 		
 		Date referencedate = DateUtils.getEndOfDay(ureq.getRequestTimestamp());
 		List<Certificate> certificates = certificationProgramService.getCertificates(assessedIdentity, certificationProgram);
 		List<CertificationProgramRecertificationRow> rows = certificates.stream()
 				.map(certificate -> forgeRecertificationRow(certificate, referencedate))
 				.toList();
-		recertificationTableModel.setObjects(rows);
-		recertificationTableEl.reset(true, true, true);
+		certificatesTableModel.setObjects(rows);
+		certificatesTableEl.reset(true, true, true);
 	}
 	
 	private CertificationProgramRecertificationRow forgeRecertificationRow(Certificate certificate, Date referenceDate) {
-		NextRecertificationInDays nextRecertification = NextRecertificationInDays.valueOf(certificate, referenceDate);
+		NextRecertificationInDays certificateNextRecertification = NextRecertificationInDays.valueOf(certificate, referenceDate);
 		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
-		CertificationProgramRecertificationRow row = new CertificationProgramRecertificationRow(certificate, nextRecertification, status);
+		CertificationProgramRecertificationRow row = new CertificationProgramRecertificationRow(certificate, certificateNextRecertification, status);
 		return row;
 	}
 	
@@ -186,21 +184,21 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		efficiencyStatementTableModel = new CertificationProgramEfficiencyStatementTableModel(columnsModel);
-		efficiencyStatementTableEl = uifactory.addTableElement(getWindowControl(), "statementTable", efficiencyStatementTableModel, 10, true, getTranslator(), formLayout);
+		assessmentEntriesTableModel = new CertificationProgramEfficiencyStatementTableModel(columnsModel);
+		assessmentEntriesTableEl = uifactory.addTableElement(getWindowControl(), "statementTable", assessmentEntriesTableModel, 10, true, getTranslator(), formLayout);
 		
-		efficiencyStatementTableEl.setAndLoadPersistedPreferences(ureq, "member-details-statements-v1");
+		assessmentEntriesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-statements-v1");
 	}
 	
-	private void loadEfficiencyStatementModel() {
+	private void loadAssessmentEntriesModel() {
 		List<RepositoryEntryStatusEnum> status = List.of(RepositoryEntryStatusEnum.preparationToClosed());
 		List<AssessmentEntry> statements = certificationProgramService.getAssessmentEntries(certificationProgram, assessedIdentity, status);	
 		List<CertificationProgramEfficiencyStatementRow> rows = new ArrayList<>();
 		for(AssessmentEntry statement:statements) {
 			rows.add(forgeStatementRow(statement));
 		}
-		efficiencyStatementTableModel.setObjects(rows);
-		efficiencyStatementTableEl.reset(true, true, true);
+		assessmentEntriesTableModel.setObjects(rows);
+		assessmentEntriesTableEl.reset(true, true, true);
 	}
 	
 	private CertificationProgramEfficiencyStatementRow forgeStatementRow(AssessmentEntry assessmentEntry) {
@@ -212,7 +210,4 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-	
-
 }
