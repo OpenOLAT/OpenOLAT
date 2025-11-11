@@ -35,8 +35,11 @@ import org.olat.repository.RepositoryService;
  */
 public class CreateCourseFromTemplateStep02 extends BasicStep {
 	
-	public CreateCourseFromTemplateStep02(UserRequest ureq) {
+	private final CreateCourseFromTemplateContext context;
+	
+	public CreateCourseFromTemplateStep02(UserRequest ureq, CreateCourseFromTemplateContext context) {
 		super(ureq);
+		this.context = context;
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("details.settings", null);
@@ -44,6 +47,7 @@ public class CreateCourseFromTemplateStep02 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
+		stepsRunContext.put(CreateCourseFromTemplateContext.KEY, context);
 		return new CreateCourseFromTemplateStep02Controller(ureq, windowControl, form, stepsRunContext);
 	}
 }

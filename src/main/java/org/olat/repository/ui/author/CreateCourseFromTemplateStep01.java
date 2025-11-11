@@ -41,7 +41,7 @@ public class CreateCourseFromTemplateStep01 extends BasicStep {
 		super(ureq);
 		this.context = context;
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		setNextStep(new CreateCourseFromTemplateStep02(ureq));
+		setNextStep(new CreateCourseFromTemplateStep02(ureq, context));
 		setI18nTitleAndDescr("runtime.type.template", null);
 	}
 

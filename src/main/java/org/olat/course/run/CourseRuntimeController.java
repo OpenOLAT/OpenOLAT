@@ -67,6 +67,10 @@ import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -218,6 +222,8 @@ import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.FakeParticipantStopController;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.author.CreateCourseFromTemplateContext;
+import org.olat.repository.ui.author.CreateCourseFromTemplateStep02;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.resource.OLATResource;
 import org.olat.search.SearchModule;
@@ -262,6 +268,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link copyWithWizardLink;
 	private Link saveAsTemplateLink;
+	private Link instantiateAsCourseLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 
@@ -305,6 +312,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseDisclaimerReviewController disclaimerReviewCtrl;
 	private CourseQuotaUsageController courseQuotaUsageCtrl;
 	private MigrationSelectionController migrationSelectionCtrl;
+	private StepsMainRunController instantiateAsCourseWizard;
 
 	private Map<String, Boolean> courseRightsCache;
 
@@ -966,15 +974,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
 				Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
 				if (copyIndex != null) {
-					copyWithWizardLink = LinkFactory.createToolLink("copy.course.with.wizard", translate("tools.copy.course.with.wizard"), this, "o_icon o_icon-fw  o_icon_copy");
+					copyWithWizardLink = LinkFactory.createToolLink("copy.course.with.wizard", translate("tools.copy.course.with.wizard"), this, "o_icon o_icon-fw o_icon_copy");
 					toolsDropdown.addComponent(copyIndex + 1, copyWithWizardLink);
 				}
 			}
 			
-			if (!RepositoryEntryRuntimeType.template.equals(re.getRuntimeType())) {
+			Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
+			Integer copyWithWizardIndex = toolsDropdown.getComponentIndex(copyWithWizardLink);
+			if (RepositoryEntryRuntimeType.template.equals(re.getRuntimeType())) {
+				instantiateAsCourseLink = LinkFactory.createToolLink("instantiate.as.course", translate("tools.instantiate.as.course"), this, "o_icon o_icon-fw o_CourseModuleTemplate_icon");
+				if (copyWithWizardIndex != null) {
+					toolsDropdown.addComponent(copyWithWizardIndex + 1, instantiateAsCourseLink);
+				} else if (copyIndex != null) {
+					toolsDropdown.addComponent(copyIndex + 1, instantiateAsCourseLink);
+				}
+			} else {
 				saveAsTemplateLink = LinkFactory.createToolLink("save.as.template", translate("tools.save.as.template"), this, "o_icon o_icon-fw o_icon_template");
-				Integer copyIndex = toolsDropdown.getComponentIndex(copyLink);
-				Integer copyWithWizardIndex = toolsDropdown.getComponentIndex(copyWithWizardLink);
 				if (copyWithWizardIndex != null) {
 					toolsDropdown.addComponent(copyWithWizardIndex + 1, saveAsTemplateLink);
 				} else if (copyIndex != null) {
@@ -1511,6 +1526,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doCopyWithWizard(ureq);
 		} else if(saveAsTemplateLink == source) {
 			doSaveAsTemplate(ureq);
+		} else if (instantiateAsCourseLink == source) {
+			doInstantiateAsCourse(ureq);			
 		} else if(source instanceof Link groupLink && "group".equals(groupLink.getCommand())
 				&& groupLink.getUserObject() instanceof BusinessGroupRef ref) {
 			launchGroup(ureq, ref.getKey());
@@ -1628,6 +1645,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else {
 				cmc.deactivate();
 				cleanUp();
+			}
+		} else if (source == instantiateAsCourseWizard) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
 			}
 		} else if (event instanceof CourseNodeEvent cne) {
 			if (cne.getIdent().contains(PersistingCourseImpl.COURSEFOLDER)) {
@@ -3519,6 +3540,20 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, false, true);
 		listenTo(copyWrapperCtrl);
+	}
+	
+	private void doInstantiateAsCourse(UserRequest ureq) {
+		removeAsListenerAndDispose(instantiateAsCourseWizard);
+		
+		CreateCourseFromTemplateContext context = new CreateCourseFromTemplateContext();
+		context.setTemplateRepositoryEntry(getRepositoryEntry());
+		Step start = new CreateCourseFromTemplateStep02(ureq, context);
+		StepRunnerCallback finish = (UserRequest ur, WindowControl wc, StepsRunContext rc) -> StepsMainRunController.DONE_MODIFIED;
+		instantiateAsCourseWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				getTranslator().translate("tools.instantiate.as.course"), "");
+		listenTo(instantiateAsCourseWizard);
+		
+		getWindowControl().pushAsModalDialog(instantiateAsCourseWizard.getInitialComponent());
 	}
 	
 	private enum Delayed {
