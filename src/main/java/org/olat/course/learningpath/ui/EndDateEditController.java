@@ -116,17 +116,11 @@ public class EndDateEditController extends FormBasicController implements Contro
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == resetOverwriteLink) {
-			doReset();
+			doReset(ureq);
 		} else if (source == endDateEl) {
 			doSetEndDate();
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	private void doReset() {
-		endDateEl.setDate(null);
-		endDate.reset();
-		updateUI();
 	}
 
 	private void doSetEndDate() {
@@ -140,7 +134,30 @@ public class EndDateEditController extends FormBasicController implements Contro
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		endDateEl.clearError();
+		if (endDateEl.getDate() != null && endDateEl.getDate().before(new Date())) {
+			endDateEl.setErrorKey("error.date.in.past");
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
+		doSetEndDate();
+		doSave(ureq);
+	}
+
+	private void doReset(UserRequest ureq) {
+		endDate.reset();
+		doSave(ureq);
+	}
+
+	private void doSave(UserRequest ureq) {
 		assessmentEntry.setEndDate(endDate);
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 		
