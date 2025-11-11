@@ -775,3 +775,82 @@ form { .o_form { .o_radio_cards_wrapper {
 		}
 	}
 }
+
+
+/* Repository info */
+.o_repo_info {
+	border: $o-repo-info-border;
+	border-radius: $o-repo-info-border-radius;
+	padding: $o-repo-info-padding;
+	
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+
+	.o_repo_info_header {
+		.o_repo_info_header_content {
+			display: flex;
+			gap: 10px;
+			.o_visual {
+				height: 50px;
+				width: 75px;
+				flex-shrink: 0;
+			}
+			.o_meta {
+				display: flex;
+				flex-direction: column;
+				.o_ext_ref {
+					color: $text-muted;
+					font-size: 10px;
+					line-height: 12px;
+					height: 12px;
+					@include text-overflow();
+				}
+				.o_title {
+					margin: 0;
+					overflow: hidden;
+					display: -webkit-box;
+					-webkit-line-clamp: 2;
+					-webkit-box-orient: vertical;
+				}
+			}
+		}
+	}
+	
+	.o_repo_info_separator {
+		border-top: $o-repo-info-separator-border;
+	}
+	
+	.o_repo_info_items {
+		display: grid;
+		column-gap: 20px;
+		.form-control-static {
+			padding: 0px;
+			min-height: 0px;
+		}
+	}
+}
+.o_repo_info_wrapper {
+	container-type: inline-size;
+	
+	.o_repo_info_items {
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+	}
+	@container (max-width: 800px) {
+		.o_repo_info_items {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	@container (max-width: 600px) {
+		.o_repo_info_header {
+			.o_repo_info_header_content {
+				.o_title {
+					font-size: $o-repo-info-header-size-small;
+				}
+			}
+		}
+		.o_repo_info_items {
+			grid-template-columns: 1fr;
+		}
+	}
+}

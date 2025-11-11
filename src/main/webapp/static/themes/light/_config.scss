@@ -607,6 +607,11 @@ $o-repo-deleted-color				: #888;		/* black */
 $o-repo-status-color-dark			: #333;
 $o-repo-status-color-bright			: #fff;
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
+$o-repo-info-border						: solid 1px #d4d4d4 !default;
+$o-repo-info-border-radius				: 4px !default;
+$o-repo-info-padding					: 20px !default;
+$o-repo-info-header-size-small			: 16px !default;
+$o-repo-info-separator-border			: 1px solid #d4d4d4 !default;
 
 /* Access control */
 $o-ac-offers-container-max-width		: math.div($o-page-width-max, 3) !default;

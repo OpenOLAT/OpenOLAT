@@ -81,7 +81,6 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private final ResourcesMapper resourcesMapper;
 	
 	private final boolean readOnly;
-	private final boolean pageIdentity;
 	private CorrectionOverviewModel model;
 	private final RepositoryEntry testEntry;
 	private AssessmentItemCorrection itemCorrection;
@@ -108,7 +107,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
 			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
-			GradingTimeRecordRef gradingTimeRecord, boolean readOnly, boolean pageIdentity) {
+			GradingTimeRecordRef gradingTimeRecord, boolean readOnly) {
 		super(ureq, wControl, "correction_identity_assessment_item");
 		this.readOnly = readOnly;
 		this.gradingTimeRecord = gradingTimeRecord;
@@ -120,7 +119,6 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		
 		this.model = model;
 		this.testEntry = testEntry;
-		this.pageIdentity = pageIdentity;
 		this.itemCorrection = itemCorrection;
 		this.assessmentEntry = assessmentEntry;
 		this.assessmentEntryList = assessmentEntryList;
@@ -162,13 +160,11 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 
 		if(readOnly) {
-			String nextI18n = pageIdentity ? "next.user" : "next.item";
-			nextQuestionButton = uifactory.addFormLink("next.item", nextI18n, null, formLayout, Link.BUTTON);
+			nextQuestionButton = uifactory.addFormLink("next.item", "next", null, formLayout, Link.BUTTON);
 			backOverviewButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
 		} else {
 			uifactory.addFormSubmitButton("save", formLayout);
-			String saveNextI18n = pageIdentity ? "save.next.identity" : "save.next";
-			saveNextQuestionButton = uifactory.addFormLink("save.next", saveNextI18n, null, formLayout, Link.BUTTON);
+			saveNextQuestionButton = uifactory.addFormLink("save.next", "save.and.next", null, formLayout, Link.BUTTON);
 			saveBackOverviewButton = uifactory.addFormLink("save.back", formLayout, Link.BUTTON);
 		}
 	}

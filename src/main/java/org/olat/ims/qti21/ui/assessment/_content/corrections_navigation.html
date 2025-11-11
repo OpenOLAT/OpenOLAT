@@ -2,8 +2,8 @@
 	<h3><i class="o_icon $titleCssClass"> </i> $r.escapeHtml($title)</h3>
 #end
 <div class="o_block o_correction_navigation clearfix">
+	$r.render("back.nav")
 	$r.render("back")
-	$r.render("previous.item")
 	<div id="o_cocurrent_item_SELBOX">
 		<select class="form-control" onchange="var current = jQuery(this).val(); jQuery(this).val('$selectedValue'); $r.openJavaScriptCommand("sel", true, false), 'item', current);">
 			#foreach($itemRef in $itemRefKeys)
@@ -11,7 +11,7 @@
 			#end
 		</select>
 	</div>
-	$r.render("next.item")
+	$r.render("next")
 	$r.render("back.overview")
 </div>
 
