@@ -503,7 +503,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				boolean readOnly = model.isAssessmentEntryDone(assessedIdentity) || running;
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model, null, readOnly, running, true);
+						selectedItemSessions, model, null, readOnly, running);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				
