@@ -450,7 +450,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				nextEnable = true;
 			}
 
-			identityItemCtrl.updatePreviousNext(previousText, previousEnable, nextText, nextEnable);
+			identityItemCtrl.updatePreviousNext(previousEnable, nextEnable);
 		}
 	}
 }

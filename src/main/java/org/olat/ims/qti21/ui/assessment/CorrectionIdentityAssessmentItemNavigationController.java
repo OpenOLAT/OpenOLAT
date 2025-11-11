@@ -79,15 +79,15 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		
 		backLink = LinkFactory.createLinkBack(mainVC, this);
 		backLink.setElementCssClass("o_correction_navigation_back");
-		mainVC.put("back", backLink);
+		mainVC.put("back.nav", backLink);
 		backOverviewButton = LinkFactory.createButton("back.overview", mainVC, this);
 		backOverviewButton.setElementCssClass("o_correction_navigation_next");
 		mainVC.put("back.overview", backOverviewButton);
 		
-		previousItemLink = LinkFactory.createButton("previous.item", mainVC, this);
+		previousItemLink = LinkFactory.createButton("back", mainVC, this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon_previous");
 		previousItemLink.setElementCssClass("o_correction_navigation_previous");
-		nextItemLink = LinkFactory.createButton("next.item", mainVC, this);
+		nextItemLink = LinkFactory.createButton("next", mainVC, this);
 		nextItemLink.setIconRightCSS("o_icon o_icon_next");
 		nextItemLink.setElementCssClass("o_correction_navigation_next");
 		
@@ -152,10 +152,8 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		}
 	}
 	
-	protected void updatePreviousNext(String previousText, boolean previousEnable, String nextText, boolean nextEnable) {
-		previousItemLink.setCustomDisplayText(previousText);
+	protected void updatePreviousNext(boolean previousEnable, boolean nextEnable) {
 		previousItemLink.setEnabled(previousEnable);
-		nextItemLink.setCustomDisplayText(nextText);
 		nextItemLink.setVisible(nextEnable);
 		backOverviewButton.setVisible(!nextEnable);
 		itemCtrl.updateNext(nextEnable);

@@ -520,8 +520,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		if(identityItemCtrl != null) {
 			AssessmentItemListEntry itemSession = identityItemCtrl.getAssessmentItemSession();
 			List<? extends AssessmentItemListEntry> selectedItemSessions = identityItemCtrl.getAssessmentEntryList();
-			String previousText = translate("previous.user");
-			String nextText = translate("next.user");
 			boolean previousEnable = false;
 			boolean nextEnable = false;
 			
@@ -532,7 +530,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			if(index + 1 >= 0 && selectedItemSessions.size() > index + 1) {
 				nextEnable = true;
 			}
-			identityItemCtrl.updatePreviousNext(previousText, previousEnable, nextText, nextEnable);
+			identityItemCtrl.updatePreviousNext(previousEnable, nextEnable);
 		}
 	}
 	
