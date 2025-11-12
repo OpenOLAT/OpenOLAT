@@ -381,6 +381,7 @@ public class ObjectSelectionController extends FormBasicController {
 		
 		selectionEl.setVisible(selectionsExpandButton.isExpanded());
 		selectionEl.getKeys().stream().forEach(key -> selectionEl.select(key, true));
+		onSelectionChanged();
 	}
 	
 	private void onSelectionChanged() {
