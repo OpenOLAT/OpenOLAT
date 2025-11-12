@@ -122,10 +122,9 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		
 		String validityDurationVal = Integer.toString(certificationProgram.getValidityTimelapse());
 		DurationType validityDurationType = certificationProgram.getValidityTimelapseUnit();
-		validityEl = new DurationFormItem("validity.duration", getTranslator());
+		validityEl = new DurationFormItem("validity.duration", getTranslator(), false);
 		validityEl.setLabel("validity.duration", null);
-		validityEl.setValue(validityDurationVal);
-		validityEl.setType(validityDurationType);
+		validityEl.setValue(validityDurationVal, validityDurationType);
 		formLayout.add(validityEl);
 	}
 	
@@ -134,12 +133,11 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		recertificationToggleEl.toggle(certificationProgram.isRecertificationEnabled());
 		
 		String recertificationWindowVal = Integer.toString(certificationProgram.getRecertificationWindow());
-		DurationType vrecertificationWindowType = certificationProgram.getRecertificationWindowUnit();
-		recertificationWindowEl = new DurationFormItem("recertification.window", getTranslator());
+		DurationType recertificationWindowType = certificationProgram.getRecertificationWindowUnit();
+		recertificationWindowEl = new DurationFormItem("recertification.window", getTranslator(), true);
 		recertificationWindowEl.setLabel("recertification.window", null);
 		recertificationWindowEl.setHelpText(translate("recertification.window.hint"));
-		recertificationWindowEl.setValue(recertificationWindowVal);
-		recertificationWindowEl.setType(vrecertificationWindowType);
+		recertificationWindowEl.setValue(recertificationWindowVal, recertificationWindowType);
 		formLayout.add(recertificationWindowEl);
 		
 		// Credit point
@@ -261,43 +259,36 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			allOk &= false;
 		}
 		
-		allOk &= validateDuration(creditPointEl, true);
-		allOk &= validateInteger(validityEl, true);
-		allOk &= validateInteger(recertificationWindowEl, true);
+		allOk &= validateCreditPoints(creditPointEl, true);
+		allOk &= validateDuration(validityEl, true);
+		allOk &= validateDuration(recertificationWindowEl, false);
 		
 		return allOk;
 	}
 	
-	private boolean validateInteger(DurationFormItem el, boolean mandatory) {
+	private boolean validateDuration(DurationFormItem el, boolean mandatory) {
 		boolean allOk = true;
 		
 		el.clearError();
 		if(el.isVisible()) {
-			if(el.getValue() != null) {
-				try {
-					if(el.getValue().intValue() < 0) {
-						el.setErrorKey("error.integer.positive");
-						allOk &= false;
-					}
-				} catch (NumberFormatException e) {
-					logWarn("", e);
-					el.setErrorKey("form.error.nointeger");
+			if(el.isOneSelected()) {
+				if((el.getValue() != null &&el.getValue().intValue() <= 0)
+						|| (el.getType() != null && !StringHelper.isLong(el.getRawValue()))) {
+					el.setErrorKey("error.integer.positive");
+					allOk &= false;
+				} else if(mandatory && (el.getValue() == null || el.getType() == null)) {
+					el.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
-			} else if(mandatory) {
-				el.setErrorKey("form.legende.mandatory");
-				allOk &= false;
-			}
-			
-			if(allOk && el.getType() == null && mandatory) {
-				el.setErrorKey("form.legende.mandatory");
+			} else {
+				el.setErrorKey("error.dropdown.select.one");
 				allOk &= false;
 			}
 		}
 		return allOk;
 	}
 	
-	private boolean validateDuration(TextElement el, boolean mandatory) {
+	private boolean validateCreditPoints(TextElement el, boolean mandatory) {
 		boolean allOk = true;
 		
 		el.clearError();
@@ -340,12 +331,16 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		}
 		
 		Integer window = recertificationWindowEl.getValue();
-		boolean recertificationEnabled = validityEnabled && recertificationToggleEl.isOn()
-				&& window != null && window.intValue() > 0;
+		boolean recertificationEnabled = validityEnabled && recertificationToggleEl.isOn();
 		if(recertificationEnabled) {
 			certificationProgram.setRecertificationEnabled(true);
-			certificationProgram.setRecertificationWindow(window.intValue());
-			certificationProgram.setRecertificationWindowUnit(recertificationWindowEl.getType());
+			DurationType type = recertificationWindowEl.getType();
+			certificationProgram.setRecertificationWindowUnit(type);
+			if(type == null || window == null) {
+				certificationProgram.setRecertificationWindow(0);
+			} else {
+				certificationProgram.setRecertificationWindow(window.intValue());
+			}
 		} else {
 			certificationProgram.setRecertificationEnabled(false);
 			certificationProgram.setRecertificationWindow(0);

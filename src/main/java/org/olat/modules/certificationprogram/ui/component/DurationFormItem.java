@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
@@ -46,12 +47,14 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 	
 	private static final Logger log = Tracing.createLoggerFor(DurationFormItem.class);
 	
+	private static final String NONE_KEY = "none";
+	
 	private final TextElement valueEl;
 	private final SingleSelection typeEl;
 	
 	private final DurationComponent component;
 	
-	public DurationFormItem(String name, Translator translator) {
+	public DurationFormItem(String name, Translator translator, boolean withNone) {
 		super(name);
 		setTranslator(translator);
 		
@@ -62,11 +65,25 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		valueEl.setMaxLength(4);
 		
 		String unitName = "vtype_" + getName();
-		typeEl = new SelectboxSelectionImpl(unitName, unitName, translator.getLocale());
+		typeEl = new SelectboxSelectionImpl(unitName, unitName, translator.getLocale()) {
+			/**
+			 * Catch the request to the date chooser and redirect it the our due date item.
+			 * 
+			 */
+			@Override
+			public void doDispatchFormRequest(UserRequest ureq) {
+				DurationFormItem.this.doDispatchFormRequest(ureq);
+			}
+		};
+				
 		typeEl.setTranslator(getTranslator());
 		typeEl.setDomReplacementWrapperRequired(false);
+		typeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		SelectionValues unitPK = new SelectionValues();
+		if(withNone) {
+			unitPK.add(SelectionValues.entry(NONE_KEY, translator.translate("unit.none")));
+		}
 		unitPK.add(SelectionValues.entry(DurationType.day.name(), translator.translate("unit.days")));
 		unitPK.add(SelectionValues.entry(DurationType.week.name(), translator.translate("unit.weeks")));
 		unitPK.add(SelectionValues.entry(DurationType.month.name(), translator.translate("unit.months")));
@@ -74,6 +91,7 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		typeEl.setKeysAndValues(unitPK.keys(), unitPK.values(), null);
 		
 		component = new DurationComponent(this, name);
+		component.setDomReplacementWrapperRequired(false);
 	}
 	
 	@Override
@@ -86,16 +104,21 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		//
 	}
 	
-	public boolean isEmpty() {
-		return !StringHelper.containsNonWhitespace(valueEl.getValue())
-				|| !typeEl.isOneSelected();
+	public boolean isOneSelected() {
+		return typeEl.isOneSelected();
+	}
+	
+	public String getRawValue() {
+		return valueEl.getValue();
 	}
 	
 	public Integer getValue() {
 		try {
-			String val = valueEl.getValue();
-			if(StringHelper.isLong(val)) {
-				return Integer.valueOf(valueEl.getValue());
+			if(typeEl.isOneSelected() && !NONE_KEY.equals(typeEl.getSelectedKey())) {
+				String val = valueEl.getValue();
+				if(StringHelper.isLong(val)) {
+					return Integer.valueOf(valueEl.getValue());
+				}
 			}
 		} catch (NumberFormatException e) {
 			log.debug("", e);
@@ -103,8 +126,17 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		return null;
 	}
 	
-	public void setValue(String value) {
-		valueEl.setValue(value);
+	public void setValue(String value, DurationType type) {
+		if(!StringHelper.containsNonWhitespace(value) || "0".equals(value) || type == null) {
+			valueEl.setValue("");
+			valueEl.setEnabled(false);
+			typeEl.select(NONE_KEY, true);
+		} else {
+			valueEl.setValue(value);
+			if(typeEl.containsKey(type.name())) {
+				typeEl.select(type.name(), true);
+			}
+		}
 	}
 	
 	protected TextElement getValueElement() {
@@ -112,15 +144,12 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 	}
 	
 	public DurationType getType() {
-		return typeEl.isOneSelected()
-			? DurationType.valueOf(typeEl.getSelectedKey())
-			: null;
-	}
-	
-	public void setType(DurationType type) {
-		if(type != null) {
-			typeEl.select(type.name(), true);
+		if(typeEl.isOneSelected()) {
+			return NONE_KEY.equals(typeEl.getSelectedKey())
+					? null
+					: DurationType.valueOf(typeEl.getSelectedKey());
 		}
+		return null;	
 	}
 	
 	protected SingleSelection getTypeElement() {
@@ -168,10 +197,21 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 		
 		Form form = getRootForm();
 		String dispatchuri = form.getRequestParameter("dispatchuri");
-		if(action == getRootForm().getAction()
+		if(typeEl.getAction() == getRootForm().getAction()
 				&& dispatchuri.equals(DISPPREFIX.concat(typeEl.getComponent().getDispatchID()))) {
 			valueEl.evalFormRequest(ureq);
 			typeEl.evalFormRequest(ureq);
+			if(typeEl.isOneSelected() && NONE_KEY.equals(typeEl.getSelectedKey())) {
+				valueEl.setValue("");
+				valueEl.setEnabled(false);
+				component.setDirty(true);
+			} else if(!valueEl.isEnabled()) {
+				valueEl.setEnabled(true);
+				if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
+					valueEl.setValue("1");
+				}
+				component.setDirty(true);
+			}
 		}
 	}
 }

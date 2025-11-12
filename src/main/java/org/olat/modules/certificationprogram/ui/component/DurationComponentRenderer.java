@@ -43,7 +43,8 @@ public class DurationComponentRenderer extends DefaultComponentRenderer {
 		DurationComponent expCmp = (DurationComponent)source;
 		DurationFormItem item = expCmp.getFormItem();
 		
-		sb.append("<div class='form-inline'>");
+		String cmpId = expCmp.getDispatchID();
+		sb.append("<div id='o_c").append(cmpId).append("' class='form-inline'>");
 	
 		TextElement valueEl = item.getValueElement();
 		Component valueCmp = valueEl.getComponent();
