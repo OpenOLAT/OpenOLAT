@@ -156,7 +156,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		certificatesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1.1");
 
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(RecertificationCols.issuedOn.name(), true));
+		sortOptions.setDefaultOrderBy(new SortKey(RecertificationCols.issuedOn.name(), false));
 		certificatesTableEl.setSortSettings(sortOptions);
 	}
 	

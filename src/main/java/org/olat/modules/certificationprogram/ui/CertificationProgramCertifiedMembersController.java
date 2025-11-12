@@ -267,11 +267,11 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		BigDecimal balance = row.getWalletBalance();
 		BigDecimal price = certificationProgram.getCreditPoints();
 		Identity certifiedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		
-		if((balance == null && price == null)
-				|| (price != null && BigDecimal.ZERO.compareTo(price) == 0)
-				|| (price != null && balance != null && price.compareTo(balance) <= 0)) {
-			
+		if(price != null && balance != null && price.compareTo(balance) > 0) {
+			showWarning("warning.renew.balance.insufficient");
+		} else if(price != null && BigDecimal.ZERO.compareTo(price) < 0) {
+			showWarning("warning.coach.recertification.credit.point");
+		} else {
 			renewConfirmationCtrl = new ConfirmRenewController(ureq, getWindowControl(), 
 					translate("renew.confirm.text", CertificationHelper.creditPoints(price)),
 					null,
@@ -283,8 +283,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 					true, translate("renew.confirm.title"), true);
 			listenTo(cmc);
 			cmc.activate();
-		} else {
-			showWarning("warning.renew.balance.insufficient");
 		}
 	}
 

@@ -77,11 +77,17 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
 				generateCertificate(identity, certificationProgram);
 				accepted = true;
-			} else if(certificate.getNextRecertificationDate() != null
+			}  else if(certificate.getNextRecertificationDate() != null
 					// Exclude use case 1 (eternal certificates)
 					&& certificationProgram.isValidityEnabled()
 					// Exclude use case 2 (certificates expire without renewal)
 					&& certificationProgram.isRecertificationEnabled()) {
+				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
+			} else if(certificate.getNextRecertificationDate() == null && requestMode == RequestMode.COACH
+					&& certificationProgram.isValidityEnabled()
+					&& certificationProgram.isRecertificationEnabled()) {
+				// Someone change the settings. The certificate is not marked as renewable but the certification program allows it.
+				// A coach can renew it.
 				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
 			}
 		}
@@ -98,7 +104,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			return false;
 		}
 
-		boolean allowed = isCertificationAllowedByDate(certificate, certificationProgram, referenceDate);
+		boolean allowed = isCertificationAllowedByDate(certificate, certificationProgram, requestMode, referenceDate);
 		if(allowed) {
 			if(system != null && amount != null) {
 				BigDecimal amountToRemove = amount.negate();
@@ -120,23 +126,19 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	
 	private boolean isCertificationAllowedByRequestMode(CertificationProgram certificationProgram, CreditPointSystem system, BigDecimal amount, RequestMode requestMode) {
 		return (system == null && amount == null)
-				|| (system != null && amount != null && (
-						(certificationProgram.getRecertificationMode() == RecertificationMode.automatic) //if automatic, participant, cron job and coach are allowed to renew the certificate
-						|| (certificationProgram.getRecertificationMode() == RecertificationMode.manual && requestMode == RequestMode.COACH)
+				// Coach cannot renew a certificate if credit points engaged
+				|| (system != null && amount != null && requestMode != RequestMode.COACH && (
+						 //if automatic, participant and cron job are allowed to renew the certificate
+						(certificationProgram.getRecertificationMode() == RecertificationMode.automatic)
+								|| (certificationProgram.getRecertificationMode() == RecertificationMode.manual && requestMode != RequestMode.AUTOMATIC)
 					));
 	}
-	
-	@Override
-	public boolean isRecertificationAllowed(CertificationProgram certificationProgram, Certificate certificate, Date referenceDate) {
-		if(certificationProgram.isRecertificationEnabled()) {
-			return isCertificationAllowedByDate(certificate, certificationProgram, referenceDate);
-		}
-		return false;
-	}
 
-	private boolean isCertificationAllowedByDate(Certificate certificate, CertificationProgram certificationProgram, Date referenceDate) {
+	private boolean isCertificationAllowedByDate(Certificate certificate, CertificationProgram certificationProgram, RequestMode requestMode, Date referenceDate) {
 		boolean allowed;
 		if(certificate == null) {
+			allowed = true;
+		} else if(requestMode == RequestMode.COACH && certificationProgram.isRecertificationEnabled()) {
 			allowed = true;
 		} else if(certificationProgram.isRecertificationEnabled()) {
 			Date nextRecertificationDate = certificate.getNextRecertificationDate();
