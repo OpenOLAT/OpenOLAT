@@ -678,9 +678,11 @@ public class MediaCenterController extends FormBasicController
 			if(currentMap.containsKey(mediaWithVersion.getKey())) {
 				MediaRow row = currentMap.get(mediaWithVersion.getKey());
 				if(mediaWithVersion.version() != null && row.getVersion().getCollectionDate().equals(mediaWithVersion.version().getCollectionDate())) {
-					row.getOpenFormItem().getComponent().setCustomDisplayText(StringHelper.escapeHtml(media.getTitle()));
-					rows.add(row);
-					continue;
+					if (row.getTitle() != null && row.getTitle().equals(media.getTitle())) {
+						row.getOpenFormItem().getComponent().setCustomDisplayText(StringHelper.escapeHtml(media.getTitle()));
+						rows.add(row);
+						continue;
+					}
 				}
 			}
 			MediaHandler handler = mediaService.getMediaHandler(media.getType());
