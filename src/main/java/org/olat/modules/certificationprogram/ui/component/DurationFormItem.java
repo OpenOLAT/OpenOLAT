@@ -127,10 +127,15 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 	}
 	
 	public void setValue(String value, DurationType type) {
-		if(!StringHelper.containsNonWhitespace(value) || "0".equals(value) || type == null) {
+		if(!StringHelper.containsNonWhitespace(value) || type == null
+				|| ("0".equals(value) && typeEl.containsKey(NONE_KEY))) {
 			valueEl.setValue("");
 			valueEl.setEnabled(false);
-			typeEl.select(NONE_KEY, true);
+			if(typeEl.containsKey(NONE_KEY)) {
+				typeEl.select(NONE_KEY, true);
+			} else if(type != null && typeEl.containsKey(type.name())) {
+				typeEl.select(type.name(), true);
+			}
 		} else {
 			valueEl.setValue(value);
 			if(typeEl.containsKey(type.name())) {
