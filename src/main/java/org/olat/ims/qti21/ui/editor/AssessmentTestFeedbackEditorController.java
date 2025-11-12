@@ -71,7 +71,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_feedback");
-		
+		mainForm.setMultipartEnabled(true);
 		
 		String relativePath = rootDirectory.toPath().relativize(testFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
