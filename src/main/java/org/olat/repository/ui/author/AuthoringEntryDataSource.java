@@ -179,6 +179,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	}
 	
 	private void setFilterValue(FlexiTableFilter filter) {
+		System.err.println("setFilterValue: " + filter.getFilter());
 		switch(AuthorSourceFilter.valueOf(filter.getFilter())) {
 			case MARKED: 
 				if(StringHelper.containsNonWhitespace(((FlexiTableExtendedFilter)filter).getValue())) {
@@ -188,8 +189,15 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				}
 				break;
 			case OWNED:
-				boolean ownedOnly = StringHelper.containsNonWhitespace(((FlexiTableExtendedFilter)filter).getValue());
-				searchParams.setOwnedResourcesOnly(ownedOnly);
+				if (filter instanceof FlexiTableExtendedFilter extendedFilter) {
+					searchParams.setOwnedResourcesOnly(false);
+					searchParams.setNotOwnedResourcesOnly(false);
+					if ("owned".equals(extendedFilter.getValue())) {
+						searchParams.setOwnedResourcesOnly(true);
+					} else if ("notOwned".equals(extendedFilter.getValue())) {
+						searchParams.setNotOwnedResourcesOnly(true);
+					}
+				}
 				break;
 			case STATUS:
 				List<String> selectedStatus = ((FlexiTableMultiSelectionFilter)filter).getValues();

@@ -217,6 +217,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiTableElement tableEl;
 	
 	private FlexiFiltersTab myTab;
+	private FlexiFiltersTab allCoursesTab;
 	private FlexiFiltersTab myCoursesTab;
 	private FlexiFiltersTab coursesSharedWithMeTab;
 	private FlexiFiltersTab bookmarkTab;
@@ -696,6 +697,15 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(configuration.isResourceTypeAllowed("CourseModule")) {
+			if (configuration.isShowSharedWithMeFilter()) {
+				allCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("AllCourses",
+						translate("search.all"),
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, ""),
+								FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
+				allCoursesTab.setFiltersExpanded(true);
+				tabs.add(allCoursesTab);
+			}
+
 			String filterKey = configuration.isOnlyAllowedRuntimeType(RepositoryEntryRuntimeType.template) ? 
 					"search.my.templates" : "search.my.courses";
 			myCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyCourses", translate(filterKey),
@@ -708,7 +718,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if (configuration.isShowSharedWithMeFilter()) {
 				coursesSharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("CoursesSharedWithMe", 
 						translate("search.shared.with.me"),
-						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, ""),
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "notOwned"),
 								FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
 				coursesSharedWithMeTab.setFiltersExpanded(true);
 				tabs.add(coursesSharedWithMeTab);

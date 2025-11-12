@@ -425,7 +425,8 @@ public class RepositoryEntryAuthorQueries {
 		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
 			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
-		if (!params.isOwnedResourcesOnly() && params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
+		if (!params.isOwnedResourcesOnly() && !params.isNotOwnedResourcesOnly() && 
+				params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
 			dbQuery.setParameter("additionalOrgRoles", params.getAdditionalCurricularOrgRoles().stream().map(OrganisationRoles::name).toList());
 		}
 		return dbQuery;
@@ -433,14 +434,21 @@ public class RepositoryEntryAuthorQueries {
 	
 	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
 		if(dbInstance.isMySQL()) {
-			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			sb.append(" v.key");
+			if (params.isNotOwnedResourcesOnly()) {
+				sb.append(" not");
+			}
+			sb.append(" in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		} else {
+			if (params.isNotOwnedResourcesOnly()) {
+				sb.append(" not");
+			}
 			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		}
 		
-		if(params.isOwnedResourcesOnly()) {
+		if(params.isOwnedResourcesOnly() || params.isNotOwnedResourcesOnly()) {
 			sb.append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" ) and v.status");
 			if(params.hasStatus()) {
