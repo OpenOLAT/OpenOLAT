@@ -20,9 +20,12 @@
 package org.olat.core.gui.components.tree;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.olat.core.util.nodes.INode;
 
 /**
  * 
@@ -82,6 +85,12 @@ public class GenericTreeModelBuilder<T> {
 					parentNode.addChild(node);
 				}
 			}
+		}
+		
+		Comparator<INode> comparator = new TreeNodeTitleComparator();
+		model.getRootNode().sort(comparator);
+		for (GenericTreeNode node : keyToNode.values()) {
+			node.sort(comparator);
 		}
 	}
 

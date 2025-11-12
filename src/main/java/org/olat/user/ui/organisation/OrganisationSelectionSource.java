@@ -21,7 +21,6 @@ package org.olat.user.ui.organisation;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -45,7 +44,10 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -135,33 +137,31 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 		Function<Organisation, GenericTreeNode> toNode = organisation -> {
 			GenericTreeNode newNode = new GenericTreeNode();
 			newNode.setTitle(createTitle(organisation));
+			newNode.setUserObject(organisation);
 			return newNode;
 		};
 		GenericTreeModelBuilder<Organisation> treeModelBuilder = new GenericTreeModelBuilder<>(keyExtractor, parentExtractor, toNode);
 		GenericTreeModel treeModel = treeModelBuilder.build(organisations);
 		
-		List<OrganisationOption> options = new ArrayList<>(organisations.size());
-		for (Organisation organisation : organisations) {
-			TreeNode treeNode = treeModel.getNodeById(keyExtractor.apply(organisation));
-			int totalNodeCount = TreeHelper.totalNodeCount(treeNode) - 1; // Do not count myself.
-			List<TreeNode> treePath = TreeHelper.getTreePath(treeNode);
-			treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
-			
-			String title = createOptionTitle(organisation, totalNodeCount);
-			String subTitle = ObjectOption.createShortPath(treePath, TreeNode::getTitle);
-			String subTitleFull = ObjectOption.createFullPath(treePath, TreeNode::getTitle);
-			OrganisationOption option = new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, subTitleFull, organisation.getDisplayName());
-			
-			options.add(option);
-		}
-		
-		options.sort(new PathTitleComparator());
-		
-		return options;
+		OptionCreationVisitor optionCreationVisitor = new OptionCreationVisitor(keyExtractor);
+		TreeVisitor tv = new TreeVisitor(optionCreationVisitor, treeModel.getRootNode(), false);
+		tv.visitAll();
+		return optionCreationVisitor.getOptions();
 	}
 
 	public static String createTitle(Organisation organisation) {
 		return organisation.getDisplayName();
+	}
+
+	private static OrganisationOption createOption(TreeNode treeNode, Organisation organisation, Function<Organisation, String> keyExtractor) {
+		int totalNodeCount = TreeHelper.totalNodeCount(treeNode) - 1; // Do not count myself.
+		List<TreeNode> treePath = TreeHelper.getTreePath(treeNode);
+		treePath = TreeHelper.getTreePath(treeNode).subList(1, treePath.size() - 1); // Do not display leading slash
+		
+		String title = createOptionTitle(organisation, totalNodeCount);
+		String subTitle = ObjectOption.createShortPath(treePath, TreeNode::getTitle);
+		String subTitleFull = ObjectOption.createFullPath(treePath, TreeNode::getTitle);
+		return new OrganisationOption(keyExtractor.apply(organisation), title, subTitle, subTitleFull, organisation.getDisplayName());
 	}
 
 	private static String createOptionTitle(Organisation organisation, int totalNodeCount) {
@@ -175,22 +175,26 @@ public class OrganisationSelectionSource implements ObjectSelectionSource {
 		return title;
 	}
 	
-	private final static class PathTitleComparator implements Comparator<OrganisationOption> {
+	private final static class OptionCreationVisitor implements Visitor {
 		
+		private final Function<Organisation, String> keyExtractor;
+		private final List<OrganisationOption> options = new ArrayList<>();
+		
+		public OptionCreationVisitor(Function<Organisation, String> keyExtractor) {
+			this.keyExtractor = keyExtractor;
+		}
+
 		@Override
-		public int compare(OrganisationOption o1, OrganisationOption o2) {
-			
-			// Use title fallback, otherwise all root options will be at the top of the list.
-			String subTitleFull1 = StringHelper.containsNonWhitespace(o1.getSubTitleFull())? o1.getSubTitleFull(): o1.getDisplayTitle();
-			String subTitleFull2 = StringHelper.containsNonWhitespace(o2.getSubTitleFull())? o2.getSubTitleFull(): o2.getDisplayTitle();
-			
-			int c = subTitleFull1.compareToIgnoreCase(subTitleFull2);
-			if (c == 0) {
-				c = o1.getDisplayTitle().compareToIgnoreCase(o2.getDisplayTitle());
+		public void visit(INode node) {
+			if (node instanceof TreeNode treeNode && treeNode.getUserObject() instanceof Organisation organisation) {
+				OrganisationOption option = createOption(treeNode, organisation, keyExtractor);
+				options.add(option);
 			}
-			return c;
 		}
 		
+		public List<OrganisationOption> getOptions() {
+			return options;
+		}
 	}
 	
 	static final class OrganisationOption extends ObjectOptionValues {
