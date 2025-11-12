@@ -19,9 +19,13 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
@@ -29,17 +33,34 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificationProgramEfficiencyStatementTableModel extends DefaultFlexiTableDataModel<CertificationProgramEfficiencyStatementRow> {
+public class CertificationProgramEfficiencyStatementTableModel extends DefaultFlexiTableDataModel<CertificationProgramEfficiencyStatementRow>
+implements SortableFlexiTableDataModel<CertificationProgramEfficiencyStatementRow>{
 	
 	private static final StatmentCols[] COLS = StatmentCols.values();
 	
-	public CertificationProgramEfficiencyStatementTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public CertificationProgramEfficiencyStatementTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			CertificationProgramEfficiencyStatementTableSortDelegate sort = new CertificationProgramEfficiencyStatementTableSortDelegate(orderBy, this, locale);
+			super.setObjects(sort.sort());
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		CertificationProgramEfficiencyStatementRow statementRow = getObject(row);
+		return getValueAt(statementRow, col);
+	}
+
+	@Override
+	public Object getValueAt(CertificationProgramEfficiencyStatementRow statementRow, int col) {
 		return switch(COLS[col]) {
 			case key -> statementRow.getRepositoryEntryKey();
 			case repositoryEntryDisplayName -> statementRow.getRepositoryEntryDisplayname();
@@ -74,7 +95,7 @@ public class CertificationProgramEfficiencyStatementTableModel extends DefaultFl
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

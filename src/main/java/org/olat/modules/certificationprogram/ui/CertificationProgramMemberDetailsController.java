@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -133,20 +135,29 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.status,
 				new CertificationStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.nextRecertificationDate,
+		if(certificationProgram.isValidityEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.validUntil,
 				new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.nextRecertificationDays,
+		}
+		if(certificationProgram.isRecertificationEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.nextRecertificationDays,
 				new NextRecertificationInDaysFlexiCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.recertificationDeadline,
+		}
+		if(certificationProgram.isRecertificationWindowEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RecertificationCols.recertificationDeadline,
 				new DateFlexiCellRenderer(getLocale())));
+		}
         ActionsColumnModel actionsCol = new ActionsColumnModel(RecertificationCols.tools);
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		certificatesTableModel = new CertificationProgramRecertificationTableModel(columnsModel);
+		certificatesTableModel = new CertificationProgramRecertificationTableModel(columnsModel, getLocale());
 		certificatesTableEl = uifactory.addTableElement(getWindowControl(), "recertificationTable", certificatesTableModel, 10, true, getTranslator(), formLayout);
-		
-		certificatesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1");
+		certificatesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-recertification-v1.1");
+
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setDefaultOrderBy(new SortKey(RecertificationCols.issuedOn.name(), true));
+		certificatesTableEl.setSortSettings(sortOptions);
 	}
 	
 	private void loadCertificatesModel(UserRequest ureq) {
@@ -184,7 +195,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
         actionsCol.setCellRenderer(new ActionsCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(actionsCol);
 		
-		assessmentEntriesTableModel = new CertificationProgramEfficiencyStatementTableModel(columnsModel);
+		assessmentEntriesTableModel = new CertificationProgramEfficiencyStatementTableModel(columnsModel, getLocale());
 		assessmentEntriesTableEl = uifactory.addTableElement(getWindowControl(), "statementTable", assessmentEntriesTableModel, 10, true, getTranslator(), formLayout);
 		
 		assessmentEntriesTableEl.setAndLoadPersistedPreferences(ureq, "member-details-statements-v1");

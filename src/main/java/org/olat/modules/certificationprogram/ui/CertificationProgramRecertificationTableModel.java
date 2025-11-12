@@ -19,9 +19,13 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
@@ -29,24 +33,42 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificationProgramRecertificationTableModel extends DefaultFlexiTableDataModel<CertificationProgramRecertificationRow> {
+public class CertificationProgramRecertificationTableModel extends DefaultFlexiTableDataModel<CertificationProgramRecertificationRow>
+implements SortableFlexiTableDataModel<CertificationProgramRecertificationRow> {
 	
 	private static final RecertificationCols[] COLS = RecertificationCols.values();
 	
-	public CertificationProgramRecertificationTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public CertificationProgramRecertificationTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void sort(SortKey sortKey) {
+		if(sortKey != null) {
+			CertificationProgramRecertificationTableSortDelegate sort
+					= new CertificationProgramRecertificationTableSortDelegate(sortKey, this, locale);
+			super.setObjects(sort.sort());
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		CertificationProgramRecertificationRow recertificationRow = getObject(row);
+		return getValueAt(recertificationRow, col);
+	}
+
+	@Override
+	public Object getValueAt(CertificationProgramRecertificationRow recertificationRow, int col) {
 		return switch(COLS[col]) {
 			case key -> recertificationRow.getCertificateKey();
 			case recertificationCount -> recertificationRow.getRecertificationCount();
 			case issuedOn -> recertificationRow.getCertificationDate();
 			case status -> recertificationRow.getCertificationStatus();
 			case certificate -> recertificationRow.getCertificate();
-			case nextRecertificationDate -> recertificationRow.getNextRecertificationDate();
+			case validUntil -> recertificationRow.getNextRecertificationDate();
 			case nextRecertificationDays -> recertificationRow.getNextRecertification();
 			case recertificationDeadline -> recertificationRow.getRecertificationWindowDate();
 			case tools -> Boolean.TRUE;
@@ -60,7 +82,7 @@ public class CertificationProgramRecertificationTableModel extends DefaultFlexiT
 		certificate("table.header.certificate"),
 		issuedOn("table.header.issued.on"),
 		status("table.header.status"),
-		nextRecertificationDate("table.header.valid.until"),
+		validUntil("table.header.valid.until"),
 		nextRecertificationDays("table.header.next.recertification.days"),
 		recertificationDeadline("table.header.recertification.deadline"),
 		tools("action.more");
@@ -78,7 +100,7 @@ public class CertificationProgramRecertificationTableModel extends DefaultFlexiT
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

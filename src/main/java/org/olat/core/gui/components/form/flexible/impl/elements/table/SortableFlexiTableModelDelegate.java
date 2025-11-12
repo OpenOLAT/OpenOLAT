@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -179,6 +180,13 @@ public class SortableFlexiTableModelDelegate<T> {
 	}
 	
 	protected final int compareLongs(Long a, Long b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		return a.compareTo(b);
+	}
+	
+	protected final int compareBigDecimal(BigDecimal a, BigDecimal b) {
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
 		}
