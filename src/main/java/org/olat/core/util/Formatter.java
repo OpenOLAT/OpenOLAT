@@ -853,6 +853,10 @@ public class Formatter {
 		  .append("        }\n")
 		  .append("      }, '']\n")
 		  .append("    }\n")
+		  .append("  },\n")
+		  .append("  output: {\n")
+		  .append("    font: 'mathjax-newcm',")
+		  .append("    fontPath: '").append(WebappHelper.getMathJaxCdn()).append("mathjax-newcm-font'")
 		  .append("  }\n")
 		  .append("};\n");
 		return sb.toString();
