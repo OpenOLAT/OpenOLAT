@@ -300,18 +300,19 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		currentCertificate = certificatesDao.updateCertificate(currentCertificate);
 		dbInstance.commitAndCloseSession();
 		
-		boolean recertParticipantNok = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), null);
-		Assert.assertFalse(recertParticipantNok);
-		
 		boolean recertCronJobNok = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), null);
 		Assert.assertFalse(recertCronJobNok);
+		
+		// Coach cannot renew a certificate if credit point involved
+		boolean recertCoachOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COACH, new Date(), null);
+		Assert.assertFalse(recertCoachOk);
 		
 		List<Certificate> certificatesNotRenewed = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(certificatesNotRenewed)
 			.hasSize(1);
 		
-		boolean recertCoachOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COACH, new Date(), null);
-		Assert.assertTrue(recertCoachOk);
+		boolean recertParticipantOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), null);
+		Assert.assertTrue(recertParticipantOk);
 		
 		List<Certificate> recertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(recertificates)
