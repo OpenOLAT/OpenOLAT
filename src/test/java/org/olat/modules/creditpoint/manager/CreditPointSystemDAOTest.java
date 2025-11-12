@@ -207,4 +207,20 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 			.hasSizeGreaterThanOrEqualTo(1)
 			.containsAnyOf(cpSystem);
 	}
+	
+	@Test
+	public void getOrganisationsMapOrganisationRestriction() {
+		Organisation forbiddenOrganisation = organisationService
+				.createOrganisation("Credit-point-forbidden-4", "Credit-point-forbidden-4", "", null, null, JunitTestHelper.getDefaultActor());
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("CSP-9", "R9", Integer.valueOf(180), CreditPointExpirationType.DAY, true, false);
+		CreditPointSystemToOrganisation relation = creditPointSystemToOrganisationDao.createRelation(cpSystem, forbiddenOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+
+		List<OrganisationRef> restrictedOrganisations = List.of(defaultUnitTestOrganisation);
+		List<CreditPointSystem> systemList = creditPointSystemDao.loadCreditPointSystemsFor(List.of(), restrictedOrganisations);
+		Assertions.assertThat(systemList)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(cpSystem);
+	}
 }

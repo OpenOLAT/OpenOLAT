@@ -84,7 +84,7 @@ public class CreditPointSystemDAO {
 		  .append(" where sys.organisationsRestrictions=false");
 		if(organisations != null && !organisations.isEmpty()) {
 			sb.append(" or exists (select rel.key from creditpointsystemtoorganisation as rel")
-			  .append("  where sys.rolesRestrictions=false and sys.rolesRestrictions=true")
+			  .append("  where sys.organisationsRestrictions=true and sys.rolesRestrictions=false")
 			  .append("  and rel.creditPointSystem.key=sys.key and rel.organisation.key in (:organisationsKeys)")
 			  .append(" )");
 		}
