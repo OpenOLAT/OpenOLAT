@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -49,6 +50,8 @@ public class AddProgramMemberController extends FormBasicController {
 	private final List<Long> excludeIdentityKeys;
 	private final CertificationProgram certificationProgram;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CertificationCoordinator certificationCoordinator;
 	
@@ -99,5 +102,6 @@ public class AddProgramMemberController extends FormBasicController {
 	private void doAddMember(UserRequest ureq, Identity member) {
 		certificationCoordinator.processCertificationRequest(member, certificationProgram, RequestMode.COACH,
 				ureq.getRequestTimestamp(), getIdentity());
+		dbInstance.commit();
 	}
 }
