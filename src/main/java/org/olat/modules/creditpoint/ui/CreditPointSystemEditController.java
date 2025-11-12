@@ -141,7 +141,7 @@ public class CreditPointSystemEditController extends FormBasicController {
 		rolesRestrictionsPK.add(SelectionValues.entry(ROLES_RESTRICTIONS_MANAGERS_KEY, translate("roles.restrictions.managers"), null, "o_icon o_icon_lock", null, true));
 		rolesRestrictionsEl = uifactory.addRadiosHorizontal("roles.restrictions", "roles.restrictions", restrictionsCont,
 				rolesRestrictionsPK.keys(), rolesRestrictionsPK.values());
-		String rolesRestrictionsKey = creditPointSystem == null || creditPointSystem.isRolesRestrictions()
+		String rolesRestrictionsKey = creditPointSystem != null && creditPointSystem.isRolesRestrictions()
 				? ROLES_RESTRICTIONS_MANAGERS_KEY
 				: ROLES_RESTRICTIONS_NONE_KEY;
 		rolesRestrictionsEl.select(rolesRestrictionsKey, true);

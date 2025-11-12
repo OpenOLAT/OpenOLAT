@@ -142,10 +142,12 @@ public class CreditPointServiceImpl implements CreditPointService {
 	public List<CreditPointSystem> getCreditPointSystems(Roles roles) {
 		// Without roles restrictions
 		List<OrganisationRef> organisations = roles
-				.getOrganisationsWithRoles(OrganisationRoles.author, OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator);
+				.getOrganisationsWithRoles(OrganisationRoles.author, OrganisationRoles.learnresourcemanager,
+						OrganisationRoles.curriculummanager, OrganisationRoles.administrator);
 		// With roles restrictions
 		List<OrganisationRef> restrictedOrganisations = roles
-				.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager, OrganisationRoles.administrator);
+				.getOrganisationsWithRoles(OrganisationRoles.learnresourcemanager,
+						OrganisationRoles.curriculummanager, OrganisationRoles.administrator);
 		return creditPointSystemDao.loadCreditPointSystemsFor(organisations, restrictedOrganisations);
 	}
 

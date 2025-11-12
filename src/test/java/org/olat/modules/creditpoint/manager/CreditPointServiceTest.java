@@ -28,8 +28,13 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointTransaction;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
@@ -49,6 +54,10 @@ public class CreditPointServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private CreditPointServiceImpl creditPointService;
 	@Autowired
@@ -299,5 +308,24 @@ public class CreditPointServiceTest extends OlatTestCase {
 		Assertions.assertThat(transactions)
 			.hasSize(3)
 			.containsExactlyInAnyOrder(trx1.transaction(), trx2.transaction(), result.transaction());
+	}
+	
+	@Test
+	public void getCreditPointSystems() {
+		// Add an organisation with a curriculum manager
+		Organisation systemOrganisation = organisationService
+				.createOrganisation("Credit-point-unit-test", "Credit-point-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+		Identity curriculumManager = JunitTestHelper.createAndPersistIdentityAsRndUser("coins-9-manager");
+		organisationService.addMember(systemOrganisation, curriculumManager, OrganisationRoles.curriculummanager, curriculumManager);
+		// Create a credit point system restricted to this organisation
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT8", null, null, true, true);
+		creditPointService.updateCreditPointSystemOrganisations(system, List.of(systemOrganisation));
+		dbInstance.commitAndCloseSession();
+		
+		Roles managerRoles = securityManager.getRoles(curriculumManager, true);
+		List<CreditPointSystem> systems = creditPointService.getCreditPointSystems(managerRoles);
+		Assertions.assertThat(systems)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(system);
 	}
 }

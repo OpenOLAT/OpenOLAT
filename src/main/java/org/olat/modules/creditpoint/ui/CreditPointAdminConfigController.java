@@ -24,11 +24,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.OrganisationWithParents;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -128,10 +130,10 @@ public class CreditPointAdminConfigController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.label));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.expiration,
 				new CreditPointExpirationCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.rolesRestrictions,
-				new RolesRestrictionsCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.organisations,
 				new IdentityOrganisationsCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.rolesRestrictions,
+				new RolesRestrictionsCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.usage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemCols.status,
 				new CreditPointSystemStatusRenderer(getTranslator())));
@@ -145,6 +147,10 @@ public class CreditPointAdminConfigController extends FormBasicController {
 		tableModel = new CreditPointSystemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(SystemCols.name.sortKey(), true));
+		tableEl.setSortSettings(options);
 	}
 	
 	private void loadModel() {

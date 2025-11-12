@@ -84,12 +84,14 @@ public class CreditPointSystemDAO {
 		  .append(" where sys.organisationsRestrictions=false");
 		if(organisations != null && !organisations.isEmpty()) {
 			sb.append(" or exists (select rel.key from creditpointsystemtoorganisation as rel")
-			  .append("  where sys.rolesRestrictions=false and rel.creditPointSystem.key=sys.key and rel.organisation.key in (:organisationsKeys)")
+			  .append("  where sys.rolesRestrictions=false and sys.rolesRestrictions=true")
+			  .append("  and rel.creditPointSystem.key=sys.key and rel.organisation.key in (:organisationsKeys)")
 			  .append(" )");
 		}
 		if(restrictedOrganisations != null && !restrictedOrganisations.isEmpty()) {
 			sb.append(" or exists (select restrictedRel.key from creditpointsystemtoorganisation as restrictedRel")
-			  .append("  where sys.rolesRestrictions=true and restrictedRel.creditPointSystem.key=sys.key and restrictedRel.organisation.key in (:restrictedOrganisationsKeys)")
+			  .append("  where sys.organisationsRestrictions=true and sys.rolesRestrictions=true")
+			  .append("  and restrictedRel.creditPointSystem.key=sys.key and restrictedRel.organisation.key in (:restrictedOrganisationsKeys)")
 			  .append(" )");
 		}
 
