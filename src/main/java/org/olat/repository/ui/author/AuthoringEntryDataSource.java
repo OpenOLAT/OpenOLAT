@@ -179,7 +179,6 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	}
 	
 	private void setFilterValue(FlexiTableFilter filter) {
-		System.err.println("setFilterValue: " + filter.getFilter());
 		switch(AuthorSourceFilter.valueOf(filter.getFilter())) {
 			case MARKED: 
 				if(StringHelper.containsNonWhitespace(((FlexiTableExtendedFilter)filter).getValue())) {
