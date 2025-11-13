@@ -9,6 +9,11 @@
 			$r.render($indicatorsComponentName)
 		</div>
 	#end
+	#if($r.isNotEmpty($tableTitle))
+		<div class="o_dashboard_widget_sub_title">
+			<h4>$tableTitle</h4>
+		</div>
+	#end
 	#if($r.available($tableComponentName) && $r.visible($tableComponentName))
 		<div class="o_dashboard_widget_table">
 			$r.render($tableComponentName)

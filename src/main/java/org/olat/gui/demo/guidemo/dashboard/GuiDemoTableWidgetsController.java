@@ -25,6 +25,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
+import org.olat.gui.demo.guidemo.GuiDemoFlexiTablesController;
 
 /**
  * 
@@ -36,30 +38,32 @@ public class GuiDemoTableWidgetsController extends BasicController {
 
 	protected GuiDemoTableWidgetsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
+		
 		VelocityContainer mainVC = createVelocityContainer("tables");
 		putInitialPanel(mainVC);
 		
 		GuiDemoTableWidgetController table1Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title"),
-				true, false, false);
+				null, true, false, false);
 		listenTo(table1Ctrl);
 		mainVC.put("table1", table1Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table2Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.without.header"),
-				false, false, false);
+				null, false, false, false);
 		listenTo(table2Ctrl);
 		mainVC.put("table2", table2Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table3Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.with.cell.links"),
-				true, true, false);
+				null, true, true, false);
 		listenTo(table3Ctrl);
 		mainVC.put("table3", table3Ctrl.getInitialComponent());
 		
 		GuiDemoTableWidgetController table4Ctrl = new GuiDemoTableWidgetController(ureq, wControl,
 				"<i class=\"o_icon o_icon_table\"> </i> " + translate("table.title.list.view"),
-				true, false, true);
+				translate("select.3"), true, false, true);
 		listenTo(table4Ctrl);
 		mainVC.put("table4", table4Ctrl.getInitialComponent());
 	}

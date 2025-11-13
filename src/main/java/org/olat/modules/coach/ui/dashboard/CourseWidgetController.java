@@ -114,6 +114,11 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	}
 
 	@Override
+	protected String getTableTitle() {
+		return translate("courses");
+	}
+
+	@Override
 	protected String createIndicators(FormLayoutContainer widgetCont) {
 		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
 		

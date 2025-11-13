@@ -64,14 +64,17 @@ public class GuiDemoTableWidgetController extends TableWidgetController implemen
 	private FormLink showAllLink;
 
 	private final String title;
+	private final String tableTitle;
 	private final boolean showHeader;
 	private final boolean linkCells;
 	private final boolean listView;
 
-	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, boolean showHeader, boolean linkCells, boolean listView) {
+	protected GuiDemoTableWidgetController(UserRequest ureq, WindowControl wControl, String title, String tableTitle,
+			boolean showHeader, boolean linkCells, boolean listView) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GuiDemoFlexiTablesController.class, getLocale(), getTranslator()));
 		this.title = title;
+		this.tableTitle = tableTitle;
 		this.showHeader = showHeader;
 		this.linkCells = linkCells;
 		this.listView = listView;
@@ -82,6 +85,11 @@ public class GuiDemoTableWidgetController extends TableWidgetController implemen
 	@Override
 	protected String getTitle() {
 		return title;
+	}
+
+	@Override
+	protected String getTableTitle() {
+		return tableTitle;
 	}
 
 	@Override

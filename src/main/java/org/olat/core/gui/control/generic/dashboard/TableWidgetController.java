@@ -55,12 +55,14 @@ public abstract class TableWidgetController extends FormBasicController {
 		formLayout.add(widgetCont);
 		
 		widgetCont.contextPut("title", getTitle());
+		widgetCont.contextPut("tableTitle", getTableTitle());
 		widgetCont.contextPut("indicatorsComponentName", createIndicators(widgetCont));
 		widgetCont.contextPut("tableComponentName", createTable(widgetCont));
 		widgetCont.contextPut("showAllComponentName", createShowAll(widgetCont));
 	}
 	
 	protected abstract String getTitle();
+	protected abstract String getTableTitle();
 	protected abstract String createIndicators(FormLayoutContainer widgetCont);
 	protected abstract String createTable(FormLayoutContainer widgetCont);
 	protected abstract String createShowAll(FormLayoutContainer widgetCont);

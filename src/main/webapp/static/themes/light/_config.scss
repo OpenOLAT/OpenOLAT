@@ -1816,7 +1816,11 @@ $o-dashboard-widget-content-margin				: 0 $o-dashboard-widget-base-margin !defau
 $o-dashboard-widget-border						: 1px solid #e7e7e7 !default;
 $o-dashboard-widget-border-radius				: 4px !default;
 $o-dashboard-widget-bg-color						: $panel-bg !default;
-$o-dashboard-widget-title-font-size				: 30px !default;
+$o-dashboard-widget-title-font-size				: 16px !default;
+$o-dashboard-widget-sub-title-font-size			: 14px !default;
+$o-dashboard-widget-sub-title-font-weight		: bold !default;
+$o-dashboard-widget-sub-title-margin				: 0px 5px !default;
+$o-dashboard-widget-indicators-margin-bottom		: 20px !default;
 $o-dashboard-widget-table-bg-color				: #fff !default;
 
 /* Course Quota */
