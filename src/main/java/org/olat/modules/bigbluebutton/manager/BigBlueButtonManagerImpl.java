@@ -710,7 +710,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		if(availableServers.size() == 1) {
 			return availableServers.get(0);
 		}
-		return getBigBlueButtonServer(servers);
+		return getBigBlueButtonServer(availableServers);
 	}
 	
 	private BigBlueButtonServer getBigBlueButtonServer(List<BigBlueButtonServer> servers) {
