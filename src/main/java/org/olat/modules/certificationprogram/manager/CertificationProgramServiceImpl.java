@@ -254,7 +254,7 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 
 	@Override
 	public void revokeRecertification(CertificationProgram program, IdentityRef identity, Identity doer) {
-		certificatesDao.removeLastFlag(identity, program);
+		certificatesDao.revoke(identity, program);
 	}
 
 	@Override

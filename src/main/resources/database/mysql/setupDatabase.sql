@@ -1896,7 +1896,8 @@ create table o_cer_certificate (
    c_recertification_win_date datetime,
    c_recertification_paused bool default false not null,
    c_path varchar(1024),
-   c_last boolean not null default 1,
+   c_last bool default true not null,
+   c_revoked bool default false not null;
    c_course_title varchar(255),
    c_archived_resource_id bigint not null,
    fk_olatresource bigint,

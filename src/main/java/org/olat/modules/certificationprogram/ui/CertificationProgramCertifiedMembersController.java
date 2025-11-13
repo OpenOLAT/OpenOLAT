@@ -269,13 +269,14 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		Identity certifiedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		if(price != null && balance != null && price.compareTo(balance) > 0) {
 			showWarning("warning.renew.balance.insufficient");
-		} else if(price != null && BigDecimal.ZERO.compareTo(price) < 0) {
-			showWarning("warning.coach.recertification.credit.point");
 		} else {
-			renewConfirmationCtrl = new ConfirmRenewController(ureq, getWindowControl(), 
-					translate("renew.confirm.text", CertificationHelper.creditPoints(price)),
-					null,
-					translate("renew"), certificationProgram, certifiedIdentity);
+			String confirmationText = (price == null || price.compareTo(BigDecimal.ZERO) <= 0)
+					? translate("renew.confirm.text")
+					: translate("renew.confirm.text.creditpoints", CertificationHelper.creditPoints(price));
+
+			renewConfirmationCtrl = new ConfirmRenewController(ureq, getWindowControl(),
+					confirmationText, null, translate("renew.certificate"),
+					certificationProgram, certifiedIdentity);
 			renewConfirmationCtrl.setUserObject(row);
 			listenTo(renewConfirmationCtrl);
 			
@@ -354,7 +355,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			contactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			
 			if(certificationProgram.isRecertificationEnabled()) {
-				renewLink = LinkFactory.createLink("renew", "renew", getTranslator(), mainVC, this, Link.LINK);
+				renewLink = LinkFactory.createLink("renew.certificate", "renew", getTranslator(), mainVC, this, Link.LINK);
 				renewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_recycle");
 			}
 			

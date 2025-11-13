@@ -432,16 +432,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Override
 	public CertificateImpl getCertificateById(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select cer from certificate cer")
-		  .append(" inner join fetch cer.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where cer.key=:certificateKey");
-		List<CertificateImpl> certificates = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CertificateImpl.class)
-				.setParameter("certificateKey", key)
-				.getResultList();
-		return certificates.isEmpty() ? null : certificates.get(0);
+		return certificatesDao.getCertificateById(key);
 	}
 	
 	@Override
@@ -1248,6 +1239,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setExternalId(certificateInfos.getExternalId());
 		certificate.setLast(true);
+		certificate.setRevoked(false);
 		certificate.setStatus(CertificateStatus.pending);
 		certificate.setRecertificationPaused(false);
 		

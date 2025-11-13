@@ -19,6 +19,7 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -41,6 +42,8 @@ public class ConfirmRenewController extends ConfirmationController {
 	private final CertificationProgram certificationProgram;
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private CertificationCoordinator certificationOrchestrator;
 	
 	public ConfirmRenewController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
@@ -54,6 +57,7 @@ public class ConfirmRenewController extends ConfirmationController {
 	protected void doAction(UserRequest ureq) {
 		boolean produced = certificationOrchestrator
 				.processCertificationRequest(certifiedIdentity, certificationProgram, RequestMode.COACH, ureq.getRequestTimestamp(), getIdentity());
+		dbInstance.commit();
 		if(produced) {
 			getLogger().info("Renew certificate of {} in certification program {}", certifiedIdentity.getKey(), certificationProgram.getKey());
 			fireEvent(ureq, Event.DONE_EVENT);

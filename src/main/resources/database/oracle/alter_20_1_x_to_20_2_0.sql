@@ -65,6 +65,7 @@ alter table o_cer_program_to_element add constraint cer_prog_to_el_element_idx f
 create index idx_cer_prog_to_el_element_idx on o_cer_program_to_element (fk_element);
 
 -- Certificate
+alter table o_cer_certificate add c_revoked number default 0 not null;
 alter table o_cer_certificate add c_recertification_count number(20);
 alter table o_cer_certificate add c_recertification_win_date date;
 alter table o_cer_certificate add c_recertification_paused number default 0 not null;

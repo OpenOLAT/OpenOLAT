@@ -172,7 +172,9 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	}
 	
 	private CertificationProgramRecertificationRow forgeRecertificationRow(Certificate certificate, Date referenceDate) {
-		NextRecertificationInDays certificateNextRecertification = NextRecertificationInDays.valueOf(certificate, referenceDate);
+		NextRecertificationInDays certificateNextRecertification = certificate.isLast()
+				? NextRecertificationInDays.valueOf(certificate, referenceDate)
+				: null;
 		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
 		CertificationProgramRecertificationRow row = new CertificationProgramRecertificationRow(certificate, certificateNextRecertification, status);
 		return row;

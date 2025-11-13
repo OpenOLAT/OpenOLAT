@@ -44,6 +44,19 @@ public class CertificatesDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	public CertificateImpl getCertificateById(Long key) {
+		String query = """
+				select cer from certificate cer
+				inner join fetch cer.identity ident
+				inner join fetch ident.user identUser
+				where cer.key=:certificateKey""";
+		List<CertificateImpl> certificates = dbInstance.getCurrentEntityManager()
+				.createQuery(query, CertificateImpl.class)
+				.setParameter("certificateKey", key)
+				.getResultList();
+		return certificates.isEmpty() ? null : certificates.get(0);
+	}
+	
 	public long certificationCount(IdentityRef identity, CertificationProgram certificationProgram) {
 		String query = """
 				select max(cer.recertificationCount) from certificate cer
@@ -134,6 +147,17 @@ public class CertificatesDAO {
 		String query = """
 				update certificate cer set cer.last=false
 				where cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
+		
+		dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("programKey", program.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
+	
+	public void revoke(IdentityRef identity, CertificationProgramRef program) {
+		String query = """
+				update certificate cer set cer.last=false,cer.revoked=true
+				where cer.last=true and cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
 		
 		dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("programKey", program.getKey())

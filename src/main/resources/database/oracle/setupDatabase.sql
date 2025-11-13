@@ -1951,6 +1951,7 @@ create table o_cer_certificate (
    c_recertification_paused number default 0 not null,
    c_path varchar2(1024 char),
    c_last number default 1 not null,
+   c_revoked number default 0 not null,
    c_course_title varchar2(255 char),
    c_archived_resource_id number(20) not null,
    fk_olatresource number(20),

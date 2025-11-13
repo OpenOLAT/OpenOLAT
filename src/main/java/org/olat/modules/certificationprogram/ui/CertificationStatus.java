@@ -28,7 +28,7 @@ import org.olat.course.certificate.Certificate;
 /**
  * 
  * Initial date: 3 sept. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public enum CertificationStatus {
@@ -43,9 +43,9 @@ public enum CertificationStatus {
 	PAUSED,
 	/** Flag last=true on certificate but next certification date, and window for recertification */
 	NOT_RENEWABLE,
-	/** Only flag last=false */
+	/** Only flag last=false and revoked=true */
 	REVOKED,
-	
+	/** Only flag last=false and revoked=false*/
 	ARCHIVED;
 
 	public static CertificationStatus evaluate(Certificate certificate, Date referenceDate) {
@@ -67,8 +67,10 @@ public enum CertificationStatus {
 				return EXPIRED_RENEWABLE;
 			}
 			return EXPIRED;
+		} else if(certificate.isRevoked()) {
+			return REVOKED;
 		}
-		return REVOKED;
+		return ARCHIVED;
 	}
 	
 	public String asLabelExplained(Certificate certificate, Date referenceDate, Translator translator) {

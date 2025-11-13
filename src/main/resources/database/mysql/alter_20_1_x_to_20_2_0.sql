@@ -62,6 +62,7 @@ alter table o_cer_program_to_element add constraint cer_prog_to_el_element_idx f
 
 
 -- Certificate
+alter table o_cer_certificate add column c_revoked bool default false not null;
 alter table o_cer_certificate add column c_recertification_count bigint;
 alter table o_cer_certificate add column c_recertification_win_date datetime;
 alter table o_cer_certificate add column c_recertification_paused bool default false not null;

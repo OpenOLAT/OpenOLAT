@@ -138,9 +138,45 @@ public class CertificatesDAOTest extends OlatTestCase {
 		certificatesDao.removeLastFlag(identity, program);
 		dbInstance.commitAndCloseSession();
 		
-		// Has a last certificate
+		// Hasn't a last certificate
 		Certificate noLastCertificate = certificatesDao.getLastCertificate(identity, program);
 		Assert.assertNull(noLastCertificate);
+
+		// Check the flags
+		Certificate reloadCertificate = certificatesDao.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadCertificate);
+		Assert.assertFalse(reloadCertificate.isLast());
+		Assert.assertFalse(reloadCertificate.isRevoked());
+	}
+	
+	@Test
+	public void revokeByCertificationProgram() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-3", defaultUnitTestOrganisation, null);
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("cer-program-3", "Program");
+		dbInstance.commitAndCloseSession();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		// Has a last certificate
+		Certificate lastCertificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNotNull(lastCertificate);
+		
+		certificatesDao.revoke(identity, program);
+		dbInstance.commitAndCloseSession();
+		
+		// Hasn't a last certificate
+		Certificate noLastCertificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNull(noLastCertificate);
+		
+		// Check the flags
+		Certificate reloadCertificate = certificatesDao.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadCertificate);
+		Assert.assertFalse(reloadCertificate.isLast());
+		Assert.assertTrue(reloadCertificate.isRevoked());
 	}
 	
 	@Test

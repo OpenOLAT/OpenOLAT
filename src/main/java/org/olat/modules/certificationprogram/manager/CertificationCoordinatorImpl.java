@@ -23,10 +23,12 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
@@ -54,6 +56,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	
 	private static final Logger log = Tracing.createLoggerFor(CertificationCoordinatorImpl.class);
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private CertificatesDAO certificatesDao;
 	@Autowired
 	private CreditPointService creditPointService;
 	@Autowired
@@ -169,6 +175,11 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	
 	@Override
 	public void generateCertificate(Identity identity, CertificationProgram certificationProgram) {
+		// Archive the last certificate
+		certificatesDao.removeLastFlag(identity, certificationProgram);
+		dbInstance.commit();
+		
+		// Generate a new certificate
 		// No course informations, only certification program informations
 		CertificateInfos certificateInfos = CertificateInfos.valueOf(identity, null, null);
 		CertificateConfig config = CertificateConfig.builder()

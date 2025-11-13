@@ -3,8 +3,8 @@
 	#if($r.available("renew") || $r.available("revoke") || $r.available("pause") || $r.available("continue"))
 		<li class="divider"></li>
 	#end	
-	#if($r.available("renew"))	
-		<li>$r.render("renew")</li>
+	#if($r.available("renew.certificate"))	
+		<li>$r.render("renew.certificate")</li>
 	#end
 	#if($r.available("revoke"))
 		<li>$r.render("revoke")</li>
