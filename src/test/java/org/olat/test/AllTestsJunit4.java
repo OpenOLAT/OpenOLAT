@@ -311,6 +311,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.certificationprogram.manager.CertificationProgramToOrganisationDAOTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationProgramServiceTest.class,
 	org.olat.modules.certificationprogram.manager.CertificationCoordinatorTest.class,
+	org.olat.modules.certificationprogram.ui.component.NextRecertificationInDaysTest.class,
 	org.olat.modules.contacttracing.manager.ContactTracingLocationDAOTest.class,
 	org.olat.modules.contacttracing.manager.ContactTracingRegistrationDAOTest.class,
 	org.olat.modules.immunityproof.ImmunityProofDaoTest.class,

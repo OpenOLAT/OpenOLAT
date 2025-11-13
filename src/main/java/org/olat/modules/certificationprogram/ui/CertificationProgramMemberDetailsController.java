@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
@@ -112,7 +111,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 			layoutCont.contextPut("warningNotRenewable", Boolean.TRUE);
 		}
 		initCertificatesForm(formLayout, ureq);
-		initEfficiencyStatementForm(formLayout, ureq);
+		initAssessmentEntriesForm(formLayout, ureq);
 	}
 	
 	private void initPortraitForm(FormItemContainer formLayout, UserRequest ureq) {
@@ -163,7 +162,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 	private void loadCertificatesModel(UserRequest ureq) {
 		if(certificatesTableModel == null) return;// Nothing to do
 		
-		Date referencedate = DateUtils.getEndOfDay(ureq.getRequestTimestamp());
+		Date referencedate = ureq.getRequestTimestamp();
 		List<Certificate> certificates = certificationProgramService.getCertificates(assessedIdentity, certificationProgram);
 		List<CertificationProgramRecertificationRow> rows = certificates.stream()
 				.map(certificate -> forgeRecertificationRow(certificate, referencedate))
@@ -179,7 +178,7 @@ public class CertificationProgramMemberDetailsController extends FormBasicContro
 		return row;
 	}
 	
-	private void initEfficiencyStatementForm(FormItemContainer formLayout, UserRequest ureq) {
+	private void initAssessmentEntriesForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, StatmentCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatmentCols.repositoryEntryDisplayName));
