@@ -6,8 +6,13 @@
 	#end
 	<div class="clearfix o_filter_search_list_values o_tag_selection_tags">
 		#foreach($tag in $tags)
+			## Selection
 			#if($tag.getToggle().isVisible())
 				$r.render($tag.getToggleName())
+			#end
+			## Filter
+			#if($tag.getLink().isVisible())
+				$r.render($tag.getLinkName())
 			#end
 		#end
 	</div>

@@ -141,7 +141,7 @@ public class TagFilterSelectionController extends FlexiFilterExtendedController 
 	
 	
 	private String getDisplayTag(TagItem tagItem) {
-		return translate("tag.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
+		return translate("tag.num.count", StringHelper.escapeHtml(tagItem.getDisplayValue()), String.valueOf(tagItem.getCount()));
 	}
 	
 	private String getTagLinkCss(boolean selected) {
