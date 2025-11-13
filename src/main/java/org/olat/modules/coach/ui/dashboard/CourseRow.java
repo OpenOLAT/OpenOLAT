@@ -31,6 +31,7 @@ public class CourseRow {
 	
 	private Long key;
 	private String externalRef;
+	private String translatedTechnicalType;
 	private String displayName;
 	private String thumbnailRelPath;
 	private String completion;
@@ -50,6 +51,14 @@ public class CourseRow {
 
 	public void setExternalRef(String externalRef) {
 		this.externalRef = externalRef;
+	}
+
+	public String getTranslatedTechnicalType() {
+		return translatedTechnicalType;
+	}
+
+	public void setTranslatedTechnicalType(String translatedTechnicalType) {
+		this.translatedTechnicalType = translatedTechnicalType;
 	}
 
 	public String getDisplayName() {

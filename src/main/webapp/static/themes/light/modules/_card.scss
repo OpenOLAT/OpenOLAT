@@ -293,7 +293,7 @@
 	}
 	
 	.o_dashboard_widget_indicators {
-		margin-bottom: $o-dashboard-widget-indicators-margin-bottom;
+		margin: 0px $o-dashboard-widget-base-margin $o-dashboard-widget-indicators-margin-bottom $o-dashboard-widget-base-margin;
 	}
 	.o_dashboard_widget_space {
 		margin-top: auto;

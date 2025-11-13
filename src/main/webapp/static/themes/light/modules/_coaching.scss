@@ -95,6 +95,8 @@
 
 /* Dashboard */
 .o_coaching_widget_course_row {
+	container-type: inline-size;
+	
 	display: flex;
 	width: 100%;
 	align-items: center;
@@ -130,7 +132,7 @@
 				}
 				.o_title {
 					line-height: 1.2;
-					font-size: 21px;
+					font-size: 18px;
 					margin: 0;
 				}
 			}
@@ -143,5 +145,34 @@
 	.o_row_success_status {
 		width: 170px;
 		flex-shrink: 0; 
+	}
+	@container (max-width: 500px) {
+		.o_row_completion,
+		.o_row_success_status {
+			display: none;
+		}
+		.o_row_course {
+			.o_course {
+				align-items: center;
+				.o_meta {
+					.o_title {
+						font-size: 16px;
+						white-space: wrap;
+						overflow: hidden;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+					}
+				}
+			}
+		}
+	}
+}
+.o_course_widget_icon {
+	&.o_icon_repo_status_published {
+		color: $o-repo-published-color;
+	}
+	&.o_icon_coach {
+		color: $o-repo-coachpublished-color;
 	}
 }

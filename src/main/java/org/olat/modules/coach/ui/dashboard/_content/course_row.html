@@ -10,10 +10,16 @@
 			</div>
 			
 			<div class="o_meta">
-				#if($r.isNotEmpty($row.externalRef))
+				#if($r.isNotEmpty($row.externalRef) || $r.isNotEmpty($row.translatedTechnicalType))
 					<div class="o_ext_ref">
 						#if($r.isNotEmpty($row.externalRef))
 							$r.escapeHtml($row.externalRef)
+							#if($r.isNotEmpty($row.translatedTechnicalType))
+								<span class="o_spacer">&middot;</span>
+							#end
+						#end
+						#if($r.isNotEmpty($row.translatedTechnicalType))
+							$r.escapeHtml($row.translatedTechnicalType)
 						#end
 					</div>
 				#end

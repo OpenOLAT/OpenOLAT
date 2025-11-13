@@ -50,9 +50,13 @@ import org.olat.core.gui.control.generic.dashboard.TableWidgetController;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
@@ -96,6 +100,8 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	private CoachingService coachingService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public CourseWidgetController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -115,7 +121,7 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 
 	@Override
 	protected String getTableTitle() {
-		return translate("courses");
+		return translate("course.courses");
 	}
 
 	@Override
@@ -205,13 +211,13 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 		}
 		
 		indicatorMarkedLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_icon_bookmark\"></i> " + translate("search.mark"),
+				"<i class=\"o_icon o_course_widget_icon o_icon_bookmark\"></i> " + translate("search.mark"),
 				String.valueOf(numMarked)));
 		indicatorPublishedLink.setI18nKey(IndicatorsFactory.createLinkText(
-				translate("filter.published"),
+				"<i class=\"o_icon o_course_widget_icon o_icon_repo_status_published\"></i> " + translate("filter.published"),
 				String.valueOf(numPublished)));
 		indicatorCoachPublishedLink.setI18nKey(IndicatorsFactory.createLinkText(
-				"<i class=\"o_icon o_icon_coach\"></i> " + translate("filter.access.for.coach"),
+				"<i class=\"o_icon o_course_widget_icon o_icon_coach\"></i> " + translate("filter.access.for.coach"),
 				String.valueOf(numCoachPublished)));
 	}
 
@@ -235,8 +241,18 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 	private CourseRow toRow(CourseStatEntry entry) {
 		CourseRow row = new CourseRow();
 		row.setKey(entry.getRepoKey());
-		row.setExternalRef(entry.getRepoExternalRef());
 		row.setDisplayName(entry.getRepoDisplayName());
+		row.setExternalRef(entry.getRepoExternalRef());
+		
+		if (StringHelper.containsNonWhitespace(entry.getRepoTechnicalType())) {
+			NodeAccessType type = NodeAccessType.of(entry.getRepoTechnicalType());
+			String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())
+					? translate("CourseModule")
+					: nodeAccessService.getNodeAccessTypeName(type, getLocale());
+			row.setTranslatedTechnicalType(translatedType);
+		} else {
+			row.setTranslatedTechnicalType(translate(entry.getResourceTypeName()));
+		} 
 		
 		VFSLeaf image = repositoryManager.getImage(entry.getRepoKey(), OresHelper.createOLATResourceableInstance("CourseModule", entry.getResourceId()));
 		if(image != null) {
