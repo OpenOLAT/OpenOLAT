@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -109,6 +110,11 @@ public class CurriculumElementListController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 	
+	private void filterModel() {
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		tableEl.reset(true, true, true);
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(selectButton == source) {
@@ -117,6 +123,8 @@ public class CurriculumElementListController extends FormBasicController {
 			if(event instanceof SelectionEvent se && CMD_SELECT.equals(se.getCommand())) {
 				CurriculumElementRow elementRow = tableModel.getObject(se.getIndex());
 				doSelectCurriculumElement(ureq, elementRow);
+			} else if(event instanceof FlexiTableSearchEvent) {
+				filterModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
