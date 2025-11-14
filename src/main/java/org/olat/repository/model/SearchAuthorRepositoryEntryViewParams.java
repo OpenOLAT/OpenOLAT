@@ -43,7 +43,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	
 	private Boolean marked;
 	private boolean ownedResourcesOnly;
-	private boolean notOwnedResourcesOnly;
+	private boolean shared;
 	private OERRelease oerRelease = OERRelease.all;
 	private ResourceUsage resourceUsage = ResourceUsage.all;
 	private RepositoryEntryStatusEnum[] status;
@@ -110,12 +110,12 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.ownedResourcesOnly = ownedResourcesOnly;
 	}
 
-	public boolean isNotOwnedResourcesOnly() {
-		return notOwnedResourcesOnly;
+	public boolean isShared() {
+		return shared;
 	}
 
-	public void setNotOwnedResourcesOnly(boolean notOwnedResourcesOnly) {
-		this.notOwnedResourcesOnly = notOwnedResourcesOnly;
+	public void setShared(boolean shared) {
+		this.shared = shared;
 	}
 
 	public String getAuthor() {

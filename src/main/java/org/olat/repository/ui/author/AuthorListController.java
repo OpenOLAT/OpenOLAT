@@ -718,7 +718,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if (configuration.isShowSharedWithMeFilter()) {
 				coursesSharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("CoursesSharedWithMe", 
 						translate("search.shared.with.me"),
-						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "notOwned"),
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared"),
 								FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
 				coursesSharedWithMeTab.setFiltersExpanded(true);
 				tabs.add(coursesSharedWithMeTab);

@@ -425,7 +425,7 @@ public class RepositoryEntryAuthorQueries {
 		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
 			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
-		if (!params.isOwnedResourcesOnly() && !params.isNotOwnedResourcesOnly() && 
+		if (!params.isOwnedResourcesOnly() && !params.isShared() && 
 				params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
 			dbQuery.setParameter("additionalOrgRoles", params.getAdditionalCurricularOrgRoles().stream().map(OrganisationRoles::name).toList());
 		}
@@ -435,27 +435,34 @@ public class RepositoryEntryAuthorQueries {
 	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
 		if(dbInstance.isMySQL()) {
 			sb.append(" v.key");
-			if (params.isNotOwnedResourcesOnly()) {
+			if (params.isShared()) {
 				sb.append(" not");
 			}
 			sb.append(" in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		} else {
-			if (params.isNotOwnedResourcesOnly()) {
+			if (params.isShared()) {
 				sb.append(" not");
 			}
 			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		}
 		
-		if(params.isOwnedResourcesOnly() || params.isNotOwnedResourcesOnly()) {
+		if(params.isOwnedResourcesOnly() || params.isShared()) {
 			sb.append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" ) and v.status");
 			if(params.hasStatus()) {
 				sb.in(params.getStatus());
 			} else {
-				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-			}			
+				if (params.isShared()) { // shared means no 'preparation'...
+					sb.in(RepositoryEntryStatusEnum.reviewToClosed());
+				} else {
+					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+				}
+			}
+			if (params.isShared()) { // shared means it has to be canCopy...
+				sb.append(" and v.canCopy=true");
+			}
 		} else {
 			Roles roles = params.getRoles();
 			if(roles == null) {
