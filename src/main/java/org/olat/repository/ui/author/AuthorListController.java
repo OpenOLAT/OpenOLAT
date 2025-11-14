@@ -2093,6 +2093,21 @@ public class AuthorListController extends FormBasicController implements Activat
 		lockAndRun(ureq, ores, typeToDownload, true, run);
 	}
 	
+	void doCreateFromTemplate(UserRequest ureq, AuthoringEntryRow row) {
+		removeAsListenerAndDispose(createWizard);
+
+		CreateCourseFromTemplateContext context = new CreateCourseFromTemplateContext();
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		context.setTemplateRepositoryEntry(entry);
+		Step start = new CreateCourseFromTemplateStep02(ureq, context);
+		StepRunnerCallback finish = (UserRequest ur, WindowControl wc, StepsRunContext rc) -> StepsMainRunController.DONE_MODIFIED;
+		createWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("new.course.from.template"), "");
+		listenTo(createWizard);
+
+		getWindowControl().pushAsModalDialog(createWizard.getInitialComponent());
+	}
+	
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
 		try {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
@@ -2469,6 +2484,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
 			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
+			boolean isCourse = "CourseModule".equals(entry.getOlatResource().getResourceableTypeName());
+			boolean canCreateCourseFromTemplate = isCourse && RepositoryEntryRuntimeType.template.equals(entry.getRuntimeType());
 			
 			boolean canConvertLearningPath = false;
 			boolean isLearningPathCourse = false;
@@ -2493,14 +2510,16 @@ public class AuthorListController extends FormBasicController implements Activat
 				canDownload = true;
 			}
 			
-			
-			if(canCopy || canDownload) {
+			if(canCopy || canDownload || canCreateCourseFromTemplate) {
 				links.add("-");
 				if (canCopy) {
 					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", "/Infos/0", links);
 					if (isLearningPathCourse && canCopy) {
 						addLink("details.copy.with.wizard", "copy_with_wizard", "o_icon o_icon-fw o_icon_copy", "/Infos/0", links);
 					}
+				}
+				if (canCreateCourseFromTemplate) {
+					addLink("new.course.from.template", "createFromTemplate", "o_icon o_icon-fw o_icon_template", null, links);
 				}
 				if (canConvertLearningPath) {
 					addLink("details.convert.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", null, links);
@@ -2582,6 +2601,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					doOverrideCloseResource(ureq, row);
 				} else if("delete".equals(cmd)) {
 					doDelete(ureq, Collections.singletonList(row));
+				} else if ("createFromTemplate".equals(cmd)) {
+					doCreateFromTemplate(ureq, row);
 				}
 			}
 		}
