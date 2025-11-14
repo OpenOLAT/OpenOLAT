@@ -70,11 +70,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificationProgramCertifiedMembersController extends AbstractCertificationProgramMembersController {
 	
-	protected static final String VALID_TAB_ID = "Valid";
 	protected static final String PAUSED_TAB_ID = "Paused";
 	protected static final String EXPIRED_TAB_ID = "Expired";
 	protected static final String RECERTIFIED_ID = "Recertified";
+	protected static final String CERTIFIED_TAB_ID = "Certified";
 	protected static final String EXPIRING_SOON_ID = "ExpiringSoon";
+	protected static final String IN_RECERTIFICATION_TAB_ID = "InRecertification";
 	protected static final String INSUFFICIENT_CREDIT_POINTS_ID = "InsufficientCreditPoints";
 	
 	private FormLink addMemberButton;
@@ -105,6 +106,8 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			addMemberButton.setIconLeftCSS("o_icon o_icon_add_member");
 		}
 		super.initForm(formLayout, listener, ureq);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-certified-members-v1");
 	}
 
 	@Override
@@ -127,6 +130,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CertificationStatus.VALID.name(), translate("filter.valid")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.EXPIRED.name(), translate("filter.expired")));
+		statusValues.add(SelectionValues.entry(CertificationIdentityStatus.RECERTIFYING.name(), translate("filter.recertifying")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.PAUSED.name(), translate("filter.paused")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
@@ -157,12 +161,14 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	@Override
 	protected void initFiltersPresets(List<FlexiFiltersTab> tabs) {
 		if(certificationProgram.isValidityEnabled()) {
-			FlexiFiltersTab validTab = FlexiFiltersTabFactory.tabWithImplicitFilters(VALID_TAB_ID, translate("filter.valid"),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.VALID.name())));
+			FlexiFiltersTab validTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CERTIFIED_TAB_ID, translate("filter.certified"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationIdentityStatus.CERTIFIED.name())));
 			tabs.add(validTab);
-		
-			FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRED_TAB_ID, translate("filter.expired"),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.EXPIRED.name())));
+		}
+
+		if(certificationProgram.isRecertificationEnabled()) {
+			FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(IN_RECERTIFICATION_TAB_ID, translate("filter.recertifying"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationIdentityStatus.RECERTIFYING.name())));
 			tabs.add(expiredTab);
 		}
 		
@@ -183,12 +189,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			FlexiFiltersTab creditPointsTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INSUFFICIENT_CREDIT_POINTS_ID, translate("filter.insufficient.credit.points"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_NOT_ENOUGH_CREDIT_POINTS, FILTER_NOT_ENOUGH_CREDIT_POINTS)));
 			tabs.add(creditPointsTab);
-		}
-		
-		if(certificationProgram.isRecertificationEnabled()) {
-			FlexiFiltersTab recertifiedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RECERTIFIED_ID, translate("filter.recertified"),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_RECERTIFIED, FILTER_RECERTIFIED)));
-			tabs.add(recertifiedTab);
 		}
 	}
 	
@@ -347,7 +347,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		public ToolsController(UserRequest ureq, WindowControl wControl, CertificationProgramMemberRow row) {
 			super(ureq, wControl);
 			this.row = row;
-			final CertificationStatus status = row.getStatus();
+			final CertificationStatus status = row.getCertificateStatus();
 			
 			VelocityContainer mainVC = createVelocityContainer("tool_members");
 			
@@ -356,11 +356,11 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			
 			if(certificationProgram.isRecertificationEnabled()) {
 				renewLink = LinkFactory.createLink("renew.certificate", "renew", getTranslator(), mainVC, this, Link.LINK);
-				renewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_recycle");
+				renewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_recertifying");
 			}
 			
 			if(status != CertificationStatus.REVOKED && status != CertificationStatus.ARCHIVED) {
-				revokeLink = LinkFactory.createLink("revoke", "revoke", getTranslator(), mainVC, this, Link.LINK);
+				revokeLink = LinkFactory.createLink("revoke.certificate", "revoke", getTranslator(), mainVC, this, Link.LINK);
 				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_revoked");
 			}
 			

@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.certificationprogram.ui.CertificationIdentityStatus;
 import org.olat.modules.certificationprogram.ui.CertificationStatus;
 
 /**
@@ -45,6 +46,8 @@ public class CertificationStatusCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof CertificationStatus status) {
+			getStatus(target, "o_labeled_light", status, translator);
+		} else if(cellValue instanceof CertificationIdentityStatus status) {
 			getStatus(target, "o_labeled_light", status, translator);
 		}
 	}

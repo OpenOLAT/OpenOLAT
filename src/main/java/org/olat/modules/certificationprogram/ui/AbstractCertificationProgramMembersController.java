@@ -148,7 +148,9 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 			colIndex++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.status,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.identityStatus,
+				new CertificationStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CertificationProgramMembersCols.certificateStatus,
 				new CertificationStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificationProgramMembersCols.recertificationCount));
 		if(certificationProgram.isValidityEnabled()) {
@@ -231,10 +233,11 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 	
 	protected CertificationProgramMemberRow forgeRow(CertificationProgramMemberWithInfos infos, Date referenceDate) {
 		Certificate certificate = infos.certificate();
-		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
+		CertificationStatus certificateStatus = CertificationStatus.evaluate(certificate, referenceDate);
+		CertificationIdentityStatus identityStatus = CertificationIdentityStatus.evaluate(certificate, referenceDate);
 		NextRecertificationInDays nextRecertification = NextRecertificationInDays.valueOf(certificate, referenceDate);
-		return new CertificationProgramMemberRow(infos.identity(), certificate, nextRecertification, status,
-				infos.wallet(), userPropertyHandlers, getLocale());
+		return new CertificationProgramMemberRow(infos.identity(), certificate, nextRecertification, certificateStatus,
+				identityStatus, infos.wallet(), userPropertyHandlers, getLocale());
 	}
 	
 	private void filterModel() {

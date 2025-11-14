@@ -43,21 +43,28 @@ public class CertificationProgramMemberRow extends UserPropertiesRow {
 
 	private final CreditPointWallet wallet;
 	private final Certificate certificate;
-	private final CertificationStatus status;
+	private final CertificationStatus certificateStatus;
+	private final CertificationIdentityStatus identityStatus;
 	private final NextRecertificationInDays nextRecertification;
 	
 	public CertificationProgramMemberRow(Identity member, Certificate certificate,
-			NextRecertificationInDays nextRecertification, CertificationStatus status,
-			CreditPointWallet wallet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+			NextRecertificationInDays nextRecertification, CertificationStatus certificateStatus,
+			CertificationIdentityStatus identityStatus, CreditPointWallet wallet,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member, userPropertyHandlers, locale);
 		this.wallet = wallet;
-		this.status = status;
 		this.certificate = certificate;
+		this.identityStatus = identityStatus;
+		this.certificateStatus = certificateStatus;
 		this.nextRecertification = nextRecertification;
 	}
 	
-	public CertificationStatus getStatus() {
-		return status;
+	public CertificationStatus getCertificateStatus() {
+		return certificateStatus;
+	}
+	
+	public CertificationIdentityStatus getIdentityStatus() {
+		return identityStatus;
 	}
 	
 	public long getRecertificationCount() {
