@@ -217,7 +217,9 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.FakeParticipantStopController;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
@@ -1649,6 +1651,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (source == instantiateAsCourseWizard) {
 			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
+				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					StepsRunContext stepsRunContext = instantiateAsCourseWizard.getRunContext();
+					if (stepsRunContext.containsKey(CreateCourseFromTemplateContext.KEY)
+							&& stepsRunContext.get(CreateCourseFromTemplateContext.KEY) instanceof CreateCourseFromTemplateContext context) {
+						launchCreateCourseEditDescription(ureq, context.getCreatedRepositoryEntry());
+					}
+				}
 			}
 		} else if (event instanceof CourseNodeEvent cne) {
 			if (cne.getIdent().contains(PersistingCourseImpl.COURSEFOLDER)) {
@@ -2921,6 +2930,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		listenTo(courseSearchCalloutCtr);
 	}
 	
+	private void launchCreateCourseEditDescription(UserRequest ureq, RepositoryEntry createdRepositoryEntry) {
+		String businessPath = "[RepositoryEntry:" + createdRepositoryEntry.getKey() + "][EditDescription:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+
+		EntryChangedEvent e = new EntryChangedEvent(createdRepositoryEntry, getIdentity(), Change.added, "runtime");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+	}
+
 	private void doParticipantList(UserRequest ureq) {
 		if(delayedClose == Delayed.participantList || requestForClose(ureq)) {
 			removeCustomCSS();
