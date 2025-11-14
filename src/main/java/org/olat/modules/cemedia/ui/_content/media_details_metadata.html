@@ -69,6 +69,10 @@
 	<tr><th id="oo-media-publisher">$r.translate("publisher")</th>
 		<td aria-labelledby="oo-media-publisher">$r.escapeHtml($media.publisher)</td></tr>
 	#end
+	#if($r.isNotEmpty($media.publicationDate))
+	<tr><th id="oo-media-publication-date">$r.translate("mf.publicationDate")</th>
+	    <td aria-labelledby="oo-media-publication-date">$r.formatDate($media.publicationDate)</td></tr>
+	#end
 	#if($r.isNotEmpty($media.url))
 	<tr><th id="oo-media-url">$r.translate("url")</th>
 		<td aria-labelledby="oo-media-url">$r.escapeHtml($media.url)</td></tr>
@@ -90,6 +94,10 @@
 		<td aria-labelledby="oo-media-language">$r.escapeHtml($media.language)</td></tr>
 	#end
 	
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.itemType))
+	<tr><th id="oo-media-item-type">$r.translate("mf.sourceType")</th>
+		<td aria-labelledby="oo-media-item-type">$r.translate("mf.sourceType." + $metadata.itemType)</td></tr>
+	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition))
 	<tr><th id="oo-media-edition">$r.translate("mf.edition")</th>
 		<td aria-labelledby="oo-media-edition">$r.escapeHtml($metadata.edition)</td></tr>
