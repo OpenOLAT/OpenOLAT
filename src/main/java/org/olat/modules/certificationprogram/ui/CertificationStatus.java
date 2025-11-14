@@ -41,8 +41,6 @@ public enum CertificationStatus {
 	EXPIRED_RENEWABLE,
 	/** Flag paused on certificate */
 	PAUSED,
-	/** Flag last=true on certificate but next certification date, and window for recertification */
-	NOT_RENEWABLE,
 	/** Only flag last=false and revoked=true */
 	REVOKED,
 	/** Only flag last=false and revoked=false*/
@@ -59,11 +57,7 @@ public enum CertificationStatus {
 			if(nextRecertificationDate == null || nextRecertificationDate.compareTo(referenceDate) >= 0) {
 				return VALID;
 			}
-			
-			if(recertificationWindowDate != null) {
-				if(recertificationWindowDate.compareTo(referenceDate) < 0) {
-					return NOT_RENEWABLE;
-				}
+			if(recertificationWindowDate != null && recertificationWindowDate.compareTo(referenceDate) >= 0) {
 				return EXPIRED_RENEWABLE;
 			}
 			return EXPIRED;

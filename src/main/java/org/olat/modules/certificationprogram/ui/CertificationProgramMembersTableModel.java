@@ -28,10 +28,10 @@ import static org.olat.modules.certificationprogram.ui.AbstractCertificationProg
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -83,9 +83,7 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 					? null : searchString.toLowerCase();
 
 			final List<String> status = getFilteredList(filters, FILTER_STATUS);
-			final Set<CertificationStatus> statusSet = status == null
-					? Set.of()
-					: status.stream().map(CertificationStatus::valueOf).collect(Collectors.toSet());
+			final Set<String> statusSet = status == null ? Set.of() : new HashSet<>(status);
 			final boolean expireSoon = isFilterSelected(filters, FILTER_EXPIRE_SOON);
 			final boolean recertified = isFilterSelected(filters, FILTER_RECERTIFIED);
 			final boolean notEnoughCreditPoints = isFilterSelected(filters, FILTER_NOT_ENOUGH_CREDIT_POINTS);
@@ -118,15 +116,21 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		return val != null && val.toLowerCase().contains(searchValue);
 	}
 	
-	private boolean acceptStatus(Set<CertificationStatus> status, CertificationProgramMemberRow memberRow) {
+	private boolean acceptStatus(Set<String> status, CertificationProgramMemberRow memberRow) {
 		if(status == null || status.isEmpty()) return true;
 		
 		// We group both EXPIRED status under one
-		CertificationStatus rStatus = memberRow.getStatus();
-		if(rStatus == CertificationStatus.EXPIRED_RENEWABLE) {
-			rStatus = CertificationStatus.EXPIRED;
+		CertificationStatus rStatus = memberRow.getCertificateStatus();
+		if(status.contains(rStatus.name())) {
+			return true;
 		}
-		return status.contains(memberRow.getStatus());
+		if(rStatus == CertificationStatus.VALID
+				&& (status.contains(CertificationStatus.VALID.name())
+						|| status.contains(CertificationIdentityStatus.CERTIFIED.name())) ) {
+			return true;
+		}
+		CertificationIdentityStatus iStatus = memberRow.getIdentityStatus();
+		return status.contains(iStatus.name());
 	}
 	
 	private boolean acceptRecertified(boolean recertified, CertificationProgramMemberRow memberRow) {
@@ -205,7 +209,8 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
 				case id -> row.getIdentityKey();
-				case status -> row.getStatus();
+				case identityStatus -> row.getIdentityStatus();
+				case certificateStatus -> row.getCertificateStatus();
 				case recertificationCount -> row.getRecertificationCount() > 0
 					? Long.valueOf(row.getRecertificationCount())
 					: null;
@@ -229,7 +234,8 @@ implements SortableFlexiTableDataModel<CertificationProgramMemberRow>, Filterabl
 	
 	public enum CertificationProgramMembersCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
-		status("table.header.status"),
+		identityStatus("table.header.status"),
+		certificateStatus("table.header.certificate"),
 		recertificationCount("table.header.recertification.count"),
 		validUntil("table.header.valid.until"),
 		nextRecertificationDays("table.header.next.recertification.days"),

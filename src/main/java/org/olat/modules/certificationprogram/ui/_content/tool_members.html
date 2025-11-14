@@ -6,8 +6,8 @@
 	#if($r.available("renew.certificate"))	
 		<li>$r.render("renew.certificate")</li>
 	#end
-	#if($r.available("revoke"))
-		<li>$r.render("revoke")</li>
+	#if($r.available("revoke.certificate"))
+		<li>$r.render("revoke.certificate")</li>
 	#end
 	#if($r.available("pause"))
 		<li>$r.render("pause")</li>

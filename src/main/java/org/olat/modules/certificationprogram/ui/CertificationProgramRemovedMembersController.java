@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -53,7 +54,7 @@ import org.olat.modules.certificationprogram.model.CertificationProgramMemberSea
 public class CertificationProgramRemovedMembersController extends AbstractCertificationProgramMembersController {
 
 	protected static final String REVOKED_ID = "Revoked";
-	protected static final String NOT_RENEWABLE_ID = "NotRenewable";
+	protected static final String EXPIRED_ID = "Expired";
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -68,6 +69,13 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 	}
 
 	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "certification-program-removed-members-v1");
+	}
+
+	@Override
 	protected void initColumns(FlexiTableColumnModel columnsModel) {
 		//
 	}
@@ -75,7 +83,7 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 	@Override
 	protected void initFilters(List<FlexiTableExtendedFilter> filters) {
 		SelectionValues statusValues = new SelectionValues();
-		statusValues.add(SelectionValues.entry(CertificationStatus.NOT_RENEWABLE.name(), translate("filter.not.renewable")));
+		statusValues.add(SelectionValues.entry(CertificationStatus.EXPIRED.name(), translate("filter.not.renewable")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.REVOKED.name(), translate("filter.revoked")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
@@ -88,9 +96,9 @@ public class CertificationProgramRemovedMembersController extends AbstractCertif
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.REVOKED.name())));
 		tabs.add(revokedTab);
 		
-		FlexiFiltersTab notRenewableTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_RENEWABLE_ID, translate("filter.not.renewable"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.NOT_RENEWABLE.name())));
-		tabs.add(notRenewableTab);
+		FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRED_ID, translate("filter.expired"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.EXPIRED.name())));
+		tabs.add(expiredTab);
 	}
 	
 	@Override
