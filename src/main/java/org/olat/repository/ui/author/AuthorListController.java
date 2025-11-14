@@ -1057,8 +1057,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				getWindowControl().pop();
 				if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					reloadRows();
-					ContextEntry myCoursesEntry = BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType("MyCourses"));
-					activate(ureq, List.of(myCoursesEntry), null);
+					System.err.println("reloaded rows after create wizard");
+					StepsRunContext stepsRunContext = createWizard.getRunContext();
+					if (stepsRunContext.containsKey(CreateCourseFromTemplateContext.KEY) && stepsRunContext.get(CreateCourseFromTemplateContext.KEY) instanceof CreateCourseFromTemplateContext context) {
+						System.err.println("trying to launch edit description for repository entry " + context.getCreatedRepositoryEntry().getKey());
+						launchEditDescription(ureq, context.getCreatedRepositoryEntry());
+					} else {
+						System.err.println("the context is something else: " + createWizard.getRunContext().getClass().getSimpleName());
+					}
 				}
 			}
 		} else if(copyCtrl == source) {

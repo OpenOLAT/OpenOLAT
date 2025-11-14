@@ -425,5 +425,7 @@ public class CreateCourseFromTemplateStep02Controller extends StepFormBasicContr
 		repositoryManager.setRuntimeType(reloadedEntry, runtimeType);
 
 		RepositoyUIFactory.setDefaultOrganisationKeys(ureq, administrativeAccessEl.getSelectedKeys());
+		
+		context.setCreatedRepositoryEntry(reloadedEntry);
 	}
 }

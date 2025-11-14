@@ -30,6 +30,7 @@ public class CreateCourseFromTemplateContext {
 	public static final String KEY = "createCourseFromTemplateContext";
 
 	private RepositoryEntry templateRepositoryEntry;
+	private RepositoryEntry createdRepositoryEntry;
 
 	public RepositoryEntry getTemplateRepositoryEntry() {
 		return templateRepositoryEntry;
@@ -37,5 +38,13 @@ public class CreateCourseFromTemplateContext {
 
 	public void setTemplateRepositoryEntry(RepositoryEntry templateRepositoryEntry) {
 		this.templateRepositoryEntry = templateRepositoryEntry;
+	}
+
+	public RepositoryEntry getCreatedRepositoryEntry() {
+		return createdRepositoryEntry;
+	}
+
+	public void setCreatedRepositoryEntry(RepositoryEntry createdRepositoryEntry) {
+		this.createdRepositoryEntry = createdRepositoryEntry;
 	}
 }
