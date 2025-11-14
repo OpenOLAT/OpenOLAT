@@ -22,6 +22,9 @@ package org.olat.modules.quality.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
@@ -83,10 +86,28 @@ class QualityContextToTaxonomyLevelDAO {
 		sb.append("       left join fetch taxonomyLevel.type as taxonomyType");
 		sb.append(" where rel.context.evaluationFormSession.key in :sessionKeys");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QualityContextToTaxonomyLevel.class)
-				.setParameter("sessionKeys", sessions.stream().map(EvaluationFormSessionRef::getKey).toList())
+		TypedQuery<QualityContextToTaxonomyLevel> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContextToTaxonomyLevel.class);
+		
+		int count = 0;
+		int batch = 8192;
+		List<Long> sessionKeys = sessions.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
+		List<QualityContextToTaxonomyLevel> contextToLevel = new ArrayList<>();
+		do {
+			int toIndex = Math.min(count + batch, sessionKeys.size());
+			List<Long> toLoad = sessionKeys.subList(count, toIndex);
+			List<QualityContextToTaxonomyLevel> partContexts = query
+				.setParameter("sessionKeys", toLoad)
+				.setFirstResult(0)
+				.setMaxResults(batch)
 				.getResultList();
+			contextToLevel.addAll(partContexts);
+			
+			count += batch;
+		} while(count < sessionKeys.size());
+		
+		
+		return contextToLevel;
 	}
 
 	void deleteRelations(QualityContextRef context) {
