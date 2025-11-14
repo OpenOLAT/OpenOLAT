@@ -121,7 +121,7 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 
 	@Override
 	protected String getTableTitle() {
-		return translate("course.courses");
+		return translate("search.mark");
 	}
 
 	@Override
