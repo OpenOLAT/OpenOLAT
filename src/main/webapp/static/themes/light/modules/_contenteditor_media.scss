@@ -298,6 +298,10 @@
 				
 				.o_tag_selection_tags {
 					overflow: hidden;
+					
+					&.o_placeholder {
+						height: calc($line-height-base * 1em + 2px);
+					}
 				}
 				
 				.o_title {

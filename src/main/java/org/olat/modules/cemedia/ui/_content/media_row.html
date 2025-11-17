@@ -20,6 +20,8 @@
 				<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
 			#end
 			</span>
+		#else
+			<span class="o_tag_selection_tags o_placeholder"></span>
 		#end
 		#if($r.isNotEmpty($row.taxonomyLevelsNames))
 			<span class="o_tag_selection_tags">
@@ -27,6 +29,8 @@
 				<span class='o_tag o_taxonomy'>$r.escapeHtml($levelName)</span>
 			#end
 			</span>
+		#else
+			<span class="o_tag_selection_tags o_placeholder"></span>
 		#end
 	</div>
 </div>
