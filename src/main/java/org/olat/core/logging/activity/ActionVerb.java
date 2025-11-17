@@ -74,6 +74,8 @@ public enum ActionVerb {
 	unlock,
 	end,
 	prolonge,
-	noshow;
+	noshow,
+	
+	revoke;
 
 }

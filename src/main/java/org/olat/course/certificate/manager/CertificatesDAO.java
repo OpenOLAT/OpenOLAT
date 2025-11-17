@@ -84,6 +84,22 @@ public class CertificatesDAO {
 				.getResultList();
 	}
 	
+	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey) {
+		String query = """
+				select cer from certificate cer
+				inner join fetch cer.identity ident
+				inner join fetch ident.user identUser
+				where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey or cer.key=:resourceKey)
+				and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate""";
+		List<Certificate> certififcates = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Certificate.class)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("identityKey", identity.getKey())
+				.setMaxResults(1)
+				.getResultList();
+		return certififcates.isEmpty() ? null : certififcates.get(0);
+	}
+	
 	public Certificate getLastCertificate(IdentityRef identity, CertificationProgram certificationProgram) {
 		String query = """
 				select cer from certificate cer
@@ -154,12 +170,12 @@ public class CertificatesDAO {
 				.executeUpdate();
 	}
 	
-	public void revoke(IdentityRef identity, CertificationProgramRef program) {
+	public int revoke(IdentityRef identity, CertificationProgramRef program) {
 		String query = """
 				update certificate cer set cer.last=false,cer.revoked=true
 				where cer.last=true and cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
 		
-		dbInstance.getCurrentEntityManager().createQuery(query)
+		return dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("programKey", program.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();

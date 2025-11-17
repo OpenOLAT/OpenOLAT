@@ -511,19 +511,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select cer from certificate cer")
-		  .append(" inner join fetch cer.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey or cer.key=:resourceKey)")
-		  .append(" and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate");
-		List<Certificate> certififcates = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Certificate.class)
-				.setParameter("resourceKey", resourceKey)
-				.setParameter("identityKey", identity.getKey())
-				.setMaxResults(1)
-				.getResultList();
-		return certififcates.isEmpty() ? null : certififcates.get(0);
+		return certificatesDao.getLastCertificate(identity, resourceKey);
 	}
 
 	@Override

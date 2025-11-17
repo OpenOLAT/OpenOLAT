@@ -20,25 +20,32 @@
 package org.olat.modules.certificationprogram.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ActivityLogService;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.ILoggingResourceable;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
+import org.olat.modules.certificationprogram.CertificationLoggingAction;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.certificationprogram.ui.component.Duration;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointService;
-import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
 import org.olat.modules.creditpoint.CreditPointWallet;
 import org.olat.modules.creditpoint.manager.CreditPointWalletDAO;
@@ -61,13 +68,15 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	@Autowired
 	private CertificatesDAO certificatesDao;
 	@Autowired
+	private ActivityLogService activityLogService;
+	@Autowired
 	private CreditPointService creditPointService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private CreditPointWalletDAO creditPointWalletDao;
 	@Autowired
 	private CertificationProgramDAO certificationProgramDao;
-	@Autowired
-	private CertificatesManager certificatesManager;
 
 	@Override
 	public boolean processCertificationRequest(Identity identity, CertificationProgram certificationProgram,
@@ -77,23 +86,13 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		boolean accepted = false;
 		certificationProgram = certificationProgramDao.loadCertificationProgram(certificationProgram.getKey());
 		if(certificationProgram != null && certificationProgram.getStatus() == CertificationProgramStatusEnum.active) {
-			Certificate certificate = certificatesManager.getLastCertificate(identity, certificationProgram.getResource().getKey());
+			Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram.getResource().getKey());
 			if(certificate == null) {
 				//First certificate is free (paid by the course fee)
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
-				generateCertificate(identity, certificationProgram);
+				generateCertificate(identity, certificationProgram, requestMode, doer);
 				accepted = true;
-			}  else if(certificate.getNextRecertificationDate() != null
-					// Exclude use case 1 (eternal certificates)
-					&& certificationProgram.isValidityEnabled()
-					// Exclude use case 2 (certificates expire without renewal)
-					&& certificationProgram.isRecertificationEnabled()) {
-				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
-			} else if(certificate.getNextRecertificationDate() == null && requestMode == RequestMode.COACH
-					&& certificationProgram.isValidityEnabled()
-					&& certificationProgram.isRecertificationEnabled()) {
-				// Someone change the settings. The certificate is not marked as renewable but the certification program allows it.
-				// A coach can renew it.
+			} else {
 				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
 			}
 		}
@@ -102,42 +101,82 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 
 	private boolean processRecertificationRequest(Identity identity, CertificationProgram certificationProgram, Certificate certificate,
 			RequestMode requestMode, Date referenceDate, Identity doer) {
-		BigDecimal amount = certificationProgram.getCreditPoints();
-		CreditPointSystem system = certificationProgram.getCreditPointSystem();
-		boolean allowedAccessWallet = isCertificationAllowedByRequestMode(certificationProgram, system, amount, requestMode);
-		if(!allowedAccessWallet) {
-			// Credit points are configured and the requester cannot access the wallet (automatic / manual option)
+		
+		// Check if the request mode is allowed by the actor (prevent job to issue manual only certificates)
+		boolean allowedMode = isCertificationAllowedByRequestMode(certificationProgram, certificate, requestMode);
+		if(!allowedMode) {
 			return false;
 		}
-
+		
 		boolean allowed = isCertificationAllowedByDate(certificate, certificationProgram, requestMode, referenceDate);
-		if(allowed) {
-			if(system != null && amount != null) {
+		if(!allowed) {
+			return false;
+		}
+		
+		BigDecimal amount = certificationProgram.getCreditPoints();	
+		if(certificationProgram.getCreditPointSystem() != null && amount != null) {
+			CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, certificationProgram.getCreditPointSystem());
+			if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
+				// Not enough credit
+				if(isRemovedFromProgramNotEnoughCreditPoints(certificate, certificationProgram, requestMode, referenceDate)) {
+					removeFromCertificationProgram(identity, certificationProgram, requestMode, doer);
+				}
+				return false;
+			} else {
 				BigDecimal amountToRemove = amount.negate();
 				String note = "Certification \"" + certificationProgram.getDisplayName() + "\"";
-				CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, system);
-				if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
-					allowed = false;
-				} else {
-					creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
-							note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
-				}
+				creditPointService.createCreditPointTransaction(CreditPointTransactionType.removal, amountToRemove, null,
+						note, wallet, identity, certificationProgram.getResource(), null, null, null, null);
 			}
-			log.info("Generate paid certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
-			generateCertificate(identity, certificationProgram);
-			return true;
+		}
+		log.info("Generate paid certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
+		generateCertificate(identity, certificationProgram, requestMode, doer);
+		return true;
+	}
+	
+	private void removeFromCertificationProgram(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity doer) {
+		certificatesDao.removeLastFlag(identity, certificationProgram);
+		log.info("User {} removed of program {} by {0}", identity, certificationProgram, doer);
+		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REMOVED, requestMode, doer);
+	}
+	
+	/**
+	 * 
+	 * @param certificate The last certificate
+	 * @param certificationProgram The certification program
+	 * @param requestMode The request mode
+	 * @param referenceDate The date where the check happens	
+	 * @return true if removed
+	 */
+	private boolean isRemovedFromProgramNotEnoughCreditPoints(Certificate certificate, CertificationProgram certificationProgram,
+			RequestMode requestMode, Date referenceDate) {
+		if(requestMode == RequestMode.AUTOMATIC) {
+			if(certificationProgram.isRecertificationWindowEnabled()) {
+				Date endWindowDate = certificate.getRecertificationWindowDate();
+				if(endWindowDate != null && referenceDate.compareTo(endWindowDate) > 0) {
+					return true;
+				}
+			} else {
+				return true;
+			}
 		}
 		return false;
 	}
 	
-	private boolean isCertificationAllowedByRequestMode(CertificationProgram certificationProgram, CreditPointSystem system, BigDecimal amount, RequestMode requestMode) {
-		return (system == null && amount == null)
-				// Coach cannot renew a certificate if credit points engaged
-				|| (system != null && amount != null && requestMode != RequestMode.COACH && (
-						 //if automatic, participant and cron job are allowed to renew the certificate
-						(certificationProgram.getRecertificationMode() == RecertificationMode.automatic)
-								|| (certificationProgram.getRecertificationMode() == RecertificationMode.manual && requestMode != RequestMode.AUTOMATIC)
-					));
+	private boolean isCertificationAllowedByRequestMode(CertificationProgram certificationProgram, Certificate certificate, RequestMode requestMode) {
+		// No recertification, only automatic renewal is forbidden
+		if(!certificationProgram.isValidityEnabled() || !certificationProgram.isRecertificationEnabled()) {
+			return requestMode != RequestMode.AUTOMATIC;
+		}
+		
+		// In automatic mode, a manager can renew the certificate, the participant too
+		if(certificationProgram.getRecertificationMode() == RecertificationMode.automatic) {
+			if(requestMode == RequestMode.AUTOMATIC && certificate != null && certificate.isRecertificationPaused()) {
+				return false;
+			}
+			return true;
+		}
+		return (certificationProgram.getRecertificationMode() == RecertificationMode.manual && requestMode != RequestMode.AUTOMATIC);
 	}
 
 	private boolean isCertificationAllowedByDate(Certificate certificate, CertificationProgram certificationProgram, RequestMode requestMode, Date referenceDate) {
@@ -167,6 +206,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 						&& nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) >= 0)
 					|| ((nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) <= 0
 						&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0)));
+		} else if (requestMode == RequestMode.COURSE) {
+			allowed = true;
 		} else {
 			allowed = false;
 		}
@@ -174,7 +215,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 	
 	@Override
-	public void generateCertificate(Identity identity, CertificationProgram certificationProgram) {
+	public void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor) {
 		// Archive the last certificate
 		certificatesDao.removeLastFlag(identity, certificationProgram);
 		dbInstance.commit();
@@ -191,6 +232,18 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withSendEmailIdentityRelations(true)
 				.build();
 		certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
+
+		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);
+	}
+	
+	private void activityLog(Identity identity, CertificationProgram program, ILoggingAction action, RequestMode requestMode, Identity actor) {
+		Long identityKey = actor == null ? null : actor.getKey();
+		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(program, OlatResourceableType.certificationProgram, program.getDisplayName()));
+		loggingResourceableList.add(CoreLoggingResourceable.wrap(identity));
+
+		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, getClass(), requestMode == RequestMode.AUTOMATIC,
+				"", List.of(), loggingResourceableList);
 	}
 	
 	public enum Permission {

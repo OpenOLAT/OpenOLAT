@@ -97,7 +97,7 @@ public interface CertificationProgramService {
 	
 	Certificate continueRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
 	
-	void revokeRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
+	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
 	
 	List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate);
 

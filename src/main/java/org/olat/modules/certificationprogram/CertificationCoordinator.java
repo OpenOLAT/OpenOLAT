@@ -47,7 +47,7 @@ public interface CertificationCoordinator {
 	boolean processCertificationRequest(Identity identity, CertificationProgram certificationProgram,
 			RequestMode requestMode, Date referenceDate, Identity doer);
 	
-	void generateCertificate(Identity identity, CertificationProgram certificationProgram);
+	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor);
 	
 	public enum RequestMode {
 		/**

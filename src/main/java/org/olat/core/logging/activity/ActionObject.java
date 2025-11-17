@@ -114,6 +114,7 @@ public enum ActionObject {
 	zoom,
 	assessmentmode,
 	assessmentinspection,
-	disadvantagecompensation
+	disadvantagecompensation,
+	certificate
 	;
 }
