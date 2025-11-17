@@ -20,6 +20,7 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -100,7 +101,9 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private TextElement creatorsEl;
 	private TextElement placeEl;
 	private TextElement publisherEl;
-	private DateChooser publicationDateEl;
+	private TextElement publicationYearEl;
+	private TextElement publicationMonthEl;
+	private TextElement publicationDayEl;
 	private DateChooser lastVisitDateEl;
 	private TextElement editorEl;
 	private TextElement editionEl;
@@ -132,7 +135,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private TaxonomyService taxonomyService;
 
 	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
@@ -147,7 +150,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	}
 	
 	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean metadataOnly) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = media.getBusinessPath();
@@ -186,13 +189,14 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		formLayout.setElementCssClass("o_sel_ce_collect_citation_form");
 		initMetadataForm(formLayout, ureq);
 		
+		FormLayoutContainer footerContainer = uifactory.addDefaultFormLayout("footerContainer", null, formLayout);
 		if(relationsCtrl != null) {
 			FormItem relationsItem = relationsCtrl.getInitialFormItem();
 			relationsItem.setFormLayout("0_12");
-			formLayout.add(relationsItem);
+			footerContainer.add(relationsItem);
 		}
 
-		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
+		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, footerContainer);
 		if(relationsCtrl != null) {
 			buttonsCont.setFormLayout("0_12");
 		}
@@ -201,13 +205,15 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	}
 	
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
+		FormItemContainer topLayout = uifactory.addDefaultFormLayout("topContainer", null, formLayout);
+		
 		String title = mediaReference == null ? null : mediaReference.getTitle();
-		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
+		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, topLayout);
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl = uifactory.addTagSelection("tags", "tags", topLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
@@ -216,14 +222,14 @@ public class CollectCitationMediaController extends FormBasicController implemen
 				mediaService.getTaxonomyLevels(mediaReference),
 				() -> taxonomyService.getTaxonomyLevels(mediaModule.getTaxonomyRefs()),
 				translate("taxonomy.levels"), translate("table.header.taxonomy"));
-		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", formLayout, getWindowControl(), true, source);
+		taxonomyLevelEl = uifactory.addObjectSelectionElement("taxonomy", "taxonomy.levels", topLayout, getWindowControl(), true, source);
 		
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, topLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		
 		String text = mediaVersion == null ? null : mediaVersion.getContent();
-		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, topLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_pf_collect_citation");
 		textEl.setVisible(!metadataOnly);
 		
@@ -235,7 +241,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			typeValues[i++] = translate("mf.sourceType." + type.name());
 		}
 		
-		sourceTypeEl = uifactory.addDropdownSingleselect("mf.sourceType", formLayout, typeKeys, typeValues, null);
+		sourceTypeEl = uifactory.addDropdownSingleselect("mf.sourceType", topLayout, typeKeys, typeValues, null);
 		sourceTypeEl.addActionListener(FormEvent.ONCHANGE);
 		String sourceType = (citation != null && citation.getItemType() != null
 				? citation.getItemType().name() : CitationSourceType.book.name());
@@ -244,12 +250,16 @@ public class CollectCitationMediaController extends FormBasicController implemen
 				sourceTypeEl.select(typeKey, true);
 			}
 		}
-		
-		initMetadataForm(formLayout);
-		initCitationForm(formLayout);
 
+		FormLayoutContainer bibliographyContainer = uifactory.addDefaultFormLayout("bibliographyContainer", null, formLayout);
+		bibliographyContainer.setFormTitle(translate("bibliography"));
+
+		initMetadataForm(bibliographyContainer);
+		initCitationForm(bibliographyContainer);
+
+		FormLayoutContainer bottomContainer = uifactory.addDefaultFormLayout("bottomContainer", null, formLayout);
 		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
+		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, bottomContainer);
 		linkEl.setVisible(!metadataOnly && MediaUIHelper.showBusinessPath(businessPath));
 	}
 
@@ -272,8 +282,63 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		String language = (mediaReference != null ? mediaReference.getLanguage() : null);
 		languageEl = uifactory.addTextElement("language", "mf.language", -1, language, formLayout);
 
-		Date pubDate = (mediaReference != null ? mediaReference.getPublicationDate() : null);
-		publicationDateEl = uifactory.addDateChooser("publicationDate", "mf.publicationDate", pubDate, formLayout);
+		publicationYearEl = uifactory.addTextElement("publicationYear", "unit.year", 5, null, formLayout);
+		publicationMonthEl = uifactory.addTextElement("publicationMonth", "unit.month", 2, null, formLayout);
+		publicationDayEl = uifactory.addTextElement("publicationDay", "unit.day", 2, null, formLayout);
+		
+		if (mediaReference != null && mediaReference.getPublicationDate() != null) {
+			publicationYearEl.setValue(String.valueOf(yearFromDate(mediaReference.getPublicationDate())));
+			publicationMonthEl.setValue(String.valueOf(monthFromDate(mediaReference.getPublicationDate())));
+			publicationDayEl.setValue(String.valueOf(dayFromDate(mediaReference.getPublicationDate())));
+		}
+	}
+	
+	private int yearFromDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(java.util.Calendar.YEAR);
+	}
+	
+	private int monthFromDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(java.util.Calendar.MONTH) + 1;
+	}
+
+	private int dayFromDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(java.util.Calendar.DAY_OF_MONTH);
+	}
+
+	private Date dateFromYear(TextElement el) {
+		if (StringHelper.containsNonWhitespace(el.getValue())) {
+			return dateFromYear(Integer.parseInt(el.getValue()));
+		}
+		return null;
+	}
+
+	private Date dateFromYear(int year) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(year, 0, 1, 0, 0, 0);
+		return calendar.getTime();
+	}
+
+	private Date dateFromYearMonthDay(TextElement publicationYearEl, TextElement publicationMonthEl, 
+									  TextElement publicationDayEl) {
+		if (StringHelper.containsNonWhitespace(publicationYearEl.getValue()) 
+				&& StringHelper.containsNonWhitespace(publicationMonthEl.getValue()) 
+				&& StringHelper.containsNonWhitespace(publicationDayEl.getValue())) {
+			return dateFromYearMonthDay(Integer.parseInt(publicationYearEl.getValue()), 
+					Integer.parseInt(publicationMonthEl.getValue()), Integer.parseInt(publicationDayEl.getValue()));
+		}
+		return null;
+	}
+
+	private Date dateFromYearMonthDay(int year, int month, int day) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(year, month - 1, day, 0, 0, 0);
+		return calendar.getTime();
 	}
 
 	protected void initCitationForm(FormItemContainer formLayout) {
@@ -326,6 +391,16 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		pagesEl.setVisible(sourceType == CitationSourceType.journalArticle || sourceType == CitationSourceType.book);
 		institutionEl.setVisible(sourceType == CitationSourceType.report);
 		lastVisitDateEl.setVisible(sourceType == CitationSourceType.webpage);
+		switch (sourceType) {
+			case webpage, journalArticle -> {
+				publicationMonthEl.setVisible(true);
+				publicationDayEl.setVisible(true);
+			}
+			default -> {
+				publicationMonthEl.setVisible(false);
+				publicationDayEl.setVisible(false);
+			}
+		}
 	}
 	
 	@Override
@@ -344,7 +419,99 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		allOk &= MetaInfoFormController.validateTextfield(urlEl, 1000);
 		allOk &= MetaInfoFormController.validateTextfield(sourceEl, 1000);
 		allOk &= MetaInfoFormController.validateTextfield(languageEl, 32);
+		allOk &= validateYearMonthDay();
 
+		return allOk;
+	}
+	
+	private boolean validateYearMonthDay() {
+		boolean allOk = true;
+
+		publicationYearEl.clearError();
+		publicationMonthEl.clearError();
+		publicationDayEl.clearError();
+
+		// Are all required date elements set?
+		if (publicationMonthEl.isVisible() && publicationDayEl.isVisible()) {
+			if (StringHelper.containsNonWhitespace(publicationYearEl.getValue())) {
+				if (!StringHelper.containsNonWhitespace(publicationMonthEl.getValue())) {
+					publicationMonthEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}
+				if (!StringHelper.containsNonWhitespace(publicationDayEl.getValue())) {
+					publicationDayEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}
+			} else {
+				if (StringHelper.containsNonWhitespace(publicationMonthEl.getValue()) || 
+						StringHelper.containsNonWhitespace(publicationDayEl.getValue())) {
+					publicationYearEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				} else {
+					// All three date elements visible, but all empty: no more checks.
+					return allOk;
+				}
+			}
+			if (!allOk) {
+				return allOk;
+			}
+		}
+		
+		// Are all required date elements in acceptable ranges?
+		try {
+			int year = Integer.parseInt(publicationYearEl.getValue());
+			if (year < 1 || year > 9999) {
+				throw new NumberFormatException("Invalid year");
+			}
+		} catch (NumberFormatException e) {
+			publicationYearEl.setErrorKey("form.date.datevalid");
+			allOk &= false;
+		}
+		if (publicationMonthEl.isVisible() && publicationDayEl.isVisible()) {
+			try {
+				int month = Integer.parseInt(publicationMonthEl.getValue());
+				if (month < 1 || month > 12) {
+					throw new NumberFormatException("Invalid month");
+				}
+			} catch (NumberFormatException e) {
+				publicationMonthEl.setErrorKey("form.date.datevalid");
+				allOk &= false;
+			}
+			try {
+				int day = Integer.parseInt(publicationDayEl.getValue());
+				if (day < 1 || day > 31) {
+					throw new NumberFormatException("Invalid day");
+				}
+			}  catch (NumberFormatException e) {
+				publicationDayEl.setErrorKey("form.date.datevalid");
+				allOk &= false;
+			}
+		}
+		if (!allOk) {
+			return allOk;
+		}
+		
+		// Can integers be converted to dates successfully?
+		if (StringHelper.containsNonWhitespace(publicationYearEl.getValue())) {
+			try {
+				int year = Integer.parseInt(publicationYearEl.getValue());
+				dateFromYear(year);
+				if (publicationMonthEl.isVisible() && publicationDayEl.isVisible()) {
+					int month = Integer.parseInt(publicationMonthEl.getValue());
+					int day = Integer.parseInt(publicationDayEl.getValue());
+					dateFromYearMonthDay(year, month, day);
+				}
+			} catch (Exception e) {
+				publicationYearEl.setErrorKey("form.date.datevalid");
+				if (publicationMonthEl.isVisible() && publicationDayEl.isVisible()) {
+					publicationMonthEl.setErrorKey("form.date.datevalid");
+					publicationDayEl.setErrorKey("form.date.datevalid");
+				}
+				allOk &= false;
+			}
+			
+		}
+		
 		return allOk;
 	}
 
@@ -394,7 +561,11 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		mediaReference.setCreators(creatorsEl.getValue());
 		mediaReference.setPlace(placeEl.getValue());
 		mediaReference.setPublisher(publisherEl.getValue());
-		mediaReference.setPublicationDate(publicationDateEl.getDate());
+		if (publicationMonthEl.isVisible() && publicationDayEl.isVisible()) {
+			mediaReference.setPublicationDate(dateFromYearMonthDay(publicationYearEl, publicationMonthEl, publicationDayEl));
+		} else {
+			mediaReference.setPublicationDate(dateFromYear(publicationYearEl));
+		}
 		mediaReference.setUrl(urlEl.getValue());
 		mediaReference.setSource(sourceEl.getValue());
 		mediaReference.setLanguage(languageEl.getValue());

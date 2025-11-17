@@ -8,11 +8,11 @@
 	#end
 	
 	#if($r.isNotEmpty($author))
-	<tr><th id="oo-media-author">$r.translate("created.by")</th>
+	<tr><th id="oo-media-author">$r.translate("author")</th>
 		<td aria-labelledby="oo-media-author">$r.escapeHtml($author)</td></tr>
 	#end
 	#if($r.isNotEmpty($collectionDate))
-	<tr><th id="oo-media-collection-date">$r.translate("created.date")</th>
+	<tr><th id="oo-media-collection-date">$r.translate("table.header.creation.date")</th>
 		<td aria-labelledby="oo-media-collection-date">$r.escapeHtml($collectionDate)</td></tr>
 	#end
 	#if($r.isNotEmpty($fileSize))
@@ -58,11 +58,11 @@
 	#end
 	
 	#if($r.isNotEmpty($media.creators))
-	<tr><th id="oo-media-creators">$r.translate("creators")</th>
+	<tr><th id="oo-media-creators">$r.translate("author")</th>
 		<td aria-labelledby="oo-media-creators">$r.escapeHtml($media.creators)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.place))
-	<tr><th id="oo-media-place">$r.translate("place")</th>
+	<tr><th id="oo-media-place">$r.translate("location")</th>
 		<td aria-labelledby="oo-media-place">$r.escapeHtml($media.place)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.publisher))
