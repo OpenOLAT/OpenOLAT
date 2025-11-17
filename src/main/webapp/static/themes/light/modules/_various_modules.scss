@@ -1977,7 +1977,7 @@ ul.o_list_narrow {
 	.o_indicators_key {
 		display: flex;
 		justify-content: center;
-		align-items: center;
+		align-items: baseline;
 		padding: $o-indicator-key-padding;
 		min-width: $o-indicator-key-min-width;
 		
@@ -2013,17 +2013,17 @@ ul.o_list_narrow {
 		display: flex;
 		flex-direction: column-reverse;
 		align-items: center;
-		gap: $o-indicator-indicator-gap;
 	}
 	
 	.o_indicator_figure {
+		display: flex;
+		align-items: center;
+  
 		font-size: $o-indicator-figure-font-size;
+		height: $o-indicator-indicator-figure-height;
 		&:is(.o_indicators_focus *) {
 			font-size: $o-indicator-focus-figure-font-size;
-		}
-		
-		&.o_indicator_figure_text {
-			margin-bottom: -$o-indicator-indicator-gap;
+			padding-top: $o-indicator-focus-figure-padding-top; // to get the same baseline as the key figure
 		}
 	}
 	
