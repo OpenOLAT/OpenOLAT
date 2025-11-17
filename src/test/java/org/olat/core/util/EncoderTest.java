@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.services.webdav.manager.WebDAVManagerImpl;
 import org.olat.core.util.Encoder.Algorithm;
+import org.olat.test.OlatTestCase;
 
 /**
  * 
@@ -36,7 +37,7 @@ import org.olat.core.util.Encoder.Algorithm;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EncoderTest {
+public class EncoderTest extends OlatTestCase {
 	
 	static {
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
