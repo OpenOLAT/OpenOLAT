@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -87,20 +88,38 @@ import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti21.AssessmentItemSession;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.ReferenceHistoryWithInfos;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemPrintController;
+import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.logviewer.LogExcelExport;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPlan;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode.TestNodeType;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
+import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -126,6 +145,7 @@ public class QTI21ResultsExport {
 	private Translator translator;
 	private RepositoryEntry entry;
 	private final boolean withPdfs;
+	private final boolean withEssayPdfs;
 	private final CourseEnvironment courseEnv;
 	private final boolean withNonParticipants;
 	private UserRequest ureq;
@@ -149,14 +169,15 @@ public class QTI21ResultsExport {
 	@Autowired
 	private MapperService mapperService;
 	
-	public QTI21ResultsExport(CourseEnvironment courseEnv, List<Identity> identities,
-			boolean withNonParticipants, boolean withPdfs, QTICourseNode courseNode, String archivePath, Locale locale,
+	public QTI21ResultsExport(CourseEnvironment courseEnv, List<Identity> identities, boolean withNonParticipants,
+			boolean withPdfs, boolean withEssayPdfs, QTICourseNode courseNode, String archivePath, Locale locale,
 			Identity identity, WindowControl windowControl) {
 		CoreSpringFactory.autowireObject(this);
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.courseEnv = courseEnv;
 		this.withPdfs = withPdfs;
+		this.withEssayPdfs = withEssayPdfs;
 		this.identity = identity;
 		this.windowControl = windowControl;
 		this.withNonParticipants = withNonParticipants;
@@ -452,6 +473,9 @@ public class QTI21ResultsExport {
 
 			if(withPdfs) {
 				createResultPDF(zout, idPath + assessmentID +".pdf", assessedIdentity, session, fUnzippedDirRoot);
+				if (withEssayPdfs) {
+					createEssayPdfs(zout, idPath, assessedIdentity, session, fUnzippedDirRoot);
+				}
 			}
 			
 			File signatureXML = qtiService.getAssessmentResultSignature(session);
@@ -489,6 +513,82 @@ public class QTI21ResultsExport {
 				return new AssessmentResultController(uureq, wwControl, assessedIdentity, false,
 						candidateSession, fUnzippedDirRoot, mapperUriForPdf, null,
 						QTI21AssessmentResultsOptions.allOptions(), false, true, false);
+			};
+			
+			zout.putNextEntry(new ZipEntry(path));
+			pdfService.convert(identity, creator, windowControl, PdfOutputOptions.defaultOptions(), zout);
+			zout.closeEntry();
+		} catch(Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private void createEssayPdfs(ZipOutputStream zout, String idPath, Identity assessedIdentity, AssessmentTestSession candidateSession,
+			File fUnzippedDirRoot) {
+		try {
+			ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+			TestSessionState testSessionState = qtiService.loadTestSessionState(candidateSession);
+			List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
+			Map<String, AssessmentItemSession> identifierToItemSession = new HashMap<>();
+			for(AssessmentItemSession itemSession:itemSessions) {
+				identifierToItemSession.put(itemSession.getAssessmentItemIdentifier(), itemSession);
+			}
+			
+			Map<Identifier, AssessmentItemRef> identifierToRefs = new HashMap<>();
+			for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
+				identifierToRefs.put(itemRef.getIdentifier(), itemRef);
+			}
+
+			TestPlan testPlan = testSessionState.getTestPlan();
+			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
+			for (TestPlanNode node:nodes) {
+				TestNodeType testNodeType = node.getTestNodeType();
+				if (testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
+					TestPlanNodeKey testPlanNodeKey = node.getKey();
+					Identifier identifier = testPlanNodeKey.getIdentifier();
+					AssessmentItemSession itemSession = identifierToItemSession.get(identifier.toString());
+					AssessmentItemRef itemRef = identifierToRefs.get(identifier);
+					ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+					AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+					QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+					if (type == QTI21QuestionType.essay) {
+						if (itemSession == null) {
+							ParentPartItemRefs parentParts = AssessmentTestHelper.getParentSection(node.getKey(),
+									testSessionState, resolvedAssessmentTest);
+							itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, parentParts,
+									identifier.toString(), itemRef.getIdentifier().toString());
+						}
+						
+						if (itemSession != null) {
+							ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(node.getKey());
+							AssessmentItemCorrection itemCorrection = new AssessmentItemCorrection(assessedIdentity, 
+									candidateSession, testSessionState, itemSession, itemSessionState,
+									itemRef, node);
+							itemCorrection.setItemSession(itemSession);
+							
+							
+							
+							String filename = idPath + "/" + EssaysPdfMediaResource.createPdfFilename(assessmentItem, candidateSession, assessedIdentity, null);
+							createEssayPDF(zout, filename, itemCorrection, resolvedAssessmentTest, resolvedAssessmentItem);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Cannot export essay pdf files", e);
+			return;
+		}
+	}
+	
+	private void createEssayPDF(ZipOutputStream zout, String path, AssessmentItemCorrection itemCorrection,
+			ResolvedAssessmentTest resolvedAssessmentTest, ResolvedAssessmentItem resolvedAssessmentItem) {
+		try {
+			ControllerCreator creator = (lureq, lwControl) -> {
+				lureq = new SyntheticUserRequest(ureq.getIdentity(), translator.getLocale(), ureq.getUserSession());
+				return new CorrectionIdentityAssessmentItemPrintController(lureq, lwControl,
+						courseEnv.getCourseGroupManager().getCourseEntry(), courseNode,
+						resolvedAssessmentTest, resolvedAssessmentItem,
+						itemCorrection, null);
 			};
 			
 			zout.putNextEntry(new ZipEntry(path));

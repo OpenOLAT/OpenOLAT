@@ -795,6 +795,12 @@ form.o_dnd_over {
 	}
 }
 
+.o_form_label {
+	display: inline-block;
+	margin-bottom: 5px;
+	font-weight: 700;
+}
+
 /* day chooser with previous next */
 .o_day_chooser {
 	.o_day_previous {

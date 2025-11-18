@@ -81,6 +81,7 @@ public class GuiDemoRepositoryEntryController extends BasicController {
 		
 		public RepositoryEntryInfoCardDemoController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 			super(ureq, wControl, entry);
+			initForm(ureq);
 		}
 
 		@Override

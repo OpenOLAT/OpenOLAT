@@ -49,6 +49,7 @@ public class ItemBodyResultComponent extends AssessmentObjectComponent  {
 	private ItemSessionState itemSessionState;
 	private boolean showSolution = false;
 	private boolean report = false;
+	private boolean pdfExport = false;
 	private boolean offline = false;
 	
 	public ItemBodyResultComponent(String name, ResolvedAssessmentItem resolvedAssessmentItem, ItemBodyResultFormItem qtiItem) {
@@ -72,6 +73,14 @@ public class ItemBodyResultComponent extends AssessmentObjectComponent  {
 
 	public void setReport(boolean report) {
 		this.report = report;
+	}
+
+	public boolean isPdfExport() {
+		return pdfExport;
+	}
+
+	public void setPdfExport(boolean pdfExport) {
+		this.pdfExport = pdfExport;
 	}
 
 	public boolean isOffline() {

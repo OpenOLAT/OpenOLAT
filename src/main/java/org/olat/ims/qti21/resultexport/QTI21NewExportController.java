@@ -19,7 +19,9 @@
  */
 package org.olat.ims.qti21.resultexport;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.services.export.ArchiveType;
@@ -28,6 +30,7 @@ import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -44,10 +47,18 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -60,6 +71,7 @@ public class QTI21NewExportController extends FormBasicController {
 	private String defaultTitle;
 	private TextElement titleEl;
 	private SingleSelection withPdfEl;
+	private MultipleSelectionElement optionsEl;
 	
 	private final IdentitiesList identities;
 	private final CourseEnvironment courseEnv;
@@ -69,6 +81,8 @@ public class QTI21NewExportController extends FormBasicController {
 	private PdfModule pdfModule;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private QTI21Service qtiService;
 	@Autowired
 	private ExportManager exportManager;
 	
@@ -85,33 +99,66 @@ public class QTI21NewExportController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("new.export.title");
+		setFormInfo("export.info");
+		setFormInfoHelp("manual_user/learningresources/Course_Element_Test/#archive");
+		
+		String text;
+		int numOfUsers = identities.getIdentities().size();
+		if(numOfUsers <= 1) {
+			text = translate("export.participants.num.singular", Integer.toString(numOfUsers));
+		} else {
+			text = translate("export.participants.num.plural", Integer.toString(numOfUsers));
+		}
+		if (identities.isAll()) {
+			text = translate("export.participants.num.all", text);
+		}
+		
+		uifactory.addStaticTextElement("export.participants", "export.participants.label", text, formLayout);
+		
+		defaultTitle = getDefaultTitle(ureq, false);
+		titleEl = uifactory.addTextElement("export.title.label", 96, defaultTitle, formLayout);
+		titleEl.setMandatory(true);
 		
 		SelectionValues withPdfValues = new SelectionValues();
-		withPdfValues.add(new SelectionValue("wo", translate("export.wo.option"), translate("export.wo.option.desc")));
-		withPdfValues.add(new SelectionValue("with", translate("export.with.option"), translate("export.with.option.desc")));
-		withPdfEl = uifactory.addCardSingleSelectHorizontal("export.with", formLayout, withPdfValues.keys(), withPdfValues.values(), withPdfValues.descriptions(), null);
+		withPdfValues.add(new SelectionValue("wo", translate("export.export.standard"), translate("export.export.standard.desc")));
+		withPdfValues.add(new SelectionValue("with", translate("export.export.advanced"), translate("export.export.advanced.desc")));
+		withPdfEl = uifactory.addCardSingleSelectHorizontal("export.export", formLayout, withPdfValues.keys(), withPdfValues.values(), withPdfValues.descriptions(), null);
 		withPdfEl.addActionListener(FormEvent.ONCHANGE);
 		withPdfEl.setElementCssClass("o_radio_cards_lg");
 		withPdfEl.setVisible(pdfModule.isEnabled());
 		withPdfEl.select("wo", true);
 		
-		String text;
-		int numOfUsers = identities.getIdentities().size();
-		if(identities.isAll()) {
-			text = translate("export.participants.all");
-		} else if(numOfUsers <= 1) {
-			text = translate("export.participants.num.singular", Integer.toString(numOfUsers));
-		} else {
-			text = translate("export.participants.num.plural", Integer.toString(numOfUsers));
+		SelectionValues optionsValues = new SelectionValues();
+		if (pdfModule.isEnabled() && isTestWithEssay()) {
+			optionsValues.add(new SelectionValue("essay.pdf", translate("export.options.essay.pdf")));
 		}
-		uifactory.addStaticTextElement("export.participants", "export.participants", text, formLayout);
+		optionsEl = uifactory.addCheckboxesVertical("export.options", formLayout, optionsValues.keys(), optionsValues.values(), 1);
+		updateUI();
 		
-		defaultTitle = getDefaultTitle(ureq, false);
-		titleEl = uifactory.addTextElement("export.title", 96, defaultTitle, formLayout);
-		titleEl.setMandatory(true);
+		uifactory.addFormSubmitButton("export.start", formLayout);
 		
-		uifactory.addFormSubmitButton("export", formLayout);
+	}
+
+	private boolean isTestWithEssay() {
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		File fUnzippedDirRoot = FileResourceManager.getInstance()
+				.unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
+		List<AssessmentItemRef> itemRefs = resolvedAssessmentTest.getAssessmentItemRefs();
+		for(AssessmentItemRef itemRef:itemRefs) {
+			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+			if (type == QTI21QuestionType.essay) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void updateUI() {
+		optionsEl.setVisible(isWithPdfs() && !optionsEl.getKeys().isEmpty());
 	}
 
 	@Override
@@ -131,6 +178,7 @@ public class QTI21NewExportController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(withPdfEl == source) {
 			titleEl.setValue(getDefaultTitle(ureq, isWithPdfs()));
+			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -139,6 +187,7 @@ public class QTI21NewExportController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (!identities.isEmpty()) {
 			boolean withPdfs = isWithPdfs();
+			boolean withEssayPdfs = withPdfs && isEssayPdfs();
 			OLATResource resource = courseEnv.getCourseGroupManager().getCourseResource();
 			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 			String title = titleEl.getValue();
@@ -147,7 +196,7 @@ public class QTI21NewExportController extends FormBasicController {
 			Date expirationDate = CalendarUtils.endOfDay(DateUtils.addDays(ureq.getRequestTimestamp(), 10));
 	
 			QTI21ResultsExportTask task = new QTI21ResultsExportTask(resource, courseNode, identities.getIdentities(),
-					title, description, identities.isWithNonParticipants(), withPdfs, getLocale());
+					title, description, identities.isWithNonParticipants(), withPdfs, withEssayPdfs, getLocale());
 			
 			exportManager.startExport(task, title, description,
 					filename, ArchiveType.QTI21, expirationDate, false,
@@ -158,9 +207,13 @@ public class QTI21NewExportController extends FormBasicController {
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
+
 	private boolean isWithPdfs() {
 		return withPdfEl.isVisible() && "with".equals(withPdfEl.getSelectedKey());
+	}
+	
+	private boolean isEssayPdfs() {
+		return optionsEl.isVisible() && optionsEl.getSelectedKeys().contains("essay.pdf");
 	}
 	
 	private String getDefaultTitle(UserRequest ureq, boolean withPdf) {

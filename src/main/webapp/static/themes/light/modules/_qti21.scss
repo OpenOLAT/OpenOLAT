@@ -938,6 +938,13 @@ body>li.o_assessmentitem_order_item  {
 }
 
 /* manual correction workflow */
+.o_assessmentitem_top_buttons {
+	margin: 0;
+	padding: $padding-small-horizontal $padding-small-horizontal 0px $padding-small-horizontal;
+	background-color: $panel-bg;
+	border-left: 1px solid $o-qti-item-border-color;
+	border-right: 1px solid $o-qti-item-border-color;
+}
 .o_assessmentitem_scoring {
 	background: $o-qti-item-title-bg;
 	border: 1px solid $o-qti-item-title-border-color;
@@ -1905,6 +1912,28 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 		@extend %o_small;			
 	}	
 }
+
+/* PDF Export */
+.o_qti_pdf_item {
+	.o_form_label {
+		padding-top: 5px;
+	}
+	.o_qti_question_title:has(+.o_qti_answer_title) {
+		display: none;
+	}
+}
+.form-control {
+	&.textarea_disabled {
+		&.o_qti_pdf_export {
+			padding: 0;
+			border: none;
+			border-radius: 0;
+			-webkit-box-shadow: none;
+			box-shadow: none;
+		}
+	}
+}
+
 
 /* Log */
 

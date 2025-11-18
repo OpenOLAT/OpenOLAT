@@ -1046,6 +1046,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ctx.put("isCorrectionHelp", component.isCorrectionHelp());
 		ctx.put("isCorrectionSolution", component.isCorrectionSolution());
 		ctx.put("isSolutionMode", renderer.isSolutionMode());
+		ctx.put("isPdfExport", renderer.isPdfExport());
 		ctx.put("isOffline", renderer.isOffline());
 		addInteractionSpecificContextValues(interaction, ctx, itemSessionState, component, renderer.isPageModeSolutionMode());
 
@@ -1314,6 +1315,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				expectedLines = 1;// resized textarea for solution in reports
 			}
 			sb.append("<div id='oo_").append(responseUniqueId).append("' style='min-height:").append(expectedLines * 1.5).append("em;' class='form-control textarea_disabled o_disabled o_form_element_disabled");
+			if (renderer.isPdfExport()) {
+				sb.append(" o_qti_pdf_export");
+			}
 		} else {
 			sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
 	

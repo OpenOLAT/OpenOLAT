@@ -129,6 +129,7 @@ public class CourseArchiveOverviewController extends StepFormBasicController {
 		ArchiveOptions nodeOptions = new ArchiveOptions();
 		nodeOptions.setDoer(getIdentity());
 		nodeOptions.setWithPdfs(archiveOptions.isResultsWithPDFs());
+		nodeOptions.setWithEssayPdfs(archiveOptions.isWithEssayPdfs());
 		for(CourseNode node:nodes) {
 			time += node.estimatedArchivedTime(course, nodeOptions);
 		}
