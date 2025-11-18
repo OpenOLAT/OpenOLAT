@@ -338,13 +338,16 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			certificationProgram.setRecertificationWindowUnit(type);
 			if(type == null || window == null) {
 				certificationProgram.setRecertificationWindow(0);
+				certificationProgram.setRecertificationWindowEnabled(false);
 			} else {
 				certificationProgram.setRecertificationWindow(window.intValue());
+				certificationProgram.setRecertificationWindowEnabled(true);
 			}
 		} else {
 			certificationProgram.setRecertificationEnabled(false);
 			certificationProgram.setRecertificationWindow(0);
 			certificationProgram.setRecertificationWindowUnit(null);
+			certificationProgram.setRecertificationWindowEnabled(false);
 		}
 		
 		boolean creditPointEnabled = recertificationEnabled && creditPointToggleEl.isOn();
