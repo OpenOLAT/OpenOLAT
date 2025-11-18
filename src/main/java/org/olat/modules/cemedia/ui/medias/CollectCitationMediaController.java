@@ -47,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
@@ -292,28 +293,10 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		publicationDayEl.setElementCssClass("o_sel_pf_publication_day");
 		
 		if (mediaReference != null && mediaReference.getPublicationDate() != null) {
-			publicationYearEl.setValue(String.valueOf(yearFromDate(mediaReference.getPublicationDate())));
-			publicationMonthEl.setValue(String.valueOf(monthFromDate(mediaReference.getPublicationDate())));
-			publicationDayEl.setValue(String.valueOf(dayFromDate(mediaReference.getPublicationDate())));
+			publicationYearEl.setValue(String.valueOf(DateUtils.yearFromDate(mediaReference.getPublicationDate())));
+			publicationMonthEl.setValue(String.valueOf(DateUtils.monthFromDate(mediaReference.getPublicationDate())));
+			publicationDayEl.setValue(String.valueOf(DateUtils.dayFromDate(mediaReference.getPublicationDate())));
 		}
-	}
-	
-	private int yearFromDate(Date date) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		return calendar.get(java.util.Calendar.YEAR);
-	}
-	
-	private int monthFromDate(Date date) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		return calendar.get(java.util.Calendar.MONTH) + 1;
-	}
-
-	private int dayFromDate(Date date) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		return calendar.get(java.util.Calendar.DAY_OF_MONTH);
 	}
 
 	private Date dateFromYear(TextElement el) {
@@ -403,7 +386,9 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			}
 			default -> {
 				publicationMonthEl.setVisible(false);
+				publicationMonthEl.setValue("");
 				publicationDayEl.setVisible(false);
+				publicationDayEl.setValue("");
 			}
 		}
 	}
@@ -458,6 +443,11 @@ public class CollectCitationMediaController extends FormBasicController implemen
 				}
 			}
 			if (!allOk) {
+				return allOk;
+			}
+		} else {
+			if (!StringHelper.containsNonWhitespace(publicationYearEl.getValue())) {
+				// Only year element visible, but empty: no more checks.
 				return allOk;
 			}
 		}

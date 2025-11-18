@@ -19,6 +19,8 @@
  */
 package org.olat.modules.cemedia.ui.component;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -26,9 +28,13 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.cemedia.Citation;
+import org.olat.modules.cemedia.ui.MediaCentersController;
 
 /**
  * 
@@ -38,40 +44,56 @@ import org.olat.modules.cemedia.Citation;
  */
 public class CitationComponentRenderer extends DefaultComponentRenderer {
 
+	private Translator getTranslator(Translator fallbackTranslator) {
+		return Util.createPackageTranslator(
+				MediaCentersController.class, fallbackTranslator.getLocale(), fallbackTranslator);
+	}
+	
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		CitationComponent cmp = (CitationComponent)source;
 		String notes = null;
 		String links = null;
-		renderAPAGerman(sb, cmp.getCitation(), cmp.getDublinCoreMetadata(), notes, links);
+		renderApa(sb, translator, cmp.getCitation(), cmp.getDublinCoreMetadata(), notes, links);
 	}
 	
-	public static void renderAPAGerman(StringOutput sb, Citation citation, DublinCoreMetadata dcData, String notes, String links) {
+	public void renderApa(StringOutput sb, Translator translator, Citation citation, DublinCoreMetadata dcData, String notes, String links) {
+		Translator ownTranslator = getTranslator(translator);
+
 		String authors = dcData.getCreators();		
-		String authorString = getAuthors(authors/* " (Hrsg.). ", true*/);
-		String edition = getOrdinalAPA(citation.getEdition());
-		String volume = getVolumeAPA(citation.getVolume());
-		String series = getSeries(citation.getSeries());
-		String date = getDate(dcData.getDate());
-		String dateAdded = "";
+		String edition = getEdition(citation.getEdition(), ownTranslator);
 
 		sb.append("<div class='item ").append(citation.getItemType().name()).append("'><div class='bib'>");
 		switch (citation.getItemType()) {
 			case webpage:
-				sb.appendHtmlEscaped(authorString)
-				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(".</span>").append(dateAdded) 
-				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");
+				sb.append("<span class='authors'>").appendHtmlEscaped(authors).append(".</span>");
+				sb.append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(".</span>");
+				sb.append(getDate(dcData.getPublicationDate(), ownTranslator, ".")); 
+				sb.append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").append(dcData.getUrl()).append("</a>");
 				break;
 			case book:
-				sb.appendHtmlEscaped(authorString).append(date) 
-				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(".</span>")
-				  .appendHtmlEscaped(volume).appendHtmlEscaped(series).appendHtmlEscaped(edition)
-				  .append("<span class='place'>").appendHtmlEscaped(dcData.getPlace()).append(":</span>")
-				  .append("<span class='publisher'>").appendHtmlEscaped(dcData.getPublisher()).append("</span>")
-				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");					
+				sb.appendHtmlEscaped(authors);
+				sb.append(getYear(dcData.getPublicationDate(), ownTranslator, "."));
+				sb.append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(".</span>");
+				if (StringHelper.containsNonWhitespace(citation.getVolume())) {
+					sb.append("<span class='volume'>").append(ownTranslator.translate("apa.volume.short")).append(" ").append(StringHelper.escapeHtml(citation.getVolume())).append(".</span>");
+				}
+				if (StringHelper.containsNonWhitespace(citation.getSeries())) {
+					sb.append("<span class='series'>").append(StringHelper.escapeHtml(citation.getSeries())).append(".</span>");
+				}
+				sb.append(edition, StringHelper.containsNonWhitespace(edition));
+				if (StringHelper.containsNonWhitespace(dcData.getPlace())) {
+					sb.append("<span class='place'>").appendHtmlEscaped(dcData.getPlace()).append(":</span>");
+				}
+				if (StringHelper.containsNonWhitespace(dcData.getPublisher())) {
+					sb.append("<span class='publisher'>").appendHtmlEscaped(dcData.getPublisher()).append(".</span>");
+				}
+				if (StringHelper.containsNonWhitespace(dcData.getUrl())) {
+					sb.append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
+				}
 				break;
 			case journalArticle:					
-				sb.appendHtmlEscaped(authorString).append(date) 
+				sb.appendHtmlEscaped(authors).append(getDate(dcData.getPublicationDate(), ownTranslator, ",")) 
 				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append(",</span>") 
 				  .append("<span class='publicationTitle'>").appendHtmlEscaped(citation.getPublicationTitle()).append(",</span>") 
 				  .append("<span class='issue'>").appendHtmlEscaped(citation.getIssue()).append("</span>")
@@ -79,15 +101,18 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
 				break;
 			case report:
-				sb.appendHtmlEscaped(authorString).append(date)
+				sb.appendHtmlEscaped(authors).append(getYear(dcData.getPublicationDate(), ownTranslator, ""))
 				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append("</span>")
 				  .append("<span class='place'>").appendHtmlEscaped(dcData.getPlace()).append(":</span>")
 				  .append("<span class='institution'>").appendHtmlEscaped(citation.getInstitution()).append("</span>")
 				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
 				break;			
 			case film:
-				sb.appendHtmlEscaped(authorString).append("<span class='date'>").append(dcData.getDate()).append("</span>")
-				  .append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append("</span> ")
+				sb.append("<span class='authors'>").appendHtmlEscaped(authors).append("</span>");
+				if (dcData.getPublicationDate() != null) {
+					sb.append("<span class='date'>").append(getYearWithoutPunctuation(dcData.getPublicationDate())).append("</span>");
+				}
+				sb.append("<span class='title'>").appendHtmlEscaped(dcData.getTitle()).append("</span> ")
 				  .append("<a href='").append(dcData.getUrl()).append("' target='_blank' class='url'>").appendHtmlEscaped(dcData.getUrl()).append("</a>");
 				break;
 			default:
@@ -105,45 +130,45 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 	}
 	
-	public static String getAuthors(String authors/*, String d, boolean apa*/) {
-		return authors;
-	}
-	
-	public static String getOrdinalAPA(String n) {
-		if(StringHelper.containsNonWhitespace(n)) {
-			if (StringHelper.isLong(n)){
-				String w = "("+ n + ". Aufl.)";	
-				if (w.equals("(. Aufl.)")) {
+	public static String getEdition(String edition, Translator translator) {
+		if(StringHelper.containsNonWhitespace(edition)) {
+			if (StringHelper.isLong(edition)){
+				String editionWithNumber = "(" + edition + ". " + translator.translate("apa.edition.short") + ")";	
+				if (editionWithNumber.equals("(. " + translator.translate("apa.edition.short") + ")")) {
 					return "";
 				}
-				return "<span class='edition'>" + w + "</span>"; 
+				return "<span class='edition'>" + editionWithNumber + "</span>"; 
 			}
 			else {
-				return "<span class='edition'>(" + n + ")</span>";				
+				return "<span class='edition'>(" + StringHelper.escapeHtml(edition) + ")</span>";				
 			}
 		} else {
-			return "";				
+			return "";
 		}
 	}
 	
-	public static String getVolumeAPA(String volume) {
-		if (StringHelper.containsNonWhitespace(volume)) {
-			return "<span class='volume'>Bd. " + volume + " </span>";
+	public static String getDate(Date publicationDate, Translator translator, String punctuation) {
+		if (publicationDate != null) {
+			return " <span class='date'>(" + 
+					Formatter.getInstance(translator.getLocale()).formatDate(publicationDate) + ")" + punctuation + 
+					"</span>";
+		}
+		return " <span class='date'>(" + translator.translate("apa.no.year") + ")" + punctuation + "</span>";
+	}
+	
+	public static String getYear(Date publicationDate, Translator translator, String punctuation) {
+		if (publicationDate != null) {
+			int year = DateUtils.yearFromDate(publicationDate);
+			return " <span class='date'>(" + year + ")" + punctuation + "</span>";
+		}
+		return " <span class='date'>(" + translator.translate("apa.no.year") + ")" + punctuation + "</span>";
+	}
+
+	public static String getYearWithoutPunctuation(Date publicationDate) {
+		if (publicationDate != null) {
+			int year = DateUtils.yearFromDate(publicationDate);
+			return " <span class='date'>" + year + "</span>";
 		}
 		return "";
-	}
-	
-	public static String getSeries(String series) {
-		if (StringHelper.containsNonWhitespace(series)) {
-			return "<span class='series'> " + series + ". </span>";
-		}
-		return "";
-	}
-	
-	public static String getDate(String date) {
-		if (StringHelper.containsNonWhitespace(date)) {
-			return " <span class='date'>(" + date + ")</span>";
-		}
-		return " <span class='date'>(o. J.)</span>";
 	}
 }

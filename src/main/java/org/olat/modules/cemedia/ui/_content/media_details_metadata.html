@@ -3,29 +3,29 @@
 
 <table class="table table-condensed table-striped"><tbody>
 	#if($r.isNotEmpty($mediaType))
-	<tr><th id="oo-media-type">$r.translate("table.header.type")</th>
-		<td aria-labelledby="oo-media-type">#if($r.isNotEmpty($mediaIconCssClass))<i class="o_icon $mediaIconCssClass"> </i> #end $r.escapeHtml($mediaType)</td></tr>
+	<tr><th scope="row">$r.translate("table.header.type")</th>
+		<td>#if($r.isNotEmpty($mediaIconCssClass))<i class="o_icon $mediaIconCssClass"> </i> #end $r.escapeHtml($mediaType)</td></tr>
 	#end
 	
 	#if($r.isNotEmpty($author))
-	<tr><th id="oo-media-author">$r.translate("author")</th>
-		<td aria-labelledby="oo-media-author">$r.escapeHtml($author)</td></tr>
+	<tr><th scope="row">$r.translate("created.by")</th>
+		<td>$r.escapeHtml($author)</td></tr>
 	#end
 	#if($r.isNotEmpty($collectionDate))
-	<tr><th id="oo-media-collection-date">$r.translate("table.header.creation.date")</th>
-		<td aria-labelledby="oo-media-collection-date">$r.escapeHtml($collectionDate)</td></tr>
+	<tr><th scope="row">$r.translate("table.header.creation.date")</th>
+		<td>$r.escapeHtml($collectionDate)</td></tr>
 	#end
 	#if($r.isNotEmpty($fileSize))
-	<tr><th id="oo-media-file-size">$r.translate("mf.size")</th>
-		<td aria-labelledby="oo-media-file-size">$fileSize</td></tr>
+	<tr><th scope="row">$r.translate("mf.size")</th>
+		<td>$fileSize</td></tr>
 	#end
 	#if($r.available("goto.original"))
 		<tr><th></th><td>$r.render("goto.original")</td>
 	#end
 	
 	#if($r.isNotEmpty($license)) 
-	<tr><th id="oo-media-license">$r.translate("rights.license")</th>
-		<td aria-labelledby="oo-media-license" class="o_license_info">
+	<tr><th scope="row">$r.translate("rights.license")</th>
+		<td class="o_license_info">
 		#if ($r.isNotEmpty($licenseIconCss))
 			<i class="o_icon o_icon-2x $r.escapeCssClass($licenseIconCss)"> </i> 
 		#end
@@ -40,8 +40,8 @@
 	#end
 	
 	#if($r.isNotEmpty($tags))
-	<tr><th id="oo-media-tags">$r.translate("tags")</th>
-		<td aria-labelledby="oo-media-tags"><span class="o_tag_selection_tags">
+	<tr><th scope="row">$r.translate("tags")</th>
+		<td><span class="o_tag_selection_tags">
 		#foreach($tag in $tags)
 			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
 		#end
@@ -49,100 +49,101 @@
 	#end
 	
 	#if($r.isNotEmpty($taxonomyLevels))
-	<tr><th id="oo-media-levels">$r.translate("taxonomy.levels")</th>
-		<td aria-labelledby="oo-media-levels">
+	<tr><th scope="row">$r.translate("taxonomy.levels")</th>
+		<td>
 		#foreach($taxonomyLevel in $taxonomyLevels)
 			<span class='o_tag o_taxonomy'>$r.escapeHtml($taxonomyLevel)</span>
 		#end
 		</td></tr>
 	#end
 	
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.itemType))
+	<tr><th scope="row">$r.translate("mf.sourceType")</th>
+		<td>$r.translate("mf.sourceType." + $metadata.itemType)</td></tr>
+	#end
+
 	#if($r.isNotEmpty($media.creators))
-	<tr><th id="oo-media-creators">$r.translate("author")</th>
-		<td aria-labelledby="oo-media-creators">$r.escapeHtml($media.creators)</td></tr>
+	<tr><th scope="row">$r.translate("author")</th>
+		<td>$r.escapeHtml($media.creators)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.place))
-	<tr><th id="oo-media-place">$r.translate("location")</th>
-		<td aria-labelledby="oo-media-place">$r.escapeHtml($media.place)</td></tr>
+	<tr><th scope="row">$r.translate("location")</th>
+		<td>$r.escapeHtml($media.place)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.publisher))
-	<tr><th id="oo-media-publisher">$r.translate("publisher")</th>
-		<td aria-labelledby="oo-media-publisher">$r.escapeHtml($media.publisher)</td></tr>
+	<tr><th scope="row">$r.translate("publisher")</th>
+		<td>$r.escapeHtml($media.publisher)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.publicationDate))
-	<tr><th id="oo-media-publication-date">$r.translate("mf.publicationDate")</th>
-	    <td aria-labelledby="oo-media-publication-date">$r.formatDate($media.publicationDate)</td></tr>
+	<tr><th scope="row">$r.translate("mf.publicationDate")</th>
+	    <td>$r.formatDate($media.publicationDate)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.url))
-	<tr><th id="oo-media-url">$r.translate("url")</th>
-		<td aria-labelledby="oo-media-url">$r.escapeHtml($media.url)</td></tr>
+	<tr><th scope="row">$r.translate("url")</th>
+		<td>$r.escapeHtml($media.url)</td></tr>
 	#end
 	#if($r.isNotEmpty($url))
-	<tr><th id="oo-url">$r.translate("url")</th>
-		<td aria-labelledby="oo-url">$r.escapeHtml($url)</td></tr>
+	<tr><th scope="row">$r.translate("url")</th>
+		<td>$r.escapeHtml($url)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.source))
-	<tr><th id="oo-media-source">$r.translate("source")</th>
-		<td aria-labelledby="oo-media-source">$r.escapeHtml($media.source)</td></tr>
+	<tr><th scope="row">$r.translate("source")</th>
+		<td>$r.escapeHtml($media.source)</td></tr>
 	#end
 	#if($r.isNotEmpty($platform))
-	<tr><th id="oo-platform">$r.translate("platform")</th>
-		<td aria-labelledby="oo-platform">$r.escapeHtml($platform)</td></tr>
+	<tr><th scope="row">$r.translate("platform")</th>
+		<td>$r.escapeHtml($platform)</td></tr>
 	#end
 	#if($r.isNotEmpty($media.language))
-	<tr><th id="oo-media-language">$r.translate("language")</th>
-		<td aria-labelledby="oo-media-language">$r.escapeHtml($media.language)</td></tr>
+	<tr><th scope="row">$r.translate("language")</th>
+		<td>$r.escapeHtml($media.language)</td></tr>
 	#end
 	
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.itemType))
-	<tr><th id="oo-media-item-type">$r.translate("mf.sourceType")</th>
-		<td aria-labelledby="oo-media-item-type">$r.translate("mf.sourceType." + $metadata.itemType)</td></tr>
-	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition))
-	<tr><th id="oo-media-edition">$r.translate("mf.edition")</th>
-		<td aria-labelledby="oo-media-edition">$r.escapeHtml($metadata.edition)</td></tr>
+	<tr><th scope="row">$r.translate("mf.edition")</th>
+		<td>$r.escapeHtml($metadata.edition)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.editor))
-	<tr><th id="oo-media-editor">$r.translate("mf.editor")</th>
-		<td aria-labelledby="oo-media-pub-title">$r.escapeHtml($metadata.editor)</td></tr>
+	<tr><th scope="row">$r.translate("mf.editor")</th>
+		<td>$r.escapeHtml($metadata.editor)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.volume))
-	<tr><th id="oo-media-volume">$r.translate("volume")</th>
-		<td aria-labelledby="">$r.escapeHtml($metadata.volume)</td></tr>
+	<tr><th scope="row">$r.translate("mf.volume")</th>
+		<td>$r.escapeHtml($metadata.volume)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.series))
-	<tr><th id="oo-media-sseries">$r.translate("series")</th>
-		<td aria-labelledby="">$r.escapeHtml($metadata.series)</td></tr>
+	<tr><th scope="row">$r.translate("series")</th>
+		<td>$r.escapeHtml($metadata.series)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.publicationTitle))
-	<tr><th id="oo-media-pub-title">$r.translate("publication.title")</th>
-		<td aria-labelledby="">$r.escapeHtml($metadata.publicationTitle)</td></tr>
+	<tr><th scope="row">$r.translate("mf.publicationTitle")</th>
+		<td>$r.escapeHtml($metadata.publicationTitle)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.issue))
-	<tr><th id="oo-media-issue">$r.translate("issue")</th>
-		<td aria-labelledby="oo-media-issue">$r.escapeHtml($metadata.issue)</td></tr>
+	<tr><th scope="row">$r.translate("mf.issue")</th>
+		<td>$r.escapeHtml($metadata.issue)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.pages))
-	<tr><th id="oo-media-pages">$r.translate("mf.pages")</th>
-		<td aria-labelledby="oo-media-pages">$r.escapeHtml($metadata.pages)</td></tr>
+	<tr><th scope="row">$r.translate("mf.pages")</th>
+		<td>$r.escapeHtml($metadata.pages)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.institution))
-	<tr><th id="oo-media-institution">$r.translate("institution")</th>
-		<td aria-labelledby="oo-media-institution">$r.escapeHtml($metadata.institution)</td></tr>
+	<tr><th scope="row">$r.translate("institution")</th>
+		<td>$r.escapeHtml($metadata.institution)</td></tr>
 	#end
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.isbn))
-	<tr><th id="oo-media-isbn">$r.translate("mf.isbn")</th>
-		<td aria-labelledby="oo-media-isbn">$r.escapeHtml($metadata.isbn)</td></tr>
+	<tr><th scope="row">$r.translate("mf.isbn")</th>
+		<td>$r.escapeHtml($metadata.isbn)</td></tr>
 	#end
 	
 	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit))
-	<tr><th id="oo-media-last-visit">$r.translate("mf.lastVisitDate")</th>
-		<td aria-labelledby="oo-media-last-visit">$r.formatDate($metadata.lastVisit)</td></tr>
+	<tr><th scope="row">$r.translate("mf.lastVisitDate")</th>
+		<td>$r.formatDate($metadata.lastVisit)</td></tr>
 	#end
 	
 	#if($r.isNotEmpty($referencesLinks))
-	<tr><th id="oo-media-used-in">$r.translate("used.in")</th>
-		<td aria-labelledby="oo-media-used-in" class="o_media_references">#foreach($link in $referencesLinks)
+	<tr><th scope="row">$r.translate("used.in")</th>
+		<td class="o_media_references">#foreach($link in $referencesLinks)
 			$r.render($link)
 		#end
 		#if($r.visible("reference.more"))
@@ -151,8 +152,8 @@
 		</td></tr>
 	#end
 	#if($r.isNotEmpty($sharesList))
-	<tr><th id="oo-media-shared-with">$r.translate("shared.with")</th>
-		<td aria-labelledby="oo-media-shared-with">#foreach($share in $sharesList)
+	<tr><th scope="row">$r.translate("shared.with")</th>
+		<td>#foreach($share in $sharesList)
 			<span><i class="o_icon o_icon-fw ${share.iconCssClass()}"> </i> $r.escapeHtml(${share.displayName()})</span> 
 		#end</td></tr>
 	#end

@@ -550,4 +550,22 @@ public class DateUtils {
 
 		return result.toString();
 	}
+
+	public static int yearFromDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(java.util.Calendar.YEAR);
+	}
+
+	public static  int monthFromDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(java.util.Calendar.MONTH) + 1;
+	}
+
+	public static  int dayFromDate(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(java.util.Calendar.DAY_OF_MONTH);
+	}
 }
