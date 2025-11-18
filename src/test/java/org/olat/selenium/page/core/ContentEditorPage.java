@@ -167,7 +167,7 @@ public class ContentEditorPage extends ContentViewPage {
 		return this;
 	}
 	
-	public ContentEditorPage addCitation(String title, String citation) {
+	public ContentEditorPage addCitation(String title, String citation, String publicationYear) {
 		By addCitationBy = By.cssSelector("a#o_coadd_el_citation");
 		browser.findElement(addCitationBy).click();
 		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_ceditor_add_elements");
@@ -180,12 +180,15 @@ public class ContentEditorPage extends ContentViewPage {
 		By titleBy = By.cssSelector("fieldset.o_sel_ce_collect_citation_form .o_sel_pf_collect_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
+		By yearBy = By.cssSelector(".o_sel_ce_collect_bibliography .o_sel_pf_publication_year input[type='text']");
+		browser.findElement(yearBy).sendKeys(publicationYear);
+		
 		String citationSelector = ".o_sel_ce_collect_citation_form .o_sel_pf_collect_citation";
 		OOGraphene.tinymce(citation, citationSelector, browser);
 		
-		//ok save
-		By saveBy = By.cssSelector("fieldset.o_sel_ce_collect_citation_form button.btn-primary");
-		browser.findElement(saveBy).click();
+		// Save
+		By saveBy = By.cssSelector(".o_sel_ce_collect_citation_buttons button.btn-primary");
+		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_ce_collect_citation_form");
 		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_ce_add_citation");
 		return this;

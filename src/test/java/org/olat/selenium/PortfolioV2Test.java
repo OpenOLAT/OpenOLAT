@@ -859,7 +859,7 @@ public class PortfolioV2Test extends Deployments {
 		entry
 			.contentEditor()
 			.openElementsChooser(1, 2)
-			.addCitation("Serial experiment", citation)
+			.addCitation("Serial Experiments Lain", citation, "1998")
 			.assertOnCitation(citation);
 		//close the editor and check all parts
 		entry.closeEditor()

@@ -186,7 +186,6 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_ce_collect_citation_form");
 		initMetadataForm(formLayout, ureq);
 		
 		FormLayoutContainer footerContainer = uifactory.addDefaultFormLayout("footerContainer", null, formLayout);
@@ -197,6 +196,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		}
 
 		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, footerContainer);
+		buttonsCont.setElementCssClass("o_sel_ce_collect_citation_buttons");
 		if(relationsCtrl != null) {
 			buttonsCont.setFormLayout("0_12");
 		}
@@ -206,6 +206,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
 		FormItemContainer topLayout = uifactory.addDefaultFormLayout("topContainer", null, formLayout);
+		topLayout.setElementCssClass("o_sel_ce_collect_citation_form");
 		
 		String title = mediaReference == null ? null : mediaReference.getTitle();
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, topLayout);
@@ -253,6 +254,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 		FormLayoutContainer bibliographyContainer = uifactory.addDefaultFormLayout("bibliographyContainer", null, formLayout);
 		bibliographyContainer.setFormTitle(translate("bibliography"));
+		bibliographyContainer.setElementCssClass("o_sel_ce_collect_bibliography");
 
 		initMetadataForm(bibliographyContainer);
 		initCitationForm(bibliographyContainer);
@@ -283,8 +285,11 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		languageEl = uifactory.addTextElement("language", "mf.language", -1, language, formLayout);
 
 		publicationYearEl = uifactory.addTextElement("publicationYear", "unit.year", 5, null, formLayout);
+		publicationYearEl.setElementCssClass("o_sel_pf_publication_year");
 		publicationMonthEl = uifactory.addTextElement("publicationMonth", "unit.month", 2, null, formLayout);
+		publicationMonthEl.setElementCssClass("o_sel_pf_publication_month");
 		publicationDayEl = uifactory.addTextElement("publicationDay", "unit.day", 2, null, formLayout);
+		publicationDayEl.setElementCssClass("o_sel_pf_publication_day");
 		
 		if (mediaReference != null && mediaReference.getPublicationDate() != null) {
 			publicationYearEl.setValue(String.valueOf(yearFromDate(mediaReference.getPublicationDate())));
