@@ -38,6 +38,7 @@ public class CourseArchiveOptions {
 	private ArchiveType archiveType;
 	private List<String> courseNodesIdents;
 	private boolean resultsWithPDFs;
+	private boolean withEssayPdfs;
 	
 	private boolean customize;
 	private boolean itemColumns;
@@ -100,6 +101,17 @@ public class CourseArchiveOptions {
 
 	public void setResultsWithPDFs(boolean resultsWithPDFs) {
 		this.resultsWithPDFs = resultsWithPDFs;
+	}
+
+	public boolean isWithEssayPdfs() {
+		if (isResultsWithPDFs()) {
+			return withEssayPdfs;
+		}
+		return false;
+	}
+
+	public void setWithEssayPdfs(boolean withEssayPdfs) {
+		this.withEssayPdfs = withEssayPdfs;
 	}
 
 	public boolean isCustomize() {

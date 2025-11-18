@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.export.ArchiveType;
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,12 +33,14 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.archiver.wizard.CourseArchiveContext.LogSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,9 +58,11 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 	private static final String STANDARD = "standard";
 	private static final String RESULTS_WITH_PDF = "withpdf";
 	private static final String RESULTS_WITHOUT_PDF = "withoutpdf";
+	private static final String RESULTS_WITH_ESSAY_PDF = "withessaypdf";
 	
 	private SingleSelection logEl;
-	private SingleSelection resultsEl;
+	private SingleSelection withPdfEl;
+	private MultipleSelectionElement pdfOptionsEl;
 	private SingleSelection customizeElementEl;
 	private FormLayoutContainer qtiSettingsCont;
 	private MultipleSelectionElement downloadOptionsEl;
@@ -66,6 +71,9 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 	private final boolean customization;
 	private final CourseArchiveOptions archiveOptions;
 	private final BulkCoursesArchivesContext bulkArchivesContext;
+	
+	@Autowired
+	private PdfModule pdfModule;
 	
 	public CourseArchiveSettingsController(UserRequest ureq, WindowControl wControl,
 			CourseArchiveContext archiveContext, StepsRunContext runContext, Form rootForm) {
@@ -133,17 +141,21 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 		downloadOptionsEl.select(TIMECOLS, archiveOptions.isTimeColumns());
 		downloadOptionsEl.select(COMMENTCOL, archiveOptions.isCommentColumn());
 		
-		SelectionValues resultsPK = new SelectionValues();
-		resultsPK.add(SelectionValues.entry(RESULTS_WITHOUT_PDF, translate("results.archive.without.pdf"),
-				translate("results.archive.without.pdf.desc"), null, null, true));
-		resultsPK.add(SelectionValues.entry(RESULTS_WITH_PDF, translate("results.archive.with.pdf"),
-				translate("results.archive.with.pdf.desc"), null, null, true));
-		resultsEl = uifactory.addCardSingleSelectHorizontal("results.archive", "results.archive", qtiSettingsCont, resultsPK);
+		SelectionValues withPdfValues = new SelectionValues();
+		withPdfValues.add(new SelectionValue(RESULTS_WITHOUT_PDF, translate("export.export.standard"), translate("export.export.standard.desc")));
+		withPdfValues.add(new SelectionValue(RESULTS_WITH_PDF, translate("export.export.advanced"), translate("export.export.advanced.desc")));
+		withPdfEl = uifactory.addCardSingleSelectHorizontal("export.export", qtiSettingsCont, withPdfValues.keys(), withPdfValues.values(), withPdfValues.descriptions(), null);
+		withPdfEl.addActionListener(FormEvent.ONCHANGE);
+		withPdfEl.setVisible(pdfModule.isEnabled());
 		if(archiveOptions.isResultsWithPDFs()) {
-			resultsEl.select(RESULTS_WITH_PDF, true);
+			withPdfEl.select(RESULTS_WITH_PDF, true);
 		} else {
-			resultsEl.select(RESULTS_WITHOUT_PDF, true);
+			withPdfEl.select(RESULTS_WITHOUT_PDF, true);
 		}
+		
+		SelectionValues pdfOptionsValues = new SelectionValues();
+			pdfOptionsValues.add(new SelectionValue(RESULTS_WITH_ESSAY_PDF, translate("export.options.essay.pdf")));
+		pdfOptionsEl = uifactory.addCheckboxesVertical("export.options", qtiSettingsCont, pdfOptionsValues.keys(), pdfOptionsValues.values(), 1);
 		
 		updateUI();
 	}
@@ -151,6 +163,7 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 	private void updateUI() {
 		qtiSettingsCont.setVisible(customization && customizeElementEl.isVisible()
 				&& customizeElementEl.isOneSelected() && CUSTOMIZE.equals(customizeElementEl.getSelectedKey()));
+		pdfOptionsEl.setVisible(withPdfEl.isVisible() && withPdfEl.isOneSelected() && withPdfEl.isKeySelected(RESULTS_WITH_PDF));
 	}
 	
 	@Override
@@ -163,9 +176,9 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
-		resultsEl.clearError();
-		if(qtiSettingsCont.isVisible() && resultsEl.isVisible() &&  !resultsEl.isOneSelected()) {
-			resultsEl.setErrorKey("form.legende.mandatory");
+		withPdfEl.clearError();
+		if(qtiSettingsCont.isVisible() && withPdfEl.isVisible() &&  !withPdfEl.isOneSelected()) {
+			withPdfEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -182,6 +195,8 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 				downloadOptionsEl.select(TIMECOLS, archiveOptions.isTimeColumns());
 				downloadOptionsEl.select(COMMENTCOL, archiveOptions.isCommentColumn());
 			}
+			updateUI();
+		} else if(withPdfEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -208,9 +223,11 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 			archiveOptions.setTimeColumns(options.contains(TIMECOLS));
 			archiveOptions.setCommentColumn(options.contains(COMMENTCOL));
 			
-			boolean withPDFs = resultsEl.isOneSelected() && RESULTS_WITH_PDF.equals(resultsEl.getSelectedKey());
+			boolean withPDFs = withPdfEl.isOneSelected() && RESULTS_WITH_PDF.equals(withPdfEl.getSelectedKey());
 			archiveOptions.setCustomize(true);
 			archiveOptions.setResultsWithPDFs(withPDFs);
+			boolean withEssayPdfs = pdfOptionsEl.isVisible() && pdfOptionsEl.isKeySelected(RESULTS_WITH_ESSAY_PDF);
+			archiveOptions.setWithEssayPdfs(withEssayPdfs);
 		} else {
 			archiveOptions.setItemColumns(true);
 			archiveOptions.setPointColumn(true);
@@ -218,6 +235,7 @@ public class CourseArchiveSettingsController extends StepFormBasicController {
 			archiveOptions.setCommentColumn(true);
 			archiveOptions.setCustomize(false);
 			archiveOptions.setResultsWithPDFs(false);
+			archiveOptions.setWithEssayPdfs(false);
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
