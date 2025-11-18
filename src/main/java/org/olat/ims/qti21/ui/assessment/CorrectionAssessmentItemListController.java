@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,6 +52,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -65,7 +67,9 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Module.CorrectionWorkflow;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.resultexport.EssaysPdfMediaResource;
 import org.olat.ims.qti21.ui.assessment.BulkScoreController.Mode;
 import org.olat.ims.qti21.ui.assessment.CorrectionAssessmentItemTableModel.ItemCols;
 import org.olat.ims.qti21.ui.assessment.components.AutoCorrectedFlexiCellRenderer;
@@ -129,6 +133,8 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private PdfModule pdfModule;
 	
 	public CorrectionAssessmentItemListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			CorrectionOverviewModel model) {
@@ -503,7 +509,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				boolean readOnly = model.isAssessmentEntryDone(assessedIdentity) || running;
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, listEntry,
-						selectedItemSessions, model, null, readOnly, running);
+						selectedItemSessions, model, null, readOnly, running, anonymous);
 				listenTo(identityItemCtrl);
 				updatePreviousNext();
 				
@@ -556,6 +562,11 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		fireEvent(ureq, new CompleteAssessmentTestSessionEvent(rows, assessmentTest, AssessmentEntryStatus.done));
 	}
 	
+	private void doExportEssayPdfs(UserRequest ureq, CorrectionAssessmentItemRow row) {
+		MediaResource resource = new EssaysPdfMediaResource(model, row.getItemRef(), anonymous, getLocale(), getIdentity(), getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
 	private final class ResponsedPredicate implements Predicate<AssessmentItemListEntry> {
 		
 		private final boolean responded;
@@ -585,6 +596,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		private final Link unreviewAllLink;
 		private final Link addPointsLink;
 		private final Link setScoreLink;
+		private Link pdfExportLink;
 		private final CorrectionAssessmentItemRow row;
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, CorrectionAssessmentItemRow row) {
@@ -596,6 +608,10 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			unreviewAllLink = LinkFactory.createLink("tool.unreview.all", "unreview", getTranslator(), mainVC, this, Link.LINK);
 			addPointsLink = LinkFactory.createLink("tool.add.point", "add.points", getTranslator(), mainVC, this, Link.LINK);
 			setScoreLink = LinkFactory.createLink("tool.set.score", "set.score", getTranslator(), mainVC, this, Link.LINK);
+			if (pdfModule.isEnabled() && row.getItemType() == QTI21QuestionType.essay) {
+				pdfExportLink = LinkFactory.createLink("tool.pdf.exprt", "pdf.exprot", getTranslator(), mainVC, this, Link.LINK);
+			}
+			
 			putInitialPanel(mainVC);
 		}
 
@@ -613,6 +629,9 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			} else if(setScoreLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				doBulkPoints(ureq, row, Mode.SET);
+			} else if(pdfExportLink == source) {
+				doExportEssayPdfs(ureq, row);
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
 	}

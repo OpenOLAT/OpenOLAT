@@ -43,6 +43,7 @@ public class AssessmentRenderer {
 	private boolean candidateCommentAllowed;
 	private boolean showTitles;
 	private boolean report;
+	private boolean pdfExport;
 	private boolean offline;
 	private boolean pageModeSolutionMode;
 	private boolean pageMode;
@@ -64,6 +65,7 @@ public class AssessmentRenderer {
 		clone.setCandidateCommentAllowed(candidateCommentAllowed);
 		clone.setShowTitles(showTitles);
 		clone.setReport(report);
+		clone.setPdfExport(pdfExport);
 		clone.setOffline(offline);
 		clone.setPageModeSolutionMode(pageModeSolutionMode);
 		clone.setPageMode(pageMode);
@@ -184,6 +186,14 @@ public class AssessmentRenderer {
 
 	public void setReport(boolean report) {
 		this.report = report;
+	}
+
+	public boolean isPdfExport() {
+		return pdfExport;
+	}
+
+	public void setPdfExport(boolean pdfExport) {
+		this.pdfExport = pdfExport;
 	}
 
 	public boolean isOffline() {

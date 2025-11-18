@@ -114,8 +114,10 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class CorrectionIdentityInteractionsController extends FormBasicController {
 	
+	public static final Event DOWNLOAD_PDF = new Event("download.pdf");
 	private static final String[] onKeys = new String[] { "on" };
 
+	private FormLink downlaodPdfButton;
 	private TextElement scoreEl;
 	private RichTextElement commentEl;
 	private StaticTextElement statusEl;
@@ -149,6 +151,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	private BigDecimal overrideAutoScore;
 	private boolean manualScore = false;
 	private final boolean readOnly;
+	private final boolean downloadEnabled;
 	
 	private int count = 0;
 	private final long id = CodeHelper.getRAMUniqueID();
@@ -161,12 +164,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	public CorrectionIdentityInteractionsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection correction, Map<Long, File> submissionDirectoryMaps, boolean readOnly,
-			String mapperUri, Form rootForm) {
+			String mapperUri, boolean downloadEnabled, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "correction_identity_interactions", rootForm);
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
 		this.readOnly = readOnly;
 		this.mapperUri = mapperUri;
+		this.downloadEnabled = downloadEnabled;
 		this.correction = correction;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
@@ -189,6 +193,10 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		downlaodPdfButton = uifactory.addFormLink("download.as.pdf", formLayout, Link.BUTTON);
+		downlaodPdfButton.setIconLeftCSS("o_icon o_icon_lg o_icon_download");
+		downlaodPdfButton.setVisible(downloadEnabled);
+		
 		TestPlanNode node = correction.getItemNode();
 		TestPlanNodeKey testPlanNodeKey = node.getKey();
 		AssessmentItemSession itemSession = correction.getItemSession();
@@ -525,7 +533,9 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(overrideScoreButton == source) {
+		if (source == downlaodPdfButton) {
+			fireEvent(ureq, DOWNLOAD_PDF);
+		} else if(overrideScoreButton == source) {
 			doOverrideScore(ureq);
 		} else if(viewSolutionButton == source) {
 			doToggleSolution();

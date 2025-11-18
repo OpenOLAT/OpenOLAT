@@ -42,6 +42,7 @@ public class ArchiveOptions {
 	
 	private Identity doer;
 	private boolean withPdfs = false;
+	private boolean withEssayPdfs = false;
 	private WindowControl windowControl;
 	
 	public ArchiveOptions() {
@@ -102,6 +103,14 @@ public class ArchiveOptions {
 
 	public void setWithPdfs(boolean withPdfs) {
 		this.withPdfs = withPdfs;
+	}
+
+	public boolean isWithEssayPdfs() {
+		return withEssayPdfs;
+	}
+
+	public void setWithEssayPdfs(boolean withEssayPdfs) {
+		this.withEssayPdfs = withEssayPdfs;
 	}
 
 	public Identity getDoer() {

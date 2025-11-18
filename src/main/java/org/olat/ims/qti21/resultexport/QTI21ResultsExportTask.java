@@ -77,6 +77,7 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 	private transient VFSLeaf exportZip;
 	
 	private boolean withPdfs;
+	private boolean withEssayPdfs;
 	private boolean withNonParticipants;
 	
 	private String title;
@@ -87,9 +88,9 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 	private String courseNodeIdent;
 	private OLATResourceable courseRes;
 	
-	public QTI21ResultsExportTask(OLATResourceable courseRes, CourseNode courseNode,
-			List<Identity> identities, String title, String description,
-			boolean withNonParticipants, boolean withPdfs, Locale locale) {
+	public QTI21ResultsExportTask(OLATResourceable courseRes, CourseNode courseNode, List<Identity> identities,
+			String title, String description, boolean withNonParticipants, boolean withPdfs, boolean withEssayPdfs,
+			Locale locale) {
 		this.courseRes = OresHelper.clone(courseRes);
 		this.courseNodeIdent = courseNode.getIdent();
 		identitiesKeys = identities.stream()
@@ -97,6 +98,7 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 				.collect(Collectors.toList());
 		this.withNonParticipants = withNonParticipants;
 		this.withPdfs = withPdfs;
+		this.withEssayPdfs = withEssayPdfs;
 		this.title = title;
 		this.locale = locale;
 		this.description = description;
@@ -171,9 +173,8 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 			progress.setProgress(0.0d, null);
 		}
 		
-		export = new QTI21ResultsExport(course.getCourseEnvironment(),
-				identities, withNonParticipants, withPdfs, courseNode, "", locale,
-				task.getCreator(), new WindowControlMocker());
+		export = new QTI21ResultsExport(course.getCourseEnvironment(), identities, withNonParticipants, withPdfs,
+				withEssayPdfs, courseNode, "", locale, task.getCreator(), new WindowControlMocker());
 
 		try(OutputStream out=exportZip.getOutputStream(true);
 				ZipOutputStream zout = new ZipOutputStream(out)) {

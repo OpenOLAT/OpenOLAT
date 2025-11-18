@@ -53,8 +53,7 @@ public class QTI21ExportResultsController extends BasicController {
 		
 		ExportsListSettings options = new ExportsListSettings(true);
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		exportListController = new ExportsListController(ureq, wControl, entry, courseNode.getIdent(), secCallback.isAdmin(),
-				options, getTranslator());
+		exportListController = new QTI21ExportsListController(ureq, wControl, entry, courseNode.getIdent(), secCallback.isAdmin(), options, getTranslator());
 		listenTo(exportListController);
 		exportListController.loadModel();
 		

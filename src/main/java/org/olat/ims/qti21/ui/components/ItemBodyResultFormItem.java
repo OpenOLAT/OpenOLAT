@@ -98,6 +98,14 @@ public class ItemBodyResultFormItem extends AssessmentObjectFormItem {
 		component.setReport(report);
 	}
 	
+	public boolean isPdfExport() {
+		return component.isPdfExport();
+	}
+
+	public void setPdfExport(boolean pdfExport) {
+		this.component.setPdfExport(pdfExport);
+	}
+	
 	public boolean isOffline() {
 		return component.isOffline();
 	}

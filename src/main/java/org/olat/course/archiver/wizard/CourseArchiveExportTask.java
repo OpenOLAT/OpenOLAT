@@ -166,6 +166,7 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 		ArchiveOptions nodeOptions = new ArchiveOptions();
 		nodeOptions.setDoer(task.getCreator());
 		nodeOptions.setWithPdfs(options.isResultsWithPDFs());
+		nodeOptions.setWithEssayPdfs(options.isWithEssayPdfs());
 		nodeOptions.setExportFormat(options.getQTI21ExportFormat());
 
 		List<Identity> participants = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment(), nodeOptions);
@@ -264,8 +265,8 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 			String nodePath = getNodePath(courseNode, numOfCourseNodes);
 			if(courseNode instanceof IQTESTCourseNode testNode) {
 				QTI21ResultsExport export = new QTI21ResultsExport(course.getCourseEnvironment(),
-						nodeOptions.getIdentities(), false, options.isResultsWithPDFs(), testNode, nodePath, locale,
-						task.getCreator(), new WindowControlMocker());
+						nodeOptions.getIdentities(), false, options.isResultsWithPDFs(), options.isWithEssayPdfs(),
+						testNode, nodePath, locale, task.getCreator(), new WindowControlMocker());
 
 				export.exportTestResults(zout, progress);
 				export.archiveExcelResults(zout);
