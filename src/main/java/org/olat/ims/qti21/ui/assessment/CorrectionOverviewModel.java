@@ -135,7 +135,7 @@ public class CorrectionOverviewModel {
 		anomyzedNamed = anonymize();
 	}
 	
-	protected String getAnonymizedName(Identity identity) {
+	public String getAnonymizedName(Identity identity) {
 		String name = anomyzedNamed.get(identity);
 		if(!StringHelper.containsNonWhitespace(name)) {
 			name = "UNKOWN";

@@ -43,8 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.session.UserSessionModule;
 import org.olat.fileresource.FileResourceManager;
@@ -56,12 +54,11 @@ import org.olat.ims.qti21.CorrectionManager;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.resultexport.EssaysPdfMediaResource;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.repository.RepositoryEntry;
@@ -119,8 +116,6 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private UserSessionModule sessionModule;
 	@Autowired
 	private CorrectionManager correctionManager;
-	@Autowired
-	private AssessmentService assessmentService;
 	
 	public CorrectionIdentityAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
@@ -339,39 +334,15 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append(candidateSession.getKey());
-		sb.append("_");
-		sb.append(QTI21QuestionType.getType(assessmentItem).name());
-		sb.append("_");
-		if (StringHelper.containsNoneOfCoDouSemi(assessmentItem.getTitle())) {
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessmentItem.getLabel()));
-			sb.append("_");
-		}
+		String userDisplayIdentifier = anonymous
+				? userDisplayIdentifier = model.getAnonymizedName(itemCorrection.getAssessedIdentity())
+				: null;
 		
-		String userDisplayIdentifier = null;
-		if (anonymous) {
-			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(itemCorrection.getAssessedIdentity(), null,
-					model.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					model.getCourseNode().getIdent(),
-					Boolean.FALSE, testEntry, true);
-			userDisplayIdentifier = assessmentEntry.getUserDisplayIdentifier();
-			
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(userDisplayIdentifier));
-		} else {
-			User assessedUser = itemCorrection.getAssessedIdentity().getUser();
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getLastName()));
-			sb.append("_");
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getFirstName()));
-			sb.append("_");
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getProperty(UserConstants.NICKNAME)));
-		}
-		
-		sb.append(".pdf");
-		
+		String filename = EssaysPdfMediaResource.createPdfFilename(assessmentItem, candidateSession,
+				itemCorrection.getAssessedIdentity(), userDisplayIdentifier);
 		
 		ControllerCreator printControllerCreator = getPrintControllerCreator(resolvedAssessmentItem, userDisplayIdentifier);
-		MediaResource resource = pdfService.convert(sb.toString(), getIdentity(), printControllerCreator,
+		MediaResource resource = pdfService.convert(filename, getIdentity(), printControllerCreator,
 				getWindowControl(), PdfOutputOptions.defaultOptions());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 		

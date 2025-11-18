@@ -4,4 +4,8 @@
 	<li class="divider"></li>
 	<li>$r.render("tool.add.point")</li>
 	<li>$r.render("tool.set.score")</li>
+	#if($r.available("tool.pdf.exprt"))
+		<li class="divider"></li>
+		<li>$r.render("tool.pdf.exprt")</li>
+	#end
 </ul>

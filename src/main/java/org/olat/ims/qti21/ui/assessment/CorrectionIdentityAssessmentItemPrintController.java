@@ -71,7 +71,7 @@ public class CorrectionIdentityAssessmentItemPrintController extends FormBasicCo
 	@Autowired
 	private UserManager userManager;
 
-	protected CorrectionIdentityAssessmentItemPrintController(UserRequest ureq, WindowControl wControl,
+	public CorrectionIdentityAssessmentItemPrintController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			ResolvedAssessmentItem resolvedAssessmentItem, CorrectionOverviewModel model,
 			AssessmentItemCorrection itemCorrection, String userDisplayIdentifier) {
