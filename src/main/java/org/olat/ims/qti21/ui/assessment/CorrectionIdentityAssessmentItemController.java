@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +41,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.session.UserSessionModule;
 import org.olat.fileresource.FileResourceManager;
@@ -48,17 +55,22 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.CorrectionManager;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.event.NextAssessmentItemEvent;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemListEntry;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.grading.GradingTimeRecordRef;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
@@ -81,6 +93,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private final ResourcesMapper resourcesMapper;
 	
 	private final boolean readOnly;
+	private final boolean anonymous;
 	private CorrectionOverviewModel model;
 	private final RepositoryEntry testEntry;
 	private AssessmentItemCorrection itemCorrection;
@@ -95,6 +108,10 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private CorrectionIdentityInteractionsController identityInteractionsCtrl;
 
 	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
+	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private GradingService gradingService;
@@ -102,14 +119,17 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	private UserSessionModule sessionModule;
 	@Autowired
 	private CorrectionManager correctionManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public CorrectionIdentityAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
 			AssessmentItemCorrection itemCorrection, AssessmentItemListEntry assessmentEntry,
 			List<? extends AssessmentItemListEntry> assessmentEntryList, CorrectionOverviewModel model,
-			GradingTimeRecordRef gradingTimeRecord, boolean readOnly) {
+			GradingTimeRecordRef gradingTimeRecord, boolean readOnly, boolean anonymous) {
 		super(ureq, wControl, "correction_identity_assessment_item");
 		this.readOnly = readOnly;
+		this.anonymous = anonymous;
 		this.gradingTimeRecord = gradingTimeRecord;
 		timeStartInMilliSeconds = System.currentTimeMillis();
 		
@@ -150,10 +170,18 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 				layoutCont.contextPut("titleCssClass", assessmentEntry.getTitleCssClass());
 			}
 		}
+		
+		boolean downloadEnabled = pdfModule.isEnabled()
+				&& (model.getCourseNode() != null && model.getCourseEnvironment() != null);
+		if (downloadEnabled) {
+			AssessmentItem assessmentItem = resolvedAssessmentTest
+					.getResolvedAssessmentItem(itemCorrection.getItemRef()).getRootNodeLookup().extractIfSuccessful();
+			downloadEnabled = QTI21QuestionType.getType(assessmentItem) == QTI21QuestionType.essay;
+		}
 
 		identityInteractionsCtrl = new CorrectionIdentityInteractionsController(ureq, getWindowControl(), 
 				testEntry, resolvedAssessmentTest, itemCorrection, submissionDirectoryMaps, readOnly,
-				mapperUri, mainForm);
+				mapperUri, downloadEnabled, mainForm);
 		listenTo(identityInteractionsCtrl);
 		formLayout.add("interactions", identityInteractionsCtrl.getInitialFormItem());
 		
@@ -190,6 +218,16 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
         super.doDispose();
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == identityInteractionsCtrl) {
+			if (event == CorrectionIdentityInteractionsController.DOWNLOAD_PDF) {
+				doDownloadPdf(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	private void recordDisposedTime() {
 		if(gradingTimeRecord == null || timeStartInMilliSeconds == 0l) return;
 		
@@ -294,4 +332,56 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			logError("", e);
 		}
 	}
+	
+	private void doDownloadPdf(UserRequest ureq) {
+		AssessmentTestSession candidateSession = itemCorrection.getTestSession();
+		AssessmentItemRef itemRef = itemCorrection.getItemRef();
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(candidateSession.getKey());
+		sb.append("_");
+		sb.append(QTI21QuestionType.getType(assessmentItem).name());
+		sb.append("_");
+		if (StringHelper.containsNoneOfCoDouSemi(assessmentItem.getTitle())) {
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessmentItem.getLabel()));
+			sb.append("_");
+		}
+		
+		String userDisplayIdentifier = null;
+		if (anonymous) {
+			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(itemCorrection.getAssessedIdentity(), null,
+					model.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					model.getCourseNode().getIdent(),
+					Boolean.FALSE, testEntry, true);
+			userDisplayIdentifier = assessmentEntry.getUserDisplayIdentifier();
+			
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(userDisplayIdentifier));
+		} else {
+			User assessedUser = itemCorrection.getAssessedIdentity().getUser();
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getLastName()));
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getFirstName()));
+			sb.append("_");
+			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getProperty(UserConstants.NICKNAME)));
+		}
+		
+		sb.append(".pdf");
+		
+		
+		ControllerCreator printControllerCreator = getPrintControllerCreator(resolvedAssessmentItem, userDisplayIdentifier);
+		MediaResource resource = pdfService.convert(sb.toString(), getIdentity(), printControllerCreator,
+				getWindowControl(), PdfOutputOptions.defaultOptions());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+		
+		// Redraw form to avoid not saved dialog
+		identityInteractionsCtrl.getInitialComponent().setDirty(true);
+	}
+	
+	private ControllerCreator getPrintControllerCreator(ResolvedAssessmentItem resolvedAssessmentItem, String userDisplayIdentifier) {
+		return (lureq, lwControl) -> new CorrectionIdentityAssessmentItemPrintController(lureq, lwControl, testEntry,
+				resolvedAssessmentTest, resolvedAssessmentItem, model, itemCorrection, userDisplayIdentifier);
+	}
+
 }

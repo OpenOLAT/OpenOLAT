@@ -52,6 +52,7 @@ public class ItemBodyResultComponentRenderer extends AssessmentObjectComponentRe
 		ItemSessionState itemSessionState = cmp.getItemSessionState();
 		AssessmentRenderer assessmentRenderer = new AssessmentRenderer(renderer);
 		assessmentRenderer.setOffline(cmp.isOffline());
+		assessmentRenderer.setPdfExport(cmp.isPdfExport());
 		
 		if(cmp.isShowSolution()) {
 			assessmentRenderer.setSolutionAllowed(true);

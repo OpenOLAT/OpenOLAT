@@ -49,7 +49,7 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 
 	private RepositoryEntryInfoHeaderController headerCtrl;
 	
-	private final RepositoryEntry entry;
+	protected final RepositoryEntry entry;
 	
 	@Autowired
 	private MapperService mapperService;
@@ -61,8 +61,6 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 	public RepositoryEntryInfoCardController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, LAYOUT_BAREBONE, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.entry = entry;
-		
-		initForm(ureq);
 	}
 
 	@Override
@@ -121,21 +119,31 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 		itemsCont.setRootForm(mainForm);
 		formLayout.add("items", itemsCont);
 		
+		addInfoItems(itemsCont);
+	}
+
+	protected void addInfoItems(FormLayoutContainer itemsCont) {
+		addRepositoryEntryKey(itemsCont);
+		addType(itemsCont);
+		addExecutionPeriod(itemsCont);
+		addLocation(itemsCont);
+	}
+
+	protected void addRepositoryEntryKey(FormLayoutContainer itemsCont) {
 		uifactory.addStaticTextElement("table.header.key", String.valueOf(entry.getKey()), itemsCont);
-		
+	}
+	
+	protected void addType(FormLayoutContainer itemsCont) {
 		uifactory.addStaticTextElement("cif.type", getType(), itemsCont);
-		
+	}
+
+	protected void addExecutionPeriod(FormLayoutContainer itemsCont) {
 		String executionPeriod = getExecutionPeriod();
 		if (StringHelper.containsNonWhitespace(executionPeriod)) {
 			uifactory.addStaticTextElement("cif.dates", StringHelper.escapeHtml(executionPeriod), itemsCont);
 		}
-		
-		String location = entry.getLocation();
-		if (StringHelper.containsNonWhitespace(location)) {
-			uifactory.addStaticTextElement("cif.location", StringHelper.escapeHtml(location), itemsCont);
-		}
 	}
-	
+
 	private String getExecutionPeriod() {
 		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
 		if (lifecycle == null) {
@@ -159,6 +167,13 @@ public class RepositoryEntryInfoCardController extends FormBasicController {
 			}
 		}
 		return executionPeriod;
+	}
+	
+	protected void addLocation(FormLayoutContainer itemsCont) {
+		String location = entry.getLocation();
+		if (StringHelper.containsNonWhitespace(location)) {
+			uifactory.addStaticTextElement("cif.location", StringHelper.escapeHtml(location), itemsCont);
+		}
 	}
 
 	@Override

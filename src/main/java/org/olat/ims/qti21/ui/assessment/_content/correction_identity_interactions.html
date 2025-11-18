@@ -9,6 +9,12 @@
 </div>
 #end
 
+#if($r.available("download.as.pdf") && $r.visible("download.as.pdf"))
+	<div class="o_button_group o_button_group_right o_assessmentitem_top_buttons">
+		$r.render("download.as.pdf")
+	</div>
+#end
+
 #if($r.isNotEmpty($sectionRubrics))
 	<div class='o_assessmentsection_rubrics_correction_wrapper'>
 	#foreach($sectionRubric in $sectionRubrics)

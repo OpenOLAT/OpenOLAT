@@ -5,6 +5,15 @@
 #set($numOfWords = $r.getWordCount($interaction))
 #set($isRichText = $r.hasCssClass($interaction, "essay-richtext"))
 
+#if($r.isTrue($isPdfExport))
+	<div class="o_form_label o_qti_answer_title">
+		#if($numOfWords == 1)
+			$r.translate("answer.word", $numOfWords)
+		#else
+			$r.translate("answer.words", $numOfWords)
+		#end
+	</div>
+#end
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName #if($isRichText)o_richtext_mce#end">
 	#if($interaction.getPrompt())
@@ -36,7 +45,7 @@
 		<div class="o_note">$r.translate("warning.no.solution")</div>
 	#else
 		$r.renderExtendedTextBox($interaction)
-		#if($r.isFalse($isSolutionMode))
+		#if($r.isFalse($isSolutionMode) && $r.isFalse($isPdfExport))
 		<div class='o_qti_essay_infos'>
 			<div class="col-sm-6 o_qti_essay_save">
 				<span class='o_qti_essay_last_save' style='display:none'>$r.translate("last.saved") <span class='o_qti_essay_last_save-time'></span></span>

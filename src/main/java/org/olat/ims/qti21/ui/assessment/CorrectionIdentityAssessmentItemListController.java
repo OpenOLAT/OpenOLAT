@@ -113,6 +113,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	private final String title;
 	private LockResult lockResult;
 	private final boolean readOnly;
+	private final boolean anonymous;
 	private final boolean saveEnabled;
 	private GradingAssignment assignment;
 	private final Identity assessedIdentity;
@@ -131,6 +132,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.stackPanel = stackPanel;
 		this.model = model;
 		this.readOnly = readOnly;
+		this.anonymous = false;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = true;
 		title = userManager.getUserDisplayName(assessedIdentity);
@@ -148,6 +150,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.model = model;
 		this.assessedIdentity = assessedIdentity;
 		this.readOnly = readOnly;
+		this.anonymous = anonymous;
 		this.saveEnabled = !readOnly;
 		this.assignment = assignment;
 		this.gradingTimeRecord = gradingTimeRecord;
@@ -165,6 +168,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		this.model = model;
 		this.title = title;
 		this.readOnly = readOnly;
+		this.anonymous = false;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = false;
 
@@ -418,7 +422,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 				identityItemCtrl = new CorrectionIdentityAssessmentItemNavigationController(ureq, getWindowControl(),
 						model.getTestEntry(), model.getResolvedAssessmentTest(), itemCorrection, row,
-						tableModel.getObjects(), model, gradingTimeRecord, readOnly || running, running);
+						tableModel.getObjects(), model, gradingTimeRecord, readOnly || running, running, anonymous);
 				listenTo(identityItemCtrl);
 				stackPanel.pushController(assessmentItem.getTitle(), identityItemCtrl);
 				updatePreviousNext();
