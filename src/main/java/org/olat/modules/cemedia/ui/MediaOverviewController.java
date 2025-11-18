@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -61,6 +62,7 @@ import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
+import org.olat.modules.cemedia.model.CitationXml;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaWithVersion;
@@ -341,6 +343,15 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		
 		if(StringHelper.containsNonWhitespace(media.getMetadataXml())) {
 			Object metadata = MetadataXStream.get().fromXML(media.getMetadataXml());
+			if (media.getPublicationDate() != null && metadata instanceof CitationXml citationXml) {
+				metaCont.contextPut("year", DateUtils.yearFromDate(media.getPublicationDate()));
+				switch (citationXml.getItemType()) {
+					case webpage, journalArticle -> {
+						metaCont.contextPut("month", DateUtils.monthFromDate(media.getPublicationDate()));
+						metaCont.contextPut("day", DateUtils.dayFromDate(media.getPublicationDate()));
+					}
+				}
+			}
 			metaCont.contextPut("metadata", metadata);
 		}
 		

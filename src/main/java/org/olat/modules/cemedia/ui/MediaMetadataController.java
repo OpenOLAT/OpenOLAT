@@ -33,6 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
@@ -41,6 +42,7 @@ import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
+import org.olat.modules.cemedia.model.CitationXml;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.user.UserManager;
@@ -100,6 +102,15 @@ public class MediaMetadataController extends BasicController {
 		
 		if(StringHelper.containsNonWhitespace(media.getMetadataXml())) {
 			Object metadata = MetadataXStream.get().fromXML(media.getMetadataXml());
+			if (media.getPublicationDate() != null && metadata instanceof CitationXml citationXml) {
+				metaVC.contextPut("year", DateUtils.yearFromDate(media.getPublicationDate()));
+				switch (citationXml.getItemType()) {
+					case webpage, journalArticle -> {
+						metaVC.contextPut("month", DateUtils.monthFromDate(media.getPublicationDate()));
+						metaVC.contextPut("day", DateUtils.dayFromDate(media.getPublicationDate()));
+					}
+				}
+			}
 			metaVC.contextPut("metadata", metadata);
 		}
 		

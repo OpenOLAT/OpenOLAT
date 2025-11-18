@@ -1,3 +1,9 @@
+#set($isBook = $metadata.itemType == "book")
+#set($isJournalArticle = $metadata.itemType == "journalArticle")
+#set($isReport = $metadata.itemType == "report")
+#set($isWebPage = $metadata.itemType == "webpage")
+#set($isFilm = $metadata.itemType == "film")
+
 <div class="o_artefact panel panel-default">
 	<div class="panel-heading"><h4>$r.translate("tab.overview")</h4></div>
 
@@ -74,10 +80,6 @@
 	<tr><th scope="row">$r.translate("publisher")</th>
 		<td>$r.escapeHtml($media.publisher)</td></tr>
 	#end
-	#if($r.isNotEmpty($media.publicationDate))
-	<tr><th scope="row">$r.translate("mf.publicationDate")</th>
-	    <td>$r.formatDate($media.publicationDate)</td></tr>
-	#end
 	#if($r.isNotEmpty($media.url))
 	<tr><th scope="row">$r.translate("url")</th>
 		<td>$r.escapeHtml($media.url)</td></tr>
@@ -99,44 +101,61 @@
 		<td>$r.escapeHtml($media.language)</td></tr>
 	#end
 	
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition))
-	<tr><th scope="row">$r.translate("mf.edition")</th>
-		<td>$r.escapeHtml($metadata.edition)</td></tr>
+	#if($r.isNotNull($year))
+	<tr><th scope="row">$r.translate("unit.year")</th>
+		<td>$year</td></tr>
+	  #if($r.isNotNull($month))
+      <tr><th scope="row">$r.translate("unit.month")</th>
+	      <td>$month</td></tr>
+	  #end
+	  #if($r.isNotNull($day))
+      <tr><th scope="row">$r.translate("unit.day")</th>
+	      <td>$day</td></tr>
+	  #end
+	#elseif($r.isNotEmpty($media.publicationDate))
+	<tr><th scope="row">$r.translate("mf.publicationDate")</th>
+	    <td>$r.formatDate($media.publicationDate)</td></tr>
 	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.editor))
+
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.editor) && $isBook)
 	<tr><th scope="row">$r.translate("mf.editor")</th>
 		<td>$r.escapeHtml($metadata.editor)</td></tr>
 	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.volume))
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition) && $isBook)
+	<tr><th scope="row">$r.translate("mf.edition")</th>
+		<td>$r.escapeHtml($metadata.edition)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.volume) && $isBook)
 	<tr><th scope="row">$r.translate("mf.volume")</th>
 		<td>$r.escapeHtml($metadata.volume)</td></tr>
 	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.series))
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.series) && $isBook)
 	<tr><th scope="row">$r.translate("series")</th>
 		<td>$r.escapeHtml($metadata.series)</td></tr>
 	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.publicationTitle))
-	<tr><th scope="row">$r.translate("mf.publicationTitle")</th>
-		<td>$r.escapeHtml($metadata.publicationTitle)</td></tr>
-	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.issue))
-	<tr><th scope="row">$r.translate("mf.issue")</th>
-		<td>$r.escapeHtml($metadata.issue)</td></tr>
-	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.pages))
-	<tr><th scope="row">$r.translate("mf.pages")</th>
-		<td>$r.escapeHtml($metadata.pages)</td></tr>
-	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.institution))
-	<tr><th scope="row">$r.translate("institution")</th>
-		<td>$r.escapeHtml($metadata.institution)</td></tr>
-	#end
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.isbn))
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.isbn) && $isBook)
 	<tr><th scope="row">$r.translate("mf.isbn")</th>
 		<td>$r.escapeHtml($metadata.isbn)</td></tr>
 	#end
+
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.publicationTitle) && $isJournalArticle)
+	<tr><th scope="row">$r.translate("mf.publicationTitle")</th>
+		<td>$r.escapeHtml($metadata.publicationTitle)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.issue) && $isJournalArticle)
+	<tr><th scope="row">$r.translate("mf.issue")</th>
+		<td>$r.escapeHtml($metadata.issue)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.pages) && ($isJournalArticle || $isBook))
+	<tr><th scope="row">$r.translate("mf.pages")</th>
+		<td>$r.escapeHtml($metadata.pages)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.institution) && $isReport)
+	<tr><th scope="row">$r.translate("institution")</th>
+		<td>$r.escapeHtml($metadata.institution)</td></tr>
+	#end
 	
-	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit))
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit) && $isWebPage)
 	<tr><th scope="row">$r.translate("mf.lastVisitDate")</th>
 		<td>$r.formatDate($metadata.lastVisit)</td></tr>
 	#end
