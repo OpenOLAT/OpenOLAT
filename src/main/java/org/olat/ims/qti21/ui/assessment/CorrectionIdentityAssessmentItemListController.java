@@ -438,19 +438,15 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		if(identityItemCtrl != null) {
 			List<CorrectionIdentityAssessmentItemRow> rows = tableModel.getObjects();
 			AssessmentItemListEntry itemSession = identityItemCtrl.getAssessmentItemSession();
-			String previousText = translate("previous.item");
-			String nextText = translate("next.item");
 			boolean previousEnable = false;
 			boolean nextEnable = false;
 			
 			int index = rows.indexOf(itemSession);
 			if(index - 1 >= 0 && rows.size() > index - 1) {
-				previousText = rows.get(index - 1).getLabel();
 				previousEnable = true;
 			}
 			
 			if(index + 1 >= 0 && rows.size() > index + 1) {
-				nextText = rows.get(index + 1).getLabel();
 				nextEnable = true;
 			}
 
