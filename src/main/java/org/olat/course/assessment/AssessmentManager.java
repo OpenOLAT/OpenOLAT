@@ -42,6 +42,7 @@ import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Description:<BR>
@@ -280,6 +281,15 @@ public interface AssessmentManager {
 			Boolean passed);
 
 	public Overridable<Boolean> resetRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * The caller takes the 
+	 * @param userCourseEnvironment The course environment of the assessed identity
+	 * @param courseEntry The course
+	 * @param setRootToPassed If the root node passed value has changed
+	 * @param doer The identity which does the action
+	 */
+	void requestCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry, Identity doer);
 	
 	/**
 	 * Provides an OLATResourceable for locking (of score/passed etc.) purposes (if doInSync is called on score/passed data)

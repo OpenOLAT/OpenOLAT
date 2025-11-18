@@ -47,6 +47,7 @@ import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial Date:  08.02.2005
@@ -276,6 +277,12 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	@Override
 	public Overridable<Boolean> resetRootPassed(Identity coach, UserCourseEnvironment userCourseEnvironment) {
 		return Overridable.empty();
+	}
+	
+	@Override
+	public void requestCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment,
+			RepositoryEntry courseEntry, Identity doer) {
+		//
 	}
 
 	@Override

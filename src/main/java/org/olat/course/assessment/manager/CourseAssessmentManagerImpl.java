@@ -496,6 +496,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		nodeAssessment.setAssessmentStatus(status);
 		nodeAssessment.setFullyAssessed(fullyAssessed);
+		final Boolean currentPassed = nodeAssessment.getPassed();
 		
 		nodeAssessment = assessmentService.updateAssessmentEntry(nodeAssessment);
 		dbInstance.commit();
@@ -503,10 +504,12 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
 		dbInstance.commit();
+		Boolean passed = scoreAccounting.getScoreEvaluation(courseNode).getPassed();
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		transfertCreditPoint(userCourseEnvironment, nodeAssessment);
-		generateCertificate(userCourseEnvironment, null);
+		boolean setToPassed = Boolean.TRUE.equals(entryRoot) && passed != null && passed.booleanValue() && !Objects.equals(passed, currentPassed);
+		generateCertificate(userCourseEnvironment, null, setToPassed);
 		awardBadge(userCourseEnvironment, nodeAssessment.getCoach());
 	}
 
@@ -519,13 +522,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		Float score = scoreEvaluation.getScore();
 		Float weightedScore = scoreEvaluation.getWeightedScore();
-		Boolean passed = scoreEvaluation.getPassed();
+		final Boolean passed = scoreEvaluation.getPassed();
 		Long assessmentId = scoreEvaluation.getAssessmentID();
 		
 		String subIdent = courseNode.getIdent();
 		RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
 		Boolean entryRoot = isEntryRoot(course, courseNode);
 		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, entryRoot, referenceEntry);
+		final Boolean currentPassed = assessmentEntry.getPassed();
 		if(referenceEntry != null && !referenceEntry.equals(assessmentEntry.getReferenceEntry())) {
 			assessmentEntry.setReferenceEntry(referenceEntry);
 		}
@@ -643,7 +647,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnv);
 		transfertCreditPoint(userCourseEnv, assessmentEntry);
-		generateCertificate(userCourseEnv, identity);
+		boolean setRootToPassed = Boolean.TRUE.equals(entryRoot) && passed != null && passed.booleanValue()
+				&& !Objects.equals(passed, currentPassed);
+		generateCertificate(userCourseEnv, identity, setRootToPassed);
 		awardBadge(userCourseEnv, assessmentEntry.getCoach());
 	}
 	
@@ -669,6 +675,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		String subIdent = rootNode.getIdent();
 		RepositoryEntry referenceEntry = rootNode.getReferencedRepositoryEntry();
 		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, Boolean.TRUE, referenceEntry);
+		final Boolean currentPassed = assessmentEntry.getPassed();
 		
 		Date now = new Date();
 		assessmentEntry.setLastCoachModified(now);
@@ -692,7 +699,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
-		generateCertificate(userCourseEnvironment, null);
+
+		boolean setPassed = passed != null && passed.booleanValue() && !Objects.equals(passed, currentPassed);
+		generateCertificate(userCourseEnvironment, null, setPassed);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
 
 		return assessmentEntry.getPassedOverridable();
@@ -709,6 +718,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		String subIdent = rootNode.getIdent();
 		RepositoryEntry referenceEntry = rootNode.getReferencedRepositoryEntry();
 		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, Boolean.TRUE, referenceEntry);
+		final Boolean currentPassed = assessmentEntry.getPassed();
 		
 		Date now = new Date();
 		assessmentEntry.setLastCoachModified(now);
@@ -733,7 +743,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		transfertCreditPoint(userCourseEnvironment, assessmentEntry);
-		generateCertificate(userCourseEnvironment, coach);
+		boolean setToPassed = passed != null && passed.booleanValue() && !Objects.equals(passed, currentPassed);
+		generateCertificate(userCourseEnvironment, coach, setToPassed);
 		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
 
 		return assessmentEntry.getPassedOverridable();
@@ -797,10 +808,12 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry);
 	}
 
-	private void generateCertificate(UserCourseEnvironment userCourseEnvironment, Identity doer) {
+	private void generateCertificate(UserCourseEnvironment userCourseEnvironment, Identity doer, boolean setRootToPassed) {
 		RepositoryEntry courseEntry = cgm.getCourseEntry();
 		if(certificationProgramService.isInCertificationProgram(courseEntry)) {
-			generateCertificateOfCertificationProgram(userCourseEnvironment, courseEntry, doer);
+			if(setRootToPassed) {
+				requestCertificateOfCertificationProgram(userCourseEnvironment, courseEntry, doer);
+			}
 		} else if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
 			generateCertificateOfCourse(userCourseEnvironment, courseEntry);
 		}
@@ -836,8 +849,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	 * 
 	 * @param userCourseEnvironment The user course environment
 	 * @param courseEntry The course
+	 * @param setRootToPassed The passed value of the root node has changed
+	 * @param doer The user which do the action
 	 */
-	private void generateCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry, Identity doer) {
+	@Override
+	public void requestCertificateOfCertificationProgram(UserCourseEnvironment userCourseEnvironment, RepositoryEntry courseEntry, Identity doer) {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();

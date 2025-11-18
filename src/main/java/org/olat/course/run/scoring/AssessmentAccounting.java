@@ -34,6 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
@@ -316,6 +317,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		if (result.hasChanges()) {
 			update(courseNode, result);
+		}
+		if (courseNode.getParent() == null && result.hasPassedChanges()
+				&& result.getPassed() != null && result.getPassed().booleanValue() ) {
+			// This is a workaround to retrieve the doer of the action if any
+			Identity actor = ThreadLocalUserActivityLogger.getLoggedIdentity();
+			getAssessmentManager().requestCertificateOfCertificationProgram(userCourseEnvironment, getCourseEntry(), actor);
 		}
 		
 		updateToDos(courseNode);
