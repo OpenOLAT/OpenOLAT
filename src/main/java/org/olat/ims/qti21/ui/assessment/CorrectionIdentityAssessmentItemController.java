@@ -351,8 +351,9 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	}
 	
 	private ControllerCreator getPrintControllerCreator(ResolvedAssessmentItem resolvedAssessmentItem, String userDisplayIdentifier) {
-		return (lureq, lwControl) -> new CorrectionIdentityAssessmentItemPrintController(lureq, lwControl, testEntry,
-				resolvedAssessmentTest, resolvedAssessmentItem, model, itemCorrection, userDisplayIdentifier);
+		return (lureq, lwControl) -> new CorrectionIdentityAssessmentItemPrintController(lureq, lwControl,
+				model.getCourseEntry(), model.getCourseNode(), resolvedAssessmentTest, resolvedAssessmentItem,
+				itemCorrection, userDisplayIdentifier);
 	}
 
 }

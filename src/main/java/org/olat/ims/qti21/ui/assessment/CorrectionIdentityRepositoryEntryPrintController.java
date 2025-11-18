@@ -37,17 +37,15 @@ import org.olat.repository.ui.RepositoryEntryInfoCardController;
 public class CorrectionIdentityRepositoryEntryPrintController extends RepositoryEntryInfoCardController {
 
 	private final CourseNode courseNode;
-	private final RepositoryEntry testEntry;
 	private final AssessmentTestSession assessmentTestSession;
 	private final String userLableI18n;
 	private final String userValue;
 
 	public CorrectionIdentityRepositoryEntryPrintController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, CourseNode courseNode, RepositoryEntry testEntry,
-			AssessmentTestSession assessmentTestSession, String userLableI18n, String userValue) {
+			RepositoryEntry entry, CourseNode courseNode, AssessmentTestSession assessmentTestSession,
+			String userLableI18n, String userValue) {
 		super(ureq, wControl, entry);
 		this.courseNode = courseNode;
-		this.testEntry = testEntry;
 		this.assessmentTestSession = assessmentTestSession;
 		this.userLableI18n = userLableI18n;
 		this.userValue = userValue;
@@ -74,6 +72,7 @@ public class CorrectionIdentityRepositoryEntryPrintController extends Repository
 	}
 
 	private void addTest(FormLayoutContainer itemsCont) {
+		RepositoryEntry testEntry = assessmentTestSession.getTestEntry();
 		String testEntryName = StringHelper.escapeHtml(testEntry.getDisplayname());
 		if (StringHelper.containsNonWhitespace(testEntry.getExternalRef())) {
 			testEntryName += " · <span class=\"o_muted\">";

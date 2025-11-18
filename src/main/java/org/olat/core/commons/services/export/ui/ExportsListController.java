@@ -120,7 +120,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	
 	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
 			ExportsListSettings options) {
-		this(ureq, wControl, entry, subIdent, admin, options, "export_list");
+		this(ureq, wControl, entry, subIdent, admin, options, Util.getPackageVelocityRoot(ExportsListController.class) + "/export_list.html");
 	}
 
 	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,

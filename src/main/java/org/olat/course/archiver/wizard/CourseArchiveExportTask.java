@@ -264,7 +264,7 @@ public class CourseArchiveExportTask extends AbstractExportTask {
 			String nodePath = getNodePath(courseNode, numOfCourseNodes);
 			if(courseNode instanceof IQTESTCourseNode testNode) {
 				QTI21ResultsExport export = new QTI21ResultsExport(course.getCourseEnvironment(),
-						nodeOptions.getIdentities(), false, options.isResultsWithPDFs(), testNode, nodePath, locale,
+						nodeOptions.getIdentities(), false, options.isResultsWithPDFs(), false, testNode, nodePath, locale,
 						task.getCreator(), new WindowControlMocker());
 
 				export.exportTestResults(zout, progress);

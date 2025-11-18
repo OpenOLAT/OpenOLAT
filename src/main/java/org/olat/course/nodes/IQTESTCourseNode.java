@@ -596,7 +596,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				boolean withPdfs = options != null && options.getDoer() != null && options.getWindowControl() != null && options.isWithPdfs();
 				Translator translator = Util.createPackageTranslator(QTI21ResultsExport.class, locale);
 				String exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
-				new QTI21ResultsExport(courseEnv, identities, true, withPdfs, this, exportFolderName, locale,
+				boolean withEssayPdfs = false;
+				new QTI21ResultsExport(courseEnv, identities, true, withPdfs, withEssayPdfs, this, exportFolderName, locale,
 						options == null ? null : options.getDoer(), options == null ? null : options.getWindowControl())
 					.exportTestResults(exportStream);
 				// excel results
@@ -936,7 +937,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				assessedIdentitities.add(assessedIdentity);
 				
 				//1) create export resource
-				new QTI21ResultsExport(courseEnv, assessedIdentitities, true, false, this, path, locale, doer, null)
+				new QTI21ResultsExport(courseEnv, assessedIdentitities, true, false, false, this, path, locale, doer, null)
 					.exportTestResults(archiveStream);
 				
 				ArchiveOptions options = new ArchiveOptions();

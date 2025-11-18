@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.nodes.QTICourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
@@ -57,10 +58,10 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class CorrectionIdentityAssessmentItemPrintController extends FormBasicController implements Controller {
 
-	private final RepositoryEntry testEntry;
+	private final RepositoryEntry courseEntry;
+	private final QTICourseNode courseNode;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
-	private final CorrectionOverviewModel model;
 	private final AssessmentItemCorrection itemCorrection;
 	private final ResourceLocator inputResourceLocator;
 	private final URI assessmentObjectUri;
@@ -72,21 +73,21 @@ public class CorrectionIdentityAssessmentItemPrintController extends FormBasicCo
 	private UserManager userManager;
 
 	public CorrectionIdentityAssessmentItemPrintController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
-			ResolvedAssessmentItem resolvedAssessmentItem, CorrectionOverviewModel model,
-			AssessmentItemCorrection itemCorrection, String userDisplayIdentifier) {
+			RepositoryEntry courseEntry, QTICourseNode courseNode, ResolvedAssessmentTest resolvedAssessmentTest,
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemCorrection itemCorrection,
+			String userDisplayIdentifier) {
 		super(ureq, wControl, "correction_identity_print");
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessmentTestComposerController.class, getLocale(), getTranslator()));
-		this.testEntry = testEntry;
+		this.courseEntry = courseEntry;
+		this.courseNode = courseNode;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
-		this.model = model;
 		this.itemCorrection = itemCorrection;
 		this.userDisplayIdentifier = userDisplayIdentifier;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		File fUnzippedDirRoot = frm.unzipFileResource(itemCorrection.getTestSession().getTestEntry().getOlatResource());
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 		assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
@@ -101,7 +102,7 @@ public class CorrectionIdentityAssessmentItemPrintController extends FormBasicCo
 	}
 
 	private void initCourse(UserRequest ureq, FormItemContainer formLayout) {
-		if (model.getCourseNode() == null || model.getCourseEnvironment() == null) {
+		if (courseEntry == null || courseNode == null) {
 			return;
 		}
 		
@@ -113,9 +114,8 @@ public class CorrectionIdentityAssessmentItemPrintController extends FormBasicCo
 		
 		CorrectionIdentityRepositoryEntryPrintController repositoryEntryCtrl = new CorrectionIdentityRepositoryEntryPrintController(
 				ureq, getWindowControl(),
-				model.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-				model.getCourseNode(),
-				testEntry,
+				courseEntry,
+				courseNode,
 				itemCorrection.getTestSession(),
 				userLableI18n,
 				userDisplayIdentifier);

@@ -203,8 +203,9 @@ public class EssaysPdfMediaResource implements MediaResource {
 		try {
 			ControllerCreator creator = (lureq, lwControl) -> {
 				lureq = new SyntheticUserRequest(ureq.getIdentity(), locale, ureq.getUserSession());
-				return new CorrectionIdentityAssessmentItemPrintController(lureq, lwControl, model.getTestEntry(),
-						resolvedAssessmentTest, resolvedAssessmentItem, model, itemCorrection, userDisplayIdentifier);
+				return new CorrectionIdentityAssessmentItemPrintController(lureq, lwControl, model.getCourseEntry(),
+						model.getCourseNode(), resolvedAssessmentTest, resolvedAssessmentItem, itemCorrection,
+						userDisplayIdentifier);
 			};
 			
 			zout.putNextEntry(new ZipEntry(path));
@@ -228,13 +229,21 @@ public class EssaysPdfMediaResource implements MediaResource {
 		}
 		if (StringHelper.containsNonWhitespace(userDisplayIdentifier)) {
 			sb.append(userDisplayIdentifier);
-		} else {
+		} else if (StringHelper.containsNonWhitespace(candidateSession.getAnonymousIdentifier())) {
+			sb.append(candidateSession.getAnonymousIdentifier());
+		} else if (assessedIdentity != null && assessedIdentity.getUser() != null) {
 			User assessedUser = assessedIdentity.getUser();
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getLastName()));
-			sb.append("_");
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getFirstName()));
-			sb.append("_");
-			sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getProperty(UserConstants.NICKNAME)));
+			if (StringHelper.containsNonWhitespace(assessedUser.getLastName())) {
+				sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getLastName()));
+				sb.append("_");
+			}
+			if (StringHelper.containsNonWhitespace(assessedUser.getFirstName())) {
+				sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getFirstName()));
+				sb.append("_");
+			}
+			if (StringHelper.containsNonWhitespace(assessedUser.getProperty(UserConstants.NICKNAME))) {
+				sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getProperty(UserConstants.NICKNAME)));
+			}
 		}
 		sb.append(".pdf");
 		return sb.toString();
