@@ -112,18 +112,18 @@ public class UserInfoProfileController extends BasicController {
 			return;
 		}
 		
-		visitingCardLink = LinkFactory.createLink("user.info.visiting.card", mainVC, this);
+		visitingCardLink = LinkFactory.createCustomLink("user.info.visiting.card", "visiting.card", null, Link.BUTTON_XSMALL, mainVC, this);
+		visitingCardLink.setTitle("user.info.visiting.card");
 		visitingCardLink.setIconLeftCSS("o_icon o_icon-fw o_icon_visiting_card");
-		visitingCardLink.setAriaRole("button");
 		
-		emailLink = LinkFactory.createLink("user.info.email", mainVC, this);
+		emailLink = LinkFactory.createCustomLink("user.info.email", "email", null, Link.BUTTON_XSMALL, mainVC, this);
+		emailLink.setTitle("user.info.email");
 		emailLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
-		emailLink.setAriaRole("button");
 
 		if (profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey())) {
-			chatLink = LinkFactory.createLink("user.info.chat", mainVC, this);
+			chatLink = LinkFactory.createCustomLink("user.info.chat", "chat", null, Link.BUTTON_XSMALL, mainVC, this);
+			chatLink.setTitle("user.info.chat");
 			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
-			chatLink.setAriaRole("button");
 		}
 
 		if (profileConfig.isUserManagementLinkEnabled()) {
@@ -138,8 +138,8 @@ public class UserInfoProfileController extends BasicController {
 					String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(
 							"[UserAdminSite:0][usearch:0][table:0][Identity:" + portraitUser.getIdentityKey() + "]");
 					ExternalLink userManagementLink = LinkFactory.createExternalLink("user.info.user.management", "user.info.user.management", url);
-					userManagementLink.setCssClass("o_open_org");
-					userManagementLink.setName(translate("user.info.user.management"));
+					userManagementLink.setCssClass("btn btn-xs btn-default");
+					userManagementLink.setTooltip(translate("user.info.user.management"));
 					userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
 					mainVC.put("user.info.user.management", userManagementLink);
 				}

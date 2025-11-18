@@ -795,6 +795,13 @@ form.o_dnd_over {
 	}
 }
 
+.o_muted_labels {
+	label,
+	.o_form_label {
+		color: $text-muted;
+		font-weight: 400;
+	}
+}
 .o_form_label {
 	display: inline-block;
 	margin-bottom: 5px;
