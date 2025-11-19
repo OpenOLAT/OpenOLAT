@@ -188,7 +188,7 @@ public class EssaysPdfMediaResource implements MediaResource {
 									? userDisplayIdentifier = model.getAnonymizedName(itemCorrection.getAssessedIdentity())
 									: null;
 							
-							String filename = createPdfFilename(assessmentItem, testSession, assessedIdentity, userDisplayIdentifier);
+							String filename = createPdfFilename(assessmentItem, testSession, assessedIdentity, userDisplayIdentifier) + ".pdf";
 							createEssayPDF(zout, filename, itemCorrection, userDisplayIdentifier);
 						}
 					}
@@ -245,7 +245,6 @@ public class EssaysPdfMediaResource implements MediaResource {
 				sb.append(StringHelper.transformDisplayNameToFileSystemName(assessedUser.getProperty(UserConstants.NICKNAME)));
 			}
 		}
-		sb.append(".pdf");
 		return sb.toString();
 	}
 	
