@@ -31,11 +31,13 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -188,6 +190,9 @@ public class PendingMembershipsController extends FormBasicController implements
 
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
+		sortOptions.setDefaultOrderBy(new SortKey(PendingMembershipsCol.confirmationUntil.name(), true));
+		tableEl.setSortSettings(sortOptions);
 
 		initFiltersPreset(ureq);
 	}
