@@ -42,6 +42,7 @@ import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.InputType;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.SingleKey;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailing;
@@ -60,7 +61,8 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 	private FormLink customizeButton;
 	private FormLink editCustomizationButton;
 	
-	private CertificationProgramNotificationRow notificationRow;
+	private final CertificationProgram certificationProgram;
+	private final CertificationProgramNotificationRow notificationRow;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController translatorCtrl;
@@ -71,9 +73,10 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 	private CertificationProgramService certificationProgramService;
 	
 	public CertificationProgramNotificationDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			CertificationProgramNotificationRow notificationRow) {
+			CertificationProgram certificationProgram, CertificationProgramNotificationRow notificationRow) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "program_notification_details_view", rootForm);
 		this.notificationRow = notificationRow;
+		this.certificationProgram = certificationProgram;
 		initForm(ureq);
 	}
 
@@ -99,7 +102,7 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 			i18nKeys = CertificationProgramMailing.getCustomI18nKeys(notificationRow);
 		} else {
 			content = translate("notification.default.template");
-			i18nKeys = CertificationProgramMailing.getDefaultI18nKeys(notificationRow.getType());
+			i18nKeys = CertificationProgramMailing.getDefaultI18nKeys(notificationRow.getType(), certificationProgram.hasCreditPoints());
 		}
 		uifactory.addStaticTextElement("content", "table.header.content", content, formLayout);
 		
@@ -155,7 +158,7 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 		
 		String description = MailHelper.getVariableNamesHelp(CPMailTemplate.variableNames(), getLocale());
 		I18nKeys customTemplate = CertificationProgramMailing.getCustomI18nKeys(notificationRow);
-		I18nKeys template = CertificationProgramMailing.getDefaultI18nKeys(notificationRow.getType());
+		I18nKeys template = CertificationProgramMailing.getDefaultI18nKeys(notificationRow.getType(), certificationProgram.hasCreditPoints());
 		SingleKey subjectKey = new SingleKey(customTemplate.subject(), InputType.TEXT_ELEMENT, template.subject());
 		SingleKey bodyKey = new SingleKey(customTemplate.body(), InputType.RICH_TEXT_ELEMENT, template.body());
 		List<SingleKey> keys = List.of(subjectKey, bodyKey);

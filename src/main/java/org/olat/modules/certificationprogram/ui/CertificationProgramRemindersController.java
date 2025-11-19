@@ -278,7 +278,8 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		
 		String description = MailHelper.getVariableNamesHelp(CPMailTemplate.variableNames(), getLocale());
 		I18nKeys customTemplate = CertificationProgramMailing.getCustomI18nKeys(notificationRow);
-		I18nKeys template = CertificationProgramMailing.getDefaultI18nKeys(notificationRow.getType());
+		I18nKeys template = CertificationProgramMailing.getDefaultI18nKeys(notificationRow.getType(),
+				certificationProgram.hasCreditPoints());
 		SingleKey subjectKey = new SingleKey(customTemplate.subject(), InputType.TEXT_ELEMENT, template.subject());
 		SingleKey bodyKey = new SingleKey(customTemplate.body(), InputType.RICH_TEXT_ELEMENT, template.body());
 		List<SingleKey> keys = List.of(subjectKey, bodyKey);

@@ -146,7 +146,8 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 			flc.remove(row.getDetailsController().getInitialFormItem());
 		}
 		
-		CertificationProgramNotificationDetailsController detailsCtrl = new CertificationProgramNotificationDetailsController(ureq, getWindowControl(), mainForm, row);
+		CertificationProgramNotificationDetailsController detailsCtrl = new CertificationProgramNotificationDetailsController(ureq, getWindowControl(), mainForm,
+				certificationProgram, row);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

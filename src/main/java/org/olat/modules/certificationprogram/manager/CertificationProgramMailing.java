@@ -55,7 +55,7 @@ public class CertificationProgramMailing {
 		return new I18nKeys(subjectKey, bodyKey);
 	}
 	
-	public static I18nKeys getI18nKeys(CertificationProgramMailConfiguration configuration) {
+	public static I18nKeys getI18nKeys(CertificationProgramMailConfiguration configuration, boolean withCreditPoints) {
 		I18nKeys keys;
 		if(configuration.isCustomized()) {
 			String suffix = configuration.getI18nSuffix();
@@ -63,7 +63,7 @@ public class CertificationProgramMailing {
 			String bodyKey = getCustomI18nMailBody(suffix);
 			return new I18nKeys(subjectKey, bodyKey);
 		} else {
-			keys = getDefaultI18nKeys(configuration.getType());
+			keys = getDefaultI18nKeys(configuration.getType(), withCreditPoints);
 		}
 		return keys;
 	}
@@ -76,8 +76,10 @@ public class CertificationProgramMailing {
 		return "mail.subject." + suffix;
 	}
 	
-	public static I18nKeys getDefaultI18nKeys(CertificationProgramMailType type) {
+	public static I18nKeys getDefaultI18nKeys(CertificationProgramMailType type, boolean withCreditPoints) {
 		if(type == null) return null;
+		
+		String creditPointSuffix = withCreditPoints ? ".cp" : "";
 		
 		return switch(type) {
 			case certificate_issued -> new I18nKeys("mail.certificate_issued.subject", "mail.certificate_issued.body");
@@ -85,8 +87,8 @@ public class CertificationProgramMailing {
 			case certificate_expired -> new I18nKeys("mail.certificate_expired.subject", "mail.certificate_expired.body");
 			case certificate_revoked -> new I18nKeys("mail.certificate_revoked.subject", "mail.certificate_revoked.body");
 			case program_removed -> new I18nKeys("mail.program_removed.subject", "mail.program_removed.body");
-			case reminder_overdue -> new I18nKeys("mail.reminder_overdue.subject", "mail.reminder_overdue.body");
-			case reminder_upcoming -> new I18nKeys("mail.reminder_upcoming.subject", "mail.reminder_upcoming.body");
+			case reminder_overdue -> new I18nKeys("mail.reminder_overdue.subject" + creditPointSuffix, "mail.reminder_overdue.body" + creditPointSuffix);
+			case reminder_upcoming -> new I18nKeys("mail.reminder_upcoming.subject" + creditPointSuffix, "mail.reminder_upcoming.body" + creditPointSuffix);
 			default -> null;
 		};
 	}
@@ -94,7 +96,8 @@ public class CertificationProgramMailing {
 	public static MailTemplate getTemplate(CertificationProgram program, CertificationProgramMailConfiguration configuration,
 			Identity recipient, Certificate certificate, Identity actor) {
 		if(configuration == null) return null;
-		I18nKeys keys = getI18nKeys(configuration);
+		
+		I18nKeys keys = getI18nKeys(configuration, program.hasCreditPoints());
 		return createMailTemplate(program, recipient, certificate, actor, keys.subject(), keys.body());
 	}
 	

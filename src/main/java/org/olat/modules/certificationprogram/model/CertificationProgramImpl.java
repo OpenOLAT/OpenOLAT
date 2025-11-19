@@ -319,6 +319,12 @@ public class CertificationProgramImpl implements CertificationProgram, Persistab
 	public void setPrematureRecertificationByUserEnabled(boolean enabled) {
 		this.prematureRecertificationByUserEnabled = enabled;
 	}
+	
+	@Override
+	@Transient
+	public boolean hasCreditPoints() {
+		return getCreditPointSystem() != null && getCreditPoints() != null;
+	}
 
 	@Override
 	public BigDecimal getCreditPoints() {

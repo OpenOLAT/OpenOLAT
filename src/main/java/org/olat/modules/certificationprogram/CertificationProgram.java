@@ -90,6 +90,8 @@ public interface CertificationProgram extends CertificationProgramRef, OLATResou
 
 	void setRecertificationWindowUnit(DurationType recertificationWindowUnit);
 	
+	boolean hasCreditPoints();
+	
 	BigDecimal getCreditPoints();
 	
 	void setCreditPoints(BigDecimal points);
