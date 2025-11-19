@@ -131,7 +131,8 @@ public class CatalogLayoutController extends FormBasicController {
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.educationalType.name(), translate("admin.card.view.educational.type")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.certificate.name(), translate("admin.card.view.certificate")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.creditPoints.name(), translate("admin.card.view.credit.points")));
-		cardViewSV.add(SelectionValues.entry(CatalogCardView.externalRef.name(), translate("admin.card.view.external.ref.type")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.extRef.name(), translate("admin.card.view.external.ref")));
+		cardViewSV.add(SelectionValues.entry(CatalogCardView.type.name(), translate("admin.card.view.type")));
 		cardViewSV.add(SelectionValues.entry(KEY_TITLE, translate("admin.card.view.title")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.teaserText.name(), translate("admin.card.view.teaser.text")));
 		cardViewSV.add(SelectionValues.entry(CatalogCardView.authors.name(), translate("admin.card.view.authors")));

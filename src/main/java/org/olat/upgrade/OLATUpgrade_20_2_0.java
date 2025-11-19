@@ -19,12 +19,19 @@
  */
 package org.olat.upgrade;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WebappHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -43,6 +50,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_20_2_0.class);
 
 	private static final String VERSION = "OLAT_20.2.0";
+	private static final String MIGRATE_CATALOG_CARD_VIEW = "MIGRATE CATALOG CARD_VIEW";
 	private static final String MIGRATE_CURRICULUM_MANAGERS = "MIGRATE CURRICULUM MANAGERS";
 
 	@Autowired
@@ -67,6 +75,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 		}
 
 		boolean allOk = true;
+		allOk &= migrateCatalogCardView(upgradeManager, uhd);
 		allOk &= migrateCurriculumManagers(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -76,6 +85,40 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_20_2_0 successfully!");
 		} else {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_20_2_0 not finished, try to restart OpenOlat!");
+		}
+		return allOk;
+	}
+	
+	private boolean migrateCatalogCardView(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CATALOG_CARD_VIEW)) {
+			try {
+				String userDataDirectory = WebappHelper.getUserDataRoot();
+				Path propsPath = Paths.get(userDataDirectory, "system", "configuration", "org.olat.modules.catalog.CatalogV2Module.properties");
+				if (Files.exists(propsPath)) {
+					Properties props = new Properties();
+					try (FileInputStream input = new FileInputStream(propsPath.toFile())) {
+						props.load(input);
+					}
+					
+					Object prop = props.get("catalog.v2.card.view");
+					if (prop instanceof String propertyValue) {
+						propertyValue = propertyValue.replace("externalRef", "extRef,type");
+						props.setProperty("catalog.v2.card.view", propertyValue);
+						try (FileOutputStream output = new FileOutputStream(propsPath.toFile())) {
+							props.store(output, "");
+							log.info("Catalog card view migrated.");
+						} catch (Exception e) {
+							log.error("", e);
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(MIGRATE_CATALOG_CARD_VIEW, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}

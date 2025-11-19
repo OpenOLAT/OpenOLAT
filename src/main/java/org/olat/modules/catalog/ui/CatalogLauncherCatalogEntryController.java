@@ -179,8 +179,10 @@ public class CatalogLauncherCatalogEntryController extends BasicController {
 		if (creditPointModule.isEnabled() && catalogModule.getCardView().contains(CatalogCardView.creditPoints)) {
 			item.setCreditPointAmount(entry.getCreditPointAmount());
 		}
-		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
+		if (catalogModule.getCardView().contains(CatalogCardView.extRef)) {
 			item.setExternalRef(entry.getExternalRef());
+		}
+		if (catalogModule.getCardView().contains(CatalogCardView.type)) {
 			if (StringHelper.containsNonWhitespace(entry.getTechnicalType())) {
 				NodeAccessType type = NodeAccessType.of(entry.getTechnicalType());
 				String translatedType = ConditionNodeAccessProvider.TYPE.equals(type.getType())

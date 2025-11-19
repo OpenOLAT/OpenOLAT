@@ -53,7 +53,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	
 	public enum CatalogV1Migration { pending, running, done }
 	public enum CatalogCardView {
-		externalRef, teaserText, taxonomyLevels, educationalType, mainLanguage, location, executionPeriod, authors,
+		teaserText, taxonomyLevels, educationalType, extRef, type, mainLanguage, location, executionPeriod, authors,
 		expenditureOfWork, certificate, creditPoints
 	}
 
@@ -88,7 +88,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private String headerBgImageFilename;
 	@Value("${catalog.v2.launcher.taxonomy.levelstyle:rectangle}")
 	private String launcherTaxonomyLevelStyle;
-	@Value("${catalog.v2.card.view:externalRef,teaserText,taxonomyLevels,educationalType}")
+	@Value("${catalog.v2.card.view:teaserText,taxonomyLevels,educationalType,extRef,type}")
 	private String cardViewStr;
 	private Set<CatalogCardView> cardView;
 	
@@ -271,6 +271,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	public Set<CatalogCardView> getCardView() {
 		if (cardView == null) {
 			if (StringHelper.containsNonWhitespace(cardViewStr)) {
+				cardViewStr = cardViewStr.replace("externalRef", "extRef,type"); // Separate old config in two configs
 				cardView = Arrays.stream(cardViewStr.split(",")).map(CatalogCardView::valueOf).collect(Collectors.toSet());
 			} else {
 				cardView = Collections.emptySet();
