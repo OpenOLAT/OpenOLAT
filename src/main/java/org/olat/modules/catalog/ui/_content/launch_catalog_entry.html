@@ -54,13 +54,13 @@
 						<div class="o_meta">
 							<div class="o_ext_ref">
 								#if ($r.isNotEmpty($row.getExternalRef()))
-									$r.escapeHtml($row.getExternalRef())
+									<span class="o_external_ref">$r.escapeHtml($row.getExternalRef())</span>
 									#if($r.isNotEmpty($row.translatedTechnicalType))
 										<span class="o_spacer">&middot;</span>
 									#end
 								#end
 								#if($r.isNotEmpty($row.translatedTechnicalType))
-									$r.escapeHtml($row.translatedTechnicalType)
+									<span class="o_technical_type">$r.escapeHtml($row.translatedTechnicalType)</span>
 								#end
 							</div>
 							<h4 class="o_title o_card_title">$r.render("$row.getDisplayNameLinkName()")</h4>

@@ -13,13 +13,13 @@
 				#if($r.isNotEmpty($row.externalRef) || $r.isNotEmpty($row.translatedTechnicalType))
 					<div class="o_ext_ref">
 						#if($r.isNotEmpty($row.externalRef))
-							$r.escapeHtml($row.externalRef)
+							<span class="o_external_ref">$r.escapeHtml($row.externalRef)</span>
 							#if($r.isNotEmpty($row.translatedTechnicalType))
 								<span class="o_spacer">&middot;</span>
 							#end
 						#end
 						#if($r.isNotEmpty($row.translatedTechnicalType))
-							$r.escapeHtml($row.translatedTechnicalType)
+							<span class="o_technical_type">$r.escapeHtml($row.translatedTechnicalType)</span>
 						#end
 					</div>
 				#end
