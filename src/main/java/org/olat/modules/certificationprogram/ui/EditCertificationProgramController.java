@@ -93,10 +93,12 @@ public class EditCertificationProgramController extends BasicController implemen
 		if (administrator) {
 			mainVC.contextPut("key", certificationProgram.getKey());
 		}
-		if(certificationProgram.getRecertificationMode() != null) {
-			mainVC.contextPut("rmode", translate("recertification.mode." + certificationProgram.getRecertificationMode().name()));
-		}
+		
 		if(certificationProgram.getCreditPointSystem() != null) {
+			// Only available with credit points
+			if(certificationProgram.getRecertificationMode() != null) {
+				mainVC.contextPut("rmode", translate("recertification.mode." + certificationProgram.getRecertificationMode().name()));
+			}
 			String text = CertificationHelper.creditPointsToString(certificationProgram);
 			mainVC.contextPut("creditPoints", text);
 		}
@@ -132,8 +134,10 @@ public class EditCertificationProgramController extends BasicController implemen
 		} else if(configurationCtrl == source) {
 			certificationProgram = configurationCtrl.getCertificationProgram();
 			exposeToVC();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(certificateCtrl == source) {
 			certificationProgram = certificateCtrl.getCertificationProgram();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 	

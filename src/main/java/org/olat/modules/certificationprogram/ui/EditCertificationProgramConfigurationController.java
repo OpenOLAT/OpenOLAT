@@ -68,7 +68,6 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 	private SingleSelection systemEl;
 	private TextElement creditPointEl;
 	private FormLayoutContainer creditPointCont;
-	private SingleSelection prematureRecertificationEl;
 	
 	private final List<CreditPointSystem> systems;
 	private CertificationProgram certificationProgram;
@@ -189,14 +188,6 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		creditPointEl.setDisplaySize(8);
 		creditPointEl.setMandatory(true);
 		updateCreditPointUI();
-		
-		SelectionValues yesNoPk = new SelectionValues();
-		yesNoPk.add(SelectionValues.entry(Boolean.TRUE.toString(), translate("yes")));
-		yesNoPk.add(SelectionValues.entry(Boolean.FALSE.toString(), translate("no")));
-		prematureRecertificationEl = uifactory.addRadiosHorizontal("recertification.premature", "recertification.premature", formLayout,
-				yesNoPk.keys(), yesNoPk.values());
-		prematureRecertificationEl.setHelpText(translate("recertification.premature.hint"));
-		prematureRecertificationEl.select(Boolean.toString(certificationProgram.isPrematureRecertificationByUserEnabled()), true);
 	}
 	
 	private void updateUI() {
@@ -214,7 +205,6 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		creditPointCont.setVisible(creditPointEnabled);
 		creditPointEl.setVisible(creditPointEnabled);
 		systemEl.setVisible(creditPointEnabled);
-		prematureRecertificationEl.setVisible(creditPointEnabled);
 	}
 	
 	private void updateCreditPointUI() {
@@ -357,12 +347,11 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 			certificationProgram.setCreditPointSystem(system);
 			BigDecimal points = new BigDecimal(creditPointEl.getValue());
 			certificationProgram.setCreditPoints(points);
-			certificationProgram.setPrematureRecertificationByUserEnabled(Boolean.TRUE.toString().equals(prematureRecertificationEl.getSelectedKey()));
 		} else {
-			certificationProgram.setRecertificationMode(null);
+			// No
+			certificationProgram.setRecertificationMode(RecertificationMode.manual);
 			certificationProgram.setCreditPointSystem(null);
 			certificationProgram.setCreditPoints(null);
-			certificationProgram.setPrematureRecertificationByUserEnabled(false);
 		}
 		
 		certificationProgram = certificationProgramService.updateCertificationProgram(certificationProgram);

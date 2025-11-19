@@ -225,7 +225,6 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(CertificationStatus.VALID.name(), translate("certification.status.valid")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.EXPIRED.name(), translate("certification.status.expired")));
-		statusValues.add(SelectionValues.entry(CertificationStatus.PAUSED.name(), translate("certification.status.paused")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.REVOKED.name(), translate("certification.status.revoked")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.ARCHIVED.name(), translate("certification.status.archived")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.certificate.status"),

@@ -24,7 +24,6 @@ import java.util.Date;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -49,7 +48,6 @@ import org.olat.course.assessment.ui.tool.IdentityCertificatesController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.modules.certificationprogram.CertificationProgram;
-import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramCertifiedMembersController;
 import org.olat.modules.certificationprogram.ui.CertificationStatus;
@@ -70,35 +68,25 @@ public class CertificateDetailsController extends BasicController {
 	private static final Size THUMBNAIL_SIZE = new Size(249, 172, false);
 
 	private Link courseLink;
-	private Link downloadButton;
-	private Link pauseRecertificationButton;
-	private Link startRecertificationButton;
-	private Link resumeRecertificationButton;
+	private final Link downloadButton;
+	private final Link startRecertificationButton;
 	private final VelocityContainer mainVC;
 
-	private Certificate certificate;
+	private final Certificate certificate;
 	private final RepositoryEntry course;
-	private final Identity assessedIdentity;
-	private final CertificationProgram certificationProgram;
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private CreditPointService creditPointService;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
-	@Autowired
-	private CertificationProgramService certificationProgramService;
 	
 	public CertificateDetailsController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, CertificateRow certificateRow) {
 		super(ureq, wControl, Util
 				.createPackageTranslator(CertificationProgramCertifiedMembersController.class, ureq.getLocale()));
-		this.assessedIdentity = assessedIdentity;
 		certificate = certificateRow.getCertificate();
-		certificationProgram = certificateRow.getCertificationProgram();
 		
 		mainVC = createVelocityContainer("certificate_details");
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-249-172",
@@ -116,10 +104,6 @@ public class CertificateDetailsController extends BasicController {
 		downloadButton.setIconLeftCSS("o_icon o_icon_download");
 		downloadButton.setTarget("_blank");
 
-		pauseRecertificationButton = LinkFactory.createButton("recertification.pause", mainVC, this);
-		pauseRecertificationButton.setIconLeftCSS("o_icon o_icon_certification_status_paused");
-		resumeRecertificationButton = LinkFactory.createButton("recertification.resume", mainVC, this);
-		resumeRecertificationButton.setIconLeftCSS("o_icon o_icon_certification_resume");
 		startRecertificationButton = LinkFactory.createButton("recertification.start", mainVC, this);
 
 		course = certificateRow.getCourse();
@@ -196,10 +180,7 @@ public class CertificateDetailsController extends BasicController {
 		}
 
 		// Buttons
-		boolean paused = certificate.isRecertificationPaused();
-		resumeRecertificationButton.setVisible(paused);
-		pauseRecertificationButton.setVisible(!paused && recertificationInDays.isBeforeRecertification(ureq.getRequestTimestamp()));
-		startRecertificationButton.setVisible(!paused && recertificationInDays.isRecertificationOpen(ureq.getRequestTimestamp()));
+		startRecertificationButton.setVisible(recertificationInDays.isRecertificationOpen(ureq.getRequestTimestamp()));
 		mainVC.contextPut("recertificationWindowClosed", recertificationInDays.isRecertificationWindowClosed(ureq.getRequestTimestamp()));
 
 		// Date of recertification
@@ -209,49 +190,35 @@ public class CertificateDetailsController extends BasicController {
 		Date  endDateOfRecertificationWindow = recertificationInDays.endDateOfRecertificationWindow();
 		String endDateOfRecertificationWindowFormatted = formatter.formatDate(endDateOfRecertificationWindow);
 		String recertificationInfosDate = nextRecertificationDateFormatted;// Set a default value
-		if(certificate.isRecertificationPaused()) {
-			if(recertificationInDays.isBeforeRecertification(ureq.getRequestTimestamp())) {
-				// Date of certification in the future
-				recertificationInfosDate = translate("recertification.paused", nextRecertificationDateFormatted, paused());
-			} else if(recertificationInDays.isRecertificationWindowClosed(ureq.getRequestTimestamp())) {
-				// Too late
-				recertificationInfosDate = danger() + translate("recertification.paused.after", endDateOfRecertificationWindowFormatted, paused());
+		
+		long days = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertificationDate);
+		if(days >= 2) {
+			recertificationInfosDate = translate("recertification.running.more", nextRecertificationDateFormatted, Long.toString(days));	
+		} else if(days == 1) {
+			recertificationInfosDate = translate("recertification.running.more.tomorrow", nextRecertificationDateFormatted, Long.toString(days));	
+		} else if(days == 0) {
+			if(endDateOfRecertificationWindow == null) {
+				recertificationInfosDate = warning() + translate("recertification.running.more.today");
 			} else {
-				recertificationInfosDate = warning() + translate("recertification.paused.after", endDateOfRecertificationWindowFormatted, paused());
-			}
-		} else {
-			long days = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertificationDate);
-			if(days >= 2) {
-				recertificationInfosDate = translate("recertification.running.more", nextRecertificationDateFormatted, Long.toString(days));	
-			} else if(days == 1) {
-				recertificationInfosDate = translate("recertification.running.more.tomorrow", nextRecertificationDateFormatted, Long.toString(days));	
-			} else if(days == 0) {
-				if(endDateOfRecertificationWindow == null) {
-					recertificationInfosDate = warning() + translate("recertification.running.more.today");
-				} else {
-					long winDays = DateUtils.countDays(ureq.getRequestTimestamp(), endDateOfRecertificationWindow);
-					recertificationInfosDate = warning() + translate("recertification.running.more.today.window", endDateOfRecertificationWindowFormatted, Long.toString(winDays));
-				}
-			} else if(endDateOfRecertificationWindow != null) {
 				long winDays = DateUtils.countDays(ureq.getRequestTimestamp(), endDateOfRecertificationWindow);
-				if(winDays > 2) {
-					recertificationInfosDate = warning() + translate("recertification.running.more.today.window", endDateOfRecertificationWindowFormatted, Long.toString(winDays));
-				} else if(winDays == 1) {
-					recertificationInfosDate = warning() + translate("recertification.running.late.tomorrow", endDateOfRecertificationWindowFormatted);
-				} else if(winDays == 0) {
-					recertificationInfosDate = warning() + translate("recertification.running.late.today", endDateOfRecertificationWindowFormatted);
-				} else if(winDays == -1) {
-					recertificationInfosDate = danger() + translate("recertification.running.late.yesterday", endDateOfRecertificationWindowFormatted);
-				} else {
-					recertificationInfosDate = danger() + translate("recertification.running.late.more", endDateOfRecertificationWindowFormatted, Long.toString(Math.abs(winDays)));
-				}
+				recertificationInfosDate = warning() + translate("recertification.running.more.today.window", endDateOfRecertificationWindowFormatted, Long.toString(winDays));
 			}
-		}	
+		} else if(endDateOfRecertificationWindow != null) {
+			long winDays = DateUtils.countDays(ureq.getRequestTimestamp(), endDateOfRecertificationWindow);
+			if(winDays > 2) {
+				recertificationInfosDate = warning() + translate("recertification.running.more.today.window", endDateOfRecertificationWindowFormatted, Long.toString(winDays));
+			} else if(winDays == 1) {
+				recertificationInfosDate = warning() + translate("recertification.running.late.tomorrow", endDateOfRecertificationWindowFormatted);
+			} else if(winDays == 0) {
+				recertificationInfosDate = warning() + translate("recertification.running.late.today", endDateOfRecertificationWindowFormatted);
+			} else if(winDays == -1) {
+				recertificationInfosDate = danger() + translate("recertification.running.late.yesterday", endDateOfRecertificationWindowFormatted);
+			} else {
+				recertificationInfosDate = danger() + translate("recertification.running.late.more", endDateOfRecertificationWindowFormatted, Long.toString(Math.abs(winDays)));
+			}
+		}
+
 		mainVC.contextPut("recertificationDate", recertificationInfosDate);
-	}
-	
-	private String paused() {
-		return "<i class='o_icon o_icon_certification_status_paused'> </i> ";
 	}
 	
 	private String warning() {
@@ -271,27 +238,7 @@ public class CertificateDetailsController extends BasicController {
 		} else if(startRecertificationButton == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doOpenCourse(ureq);
-		} else if(resumeRecertificationButton == source) {
-			doResumeCertification(ureq);
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else if(pauseRecertificationButton == source) {
-			doPauseCertification(ureq);
-			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
-	}
-	
-	private void doResumeCertification(UserRequest ureq) {
-		certificate = certificationProgramService.continueRecertification(certificationProgram, assessedIdentity, getIdentity());
-		dbInstance.commit();
-		initStatus(ureq);
-		initRecertificationProgram(ureq, certificate, certificationProgram);
-	}
-	
-	private void doPauseCertification(UserRequest ureq) {
-		certificate = certificationProgramService.pauseRecertification(certificationProgram, assessedIdentity, getIdentity());
-		dbInstance.commit();
-		initStatus(ureq);
-		initRecertificationProgram(ureq, certificate, certificationProgram);
 	}
 	
 	private void doDownload(UserRequest ureq) {

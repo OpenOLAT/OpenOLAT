@@ -58,11 +58,6 @@ public class CertificateStandalone extends AbstractCertificate {
 	public Date getRecertificationWindowDate() {
 		return null;
 	}
-	
-	@Override
-	public boolean isRecertificationPaused() {
-		return false;
-	}
 
 	@Override
 	public boolean equals(Object obj) {

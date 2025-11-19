@@ -39,8 +39,6 @@ public enum CertificationStatus {
 	EXPIRED,
 	/** Flag last=true on certificate but next certification date */
 	EXPIRED_RENEWABLE,
-	/** Flag paused on certificate */
-	PAUSED,
 	/** Only flag last=false and revoked=true */
 	REVOKED,
 	/** Only flag last=false and revoked=false*/
@@ -48,10 +46,6 @@ public enum CertificationStatus {
 
 	public static CertificationStatus evaluate(Certificate certificate, Date referenceDate) {
 		if(certificate.isLast()) {
-			if(certificate.isRecertificationPaused()) {
-				return PAUSED;
-			}
-			
 			Date nextRecertificationDate = certificate.getNextRecertificationDate();
 			Date recertificationWindowDate = certificate.getRecertificationWindowDate();
 			if(nextRecertificationDate == null || nextRecertificationDate.compareTo(referenceDate) >= 0) {

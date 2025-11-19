@@ -113,10 +113,6 @@ public class CertificateRow {
 		return null;
 	}
 	
-	public boolean isRecertificationPaused() {
-		return certificate.isRecertificationPaused();
-	}
-	
 	public boolean isUploaded() {
 		return StringHelper.containsNonWhitespace(uploadedByName);
 	}

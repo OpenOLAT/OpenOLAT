@@ -227,6 +227,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 		if(settingsCtrl == source) {
 			certificationProgram = settingsCtrl.getCertificationProgram();
 			toolbarPanel.changeDisplayname(certificationProgram.getDisplayName());
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.event(ureq, source, event);
 	}

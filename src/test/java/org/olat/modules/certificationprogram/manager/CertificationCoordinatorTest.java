@@ -128,7 +128,6 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT1", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
-		program.setPrematureRecertificationByUserEnabled(true);
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(30);
 		program.setValidityTimelapseUnit(DurationType.day);
@@ -176,7 +175,6 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT5", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
-		program.setPrematureRecertificationByUserEnabled(true);
 		program.setRecertificationEnabled(true);
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(30);
@@ -229,7 +227,6 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT6", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
-		program.setPrematureRecertificationByUserEnabled(true);
 		program.setRecertificationEnabled(true);
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(30);
@@ -281,7 +278,6 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test coins", "UT7", null, null, false, false);
 		program.setCreditPoints(new BigDecimal("20"));
 		program.setCreditPointSystem(system);
-		program.setPrematureRecertificationByUserEnabled(true);
 		program.setRecertificationEnabled(true);
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(30);
@@ -486,6 +482,43 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assert.assertNotNull(expiredAgainLastCertificate);
 		assertCertificateStatus(expiredAgainLastCertificate, CertificationStatus.EXPIRED, CertificationIdentityStatus.REMOVED);
 		//TODO certification removed assertMessage(program, CertificationProgramMailType.program_removed);
+	}
+	
+	@Test
+	public void processUseCase4() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("usecase-1-participant-4", Locale.ENGLISH);
+		CertificationProgram program = certificationProgramService.createCertificationProgram("usecase-1-to-curriculum-4", "UC3", null);
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(7);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationMode(RecertificationMode.manual);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(1);
+		program.setRecertificationWindowUnit(DurationType.month);
+		program = certificationProgramService.updateCertificationProgram(program);
+		dbInstance.commit();
+		
+		boolean courseOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
+		Assert.assertTrue(courseOk);
+		waitMessageAreConsumed();// Wait certificate is generated
+		
+		List<Certificate> firstCertificates = certificationProgramService.getCertificates(participant, program);
+		Assertions.assertThat(firstCertificates)
+			.hasSize(1);
+		Certificate firstCertificate = certificatesDao.getLastCertificate(participant, program);
+		assertCertificateStatus(firstCertificate, CertificationStatus.VALID, CertificationIdentityStatus.CERTIFIED);
+		assertMessage(program, CertificationProgramMailType.certificate_issued);
+		
+		// Move date a little bit
+		updateCertificate(firstCertificate, DateUtils.addDays(firstCertificate.getCreationDate(), -3), program);
+		
+		// Manager renews it
+		boolean coachRenewOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COACH, new Date(), actor);
+		Assert.assertTrue(coachRenewOk);
+		
+		//TODO certification
 	}
 	
 	/**

@@ -166,7 +166,7 @@ public class CertificationProgramToCurriculumElementDAO {
 	
 	public long countCertificates(CertificationProgramMemberSearchParameters searchParams, Date referenceDate) {
 		QueryBuilder query = new QueryBuilder();
-		query.append("select count(distinct cert.key) from certificate as cert")
+		query.append("select count(distinct ident.key) from certificate as cert")
 		     .append(" inner join cert.identity as ident");
 		
 		appendQueryCertificates(query, searchParams);
@@ -184,8 +184,8 @@ public class CertificationProgramToCurriculumElementDAO {
 		query.append("select cert from certificate as cert")
 		     .append(" inner join fetch cert.identity as ident")
 		     .append(" inner join fetch ident.user as identUser");
-		
 		appendQueryCertificates(query, searchParams);
+		
 		return dbInstance.getCurrentEntityManager().createQuery(query.toString(), Certificate.class)
 				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
 				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
@@ -199,9 +199,10 @@ public class CertificationProgramToCurriculumElementDAO {
 			// Paused, or valid (before next recertification), expired (after next recertification but in window)
 			query.append(" ").append("""
 					and cert.last=true
-					and (cert.recertificationPaused=true
-					 or (cert.nextRecertificationDate is null or cert.nextRecertificationDate>=:referenceDate)
-					 or (cert.nextRecertificationDate<:referenceDate and (cert.recertificationWindowDate is null or cert.recertificationWindowDate>=:referenceDate))
+					and (
+					  (cert.nextRecertificationDate is null or cert.nextRecertificationDate>=:referenceDate)
+					  or
+					  (cert.nextRecertificationDate<:referenceDate and (cert.recertificationWindowDate is null or cert.recertificationWindowDate>=:referenceDate))
 					)""");
 		} else if(searchParams.getType() == Type.REMOVED) {
 			// After recertification window or without a last certificate (all revoked)

@@ -22,9 +22,6 @@ package org.olat.modules.certificationprogram.ui;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.model.IdentityRefImpl;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -60,7 +57,6 @@ import org.olat.modules.certificationprogram.model.CertificationProgramMemberSea
 import org.olat.modules.certificationprogram.ui.CertificationProgramMembersTableModel.CertificationProgramMembersCols;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDaysFlexiCellRenderer;
 import org.olat.modules.certificationprogram.ui.component.WalletBalanceCellRenderer;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,7 +66,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificationProgramCertifiedMembersController extends AbstractCertificationProgramMembersController {
 	
-	protected static final String PAUSED_TAB_ID = "Paused";
 	protected static final String EXPIRED_TAB_ID = "Expired";
 	protected static final String RECERTIFIED_ID = "Recertified";
 	protected static final String CERTIFIED_TAB_ID = "Certified";
@@ -86,9 +81,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	private CloseableCalloutWindowController calloutCtrl;
 	private ConfirmRenewController renewConfirmationCtrl;
 	private ConfirmRevokeController revokeConfirmationCtrl;
-	
-	@Autowired
-	private DB dbInstance;
 	
 	public CertificationProgramCertifiedMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CertificationProgram certificationProgram, CertificationProgramSecurityCallback secCallback) {
@@ -131,7 +123,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		statusValues.add(SelectionValues.entry(CertificationStatus.VALID.name(), translate("filter.valid")));
 		statusValues.add(SelectionValues.entry(CertificationStatus.EXPIRED.name(), translate("filter.expired")));
 		statusValues.add(SelectionValues.entry(CertificationIdentityStatus.RECERTIFYING.name(), translate("filter.recertifying")));
-		statusValues.add(SelectionValues.entry(CertificationStatus.PAUSED.name(), translate("filter.paused")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_STATUS, statusValues, true);
 		filters.add(statusFilter);
@@ -170,12 +161,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 			FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(IN_RECERTIFICATION_TAB_ID, translate("filter.recertifying"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationIdentityStatus.RECERTIFYING.name())));
 			tabs.add(expiredTab);
-		}
-		
-		if(certificationProgram.isRecertificationEnabled()) {
-			FlexiFiltersTab pausedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAUSED_TAB_ID, translate("filter.paused"),
-					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.PAUSED.name())));
-			tabs.add(pausedTab);
 		}
 		
 		if(certificationProgram.isValidityEnabled()) {
@@ -301,24 +286,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	private void doPause(UserRequest ureq, CertificationProgramMemberRow row) {
-		IdentityRef certifiedIdentity = new IdentityRefImpl(row.getIdentityKey());
-		certificationProgramService.pauseRecertification(certificationProgram, certifiedIdentity, getIdentity());
-		getLogger().info("Pause certificate of {} in certification program {}", certifiedIdentity.getKey(), certificationProgram.getKey());
-		dbInstance.commit();
-		showInfo("info.recertification.paused");
-		loadModel(ureq);
-	}
-	
-	private void doContinue(UserRequest ureq, CertificationProgramMemberRow row) {
-		IdentityRef certifiedIdentity = new IdentityRefImpl(row.getIdentityKey());
-		certificationProgramService.continueRecertification(certificationProgram, certifiedIdentity, getIdentity());
-		getLogger().info("Continue certificate of {} in certification program {}", certifiedIdentity.getKey(), certificationProgram.getKey());
-		dbInstance.commit();
-		showInfo("info.recertification.continue");
-		loadModel(ureq);
-	}
 
 	@Override
 	protected void doOpenTools(UserRequest ureq, CertificationProgramMemberRow row, String targetId) {
@@ -336,10 +303,8 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	
 	private class ToolsController extends BasicController {
 
-		private Link pauseLink;
 		private Link renewLink;
 		private Link revokeLink;
-		private Link continueLink;
 		private final Link contactLink;
 		
 		private final CertificationProgramMemberRow row;
@@ -363,17 +328,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 				revokeLink = LinkFactory.createLink("revoke.certificate", "revoke", getTranslator(), mainVC, this, Link.LINK);
 				revokeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_revoked");
 			}
-			
-			if(status != CertificationStatus.PAUSED && certificationProgram.isRecertificationEnabled()) {
-				pauseLink = LinkFactory.createLink("pause", "pause", getTranslator(), mainVC, this, Link.LINK);
-				pauseLink.setIconLeftCSS("o_icon o_icon-fw o_icon_certification_status_paused");
-			}
 
-			if(status == CertificationStatus.PAUSED) {
-				continueLink = LinkFactory.createLink("continue", "continue", getTranslator(), mainVC, this, Link.LINK);
-				continueLink.setIconLeftCSS("o_icon o_icon-fw o_icon_play");
-			}
-			
 			putInitialPanel(mainVC);
 		}
 
@@ -386,10 +341,6 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 				doConfirmRenew(ureq, row);
 			} else if(revokeLink == source) {
 				doConfirmRevoke(ureq, row);
-			} else if(pauseLink == source) {
-				doPause(ureq, row);
-			} else if(continueLink == source) {
-				doContinue(ureq, row);
 			}
 		}
 	}

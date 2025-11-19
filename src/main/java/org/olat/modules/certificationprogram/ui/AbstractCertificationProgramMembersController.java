@@ -21,8 +21,11 @@ package org.olat.modules.certificationprogram.ui;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
@@ -66,6 +69,7 @@ import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.olat.modules.certificationprogram.ui.CertificationProgramMembersTableModel.CertificationProgramMembersCols;
+import org.olat.modules.certificationprogram.ui.component.CertificationProgramMemberWithInfosCreationComparator;
 import org.olat.modules.certificationprogram.ui.component.CertificationStatusCellRenderer;
 import org.olat.modules.certificationprogram.ui.component.NextRecertificationInDays;
 import org.olat.modules.co.ContactFormController;
@@ -222,11 +226,24 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 		final Date referenceDate = ureq.getRequestTimestamp();
 		CertificationProgramMemberSearchParameters searchParams = getSearchParams();
 		searchParams.setCertificationProgram(certificationProgram);
-		List<CertificationProgramMemberWithInfos> membersWithInfos = certificationProgramService.getMembers(searchParams, referenceDate);
+		List<CertificationProgramMemberWithInfos> membersWithInfos = new ArrayList<>(certificationProgramService.getMembers(searchParams, referenceDate));
+
+		// Sort last certificates first
+		Collections.sort(membersWithInfos, new CertificationProgramMemberWithInfosCreationComparator());
+		// Only one per user
+		final Set<Identity> ids = new HashSet<>();
 		List<CertificationProgramMemberRow> rows = membersWithInfos.stream()
+				.filter(infos -> infos.identity() != null)
+				.filter(infos -> {
+					if(ids.contains(infos.identity())) {
+						return false;
+					}
+					ids.add(infos.identity());
+					return true;
+				})
 				.map(infos -> forgeRow(infos, referenceDate))
 				.toList();
-		
+
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}

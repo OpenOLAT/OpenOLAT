@@ -121,7 +121,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			RequestMode requestMode, Date referenceDate, Identity doer) {
 		
 		// Check if the request mode is allowed by the actor (prevent job to issue manual only certificates)
-		boolean allowedMode = isCertificationAllowedByRequestMode(certificationProgram, certificate, requestMode);
+		boolean allowedMode = isCertificationAllowedByRequestMode(certificationProgram, requestMode);
 		if(!allowedMode) {
 			return false;
 		}
@@ -187,7 +187,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		return false;
 	}
 	
-	private boolean isCertificationAllowedByRequestMode(CertificationProgram certificationProgram, Certificate certificate, RequestMode requestMode) {
+	private boolean isCertificationAllowedByRequestMode(CertificationProgram certificationProgram, RequestMode requestMode) {
 		// No recertification, only automatic renewal is forbidden
 		if(!certificationProgram.isValidityEnabled() || !certificationProgram.isRecertificationEnabled()) {
 			return requestMode != RequestMode.AUTOMATIC;
@@ -195,9 +195,6 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		
 		// In automatic mode, a manager can renew the certificate, the participant too
 		if(certificationProgram.getRecertificationMode() == RecertificationMode.automatic) {
-			if(requestMode == RequestMode.AUTOMATIC && certificate != null && certificate.isRecertificationPaused()) {
-				return false;
-			}
 			return true;
 		}
 		return (certificationProgram.getRecertificationMode() == RecertificationMode.manual && requestMode != RequestMode.AUTOMATIC);
@@ -226,10 +223,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				}
 			}
 			
-			allowed = (certificationProgram.isPrematureRecertificationByUserEnabled()
-						&& nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) >= 0)
-					|| ((nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) <= 0
-						&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0)));
+			allowed = (requestMode == RequestMode.COURSE
+					&& nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) >= 0)
+				|| ((nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) <= 0
+					&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0)));
 		} else if (requestMode == RequestMode.COURSE) {
 			allowed = true;
 		} else {

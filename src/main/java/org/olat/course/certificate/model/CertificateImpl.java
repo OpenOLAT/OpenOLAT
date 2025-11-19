@@ -102,7 +102,6 @@ public class CertificateImpl extends AbstractCertificate {
 		this.recertificationWindowDate = date;
 	}
 
-	@Override
 	public boolean isRecertificationPaused() {
 		return recertificationPaused;
 	}

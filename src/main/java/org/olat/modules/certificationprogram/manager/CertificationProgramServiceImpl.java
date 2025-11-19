@@ -264,24 +264,6 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public Certificate pauseRecertification(CertificationProgram program, IdentityRef identity, Identity doer) {
-		Certificate lastCertificate = certificatesDao.getLastCertificate(identity, program);
-		if(lastCertificate != null) {
-			lastCertificate = certificatesDao.pauseCertificate(lastCertificate);
-		}
-		return lastCertificate;
-	}
-
-	@Override
-	public Certificate continueRecertification(CertificationProgram program, IdentityRef identity, Identity doer) {
-		Certificate lastCertificate = certificatesDao.getLastCertificate(identity, program);
-		if(lastCertificate != null) {
-			lastCertificate = certificatesDao.continueCertificate(lastCertificate);
-		}
-		return lastCertificate;
-	}
-
-	@Override
 	public List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate) {
 		if(program == null || !program.isRecertificationEnabled()) return List.of();
 		

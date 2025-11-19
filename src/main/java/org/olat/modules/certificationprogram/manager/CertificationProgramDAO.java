@@ -155,10 +155,6 @@ public class CertificationProgramDAO {
 				  and expiredCertificate.nextRecertificationDate<:referenceDate
 				  and (expiredCertificate.recertificationWindowDate is null or expiredCertificate.recertificationWindowDate>=:referenceDate)
 				 ) as expiredCertificates,
-				 (select count(pausedCertificate.key) from certificate as pausedCertificate
-				  where pausedCertificate.certificationProgram.key=program.key
-				  and pausedCertificate.last=true and pausedCertificate.recertificationPaused=true
-				 ) as pausedCertificates,
 				 (select count(notRenewableCertificate.key) from certificate as notRenewableCertificate
 				  where notRenewableCertificate.certificationProgram.key=program.key
 				  and notRenewableCertificate.last=true and notRenewableCertificate.recertificationPaused=false

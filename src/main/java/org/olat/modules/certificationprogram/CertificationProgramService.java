@@ -93,10 +93,6 @@ public interface CertificationProgramService {
 	List<AssessmentEntry> getAssessmentEntries(CertificationProgram program, IdentityRef identity, List<RepositoryEntryStatusEnum> status);
 	
 	
-	Certificate pauseRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
-	
-	Certificate continueRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
-	
 	List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate);
 	
 	

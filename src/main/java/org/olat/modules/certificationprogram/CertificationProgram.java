@@ -98,10 +98,6 @@ public interface CertificationProgram extends CertificationProgramRef, OLATResou
 
 	void setCreditPointSystem(CreditPointSystem creditPointSystem);
 	
-	boolean isPrematureRecertificationByUserEnabled();
-
-	void setPrematureRecertificationByUserEnabled(boolean enabled);
-	
 	
 	String getCertificateCustom1();
 

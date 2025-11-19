@@ -55,8 +55,6 @@ public interface Certificate extends CreateInfo {
 
 	Date getRecertificationWindowDate();
 	
-	boolean isRecertificationPaused();
-	
 	Date getRevocationDate();
 	
 	Date getRemovalDate();

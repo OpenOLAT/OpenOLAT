@@ -1007,7 +1007,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_certification_status_certified { @include o-add-icon('circle-check'); }
 .o_icon_certification_status_expired { @include o-add-icon('clock-rotate-left'); }
 .o_icon_certification_status_expired_renewable { @include o-add-icon('triangle-exclamation'); }
-.o_icon_certification_status_paused { @include o-add-icon('pause'); }
 .o_icon_certification_status_recertifying { @include o-add-icon('rotate-right'); }
 .o_icon_certification_status_removed { @include o-add-icon('circle-xmark'); }
 .o_icon_certification_status_revoked { @include o-add-icon('ban'); }

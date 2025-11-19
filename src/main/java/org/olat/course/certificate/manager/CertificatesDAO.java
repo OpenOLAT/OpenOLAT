@@ -145,23 +145,6 @@ public class CertificatesDAO {
 				.getResultList();
 	}
 	
-	
-	public Certificate pauseCertificate(Certificate certificate) {
-		if(certificate instanceof CertificateImpl cert) {
-			cert.setRecertificationPaused(true);
-			certificate = updateCertificate(cert);
-		}
-		return certificate;
-	}
-	
-	public Certificate continueCertificate(Certificate certificate) {
-		if(certificate instanceof CertificateImpl cert) {
-			cert.setRecertificationPaused(false);
-			certificate = updateCertificate(cert);
-		}
-		return certificate;
-	}
-	
 	public int removeLastFlag(IdentityRef identity, CertificationProgramRef program) {
 		String query = """
 				update certificate cer set cer.last=false,cer.removalDate=:removalDate

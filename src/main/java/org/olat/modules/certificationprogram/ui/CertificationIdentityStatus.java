@@ -38,7 +38,7 @@ public enum CertificationIdentityStatus {
 	public static final CertificationIdentityStatus valueOf(CertificationStatus status) {
 		return switch(status) {
 			case VALID -> CertificationIdentityStatus.CERTIFIED;
-			case EXPIRED_RENEWABLE, PAUSED -> CertificationIdentityStatus.RECERTIFYING;
+			case EXPIRED_RENEWABLE -> CertificationIdentityStatus.RECERTIFYING;
 			case EXPIRED, REVOKED, ARCHIVED -> CertificationIdentityStatus.REMOVED;
 			default -> null;
 		};
