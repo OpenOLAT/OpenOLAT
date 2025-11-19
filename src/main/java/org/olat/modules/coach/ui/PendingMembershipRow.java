@@ -157,7 +157,7 @@ public class PendingMembershipRow extends UserPropertiesRow {
 			return true;
 		}
 		for (String identityProp : getIdentityProps()) {
-			if (identityProp.toLowerCase().contains(searchString)) {
+			if (identityProp != null && identityProp.toLowerCase().contains(searchString)) {
 				return true;
 			}
 		}
