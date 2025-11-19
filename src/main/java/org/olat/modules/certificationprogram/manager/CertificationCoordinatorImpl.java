@@ -161,7 +161,9 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		
 		log.info("User {} removed of program {} by {0}", identity, certificationProgram, doer);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REMOVED, requestMode, doer);
-		sendMail(identity, certificationProgram, certificate, CertificationProgramMailType.program_removed, doer);
+		
+		CreditPointWallet wallet = loadWallet(identity, certificationProgram);
+		sendMail(identity, certificationProgram, certificate, wallet, CertificationProgramMailType.program_removed, doer);
 	}
 	
 	/**
@@ -270,7 +272,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		
 		log.info("Certificate revoked {} for {} and program {} by {0}", revokedCertificates, identity, certificationProgram, actor);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
-		sendMail(identity, certificationProgram, certificate, CertificationProgramMailType.program_removed, actor);
+		sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.program_removed, actor);
 	}
 	
 	public void sendReminders(CertificationProgramMailType type, Date referenceDate) {
@@ -283,9 +285,16 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			dbInstance.commit();
 			for(Certificate certificate:toNotify) {
 				Identity recipient = certificate.getIdentity();
-				sendMail(recipient, program, certificate, configuration.getType(), null);
+				CreditPointWallet wallet = loadWallet(recipient, program);
+				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
 			}
 		}
+	}
+	
+	private CreditPointWallet loadWallet(Identity identity, CertificationProgram program) {
+		return program.hasCreditPoints()
+				? creditPointService.getOrCreateWallet(identity, program.getCreditPointSystem())
+				: null;
 	}
 	
 	private void activityLog(Identity identity, CertificationProgram program, ILoggingAction action, RequestMode requestMode, Identity actor) {
@@ -298,11 +307,12 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				"", List.of(), loggingResourceableList);
 	}
 	
-	private void sendMail(Identity recipient, CertificationProgram program, Certificate certificate, CertificationProgramMailType type, Identity actor) {
+	private void sendMail(Identity recipient, CertificationProgram program, Certificate certificate, CreditPointWallet wallet,
+			CertificationProgramMailType type, Identity actor) {
 		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.getConfiguration(program, type);
 		if(configuration == null || configuration.getStatus() == CertificationProgramMailConfigurationStatus.inactive) return;
 		
-		MailTemplate template = CertificationProgramMailing.getTemplate(program, configuration, recipient, certificate, actor);
+		MailTemplate template = CertificationProgramMailing.getTemplate(program, configuration, recipient, certificate, null, wallet, actor);
 
 		MailerResult result = new MailerResult();
 		MailContext context = new MailContextImpl(null, null, "[HomeSite:" + recipient.getKey() + "][Certificates:0][All:0]");

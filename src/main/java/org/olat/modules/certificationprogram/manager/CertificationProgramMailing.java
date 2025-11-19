@@ -19,6 +19,7 @@
  */
 package org.olat.modules.certificationprogram.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramNotificationRow;
 import org.olat.modules.certificationprogram.ui.CertificationProgramNotificationsController;
+import org.olat.modules.creditpoint.CreditPointWallet;
 
 /**
  * 
@@ -94,31 +96,31 @@ public class CertificationProgramMailing {
 	}
 
 	public static MailTemplate getTemplate(CertificationProgram program, CertificationProgramMailConfiguration configuration,
-			Identity recipient, Certificate certificate, Identity actor) {
+			Identity recipient, Certificate certificate, File certificateFile, CreditPointWallet wallet, Identity actor) {
 		if(configuration == null) return null;
 		
 		I18nKeys keys = getI18nKeys(configuration, program.hasCreditPoints());
-		return createMailTemplate(program, recipient, certificate, actor, keys.subject(), keys.body());
+		return createMailTemplate(program, recipient, certificate, certificateFile, wallet, actor, keys.subject(), keys.body());
 	}
 	
 	public static MailTemplate createMailTemplate(CertificationProgram program, Identity recipient,
-			Certificate certificate, Identity actor, String subjectKey, String bodyKey) {
+			Certificate certificate, File certificateFile, CreditPointWallet wallet, Identity actor, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String lang = null;
 		if (recipient != null) {
 			lang = recipient.getUser().getPreferences().getLanguage();
 		}
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
-		return createMailTemplate(program, recipient, certificate, actor, subjectKey, bodyKey, locale);
+		return createMailTemplate(program, recipient, certificate, certificateFile, wallet, actor, subjectKey, bodyKey, locale);
 	}
 	
-	private static MailTemplate createMailTemplate(CertificationProgram program, Identity identity, Certificate certificate, Identity actor,
-			String subjectKey, String bodyKey, Locale locale) {
+	private static MailTemplate createMailTemplate(CertificationProgram program, Identity identity, Certificate certificate,
+			File certificateFile, CreditPointWallet wallet, Identity actor, String subjectKey, String bodyKey, Locale locale) {
 	
 		Translator trans = Util.createPackageTranslator(CertificationProgramNotificationsController.class, locale);
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey);
-		return new CPMailTemplate(subject, body, program, identity, certificate, actor, trans);
+		return new CPMailTemplate(subject, body, certificateFile, program, identity, certificate, wallet, actor, trans);
 	}
 	
 	public record I18nKeys(String subject, String body) {
@@ -138,17 +140,20 @@ public class CertificationProgramMailing {
 		private static final String REMOVAL_DATE = "removalDate";
 		private static final String REVOCATION_DATE = "revocationDate";
 		private static final String RECERTIFICATION_DEADLINE = "recertificationDeadline";
+		private static final String ACCOUNT_BALANCE = "accountBalance";
 		
 		private final Identity actor;
 		private final Identity identity;
 		private final Translator translator;
 		private final Certificate certificate;
+		private final CreditPointWallet wallet;
 		private final CertificationProgram certificationProgram;
 		
-		public CPMailTemplate(String subject, String body, CertificationProgram certificationProgram, Identity identity,
-				Certificate certificate, Identity actor, Translator translator) {
-			super(subject, body, null);
+		public CPMailTemplate(String subject, String body, File certificateFile, CertificationProgram certificationProgram, Identity identity,
+				Certificate certificate, CreditPointWallet wallet, Identity actor, Translator translator) {
+			super(subject, body, certificateFile == null ? null : new File[] { certificateFile });
 			this.actor = actor;
+			this.wallet = wallet;
 			this.identity = identity;
 			this.translator = translator;
 			this.certificate = certificate;
@@ -168,6 +173,7 @@ public class CertificationProgramMailing {
 			variableNames.add(ACTOR_EMAIL);
 			variableNames.add(ACTOR_FIRSTNAME);
 			variableNames.add(ACTOR_LASTNAME);
+			variableNames.add(ACCOUNT_BALANCE);
 			return variableNames;
 		}
 
@@ -206,6 +212,11 @@ public class CertificationProgramMailing {
 					String requiredCreditPoints = CertificationHelper.creditPointsToString(certificationProgram);
 					putVariablesInMailContext(REQUIRED_CREDIT_POINTS, requiredCreditPoints);
 				}
+			}
+			
+			if(wallet != null) {
+				String balance = CertificationHelper.creditPointsToString(wallet.getBalance(), certificationProgram.getCreditPointSystem());
+				putVariablesInMailContext(ACCOUNT_BALANCE, balance);
 			}
 			
 			if(actor != null) {

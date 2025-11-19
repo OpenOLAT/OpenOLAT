@@ -148,6 +148,8 @@ import org.olat.modules.certificationprogram.manager.CertificationProgramLogDAO;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailConfigurationDAO;
 import org.olat.modules.certificationprogram.manager.CertificationProgramMailing;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
+import org.olat.modules.creditpoint.CreditPointService;
+import org.olat.modules.creditpoint.CreditPointWallet;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.ui.GradeSystemListController;
@@ -222,6 +224,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private CertificatesModule certificatesModule;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private CreditPointService creditPointService;
 	@Autowired
 	private CertificationProgramLogDAO certificationProgramLogDao;
 	@Autowired
@@ -1443,7 +1447,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				mailerResult.setReturnCode(MailerResult.OK);
 			} else {
 				mailerResult = new MailerResult();
-				MailTemplate template = CertificationProgramMailing.getTemplate(certificationProgram, configuration, to, certificate, actor);
+				CreditPointWallet wallet = loadWallet(to, certificationProgram);
+				MailTemplate template = CertificationProgramMailing.getTemplate(certificationProgram, configuration, to, certificate, certificateFile, wallet, actor);
 				MailContext context = new MailContextImpl(null, null, "[HomeSite:" + to.getKey() + "][Certificates:0][All:0]");
 				MailBundle bundle = mailManager.makeMailBundle(context, to, template, null, null, mailerResult);
 				if(bundle != null) {
@@ -1462,6 +1467,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			sendCertificateCopies(to, certificationProgram, entry, certificate, certificateFile, config, translator, args);
 		}
 		return mailerResult;
+	}
+	
+	private CreditPointWallet loadWallet(Identity identity, CertificationProgram program) {
+		return program.hasCreditPoints()
+				? creditPointService.getOrCreateWallet(identity, program.getCreditPointSystem())
+				: null;
 	}
 
 	private String[] createMailArgs(Identity certificateIdentity, CertificationProgram certificationProgram, RepositoryEntry entry, CertificateImpl certificate,
