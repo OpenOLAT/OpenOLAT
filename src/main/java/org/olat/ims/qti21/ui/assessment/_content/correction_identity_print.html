@@ -1,8 +1,11 @@
-#if($r.available("repo"))
-	<div class="o_block_large_bottom">
+<div class="o_block_large_bottom o_qti_pdf_header">
+	#if($r.available("repo"))
 		$r.render("repo")
-	</div>
-#end
+	#end
+	#if($r.available("user"))
+		$r.render("user")
+	#end
+</div>
 
 <h2><i class="o_icon o_mi_qtiessay"> </i> $r.translate("form.essay"): $questionTitle <small><span class="o_spacer">&middot;</span> $score</small></h2>
 

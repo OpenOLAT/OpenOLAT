@@ -88,7 +88,9 @@ public class CorrectionIdentityRepositoryEntryPrintController extends Repository
 	}
 
 	private void addUser(FormLayoutContainer itemsCont) {
-		uifactory.addStaticTextElement(userLableI18n, StringHelper.escapeHtml(userValue), itemsCont);
+		if (StringHelper.containsNonWhitespace(userValue)) {
+			uifactory.addStaticTextElement(userLableI18n, StringHelper.escapeHtml(userValue), itemsCont);
+		}
 	}
 
 }

@@ -42,7 +42,7 @@ import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesInfoController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -69,8 +69,6 @@ public class CorrectionIdentityAssessmentItemPrintController extends FormBasicCo
 	
 	@Autowired
 	private QTI21Service qtiService;
-	@Autowired
-	private UserManager userManager;
 
 	public CorrectionIdentityAssessmentItemPrintController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, QTICourseNode courseNode, ResolvedAssessmentTest resolvedAssessmentTest,
@@ -107,9 +105,10 @@ public class CorrectionIdentityAssessmentItemPrintController extends FormBasicCo
 		}
 		
 		String userLableI18n = "print.participant.identifier";
-		if (!StringHelper.containsNonWhitespace(userDisplayIdentifier)) {
-			userLableI18n = "print.participant";
-			userDisplayIdentifier = userManager.getUserDisplayName(itemCorrection.getAssessedIdentity().getKey());
+		if (!StringHelper.containsNonWhitespace(userDisplayIdentifier) && itemCorrection.getAssessedIdentity() != null) {
+			UserPropertiesInfoController userCtrl = new UserPropertiesInfoController(ureq, getWindowControl(), itemCorrection.getAssessedIdentity());
+			listenTo(userCtrl);
+			formLayout.add("user", userCtrl.getInitialFormItem());
 		}
 		
 		CorrectionIdentityRepositoryEntryPrintController repositoryEntryCtrl = new CorrectionIdentityRepositoryEntryPrintController(

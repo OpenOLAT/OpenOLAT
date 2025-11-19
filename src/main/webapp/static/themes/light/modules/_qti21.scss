@@ -1914,6 +1914,29 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 }
 
 /* PDF Export */
+.o_qti_pdf_header {
+	display: flex;
+	gap: 10px;
+	>div {
+		flex: 1;
+	}
+	// same height of the two panels
+	div:has(.o_repo_info), 
+	div:has(.o_user_info) {
+		display: grid;
+	}
+	.o_user_info {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		> div:has(.o_user_info_profile) {
+			width: 100%;
+			height: initial;
+			margin-top: 0;
+		}
+	}
+}
+
 .o_qti_pdf_item {
 	.o_form_label {
 		padding-top: 5px;
