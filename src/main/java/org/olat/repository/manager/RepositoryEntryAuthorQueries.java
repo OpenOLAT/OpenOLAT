@@ -425,7 +425,7 @@ public class RepositoryEntryAuthorQueries {
 		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
 			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
-		if (!params.isOwnedResourcesOnly() && !params.isShared() && 
+		if (!params.isOwned() && !params.isShared() && 
 				params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
 			dbQuery.setParameter("additionalOrgRoles", params.getAdditionalCurricularOrgRoles().stream().map(OrganisationRoles::name).toList());
 		}
@@ -433,6 +433,10 @@ public class RepositoryEntryAuthorQueries {
 	}
 	
 	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
+		if (params.isOwned() || params.isShared()) {
+			return appendOwnerAccessSubSelect(sb, params);
+		}
+
 		if(dbInstance.isMySQL()) {
 			sb.append(" v.key");
 			if (params.isShared()) {
@@ -448,94 +452,127 @@ public class RepositoryEntryAuthorQueries {
 			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
 		}
 		
-		if(params.isOwnedResourcesOnly() || params.isShared()) {
-			sb.append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
-			  .append(" ) and v.status");
+		Roles roles = params.getRoles();
+		if(roles == null) {
+			sb.append(" and membership.role ").in( GroupRoles.owner)
+					.append("   and v.status ");
 			if(params.hasStatus()) {
 				sb.in(params.getStatus());
 			} else {
-				if (params.isShared()) { // shared means no 'preparation'...
-					sb.in(RepositoryEntryStatusEnum.reviewToClosed());
-				} else {
-					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-				}
+				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
 			}
-			if (params.isShared()) { // shared means it has to be canCopy...
-				sb.append(" and v.canCopy=true");
-			}
+			sb.append(" )");
+
 		} else {
-			Roles roles = params.getRoles();
-			if(roles == null) {
-				sb.append(" and membership.role ").in( GroupRoles.owner)
-				  .append("   and v.status ");
-				if(params.hasStatus()) {
-					sb.in(params.getStatus());
-				} else {
-					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-				} 
-				sb.append(" )");
-				
+			sb.append(" and (")
+					// owner, principal, learn resource manager and administrator which can see all
+					.append("     ( membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+					.append("       and v.status ");
+			if(params.hasStatus()) {
+				sb.in(params.getStatus());
 			} else {
-				sb.append(" and (")
-				  // owner, principal, learn resource manager and administrator which can see all
-				  .append("     ( membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
-				  .append("       and v.status ");
-				if(params.hasStatus()) {
+				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+			}
+
+			sb.append(" )");
+
+			if (params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
+				sb.append(" or ( ");
+				sb.append(" membership.role in (:additionalOrgRoles) ");
+				sb.append(" and membership.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
+				sb.append(" and ");
+				sb.append(" v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
+				sb.append(" and v.status ");
+				if (params.hasStatus()) {
 					sb.in(params.getStatus());
 				} else {
 					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-				} 
-				
-				sb.append(" )");
-
-				if (params.getAdditionalCurricularOrgRoles() != null && !params.getAdditionalCurricularOrgRoles().isEmpty()) {
-					sb.append(" or ( ");
-					sb.append(" membership.role in (:additionalOrgRoles) ");
-					sb.append(" and membership.inheritanceModeString in ('").append(GroupMembershipInheritance.none.name()).append("','").append(GroupMembershipInheritance.root.name()).append("')");
-					sb.append(" and ");
-					sb.append(" v.runtimeType ").in(RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template);
-					sb.append(" and v.status ");
-					if (params.hasStatus()) {
-						sb.in(params.getStatus());
-					} else {
-						sb.in(RepositoryEntryStatusEnum.preparationToClosed());
-					}
-					sb.append(" ) ");
 				}
-
-				if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))
-						&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
-					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
-					  .append("   and v.status ");
-					if(params.hasStatus()) {
-						sb.in(params.getStatus());
-					} else {
-						sb.in(RepositoryEntryStatusEnum.reviewToClosed());
-					}
-					sb.append(" and (");
-					if(params.isCanCopy()) {
-						sb.append(" v.canCopy=true");	
-					}
-					if(params.isCanReference()) {
-						if(params.isCanCopy()) {
-							sb.append(" or");
-						}
-						sb.append(" v.canReference=true");	
-					}
-					if(params.isCanDownload()) {
-						if(params.isCanCopy() || params.isCanReference()) {
-							sb.append(" or");
-						}
-						sb.append(" v.canDownload=true");	
-					}
-					sb.append("))");
-				}
-				sb.append(" ))");
+				sb.append(" ) ");
 			}
+
+			if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))
+					&& (params.isCanCopy() || params.isCanDownload() || params.isCanReference())) {
+				sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
+						.append("   and v.status ");
+				if(params.hasStatus()) {
+					sb.in(params.getStatus());
+				} else {
+					sb.in(RepositoryEntryStatusEnum.reviewToClosed());
+				}
+				sb.append(" and (");
+				if(params.isCanCopy()) {
+					sb.append(" v.canCopy=true");
+				}
+				if(params.isCanReference()) {
+					if(params.isCanCopy()) {
+						sb.append(" or");
+					}
+					sb.append(" v.canReference=true");
+				}
+				if(params.isCanDownload()) {
+					if(params.isCanCopy() || params.isCanReference()) {
+						sb.append(" or");
+					}
+					sb.append(" v.canDownload=true");
+				}
+				sb.append("))");
+			}
+			sb.append(" ))");
 		}
 		return true;
 	}
 	
+	private boolean appendOwnerAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
+		boolean withOrClause = params.isOwned() && params.isShared();
+		if (withOrClause) {
+			sb.append(" ((");
+		}
+
+		if (params.isOwned()) {
+			if (dbInstance.isMySQL()) {
+				sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+			} else {
+				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+			}
+			sb.append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
+
+			sb.append(" and v.status");
+			if (params.getStatus() != null) {
+				sb.in(params.getStatus());
+			} else {
+				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
+			}
+		}
+		
+		if (withOrClause) {
+			sb.append(" ) or (");
+		}
+
+		if (params.isShared()) {
+			if(dbInstance.isMySQL()) {
+				sb.append(" v.key not in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+			} else {
+				sb.append(" not exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+						.append(" where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+			}
+
+			sb.append(" and membership.role='").append(GroupRoles.owner.name()).append("')");
+					
+			sb.append(" and v.status").in(RepositoryEntryStatusEnum.reviewToClosed());
+			sb.append(" and v.canCopy=true");
+		}
+		
+		if (withOrClause) {
+			sb.append(" ))");
+		}
+
+		return true;
+	}
+
 	private boolean hasOnly(SearchAuthorRepositoryEntryViewParams params, RepositoryEntryStatusEnum[] allowed) {
 		if(!params.hasStatus()) return false;
 		

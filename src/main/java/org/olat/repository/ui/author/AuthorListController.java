@@ -697,7 +697,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(configuration.isResourceTypeAllowed("CourseModule")) {
-			if (configuration.isShowSharedWithMeFilter()) {
+			if (configuration.isTemplateMode()) {
 				allCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("AllCourses",
 						translate("search.all"),
 						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, ""),
@@ -715,7 +715,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			myCoursesTab.setFiltersExpanded(true);
 			tabs.add(myCoursesTab);
 			
-			if (configuration.isShowSharedWithMeFilter()) {
+			if (configuration.isTemplateMode()) {
 				coursesSharedWithMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("CoursesSharedWithMe", 
 						translate("search.shared.with.me"),
 						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "shared"),

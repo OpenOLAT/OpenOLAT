@@ -70,7 +70,7 @@ public class CreateCourseFromTemplateStep01Controller extends StepFormBasicContr
 		config.setTemplatesMode(true);
 		config.setDefaultBookmark(true);
 		config.setDefaultExternalRef(true);
-		config.setShowSharedWithMeFilter(true);
+		config.setTemplateMode(true);
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.setCanCopy(true);
 		searchParams.addResourceTypes("CourseModule");

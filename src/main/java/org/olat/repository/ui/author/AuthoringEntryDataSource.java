@@ -189,14 +189,17 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				break;
 			case OWNED:
 				if (filter instanceof FlexiTableExtendedFilter extendedFilter) {
-					searchParams.setOwnedResourcesOnly(false);
-					searchParams.setShared(false);
-					searchParams.setCanCopy(false);
 					if ("owned".equals(extendedFilter.getValue())) {
-						searchParams.setOwnedResourcesOnly(true);
+						searchParams.setOwned(true);
+						searchParams.setShared(false);
 					} else if ("shared".equals(extendedFilter.getValue())) {
+						searchParams.setOwned(false);
 						searchParams.setShared(true);
-						searchParams.setCanCopy(true);
+					} else {
+						if (configuration.isTemplatesMode()) {
+							searchParams.setOwned(true);
+							searchParams.setShared(true);
+						}
 					}
 				}
 				break;

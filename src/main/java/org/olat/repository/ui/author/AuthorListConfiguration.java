@@ -55,7 +55,7 @@ public class AuthorListConfiguration {
 	private boolean defaultBookmark = true;
 	private boolean defaultIconType = true;
 	private boolean templatesMode = false;
-	private boolean showSharedWithMeFilter = false;
+	private boolean templateMode = false;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -270,11 +270,11 @@ public class AuthorListConfiguration {
 		this.defaultIconType = defaultIconType;
 	}
 
-	public boolean isShowSharedWithMeFilter() {
-		return showSharedWithMeFilter;
+	public boolean isTemplateMode() {
+		return templateMode;
 	}
 
-	public void setShowSharedWithMeFilter(boolean showSharedWithMeFilter) {
-		this.showSharedWithMeFilter = showSharedWithMeFilter;
+	public void setTemplateMode(boolean templateMode) {
+		this.templateMode = templateMode;
 	}
 }

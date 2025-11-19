@@ -411,7 +411,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.trash });
-		params.setOwnedResourcesOnly(true);
+		params.setOwned(true);
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertFalse(contains(rePreparation, results));
@@ -477,7 +477,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
-		params.setOwnedResourcesOnly(true);
+		params.setOwned(true);
 		params.addResourceTypes(reOwned.getOlatResource().getResourceableTypeName());
 		params.addResourceTypes(reOwned2.getOlatResource().getResourceableTypeName());
 		
@@ -572,7 +572,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
-		params.setOwnedResourcesOnly(true);
+		params.setOwned(true);
 
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertTrue(contains(reOwner, results));

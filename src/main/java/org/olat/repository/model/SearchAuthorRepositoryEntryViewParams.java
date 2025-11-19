@@ -42,7 +42,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private final Roles roles;
 	
 	private Boolean marked;
-	private boolean ownedResourcesOnly;
+	private boolean owned;
 	private boolean shared;
 	private OERRelease oerRelease = OERRelease.all;
 	private ResourceUsage resourceUsage = ResourceUsage.all;
@@ -102,12 +102,12 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.idRefsAndTitle = idRefsAndTitle;
 	}
 
-	public boolean isOwnedResourcesOnly() {
-		return ownedResourcesOnly;
+	public boolean isOwned() {
+		return owned;
 	}
 
-	public void setOwnedResourcesOnly(boolean ownedResourcesOnly) {
-		this.ownedResourcesOnly = ownedResourcesOnly;
+	public void setOwned(boolean owned) {
+		this.owned = owned;
 	}
 
 	public boolean isShared() {
