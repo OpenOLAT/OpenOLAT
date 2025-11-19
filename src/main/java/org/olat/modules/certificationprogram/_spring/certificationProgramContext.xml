@@ -8,18 +8,35 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
+  	<!-- Change the status of the certificates in a certification program -->
 	<bean id="recertificationTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     	<property name="jobDetail" ref="recertificationJob.${cluster.singleton.services}" />
     	<property name="cronExpression" value="0 1 1 * * ?"/>
     	<property name="startDelay" value="47000" />
 	</bean>
-	
+
 	<bean id="recertificationJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.modules.certificationprogram.manager.RecertificationJob" />
 	</bean>
 	
 	<!-- dummy bean -->
 	<bean id="recertificationJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+  	<!-- Send the reminders (upcoming and overdue) of certification programs -->
+	<bean id="recertificationRemindersTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    	<property name="jobDetail" ref="recertificationRemindersJob.${cluster.singleton.services}" />
+    	<property name="cronExpression" value="0 30 1 * * ?"/>
+    	<property name="startDelay" value="49000" />
+	</bean>
+
+	<bean id="recertificationRemindersJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.certificationprogram.manager.RecertificationRemindersJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="recertificationRemindersJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	

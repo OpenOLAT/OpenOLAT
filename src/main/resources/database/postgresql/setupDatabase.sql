@@ -1919,6 +1919,8 @@ create table o_cer_certificate (
    c_path varchar(1024),
    c_last bool default true not null,
    c_revoked bool default false not null,
+   c_revocation_date timestamp,
+   c_removal_date timestamp,
    c_course_title varchar(255),
    c_archived_resource_id int8 not null,
    fk_olatresource int8,
@@ -1992,6 +1994,30 @@ create table o_cer_program_to_element (
    creationdate timestamp not null,
    fk_program int8 not null,
    fk_element int8 not null,
+   primary key (id)
+);
+
+create table o_cer_program_mail_config (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp,
+   c_title varchar(255),
+   c_type varchar(32) not null,
+   c_status varchar(16) not null,
+   c_time int8 default 0 not null,
+   c_time_unit varchar(32),
+   c_balance_too_low bool default false not null,
+   c_i18n_suffix varchar(64) not null,
+   c_i18n_customized bool default false not null,
+   fk_program int8 not null,
+   primary key (id)
+);
+
+create table o_cer_program_log (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_certificate int8 not null,
+   fk_mail_configuration int8,
    primary key (id)
 );
 
@@ -6273,6 +6299,14 @@ alter table o_cer_program_to_element add constraint cer_prog_to_el_prog_idx fore
 create index idx_cer_prog_to_el_prog_idx on o_cer_program_to_element (fk_program);
 alter table o_cer_program_to_element add constraint cer_prog_to_el_element_idx foreign key (fk_element) references o_cur_curriculum_element (id);
 create index idx_cer_prog_to_el_element_idx on o_cer_program_to_element (fk_element);
+
+alter table o_cer_program_mail_config add constraint cer_mconfig_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+create index idx_cer_mconfig_to_prog_idx on o_cer_program_mail_config (fk_program);
+
+alter table o_cer_program_log add constraint cer_plog_to_cert_idx foreign key (fk_certificate) references o_cer_certificate (id);
+create index idx_cer_plog_to_cert_idx on o_cer_program_log (fk_certificate);
+alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key (fk_mail_configuration) references o_cer_program_mail_config (id);
+create index idx_cer_plog_to_config_idx on o_cer_program_log (fk_mail_configuration);
 
 -- sms
 alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

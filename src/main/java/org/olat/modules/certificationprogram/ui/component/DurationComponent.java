@@ -32,7 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 public class DurationComponent extends FormBaseComponentImpl {
 	
 	private DurationComponentRenderer RENDERER = new DurationComponentRenderer();
-	
+
+	private String addOn;
 	private DurationFormItem formItem;
 	
 	public DurationComponent(DurationFormItem formItem, String name) {
@@ -44,6 +45,14 @@ public class DurationComponent extends FormBaseComponentImpl {
 	@Override
 	public DurationFormItem getFormItem() {
 		return formItem;
+	}
+
+	public String getAddOn() {
+		return addOn;
+	}
+
+	public void setAddOn(String addOn) {
+		this.addOn = addOn;
 	}
 
 	@Override

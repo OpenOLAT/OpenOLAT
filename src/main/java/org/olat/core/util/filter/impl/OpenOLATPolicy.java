@@ -275,7 +275,7 @@ public class OpenOLATPolicy {
 		.allowAttributes("class").matching(HTMLCLASS).onElements("tr")
 		.allowAttributes("height").matching(NUMBERORPERCENT).onElements("tr")
 		.allowAttributes("class")
-			.matching(HTMLCLASS).onElements("span")
+			.matching(HTMLCLASS).onElements("span", "strong")
 		
 		.allowElements("dd","tbody","dl","caption","hr","div","dt","ul","init","blockquote","pre","em","figcaption","sub",
 				"strong","img","thead","h1","h2","h3","h4","h5","h6","sup","ol","table","b","figure","strike","i","p",

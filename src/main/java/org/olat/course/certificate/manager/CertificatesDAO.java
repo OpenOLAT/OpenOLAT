@@ -19,7 +19,10 @@
  */
 package org.olat.course.certificate.manager;
 
+import java.util.Date;
 import java.util.List;
+
+import jakarta.persistence.TemporalType;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -159,25 +162,27 @@ public class CertificatesDAO {
 		return certificate;
 	}
 	
-	public void removeLastFlag(IdentityRef identity, CertificationProgramRef program) {
+	public int removeLastFlag(IdentityRef identity, CertificationProgramRef program) {
 		String query = """
-				update certificate cer set cer.last=false
-				where cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
-		
-		dbInstance.getCurrentEntityManager().createQuery(query)
-				.setParameter("programKey", program.getKey())
-				.setParameter("identityKey", identity.getKey())
-				.executeUpdate();
-	}
-	
-	public int revoke(IdentityRef identity, CertificationProgramRef program) {
-		String query = """
-				update certificate cer set cer.last=false,cer.revoked=true
+				update certificate cer set cer.last=false,cer.removalDate=:removalDate
 				where cer.last=true and cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("programKey", program.getKey())
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("removalDate", new Date(), TemporalType.TIMESTAMP)
+				.executeUpdate();
+	}
+	
+	public int revoke(IdentityRef identity, CertificationProgramRef program) {
+		String query = """
+				update certificate cer set cer.last=false,cer.revoked=true,cer.revocationDate=:revocationDate
+				where cer.last=true and cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("programKey", program.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("revocationDate", new Date(), TemporalType.TIMESTAMP)
 				.executeUpdate();
 	}
 	
@@ -195,5 +200,4 @@ public class CertificatesDAO {
 	public Certificate updateCertificate(Certificate certificate) {
 		return dbInstance.getCurrentEntityManager().merge(certificate);
 	}
-
 }

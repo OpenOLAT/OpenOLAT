@@ -25,13 +25,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -52,6 +59,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_20.2.0";
 	private static final String MIGRATE_CATALOG_CARD_VIEW = "MIGRATE CATALOG CARD_VIEW";
 	private static final String MIGRATE_CURRICULUM_MANAGERS = "MIGRATE CURRICULUM MANAGERS";
+	private static final String MIGRATE_CERTIFICATION_PROGRAMS_MAIL_CONFIGURATION = "MIGRATE CERTIFICATION PROGRAMS MAIL CONFIGURATION";
 
 	@Autowired
 	private DB dbInstance;
@@ -59,6 +67,8 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 	private CurriculumDAO curriculumDao;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 	
 	@Override
 	public String getVersion() {
@@ -77,6 +87,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= migrateCatalogCardView(upgradeManager, uhd);
 		allOk &= migrateCurriculumManagers(upgradeManager, uhd);
+		allOk &= migrateCertificationProgramsMailConfiguration(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -162,4 +173,46 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 			.getResultList();
 	}
 	
+
+	private boolean migrateCertificationProgramsMailConfiguration(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(MIGRATE_CERTIFICATION_PROGRAMS_MAIL_CONFIGURATION)) {
+			try {
+				log.info("Migrate certification program mail configuration");
+				
+				List<CertificationProgram> programs = certificationProgramService.getCertificationPrograms();
+				
+				for(CertificationProgram program:programs) {
+					migrateCertificationProgramMailConfiguration(program);	
+				}
+				
+				log.info("End migration of certification program mail configuration");
+				allOk = true;
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_CERTIFICATION_PROGRAMS_MAIL_CONFIGURATION, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
+	}
+	
+	private void migrateCertificationProgramMailConfiguration(CertificationProgram program) {
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramService.getMailConfigurations(program);
+		Set<CertificationProgramMailType> currentTypes = configurations.stream()
+				.map(CertificationProgramMailConfiguration::getType)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		
+		for(CertificationProgramMailType type: CertificationProgramMailType.notifications()) {
+			if(!currentTypes.contains(type)) {
+				certificationProgramService.createMailConfigurations(program, type);
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
 }

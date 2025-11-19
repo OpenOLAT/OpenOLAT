@@ -57,6 +57,10 @@ public interface Certificate extends CreateInfo {
 	
 	boolean isRecertificationPaused();
 	
+	Date getRevocationDate();
+	
+	Date getRemovalDate();
+	
 	String getPath();
 	
 	String getCourseTitle();

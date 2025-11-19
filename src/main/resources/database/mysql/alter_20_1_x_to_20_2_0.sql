@@ -47,7 +47,6 @@ alter table o_cer_program_to_organisation ENGINE = InnoDB;
 alter table o_cer_program_to_organisation add constraint cer_prog_to_prog_idx foreign key (fk_program) references o_cer_program (id);
 alter table o_cer_program_to_organisation add constraint cer_prog_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
-
 create table o_cer_program_to_element (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -60,6 +59,36 @@ alter table o_cer_program_to_element ENGINE = InnoDB;
 alter table o_cer_program_to_element add constraint cer_prog_to_el_prog_idx foreign key (fk_program) references o_cer_program (id);
 alter table o_cer_program_to_element add constraint cer_prog_to_el_element_idx foreign key (fk_element) references o_cur_curriculum_element (id);
 
+create table o_cer_program_mail_config (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime,
+   c_title varchar(255),
+   c_type varchar(32) not null,
+   c_status varchar(16) not null,
+   c_time bigint default 0 not null,
+   c_time_unit varchar(32),
+   c_balance_too_low bool default false not null,
+   c_i18n_suffix varchar(64) not null,
+   c_i18n_customized bool default false not null,
+   fk_program bigint not null,
+   primary key (id)
+);
+alter table o_cer_program_mail_config ENGINE = InnoDB;
+
+alter table o_cer_program_mail_config add constraint cer_mconfig_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+
+create table o_cer_program_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_certificate bigint not null,
+   fk_mail_configuration bigint,
+   primary key (id)
+);
+alter table o_cer_program_log ENGINE = InnoDB;
+
+alter table o_cer_program_log add constraint cer_plog_to_cert_idx foreign key (fk_certificate) references o_cer_certificate (id);
+alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key (fk_mail_configuration) references o_cer_program_mail_config (id);
 
 -- Certificate
 alter table o_cer_certificate add column c_revoked bool default false not null;
@@ -68,6 +97,8 @@ alter table o_cer_certificate add column c_recertification_win_date datetime;
 alter table o_cer_certificate add column c_recertification_paused bool default false not null;
 alter table o_cer_certificate add column fk_certification_program bigint;
 alter table o_cer_certificate add column fk_uploaded_by bigint;
+alter table o_cer_certificate add column c_revocation_date datetime;
+alter table o_cer_certificate add column c_removal_date datetime;
 
 alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
 
@@ -84,6 +115,7 @@ create table o_cp_system_to_organisation (
   fk_organisation bigint not null,
   primary key (id)
 );
+alter table o_cp_system_to_organisation ENGINE = InnoDB;
 
 alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx foreign key (fk_cp_system) references o_cp_system(id);
 alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);

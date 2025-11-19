@@ -174,8 +174,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 			for(SingleKey i18nItemKey:i18nItemKeys) {
 				String value = "";
 				String i18nKey = i18nItemKey.getI18nKey();
-				if (bundle.hasTranslationForValue(i18nKey)) {
+				if (bundle.hasTranslationForValue(i18nKey, true)) {
 					value = bundle.getKeyTranslator().translate(i18nKey);
+				} else if (i18nItemKey.getDefaultI18nKey() != null && bundle.hasTranslationForValue(i18nItemKey.getDefaultI18nKey(), false)) {
+					value = bundle.getKeyTranslator().translate(i18nItemKey.getDefaultI18nKey());
 				}
 				String textId = TXT_NAME_PREFIX + bundle.getLanguageKey() + "." +(++counter);
 				TextElement te;
@@ -275,8 +277,9 @@ public class SingleKeyTranslatorController extends FormBasicController {
 			this.keyTranslator = Util.createPackageTranslator(getTranslatorBaseClass(), locale);
 		}
 
-		public boolean hasTranslationForValue(String v) {
-			String translation = i18nMng.getLocalizedString(getTranslatorBaseClass().getPackage().getName(), v, null, locale, true, false);
+		public boolean hasTranslationForValue(String v, boolean fallback) {
+			String translation = i18nMng.getLocalizedString(getTranslatorBaseClass().getPackage().getName(), v, null, locale, true, false,
+					fallback, true, 0);
 			return (translation != null);
 		}
 
@@ -299,11 +302,17 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		
 		private final String i18nKey;
 		private final InputType inputType;
+		private final String defaultI18nKey;
 		private final Map<String,TextElement> textElements = new HashMap<>();
 		
 		public SingleKey(String i18nKey, InputType inputType) {
+			this(i18nKey, inputType, null);
+		}
+		
+		public SingleKey(String i18nKey, InputType inputType, String defaultI18nKey) {
 			this.i18nKey = i18nKey;
 			this.inputType = inputType;
+			this.defaultI18nKey = defaultI18nKey;
 		}
 
 		public String getI18nKey() {
@@ -312,6 +321,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 		public InputType getInputType() {
 			return inputType;
+		}
+		
+		public String getDefaultI18nKey() {
+			return defaultI18nKey;
 		}
 		
 		protected Map<String, TextElement> getTextElements() {

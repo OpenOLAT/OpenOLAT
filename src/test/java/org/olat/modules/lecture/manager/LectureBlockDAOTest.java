@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -930,8 +931,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getLecturesBlockWithOptionalTeachers() {
-		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-24", null);
-		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-25", null);
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-24", Locale.ENGLISH);
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-25", Locale.ENGLISH);
 		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock1 = createMinimalLectureBlock(entry);
 		LectureBlock lectureBlock2 = createMinimalLectureBlock(entry);

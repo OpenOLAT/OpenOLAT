@@ -24,8 +24,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.Identity;
+import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationProgram;
-import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,7 +42,7 @@ public class ConfirmRevokeController extends ConfirmationController {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private CertificationProgramService certificationProgramService;
+	private CertificationCoordinator certificationCoordinator;
 	
 	public ConfirmRevokeController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
 			String confirmButton, CertificationProgram certificationProgram, Identity certifiedIdentity) {
@@ -53,7 +53,7 @@ public class ConfirmRevokeController extends ConfirmationController {
 
 	@Override
 	protected void doAction(UserRequest ureq) {
-		certificationProgramService.revokeRecertification(certificationProgram, certifiedIdentity, getIdentity());
+		certificationCoordinator.revokeRecertification(certificationProgram, certifiedIdentity, getIdentity());
 		getLogger().info("Revoke certificate of {} in certification program {}", certifiedIdentity.getKey(), certificationProgram.getKey());
 		dbInstance.commitAndCloseSession();
 		super.doAction(ureq);

@@ -26,24 +26,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ActivityLogService;
-import org.olat.core.logging.activity.CoreLoggingResourceable;
-import org.olat.core.logging.activity.ILoggingAction;
-import org.olat.core.logging.activity.ILoggingResourceable;
-import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
-import org.olat.modules.certificationprogram.CertificationLoggingAction;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramRef;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
@@ -72,8 +65,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class CertificationProgramServiceImpl implements CertificationProgramService {
 	
-	private static final Logger log = Tracing.createLoggerFor(CertificationProgramServiceImpl.class);
-	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -81,13 +72,13 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	@Autowired
 	private CertificatesDAO certificatesDao;
 	@Autowired
-	private ActivityLogService activityLogService;
-	@Autowired
 	private CreditPointWalletDAO creditPointWalletDao;
 	@Autowired
 	private CertificationProgramDAO certificationProgramDao;
 	@Autowired
 	private CertificationProgramToOrganisationDAO certificationProgramToOrganisationDao;
+	@Autowired
+	private CertificationProgramMailConfigurationDAO certificationProgramMailConfigurationDao;
 	@Autowired
 	private CertificationProgramToCurriculumElementDAO certificationProgramToCurriculumElementDao;
 	
@@ -97,6 +88,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 		if(owner != null) {
 			groupDao.addMembershipOneWay(program.getGroup(), owner, CertificationRoles.programowner.name());
 		}
+		
+		for(CertificationProgramMailType notificationType:CertificationProgramMailType.notifications()) {
+			createMailConfigurations(program, notificationType);
+		}
+		dbInstance.commit();
 		return program;
 	}
 	
@@ -148,6 +144,26 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 		return certificationProgramToOrganisationDao.getOrganisations(program);
 	}
 	
+	@Override
+	public CertificationProgramMailConfiguration createMailConfigurations(CertificationProgram program, CertificationProgramMailType type) {
+		return certificationProgramMailConfigurationDao.createConfiguration(program, type);
+	}
+
+	@Override
+	public List<CertificationProgramMailConfiguration> getMailConfigurations(CertificationProgram program) {
+		return certificationProgramMailConfigurationDao.getConfigurations(program);
+	}
+
+	@Override
+	public CertificationProgramMailConfiguration getMailConfiguration(Long key) {
+		return certificationProgramMailConfigurationDao.getConfiguration(key);
+	}
+
+	@Override
+	public CertificationProgramMailConfiguration updateMailConfiguration(CertificationProgramMailConfiguration configuration) {
+		return certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+	}
+
 	@Override
 	public List<Identity> getCertificationProgramOwners(CertificationProgram program) {
 		return groupDao.getMembers(program.getGroup(), CertificationRoles.programowner.name());
@@ -266,13 +282,6 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public void revokeRecertification(CertificationProgram program, Identity identity, Identity doer) {
-		int revokedCertificates = certificatesDao.revoke(identity, program);
-		log.info("Certificate revoked {} for {} and program {} by {0}", revokedCertificates, identity, program, doer);
-		activityLog(identity, program, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, doer);
-	}
-
-	@Override
 	public List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate) {
 		if(program == null || !program.isRecertificationEnabled()) return List.of();
 		
@@ -280,15 +289,5 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 			return certificationProgramDao.getEligibleForRecertificationsWithCreditPoints(program, referenceDate);
 		}
 		return certificationProgramDao.getEligibleForRecertifications(program, referenceDate);
-	}
-	
-	private void activityLog(Identity identity, CertificationProgram program, ILoggingAction action, RequestMode requestMode, Identity actor) {
-		Long identityKey = actor == null ? null : actor.getKey();
-		List<ILoggingResourceable> loggingResourceableList = new ArrayList<>();
-		loggingResourceableList.add(CoreLoggingResourceable.wrap(program, OlatResourceableType.certificationProgram, program.getDisplayName()));
-		loggingResourceableList.add(CoreLoggingResourceable.wrap(identity));
-
-		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, getClass(), requestMode == RequestMode.AUTOMATIC,
-				"", List.of(), loggingResourceableList);
 	}
 }

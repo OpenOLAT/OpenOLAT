@@ -49,6 +49,10 @@ public interface CertificationCoordinator {
 	
 	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor);
 	
+	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
+	
+	void sendReminders(CertificationProgramMailType type, Date referenceDate);
+	
 	public enum RequestMode {
 		/**
 		 * The cron job checks the recertification dates and try to renew them

@@ -18,12 +18,15 @@
  * <p>
  */
 package org.olat.modules.certificationprogram.manager;
+
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -42,11 +45,15 @@ import org.quartz.JobExecutionException;
 @DisallowConcurrentExecution
 public class RecertificationJob extends JobWithDB {
 
+	private static final Logger log = Tracing.createLoggerFor(RecertificationJob.class);
+	
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		CertificationProgramService certificationProgramService = CoreSpringFactory.getImpl(CertificationProgramService.class);
 		CertificationCoordinator certificationCoordinator = CoreSpringFactory.getImpl(CertificationCoordinator.class);
 		
+		log.info(Tracing.M_AUDIT, "Process certifications");
+
 		List<CertificationProgram> programs = certificationProgramService.getCertificationPrograms().stream()
 				.filter(program -> program.getStatus() == CertificationProgramStatusEnum.active)
 				.toList();

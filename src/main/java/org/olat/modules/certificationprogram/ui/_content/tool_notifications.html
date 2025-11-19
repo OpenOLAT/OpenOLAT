@@ -1,0 +1,15 @@
+<ul class="o_dropdown list-unstyled o_sel_tools">
+	#if($r.available("notification.edit"))
+	<li>$r.render("notification.edit")</li>
+	#end
+	#if($r.available("notification.customize"))
+	<li>$r.render("notification.customize")</li>
+	#end
+	#if($r.available("notification.reset"))
+	<li>$r.render("notification.reset")</li>
+	#end
+	#if($r.available("notification.delete"))
+	<li class='divider'></li>
+	<li>$r.render("notification.delete")</li>
+	#end
+</ul>

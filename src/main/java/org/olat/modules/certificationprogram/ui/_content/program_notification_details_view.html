@@ -1,0 +1,9 @@
+<div class="o_button_group o_button_group_right">
+#if($r.available("notification.customize"))
+	$r.render("notification.customize")
+#end
+#if($r.available("notification.edit.customization"))
+	$r.render("notification.edit.customization")
+#end
+</div>
+$r.render("templateCont")

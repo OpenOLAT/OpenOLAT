@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.ws.rs.core.MediaType;
 
@@ -70,7 +71,7 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 	public void changePasswordAsAdmin() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", null);
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", Locale.ENGLISH);
 		dbInstance.commitAndCloseSession();
 		
 		List<Authentication> authentications = securityManager.getAuthentications(id);
@@ -124,7 +125,7 @@ public class ChangePasswordWebServiceTest extends OlatRestTestCase {
 	public void hasChangePasswordAsAdmin() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection("administrator", "openolat");
 		
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", null);
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pwchange-1-", Locale.ENGLISH);
 		registrationManager.createAndDeleteOldTemporaryKey(id.getKey(), id.getUser().getEmail(), "192.168.1.200", RegistrationManager.PW_CHANGE, Integer.valueOf(30));
 		dbInstance.commitAndCloseSession();
 		

@@ -21,6 +21,8 @@ package org.olat.course.certificate.model;
 
 import java.io.Serializable;
 
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
+
 /**
  * 
  * Initial date: 23 Apr 2019<br>
@@ -37,6 +39,7 @@ public class CertificateConfig implements Serializable {
 	private final boolean sendEmailBcc;
 	private final boolean sendEmailLinemanager;
 	private final boolean sendEmailIdentityRelations;
+	private final CertificationProgramMailType mailType;
 
 	private CertificateConfig(Builder builder) {
 		this.custom1 = builder.custom1;
@@ -45,6 +48,7 @@ public class CertificateConfig implements Serializable {
 		this.sendEmailBcc = builder.sendEmailBcc;
 		this.sendEmailLinemanager = builder.sendEmailLinemanager;
 		this.sendEmailIdentityRelations = builder.sendEmailIdentityRelations;
+		this.mailType = builder.mailType;
 	}
 	
 	public String getCustom1() {
@@ -70,6 +74,10 @@ public class CertificateConfig implements Serializable {
 	public boolean isSendEmailIdentityRelations() {
 		return sendEmailIdentityRelations;
 	}
+	
+	public CertificationProgramMailType getMailType() {
+		return mailType;
+	}
 
 	public static Builder builder() {
 		return new Builder();
@@ -82,8 +90,10 @@ public class CertificateConfig implements Serializable {
 		private boolean sendEmailBcc;
 		private boolean sendEmailLinemanager;
 		private boolean sendEmailIdentityRelations;
+		private CertificationProgramMailType mailType;
 
 		private Builder() {
+			//
 		}
 
 		public Builder withCustom1(String custom1) {
@@ -110,10 +120,14 @@ public class CertificateConfig implements Serializable {
 			this.sendEmailLinemanager = sendEmailLinemanager;
 			return this;
 		}
-		
 
 		public Builder withSendEmailIdentityRelations(boolean sendEmailIdentityRelations) {
 			this.sendEmailIdentityRelations = sendEmailIdentityRelations;
+			return this;
+		}
+		
+		public Builder withCertificationProgramMailType(CertificationProgramMailType mailType) {
+			this.mailType = mailType;
 			return this;
 		}
 

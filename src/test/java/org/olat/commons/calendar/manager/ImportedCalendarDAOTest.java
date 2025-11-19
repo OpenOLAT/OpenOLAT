@@ -22,6 +22,7 @@ package org.olat.commons.calendar.manager;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -48,7 +49,7 @@ public class ImportedCalendarDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createImportedCalendar() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-1", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-1", Locale.ENGLISH);
 		String calendarId = UUID.randomUUID().toString();
 		String type = "imported-test";
 		String url = "http://www.openolat.org/calendar.ics";
@@ -72,7 +73,7 @@ public class ImportedCalendarDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getImportedCalendar() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-2", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-cal-2", Locale.ENGLISH);
 		String calendarId = UUID.randomUUID().toString();
 		String type = "imported-test-2";
 		String url = "http://www.openolat.org/calendar1.ics";

@@ -83,6 +83,7 @@ public class CertificationProgramListController extends FormBasicController impl
 	public static final String CONTEXT_DETAILS = "Details";
 	public static final String CONTEXT_OVERVIEW = "Overview";
 	public static final String CONTEXT_MEMBERS = "Members";
+	public static final String CONTEXT_MESSAGES = "Messages";
 	public static final String CONTEXT_OWNERS = "Owners";
 	public static final String CONTEXT_ELEMENTS = "Elements";
 	public static final String CONTEXT_SETTINGS = "Settings";

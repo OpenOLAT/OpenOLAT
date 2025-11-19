@@ -1,0 +1,11 @@
+<fieldset class="o_block">
+	<legend>$r.translate("reminders.title")</legend>
+	<div class="o_hint">$r.translate("reminders.hint")</div>
+	#if($r.visible("gadd.reminder"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("gadd.reminder")
+	</div>
+	#end
+	
+	$r.render("table")
+</fieldset>

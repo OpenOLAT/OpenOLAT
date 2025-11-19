@@ -160,6 +160,15 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 	protected SingleSelection getTypeElement() {
 		return typeEl;
 	}
+	
+	public String getAddOn() {
+		return component.getAddOn();
+	}
+
+	public void setAddOn(String addOn) {
+		component.setAddOn(addOn);
+		setComponentDirty();
+	}
 
 	@Override
 	public Iterable<FormItem> getFormItems() {

@@ -33,14 +33,24 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ILoggingResourceable;
 import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationLoggingAction;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.RecertificationMode;
 import org.olat.modules.certificationprogram.ui.component.Duration;
@@ -66,6 +76,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private MailManager mailService;
+	@Autowired
 	private CertificatesDAO certificatesDao;
 	@Autowired
 	private ActivityLogService activityLogService;
@@ -77,6 +89,12 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	private CreditPointWalletDAO creditPointWalletDao;
 	@Autowired
 	private CertificationProgramDAO certificationProgramDao;
+	@Autowired
+	private CertificationProgramLogDAO certificationProgramLogDao;
+	@Autowired
+	private CertificationProgramMailQueries certificationProgramMailQueries;
+	@Autowired
+	private CertificationProgramMailConfigurationDAO certificationProgramMailConfigurationDao;
 
 	@Override
 	public boolean processCertificationRequest(Identity identity, CertificationProgram certificationProgram,
@@ -119,7 +137,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
 				// Not enough credit
 				if(isRemovedFromProgramNotEnoughCreditPoints(certificate, certificationProgram, requestMode, referenceDate)) {
-					removeFromCertificationProgram(identity, certificationProgram, requestMode, doer);
+					removeFromCertificationProgram(identity, certificationProgram, certificate, referenceDate, requestMode, doer);
 				}
 				return false;
 			} else {
@@ -134,10 +152,16 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		return true;
 	}
 	
-	private void removeFromCertificationProgram(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity doer) {
-		certificatesDao.removeLastFlag(identity, certificationProgram);
+	private void removeFromCertificationProgram(Identity identity, CertificationProgram certificationProgram, Certificate certificate,
+			Date referenceDate, RequestMode requestMode, Identity doer) {
+		((CertificateImpl)certificate).setLast(false);
+		((CertificateImpl)certificate).setRemovalDate(referenceDate);
+		certificate = certificatesDao.updateCertificate(certificate);
+		dbInstance.commit();
+		
 		log.info("User {} removed of program {} by {0}", identity, certificationProgram, doer);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REMOVED, requestMode, doer);
+		sendMail(identity, certificationProgram, certificate, CertificationProgramMailType.program_removed, doer);
 	}
 	
 	/**
@@ -215,10 +239,15 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 	
 	@Override
-	public void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor) {
+	public void generateCertificate(Identity identity, CertificationProgram certificationProgram,
+			RequestMode requestMode, Identity actor) {
 		// Archive the last certificate
 		certificatesDao.removeLastFlag(identity, certificationProgram);
 		dbInstance.commit();
+		
+		CertificationProgramMailType mailType = requestMode == RequestMode.COURSE
+				? CertificationProgramMailType.certificate_issued
+				: CertificationProgramMailType.certificate_renewed;
 		
 		// Generate a new certificate
 		// No course informations, only certification program informations
@@ -230,10 +259,36 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
 				.withSendEmailIdentityRelations(true)
+				.withCertificationProgramMailType(mailType)
 				.build();
 		certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
-
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);
+	}
+	
+	@Override
+	public void revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity actor) {
+		Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram);
+		int revokedCertificates = certificatesDao.revoke(identity, certificationProgram);
+		if(revokedCertificates > 0)
+		
+		log.info("Certificate revoked {} for {} and program {} by {0}", revokedCertificates, identity, certificationProgram, actor);
+		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
+		sendMail(identity, certificationProgram, certificate, CertificationProgramMailType.program_removed, actor);
+	}
+	
+	public void sendReminders(CertificationProgramMailType type, Date referenceDate) {
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
+				.getConfigurations(type, CertificationProgramMailConfigurationStatus.active);
+		
+		for(CertificationProgramMailConfiguration configuration:configurations) {
+			CertificationProgram program = configuration.getCertificationProgram();
+			List<Certificate> toNotify = certificationProgramMailQueries.getOverdueCertificates(configuration, referenceDate);
+			dbInstance.commit();
+			for(Certificate certificate:toNotify) {
+				Identity recipient = certificate.getIdentity();
+				sendMail(recipient, program, certificate, configuration.getType(), null);
+			}
+		}
 	}
 	
 	private void activityLog(Identity identity, CertificationProgram program, ILoggingAction action, RequestMode requestMode, Identity actor) {
@@ -244,6 +299,22 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 
 		activityLogService.log(action, action.getResourceActionType(), "-", identityKey, getClass(), requestMode == RequestMode.AUTOMATIC,
 				"", List.of(), loggingResourceableList);
+	}
+	
+	private void sendMail(Identity recipient, CertificationProgram program, Certificate certificate, CertificationProgramMailType type, Identity actor) {
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.getConfiguration(program, type);
+		if(configuration == null || configuration.getStatus() == CertificationProgramMailConfigurationStatus.inactive) return;
+		
+		MailTemplate template = CertificationProgramMailing.getTemplate(program, configuration, recipient, certificate, actor);
+
+		MailerResult result = new MailerResult();
+		MailContext context = new MailContextImpl(null, null, "[HomeSite:" + recipient.getKey() + "][Certificates:0][All:0]");
+		MailBundle bundle = mailService.makeMailBundle(context, recipient, template, actor, null, result);
+		if(bundle != null) {
+			certificationProgramLogDao.createMailLog(certificate, configuration);
+			dbInstance.commit();
+			mailService.sendMessage(bundle);
+		}
 	}
 	
 	public enum Permission {

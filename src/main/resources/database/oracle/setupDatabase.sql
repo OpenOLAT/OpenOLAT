@@ -1952,6 +1952,8 @@ create table o_cer_certificate (
    c_path varchar2(1024 char),
    c_last number default 1 not null,
    c_revoked number default 0 not null,
+   c_revocation_date date,
+   c_removal_date date,
    c_course_title varchar2(255 char),
    c_archived_resource_id number(20) not null,
    fk_olatresource number(20),
@@ -2025,6 +2027,30 @@ create table o_cer_program_to_element (
    creationdate date not null,
    fk_program number(20) not null,
    fk_element number(20) not null,
+   primary key (id)
+);
+
+create table o_cer_program_mail_config (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date,
+   c_title varchar(255),
+   c_type varchar(32) not null,
+   c_status varchar(16) not null,
+   c_time number(20) default 0 not null,
+   c_time_unit varchar(32),
+   c_balance_too_low number default 0 not null,
+   c_i18n_suffix varchar(64) not null,
+   c_i18n_customized number default 0 not null,
+   fk_program number(20) not null,
+   primary key (id)
+);
+
+create table o_cer_program_log (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   fk_certificate number(20) not null,
+   fk_mail_configuration number(20),
    primary key (id)
 );
 
@@ -6289,6 +6315,14 @@ alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_ce
 create index idx_cer_to_cprog_idx on o_cer_certificate (fk_certification_program);
 alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
 create index idx_cer_to_upload_idx on o_cer_certificate (fk_uploaded_by);
+
+alter table o_cer_program_mail_config add constraint cer_mconfig_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+create index idx_cer_mconfig_to_prog_idx on o_cer_program_mail_config (fk_program);
+
+alter table o_cer_program_log add constraint cer_plog_to_cert_idx foreign key (fk_certificate) references o_cer_certificate (id);
+create index idx_cer_plog_to_cert_idx on o_cer_program_log (fk_certificate);
+alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key (fk_mail_configuration) references o_cer_program_mail_config (id);
+create index idx_cer_plog_to_config_idx on o_cer_program_log (fk_mail_configuration);
 
 -- Certification program
 alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);

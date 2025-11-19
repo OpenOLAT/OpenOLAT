@@ -55,6 +55,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 	private int overviewTab;
 	private int settingsTab;
 	private int ownersTab;
+	private int messagesTab;
 	private int implementationTab;
 
 	private Dropdown statusDropdown;
@@ -68,6 +69,7 @@ public class CertificationProgramDetailsController extends BasicController imple
 	
 	private CertificationProgramOwnersController ownersCtrl;
 	private EditCertificationProgramController settingsCtrl;
+	private CertificationProgramMessagesController messagesCtrl;
 	private CertificationProgramMembersOverviewController membersCtrl;
 	private CertificationProgramDashboardController overviewCtrl;
 	private CertificationProgramCurriculumElementListController curriculumElementsListCtrl;
@@ -145,6 +147,15 @@ public class CertificationProgramDetailsController extends BasicController imple
 			return membersCtrl.getInitialComponent();
 		}, true);
 		
+		messagesTab = tabPane.addTab(ureq, translate("certification.program.messages"), "o_sel_certification_program_messages", uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CertificationProgramListController.CONTEXT_MESSAGES), null);
+			messagesCtrl = new CertificationProgramMessagesController(uureq, subControl, certificationProgram);
+			listenTo(messagesCtrl);
+
+			return messagesCtrl.getInitialComponent();
+		}, true);
+		
 		ownersTab = tabPane.addTab(ureq, translate("certification.program.owners"), "o_sel_certification_program_owners", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_OWNERS), null);
@@ -181,6 +192,12 @@ public class CertificationProgramDetailsController extends BasicController imple
 			tabPane.setSelectedPane(ureq, membersTab);
 			if(membersCtrl != null) {
 				membersCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if(CertificationProgramListController.CONTEXT_MESSAGES.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			tabPane.setSelectedPane(ureq, messagesTab);
+			if(messagesCtrl != null) {
+				messagesCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if(CertificationProgramListController.CONTEXT_SETTINGS.equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());

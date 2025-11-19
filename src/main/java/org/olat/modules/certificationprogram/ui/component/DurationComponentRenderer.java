@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -55,6 +56,12 @@ public class DurationComponentRenderer extends DefaultComponentRenderer {
 		SingleSelection typeEl = item.getTypeElement();
 		Component typeCmp = typeEl.getComponent();
 		typeCmp.getHTMLRendererSingleton().render(renderer, sb, typeCmp, ubu, translator, renderResult, new String[] { "form" });
+		
+		if(StringHelper.containsNonWhitespace(item.getAddOn())) {
+			sb.append("<span class='o_flow_padding_left_small'>")
+			  .appendHtmlEscaped(item.getAddOn())
+			  .append("</span>");
+		}
 		
 		sb.append("</div>");
 		

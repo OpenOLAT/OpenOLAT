@@ -97,7 +97,10 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.VFSContainer;
@@ -138,6 +141,12 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.manager.CertificationProgramLogDAO;
+import org.olat.modules.certificationprogram.manager.CertificationProgramMailConfigurationDAO;
+import org.olat.modules.certificationprogram.manager.CertificationProgramMailing;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.GradeSystem;
@@ -214,7 +223,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
+	private CertificationProgramLogDAO certificationProgramLogDao;
+	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
+	@Autowired
+	private CertificationProgramMailConfigurationDAO certificationProgramMailConfigurationDao;
 	@Autowired
 	private GradeService gradeService;
 	
@@ -1402,7 +1415,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			//not the first certification, reset the last of the others certificates
 			certificatesDao.removeLastFlag(identity, resource.getKey());
 		}
-		MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, certificateFile, workUnit.getConfig());
+		//TODO certification actor
+		MailerResult result = sendCertificate(identity, certificationProgram, entry, certificate, null, certificateFile, workUnit.getConfig());
 		if(result.isSuccessful()) {
 			certificate.setEmailStatus(EmailStatus.ok);
 		} else {
@@ -1416,14 +1430,37 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	private MailerResult sendCertificate(Identity to, CertificationProgram certificationProgram, RepositoryEntry entry,
-			CertificateImpl certificate, File certificateFile, CertificateConfig config) {
-		String userLanguage = to.getUser().getPreferences().getLanguage();
-		Locale locale = i18nManager.getLocaleOrDefault(userLanguage);
-		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
-		String[] args = createMailArgs(to, certificationProgram, entry, certificate, translator);
-		
-		MailerResult mailerResult = sendCertificate(to, certificateFile, translator, args);
-		sendCertificateCopies(to, certificationProgram, entry, certificate, certificateFile, config, translator, args);
+			CertificateImpl certificate, Identity actor, File certificateFile, CertificateConfig config) {
+		MailerResult mailerResult;
+		if(certificationProgram != null) {
+			
+			CertificationProgramMailType type = config.getMailType() == null
+					? CertificationProgramMailType.certificate_issued
+					: config.getMailType();
+			CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.getConfiguration(certificationProgram, type);
+			if(configuration == null || configuration.getStatus() == CertificationProgramMailConfigurationStatus.inactive) {
+				mailerResult = new MailerResult();
+				mailerResult.setReturnCode(MailerResult.OK);
+			} else {
+				mailerResult = new MailerResult();
+				MailTemplate template = CertificationProgramMailing.getTemplate(certificationProgram, configuration, to, certificate, actor);
+				MailContext context = new MailContextImpl(null, null, "[HomeSite:" + to.getKey() + "][Certificates:0][All:0]");
+				MailBundle bundle = mailManager.makeMailBundle(context, to, template, null, null, mailerResult);
+				if(bundle != null) {
+					certificationProgramLogDao.createMailLog(certificate, configuration);
+					mailManager.sendMessage(bundle);
+				}
+			}
+		} else {
+
+			String userLanguage = to.getUser().getPreferences().getLanguage();
+			Locale locale = i18nManager.getLocaleOrDefault(userLanguage);
+			Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
+			String[] args = createMailArgs(to, certificationProgram, entry, certificate, translator);
+			
+			mailerResult = sendCertificate(to, certificateFile, translator, args);
+			sendCertificateCopies(to, certificationProgram, entry, certificate, certificateFile, config, translator, args);
+		}
 		return mailerResult;
 	}
 

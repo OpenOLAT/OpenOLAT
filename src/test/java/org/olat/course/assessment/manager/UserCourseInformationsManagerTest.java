@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -374,7 +375,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void updateInitialLaunchDates_concurrent() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-concurrent-6", null);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-concurrent-6", Locale.ENGLISH);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();

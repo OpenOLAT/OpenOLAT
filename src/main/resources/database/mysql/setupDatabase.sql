@@ -1898,6 +1898,8 @@ create table o_cer_certificate (
    c_path varchar(1024),
    c_last bool default true not null,
    c_revoked bool default false not null,
+   c_revocation_date datetime,
+   c_removal_date datetime,
    c_course_title varchar(255),
    c_archived_resource_id bigint not null,
    fk_olatresource bigint,
@@ -1971,6 +1973,30 @@ create table o_cer_program_to_element (
    creationdate datetime not null,
    fk_program bigint not null,
    fk_element bigint not null,
+   primary key (id)
+);
+
+create table o_cer_program_mail_config (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime,
+   c_title varchar(255),
+   c_type varchar(32) not null,
+   c_status varchar(16) not null,
+   c_time bigint default 0 not null,
+   c_time_unit varchar(32),
+   c_balance_too_low bool default false not null,
+   c_i18n_suffix varchar(64) not null,
+   c_i18n_customized bool default false not null,
+   fk_program bigint not null,
+   primary key (id)
+);
+
+create table o_cer_program_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_certificate bigint not null,
+   fk_mail_configuration bigint,
    primary key (id)
 );
 
@@ -5246,6 +5272,8 @@ alter table o_cer_entry_config ENGINE = InnoDB;
 alter table o_cer_program ENGINE = InnoDB;
 alter table o_cer_program_to_organisation ENGINE = InnoDB;
 alter table o_cer_program_to_element ENGINE = InnoDB;
+alter table o_cer_program_mail_config ENGINE = InnoDB;
+alter table o_cer_program_log ENGINE = InnoDB;
 alter table o_rem_reminder ENGINE = InnoDB;
 alter table o_rem_sent_reminder ENGINE = InnoDB;
 alter table o_goto_organizer ENGINE = InnoDB;
@@ -6189,6 +6217,11 @@ alter table o_cer_entry_config add constraint template_config_entry_idx foreign 
 
 alter table o_cer_certificate add constraint cer_to_cprog_idx foreign key (fk_certification_program) references o_cer_program (id);
 alter table o_cer_certificate add constraint cer_to_upload_idx foreign key (fk_uploaded_by) references o_bs_identity (id);
+
+alter table o_cer_program_mail_config add constraint cer_mconfig_to_prog_idx foreign key (fk_program) references o_cer_program (id);
+
+alter table o_cer_program_log add constraint cer_plog_to_cert_idx foreign key (fk_certificate) references o_cer_certificate (id);
+alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key (fk_mail_configuration) references o_cer_program_mail_config (id);
 
 -- certification program
 alter table o_cer_program add constraint cer_progr_to_group_idx foreign key (fk_group) references o_bs_group (id);

@@ -97,8 +97,15 @@ public interface CertificationProgramService {
 	
 	Certificate continueRecertification(CertificationProgram program, IdentityRef identity, Identity doer);
 	
-	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
-	
 	List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate);
-
+	
+	
+	CertificationProgramMailConfiguration createMailConfigurations(CertificationProgram program, CertificationProgramMailType type);
+	
+	List<CertificationProgramMailConfiguration> getMailConfigurations(CertificationProgram program);
+	
+	CertificationProgramMailConfiguration getMailConfiguration(Long key);
+	
+	CertificationProgramMailConfiguration updateMailConfiguration(CertificationProgramMailConfiguration configuration);	
+ 
 }

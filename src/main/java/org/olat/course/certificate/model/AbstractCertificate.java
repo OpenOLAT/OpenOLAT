@@ -96,8 +96,15 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	private boolean last;
 	@Column(name="c_revoked", nullable=false, insertable=true, updatable=true)
 	private boolean revoked;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="c_revocation_date", nullable=true, insertable=true, updatable=true)
+	private Date revocationDate;
 	@Column(name="c_course_title", nullable=true, insertable=true, updatable=false)
 	private String courseTitle;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="c_removal_date", nullable=true, insertable=true, updatable=true)
+	private Date removalDate;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -208,6 +215,24 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	public void setRevoked(boolean revoked) {
 		this.revoked = revoked;
+	}
+
+	@Override
+	public Date getRevocationDate() {
+		return revocationDate;
+	}
+
+	public void setRevocationDate(Date revocationDate) {
+		this.revocationDate = revocationDate;
+	}
+
+	@Override
+	public Date getRemovalDate() {
+		return removalDate;
+	}
+
+	public void setRemovalDate(Date removalDate) {
+		this.removalDate = removalDate;
 	}
 
 	@Override

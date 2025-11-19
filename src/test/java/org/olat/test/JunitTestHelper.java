@@ -206,6 +206,16 @@ public class JunitTestHelper {
 		return createAndPersistIdentityAsUser(login, defOrganisation, null);
 	}
 	
+	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin, Locale locale) {
+		String login = getRandomizedLoginName(prefixLogin);
+		Organisation defOrganisation = getDefaultOrganisation();
+		Identity identity = createAndPersistIdentityAsUser(login, defOrganisation, null);
+		identity.getUser().getPreferences().setLanguage(locale.getLanguage());
+		CoreSpringFactory.getImpl(UserManager.class).updateUserFromIdentity(identity);
+		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
+		return identity;
+	}
+	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin, String password) {
 		String login = getRandomizedLoginName(prefixLogin);
 		Organisation defOrganisation = getDefaultOrganisation();
