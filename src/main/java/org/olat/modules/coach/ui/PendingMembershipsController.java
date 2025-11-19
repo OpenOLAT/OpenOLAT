@@ -163,7 +163,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		acceptColumn.setIconHeader("o_icon o_icon-fw o_icon_accepted");
 		acceptColumn.setHeaderLabel(translate("accept"));
 		acceptColumn.setExportable(false);
-		acceptColumn.setAlwaysVisible(true);
+		acceptColumn.setAlwaysVisible(false);
 		columnModel.addFlexiColumnModel(acceptColumn);
 
 		DefaultFlexiColumnModel declineColumn = new DefaultFlexiColumnModel(org.olat.resource.accesscontrol.ui.PendingMembershipsTableModel.PendingMembershipCol.decline.i18nHeaderKey(),
@@ -172,7 +172,7 @@ public class PendingMembershipsController extends FormBasicController implements
 		declineColumn.setIconHeader("o_icon o_icon-fw o_icon_decline");
 		declineColumn.setHeaderLabel(translate("decline"));
 		declineColumn.setExportable(false);
-		declineColumn.setAlwaysVisible(true);
+		declineColumn.setAlwaysVisible(false);
 		columnModel.addFlexiColumnModel(declineColumn);
 
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(PendingMembershipsCol.tools);
