@@ -199,6 +199,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 						if (configuration.isTemplatesMode()) {
 							searchParams.setOwned(true);
 							searchParams.setShared(true);
+						} else {
+							searchParams.setOwned(false);
+							searchParams.setShared(false);
 						}
 					}
 				}
