@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.ui;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,12 +42,33 @@ public class CatalogEntryRowSortDelegate extends SortableFlexiTableModelDelegate
 	
 	@Override
 	protected void sort(List<CatalogEntryRow> rows) {
+		if (getOrderBy() != null && CatalogEntryDataModel.SORT_BY_PRIORITY.equals(getOrderBy().getKey())) {
+			Collections.sort(rows, new PriorityComparator());
+			return;
+		}
+		
 		int columnIndex = getColumnIndex();
 		CatalogEntryCols column = CatalogEntryCols.values()[columnIndex];
 		switch(column) {
 			case title: Collections.sort(rows, (r1, r2) -> compareString(r1.getTitle(), r2.getTitle())); break;
 			default: super.sort(rows);
 		}
+	}
+	
+	private class PriorityComparator implements Comparator<CatalogEntryRow> {
+
+		@Override
+		public int compare(CatalogEntryRow o1, CatalogEntryRow o2) {
+			// Higher priority is before lower priority
+			int c = -o1.getSortPriority().compareTo(o2.getSortPriority());
+			
+			if (c == 0) {
+				c = compareString(o1.getTitle(), o2.getTitle());
+			}
+			
+			return c;
+		}
+		
 	}
 
 }

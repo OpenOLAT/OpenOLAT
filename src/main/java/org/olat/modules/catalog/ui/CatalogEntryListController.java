@@ -37,6 +37,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -48,6 +49,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -344,6 +347,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 		tableEl.setRowRenderer(row, this);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist-3.1");
+		
+		initSorters();
 	}
 
 	private boolean shouldExcludeCatalogEntry(CatalogEntry catalogEntry) {
@@ -409,6 +414,24 @@ public class CatalogEntryListController extends FormBasicController implements A
 			tableEl.setFilters(true, flexiTableFilters, false, false);
 			tableEl.expandFilters(true);
 		}
+	}
+	
+	private void initSorters() {
+		if (!catalogModule.isPrioritySortingEnabled()) {
+			return;
+		}
+		
+		List<FlexiTableSort> sorters = new ArrayList<>();
+		sorters.add(new FlexiTableSort(translate("orderby.automatic"), CatalogEntryDataModel.SORT_BY_PRIORITY));
+		sorters.add(FlexiTableSort.SPACER);
+		Arrays.stream(CatalogEntryDataModel.COLS)
+				.filter(CatalogEntryCols::sortable)
+				.map(col -> new FlexiTableSort(translate(col.i18nHeaderKey()), col.name()))
+				.forEach(sort -> sorters.add(sort));
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(CatalogEntryDataModel.SORT_BY_PRIORITY, true));
+		tableEl.setSortSettings(options);
 	}
 	
 	private void loadModel(boolean initFilters) {

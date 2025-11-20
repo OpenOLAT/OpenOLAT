@@ -86,7 +86,7 @@ public class BusinessGroupEditAccessController extends BasicController {
 		String customPublishedIn = translate("access.published.in");
 		return new CatalogInfo(false, false, true, false, false, null, null, customPublishedIn,
 				new BusinessGroupStatusEvaluator(businessGroup.getGroupStatus()), periodStatusOption, false, false, null,
-				null, null, null, null, true);
+				null, null, null, null, true, null);
 	}
 	
 	private static final class BusinessGroupStatusEvaluator implements CatalogStatusEvaluator {

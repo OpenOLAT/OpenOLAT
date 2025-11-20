@@ -130,5 +130,7 @@ alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreig
 create index idx_rel_cpo_to_org_idx on o_cp_system_to_organisation (fk_organisation);
 
 
-
+-- Catalog
+alter table o_repositoryentry add catalog_sort_priority number(20);
+alter table o_cur_curriculum_element add c_catalog_sort_priority number(20);
 

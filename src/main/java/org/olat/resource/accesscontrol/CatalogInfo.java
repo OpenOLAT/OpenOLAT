@@ -26,7 +26,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CatalogInfo {
 
 	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null,
-			null, null, false, false, null, null, null, null, null, true);
+			null, null, false, false, null, null, null, null, null, true, null);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -47,13 +47,14 @@ public class CatalogInfo {
 	private final String webCatalogBusinessPath;
 	private final Collection<TaxonomyLevel> microsites;
 	private final boolean showQRCode;
+	private final SortPriorityProvider sortPriorityProvider;
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
 			String customPublishedIn, CatalogStatusEvaluator statusEvaluator, String statusPeriodOption,
 			boolean fullyBooked, boolean startDateAvailable, String editBusinessPath, String editLabel,
 			String catalogBusinessPath, String webCatalogBusinessPath, Collection<TaxonomyLevel> microsites,
-			boolean showQRCode) {
+			boolean showQRCode, SortPriorityProvider sortPriorityProvider) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
 		this.publishedGroupsSupported = publishedGroupsSupported;
@@ -72,6 +73,7 @@ public class CatalogInfo {
 		this.webCatalogBusinessPath = webCatalogBusinessPath;
 		this.microsites = microsites;
 		this.showQRCode = showQRCode;
+		this.sortPriorityProvider = sortPriorityProvider;
 	}
 
 	public boolean isCatalogSupported() {
@@ -146,6 +148,10 @@ public class CatalogInfo {
 		return showQRCode;
 	}
 	
+	public SortPriorityProvider getSortPriorityProvider() {
+		return sortPriorityProvider;
+	}
+
 	public interface CatalogStatusEvaluator {
 		
 		boolean isVisibleStatusNoPeriod();
@@ -165,6 +171,14 @@ public class CatalogInfo {
 		public boolean isVisibleStatusPeriod() {
 			return true;
 		}
+		
+	}
+	
+	public interface SortPriorityProvider {
+		
+		Integer getPriority();
+		
+		void setPriority(Integer priority);
 		
 	}
 

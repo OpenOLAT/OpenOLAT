@@ -59,6 +59,8 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.ui.CatalogV2UIFactory;
+import org.olat.modules.catalog.ui.SortPriorityEditController;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
@@ -93,6 +95,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private static final String ICON_CATALOG_EXTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_extern\"> </i> ";
 	private static final String ICON_CATALOG_INTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_intern\"> </i> ";
 	
+	private FormLink sortPriorityLink;
 	private FormLink linksLink;
 	private FormLink addButton;
 	private DropdownItem addMethodDropdown;
@@ -112,6 +115,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private AbstractConfigurationMethodController editMethodCtrl;
 	private MethodSelectionController methodSelectionCtrl;
 	private OfferLinksController offerLinksCtrl;
+	private SortPriorityEditController sortPriorityCtrl;
 
 	private final List<Offer> deletedOfferList = new ArrayList<>(1);
 	private final List<AccessInfo> accessInfos = new ArrayList<>(3);
@@ -150,6 +154,7 @@ public class AccessConfigurationController extends FormBasicController {
 		super(ureq, wControl, "access_configuration");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(CatalogV2UIFactory.class, getLocale(), getTranslator()));
 		this.resource = resource;
 		this.displayName = displayName;
 		this.allowPaymentMethod = allowPaymentMethod;
@@ -446,6 +451,14 @@ public class AccessConfigurationController extends FormBasicController {
 				cmc.deactivate();
 				cleanUp();
 			}
+		} else if(sortPriorityCtrl == source) {
+			if(event.equals(Event.DONE_EVENT)) {
+				catalogInfo.getSortPriorityProvider().setPriority(sortPriorityCtrl.getSortPriority());
+				updateCatalogOverviewUI();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == offerLinksCtrl) {
 			cmc.deactivate();
 			cleanUp();
@@ -459,6 +472,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(methodSelectionCtrl);
 		removeAsListenerAndDispose(openAccessOfferCtrl);
+		removeAsListenerAndDispose(sortPriorityCtrl);
 		removeAsListenerAndDispose(guestOfferCtrl);
 		removeAsListenerAndDispose(editMethodCtrl);
 		removeAsListenerAndDispose(newMethodCtrl);
@@ -466,6 +480,7 @@ public class AccessConfigurationController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		methodSelectionCtrl = null;
 		openAccessOfferCtrl = null;
+		sortPriorityCtrl = null;
 		guestOfferCtrl = null;
 		editMethodCtrl = null;
 		newMethodCtrl = null;
@@ -476,7 +491,9 @@ public class AccessConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == linksLink) {
+		if (source == sortPriorityLink) {
+			doEditSortPriority(ureq);
+		} else if (source == linksLink) {
 			doOpenLinks(ureq);
 		} else if (source == addOpenAccessLink || source == addOpenAccessButton) {
 			editOpenAccessOffer(ureq, null);
@@ -653,6 +670,12 @@ public class AccessConfigurationController extends FormBasicController {
 			overviewContainer.setRootForm(mainForm);
 			formLayout.add(overviewContainer);
 			
+			if (catalogInfo.getSortPriorityProvider() != null) {
+				if (!readOnly) {
+					sortPriorityLink = uifactory.addFormLink("sort.priority", "offer.sort.priority.change", null, overviewContainer, Link.LINK);
+				}
+			}
+			
 			if (catalogInfo.isShowDetails()) {
 				overviewContainer.contextPut("detailsLabel", catalogInfo.getDetailsLabel());
 				overviewContainer.contextPut("details", catalogInfo.getDetails());
@@ -683,6 +706,11 @@ public class AccessConfigurationController extends FormBasicController {
 			String externalCatalog = getExternalCatalogStatus();
 			if (externalCatalog != null) {
 				overviewContainer.contextPut("externalCatalog", externalCatalog);
+			}
+			
+			if (catalogInfo.getSortPriorityProvider() != null) {
+				String sortPriority = CatalogV2UIFactory.translateSortPriority(getTranslator(), catalogInfo.getSortPriorityProvider().getPriority(), true);
+				overviewContainer.contextPut("sortPriority", sortPriority);
 			}
 		} else if (catalogInfo.isPublishedGroupsSupported()) {
 			String status = getCatalogStatus();
@@ -882,6 +910,18 @@ public class AccessConfigurationController extends FormBasicController {
 		accessInfos.remove(infos);
 		updateCatalogOverviewUI();
 		updateAddUI();
+	}
+
+	private void doEditSortPriority(UserRequest ureq) {
+		guardModalController(sortPriorityCtrl);
+		
+		removeAsListenerAndDispose(sortPriorityCtrl);
+		sortPriorityCtrl = new SortPriorityEditController(ureq, getWindowControl(), catalogInfo.getSortPriorityProvider().getPriority());
+		listenTo(sortPriorityCtrl);
+		String title = translate("offer.sort.priority.change.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), sortPriorityCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void editCatalogInfo(UserRequest ureq) {

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -79,6 +80,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private List<OLATResourceAccess> resourceAccess;
 	private final Long maxParticipants;
 	private Long numParticipants;
+	private Integer sortPriority;
 	private License license;
 	private final boolean singleCourseImplementation;
 	private Long singleCourseEntryKey;
@@ -120,6 +122,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
 		maxParticipants = null;
+		sortPriority = CatalogV2UIFactory.zeroIfNull(re.getCatalogSortPriority());
 		
 		if(statistics != null) {
 			averageRating = statistics.getRating();
@@ -161,6 +164,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		publishedDate = null;
 		publicVisible = true;
 		maxParticipants = element.getMaxParticipants();
+		sortPriority = CatalogV2UIFactory.zeroIfNull(element.getCatalogSortPriority());
 		
 		averageRating = null;
 		numOfRatings = null;
@@ -359,6 +363,11 @@ public class CatalogEntryImpl implements CatalogEntry {
 
 	public void setNumParticipants(Long numParticipants) {
 		this.numParticipants = numParticipants;
+	}
+
+	@Override
+	public Integer getSortPriority() {
+		return sortPriority;
 	}
 
 	@Override

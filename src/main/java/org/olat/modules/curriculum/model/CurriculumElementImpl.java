@@ -156,6 +156,8 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="c_taught_by", nullable=true, insertable=true, updatable=true)
 	private String taughtByValue;
 	private transient Set<TaughtBy> taughtBys;
+	@Column(name="c_catalog_sort_priority", nullable=true, insertable=true, updatable=true)
+	private Integer catalogSortPriority;
 	
 	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
@@ -587,6 +589,16 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	public void setTaughtBys(Set<TaughtBy> taughtBys) {
 		this.taughtBys = taughtBys;
 		this.taughtByValue = TaughtBy.join(taughtBys);
+	}
+
+	@Override
+	public Integer getCatalogSortPriority() {
+		return catalogSortPriority;
+	}
+
+	@Override
+	public void setCatalogSortPriority(Integer catalogSortPriority) {
+		this.catalogSortPriority = catalogSortPriority;
 	}
 
 	@Override

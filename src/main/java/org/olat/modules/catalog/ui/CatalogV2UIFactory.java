@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.ui;
 
 import java.util.Comparator;
+import java.util.List;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.catalog.CatalogLauncher;
@@ -63,6 +64,28 @@ public class CatalogV2UIFactory {
 
 	public static String getLauncherNameI18nKey(String identifier) {
 		return "launcher.name.id." + identifier;
+	}
+	
+	public static List<Integer> SORT_PRIORITIES = List.of(0, 1000, 2000, 3000, 4000);
+
+	public static String translateSortPriority(Translator translator, Integer priority, boolean customWithValue) {
+		if (priority == null) {
+			return translator.translate("sort.priority.normal");
+		}
+		return switch (priority) {
+		case 0 -> translator.translate("sort.priority.normal");
+		case 1000 -> translator.translate("sort.priority.medium");
+		case 2000 -> translator.translate("sort.priority.high");
+		case 3000 -> translator.translate("sort.priority.very.high");
+		case 4000 -> translator.translate("sort.priority.ultimate");
+		default -> customWithValue
+				? translator.translate("sort.priority.custom.value", String.valueOf(priority))
+				: translator.translate("sort.priority.custom");
+		};
+	}
+	
+	public static Integer zeroIfNull(Integer integer) {
+		return integer != null? integer: Integer.valueOf(0);
 	}
 
 }

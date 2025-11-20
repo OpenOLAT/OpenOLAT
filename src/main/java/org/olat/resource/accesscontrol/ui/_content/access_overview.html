@@ -17,6 +17,16 @@
 		$internalCatalog
 	</div>
 #end
+#if($sortPriority)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_sort_priority">$r.translate("offers.overview.sort.priority")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_sort_priority">
+		<div class="o_ac_offers_details_text">
+			$sortPriority #if($r.available("sort.priority")) $r.render("sort.priority")#end
+		</div>
+	</div>
+#end
 #if($publishedGroups)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_publishedgroups">$r.translate("offers.overview.published.groups")</label>

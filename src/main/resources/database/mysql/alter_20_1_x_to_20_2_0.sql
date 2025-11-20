@@ -121,4 +121,6 @@ alter table o_cp_system_to_organisation add constraint rel_cpo_to_cp_sys_idx for
 alter table o_cp_system_to_organisation add constraint rel_cpo_to_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 
 
-
+-- Catalog
+alter table o_repositoryentry add catalog_sort_priority integer;
+alter table o_cur_curriculum_element add c_catalog_sort_priority integer;

@@ -35,6 +35,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -42,6 +43,7 @@ import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
+import org.olat.resource.accesscontrol.CatalogInfo.SortPriorityProvider;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 
 /**
@@ -76,7 +78,12 @@ public class RepositoryCatalogInfoFactory {
 					false,
 					false, 
 					editBusinessPath,
-					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null, taxonomyLevels, showRQCode);
+					translator.translate("access.open.metadata"),
+					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()),
+					catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null,
+					taxonomyLevels,
+					showRQCode,
+					catalogV2Module.isPrioritySortingEnabled()? new RepositoryEntryCatalogSortPriorityProvider(entry): null);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
@@ -105,7 +112,7 @@ public class RepositoryCatalogInfoFactory {
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
 					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), false,
-					false, editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
+					false, editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode, null);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}
@@ -163,6 +170,34 @@ public class RepositoryCatalogInfoFactory {
 		@Override
 		public boolean isVisibleStatusPeriod() {
 			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+		}
+		
+	}
+	
+	public static final class RepositoryEntryCatalogSortPriorityProvider implements SortPriorityProvider {
+		
+		private final RepositoryEntryRef entry;
+		private Integer priority;
+
+		public RepositoryEntryCatalogSortPriorityProvider(RepositoryEntry entry) {
+			this.entry = entry;
+			this.priority = entry.getCatalogSortPriority();
+		}
+
+		@Override
+		public Integer getPriority() {
+			return priority;
+		}
+
+		@Override
+		public void setPriority(Integer priority) {
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			RepositoryEntry repositoryEntry = repositoryService.loadBy(entry);
+			if (repositoryEntry != null) {
+				repositoryEntry.setCatalogSortPriority(priority);
+				repositoryService.update(repositoryEntry);
+				this.priority = priority;
+			}
 		}
 		
 	}

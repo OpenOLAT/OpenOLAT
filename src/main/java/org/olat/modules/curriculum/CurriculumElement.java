@@ -102,6 +102,10 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	Set<TaughtBy> getTaughtBys();
 
 	void setTaughtBys(Set<TaughtBy> taughtBys);
+	
+	Integer getCatalogSortPriority();
+	
+	void setCatalogSortPriority(Integer catalogSortPriority);
 
 	/**
 	 * @return true if calendars aggregation is available at this level of the curriculum

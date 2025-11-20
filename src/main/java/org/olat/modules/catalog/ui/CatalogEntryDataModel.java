@@ -39,7 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEntryRow>
 		implements SortableFlexiTableDataModel<CatalogEntryRow>, FlexiBusinessPathModel {
 	
-	private static final CatalogEntryCols[] COLS = CatalogEntryCols.values();
+	static final String SORT_BY_PRIORITY = "sort.by.priority";
+	static final CatalogEntryCols[] COLS = CatalogEntryCols.values();
 	
 	private final Locale locale;
 	

@@ -81,6 +81,7 @@ public class CatalogSettingsController extends FormBasicController {
 	private SingleSelection enabledEl;
 	private FormLayoutContainer taxonomiesCont;
 	private MultipleSelectionElement taxonomyEditRolesEl;
+	private FormToggle prioritySortingEnabledEl;
 	private FormToggle webPublishEnabledEl;
 	private FormToggle webPublishTemporarilyDisabledEl;
 	private FormToggle webPublishLoginSiteEl;
@@ -158,6 +159,11 @@ public class CatalogSettingsController extends FormBasicController {
 		taxonomyEditRolesEl = uifactory.addCheckboxesVertical("admin.taxonomy.edit.roles", generalCont, taxonomyEditRolesSV.keys(), taxonomyEditRolesSV.values(), 1);
 		taxonomyEditRolesEl.addActionListener(FormEvent.ONCHANGE);
 		catalogV2Module.getTaxonomyEditRoles().stream().forEach(role -> taxonomyEditRolesEl.select(role.name(), true));
+		
+		prioritySortingEnabledEl = uifactory.addToggleButton("sorting.enabled", "admin.priority.sorting.enabled",
+				translate("on"), translate("off"), generalCont);
+		prioritySortingEnabledEl.toggle(catalogV2Module.isPrioritySortingEnabled());
+		prioritySortingEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		webPublishEnabledEl = uifactory.addToggleButton("admin.webpub.enabled", "admin.webpub.enabled", translate("on"),
 				translate("off"), generalCont);
@@ -250,6 +256,8 @@ public class CatalogSettingsController extends FormBasicController {
 					.map(OrganisationRoles::valueOf)
 					.collect(Collectors.toSet());
 			catalogV2Module.setTaxonomyEditRoles(taxonomyEditRoles);
+		} else if (source == prioritySortingEnabledEl) {
+			catalogV2Module.setPrioritySortingEnabled(prioritySortingEnabledEl.isOn());
 		} else if (source == webPublishEnabledEl) {
 			catalogV2Module.setWebPublishEnabled(webPublishEnabledEl.isOn());
 			doSetEnabled();

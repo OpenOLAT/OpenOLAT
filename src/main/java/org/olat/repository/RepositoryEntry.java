@@ -198,6 +198,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean guests;
 	@Column(name="bookable", nullable=false, insertable=true, updatable=true)
 	private boolean bookable;
+	@Column(name="catalog_sort_priority", nullable=true, insertable=true, updatable=true)
+	private Integer catalogSortPriority;
 	
 	@Column(name="cancopy", nullable=false, insertable=true, updatable=true)
 	private boolean canCopy;
@@ -555,6 +557,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	public void setVideoCollection(boolean videoCollection) {
 		this.videoCollection = videoCollection;
+	}
+
+	public Integer getCatalogSortPriority() {
+		return catalogSortPriority;
+	}
+
+	public void setCatalogSortPriority(Integer catalogSortPriority) {
+		this.catalogSortPriority = catalogSortPriority;
 	}
 
 	@Deprecated

@@ -105,6 +105,8 @@ public interface CatalogEntry {
 	
 	Long getNumParticipants();
 	
+	Integer getSortPriority();
+	
 	List<OLATResourceAccess> getResourceAccess();
 	
 	License getLicense();

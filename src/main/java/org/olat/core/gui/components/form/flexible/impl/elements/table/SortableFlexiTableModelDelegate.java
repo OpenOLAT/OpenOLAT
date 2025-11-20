@@ -246,11 +246,7 @@ public class SortableFlexiTableModelDelegate<T> {
 			if(val1 instanceof Date && val2 instanceof Date) {
 				return compareDateAndTimestamps((Date)val1, (Date)val2);
 			}
-			if (val1 instanceof Comparable && val2 instanceof Comparable) {
-				@SuppressWarnings("rawtypes")
-				Comparable c1 = (Comparable)val1;
-				@SuppressWarnings("rawtypes")
-				Comparable c2 = (Comparable)val2;
+			if (val1 instanceof Comparable c1 && val2 instanceof Comparable c2) {
 				@SuppressWarnings("unchecked")
 				int s = c1.compareTo(c2);
 				return s;

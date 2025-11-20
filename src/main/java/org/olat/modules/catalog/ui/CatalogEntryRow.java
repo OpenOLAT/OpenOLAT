@@ -83,6 +83,7 @@ public class CatalogEntryRow {
 	private String accessError;
 	private final Long maxParticipants;
 	private final Long numParticipants;
+	private final Integer sortPriority;
 	private ParticipantsAvailabilityNum participantsAvailabilityNum;
 	private final License license;
 	private final boolean singleCourseImplementation;
@@ -127,6 +128,7 @@ public class CatalogEntryRow {
 		guestAccess = catalogEntry.isGuestAccess();
 		maxParticipants = catalogEntry.getMaxParticipants();
 		numParticipants = catalogEntry.getNumParticipants();
+		sortPriority = catalogEntry.getSortPriority();
 		license = catalogEntry.getLicense();
 		singleCourseImplementation = catalogEntry.isSingleCourseImplementation();
 		singleCourseEntryKey = catalogEntry.getSingleCourseEntryKey();
@@ -237,6 +239,10 @@ public class CatalogEntryRow {
 
 	public void setParticipantsAvailabilityNum(ParticipantsAvailabilityNum participantsAvailabilityNum) {
 		this.participantsAvailabilityNum = participantsAvailabilityNum;
+	}
+
+	public Integer getSortPriority() {
+		return sortPriority;
 	}
 
 	public Set<String> getAccessMethodTypes() {

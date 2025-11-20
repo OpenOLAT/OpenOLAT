@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Event;
@@ -45,6 +46,7 @@ import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
+import org.olat.resource.accesscontrol.CatalogInfo.SortPriorityProvider;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.AccessSegmentedOverviewController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +100,7 @@ public class CurriculumElementOffersController extends BasicController {
 				fullyBooked, startDateAvailable, editBusinessPath,
 				translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
-				taxonomyLevels, true);
+				taxonomyLevels, true, getSortOrderProvider(element));
 
 		accessConfigCtrl = new AccessSegmentedOverviewController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
@@ -119,6 +121,40 @@ public class CurriculumElementOffersController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	private CurriculumElementCatalogSortPriorityProvider getSortOrderProvider(CurriculumElement element) {
+		return catalogV2Module.isEnabled() && catalogV2Module.isPrioritySortingEnabled()
+				? new CurriculumElementCatalogSortPriorityProvider(element)
+				: null;
+	}
+	
+	private static final class CurriculumElementCatalogSortPriorityProvider implements SortPriorityProvider {
+		
+		private final CurriculumElement element;
+		private Integer priority;
+		
+		public CurriculumElementCatalogSortPriorityProvider(CurriculumElement element) {
+			this.element = element;
+			this.priority = element.getCatalogSortPriority();
+		}
+		
+		@Override
+		public Integer getPriority() {
+			return priority;
+		}
+		
+		@Override
+		public void setPriority(Integer priority) {
+			CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(element);
+			if (curriculumElement != null) {
+				curriculumElement.setCatalogSortPriority(priority);
+				curriculumService.updateCurriculumElement(curriculumElement);
+				this.priority = priority;
+			}
+		}
+		
 	}
 
 }
