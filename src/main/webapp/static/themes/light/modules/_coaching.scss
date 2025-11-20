@@ -16,12 +16,6 @@
 	
 	.o_mega_buttons {
 		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		
-		.btn.o_button_mega i.o_icon {
-			width: 25px;
-			min-width: 25px;
-			max-width: 25px;
-		}
 	}
 }
 
