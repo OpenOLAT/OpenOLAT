@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -100,6 +101,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IdentityCertificatesController extends FormBasicController implements GenericEventListener, FlexiTableComponentDelegate {
 
 	private static final Size THUMBNAIL_SIZE = new Size(50, 70, false);
+	private static final String THUMBNAIL_MAPPER_ID = "media-thumbnail-50-70";
 	
 	private FormLink generateLink;
 	private FlexiTableElement tableEl;
@@ -173,7 +175,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 		initForm(ureq);
-		if(courseEntry != null) {
+		if(courseEntry != null || certificationProgram != null) {
 			loadModel();
 		}
 	}
@@ -226,7 +228,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail",
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, THUMBNAIL_MAPPER_ID,
 				new ThumbnailMapper(tableModel, certificatesManager, vfsRepositoryService));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 	}
@@ -425,6 +427,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 			if(row.startsWith("/")) {
 				row = row.substring(1, row.length());
 			}
+			
 			int index = row.indexOf("/");
 			if(index > 0) {
 				row = row.substring(0, index);
@@ -433,7 +436,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 				if(certificateLeaf != null) {
 					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), true);
 					if(thumbnail != null) {
-						mr = new VFSMediaResource(thumbnail);
+						mr = new VFSMediaResource(thumbnail, ServletUtil.CACHE_ONE_MONTH);
 					}
 				}
 			}

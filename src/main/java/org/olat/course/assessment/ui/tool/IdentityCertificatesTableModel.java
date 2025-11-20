@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -71,14 +72,12 @@ implements SortableFlexiTableDataModel<IdentityCertificateRow>  {
 	}
 	
 	public IdentityCertificateRow getObjectByCertificateKey(Long key) {
-		for(int i=getRowCount(); i-->0; ) {
-			IdentityCertificateRow certificateRow = getObject(i);
-			if(certificateRow != null && key.equals(certificateRow.getKey())) {
-				return certificateRow;
-			}
-		}
-		return null;
-		
+		if(key == null) return null;
+		return getObjects().stream()
+				.filter(Objects::nonNull)
+				.filter( r-> key.equals(r.getKey()))
+				.findFirst()
+				.orElse(null);
 	}
 	
 	public enum IdentityCertificatesCols implements FlexiSortableColumnDef {

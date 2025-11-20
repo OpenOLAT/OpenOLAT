@@ -24,7 +24,6 @@ import java.util.Date;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -37,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
@@ -65,7 +65,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificateDetailsController extends BasicController {
 
-	private static final Size THUMBNAIL_SIZE = new Size(249, 172, false);
 
 	private Link courseLink;
 	private final Link downloadButton;
@@ -89,7 +88,7 @@ public class CertificateDetailsController extends BasicController {
 		certificate = certificateRow.getCertificate();
 		
 		mainVC = createVelocityContainer("certificate_details");
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-249-172",
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, CertificatesListOverviewController.THUMBNAIL_MAPPER_ID,
 				new ThumbnailMapper(certificate, certificatesManager, vfsRepositoryService));
 		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		mainVC.contextPut("certificateKey", certificate.getKey());
@@ -280,9 +279,11 @@ public class CertificateDetailsController extends BasicController {
 				row = row.substring(0, index);
 				VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 				if(certificateLeaf != null) {
-					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf, THUMBNAIL_SIZE.getWidth(), THUMBNAIL_SIZE.getHeight(), true);
+					VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(certificateLeaf,
+							CertificatesListOverviewController.THUMBNAIL_SIZE.getWidth(), CertificatesListOverviewController.THUMBNAIL_SIZE.getHeight(),
+							true);
 					if(thumbnail != null) {
-						mr = new VFSMediaResource(thumbnail);
+						mr = new VFSMediaResource(thumbnail, ServletUtil.CACHE_ONE_MONTH);
 					}
 				}
 			}

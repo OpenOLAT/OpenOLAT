@@ -99,7 +99,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificatesListOverviewController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
-	private static final Size THUMBNAIL_SIZE = new Size(249, 172, false);
+	protected static final Size THUMBNAIL_SIZE = new Size(249, 172, false);
+	protected static final String THUMBNAIL_MAPPER_ID = "media-thumbnail-249-172";
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String VALID_TAB_ID = "Valid";
@@ -198,7 +199,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		tableEl.setEmptyTableSettings("table.statements.empty", null, "o_icon_certificate");
 		VelocityContainer rowVC = createVelocityContainer("certificate_row");
 		rowVC.setDomReplacementWrapperRequired(false);
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail-249-172",
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, THUMBNAIL_MAPPER_ID,
 				new ThumbnailMapper(tableModel, certificatesManager, vfsRepositoryService));
 		rowVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		tableEl.setRowRenderer(rowVC, this);

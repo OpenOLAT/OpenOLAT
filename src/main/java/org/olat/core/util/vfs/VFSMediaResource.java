@@ -50,9 +50,16 @@ public class VFSMediaResource implements MediaResource {
 	private String encoding;
 	boolean unknownMimeType = false;
 	private boolean downloadable = false;
+	private final long cacheControlDuration;
 
 	public VFSMediaResource(VFSLeaf vfsLeaf) {
 		this.vfsLeaf = vfsLeaf;
+		cacheControlDuration = ServletUtil.CACHE_ONE_HOUR;
+	}
+	
+	public VFSMediaResource(VFSLeaf vfsLeaf, long cacheControlDuration) {
+		this.vfsLeaf = vfsLeaf;
+		this.cacheControlDuration = cacheControlDuration;
 	}
 
 	public void setUseMaster(boolean useMaster) {
@@ -70,7 +77,7 @@ public class VFSMediaResource implements MediaResource {
 
 	@Override
 	public long getCacheControlDuration() {
-		return ServletUtil.CACHE_ONE_HOUR;
+		return cacheControlDuration;
 	}
 
 	@Override
