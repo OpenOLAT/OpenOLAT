@@ -131,7 +131,7 @@ public class CertificatesDAO {
 	
 	public List<CertificateWithInfos> getCertificatesWithInfos(IdentityRef identity) {
 		String query = """
-				select new CertificateWithInfos(cer, course, 
+				select new CertificateWithInfos(cer, course, certificateConfig,
 				 (select count(issuedCertificate.key) from certificate as issuedCertificate
 				  where issuedCertificate.olatResource.key=cer.olatResource.key and issuedCertificate.identity.key=cer.identity.key
 				 ) as issuedCertificates
@@ -139,6 +139,7 @@ public class CertificatesDAO {
 				left join fetch cer.certificationProgram as program
 				left join fetch cer.olatResource as ores
 				left join fetch repositoryentry as course on (course.olatResource.key=ores.key)
+				left join fetch certificateentryconfig as certificateConfig on (certificateConfig.entry.key=course.key)
 				left join fetch cer.uploadedBy as uploadedByIdent
 				left join fetch uploadedByIdent.user as uploadedByUser
 				where cer.identity.key=:identityKey and cer.last=true

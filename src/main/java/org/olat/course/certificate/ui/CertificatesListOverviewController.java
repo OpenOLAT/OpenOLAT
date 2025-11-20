@@ -86,6 +86,7 @@ import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramCertifiedMembersController;
 import org.olat.modules.certificationprogram.ui.CertificationStatus;
 import org.olat.modules.certificationprogram.ui.component.CertificationStatusCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -275,6 +276,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 	private CertificateRow forgeRow(CertificateWithInfos infos, UserRequest ureq) {
 		Certificate certificate = infos.certificate();
 		Date referenceDate = ureq.getRequestTimestamp();
+		RepositoryEntry entry = infos.repositoryEntry();
 		CertificationProgram program = certificate instanceof CertificateImpl impl
 				? impl.getCertificationProgram()
 				: null;
@@ -296,8 +298,18 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		}
 		
 		String filename = DownloadCertificateCellRenderer.getName(certificate);
+		
+		RecertificationInDays recertificationInDays = null;
+		if(program != null) {
+			recertificationInDays = RecertificationInDays.valueOf(certificate, program, referenceDate);
+		} else if(entry != null) {
+			Date nextRecertificationDate = certificatesManager.nextRecertificationWindow(certificate, infos.certificateConfiguration());
+			if(nextRecertificationDate != null) {
+				recertificationInDays = RecertificationInDays.valueOf(nextRecertificationDate, entry, referenceDate);
+			}
+		}
+
 		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
-		RecertificationInDays recertificationInDays = RecertificationInDays.valueOf(certificate, program, referenceDate);
 		String statusString = status.asLabelExplained(certificate, referenceDate, getTranslator());
 		
 		Long recertificationCount = certificate.getNextRecertificationDate() != null && infos.issued() > 1 

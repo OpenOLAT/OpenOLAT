@@ -20,6 +20,7 @@
 package org.olat.course.certificate.model;
 
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -28,6 +29,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record CertificateWithInfos(Certificate certificate, RepositoryEntry repositoryEntry, long issued) {
+public record CertificateWithInfos(Certificate certificate, RepositoryEntry repositoryEntry,
+		RepositoryEntryCertificateConfiguration certificateConfiguration, long issued) {
 	//
 }

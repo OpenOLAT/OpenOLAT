@@ -21,33 +21,24 @@
 					#end
 				</div>
 				#end
-
 				#if($r.isNotEmpty($origin))
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.origin")</strong>
 					<span>$origin</span>
 				</div>
 				#end
-				
-				#if($r.isNotNull($nextRecertificationDate))
-				<div class="o_flex_first_grow_vertical">
-					<strong class="o_card_title">$r.translate("table.header.validity")</strong>
-					<span>${r.formatDate($creationDate)} &ndash; ${r.formatDate($nextRecertificationDate)}</span>
-				</div>
-				<div class="o_flex_first_grow_vertical">
-					<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
-					<span>$r.formatDate($nextRecertificationDate)</span>
-				</div>
-				#else
 				<div class="o_flex_first_grow_vertical">
 					<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
-					<span>$r.formatDate($creationDate)</span>
+					<span>${r.formatDate($creationDate)}</span>
 				</div>
 				<div class="o_flex_first_grow_vertical">
-					<strong class="o_card_title">$r.translate("table.header.validity")</strong>
+					<strong class="o_card_title">$r.translate("table.header.valid.until")</strong>
+					#if($r.isNotNull($nextRecertificationDate))
+					<span>$r.formatDate($nextRecertificationDate)</span>
+					#else
 					<span>&ndash;</span>
+					#end
 				</div>
-				#end
 			</div>
 		</div>
 	</div>

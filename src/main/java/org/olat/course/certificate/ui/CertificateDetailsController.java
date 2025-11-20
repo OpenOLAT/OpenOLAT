@@ -103,7 +103,6 @@ public class CertificateDetailsController extends BasicController {
 		downloadButton = LinkFactory.createButton("download.button", mainVC, this);
 		downloadButton.setIconLeftCSS("o_icon o_icon_download");
 		downloadButton.setTarget("_blank");
-
 		
 		course = certificateRow.getCourse();
 		CertificationProgram program = certificateRow.getCertificationProgram();
@@ -129,7 +128,10 @@ public class CertificateDetailsController extends BasicController {
 			
 			RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(course);
 			if(certificateConfig != null && certificateConfig.isRecertificationEnabled()) {
-				startRecertificationButton = LinkFactory.createButton("recertification.start", mainVC, this);
+				Date nextDate = certificatesManager.nextRecertificationWindow(certificate, certificateConfig);
+				if(nextDate != null && nextDate.compareTo(ureq.getRequestTimestamp()) <= 0) {
+					startRecertificationButton = LinkFactory.createButton("recertification.start", mainVC, this);
+				}
 				mainVC.contextPut("recertificationEnable", Boolean.TRUE);
 				initRecertificationCourse(certificate, certificateConfig);
 			}
@@ -164,25 +166,13 @@ public class CertificateDetailsController extends BasicController {
 	private void initRecertificationCourse(Certificate certificate, RepositoryEntryCertificateConfiguration certificateConfig) {
 		if((certificateConfig != null && certificateConfig.isValidityEnabled())
 				|| (certificateConfig == null && certificate.getNextRecertificationDate() != null)) {
-			Formatter formatter = Formatter.getInstance(getLocale());
 			Date nextRecertificationDate = certificate.getNextRecertificationDate();
-			
-			StringBuilder recertificationInfosDate = new StringBuilder();
-			if(nextRecertificationDate != null) {
-				recertificationInfosDate.append(formatter.formatDate(nextRecertificationDate));
-			}
-			
-			if(certificateConfig != null && certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
-				Date nextRecertificationWindow = certificatesManager.nextRecertificationWindow(certificate, certificateConfig);
-				if(nextRecertificationWindow != null) {
-					if(!recertificationInfosDate.isEmpty()) {
-						recertificationInfosDate.append(" | ");
-					}
-					recertificationInfosDate.append(translate("certificate.recertification.start", formatter.formatDate(nextRecertificationWindow)));
-				}
+			if(certificateConfig != null && certificateConfig.isRecertificationEnabled()) {
+				nextRecertificationDate = certificatesManager.nextRecertificationWindow(certificate, certificateConfig);
 			}
 
-			mainVC.contextPut("recertificationDate", recertificationInfosDate.toString());
+			Formatter formatter = Formatter.getInstance(getLocale());
+			mainVC.contextPut("recertificationDate", formatter.formatDate(nextRecertificationDate));
 		}
 	}
 	

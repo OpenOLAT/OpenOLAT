@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -46,6 +47,17 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days, Dat
 	public boolean isRecertificationWindowClosed(Date referenceDate) {
 		return nextRecertificationDate() != null && nextRecertificationDate().compareTo(referenceDate) > 0
 				&& (endDateOfRecertificationWindow() != null && (endDateOfRecertificationWindow().compareTo(referenceDate) < 0));
+	}
+
+	public static RecertificationInDays valueOf(Date nextRecertificationDate, RepositoryEntry entry, Date referenceDate) {
+		// Eternal
+		if(nextRecertificationDate == null
+				|| entry == null) {
+			return null;
+		}
+		
+		Long days = DateUtils.countDays(referenceDate, nextRecertificationDate);
+		return new RecertificationInDays(nextRecertificationDate, days, null, null);
 	}
 	
 	public static RecertificationInDays valueOf(Certificate certificate, CertificationProgram program, Date referenceDate) {
