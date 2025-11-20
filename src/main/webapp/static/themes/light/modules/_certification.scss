@@ -181,14 +181,14 @@
 	
 	&.o_certification_status_inactive,
 	&.o_certification_status_expired,
-	&.o_certification_status_expired_renewable,
-	&.o_certification_status_removed {
+	&.o_certification_status_expired_renewable {
 		font-weight: normal;
 		@extend %o_labeled_yellow;
 	}
 	
 	&.o_certification_status_paused,
-	&.o_certification_status_archived {
+	&.o_certification_status_archived,
+	&.o_certification_status_removed {
 		font-weight: normal;
 		@extend %o_labeled_grey;
 	}
@@ -214,14 +214,14 @@
 	
 	&.o_certification_status_inactive,
 	&.o_certification_status_expired,
-	&.o_certification_status_expired_renewable,
-	&.o_certification_status_removed {
+	&.o_certification_status_expired_renewable {
 		font-weight: normal;
 		@extend %o_labeled_light_yellow;
 	}
 	
 	&.o_certification_status_paused,
-	&.o_certification_status_archived {
+	&.o_certification_status_archived,
+	&.o_certification_status_removed {
 		font-weight: normal;
 		@extend %o_labeled_light_grey;
 	}

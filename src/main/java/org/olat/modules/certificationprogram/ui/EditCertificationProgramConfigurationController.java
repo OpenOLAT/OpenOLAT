@@ -193,6 +193,9 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 	private void updateUI() {
 		boolean validityEnabled = validityToggleEl.isVisible() && validityToggleEl.isOn();
 		validityEl.setVisible(validityEnabled);
+		if(validityEl.isVisible() && !validityEl.isOneSelected()) {
+			validityEl.setValue("1", DurationType.year);
+		}
 		
 		recertificationToggleEl.setEnabled(validityEnabled);
 		boolean recertificationEnabled = validityEnabled && validityToggleEl.isVisible() && recertificationToggleEl.isOn();

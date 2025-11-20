@@ -138,6 +138,7 @@ public class DurationFormItem extends FormItemImpl implements FormItemCollection
 			}
 		} else {
 			valueEl.setValue(value);
+			valueEl.setEnabled(isEnabled());
 			if(typeEl.containsKey(type.name())) {
 				typeEl.select(type.name(), true);
 			}

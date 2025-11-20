@@ -202,15 +202,20 @@ public class CertificationProgramToCurriculumElementDAO {
 					and (
 					  (cert.nextRecertificationDate is null or cert.nextRecertificationDate>=:referenceDate)
 					  or
-					  (cert.nextRecertificationDate<:referenceDate and (cert.recertificationWindowDate is null or cert.recertificationWindowDate>=:referenceDate))
+					  (cert.nextRecertificationDate<:referenceDate and cert.recertificationWindowDate>=:referenceDate)
 					)""");
 		} else if(searchParams.getType() == Type.REMOVED) {
 			// After recertification window or without a last certificate (all revoked)
 			query.append(" ").append("""
-					and ((cert.last=true and cert.recertificationWindowDate<:referenceDate)
-					 or not exists (select lastOne from certificate as lastOne
+					and (
+					 (cert.last=true and cert.recertificationWindowDate<:referenceDate)
+					 or
+					 (cert.last=true and cert.nextRecertificationDate<:referenceDate and cert.recertificationWindowDate is null)
+					 or
+					 not exists (select lastOne from certificate as lastOne
 					 	where lastOne.last=true and lastOne.identity.key=ident.key and lastOne.certificationProgram.key=:programKey
-					 ))""");
+					 )
+					)""");
 		}
 	}
 
