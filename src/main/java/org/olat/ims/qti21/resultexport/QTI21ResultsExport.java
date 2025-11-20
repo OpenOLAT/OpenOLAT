@@ -568,7 +568,7 @@ public class QTI21ResultsExport {
 							
 							
 							
-							String filename = idPath + "/" + EssaysPdfMediaResource.createPdfFilename(assessmentItem, candidateSession, assessedIdentity, null);
+							String filename = idPath + "/" + EssaysPdfMediaResource.createPdfFilename(assessmentItem, candidateSession, assessedIdentity, null) + ".pdf";
 							createEssayPDF(zout, filename, itemCorrection, resolvedAssessmentTest, resolvedAssessmentItem);
 						}
 					}
