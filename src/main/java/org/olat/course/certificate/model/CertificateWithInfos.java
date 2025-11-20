@@ -28,6 +28,6 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record CertificateWithInfos(Certificate certificate, RepositoryEntry repositoryEntry) {
+public record CertificateWithInfos(Certificate certificate, RepositoryEntry repositoryEntry, long issued) {
 	//
 }

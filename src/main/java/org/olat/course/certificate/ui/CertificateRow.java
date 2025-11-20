@@ -43,12 +43,14 @@ public class CertificateRow {
 	private final Certificate certificate;
 	private final RepositoryEntry course;
 	private final CertificationStatus status;
+	private final Long recertificationCount;
 	private final CertificationProgram certificationProgram;
 	private final RecertificationInDays recertificationInDays;
 	
 	public CertificateRow(Certificate certificate, RepositoryEntry course, CertificationProgram certificationProgram,
 			String uploadedByName, CertificationStatus status, String statusExplained,
-			RecertificationInDays recertificationInDays, String filename, String origin, String points) {
+			RecertificationInDays recertificationInDays, Long recertificationCount,
+			String filename, String origin, String points) {
 		this.status = status;
 		this.points = points;
 		this.course = course;
@@ -59,6 +61,7 @@ public class CertificateRow {
 		this.uploadedByName = uploadedByName;
 		this.certificationProgram = certificationProgram;
 		this.recertificationInDays = recertificationInDays;
+		this.recertificationCount = recertificationCount;
 	}
 	
 	public Long getKey() {
@@ -158,6 +161,10 @@ public class CertificateRow {
 				: certificate.getNextRecertificationDate();
 	}
 	
+	public Long getRecertificationCount() {
+		return recertificationCount;
+	}
+
 	public RecertificationInDays getRecertificationInDays() {
 		return recertificationInDays;
 	}

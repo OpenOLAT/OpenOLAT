@@ -122,10 +122,16 @@
 
 	.o_table_body.container-fluid {
 		margin-top: 0;
-	}	
+	}
+	
+	.o_certificate_expired_list {
+		margin-top: 1em;
+	}
 }
 
 .o_certificate_recertification_wrapper {
+	margin-top: 1em;
+	
 	.o_warning_with_icon {
 		margin: 0 0 20px 0;
 	}

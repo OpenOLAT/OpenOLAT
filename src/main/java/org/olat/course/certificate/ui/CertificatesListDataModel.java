@@ -160,6 +160,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 			case issuedOn -> row.getCreationDate();
 			case validUntil -> row.getNextRecertificationDate();
 			case dateRecertification -> row.getRecertificationInDays();
+			case recertificationCount -> row.getRecertificationCount();
 			case status -> row.getStatus();
 			default -> "ERROR";
 		};
@@ -178,6 +179,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 		issuedOn("table.header.issued.on"),
 		validUntil("table.header.valid.until"),
 		dateRecertification("table.header.recertification.date"),
+		recertificationCount("table.header.recertification.count"),
 		status("table.header.status")
 		;
 

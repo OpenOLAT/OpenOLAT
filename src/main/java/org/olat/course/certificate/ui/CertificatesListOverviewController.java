@@ -187,6 +187,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 				dateCellRenderer));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.dateRecertification,
 				new RecertificationInDaysFlexiCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.recertificationCount));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificateCols.status,
 				new CertificationStatusCellRenderer(getTranslator())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("open", translate("open"), "open"));
@@ -299,8 +300,12 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		RecertificationInDays recertificationInDays = RecertificationInDays.valueOf(certificate, program, referenceDate);
 		String statusString = status.asLabelExplained(certificate, referenceDate, getTranslator());
 		
+		Long recertificationCount = certificate.getNextRecertificationDate() != null && infos.issued() > 1 
+				? infos.issued() - 1
+				: null;
+
 		return new CertificateRow(certificate, infos.repositoryEntry(), program, uploadedByName,
-				status, statusString, recertificationInDays, filename, origin, points);
+				status, statusString, recertificationInDays, recertificationCount, filename, origin, points);
 	}
 	
 	@Override

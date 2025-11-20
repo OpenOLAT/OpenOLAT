@@ -47,6 +47,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.ui.tool.IdentityCertificatesController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramCertifiedMembersController;
@@ -68,7 +69,7 @@ public class CertificateDetailsController extends BasicController {
 
 	private Link courseLink;
 	private final Link downloadButton;
-	private final Link startRecertificationButton;
+	private Link startRecertificationButton;
 	private final VelocityContainer mainVC;
 
 	private final Certificate certificate;
@@ -103,8 +104,7 @@ public class CertificateDetailsController extends BasicController {
 		downloadButton.setIconLeftCSS("o_icon o_icon_download");
 		downloadButton.setTarget("_blank");
 
-		startRecertificationButton = LinkFactory.createButton("recertification.start", mainVC, this);
-
+		
 		course = certificateRow.getCourse();
 		CertificationProgram program = certificateRow.getCertificationProgram();
 		if(program != null) {
@@ -126,6 +126,13 @@ public class CertificateDetailsController extends BasicController {
 			mainVC.contextPut("awardedBy", displayName);
 			courseLink = LinkFactory.createLink("courselink", "courselink", "courselink", displayName, getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			courseLink.setIconLeftCSS("o_icon o_CourseModule_icon");
+			
+			RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(course);
+			if(certificateConfig != null && certificateConfig.isRecertificationEnabled()) {
+				startRecertificationButton = LinkFactory.createButton("recertification.start", mainVC, this);
+				mainVC.contextPut("recertificationEnable", Boolean.TRUE);
+				initRecertificationCourse(certificate, certificateConfig);
+			}
 		}
 		
 		if(program != null || course != null) {
@@ -154,6 +161,31 @@ public class CertificateDetailsController extends BasicController {
 		}
 	}
 	
+	private void initRecertificationCourse(Certificate certificate, RepositoryEntryCertificateConfiguration certificateConfig) {
+		if((certificateConfig != null && certificateConfig.isValidityEnabled())
+				|| (certificateConfig == null && certificate.getNextRecertificationDate() != null)) {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			Date nextRecertificationDate = certificate.getNextRecertificationDate();
+			
+			StringBuilder recertificationInfosDate = new StringBuilder();
+			if(nextRecertificationDate != null) {
+				recertificationInfosDate.append(formatter.formatDate(nextRecertificationDate));
+			}
+			
+			if(certificateConfig != null && certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
+				Date nextRecertificationWindow = certificatesManager.nextRecertificationWindow(certificate, certificateConfig);
+				if(nextRecertificationWindow != null) {
+					if(!recertificationInfosDate.isEmpty()) {
+						recertificationInfosDate.append(" | ");
+					}
+					recertificationInfosDate.append(translate("certificate.recertification.start", formatter.formatDate(nextRecertificationWindow)));
+				}
+			}
+
+			mainVC.contextPut("recertificationDate", recertificationInfosDate.toString());
+		}
+	}
+	
 	private void initRecertificationProgram(UserRequest ureq, Certificate certificate, CertificationProgram program) {
 		RecertificationInDays recertificationInDays = RecertificationInDays.valueOf(certificate, program, ureq.getRequestTimestamp());
 		
@@ -179,14 +211,17 @@ public class CertificateDetailsController extends BasicController {
 		}
 
 		// Buttons
-		startRecertificationButton.setVisible(recertificationInDays.isRecertificationOpen(ureq.getRequestTimestamp()));
 		mainVC.contextPut("recertificationWindowClosed", recertificationInDays.isRecertificationWindowClosed(ureq.getRequestTimestamp()));
 
 		// Date of recertification
-		Formatter formatter = Formatter.getInstance(getLocale());
 		Date nextRecertificationDate = recertificationInDays.nextRecertificationDate();
+		Date endDateOfRecertificationWindow = recertificationInDays.endDateOfRecertificationWindow();
+		initRecertificationDate(ureq, nextRecertificationDate,  endDateOfRecertificationWindow);
+	}
+	
+	private void initRecertificationDate(UserRequest ureq, Date nextRecertificationDate, Date  endDateOfRecertificationWindow) {
+		Formatter formatter = Formatter.getInstance(getLocale());
 		String nextRecertificationDateFormatted = formatter.formatDate(nextRecertificationDate);
-		Date  endDateOfRecertificationWindow = recertificationInDays.endDateOfRecertificationWindow();
 		String endDateOfRecertificationWindowFormatted = formatter.formatDate(endDateOfRecertificationWindow);
 		String recertificationInfosDate = nextRecertificationDateFormatted;// Set a default value
 		
@@ -232,9 +267,7 @@ public class CertificateDetailsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(downloadButton == source) {
 			doDownload(ureq);
-		} else if(courseLink == source) {
-			doOpenCourse(ureq);
-		} else if(startRecertificationButton == source) {
+		} else if(courseLink == source || startRecertificationButton == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doOpenCourse(ureq);
 		}

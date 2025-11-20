@@ -61,10 +61,12 @@
 		<div class="o_warning_with_icon">$requirementWarningMsg</div>
 		#end
 		<div class="o_recertification_infos">
+			#if($r.isNotEmpty($recertificationDate))
 			<div class="o_flex_first_grow_vertical">
 				<strong class="o_card_title">$r.translate("recertification.date")</strong>
 				<span>$recertificationDate</span>
 			</div>
+			#end
 			#if($r.isNotEmpty($requiredPoints))
 			<div class="o_flex_first_grow_vertical">
 				<strong class="o_card_title">$r.translate("recertification.requirement")</strong>
@@ -74,12 +76,6 @@
 			</div>
 			#end
 			<div class="o_button_group_right">
-			#if($r.available("recertification.pause"))
-				$r.render("recertification.pause")
-			#end	
-			#if($r.available("recertification.resume"))
-				$r.render("recertification.resume")
-			#end	
 			#if($r.available("recertification.start"))
 				$r.render("recertification.start")
 			#end
@@ -87,7 +83,9 @@
 		</div>
 	</fieldset>
 	#end
+	<div class="o_certificate_expired_list">
 	#if($r.available("certificates"))
 		$r.render("certificates")
 	#end
+	</div>
 </div>
