@@ -129,15 +129,6 @@ public class CertificationProgramDetailsController extends BasicController imple
 	private void initTabPane(UserRequest ureq) {
 		overviewTab = tabPane.addTab(ureq, translate("certification.program.overview"), uureq -> createDashBoard(uureq).getInitialComponent());
 		
-		implementationTab = tabPane.addTab(ureq, translate("certification.program.implementations"), "o_sel_certification_program_implementations", uureq -> {
-			WindowControl subControl = addToHistory(uureq, OresHelper
-					.createOLATResourceableType(CertificationProgramListController.CONTEXT_ELEMENTS), null);
-			curriculumElementsListCtrl = new CertificationProgramCurriculumElementListController(uureq, subControl, certificationProgram);
-			listenTo(curriculumElementsListCtrl);
-
-			return curriculumElementsListCtrl.getInitialComponent();
-		}, false);
-		
 		membersTab = tabPane.addTab(ureq, translate("certification.program.members"), "o_sel_certification_program_members", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_MEMBERS), null);
@@ -156,6 +147,15 @@ public class CertificationProgramDetailsController extends BasicController imple
 			return messagesCtrl.getInitialComponent();
 		}, true);
 		
+		implementationTab = tabPane.addTab(ureq, translate("certification.program.implementations"), "o_sel_certification_program_implementations", uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CertificationProgramListController.CONTEXT_ELEMENTS), null);
+			curriculumElementsListCtrl = new CertificationProgramCurriculumElementListController(uureq, subControl, certificationProgram);
+			listenTo(curriculumElementsListCtrl);
+
+			return curriculumElementsListCtrl.getInitialComponent();
+		}, false);
+		
 		ownersTab = tabPane.addTab(ureq, translate("certification.program.owners"), "o_sel_certification_program_owners", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CertificationProgramListController.CONTEXT_OWNERS), null);
@@ -173,7 +173,6 @@ public class CertificationProgramDetailsController extends BasicController imple
 
 			return settingsCtrl.getInitialComponent();
 		}, false);
-		
 	}
 
 	@Override

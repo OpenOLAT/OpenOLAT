@@ -290,7 +290,7 @@ public class CertificationProgramListController extends FormBasicController impl
 				if(CMD_SELECT.equals(se.getCommand())) {
 					CertificationProgramRow row = tableModel.getObject(se.getIndex());
 					List<ContextEntry> entries = BusinessControlFactory.getInstance()
-							.createCEListFromResourceType(CertificationProgramListController.CONTEXT_ELEMENTS);
+							.createCEListFromResourceType(CertificationProgramListController.CONTEXT_MEMBERS);
 					doOpenCertificationProgram(ureq, row).activate(ureq, entries, null);
 				}
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {

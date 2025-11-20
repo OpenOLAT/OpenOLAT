@@ -139,6 +139,17 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		recertificationWindowEl.setValue(recertificationWindowVal, recertificationWindowType);
 		formLayout.add(recertificationWindowEl);
 		
+		SelectionValues modePK = new SelectionValues();
+		modePK.add(SelectionValues.entry(RecertificationMode.automatic.name(), translate("recertification.mode.automatic"),
+				translate("recertification.mode.automatic.descr"), null, null, true));
+		modePK.add(SelectionValues.entry(RecertificationMode.manual.name(), translate("recertification.mode.manual"),
+				translate("recertification.mode.manual.descr"), null, null, true));
+		recertificationModeEl = uifactory.addCardSingleSelectHorizontal("recertification.mode", "recertification.mode", formLayout, modePK);
+		recertificationModeEl.addActionListener(FormEvent.ONCHANGE);
+		if(certificationProgram.getRecertificationMode() != null && modePK.containsKey(certificationProgram.getRecertificationMode().name())) {
+			recertificationModeEl.select(certificationProgram.getRecertificationMode().name(), true);
+		}
+		
 		// Credit point
 		creditPointSpacerEl = uifactory.addSpacerElement("creditpoint1", formLayout, false);
 
@@ -147,17 +158,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		
 		creditPointToggleEl = uifactory.addToggleButton("credit.point.enable", "credit.point.enable", translate("on"), translate("off"), formLayout);
 		creditPointToggleEl.toggle(selectedSystem != null && StringHelper.containsNonWhitespace(points));
-		
-		SelectionValues modePK = new SelectionValues();
-		modePK.add(SelectionValues.entry(RecertificationMode.automatic.name(), translate("recertification.mode.automatic"),
-				translate("recertification.mode.automatic.descr"), null, null, true));
-		modePK.add(SelectionValues.entry(RecertificationMode.manual.name(), translate("recertification.mode.manual"),
-				translate("recertification.mode.manual.descr"), null, null, true));
-		recertificationModeEl = uifactory.addCardSingleSelectHorizontal("recertification.mode", "recertification.mode", formLayout, modePK);
-		if(certificationProgram.getRecertificationMode() != null && modePK.containsKey(certificationProgram.getRecertificationMode().name())) {
-			recertificationModeEl.select(certificationProgram.getRecertificationMode().name(), true);
-		}
-		
+
 		// System
 		SelectionValues systemPK = new SelectionValues();
 		for(CreditPointSystem system:systems) {
@@ -200,11 +201,23 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		recertificationToggleEl.setEnabled(validityEnabled);
 		boolean recertificationEnabled = validityEnabled && validityToggleEl.isVisible() && recertificationToggleEl.isOn();
 		recertificationWindowEl.setVisible(recertificationEnabled);
+		recertificationModeEl.setVisible(recertificationEnabled);
 		creditPointSpacerEl.setVisible(recertificationEnabled);
 		creditPointToggleEl.setVisible(recertificationEnabled);
 		
+		boolean automaticRecertification = recertificationEnabled && recertificationModeEl.isOneSelected()
+				&& RecertificationMode.automatic.name().equals(recertificationModeEl.getSelectedKey());
+		// Automatic recertification needs credit points
+		if(automaticRecertification) {
+			creditPointToggleEl.toggleOn();
+			creditPointToggleEl.setEnabled(false);
+			creditPointToggleEl.setMandatory(true);
+		} else {
+			creditPointToggleEl.setEnabled(true);
+			creditPointToggleEl.setMandatory(false);
+		}
+		
 		boolean creditPointEnabled = recertificationEnabled && creditPointToggleEl.isVisible() && creditPointToggleEl.isOn();
-		recertificationModeEl.setVisible(creditPointEnabled);
 		creditPointCont.setVisible(creditPointEnabled);
 		creditPointEl.setVisible(creditPointEnabled);
 		systemEl.setVisible(creditPointEnabled);
@@ -228,7 +241,8 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(validityToggleEl == source || recertificationToggleEl == source || creditPointToggleEl == source) {
+		if(validityToggleEl == source || recertificationToggleEl == source
+				|| creditPointToggleEl == source || recertificationModeEl == source) {
 			updateUI();
 		} else if(systemEl == source) {
 			updateCreditPointUI();
