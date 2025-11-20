@@ -672,16 +672,17 @@ public class ACOrderDAO {
 		}
 		sb.append(" from resourcereservation as reservation");
 		sb.append(" inner join bgroupmember membership on membership.identity.key = reservation.identity.key");
-		sb.append(" inner join bgroupmember managerMembership on membership.group.key = managerMembership.group.key");
 		sb.append(" inner join organisation org on org.group.key = membership.group.key");
-		sb.append(" inner join organisationroleright or2r on (or2r.organisation.key = org.key and or2r.role = managerMembership.role)");
+		sb.append(" inner join organisation rootOrg on org.root.key = rootOrg.key");
+		sb.append(" inner join bgroupmember managerMembership on membership.group.key = managerMembership.group.key");
+		sb.append(" inner join organisationroleright rootOrgR2r on (rootOrgR2r.organisation.key = rootOrg.key and rootOrgR2r.role = managerMembership.role)");
 		sb.append(" inner join acorder o on o.delivery.key = reservation.identity.key");
 		sb.append(" inner join o.parts orderPart");
 		sb.append(" inner join orderPart.lines orderLine");
 		sb.append(" inner join orderLine.offer offer");
 		sb.append(" inner join o.delivery.user user");
 		sb.and().append("managerMembership.identity.key = :identityKey");
-		sb.and().append("or2r.right = :right");
+		sb.and().append("rootOrgR2r.right = :right");
 		sb.and().append("reservation.resource.key = offer.resource.key");
 
 		return dbInstance.getCurrentEntityManager()
