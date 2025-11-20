@@ -155,8 +155,8 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		currentCertificate = certificatesDao.updateCertificate(currentCertificate);
 		dbInstance.commitAndCloseSession();
 		
-		boolean allOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
-		Assert.assertFalse(allOk);
+		boolean notOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.AUTOMATIC, new Date(), participant);
+		Assert.assertFalse(notOk);
 		
 		List<Certificate> certificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(certificates)

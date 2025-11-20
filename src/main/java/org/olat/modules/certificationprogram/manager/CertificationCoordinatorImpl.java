@@ -134,7 +134,9 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		BigDecimal amount = certificationProgram.getCreditPoints();	
 		if(certificationProgram.getCreditPointSystem() != null && amount != null) {
 			CreditPointWallet wallet = creditPointWalletDao.getWallet(identity, certificationProgram.getCreditPointSystem());
-			if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
+			if(requestMode == RequestMode.COURSE) {
+				// Nothing, payment from the course itself
+			} else if(wallet == null || wallet.getBalance() == null || amount.compareTo(wallet.getBalance()) > 0) {
 				// Not enough credit
 				if(isRemovedFromProgramNotEnoughCreditPoints(certificate, certificationProgram, requestMode, referenceDate)) {
 					removeFromCertificationProgram(identity, certificationProgram, certificate, referenceDate, requestMode, doer);
