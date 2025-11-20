@@ -4207,7 +4207,7 @@ create table o_cur_curriculum_element (
   c_min_participants integer,
   c_max_participants integer,
   c_taught_by varchar(128),
-  c_catalog_sort_priority integer;
+  c_catalog_sort_priority integer,
   c_external_id varchar(64),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
