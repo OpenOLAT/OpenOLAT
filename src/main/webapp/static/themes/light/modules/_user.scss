@@ -287,7 +287,7 @@
 			flex-direction: column;
 			gap: 5px;
 			.o_user_info_profile_name {
-				font-size: $o-user-info-displayname-size;
+				font-size: $o-user-info-displayname-size-small;
 			}
 			.o_user_info_profile_cmds {
 				display: flex;
@@ -342,6 +342,7 @@
 					justify-content: center;
 				}
 				.o_user_info_profile_name {
+					font-size: $o-user-info-displayname-size;
 					padding-right: 0px;
 				}
 			}
@@ -354,11 +355,8 @@
 	
 	display: grid;
 	align-items: center;
-	grid-template-columns: 1fr 2px 2fr;
-	&:has(.o_user_info_items_3cols) {
-		grid-template-columns: minmax(240px, 1fr) 2px 3fr;
-	}
-	
+	grid-template-columns: 1fr;
+		
 	>div:has(.o_user_info_profile) {
 		/* Full height of the profile */
 		display: grid;
@@ -376,7 +374,7 @@
 	.o_user_info_divider {
 		border-right: $o-user-info-divider-border;
 		border-bottom: $o-user-info-divider-border;
-		height: calc(100% - 2*$o-user-info-divider-margin-base);
+		margin: 0px $o-user-info-divider-margin-base;
 	}
 	
 	.o_user_info_items {
@@ -384,10 +382,7 @@
 	
 		display: grid;
 		column-gap: 20px;
-		grid-template-columns: 1fr 1fr;
-		&.o_user_info_items_3cols {
-			grid-template-columns: 1fr 1fr 1fr;
-		}
+		grid-template-columns: 1fr;
 		
 		.form-control-static {
 			padding: 0px;
@@ -399,34 +394,28 @@
 .o_user_info_wrapper {
 	container-type: inline-size;
 	
-	@container (max-width: 800px) {
+	@container (min-width: 600px) {
 		.o_user_info {
-			grid-template-columns: 1fr;
-			.o_user_info_divider {
-				height: auto;
-				width: calc(100% - 2*$o-user-info-divider-margin-base);
-				margin-left: $o-user-info-divider-margin-base;
-			}
 			.o_user_info_items {
-				&.o_user_info_items_3cols {
-					grid-template-columns: 1fr 1fr;
-				}
+				grid-template-columns: 1fr 1fr;
 			}
 		}
 	}
-	@container (max-width: 600px) {
+	@container (min-width: 800px) {
 		.o_user_info {
-			.o_user_info_profile_container {
-				.o_user_info_profile {
-					.o_user_info_profile_name_wrapper {
-						.o_user_info_profile_name {
-							font-size: $o-user-info-displayname-size-small;
-						}
-					}
-				}
+			grid-template-columns: 1fr 2px 2fr;
+			&:has(.o_user_info_items_3cols) {
+				grid-template-columns: minmax(240px, 1fr) 2px 3fr;
+			}
+			
+			.o_user_info_divider {
+				margin: $o-user-info-divider-margin-base 0px;
+				align-self: stretch;
 			}
 			.o_user_info_items {
-				grid-template-columns: 1fr;
+				&.o_user_info_items_3cols {
+					grid-template-columns: 1fr 1fr 1fr;
+				}
 			}
 		}
 	}
