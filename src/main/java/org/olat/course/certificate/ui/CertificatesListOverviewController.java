@@ -78,6 +78,7 @@ import org.olat.course.assessment.ui.tool.IdentityCertificatesController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.course.certificate.ui.CertificatesListDataModel.CertificateCols;
@@ -111,6 +112,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 	protected static final String FILTER_STATUS = "Status";
 	protected static final String FILTER_ORIGIN = "Origin";
 	protected static final String FILTER_ORIGIN_COURSE_KEY = "course";
+	protected static final String FILTER_ORIGIN_PROGRAM_KEY = "program";
 	protected static final String FILTER_ORIGIN_UPLOAD_KEY = "upload";
 
 	private FlexiFiltersTab allTab;
@@ -220,6 +222,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 				FILTER_WITH_RECERTIFICATION, recertificationValues, true));
 		
 		SelectionValues originValues = new SelectionValues();
+		originValues.add(SelectionValues.entry(FILTER_ORIGIN_PROGRAM_KEY, translate("origin.certification.program")));
 		originValues.add(SelectionValues.entry(FILTER_ORIGIN_COURSE_KEY, translate("origin.course")));
 		originValues.add(SelectionValues.entry(FILTER_ORIGIN_UPLOAD_KEY, translate("origin.upload.manual")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.certificate.origin"),
@@ -277,6 +280,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		Certificate certificate = infos.certificate();
 		Date referenceDate = ureq.getRequestTimestamp();
 		RepositoryEntry entry = infos.repositoryEntry();
+		RepositoryEntryCertificateConfiguration certificateConfig = infos.certificateConfiguration();
 		CertificationProgram program = certificate instanceof CertificateImpl impl
 				? impl.getCertificationProgram()
 				: null;
@@ -313,10 +317,10 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		String statusString = status.asLabelExplained(certificate, referenceDate, getTranslator());
 		
 		Long recertificationCount = certificate.getNextRecertificationDate() != null && infos.issued() > 1 
-				? infos.issued() - 1
+				? infos.issued()
 				: null;
 
-		return new CertificateRow(certificate, infos.repositoryEntry(), program, uploadedByName,
+		return new CertificateRow(certificate, infos.repositoryEntry(), certificateConfig, program, uploadedByName,
 				status, statusString, recertificationInDays, recertificationCount, filename, origin, points);
 	}
 	

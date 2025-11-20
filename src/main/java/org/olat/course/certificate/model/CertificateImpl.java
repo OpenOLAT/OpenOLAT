@@ -76,6 +76,7 @@ public class CertificateImpl extends AbstractCertificate {
 		this.archivedResourceKey = archivedResourceKey;
 	}
 
+	@Override
 	public OLATResource getOlatResource() {
 		return olatResource;
 	}

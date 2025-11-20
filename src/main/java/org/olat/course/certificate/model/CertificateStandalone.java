@@ -25,6 +25,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+import org.olat.resource.OLATResource;
+
 /**
  * 
  * Initial date: 17.11.2014<br>
@@ -49,6 +51,11 @@ public class CertificateStandalone extends AbstractCertificate {
 		this.archivedResourceKey = archivedResourceKey;
 	}
 	
+	@Override
+	public OLATResource getOlatResource() {
+		return null;
+	}
+
 	@Override
 	public Long getRecertificationCount() {
 		return null;

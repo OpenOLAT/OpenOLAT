@@ -23,9 +23,11 @@ import java.util.Date;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.ui.CertificationStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -46,8 +48,10 @@ public class CertificateRow {
 	private final Long recertificationCount;
 	private final CertificationProgram certificationProgram;
 	private final RecertificationInDays recertificationInDays;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
-	public CertificateRow(Certificate certificate, RepositoryEntry course, CertificationProgram certificationProgram,
+	public CertificateRow(Certificate certificate, RepositoryEntry course,
+			RepositoryEntryCertificateConfiguration certificateConfig, CertificationProgram certificationProgram,
 			String uploadedByName, CertificationStatus status, String statusExplained,
 			RecertificationInDays recertificationInDays, Long recertificationCount,
 			String filename, String origin, String points) {
@@ -57,6 +61,7 @@ public class CertificateRow {
 		this.origin = origin;
 		this.filename = filename;
 		this.certificate = certificate;
+		this.certificateConfig = certificateConfig;
 		this.statusExplained = statusExplained;
 		this.uploadedByName = uploadedByName;
 		this.certificationProgram = certificationProgram;
@@ -121,14 +126,21 @@ public class CertificateRow {
 	}
 	
 	public boolean isCourse() {
-		return certificationProgram != null
-				|| certificate.getArchivedResourceKey() != null;
+		OLATResource resource = certificate.getOlatResource();
+		return resource != null && "CourseModule".equals(resource.getResourceableTypeName());
+	}
+	
+	public boolean isCertificationProgram() {
+		OLATResource resource = certificate.getOlatResource();
+		return resource != null && "CertificationProgram".equals(resource.getResourceableTypeName());
 	}
 	
 	public boolean isWithRecertification() {
-		return certificationProgram != null
+		return (certificationProgram != null
 				&& certificationProgram.isValidityEnabled()
-				&& certificationProgram.isRecertificationEnabled();
+				&& certificationProgram.isRecertificationEnabled())
+				|| (certificateConfig != null
+					&& certificateConfig.isRecertificationEnabled());
 	}
 	
 	public CertificationProgram getCertificationProgram() {

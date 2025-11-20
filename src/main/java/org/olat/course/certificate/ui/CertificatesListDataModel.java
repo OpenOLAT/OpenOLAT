@@ -107,7 +107,8 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 	private boolean acceptOrigin(List<String> origin, CertificateRow row) {
 		if(origin == null || origin.isEmpty()) return true;
 		return (origin.contains(CertificatesListOverviewController.FILTER_ORIGIN_UPLOAD_KEY) && row.isUploaded())
-				|| (origin.contains(CertificatesListOverviewController.FILTER_ORIGIN_COURSE_KEY) && row.isCourse());
+				|| (origin.contains(CertificatesListOverviewController.FILTER_ORIGIN_COURSE_KEY) && row.isCourse())
+				|| (origin.contains(CertificatesListOverviewController.FILTER_ORIGIN_PROGRAM_KEY) && row.isCertificationProgram());
 	}
 	
 	private List<String> getFilteredList(List<FlexiTableFilter> filters, String filterName) {
