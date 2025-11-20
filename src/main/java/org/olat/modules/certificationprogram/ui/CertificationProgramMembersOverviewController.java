@@ -38,7 +38,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.DateUtils;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
@@ -94,7 +93,7 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	
 	private List<Scope> buildScopes(UserRequest ureq) {
 		List<Scope> scopes = new ArrayList<>();
-		Date referenceDate = DateUtils.getEndOfDay(ureq.getRequestTimestamp());
+		Date referenceDate = ureq.getRequestTimestamp();
 		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(certificationProgram);
 		searchParams.setType(Type.CERTIFIED);
 		long numOfCertified = certificationProgramService.countMembers(searchParams, referenceDate);
