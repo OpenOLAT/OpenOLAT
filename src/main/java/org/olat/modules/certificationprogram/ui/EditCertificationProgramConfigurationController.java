@@ -205,6 +205,10 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		creditPointSpacerEl.setVisible(recertificationEnabled);
 		creditPointToggleEl.setVisible(recertificationEnabled);
 		
+		if(recertificationModeEl.isVisible() && !recertificationModeEl.isOneSelected()) {
+			recertificationModeEl.select(RecertificationMode.manual.name(), true);
+		}
+		
 		boolean automaticRecertification = recertificationEnabled && recertificationModeEl.isOneSelected()
 				&& RecertificationMode.automatic.name().equals(recertificationModeEl.getSelectedKey());
 		// Automatic recertification needs credit points
@@ -244,6 +248,7 @@ public class EditCertificationProgramConfigurationController extends FormBasicCo
 		if(validityToggleEl == source || recertificationToggleEl == source
 				|| creditPointToggleEl == source || recertificationModeEl == source) {
 			updateUI();
+			markDirty();
 		} else if(systemEl == source) {
 			updateCreditPointUI();
 		}

@@ -71,10 +71,10 @@ public class CertificationProgramDAO {
 		program.setIdentifier(identifier);
 		program.setDisplayName(displayName);
 		program.setStatus(CertificationProgramStatusEnum.active);
-		
+		program.setValidityEnabled(false);
+		program.setRecertificationEnabled(false);
 		program.setOrganisations(new HashSet<>());
 		program.setGroup(groupDao.createGroup());
-		
 		dbInstance.getCurrentEntityManager().persist(program);
 		
 		createResource(program);
