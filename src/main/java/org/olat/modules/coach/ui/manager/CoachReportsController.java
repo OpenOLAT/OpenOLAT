@@ -51,7 +51,7 @@ public class CoachReportsController extends BasicController implements Activatea
 
 		mainVC = createVelocityContainer("manager_reports");
 		
-		reportTemplatesCtrl = new ReportTemplatesController(ureq, wControl);
+		reportTemplatesCtrl = new ReportTemplatesController(ureq, wControl, "manual_user/area_modules/Coaching_Reports/");
 		listenTo(reportTemplatesCtrl);
 		mainVC.put("report.templates", reportTemplatesCtrl.getInitialComponent());
 

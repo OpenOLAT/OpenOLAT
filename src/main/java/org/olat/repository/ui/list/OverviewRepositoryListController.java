@@ -405,7 +405,8 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(implementationsListCtrl == null) {
 			implementationsListStackPanel = new BreadcrumbedStackedPanel("myliststack", getTranslator(), this);
 
-			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(), implementationsListStackPanel, asRoles, false);
+			implementationsListCtrl = new ImplementationsListController(ureq, getWindowControl(),
+					implementationsListStackPanel, asRoles, false, null);
 			listenTo(implementationsListCtrl);
 			implementationsListStackPanel.pushController(translate("search.implementations.list"), implementationsListCtrl);
 		} else {

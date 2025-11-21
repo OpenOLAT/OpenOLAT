@@ -244,6 +244,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		
 		CurriculumComposerConfig config = CurriculumComposerConfig.implementationsView();
 		config.setTitle(translate("curriculum.implementations"), 2, "o_icon_curriculum_implementations");
+		config.setHelpUrl("manual_user/area_modules/Course_Planner_Implementations/");
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Implementations", 0l), null);
 		implementationsCtrl = new CurriculumComposerController(ureq, subControl, toolbarPanel,
 				null, null, config , secCallback, lecturesSecCallback);

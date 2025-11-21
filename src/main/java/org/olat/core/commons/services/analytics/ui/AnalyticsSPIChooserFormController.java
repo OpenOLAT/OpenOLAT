@@ -47,12 +47,6 @@ public class AnalyticsSPIChooserFormController extends FormBasicController {
 	@Autowired
 	private AnalyticsModule analyticsModule;
 
-	/**
-	 * Standard constructor
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
 	public AnalyticsSPIChooserFormController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		initForm(ureq);
@@ -60,9 +54,10 @@ public class AnalyticsSPIChooserFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("analytics.title");		
+		setFormTitle("analytics.title");
 		setFormDescription("analytics.desc");
 		setFormInfo("analytics.privacy");
+		setFormContextHelp("manual_admin/administration/Analytics_module/");
 
 		// Use "-" as key for "disabled" on position 0, then list all other available providers
 		List<AnalyticsSPI> spies = analyticsModule.getAnalyticsProviders();

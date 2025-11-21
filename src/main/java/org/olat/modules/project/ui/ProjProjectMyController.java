@@ -55,6 +55,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 	}
 
 	@Override
+	protected String getHelpUrl() {
+		return "manual_user/area_modules/Project_Overview/";
+	}
+
+	@Override
 	protected boolean isCreateProjectEnabled() {
 		return true;
 	}

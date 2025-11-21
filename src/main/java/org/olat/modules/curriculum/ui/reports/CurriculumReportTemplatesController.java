@@ -61,7 +61,8 @@ public class CurriculumReportTemplatesController extends ReportTemplatesControll
 	public CurriculumReportTemplatesController(UserRequest ureq, WindowControl wControl,
 			Curriculum curriculum, CurriculumElement curriculumElement, ArchiveType type) {
 		super(ureq, wControl, Util.createPackageTranslator(ReportTemplatesController.class, ureq.getLocale(),
-				Util.createPackageTranslator(CurriculumManagerRootController.class, ureq.getLocale())));
+				Util.createPackageTranslator(CurriculumManagerRootController.class, ureq.getLocale()))
+				,"manual_user/area_modules/Course_Planner_Reports/");
 		this.type = type;
 		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;

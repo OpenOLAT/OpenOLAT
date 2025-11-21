@@ -2,7 +2,9 @@
 	<div class="o_error" role="alert">$pendingAlert</div>
 #end
 <fieldset>
-	<legend>$r.translate("appeals.title")</legend>
+	<legend>$r.translate("appeals.title")
+	$r.contextHelpWithWrapper("manual_user/area_modules/Absence_Management/#appeals")
+	</legend>
 	$r.render("search")
 	$r.render("appealsList")
 </fieldset>

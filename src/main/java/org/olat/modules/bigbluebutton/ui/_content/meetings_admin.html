@@ -1,11 +1,13 @@
-<div class="o_sel_bbb_edit_meetings_list">
-#if($r.available("add.meeting"))
-	<div class="o_button_group o_button_group_right">
-		$r.render("add.meeting")
-		$r.contextHelpWithWrapper("manual_admin/administration/BigBlueButton_module/#tab_online-meetings")
+<fieldset>
+	<legend>$r.translate("meetings.title")
+	$r.contextHelpWithWrapper("manual_admin/administration/BigBlueButton_module/#online-meetings")
+	</legend>
+	<div class="o_sel_bbb_edit_meetings_list">
+	#if($r.available("add.meeting"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("add.meeting")
+		</div>
+	#end
+	$r.render("meetings")
 	</div>
-#else
-	<div class="clearfix">$r.contextHelpWithWrapper("manual_admin/administration/BigBlueButton_module/#tab_online-meetings")</div>
-#end
-$r.render("meetings")
-</div>
+</fieldset>

@@ -1,4 +1,7 @@
 <div class="o_lectures_coaching clearfix">
+	#if($helpUrl)
+		$r.contextHelpWithWrapper($helpUrl)
+	#end
 	$r.render("segments")
 	#if($r.available("segmentCmp"))
 	<div class="o_segments_content">$r.render("segmentCmp")</div>

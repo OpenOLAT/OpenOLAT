@@ -111,6 +111,7 @@ public class ImplementationsListController extends FormBasicController implement
 	private final List<GroupRoles> asRoles;
 	private final boolean onlyParticipant;
 	private final boolean withTitle;
+	private final String helpUrl;
 	
 	private ImplementationController implementationCtrl;
 
@@ -122,12 +123,13 @@ public class ImplementationsListController extends FormBasicController implement
 	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
 	
 	public ImplementationsListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			List<GroupRoles> asRoles, boolean withTitle) {
+			List<GroupRoles> asRoles, boolean withTitle, String helpUrl) {
 		super(ureq, wControl, "implementations");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(),
 				Util.createPackageTranslator(CurriculumComposerController.class, getLocale(), getTranslator())));
 		this.stackPanel = stackPanel;
 		this.withTitle = withTitle;
+		this.helpUrl = helpUrl;
 		this.asRoles = asRoles;
 		onlyParticipant = asRoles.size() == 1 && asRoles.contains(GroupRoles.participant);
 		
@@ -149,6 +151,7 @@ public class ImplementationsListController extends FormBasicController implement
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("withTitle", Boolean.valueOf(withTitle));
+			layoutCont.contextPut("helpUrl", helpUrl);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

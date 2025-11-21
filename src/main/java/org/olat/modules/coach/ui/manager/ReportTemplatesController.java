@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -65,6 +66,7 @@ public class ReportTemplatesController extends FormBasicController {
 	private static final String FILTER_CATEGORY = "filter.category";
 	private static final String COACHING_REPORT_IDENT = "coaching";
 
+	private final String helpUrl;
 	private final DefaultReportConfigurationAccessSecurityCallback secContext;
 
 	private FlexiTableElement tableEl;
@@ -80,9 +82,9 @@ public class ReportTemplatesController extends FormBasicController {
 	@Autowired
 	private ExportManager exportManager;
 	
-	public ReportTemplatesController(UserRequest ureq, WindowControl wControl) {
+	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, String helpUrl) {
 		super(ureq, wControl, "report_templates");
-		
+		this.helpUrl = helpUrl;
 		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(), 
 				ureq.getUserSession().getRoles(), true, false, organisationService);
 
@@ -92,9 +94,9 @@ public class ReportTemplatesController extends FormBasicController {
 		initFilters();
 	}
 	
-	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, Translator translator) {
+	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, Translator translator, String helpUrl) {
 		super(ureq, wControl, "report_templates", translator);
-
+		this.helpUrl = helpUrl;
 		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(),
 				ureq.getUserSession().getRoles(), false, true, organisationService);
 
@@ -106,6 +108,10 @@ public class ReportTemplatesController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("helpUrl", helpUrl);
+		}
+		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.name));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.category));
