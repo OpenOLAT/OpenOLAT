@@ -2,7 +2,9 @@
 	<div class="o_error" role="alert">$unauthorizedAbsencesMsg</div>
 #end
 <fieldset>
-	<legend>$r.translate("absences.title")</legend>
+	<legend>$r.translate("absences.title")
+	$r.contextHelpWithWrapper("manual_user/area_modules/Absence_Management/#tab_absences")
+	</legend>
 	#if($r.available("search"))
 		$r.render("search")
 	#end

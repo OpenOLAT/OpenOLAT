@@ -243,6 +243,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				layoutCont.contextPut("titleSize", config.getTitleSize());
 				layoutCont.contextPut("titleIconCssClass", config.getTitleIconCssClass());
 			}
+			layoutCont.contextPut("helpUrl", config.getHelpUrl());
 		}
 		
 		initButtons(formLayout, ureq);

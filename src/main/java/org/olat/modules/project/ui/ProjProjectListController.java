@@ -211,6 +211,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	protected abstract String getTitleI18n();
 
+	protected abstract String getHelpUrl();
+
 	protected abstract boolean isCreateProjectEnabled();
 	
 	protected abstract boolean isCreateTemplateEnabled();
@@ -257,6 +259,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		setFormInfoHelp("manual_user/area_modules/Project_Overview/");
 		flc.contextPut("titleIconCss", getTitleIconCss());
 		flc.contextPut("titleI18n", getTitleI18n());
+		flc.contextPut("helpUrl", getHelpUrl());
 		
 		if (canCreateProject) {
 			createLink = uifactory.addFormLink("project.create", formLayout, Link.BUTTON);

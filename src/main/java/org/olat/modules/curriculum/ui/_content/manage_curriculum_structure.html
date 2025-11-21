@@ -5,6 +5,9 @@
 	#if($r.visible("add.curriculum.element.menu"))
 	<div class="o_button_group o_button_group_right">
 		$r.render("add.curriculum.element.menu")
+		#if($r.isNotEmpty($helpUrl))
+		$r.contextHelpWithWrapper($helpUrl)
+		#end
 	</div>
 	#end
 </div>

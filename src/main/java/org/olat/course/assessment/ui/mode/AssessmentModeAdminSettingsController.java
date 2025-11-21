@@ -53,6 +53,7 @@ public class AssessmentModeAdminSettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.mode.title");
+		setFormContextHelp("manual_admin/administration/e-Assessment_Administration/#exam_admin");
 		
 		enableAssessmentModeEl = uifactory.addToggleButton("modeenabled", "assessment.mode.enabled", translate("on"), translate("off"), formLayout);
 		enableAssessmentModeEl.toggle(assessmentModule.isAssessmentModeEnabled());

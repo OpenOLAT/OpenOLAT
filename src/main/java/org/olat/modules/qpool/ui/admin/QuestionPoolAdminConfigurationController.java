@@ -105,6 +105,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		FormLayoutContainer moduleCont = FormLayoutContainer.createDefaultFormLayout("module", getTranslator());
 		moduleCont.setElementCssClass("o_sel_qpool_configuration");
 		moduleCont.setFormTitle(translate("admin.configuration.title"));
+		moduleCont.setFormContextHelp("manual_admin/administration/eAssessment_Question_bank/");
 		moduleCont.setRootForm(mainForm);
 		formLayout.add("module", moduleCont);
 		

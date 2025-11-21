@@ -100,6 +100,7 @@ public class LayoutAdminController extends FormBasicController {
 		formLayout.add(themeCont);
 		themeCont.setFormTitle(translate("layout.title"));
 		themeCont.setFormDescription(translate("layout.intro"));
+		themeCont.setFormContextHelp("manual_admin/administration/Customizing/#representation-layout");
 		
 		String[] keys = getThemes();
 		String enabledTheme = guiSettings.getGuiThemeIdentifyer();
@@ -302,7 +303,7 @@ public class LayoutAdminController extends FormBasicController {
 				File theme = customThemes[i];
 				customThemesStr[i] = theme.getName();
 			}
-			themesStr = (String[]) ArrayUtils.addAll(themesStr, customThemesStr);
+			themesStr = ArrayUtils.addAll(themesStr, customThemesStr);
 			Arrays.sort(themesStr);
 		}
 		

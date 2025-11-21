@@ -34,6 +34,7 @@ public class CurriculumComposerConfig {
 	private String title;
 	private int titleSize;
 	private String titleIconCssClass;
+	private String helpUrl;
 	
 	private boolean withMixMaxColumn = false;
 	
@@ -92,6 +93,14 @@ public class CurriculumComposerConfig {
 		this.title = title;
 		this.titleSize = titleSize;
 		this.titleIconCssClass = titleIconCssClass;
+	}
+
+	public String getHelpUrl() {
+		return helpUrl;
+	}
+
+	public void setHelpUrl(String helpUrl) {
+		this.helpUrl = helpUrl;
 	}
 
 	public boolean isWithMixMaxColumn() {

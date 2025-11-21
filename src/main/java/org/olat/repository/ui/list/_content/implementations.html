@@ -1,4 +1,9 @@
 #if($r.isTrue($withTitle))
-	<h2><i class="o_icon o_icon_curriculum"> </i> $r.translate("implementations.list.title")</h2>
+	<h2>
+		<i class="o_icon o_icon_curriculum"> </i> $r.translate("implementations.list.title")
+		#if($r.isNotEmpty($helpUrl))
+		$r.contextHelpWithWrapper($helpUrl)
+		#end
+	</h2>
 #end
 $r.render("table")

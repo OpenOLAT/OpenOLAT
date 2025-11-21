@@ -53,6 +53,7 @@ public class GradeAdminConfigsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.config.title");
+		setFormContextHelp("manual_admin/administration/Assessment_translate_points_in_grades_admin/");
 		
 		String[] onValues = new String[]{ translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("grade.enabled", "admin.config.grade.enabled", formLayout, onKeys, onValues);

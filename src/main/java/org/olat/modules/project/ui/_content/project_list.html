@@ -17,6 +17,9 @@
 				#end
 			#end
 		</div>
+		#if($r.isNotEmpty($helpUrl))
+			$r.contextHelpWithWrapper($helpUrl)
+		#end
 	</div>
 	#if ($off_info)
 		<div class="o_hint">$off_info#if($r.isNotNull($off_info_help_url)) $r.contextHelpAdditionalInfo($off_info_help_url)#end</div>

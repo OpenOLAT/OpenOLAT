@@ -1,5 +1,7 @@
 <fieldset>
-	<legend>$r.translate("dispensations.title")</legend>
+	<legend>$r.translate("dispensations.title")
+	$r.contextHelpWithWrapper("manual_user/area_modules/Absence_Management/#tab_notices")
+	</legend>
 	#if($r.available("search"))
 		$r.render("search")
 	#end

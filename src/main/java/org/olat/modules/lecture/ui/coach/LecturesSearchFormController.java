@@ -115,6 +115,8 @@ public class LecturesSearchFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("manual_user/area_modules/Absence_Management/#report");
+		
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(adminProps);
 		

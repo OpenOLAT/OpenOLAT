@@ -78,6 +78,7 @@ public class QTI21AdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer signatureCont = FormLayoutContainer.createDefaultFormLayout("signature", getTranslator());
 		signatureCont.setFormTitle(translate("admin.signature.title"));
+		signatureCont.setFormContextHelp("manual_admin/administration/e-Assessment_Administration/#test");
 		signatureCont.setRootForm(mainForm);
 		formLayout.add(signatureCont);
 

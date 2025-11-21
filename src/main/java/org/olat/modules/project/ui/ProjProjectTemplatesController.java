@@ -51,6 +51,11 @@ public class ProjProjectTemplatesController extends ProjProjectMyController {
 	protected String getTitleI18n() {
 		return "segment.templates";
 	}
+	
+	@Override
+	protected String getHelpUrl() {
+		return null;
+	}
 
 	@Override
 	protected boolean isCreateProjectEnabled() {

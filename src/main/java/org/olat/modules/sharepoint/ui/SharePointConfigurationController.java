@@ -100,6 +100,7 @@ public class SharePointConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("sharepoint.title");
 		setFormInfo("sharepoint.intro");
+		setFormContextHelp("manual_admin/administration/SharePoint_OneDrive/");
 		
 		moduleEnabledEl = uifactory.addToggleButton("sharepoint.enable", "sharepoint.enable", translate("on"), translate("off"), formLayout);
 		moduleEnabledEl.toggle(sharePointModule.isEnabled());

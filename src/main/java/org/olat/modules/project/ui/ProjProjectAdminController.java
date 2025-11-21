@@ -56,7 +56,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	protected String getTitleI18n() {
 		return "segment.admin";
 	}
-
+	@Override
+	protected String getHelpUrl() {
+		return null;
+	}
+	
 	@Override
 	protected boolean isCreateProjectEnabled() {
 		return true;

@@ -69,6 +69,7 @@ public class MultiSearchesController extends BasicController implements Activate
 		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("coaching");
+		mainVC.contextPut("helpUrl", "manual_user/area_modules/Absence_Management/#user_search");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setRendererType(SegmentViewRendererType.linked);

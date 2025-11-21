@@ -1,6 +1,10 @@
 <div class="o_curriculum_report_templates">
 	<fieldset>
-		<legend>$r.translate("report.templates")</legend>
+		<legend>$r.translate("report.templates")
+		#if($r.isNotEmpty($helpUrl))
+		$r.contextHelpWithWrapper($helpUrl)
+		#end
+		</legend>
 		$r.render("list")
 	</fieldset>
 </div>
