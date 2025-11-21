@@ -49,11 +49,11 @@ public class RecertificationInDaysFlexiCellRenderer implements FlexiCellRenderer
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof RecertificationInDays recertification
-				&& recertification.nextRecertificationDate() != null) {
-			Long nextDays = recertification.days();
-			Date nextRecertificationDate = recertification.nextRecertificationDate();
-			if(nextRecertificationDate != null) {
-				target.append(formatter.formatDate(nextRecertificationDate));
+				&& recertification.startDateRecertification() != null) {
+			Long nextDays = recertification.startDays();
+			Date startRecertificationDate = recertification.startDateRecertification();
+			if(startRecertificationDate != null) {
+				target.append(formatter.formatDate(startRecertificationDate));
 			}
 			
 			if(nextDays != null) {

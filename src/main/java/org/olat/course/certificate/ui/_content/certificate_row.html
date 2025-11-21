@@ -16,9 +16,9 @@
 				<strong class="o_card_title">$r.translate("table.header.awarded.by")</strong>
 				<span><i class="o_icon o_icon-fw ${row.getAwardedByIconCSS()}"> </i> $r.escapeHtml($row.getAwardedBy())</span>
 			#end
-			#if(${row.hasNextRecertificationDate()}) 
+			#if(${row.isWithRecertification()}) 
 				<strong class="o_card_title">$r.translate("table.header.validity")</strong>
-				<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getValidUntil())}</span>
+				<span>${r.formatDate($row.getCreationDate())}#if($r.isNotNull($row.getValidUntil())) &ndash; ${r.formatDate($row.getValidUntil())}#end</span>
 			
 				<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
 				#if(${row.isRecertificationWindowOpen()})
@@ -29,8 +29,10 @@
 					#end
 				#elseif($row.course)
 				<span>$r.translate("certificate.start.course.recertification",$r.formatDate($row.getStartRecertificationDate()))</span>
-				#else
+				#elseif($r.isNotNull($row.getStartRecertificationDate()))
 				<span>$r.formatDate($row.getStartRecertificationDate())</span>
+				#else
+				<span>&ndash;</span>
 				#end
 			#else
 				<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>

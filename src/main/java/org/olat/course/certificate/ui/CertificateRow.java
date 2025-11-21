@@ -136,11 +136,8 @@ public class CertificateRow {
 	}
 	
 	public boolean isWithRecertification() {
-		return (certificationProgram != null
-				&& certificationProgram.isValidityEnabled()
-				&& certificationProgram.isRecertificationEnabled())
-				|| (certificateConfig != null
-					&& certificateConfig.isRecertificationEnabled());
+		return ((certificationProgram != null && certificationProgram.isValidityEnabled() && certificationProgram.isRecertificationEnabled())
+				|| (certificateConfig != null && certificateConfig.isRecertificationEnabled()));
 	}
 	
 	public CertificationProgram getCertificationProgram() {
