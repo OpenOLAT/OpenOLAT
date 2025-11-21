@@ -122,7 +122,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
 		maxParticipants = null;
-		sortPriority = CatalogV2UIFactory.zeroIfNull(re.getCatalogSortPriority());
+		sortPriority = CatalogV2UIFactory.normalPriorityIfNull(re.getCatalogSortPriority());
 		
 		if(statistics != null) {
 			averageRating = statistics.getRating();
@@ -164,7 +164,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		publishedDate = null;
 		publicVisible = true;
 		maxParticipants = element.getMaxParticipants();
-		sortPriority = CatalogV2UIFactory.zeroIfNull(element.getCatalogSortPriority());
+		sortPriority = CatalogV2UIFactory.normalPriorityIfNull(element.getCatalogSortPriority());
 		
 		averageRating = null;
 		numOfRatings = null;

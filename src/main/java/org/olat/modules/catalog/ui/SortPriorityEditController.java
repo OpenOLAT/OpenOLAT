@@ -77,7 +77,7 @@ public class SortPriorityEditController extends FormBasicController {
 		}
 		
 		priorityValueEl = uifactory.addTextElement("sort.priority.boost", 6,
-				String.valueOf(CatalogV2UIFactory.zeroIfNull(sortPriority)), formLayout);
+				String.valueOf(CatalogV2UIFactory.normalPriorityIfNull(sortPriority)), formLayout);
 		updateValueUI();
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

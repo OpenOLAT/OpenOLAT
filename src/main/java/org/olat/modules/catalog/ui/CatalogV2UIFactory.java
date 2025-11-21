@@ -84,8 +84,8 @@ public class CatalogV2UIFactory {
 		};
 	}
 	
-	public static Integer zeroIfNull(Integer integer) {
-		return integer != null? integer: Integer.valueOf(0);
+	public static Integer normalPriorityIfNull(Integer priority) {
+		return priority != null? priority: Integer.valueOf(0);
 	}
 
 }
