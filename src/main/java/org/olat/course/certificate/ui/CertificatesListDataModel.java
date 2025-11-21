@@ -159,7 +159,7 @@ implements SortableFlexiTableDataModel<CertificateRow>, FilterableFlexiTableMode
 			case awardedBy -> row.getAwardedBy();
 			case origin -> row.getOrigin();
 			case issuedOn -> row.getCreationDate();
-			case validUntil -> row.getNextRecertificationDate();
+			case validUntil -> row.getValidUntil();
 			case dateRecertification -> row.getRecertificationInDays();
 			case recertificationCount -> row.getRecertificationCount();
 			case status -> row.getStatus();

@@ -167,10 +167,20 @@ public class CertificateRow {
 		return certificate != null && certificate.getNextRecertificationDate() != null;
 	}
 	
-	public Date getNextRecertificationDate() {
+	public Date getValidUntil() {
 		return certificate == null
 				? null
 				: certificate.getNextRecertificationDate();
+	}
+	
+	public Date getStartRecertificationDate() {
+		if(recertificationInDays != null) {
+			if(recertificationInDays.startDateRecertification() != null) {
+				return recertificationInDays.startDateRecertification();
+			}
+			return recertificationInDays.nextRecertificationDate();
+		}
+		return null;
 	}
 	
 	public Long getRecertificationCount() {

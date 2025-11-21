@@ -18,7 +18,7 @@
 			#end
 			#if(${row.hasNextRecertificationDate()}) 
 				<strong class="o_card_title">$r.translate("table.header.validity")</strong>
-				<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getNextRecertificationDate())}</span>
+				<span>${r.formatDate($row.getCreationDate())} &ndash; ${r.formatDate($row.getValidUntil())}</span>
 			
 				<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
 				#if(${row.isRecertificationWindowOpen()})
@@ -27,8 +27,10 @@
 					#else
 					<span>$r.translate("certificate.end.window",$r.formatDate($row.getEndDateOfRecertificationWindow()))</span>
 					#end
+				#elseif($row.course)
+				<span>$r.translate("certificate.start.course.recertification",$r.formatDate($row.getStartRecertificationDate()))</span>
 				#else
-				<span>$r.formatDate($row.getNextRecertificationDate())</span>
+				<span>$r.formatDate($row.getStartRecertificationDate())</span>
 				#end
 			#else
 				<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>

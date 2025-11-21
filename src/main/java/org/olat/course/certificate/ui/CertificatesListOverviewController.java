@@ -304,24 +304,26 @@ public class CertificatesListOverviewController extends FormBasicController impl
 		String filename = DownloadCertificateCellRenderer.getName(certificate);
 		
 		RecertificationInDays recertificationInDays = null;
-		if(program != null) {
+		if(program != null && program.isRecertificationEnabled()) {
 			recertificationInDays = RecertificationInDays.valueOf(certificate, program, referenceDate);
-		} else if(entry != null) {
+		} else if(entry != null && certificateConfig != null && certificateConfig.isRecertificationEnabled()) {
 			Date nextRecertificationDate = certificatesManager.nextRecertificationWindow(certificate, infos.certificateConfiguration());
 			if(nextRecertificationDate != null) {
-				recertificationInDays = RecertificationInDays.valueOf(nextRecertificationDate, entry, referenceDate);
+				recertificationInDays = RecertificationInDays.valueOf(certificate.getNextRecertificationDate(), nextRecertificationDate, entry, referenceDate);
 			}
 		}
 
 		CertificationStatus status = CertificationStatus.evaluate(certificate, referenceDate);
 		String statusString = status.asLabelExplained(certificate, referenceDate, getTranslator());
 		
-		Long recertificationCount = certificate.getNextRecertificationDate() != null && infos.issued() > 1 
-				? infos.issued()
-				: null;
+		// Uploaded are not issued
+		Long issued = null;
+		if(certificate.getUploadedBy() == null) {
+			issued = infos.issued() == 0 ? 1l : infos.issued();
+		}	
 
 		return new CertificateRow(certificate, infos.repositoryEntry(), certificateConfig, program, uploadedByName,
-				status, statusString, recertificationInDays, recertificationCount, filename, origin, points);
+				status, statusString, recertificationInDays, issued, filename, origin, points);
 	}
 	
 	@Override

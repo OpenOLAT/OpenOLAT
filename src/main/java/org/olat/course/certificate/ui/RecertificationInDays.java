@@ -32,7 +32,8 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record RecertificationInDays(Date nextRecertificationDate, Long days, Date endDateOfRecertificationWindow,
+public record RecertificationInDays(Date nextRecertificationDate, Long days,
+		Date startDateRecertification, Date endDateOfRecertificationWindow,
 		Boolean windowOpen) {
 	
 	public boolean isBeforeRecertification(Date referenceDate) {
@@ -49,7 +50,7 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days, Dat
 				&& (endDateOfRecertificationWindow() != null && (endDateOfRecertificationWindow().compareTo(referenceDate) < 0));
 	}
 
-	public static RecertificationInDays valueOf(Date nextRecertificationDate, RepositoryEntry entry, Date referenceDate) {
+	public static RecertificationInDays valueOf(Date nextRecertificationDate, Date startRecertificationDate, RepositoryEntry entry, Date referenceDate) {
 		// Eternal
 		if(nextRecertificationDate == null
 				|| entry == null) {
@@ -57,7 +58,7 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days, Dat
 		}
 		
 		Long days = DateUtils.countDays(referenceDate, nextRecertificationDate);
-		return new RecertificationInDays(nextRecertificationDate, days, null, null);
+		return new RecertificationInDays(nextRecertificationDate, days, startRecertificationDate, null, null);
 	}
 	
 	public static RecertificationInDays valueOf(Certificate certificate, CertificationProgram program, Date referenceDate) {
@@ -84,6 +85,7 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days, Dat
 				days = DateUtils.countDays(referenceDate, certificate.getNextRecertificationDate());
 			}
 		}
-		return new RecertificationInDays(certificate.getNextRecertificationDate(), days, endOfWindow, windowOpen);
+		return new RecertificationInDays(certificate.getNextRecertificationDate(), days,
+				certificate.getNextRecertificationDate(), endOfWindow, windowOpen);
 	}
 }
