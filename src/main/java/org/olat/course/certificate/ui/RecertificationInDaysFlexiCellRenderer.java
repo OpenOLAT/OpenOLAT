@@ -19,8 +19,6 @@
  */
 package org.olat.course.certificate.ui;
 
-import java.util.Date;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -50,26 +48,18 @@ public class RecertificationInDaysFlexiCellRenderer implements FlexiCellRenderer
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof RecertificationInDays recertification
 				&& recertification.startDateRecertification() != null) {
-			Long nextDays = recertification.startDays();
-			Date startRecertificationDate = recertification.startDateRecertification();
-			if(startRecertificationDate != null) {
-				target.append(formatter.formatDate(startRecertificationDate));
+			if(recertification.isDanger()) {
+				target.append("<i class='o_icon o_icon_recertification_error'> </i> ");
+			} else if(recertification.isWarning()) {
+				target.append("<i class='o_icon o_icon_recertification_warning'> </i> ");
 			}
 			
-			if(nextDays != null) {
-				target.append(" &ndash; ");
-				
-				if(nextDays.longValue() > 0l) {
-					target.append(translator.translate("recertification.in", nextDays.toString()));
-				} else if(nextDays.longValue() == 0l) {
-					target.append(translator.translate("recertification.today"));
-				} else if(nextDays.longValue() == 1l) {
-					target.append(translator.translate("recertification.tomorrow"));
-				} else if(nextDays.longValue() == -1l) {
-					target.append(translator.translate("recertification.yesterday"));
-				} else if(nextDays.longValue() < 0l) {
-					target.append(translator.translate("recertification.since", Long.toString(Math.abs(nextDays.longValue()))));
-				}
+			if(recertification.isRecertificationWindowOpen()) {
+				target.append(translator.translate("certificate.end.window", formatter.formatDate(recertification.endDateOfRecertificationWindow())));
+			} else if(recertification.isRecertificationWindowClosed()) {
+				target.append(translator.translate("recertification.running.late", formatter.formatDate(recertification.endDateOfRecertificationWindow())));
+			} else if (recertification.startDateRecertification() != null) {
+				target.append(formatter.formatDate(recertification.startDateRecertification()));
 			}
 		}
 	}

@@ -21,19 +21,21 @@
 				<span>${r.formatDate($row.getCreationDate())}#if($r.isNotNull($row.getValidUntil())) &ndash; ${r.formatDate($row.getValidUntil())}#end</span>
 			
 				<strong class="o_card_title">$r.translate("table.header.recertification.date")</strong>
+				<span>#if($row.danger)<i class='o_icon o_icon_recertification_error'> </i>#elseif($row.warning)<i class='o_icon o_icon_recertification_warning'> </i>#end
 				#if(${row.isRecertificationWindowOpen()})
-					#if($r.isNotEmpty($row.points))
-					<span>$r.translate("certificate.points.required",$r.escapeHtml($row.points))</span>
-					#else
-					<span>$r.translate("certificate.end.window",$r.formatDate($row.getEndDateOfRecertificationWindow()))</span>
-					#end
-				#elseif($row.course)
-				<span>$r.translate("certificate.start.course.recertification",$r.formatDate($row.getStartRecertificationDate()))</span>
+					$r.translate("certificate.end.window",$r.formatDate($row.getEndDateOfRecertificationWindow()))
+				#elseif(${row.isRecertificationWindowClosed()})
+					$r.translate("recertification.running.late",$r.formatDate($row.getEndDateOfRecertificationWindow()))
 				#elseif($r.isNotNull($row.getStartRecertificationDate()))
-				<span>$r.formatDate($row.getStartRecertificationDate())</span>
+					$r.formatDate($row.getStartRecertificationDate())
 				#else
-				<span>&ndash;</span>
+					&ndash;
 				#end
+				
+				#if($r.isNotEmpty($row.points))
+					&ndash; $r.escapeHtml($row.points)
+				#end
+				</span>
 			#else
 				<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
 				<span>$r.formatDate($row.getCreationDate())</span>

@@ -140,6 +140,14 @@ public class CertificateRow {
 				|| (certificateConfig != null && certificateConfig.isRecertificationEnabled()));
 	}
 	
+	public boolean isWarning() {
+		return recertificationInDays != null && recertificationInDays.isWarning();
+	}
+	
+	public boolean isDanger() {
+		return recertificationInDays != null && recertificationInDays.isDanger();
+	}
+	
 	public CertificationProgram getCertificationProgram() {
 		return certificationProgram;
 	}
@@ -191,6 +199,11 @@ public class CertificateRow {
 	public boolean isRecertificationWindowOpen() {
 		return recertificationInDays != null && recertificationInDays.windowOpen() != null
 				&& recertificationInDays.windowOpen().booleanValue();
+	}
+	
+	public boolean isRecertificationWindowClosed() {
+		return recertificationInDays != null && recertificationInDays.windowOpen() != null
+				&& !recertificationInDays.windowOpen().booleanValue();
 	}
 	
 	public Date getEndDateOfRecertificationWindow() {

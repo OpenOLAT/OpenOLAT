@@ -58,6 +58,24 @@ public class CertificationHelper {
 		return sb.toString();
 	}
 	
+	public static final String compactCreditPointsToString(CertificationProgram program) {
+		StringBuilder sb = new StringBuilder();
+		if(program.getCreditPoints() != null) {
+			sb.append(program.getCreditPoints().toString()).append(" ");
+		}
+		CreditPointSystem system = program.getCreditPointSystem();
+		if(system != null) {
+			if(StringHelper.containsNonWhitespace(system.getLabel())) {
+				if(sb.length() > 0) sb.append(" ");
+				sb.append(system.getLabel());
+			} else if(StringHelper.containsNonWhitespace(system.getName())) {
+				if(sb.length() > 0) sb.append(" ");
+				sb.append(system.getName());
+			}
+		}
+		return sb.toString();
+	}
+	
 	public static final String creditPointsToString(BigDecimal amount, CreditPointSystem system) {
 		StringBuilder sb = new StringBuilder();
 		if(amount != null) {

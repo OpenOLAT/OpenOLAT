@@ -110,10 +110,10 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 		String subject = translate(i18nKeys.subject());
 		StringBuilder notification = new StringBuilder(1024);
 		if(StringHelper.containsNonWhitespace(subject)) {
-			notification.append("<div><strong>").append(subject).append("</strong></div>");
+			notification.append("<div><strong>").append(StringHelper.escapeHtml(subject)).append("</strong></div>");
 		}
 		if(StringHelper.containsNonWhitespace(body)) {
-			notification.append("<div>").append(body).append("</div>");
+			notification.append("<div>").append(StringHelper.xssScan(body)).append("</div>");
 		}
 		StaticTextElement notificationEl = uifactory.addStaticTextElement("notification", "notification.text", notification.toString(), formLayout);
 		notificationEl.setDomWrapperElement(DomWrapperElement.div);

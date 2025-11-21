@@ -48,7 +48,7 @@ public class WalletBalanceCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof BigDecimal balance && creditPointSystem != null) {
-			target.append(CertificationHelper.creditPointsToString(balance, creditPointSystem));
+			target.appendHtmlEscaped(CertificationHelper.creditPointsToString(balance, creditPointSystem));
 		}
 	}
 }

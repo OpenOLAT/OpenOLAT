@@ -285,7 +285,7 @@ public class CertificatesListOverviewController extends FormBasicController impl
 				? impl.getCertificationProgram()
 				: null;
 		String points = program != null && program.getCreditPointSystem() != null
-				? CertificationHelper.creditPointsToString(program)
+				? CertificationHelper.compactCreditPointsToString(program)
 				: null;
 		
 		Identity uploadedBy = certificate.getUploadedBy();
