@@ -73,10 +73,10 @@ public class AddProgramMemberController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof SingleIdentityChosenEvent sice) {
-			doAddMember(ureq, sice.getChosenIdentity());
+			doAddMember(sice.getChosenIdentity());
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(event instanceof MultiIdentityChosenEvent mice) {
-			doAddMembers(ureq, mice.getChosenIdentities());
+			doAddMembers(mice.getChosenIdentities());
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
 			super.event(ureq, source, event);
@@ -93,15 +93,14 @@ public class AddProgramMemberController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private void doAddMembers(UserRequest ureq, List<Identity> members) {
+	private void doAddMembers(List<Identity> members) {
 		for(Identity member: members) {
-			doAddMember(ureq, member);
+			doAddMember(member);
 		}
 	}
 	
-	private void doAddMember(UserRequest ureq, Identity member) {
-		certificationCoordinator.processCertificationRequest(member, certificationProgram, RequestMode.COACH,
-				ureq.getRequestTimestamp(), getIdentity());
+	private void doAddMember(Identity member) {
+		certificationCoordinator.generateCertificate(member, certificationProgram, RequestMode.COACH, getIdentity());
 		dbInstance.commit();
 	}
 }
