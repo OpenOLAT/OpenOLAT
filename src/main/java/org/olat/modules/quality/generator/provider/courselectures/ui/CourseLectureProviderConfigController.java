@@ -163,7 +163,7 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		surveyLectureEl = uifactory.addTextElement("config.survey.lectures", 4, surveyLectureNumber, formLayout);
 		
 		String minutesBeforeEnd = configs.getValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END);
-		minutesBeforeEndEl = uifactory.addTextElement("config.minutes.before.end", 3, minutesBeforeEnd, formLayout);
+		minutesBeforeEndEl = uifactory.addTextElement("config.minutes.before.end", 4, minutesBeforeEnd, formLayout);
 
 		// duration
 		String duration = configs.getValue(CourseLecturesProvider.CONFIG_KEY_DURATION_DAYS);
