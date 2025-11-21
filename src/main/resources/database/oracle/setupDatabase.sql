@@ -1952,7 +1952,6 @@ create table o_cer_certificate (
    c_recertification_paused number default 0 not null,
    c_path varchar2(1024 char),
    c_last number default 1 not null,
-   c_revoked number default 0 not null,
    c_revocation_date date,
    c_removal_date date,
    c_course_title varchar2(255 char),

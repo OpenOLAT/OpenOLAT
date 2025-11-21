@@ -18,15 +18,16 @@
 	</div>
 	<div class="o_achievement_meta">
 		<div class="o_certificate_label">
-			#if($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
+			#if($r.isTrue($row.revoked))
+				<span class="o_certification_status_revoked o_labeled_light"><i class='o_icon o_icon_certification_status_revoked'> </i> $r.translate("row.revoked")</span>
+			#elseif($r.isTrue($row.archived))
+				<span class="o_certification_status_archived o_labeled_light"><i class='o_icon o_icon_certification_status_archived'> </i> $r.translate("row.archived")</span>
+			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
 				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
 			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 1)
 				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.day", $expiredInDays)</span>
 			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays > 1)
 				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
-			#end
-			#if($row.status == "archived")
-				<span class="o_certificate_archived o_labeled_light">$r.translate("row.archived")</span>
 			#end
 		</div>
 		<a class="o_achievement_download #if($expired) o_certificate_download_expired #end" href="$row.url" target="_blank">$row.filename</a>

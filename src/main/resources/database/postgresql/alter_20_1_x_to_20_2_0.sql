@@ -99,7 +99,6 @@ alter table o_cer_program_log add constraint cer_plog_to_config_idx foreign key 
 create index idx_cer_plog_to_config_idx on o_cer_program_log (fk_mail_configuration);
 
 -- Certificate
-alter table o_cer_certificate add column c_revoked bool default false not null;
 alter table o_cer_certificate add column c_recertification_count int8;
 alter table o_cer_certificate add column c_recertification_win_date timestamp;
 alter table o_cer_certificate add column c_recertification_paused bool default false not null;

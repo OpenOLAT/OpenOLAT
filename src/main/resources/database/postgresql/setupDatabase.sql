@@ -1919,7 +1919,6 @@ create table o_cer_certificate (
    c_recertification_paused bool default false not null,
    c_path varchar(1024),
    c_last bool default true not null,
-   c_revoked bool default false not null,
    c_revocation_date timestamp,
    c_removal_date timestamp,
    c_course_title varchar(255),

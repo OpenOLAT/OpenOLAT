@@ -94,8 +94,6 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	private String path;
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
-	@Column(name="c_revoked", nullable=false, insertable=true, updatable=true)
-	private boolean revoked;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="c_revocation_date", nullable=true, insertable=true, updatable=true)
 	private Date revocationDate;
@@ -206,15 +204,6 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	public void setLast(boolean last) {
 		this.last = last;
-	}
-
-	@Override
-	public boolean isRevoked() {
-		return revoked;
-	}
-
-	public void setRevoked(boolean revoked) {
-		this.revoked = revoked;
 	}
 
 	@Override

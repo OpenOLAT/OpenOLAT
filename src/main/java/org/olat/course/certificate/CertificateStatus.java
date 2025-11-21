@@ -29,5 +29,6 @@ public enum CertificateStatus {
 	pending,
 	ok,
 	archived,
+	revoked,
 	error
 }

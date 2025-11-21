@@ -40,8 +40,6 @@ public interface Certificate extends CreateInfo {
 	
 	boolean isLast();
 	
-	boolean isRevoked();
-	
 	String getUuid();
 	
 	String getExternalId();

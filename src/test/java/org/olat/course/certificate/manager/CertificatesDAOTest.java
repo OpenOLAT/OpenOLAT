@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -146,7 +147,8 @@ public class CertificatesDAOTest extends OlatTestCase {
 		Certificate reloadCertificate = certificatesDao.getCertificateById(certificate.getKey());
 		Assert.assertNotNull(reloadCertificate);
 		Assert.assertFalse(reloadCertificate.isLast());
-		Assert.assertFalse(reloadCertificate.isRevoked());
+		Assert.assertNotEquals(CertificateStatus.archived, reloadCertificate.getStatus());
+		Assert.assertNotEquals(CertificateStatus.revoked, reloadCertificate.getStatus());
 	}
 	
 	@Test
@@ -176,7 +178,7 @@ public class CertificatesDAOTest extends OlatTestCase {
 		Certificate reloadCertificate = certificatesDao.getCertificateById(certificate.getKey());
 		Assert.assertNotNull(reloadCertificate);
 		Assert.assertFalse(reloadCertificate.isLast());
-		Assert.assertTrue(reloadCertificate.isRevoked());
+		Assert.assertEquals(CertificateStatus.revoked, reloadCertificate.getStatus());
 	}
 	
 	@Test

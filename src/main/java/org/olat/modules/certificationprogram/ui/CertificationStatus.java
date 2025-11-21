@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 
 /**
  * 
@@ -39,13 +40,15 @@ public enum CertificationStatus {
 	EXPIRED,
 	/** Flag last=true on certificate but next certification date */
 	EXPIRED_RENEWABLE,
-	/** Only flag last=false and revoked=true */
+	/** Only flag last=false and status revoked */
 	REVOKED,
-	/** Only flag last=false and revoked=false*/
+	/** Only flag last=false and/or status archived */
 	ARCHIVED;
 
 	public static CertificationStatus evaluate(Certificate certificate, Date referenceDate) {
-		if(certificate.isLast()) {
+		if(certificate.getStatus() == CertificateStatus.archived) {
+			return ARCHIVED;
+		} else if(certificate.isLast()) {
 			Date nextRecertificationDate = certificate.getNextRecertificationDate();
 			Date recertificationWindowDate = certificate.getRecertificationWindowDate();
 			if(nextRecertificationDate == null || nextRecertificationDate.compareTo(referenceDate) >= 0) {
@@ -55,7 +58,7 @@ public enum CertificationStatus {
 				return EXPIRED_RENEWABLE;
 			}
 			return EXPIRED;
-		} else if(certificate.isRevoked()) {
+		} else if(certificate.getStatus() == CertificateStatus.revoked) {
 			return REVOKED;
 		}
 		return ARCHIVED;

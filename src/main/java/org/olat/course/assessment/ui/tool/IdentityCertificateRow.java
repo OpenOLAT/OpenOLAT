@@ -66,6 +66,14 @@ public class IdentityCertificateRow {
 		return certificate.getCreationDate();
 	}
 	
+	public boolean isArchived() {
+		return !certificate.isLast() || certificate.getStatus() == CertificateStatus.archived;
+	}
+	
+	public boolean isRevoked() {
+		return certificate.getStatus() == CertificateStatus.revoked;
+	}
+	
 	public Date getNextRecertificationDate() {
 		return certificate.getNextRecertificationDate();
 	}

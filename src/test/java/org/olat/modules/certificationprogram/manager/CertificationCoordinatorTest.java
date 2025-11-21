@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
@@ -370,7 +371,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assertions.assertThat(revokedCertificates)
 			.hasSize(1);
 		Certificate revokedCertificate = revokedCertificates.get(0);
-		Assert.assertTrue(revokedCertificate.isRevoked());
+		Assert.assertEquals(CertificateStatus.revoked, revokedCertificate.getStatus());
 		Assert.assertFalse(revokedCertificate.isLast());
 		assertCertificateStatus(revokedCertificate, CertificationStatus.REVOKED, CertificationIdentityStatus.REMOVED);
 		assertMessage(program, CertificationProgramMailType.program_removed);

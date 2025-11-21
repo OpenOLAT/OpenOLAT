@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateWithInfos;
 import org.olat.modules.certificationprogram.CertificationProgram;
@@ -164,12 +165,13 @@ public class CertificatesDAO {
 	
 	public int revoke(IdentityRef identity, CertificationProgramRef program) {
 		String query = """
-				update certificate cer set cer.last=false,cer.revoked=true,cer.revocationDate=:revocationDate
+				update certificate cer set cer.last=false,cer.statusString=:status,cer.revocationDate=:revocationDate
 				where cer.last=true and cer.certificationProgram.key=:programKey and cer.identity.key=:identityKey""";
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("programKey", program.getKey())
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("status", CertificateStatus.revoked.name())
 				.setParameter("revocationDate", new Date(), TemporalType.TIMESTAMP)
 				.executeUpdate();
 	}

@@ -1244,7 +1244,6 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setExternalId(certificateInfos.getExternalId());
 		certificate.setLast(true);
-		certificate.setRevoked(false);
 		certificate.setStatus(CertificateStatus.pending);
 		certificate.setRecertificationPaused(false);
 		
