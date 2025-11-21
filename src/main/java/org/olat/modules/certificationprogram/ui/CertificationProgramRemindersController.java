@@ -272,6 +272,21 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
+
+	private void doEdit(UserRequest ureq, CertificationProgramNotificationRow notificationRow) {
+		CertificationProgramMailConfiguration configuration = certificationProgramService.getMailConfiguration(notificationRow.getKey());
+		if(configuration == null) {
+			loadModel();
+		} else {
+			editReminderCtrl = new CertificationProgramEditReminderController(ureq, getWindowControl(), certificationProgram, configuration);
+			listenTo(editReminderCtrl);
+			
+			String title = translate("edit.reminder.title", notificationRow.getNotificationLabel());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editReminderCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
 	
 	private void doTranslate(UserRequest ureq, CertificationProgramNotificationRow notificationRow) {
 		if(guardModalController(translatorCtrl)) return;
@@ -324,10 +339,11 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 	}
 	
 	private class ToolsController extends BasicController {
-		
+
 		private Link editLink;
 		private Link resetLink;
 		private Link deleteLink;
+		private Link translateLink;
 		
 		private final CertificationProgramNotificationRow notificationRow;
 		
@@ -337,14 +353,17 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 			
 			VelocityContainer mainVC = createVelocityContainer("tool_notifications");
 			
+			editLink = LinkFactory.createLink("edit.reminder", "edit", getTranslator(), mainVC, this, Link.LINK);
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			
 			if(notificationRow.isCustomized()) {
-				editLink = LinkFactory.createLink("notification.edit", "edit", getTranslator(), mainVC, this, Link.LINK);
-				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+				translateLink = LinkFactory.createLink("notification.edit", "translate", getTranslator(), mainVC, this, Link.LINK);
+				translateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				resetLink = LinkFactory.createLink("notification.reset", "reset", getTranslator(), mainVC, this, Link.LINK);
 				resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_recycle");
 			} else {
-				editLink = LinkFactory.createLink("notification.customize", "edit", getTranslator(), mainVC, this, Link.LINK);
-				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+				translateLink = LinkFactory.createLink("notification.customize", "translate", getTranslator(), mainVC, this, Link.LINK);
+				translateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			}
 
 			deleteLink = LinkFactory.createLink("reminder.delete", "delete", getTranslator(), mainVC, this, Link.LINK);
@@ -356,6 +375,9 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(editLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doEdit(ureq, notificationRow);
+			} else if(translateLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doTranslate(ureq, notificationRow);
 			} else if(resetLink == source) {

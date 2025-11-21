@@ -1,4 +1,7 @@
 <ul class="o_dropdown list-unstyled o_sel_tools">
+	#if($r.available("edit.reminder"))
+	<li>$r.render("edit.reminder")</li>
+	#end
 	#if($r.available("notification.edit"))
 	<li>$r.render("notification.edit")</li>
 	#end
@@ -8,8 +11,8 @@
 	#if($r.available("notification.reset"))
 	<li>$r.render("notification.reset")</li>
 	#end
-	#if($r.available("notification.delete"))
+	#if($r.available("reminder.delete"))
 	<li class='divider'></li>
-	<li>$r.render("notification.delete")</li>
+	<li>$r.render("reminder.delete")</li>
 	#end
 </ul>
