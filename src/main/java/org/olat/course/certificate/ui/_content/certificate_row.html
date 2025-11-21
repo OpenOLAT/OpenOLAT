@@ -27,7 +27,7 @@
 				#elseif(${row.isRecertificationWindowClosed()})
 					$r.translate("recertification.running.late",$r.formatDate($row.getEndDateOfRecertificationWindow()))
 				#elseif($r.isNotNull($row.getStartRecertificationDate()))
-					$r.formatDate($row.getStartRecertificationDate())
+					$r.translate("certificate.from.recertification",$r.formatDate($row.getStartRecertificationDate()))
 				#else
 					&ndash;
 				#end

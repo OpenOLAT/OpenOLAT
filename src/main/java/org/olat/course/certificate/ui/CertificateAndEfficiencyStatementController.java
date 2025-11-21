@@ -414,7 +414,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				if(certificateConfig != null && certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
 					Date nextRecertificationWindow = certificatesManager.nextRecertificationWindow(certificateToShow, certificateConfig);
 					if(nextRecertificationWindow != null) {
-						mainVC.contextPut("nextRecertificationWindow", translate("certificate.recertification.start",
+						mainVC.contextPut("nextRecertificationWindow", translate("certificate.from.recertification",
 								formatter.formatDate(nextRecertificationWindow)));
 					}
 				}

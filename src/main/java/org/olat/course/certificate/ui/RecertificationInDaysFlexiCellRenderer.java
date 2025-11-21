@@ -59,7 +59,7 @@ public class RecertificationInDaysFlexiCellRenderer implements FlexiCellRenderer
 			} else if(recertification.isRecertificationWindowClosed()) {
 				target.append(translator.translate("recertification.running.late", formatter.formatDate(recertification.endDateOfRecertificationWindow())));
 			} else if (recertification.startDateRecertification() != null) {
-				target.append(formatter.formatDate(recertification.startDateRecertification()));
+				target.append(translator.translate("certificate.from.recertification", formatter.formatDate(recertification.startDateRecertification())));
 			}
 		}
 	}

@@ -177,13 +177,13 @@ public class CertificateDetailsController extends BasicController {
 			long days = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertificationDate);
 			String recertificationInfosDate = nextRecertificationDateFormatted;
 			if(days >= 2) {
-				recertificationInfosDate = translate("recertification.running.more", nextRecertificationDateFormatted, Long.toString(days));	
+				recertificationInfosDate = translate("recertification.course.more", nextRecertificationDateFormatted, Long.toString(days));	
 			} else if(days == 1) {
-				recertificationInfosDate = translate("recertification.running.more.tomorrow", nextRecertificationDateFormatted, Long.toString(days));	
+				recertificationInfosDate = translate("recertification.course.more.tomorrow", nextRecertificationDateFormatted, Long.toString(days));	
 			} else if(days == 0) {
-				recertificationInfosDate = signal(recertificationInDays) + translate("recertification.running.more.today", nextRecertificationDateFormatted);
+				recertificationInfosDate = signal(recertificationInDays) + translate("recertification.course.more.today", nextRecertificationDateFormatted);
 			} else {
-				recertificationInfosDate = signal(recertificationInDays) + formatter.formatDate(nextRecertificationDate);
+				recertificationInfosDate = signal(recertificationInDays) + translate("certificate.from.recertification", formatter.formatDate(nextRecertificationDate));
 			}
 			mainVC.contextPut("recertificationDate", recertificationInfosDate);
 		}
@@ -250,7 +250,7 @@ public class CertificateDetailsController extends BasicController {
 				recertificationInfosDate = signal(recertificationInDays) + translate("recertification.running.late", endDateOfRecertificationWindowFormatted);
 			}
 		} else {
-			recertificationInfosDate = signal(recertificationInDays) + translate("certificate.start.course.recertification", recertificationInfosDate);
+			recertificationInfosDate = signal(recertificationInDays) + translate("certificate.from.recertification", recertificationInfosDate);
 		}
 
 		mainVC.contextPut("recertificationDate", recertificationInfosDate);
