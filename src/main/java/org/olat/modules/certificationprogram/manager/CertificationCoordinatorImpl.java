@@ -277,9 +277,27 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.program_removed, actor);
 	}
 	
-	public void sendReminders(CertificationProgramMailType type, Date referenceDate) {
+	@Override
+	public void sendUpcomingReminders(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
-				.getConfigurations(type, CertificationProgramMailConfigurationStatus.active);
+				.getConfigurations(CertificationProgramMailType.reminder_upcoming, CertificationProgramMailConfigurationStatus.active);
+		
+		for(CertificationProgramMailConfiguration configuration:configurations) {
+			CertificationProgram program = configuration.getCertificationProgram();
+			List<Certificate> toNotify = certificationProgramMailQueries.getUpcomingCertificates(configuration, referenceDate);
+			dbInstance.commit();
+			for(Certificate certificate:toNotify) {
+				Identity recipient = certificate.getIdentity();
+				CreditPointWallet wallet = loadWallet(recipient, program);
+				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+			}
+		}
+	}
+
+	@Override
+	public void sendOverdueReminders(Date referenceDate) {
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
+				.getConfigurations(CertificationProgramMailType.reminder_overdue, CertificationProgramMailConfigurationStatus.active);
 		
 		for(CertificationProgramMailConfiguration configuration:configurations) {
 			CertificationProgram program = configuration.getCertificationProgram();

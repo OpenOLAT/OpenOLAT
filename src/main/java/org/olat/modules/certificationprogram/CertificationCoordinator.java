@@ -50,8 +50,10 @@ public interface CertificationCoordinator {
 	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor);
 	
 	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
+
+	void sendUpcomingReminders(Date referenceDate);
 	
-	void sendReminders(CertificationProgramMailType type, Date referenceDate);
+	void sendOverdueReminders(Date referenceDate);
 	
 	public enum RequestMode {
 		/**

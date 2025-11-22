@@ -27,7 +27,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
-import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -50,12 +49,9 @@ public class RecertificationRemindersJob extends JobWithDB {
 		
 		Date now = new Date();
 		// Send notifications
-		certificationCoordinator.sendReminders(CertificationProgramMailType.reminder_upcoming, now);
+		certificationCoordinator.sendUpcomingReminders(now);
 		dbInstance.commitAndCloseSession();
-		certificationCoordinator.sendReminders(CertificationProgramMailType.reminder_overdue, now);
+		certificationCoordinator.sendOverdueReminders(now);
 		dbInstance.commitAndCloseSession();
 	}
-	
-	
-
 }

@@ -24,7 +24,10 @@ import java.util.List;
 
 import jakarta.persistence.TemporalType;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +41,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CertificationProgramMailQueries {
+	
+	private static final Logger log = Tracing.createLoggerFor(CertificationProgramMailQueries.class);
 
 	@Autowired
 	private DB dbInstance;
 	
 
 	public List<Certificate> getUpcomingCertificates(CertificationProgramMailConfiguration configuration, Date referenceDate) {
+		if(configuration.getTimeUnit() == null) {
+			log.warn("Upcoming certification reminder need a time: {} ({})", configuration.getTitle(), configuration.getKey());
+			return List.of();
+		}
 		Date to = configuration.getTimeUnit().toDate(referenceDate, configuration.getTime());
 		return getUpcomingCertificates(configuration, referenceDate, to);
 	}
@@ -74,7 +83,9 @@ public class CertificationProgramMailQueries {
 	
 
 	public List<Certificate> getOverdueCertificates(CertificationProgramMailConfiguration configuration, Date referenceDate) {
-		Date to = configuration.getTimeUnit().toDate(referenceDate, configuration.getTime());
+		Date to = configuration.getTimeUnit() == null
+				? DateUtils.addYears(referenceDate, 36)// A lot
+				: configuration.getTimeUnit().toDate(referenceDate, configuration.getTime());
 		return getOverdueCertificates(configuration, referenceDate, to);
 	}
 	
