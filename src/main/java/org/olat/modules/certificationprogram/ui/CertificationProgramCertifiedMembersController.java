@@ -243,7 +243,7 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		listenTo(addMemberCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addMemberCtrl.getInitialComponent(),
-				true, translate("renew.confirm.title"), true);
+				true, translate("add.member"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
