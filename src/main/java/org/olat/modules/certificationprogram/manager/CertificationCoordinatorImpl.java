@@ -274,9 +274,43 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		
 		log.info("Certificate revoked {} for {} and program {} by {0}", revokedCertificates, identity, certificationProgram, actor);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
-		sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.program_removed, actor);
+		sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
 	}
 	
+	@Override
+	public void sendExpiredNotifications(Date referenceDate) {
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
+				.getConfigurations(CertificationProgramMailType.certificate_expired, CertificationProgramMailConfigurationStatus.active);
+		
+		for(CertificationProgramMailConfiguration configuration:configurations) {
+			CertificationProgram program = configuration.getCertificationProgram();
+			List<Certificate> toNotify = certificationProgramMailQueries.getExpiredCertificates(configuration, referenceDate);
+			dbInstance.commit();
+			for(Certificate certificate:toNotify) {
+				Identity recipient = certificate.getIdentity();
+				CreditPointWallet wallet = loadWallet(recipient, program);
+				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+			}
+		}
+	}
+	
+	@Override
+	public void sendRemovedNotifications(Date referenceDate) {
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
+				.getConfigurations(CertificationProgramMailType.program_removed, CertificationProgramMailConfigurationStatus.active);
+		
+		for(CertificationProgramMailConfiguration configuration:configurations) {
+			CertificationProgram program = configuration.getCertificationProgram();
+			List<Certificate> toNotify = certificationProgramMailQueries.getRemovedCertificates(configuration, referenceDate);
+			dbInstance.commit();
+			for(Certificate certificate:toNotify) {
+				Identity recipient = certificate.getIdentity();
+				CreditPointWallet wallet = loadWallet(recipient, program);
+				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+			}
+		}
+	}
+
 	@Override
 	public void sendUpcomingReminders(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao

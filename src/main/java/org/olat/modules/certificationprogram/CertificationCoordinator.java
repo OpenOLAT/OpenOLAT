@@ -50,6 +50,22 @@ public interface CertificationCoordinator {
 	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor);
 	
 	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
+	
+	/**
+	 * Send the notifications for certificates which the next recertification date are in the past.
+	 * 
+	 * @param referenceDate The date
+	 */
+	void sendExpiredNotifications(Date referenceDate);
+	
+	/**
+	 * Send the notifications for certificates which the next recertification date are in the past
+	 * and there certification window is null or in the past too. The participant is effectively
+	 * removed from the certification progra.
+	 * 
+	 * @param referenceDate The date
+	 */
+	void sendRemovedNotifications(Date referenceDate);
 
 	void sendUpcomingReminders(Date referenceDate);
 	

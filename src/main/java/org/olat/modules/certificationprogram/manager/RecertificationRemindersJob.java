@@ -49,6 +49,8 @@ public class RecertificationRemindersJob extends JobWithDB {
 		
 		Date now = new Date();
 		// Send notifications
+		certificationCoordinator.sendExpiredNotifications(now);
+		dbInstance.commitAndCloseSession();
 		certificationCoordinator.sendUpcomingReminders(now);
 		dbInstance.commitAndCloseSession();
 		certificationCoordinator.sendOverdueReminders(now);

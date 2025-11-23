@@ -47,7 +47,44 @@ public class CertificationProgramMailQueries {
 	@Autowired
 	private DB dbInstance;
 	
+	public List<Certificate> getExpiredCertificates(CertificationProgramMailConfiguration configuration, Date referenceDate) {
+		String query = """
+				select cer from certificate as cer
+				inner join fetch cer.certificationProgram program
+				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
+				where cer.last=true and config.key=:configKey
+				and cer.nextRecertificationDate<:from
+				and not exists (select log from certificationprogramlog as log
+				  inner join log.mailConfiguration as mailConfig
+				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
+				)
+				""";
 
+		return dbInstance.getCurrentEntityManager().createQuery(query, Certificate.class)
+				.setParameter("configKey", configuration.getKey())
+				.setParameter("from", referenceDate, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	public List<Certificate> getRemovedCertificates(CertificationProgramMailConfiguration configuration, Date referenceDate) {
+		String query = """
+				select cer from certificate as cer
+				inner join fetch cer.certificationProgram program
+				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
+				where cer.last=true and config.key=:configKey
+				and cer.nextRecertificationDate<:from and (cer.recertificationWindowDate is null or cer.recertificationWindowDate<:from)
+				and not exists (select log from certificationprogramlog as log
+				  inner join log.mailConfiguration as mailConfig
+				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
+				)
+				""";
+
+		return dbInstance.getCurrentEntityManager().createQuery(query, Certificate.class)
+				.setParameter("configKey", configuration.getKey())
+				.setParameter("from", referenceDate, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
 	public List<Certificate> getUpcomingCertificates(CertificationProgramMailConfiguration configuration, Date referenceDate) {
 		if(configuration.getTimeUnit() == null) {
 			log.warn("Upcoming certification reminder need a time: {} ({})", configuration.getTitle(), configuration.getKey());

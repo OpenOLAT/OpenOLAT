@@ -88,6 +88,121 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getExpiredCertificates() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(1);
+		program.setValidityTimelapseUnit(DurationType.week);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_expired;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity1, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(expiredCertificate);
+		
+		CertificateInfos certificate2Infos = new CertificateInfos(identity2, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		Certificate certificate2 = certificatesManager.generateCertificate(certificate2Infos, program, null, config);
+		Assert.assertNotNull(certificate2);
+
+		Date now = new Date();
+		expiredCertificate = updateCertificate(expiredCertificate, DateUtils.addDays(now, -1), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificates = certificationProgramMailQueries.getExpiredCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(expiredCertificate)
+			.doesNotContain(certificate2);
+	}
+	
+	@Test
+	public void getRemovedCertificates() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(1);
+		program.setValidityTimelapseUnit(DurationType.week);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_expired;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity1, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(expiredCertificate);
+		
+		CertificateInfos certificate2Infos = new CertificateInfos(identity2, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		Certificate certificate2 = certificatesManager.generateCertificate(certificate2Infos, program, null, config);
+		Assert.assertNotNull(certificate2);
+
+		Date now = new Date();
+		expiredCertificate = updateCertificate(expiredCertificate, DateUtils.addDays(now, -1), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificates = certificationProgramMailQueries.getRemovedCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(expiredCertificate)
+			.doesNotContain(certificate2);
+	}
+	
+	@Test
+	public void getRemovedCertificatesWithRecertificationWindow() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(1);
+		program.setValidityTimelapseUnit(DurationType.week);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(2);
+		program.setRecertificationWindowUnit(DurationType.week);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_expired;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity1, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(expiredCertificate);
+		
+		CertificateInfos certificate2Infos = new CertificateInfos(identity2, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		Certificate certificate2 = certificatesManager.generateCertificate(certificate2Infos, program, null, config);
+		Assert.assertNotNull(certificate2);
+		
+		CertificateInfos certificate3Infos = new CertificateInfos(identity3, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		Certificate removedCertificate = certificatesManager.generateCertificate(certificate3Infos, program, null, config);
+		Assert.assertNotNull(removedCertificate);
+
+		Date now = new Date();
+		expiredCertificate = updateCertificate(expiredCertificate, DateUtils.addDays(now, -3), program);
+		removedCertificate = updateCertificate(removedCertificate, DateUtils.addDays(now, -23), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificates = certificationProgramMailQueries.getRemovedCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(removedCertificate)
+			.doesNotContain(expiredCertificate, certificate2);
+	}
+	
+	@Test
 	public void getUpcomingCertificates() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
 		
