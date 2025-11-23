@@ -374,7 +374,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assert.assertEquals(CertificateStatus.revoked, revokedCertificate.getStatus());
 		Assert.assertFalse(revokedCertificate.isLast());
 		assertCertificateStatus(revokedCertificate, CertificationStatus.REVOKED, CertificationIdentityStatus.REMOVED);
-		assertMessage(program, CertificationProgramMailType.program_removed);
+		assertMessage(program, CertificationProgramMailType.certificate_revoked);
 		
 		// Try again the course and get a second valid certificate
 		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
@@ -463,7 +463,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		certificationCoordinator.revokeRecertification(program, participant, actor);
 		Certificate revokedCertificate = certificatesDao.getLastCertificate(participant, program);
 		Assert.assertNull(revokedCertificate);
-		assertMessage(program, CertificationProgramMailType.program_removed);
+		assertMessage(program, CertificationProgramMailType.certificate_revoked);
 		
 		// Participant does the course again and get a new valid certificate
 		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
@@ -608,9 +608,8 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assert.assertNull(revokedCertificate);
 		revokedCertificate = certificatesDao.getCertificateById(thirdCertificate.getKey());
 		assertCertificateStatus(revokedCertificate, CertificationStatus.REVOKED, CertificationIdentityStatus.REMOVED);
-		assertMessage(program, CertificationProgramMailType.program_removed);
+		assertMessage(program, CertificationProgramMailType.certificate_revoked);
 	}
-	
 	
 
 	/**
@@ -738,6 +737,8 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 			Assert.assertTrue(subject.contains("Your certificate has been renewed"));
 		} else if(type == CertificationProgramMailType.certificate_expired) {
 			Assert.assertTrue(subject.contains("Your certificate has expired"));
+		} else if(type == CertificationProgramMailType.certificate_revoked) {
+			Assert.assertTrue(subject.contains("Your certificate has been revoked"));
 		} else if(type == CertificationProgramMailType.program_removed) {
 			Assert.assertTrue(subject.contains("You have been removed from the program"));
 		} else {
