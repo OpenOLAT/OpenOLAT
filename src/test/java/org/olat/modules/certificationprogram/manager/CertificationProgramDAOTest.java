@@ -311,6 +311,7 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		program.setValidityTimelapseUnit(DurationType.day);
 		// Recertification with a 30 days window
 		program.setRecertificationEnabled(true);
+		program.setRecertificationWindowEnabled(true);
 		program.setRecertificationWindow(30);
 		program.setRecertificationWindowUnit(DurationType.day);
 		program = certificationProgramDao.updateCertificationProgram(program);
