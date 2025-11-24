@@ -34,7 +34,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public record RecertificationInDays(Date nextRecertificationDate, Long days,
 		Date startDateRecertification, Long startDays,
-		Date endDateOfRecertificationWindow, Long windowDays, Boolean windowOpen) {
+		Date endDateOfRecertificationWindow, Long windowDays, Boolean windowOpen,
+		boolean isCourse) {
 	
 	public boolean isBeforeRecertification(Date referenceDate) {
 		return nextRecertificationDate() != null && nextRecertificationDate().compareTo(referenceDate) > 0;
@@ -55,7 +56,7 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days,
 			return false;
 		}
 		if(endDateOfRecertificationWindow() == null) {
-			return days() <= 0;
+			return days() <= 0 && !isCourse;
 		}
 		return windowDays() != null && windowDays().longValue() >= 0l;
 	}
@@ -84,7 +85,7 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days,
 		
 		Long days = DateUtils.countDays(referenceDate, nextRecertificationDate);
 		Long startDays = DateUtils.countDays(referenceDate, startRecertificationDate);
-		return new RecertificationInDays(nextRecertificationDate, days, startRecertificationDate, startDays, null, null, null);
+		return new RecertificationInDays(nextRecertificationDate, days, startRecertificationDate, startDays, null, null, null, true);
 	}
 	
 	public static RecertificationInDays valueOf(Certificate certificate, CertificationProgram program, Date referenceDate) {
@@ -121,6 +122,6 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days,
 		
 		Date nextRecertificationDate = certificate.getNextRecertificationDate();
 		return new RecertificationInDays(nextRecertificationDate, days,
-				nextRecertificationDate, days, endOfWindow, windowDays, windowOpen);
+				nextRecertificationDate, days, endOfWindow, windowDays, windowOpen, false);
 	}
 }
