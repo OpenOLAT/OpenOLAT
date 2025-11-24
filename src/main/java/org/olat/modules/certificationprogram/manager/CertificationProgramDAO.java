@@ -291,7 +291,7 @@ public class CertificationProgramDAO {
 		
 		sb.and().append(" cert.nextRecertificationDate<=:referenceDate");
 
-		if(program.getRecertificationWindow() >= 0) {
+		if(program.isRecertificationWindowEnabled()) {
 			sb.and().append(" cert.recertificationWindowDate>=:referenceDate");
 		}
 		

@@ -267,7 +267,7 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	public List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate) {
 		if(program == null || !program.isRecertificationEnabled()) return List.of();
 		
-		if(program.getCreditPoints() != null && program.getCreditPoints().compareTo(BigDecimal.ZERO) > 0) {
+		if(program.hasCreditPoints()) {
 			return certificationProgramDao.getEligibleForRecertificationsWithCreditPoints(program, referenceDate);
 		}
 		return certificationProgramDao.getEligibleForRecertifications(program, referenceDate);
