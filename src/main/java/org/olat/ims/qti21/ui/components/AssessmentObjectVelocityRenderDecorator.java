@@ -118,6 +118,7 @@ import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FileValue;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.ListValue;
 import uk.ac.ed.ph.jqtiplus.value.NullValue;
 import uk.ac.ed.ph.jqtiplus.value.Orientation;
@@ -911,6 +912,62 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return interaction != null && interaction.getResponseIdentifier() != null && avc.isScorePerAnswers();
 	}
 	
+	public String answerCorrectnessClass(Identifier responseIdentifier) {
+		if (!avc.isPageMode()) {
+			return "";
+		}
+		
+		if (!itemSessionState.isResponded()) {
+			return "";
+		}
+		
+		if (renderer.isPageModeSolutionMode()) {
+			return "";
+		}
+
+		Value responseInput = getResponseValue(responseIdentifier);
+		boolean inputMatchesSolution = false;
+
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(responseIdentifier);
+		if (responseDeclaration != null) {
+			if (responseDeclaration.getMapping() != null) {
+				List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
+				for (MapEntry mapEntry : mapEntries) {
+					Value referenceValue = mapEntry.getMapKey();
+					if (valuesMatch(referenceValue, responseInput, mapEntry.getCaseSensitive())) {
+						inputMatchesSolution = true;
+						break;
+					}
+				}
+			} else if (responseDeclaration.getCorrectResponse() != null) {
+				Value referenceValue = responseDeclaration.getCorrectResponse().evaluate();
+				inputMatchesSolution = valuesMatch(referenceValue, responseInput, false);
+			}
+		}
+
+		if (inputMatchesSolution) {
+			return "o_correct";
+		}
+		return "o_incorrect";
+	}
+
+	private boolean valuesMatch(Value referenceValue, Value responseInput, boolean caseSensitive) {
+		if (referenceValue instanceof StringValue referenceString && responseInput instanceof StringValue referenceInput) {
+			if (caseSensitive) {
+				return referenceString.equals(referenceInput);
+			} else {
+				return referenceString.stringValue().equalsIgnoreCase(referenceInput.stringValue());
+			}
+		}
+		if (referenceValue instanceof FloatValue referenceFloat && responseInput instanceof FloatValue responseFloat) {
+			return referenceFloat.equals(responseFloat);
+		}
+		if (referenceValue instanceof StringValue referenceString && responseInput instanceof NullValue) {
+			return !StringHelper.containsNonWhitespace(referenceString.stringValue());
+		}
+		return false;
+	}
+
 	/**
 	 * 
 	 * @param interaction The interaction

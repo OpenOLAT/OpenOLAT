@@ -4,21 +4,7 @@
 #set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
 #set($responseInput = $r.getResponseValue($interaction.responseIdentifier))
 #set($responseInputString = $r.toString($responseInput))
-#set($correctSolution = $solutions[${responseIdentifier}])
-#set($escapedCorrectSolution = $r.escapeHtml($correctSolution))
-#set($inputMatchesSolution = $escapedCorrectSolution.equalsIgnoreCase($r.escapeHtml($responseInputString)))
-#set($alternativesString = $r.renderTextEntryAlternatives($interaction).toLowerCase())
-#set($escapedAlternativesString = $r.escapeHtml($alternativesString))
-#set($inputMatchesAlternatives = $escapedAlternativesString.contains($r.escapeHtml($responseInputString.toLowerCase())))
-#set($answerCorrectnessClass = "")
-#if($isPageMode && $isResponded && !$isPageModeSolution)
-	#if($inputMatchesSolution || $inputMatchesAlternatives)
-		#set($answerCorrectnessClass = "o_correct")
-	#else
-		#set($answerCorrectnessClass = "o_incorrect")
-	#end
-
-#end
+#set($answerCorrectnessClass = $r.answerCorrectnessClass($interaction.responseIdentifier))
 #if($isPageModeSolution)
 	#set($isBadResponse = false)
 #end
