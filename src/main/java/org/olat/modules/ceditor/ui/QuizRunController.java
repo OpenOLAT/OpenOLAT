@@ -64,6 +64,7 @@ import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -360,6 +361,16 @@ public class QuizRunController extends BasicController implements PageRunElement
 		URI assessmentItemUri = storageInfo.questionFile().toURI();
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(assessmentItemUri,
 				storageInfo.questionDirectory());
+		if (resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null ||
+				resolvedAssessmentItem.getItemLookup().extractIfSuccessful() == null) {
+			showError(translate("error.header") + ": " + assessmentItemUri);
+			return;
+		}
+
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+		if (!assessmentItem.getIdentifier().equals(quizQuestion.getId())) {
+			assessmentItem.setIdentifier(quizQuestion.getId());
+		}
 
 		QTI21DeliveryOptions deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		deliveryOptions.setPageMode(true);
