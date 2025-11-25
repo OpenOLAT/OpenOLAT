@@ -42,6 +42,7 @@ import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
 import org.olat.modules.certificationprogram.CertificationRoles;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
+import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
@@ -251,6 +252,16 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 		}).toList();
 				
 		return infos;
+	}
+	
+	@Override
+	public long countCandidates(CertificationProgramMemberSearchParameters searchParams) {
+		return certificationProgramToCurriculumElementDao.countCandidate(searchParams);
+	}
+
+	@Override
+	public List<CertificationProgramCandidate> getCandidates(CertificationProgramMemberSearchParameters searchParams) {
+		return certificationProgramToCurriculumElementDao.getCandidates(searchParams);
 	}
 
 	@Override

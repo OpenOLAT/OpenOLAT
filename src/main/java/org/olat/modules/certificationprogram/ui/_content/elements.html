@@ -1,0 +1,8 @@
+<ul class="o_dropdown list-unstyled">
+#foreach($element in $elements)
+	<li class="o_certification_element"><span><i class="o_icon o_icon-fw o_icon_curriculum_implementations"> </i> $r.escapeHtml($element.displayName)
+	#if($r.isNotEmpty($element.identifier))
+		<small>&middot; $r.escapeHtml($element.identifier)</small>
+	#end</span></li>
+#end
+</ul>

@@ -33,6 +33,7 @@ import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramRef;
 import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
+import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
 import org.olat.modules.certificationprogram.model.CertificationProgramToCurriculumElementImpl;
@@ -162,6 +163,43 @@ public class CertificationProgramToCurriculumElementDAO {
 				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
 				.setParameter("role", GroupRoles.participant.name())
 				.getResultList();
+	}
+	
+	public long countCandidate(CertificationProgramMemberSearchParameters searchParams) {
+		QueryBuilder query = new QueryBuilder();
+		query.append("select count(distinct participant.identity.key) from curriculumelement as el")
+			 .append(" inner join certificationprogramtoelement as rel on (el.key=rel.curriculumElement.key)")
+		     .append(" inner join el.group as bGroup")
+		     .append(" inner join bGroup.members as participant");
+		appendQueryCandidates(query);
+		List<Long> count = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Long.class)
+				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null
+				? 0l
+				: count.get(0).longValue();
+	}
+	
+	public List<CertificationProgramCandidate> getCandidates(CertificationProgramMemberSearchParameters searchParams) {
+		QueryBuilder query = new QueryBuilder();
+		query.append("select new CertificationProgramCandidate(ident, el) from curriculumelement as el")
+		     .append(" inner join certificationprogramtoelement as rel on (el.key=rel.curriculumElement.key)")
+	         .append(" inner join el.group as bGroup")
+	         .append(" inner join bGroup.members as participant")
+	         .append(" inner join participant.identity as ident")
+	         .append(" inner join fetch ident.user as identUser");
+		appendQueryCandidates(query);
+		return dbInstance.getCurrentEntityManager().createQuery(query.toString(), CertificationProgramCandidate.class)
+				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
+				.getResultList();
+	}
+	
+	private void appendQueryCandidates(QueryBuilder query) {
+		query.where()
+			.append(" rel.certificationProgram.key=:programKey and participant.role").in(GroupRoles.participant)
+			.append(" and not exists (select cer.key from certificate as cer")
+			.append("  where cer.certificationProgram.key=:programKey and cer.identity.key=participant.identity.key")
+			.append(" )");
 	}
 	
 	public long countCertificates(CertificationProgramMemberSearchParameters searchParams, Date referenceDate) {

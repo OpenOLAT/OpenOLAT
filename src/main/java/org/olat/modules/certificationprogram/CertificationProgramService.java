@@ -28,6 +28,7 @@ import org.olat.core.id.Organisation;
 import org.olat.course.certificate.Certificate;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
+import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
@@ -87,6 +88,11 @@ public interface CertificationProgramService {
 	long countMembers(CertificationProgramMemberSearchParameters searchParams, Date referenceDate);
 	
 	List<CertificationProgramMemberWithInfos> getMembers(CertificationProgramMemberSearchParameters searchParams, Date referenceDate);
+	
+	long countCandidates(CertificationProgramMemberSearchParameters searchParams);
+	
+	List<CertificationProgramCandidate> getCandidates(CertificationProgramMemberSearchParameters searchParams);
+	
 	
 	List<Certificate> getCertificates(IdentityRef identity, CertificationProgram certificationProgram);
 	

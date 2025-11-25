@@ -77,6 +77,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_calendar_sync { @include o-add-icon('refresh');}
 .o_icon_cancel { @include o-add-icon('circle-stop', false);}
 .o_icon_cancelled { @include o-add-icon('ban');}
+.o_icon_candidate { @include o-add-icon('hourglass-half');}
 .o_icon_caret { @include o-add-icon('caret-down');}
 .o_icon_caret_right { @include o-add-icon('caret-right');}
 .o_icon_catalog { @include o-add-icon('sitemap');}

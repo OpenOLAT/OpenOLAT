@@ -52,8 +52,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificationProgramMembersOverviewController extends BasicController implements Activateable2 {
 	
-	private static final String CMD_CERTIFIED = "Certified";
-	private static final String CMD_REMOVED = "Removed";
+	private static final String CMD_ACTIVE = "Active";
+	private static final String CMD_ALUMNI = "Alumni";
+	private static final String CMD_CANDIDATES = "Candidates";
 	
 	private final ScopeSelection scopesEl;
 	private final VelocityContainer mainVC;
@@ -62,6 +63,7 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	private CertificationProgram certificationProgram;
 	private final CertificationProgramSecurityCallback secCallback;
 	
+	private CertificationProgramCandidatesController candidatesCtrl; 
 	private CertificationProgramRemovedMembersController removedMembersCtrl;
 	private CertificationProgramCertifiedMembersController certifiedMembersCtrl;
 	
@@ -98,11 +100,16 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 		searchParams.setType(Type.CERTIFIED);
 		long numOfCertified = certificationProgramService.countMembers(searchParams, referenceDate);
 		String certifiedHint = getScopeHint(numOfCertified);
-		scopes.add(ScopeFactory.createScope(CMD_CERTIFIED, translate("members.scope.certified"), certifiedHint, "o_icon o_icon_certificate"));
+		scopes.add(ScopeFactory.createScope(CMD_ACTIVE, translate("members.scope.active"), certifiedHint, "o_icon o_icon_activate"));
 		searchParams.setType(Type.REMOVED);
 		long numOfRemoved = certificationProgramService.countMembers(searchParams, referenceDate);
 		String removedHint = getScopeHint(numOfRemoved);
-		scopes.add(ScopeFactory.createScope(CMD_REMOVED, translate("members.scope.removed"), removedHint, "o_icon o_icon_qual_exec_future"));
+		scopes.add(ScopeFactory.createScope(CMD_ALUMNI, translate("members.scope.alumni"), removedHint, "o_icon o_icon_qual_exec_future"));
+		long numOfCandidates = certificationProgramService.countCandidates(searchParams);
+		String candidatesHint = getScopeHint(numOfCandidates);
+		scopes.add(ScopeFactory.createScope(CMD_CANDIDATES, translate("members.scope.candidates"), candidatesHint, "o_icon o_icon_candidate"));
+		
+		
 		return scopes;
 	}
 
@@ -124,10 +131,12 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(scopesEl == source) {
 			if (event instanceof ScopeEvent se) {
-				if(CMD_CERTIFIED.equals(se.getSelectedKey())) {
+				if(CMD_ACTIVE.equals(se.getSelectedKey())) {
 					doOpenCertifiedMembersList(ureq);
-				} else if(CMD_REMOVED.equals(se.getSelectedKey())) {
+				} else if(CMD_ALUMNI.equals(se.getSelectedKey())) {
 					doOpenRemovedMembersList(ureq);
+				} else if(CMD_CANDIDATES.equals(se.getSelectedKey())) {
+					doOpenCandiatesList(ureq);
 				}
 			}
 		}
@@ -157,5 +166,12 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 		listenTo(removedMembersCtrl);
 		mainVC.put("component", removedMembersCtrl.getInitialComponent());
 	}
-
+	
+	private void doOpenCandiatesList(UserRequest ureq) {
+		removeAsListenerAndDispose(candidatesCtrl);
+		
+		candidatesCtrl = new CertificationProgramCandidatesController(ureq, getWindowControl(), certificationProgram);
+		listenTo(candidatesCtrl);
+		mainVC.put("component", candidatesCtrl.getInitialComponent());
+	}
 }
