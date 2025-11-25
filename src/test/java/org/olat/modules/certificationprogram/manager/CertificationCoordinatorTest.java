@@ -272,15 +272,15 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		currentCertificate = certificatesDao.updateCertificate(currentCertificate);
 		dbInstance.commitAndCloseSession();
 		
-		boolean recertNok = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
-		Assert.assertFalse(recertNok);
+		boolean recertOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
+		Assert.assertTrue(recertOk);
 		
 		List<Certificate> recertificates = certificationProgramService.getCertificates(participant, program);
 		Assertions.assertThat(recertificates)
-			.hasSize(1);
+			.hasSize(2);
 		
 		Certificate afterRecertificationTryCertificate = certificatesDao.getLastCertificate(participant, program);
-		Assert.assertEquals(currentCertificate, afterRecertificationTryCertificate);
+		Assert.assertNotEquals(currentCertificate, afterRecertificationTryCertificate);
 	}
 	
 	/**
@@ -732,6 +732,10 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Certificate expiredCertificate = certificatesDao.getLastCertificate(participant, program);
 		Assert.assertNotNull(expiredCertificate);
 		assertCertificateStatus(expiredCertificate, CertificationStatus.EXPIRED, CertificationIdentityStatus.REMOVED);
+		
+		boolean courseAgainOk = certificationCoordinator.processCertificationRequest(participant, program, RequestMode.COURSE, new Date(), participant);
+		Assert.assertTrue(courseAgainOk);
+		waitMessageAreConsumed();// Wait certificate is generated
 	}
 	
 

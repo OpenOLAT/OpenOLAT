@@ -210,6 +210,9 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			allowed = true;
 		} else if(requestMode == RequestMode.COACH && certificationProgram.isRecertificationEnabled()) {
 			allowed = true;
+		} else if (requestMode == RequestMode.COURSE) {
+			// If a participant does the course again, there are no dates restrictions
+			allowed = true;
 		} else if(certificationProgram.isRecertificationEnabled()) {
 			Date nextRecertificationDate = certificate.getNextRecertificationDate();
 			if(nextRecertificationDate == null) {
@@ -227,12 +230,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				}
 			}
 			
-			allowed = (requestMode == RequestMode.COURSE
-					&& nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) >= 0)
-				|| ((nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) <= 0
-					&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0)));
-		} else if (requestMode == RequestMode.COURSE) {
-			allowed = true;
+			allowed = (nextRecertificationDate != null && nextRecertificationDate.compareTo(referenceDate) <= 0
+					&& (recertificationWindowDate == null || recertificationWindowDate.compareTo(referenceDate) >= 0));
 		} else {
 			allowed = false;
 		}
