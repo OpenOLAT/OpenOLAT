@@ -83,7 +83,8 @@ public class CorrectionIdentityRepositoryEntryPrintController extends Repository
 	}
 	
 	private void addTestAndRunId(FormLayoutContainer itemsCont) {
-		String courseAndNodeid = String.valueOf(entry.getKey()) + " / " + String.valueOf(assessmentTestSession.getKey());
+		String courseAndNodeid = String.valueOf(assessmentTestSession.getTestEntry().getKey()) + " / "
+				+ String.valueOf(assessmentTestSession.getKey());
 		uifactory.addStaticTextElement("print.test.and.run.id", courseAndNodeid, itemsCont);
 	}
 

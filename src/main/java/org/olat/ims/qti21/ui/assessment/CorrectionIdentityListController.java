@@ -419,7 +419,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 		boolean assessmentEntryDone = model.isAssessmentEntryDone(assessedIdentity);
 		String title = anonymous ? translate("participant.name", row.getUser()) : userManager.getUserDisplayName(row.getIdentity());
 		identityItemListCtrl = new CorrectionIdentityAssessmentItemListController(ureq, getWindowControl(), stackPanel,
-				model, assessedIdentity, title, assessmentEntryDone);
+				model, assessedIdentity, title, assessmentEntryDone, anonymous);
 		listenTo(identityItemListCtrl);
 		
 		String crumb;
