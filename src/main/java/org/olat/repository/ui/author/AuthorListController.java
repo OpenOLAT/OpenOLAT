@@ -2482,7 +2482,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
 			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
 			boolean isCourse = "CourseModule".equals(entry.getOlatResource().getResourceableTypeName());
-			boolean canCreateCourseFromTemplate = isCourse && RepositoryEntryRuntimeType.template.equals(entry.getRuntimeType());
+			boolean canCreateCourseFromTemplate = isCourse && RepositoryEntryRuntimeType.template.equals(entry.getRuntimeType()) && (isOwner || entry.getCanCopy()) && !copyManaged;
 			
 			boolean canConvertLearningPath = false;
 			boolean isLearningPathCourse = false;
@@ -2508,7 +2508,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 			
 			if(canCopy || canDownload || canCreateCourseFromTemplate) {
-				links.add("-");
+				addSeparator(links);
 				if (canCopy) {
 					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", "/Infos/0", links);
 					if (isLearningPathCourse && canCopy) {
@@ -2533,12 +2533,12 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(isOwner) {
 				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 				if(canClose || !deleteManaged) {
-					links.add("-");
+					addSeparator(links);
 				}
 
 				if (oaiPmhModule.isEnabled()) {
 					addLink("details.index.metadata", "indexMetadata", "o_icon o_icon-fw o_icon_share", null, links);
-					links.add("-");
+					addSeparator(links);
 				}
 				
 				boolean closed = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed;
@@ -2567,6 +2567,16 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 			mainVC.put(name, link);
 			links.add(name);
+		}
+		
+		private void addSeparator(List<String> links) {
+			if (links.isEmpty()) {
+				return;
+			}
+			if ("-".equals(links.get(links.size() - 1))) {
+				return;
+			}
+			links.add("-");
 		}
 
 		@Override
