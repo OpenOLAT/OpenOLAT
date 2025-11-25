@@ -3012,6 +3012,7 @@ create table o_qual_report_access (
   q_online bool default false,
   q_email_trigger varchar(64),
   q_qualitative_feedback_email bool default false not null,
+  q_todo_access varchar(64),
   fk_data_collection bigint,
   fk_generator bigint,
   fk_group bigint,

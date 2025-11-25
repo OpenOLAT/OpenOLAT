@@ -79,6 +79,9 @@ public class QualityReportAccessImpl implements QualityReportAccess, Persistable
 	private QualityReportAccess.EmailTrigger emailTrigger;
 	@Column(name="q_qualitative_feedback_email", nullable=false, insertable=true, updatable=true)
 	private boolean qualitativeFeedbackEmail;
+	@Enumerated(EnumType.STRING)
+	@Column(name="q_todo_access", nullable=true, insertable=true, updatable=true)
+	private QualityReportAccess.ToDoAccess toDoAccess;
 	
 	@ManyToOne(targetEntity=GroupImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_group", nullable=true, insertable=true, updatable=true)
@@ -165,6 +168,16 @@ public class QualityReportAccessImpl implements QualityReportAccess, Persistable
 	@Override
 	public void setQualitativeFeedbackEmail(boolean qualitativeFeedbackEmail) {
 		this.qualitativeFeedbackEmail = qualitativeFeedbackEmail;
+	}
+
+	@Override
+	public QualityReportAccess.ToDoAccess getToDoAccess() {
+		return toDoAccess;
+	}
+
+	@Override
+	public void setToDoAccess(QualityReportAccess.ToDoAccess toDoAccess) {
+		this.toDoAccess = toDoAccess;
 	}
 
 	@Override

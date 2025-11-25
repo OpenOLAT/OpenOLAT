@@ -27,9 +27,14 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityModule;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
+import org.olat.modules.quality.QualityReportAccessReference;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 
 /**
@@ -108,11 +113,20 @@ public class QualitySecurityCallbackFactory {
 		return FORBIDDEN_SECURITY_CALLBACK;
 	}
 	
-	public static DataCollectionSecurityCallback createDataCollectionSecurityCallback(Roles roles,
-			QualityDataCollectionLight dataCollection, Collection<? extends OrganisationRef> organisationRefs) {
+	public static DataCollectionSecurityCallback createDataCollectionSecurityCallback(QualityModule qualityModule,
+			QualityService qualityService, Identity identity, Roles roles, QualityDataCollectionLight dataCollection,
+			Collection<? extends OrganisationRef> organisationRefs) {
 		if (isQualityManager(roles, organisationRefs)) {
 			return new DataCollectionStatusSecurityCallback(dataCollection.getStatus());
 		}
+		
+		if (qualityModule.isToDoEnabled()) {
+			ToDoAccess toDoAccess = qualityService.getToDoAccess(QualityReportAccessReference.of(dataCollection), identity);
+			if (ToDoAccess.noAccess != toDoAccess) {
+				return new DataCollectionToDoSecurityCallback(toDoAccess);
+			}
+		}
+		
 		return DATA_COLLECTION_READ_ONLY_SECURITY_CALLBACK;
 	}
 	

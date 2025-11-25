@@ -64,6 +64,7 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 		switch(COLS[col]) {
 			case name: return row.getName();
 			case online: return row.getOnlineEl();
+			case toDoAccess: return row.getToDoAccessEl();
 			case emailTrigger: return row.getEmailTriggerEl();
 			case qualitativeFeedback: return row.getQualitativeFeedbackEl();
 			default: return null;
@@ -73,6 +74,7 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 	enum ReportAccessCols implements FlexiColumnDef {
 		name("report.access.name"),
 		online("report.access.onlineaccess"),
+		toDoAccess("report.access.todo"),
 		emailTrigger("report.access.email.trigger.done"),
 		qualitativeFeedback("report.access.email.trigger.qualitative.feedback");
 		

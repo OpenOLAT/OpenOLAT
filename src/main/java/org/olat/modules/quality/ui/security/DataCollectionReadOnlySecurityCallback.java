@@ -20,7 +20,6 @@
 package org.olat.modules.quality.ui.security;
 
 import org.olat.modules.quality.QualityReminder;
-import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 
 /**
@@ -102,6 +101,11 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 	}
 
 	@Override
+	public boolean canEditReportToDoTaskRight() {
+		return false;
+	}
+
+	@Override
 	public boolean canEditReportAccessMembers() {
 		return false;
 	}
@@ -113,7 +117,12 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 
 	@Override
 	public boolean canViewToDos() {
-		return true;
+		return false;
+	}
+
+	@Override
+	public boolean canViewAllToDos() {
+		return false;
 	}
 
 	@Override
@@ -128,7 +137,7 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 
 	@Override
 	public boolean canEdit(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
-		return ToDoStatus.deleted != toDoTask.getStatus() && (assignee || delegatee);
+		return false;
 	}
 	
 	@Override

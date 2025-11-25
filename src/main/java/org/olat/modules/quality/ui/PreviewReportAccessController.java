@@ -54,6 +54,11 @@ public class PreviewReportAccessController extends ReportAccessController {
 	}
 
 	@Override
+	protected boolean canEditReportToDoTaskRight() {
+		return false;
+	}
+
+	@Override
 	protected boolean canEditReportMembers() {
 		return false;
 	}

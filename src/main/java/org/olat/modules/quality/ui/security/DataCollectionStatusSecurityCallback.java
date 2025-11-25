@@ -115,6 +115,11 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 	public boolean canEditReportQualitativeFeedback() {
 		return true;
 	}
+
+	@Override
+	public boolean canEditReportToDoTaskRight() {
+		return true;
+	}
 	
 	@Override
 	public boolean canEditReportAccessMembers() {
@@ -140,6 +145,11 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 
 	@Override
 	public boolean canViewToDos() {
+		return true;
+	}
+
+	@Override
+	public boolean canViewAllToDos() {
 		return true;
 	}
 

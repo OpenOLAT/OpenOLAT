@@ -58,10 +58,14 @@ public interface DataCollectionSecurityCallback extends ToDoTaskSecurityCallback
 
 	public boolean canEditReportQualitativeFeedback();
 	
+	public boolean canEditReportToDoTaskRight();
+	
 	public boolean canEditReportAccessMembers();
 
 	public boolean canViewReport();
 	
 	public boolean canViewToDos();
+	
+	public boolean canViewAllToDos();
 
 }

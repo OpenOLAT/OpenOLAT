@@ -37,6 +37,8 @@ public interface GeneratorSecurityCallback {
 
 	public boolean canEditReportQualitativeFeedback();
 	
+	public boolean canEditReportToDoTaskRight();
+	
 	public boolean canEditReportAccessMembers();
 
 	public boolean canActivateGenerators();

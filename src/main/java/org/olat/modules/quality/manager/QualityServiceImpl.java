@@ -100,6 +100,7 @@ import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
@@ -929,6 +930,29 @@ public class QualityServiceImpl
 			}
 		}
 		reportAccessDao.deleteReportAccesses(reference);
+	}
+	
+	@Override
+	public ToDoAccess getToDoAccess(QualityReportAccessReference reference, Identity identity) {
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(reference);
+		List<QualityReportAccess> reportAccesses = loadReportAccesses(searchParams);
+		
+		ToDoAccess access = ToDoAccess.noAccess;
+		for (QualityReportAccess reportAccess : reportAccesses) {
+			ToDoAccess currentAccess = reportAccess.getToDoAccess();
+			if (ToDoAccess.noAccess != currentAccess) {
+				// Not very efficient, but it works
+				List<Identity> identities = reportAccessDao.loadRecipients(reportAccess);
+				if (identities.contains(identity)) {
+					if (currentAccess.ordinal() > access.ordinal()) {
+						access = currentAccess;
+					}
+				}
+			}
+		}
+		
+		return access;
 	}
 
 	@Override

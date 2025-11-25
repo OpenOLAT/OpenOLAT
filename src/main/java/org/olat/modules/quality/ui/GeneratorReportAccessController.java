@@ -64,6 +64,11 @@ public class GeneratorReportAccessController extends ReportAccessController {
 	}
 
 	@Override
+	protected boolean canEditReportToDoTaskRight() {
+		return secCallback.canEditReportToDoTaskRight();
+	}
+
+	@Override
 	protected boolean canEditReportMembers() {
 		return secCallback.canEditReportAccessMembers();
 	}

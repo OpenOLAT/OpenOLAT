@@ -134,3 +134,7 @@ create index idx_rel_cpo_to_org_idx on o_cp_system_to_organisation (fk_organisat
 -- Catalog
 alter table o_repositoryentry add catalog_sort_priority int8 null;
 alter table o_cur_curriculum_element add c_catalog_sort_priority int8 null;
+
+
+-- Quality management
+alter table o_qual_report_access add q_todo_access varchar(64);

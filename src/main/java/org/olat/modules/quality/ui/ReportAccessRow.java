@@ -37,6 +37,7 @@ public class ReportAccessRow {
 	private MultipleSelectionElement onlineEl;
 	private SingleSelection emailTriggerEl;
 	private MultipleSelectionElement qualitativeFeedbackEl;
+	private SingleSelection toDoAccessEl;
 
 	public ReportAccessRow(String name, Type type, String role) {
 		this.name = name;
@@ -78,6 +79,14 @@ public class ReportAccessRow {
 
 	public void setQualitativeFeedbackEl(MultipleSelectionElement qualitativeFeedbackEl) {
 		this.qualitativeFeedbackEl = qualitativeFeedbackEl;
+	}
+
+	public SingleSelection getToDoAccessEl() {
+		return toDoAccessEl;
+	}
+
+	public void setToDoAccessEl(SingleSelection toDoAccessEl) {
+		this.toDoAccessEl = toDoAccessEl;
 	}
 
 }

@@ -64,8 +64,10 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
@@ -98,6 +100,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	private FlexiTableElement accessTableEl;
 	private final String[] emailTriggerKeys;
 	private final String[] emailTriggerValues;
+	private final String[] toDoAccessKeys;
+	private final String[] toDoAccessValues;
 	private FormLayoutContainer membersLayout;
 	private ReportMemberTableModel membersTableModel;
 	private FlexiTableElement membersTableEl;
@@ -115,6 +119,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private List<QualityReportAccess> reportAccesses;
 	
+	@Autowired
+	private QualityModule qualityModule;
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -156,6 +162,9 @@ public abstract class ReportAccessController extends FormBasicController {
 		SelectionValues emailTriggerKV = getEmailTriggerKV();
 		this.emailTriggerKeys = emailTriggerKV.keys();
 		this.emailTriggerValues = emailTriggerKV.values();
+		SelectionValues toDoAccessSV = getToDoAccessSV();
+		this.toDoAccessKeys = toDoAccessSV.keys();
+		this.toDoAccessValues = toDoAccessSV.values();
 	}
 	
 	protected abstract boolean canEditReportAccessOnline();
@@ -163,6 +172,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	protected abstract boolean canEditReportAccessEmail();
 	
 	protected abstract boolean canEditReportQualitativeFeedback();
+	
+	protected abstract boolean canEditReportToDoTaskRight();
 	
 	protected abstract boolean canEditReportMembers();
 
@@ -177,6 +188,14 @@ public abstract class ReportAccessController extends FormBasicController {
 		}
 		return kv;
 	}
+	
+	private SelectionValues getToDoAccessSV() {
+		SelectionValues sv = new SelectionValues();
+		Arrays.asList(QualityReportAccess.ToDoAccess.values()).forEach(access -> 
+				sv.add(entry(access.name(), QualityUIFactory.translate(getTranslator(), access)))
+			);
+		return sv;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -188,6 +207,9 @@ public abstract class ReportAccessController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.online));
+		if (qualityModule.isToDoEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.toDoAccess));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.emailTrigger));
 		if (formWithQualitativeFeedback) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.qualitativeFeedback));
@@ -256,6 +278,10 @@ public abstract class ReportAccessController extends FormBasicController {
 			MultipleSelectionElement qualitativeFeedbackEl = createQualitativeFeedbackCheckbox(row, access);
 			row.setQualitativeFeedbackEl(qualitativeFeedbackEl);
 		}
+		if (qualityModule.isToDoEnabled()) {
+			SingleSelection toDoAccessEl = createToDoAccessEl(row, access);
+			row.setToDoAccessEl(toDoAccessEl);
+		}
 		return row;
 	}
 
@@ -293,6 +319,19 @@ public abstract class ReportAccessController extends FormBasicController {
 		onlineEl.setEnabled(canEditReportQualitativeFeedback());
 		onlineEl.setVisible(row.getOnlineEl().isAtLeastSelected(1));
 		return onlineEl;
+	}
+	
+	private SingleSelection createToDoAccessEl(ReportAccessRow row, QualityReportAccess access) {
+		String name =  "todo-" + CodeHelper.getRAMUniqueID();
+		SingleSelection toDoTaskRightEl = uifactory.addDropdownSingleselect(name, null, flc, toDoAccessKeys, toDoAccessValues);
+		toDoTaskRightEl.setUserObject(row);
+		toDoTaskRightEl.addActionListener(FormEvent.ONCHANGE);
+		String key = access != null? access.getToDoAccess().name(): null;
+		if (Arrays.asList(toDoAccessKeys).contains(key)) {
+			toDoTaskRightEl.select(key, true);
+		}
+		toDoTaskRightEl.setEnabled(canEditReportToDoTaskRight());
+		return toDoTaskRightEl;
 	}
 	
 	private void initMembersTable(UserRequest ureq) {
@@ -358,8 +397,12 @@ public abstract class ReportAccessController extends FormBasicController {
 			} else if (mse.getName().startsWith("qf")) {
 				doEnableQualitativeFeedbackEmail(mse);
 			}
-		} else if (source instanceof SingleSelection emailTriggerEl) {
-			doSetEmailTrigger(emailTriggerEl);
+		} else if (source instanceof SingleSelection singleSelection) {
+			if (singleSelection.getName().startsWith("email")) {
+				doSetEmailTrigger(singleSelection);
+			} else if (singleSelection.getName().startsWith("todo")) {
+				doSetToDoTaskRight(singleSelection);
+			}
 		} else if (addMemberButton == source) {
 			doSearchMember(ureq);
 		} else if (removeMemberButton == source) {
@@ -438,6 +481,15 @@ public abstract class ReportAccessController extends FormBasicController {
 		ReportAccessRow row = (ReportAccessRow) el.getUserObject();
 		QualityReportAccess reportAccess = getOrCreateReportAccess(row);
 		reportAccess.setQualitativeFeedbackEmail(enable);
+		updateReportAccess(reportAccess);
+	}
+
+	private void doSetToDoTaskRight(SingleSelection toDoTaskRightEl) {
+		String selectedKey = toDoTaskRightEl.isOneSelected()? toDoTaskRightEl.getSelectedKey(): null;
+		ToDoAccess toDoAccess = QualityReportAccess.ToDoAccess.valueOf(selectedKey);
+		ReportAccessRow row = (ReportAccessRow) toDoTaskRightEl.getUserObject();
+		QualityReportAccess reportAccess = getOrCreateReportAccess(row);
+		reportAccess.setToDoAccess(toDoAccess);
 		updateReportAccess(reportAccess);
 	}
 

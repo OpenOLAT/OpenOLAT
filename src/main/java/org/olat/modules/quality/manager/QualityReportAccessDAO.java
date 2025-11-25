@@ -37,6 +37,7 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
@@ -61,7 +62,7 @@ class QualityReportAccessDAO {
 	private DB dbInstance;
 	
 	QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type, String role) {
-		return create(reference, type, role, false, EmailTrigger.never, false);
+		return create(reference, type, role, false, EmailTrigger.never, false,  ToDoAccess.noAccess);
 	}
 
 	QualityReportAccess copy(QualityReportAccessReference reference, QualityReportAccess reportAccess) {
@@ -71,17 +72,20 @@ class QualityReportAccessDAO {
 				reportAccess.getRole(),
 				reportAccess.isOnline(),
 				reportAccess.getEmailTrigger(),
-				reportAccess.isQualitativeFeedbackEmail());
+				reportAccess.isQualitativeFeedbackEmail(),
+				reportAccess.getToDoAccess());
 	}
 	
 	private QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type,
-			String role, boolean online, EmailTrigger emailTrigger, boolean qualitativeFeedbackEmail) {
+			String role, boolean online, EmailTrigger emailTrigger, boolean qualitativeFeedbackEmail,
+			ToDoAccess toDoAccess) {
 		QualityReportAccessImpl reportAccess = new QualityReportAccessImpl();
 		reportAccess.setCreationDate(new Date());
 		reportAccess.setLastModified(reportAccess.getCreationDate());
 		reportAccess.setOnline(online);
 		reportAccess.setEmailTrigger(emailTrigger);
 		reportAccess.setQualitativeFeedbackEmail(qualitativeFeedbackEmail);
+		reportAccess.setToDoAccess(toDoAccess);
 		reportAccess.setType(type);
 		reportAccess.setRole(role);
 		if (reference.isDataCollectionRef()) {

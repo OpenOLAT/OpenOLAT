@@ -130,8 +130,8 @@ public class DataCollectionController extends BasicController implements TooledC
 		stackPanel.addListener(this);
 		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionRef);
 		organisations = qualityService.loadDataCollectionOrganisations(dataCollectionRef);
-		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(
-				ureq.getUserSession().getRoles(), dataCollection, organisations);
+		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(qualityModule, qualityService,
+				getIdentity(), ureq.getUserSession().getRoles(), dataCollection, organisations);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		if (secCallback.canViewDataCollectionConfigurations()) {
@@ -548,8 +548,8 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 	
 	private void afterDataCollectionUpdated(UserRequest ureq) {
-		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(
-				ureq.getUserSession().getRoles(), dataCollection, organisations);
+		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(qualityModule, qualityService,
+				getIdentity(), ureq.getUserSession().getRoles(), dataCollection, organisations);
 		initTools();
 		if (configurationCtrl != null) {
 			configurationCtrl.onChanged(dataCollection, secCallback);

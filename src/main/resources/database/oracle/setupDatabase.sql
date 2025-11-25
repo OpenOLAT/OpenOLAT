@@ -3044,6 +3044,7 @@ create table o_qual_report_access (
   q_online number default 0,
   q_email_trigger varchar2(64),
   q_qualitative_feedback_email number default 0 not null,
+  q_todo_access varchar(64),
   fk_data_collection number(20),
   fk_generator number(20),
   fk_group number(20),

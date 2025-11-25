@@ -123,6 +123,9 @@ public class DataCollectionToDoListController extends ToDoTaskListController {
 	protected ToDoTaskSearchParams createSearchParams() {
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setOriginIds(List.of(dataCollection.getKey()));
+		if (!secCallback.canViewAllToDos()) {
+			searchParams.setAssigneeOrDelegatee(List.of(getIdentity()));
+		}
 		return searchParams;
 	}
 

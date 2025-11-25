@@ -70,6 +70,7 @@ import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -159,6 +160,16 @@ public class QualityUIFactory {
 				|| !(QualityDataCollectionTopicType.CURRICULUM.equals(tt)
 						|| QualityDataCollectionTopicType.CURRICULUM_ELEMENT.equals(tt))
 				|| CoreSpringFactory.getImpl(CurriculumModule.class).isEnabled();
+	}
+	
+	public static String translate(Translator translator, ToDoAccess right) {
+		return switch (right) {
+		case noAccess -> translator.translate("report.access.todo.no.access");
+		case allReadMyEdit -> translator.translate("report.access.todo.all.read.my.edit");
+		case myCreateEdit -> translator.translate("report.access.todo.my.create.edit");
+		case allCreateEdit -> translator.translate("report.access.todo.all.create.edit");
+		case allFullAccess -> translator.translate("report.access.todo.full.access");
+		};
 	}
 	
 	public static KeysValues getCurriculumKeysValues(List<Curriculum> curriculums, Curriculum current) {

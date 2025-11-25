@@ -37,6 +37,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.model.QualityParticipationStats;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -257,6 +258,8 @@ public interface QualityService {
 	public List<QualityReportAccess> loadReportAccesses(QualityReportAccessSearchParams searchParams);
 	
 	public void deleteReportAccess(QualityReportAccessReference reference);
+	
+	public ToDoAccess getToDoAccess(QualityReportAccessReference reference, Identity identity);
 	
 	public QualityReportAccess loadMembersReportAccess(QualityReportAccessReference reference);
 	

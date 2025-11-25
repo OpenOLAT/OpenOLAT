@@ -56,6 +56,7 @@ import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
@@ -122,6 +123,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(access.isOnline()).isFalse();
 		softly.assertThat(access.getEmailTrigger()).isEqualTo(QualityReportAccess.EmailTrigger.never);
 		softly.assertThat(access.isQualitativeFeedbackEmail()).isFalse();
+		softly.assertThat(access.getToDoAccess()).isEqualTo(QualityReportAccess.ToDoAccess.noAccess);
 		softly.assertAll();
 	}
 	
@@ -143,6 +145,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(access.isOnline()).isFalse();
 		softly.assertThat(access.getEmailTrigger()).isEqualTo(QualityReportAccess.EmailTrigger.never);
 		softly.assertThat(access.isQualitativeFeedbackEmail()).isFalse();
+		softly.assertThat(access.getToDoAccess()).isEqualTo(QualityReportAccess.ToDoAccess.noAccess);
 		softly.assertAll();
 	}
 	
@@ -155,10 +158,12 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		boolean online = true;
 		EmailTrigger emailTrigger = QualityReportAccess.EmailTrigger.always;
 		boolean qualitativeFeedbackEmail = true;
+		ToDoAccess toDoAccess = ToDoAccess.allFullAccess;
 		QualityReportAccess reportAccess = sut.create(of(generatorRef), type, role);
 		reportAccess.setOnline(online);
 		reportAccess.setEmailTrigger(emailTrigger);
 		reportAccess.setQualitativeFeedbackEmail(qualitativeFeedbackEmail);
+		reportAccess.setToDoAccess(toDoAccess);
 		sut.save(reportAccess);
 		dbInstance.commitAndCloseSession();
 		
@@ -173,6 +178,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(copy.isOnline()).isEqualTo(online);
 		softly.assertThat(copy.getEmailTrigger()).isEqualTo(emailTrigger);
 		softly.assertThat(copy.isQualitativeFeedbackEmail()).isEqualTo(qualitativeFeedbackEmail);
+		softly.assertThat(copy.getToDoAccess()).isEqualTo(QualityReportAccess.ToDoAccess.allFullAccess);
 		softly.assertAll();
 	}
 	

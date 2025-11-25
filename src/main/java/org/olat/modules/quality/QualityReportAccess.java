@@ -47,6 +47,14 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 		insufficientNeutral,
 		always
 	}
+	
+	public enum ToDoAccess {
+		noAccess,
+		allReadMyEdit,
+		myCreateEdit,
+		allCreateEdit,
+		allFullAccess
+	}
 
 	public Long getKey();
 	
@@ -65,6 +73,10 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 	public boolean isQualitativeFeedbackEmail();
 	
 	public void setQualitativeFeedbackEmail(boolean qualitativeFeedbackEmail);
+	
+	public QualityReportAccess.ToDoAccess getToDoAccess();
+	
+	public void setToDoAccess(QualityReportAccess.ToDoAccess toDoAccess);
 	
 	public Group getGroup();
 

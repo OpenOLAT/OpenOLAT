@@ -44,6 +44,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.quality.QualityReportAccess;
+import org.olat.modules.quality.QualityReportAccess.ToDoAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,6 +62,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 	private static final String MIGRATE_CATALOG_CARD_VIEW = "MIGRATE CATALOG CARD_VIEW";
 	private static final String MIGRATE_CURRICULUM_MANAGERS = "MIGRATE CURRICULUM MANAGERS";
 	private static final String MIGRATE_CERTIFICATION_PROGRAMS_MAIL_CONFIGURATION = "MIGRATE CERTIFICATION PROGRAMS MAIL CONFIGURATION";
+	private static final String INIT_QM_TODO_ACCESS = "INIT QM TODO ACCESS";
 
 	@Autowired
 	private DB dbInstance;
@@ -88,7 +91,8 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 		allOk &= migrateCatalogCardView(upgradeManager, uhd);
 		allOk &= migrateCurriculumManagers(upgradeManager, uhd);
 		allOk &= migrateCertificationProgramsMailConfiguration(upgradeManager, uhd);
-
+		allOk &= initQMToDoAccess(upgradeManager, uhd);
+		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 
@@ -215,4 +219,49 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 		}
 		dbInstance.commitAndCloseSession();
 	}
+	
+	private boolean initQMToDoAccess(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(INIT_QM_TODO_ACCESS)) {
+			try {
+				log.info("Start init qm to-do access.");
+				
+				List<QualityReportAccess> reportAccesses = getQualityReportAccess();
+				for(int i=0; i<reportAccesses.size(); i++) {
+					QualityReportAccess reportAccess = reportAccesses.get(i);
+					
+					ToDoAccess toDoAccess = reportAccess.isOnline()? ToDoAccess.allReadMyEdit: ToDoAccess.noAccess;
+					reportAccess.setToDoAccess(toDoAccess);
+					dbInstance.getCurrentEntityManager().merge(reportAccess);
+					
+					dbInstance.commitAndCloseSession();
+					if(i % 25 == 0) {
+						log.info(Tracing.M_AUDIT, "QM to-do access init: {} / {}", i , reportAccesses.size());
+					}
+				}
+				log.info("End init qm to-do access.");
+				
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(INIT_QM_TODO_ACCESS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		
+		return allOk;
+	}
+	
+	private List<QualityReportAccess> getQualityReportAccess() {
+		String sb = """
+			select ra from qualityreportaccess ra
+			where ra.toDoAccess is null
+			order by ra.key asc""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb, QualityReportAccess.class)
+				.getResultList();
+	}
+	
 }

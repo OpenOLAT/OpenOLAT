@@ -53,6 +53,11 @@ class GeneratorReadOnlySecurityCallback implements GeneratorSecurityCallback {
 	}
 
 	@Override
+	public boolean canEditReportToDoTaskRight() {
+		return false;
+	}
+
+	@Override
 	public boolean canEditReportAccessMembers() {
 		return false;
 	}
