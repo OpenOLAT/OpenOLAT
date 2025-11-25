@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -135,8 +136,8 @@ public class QTI21NewExportController extends FormBasicController {
 		optionsEl = uifactory.addCheckboxesVertical("export.options", formLayout, optionsValues.keys(), optionsValues.values(), 1);
 		updateUI();
 		
-		uifactory.addFormSubmitButton("export.start", formLayout);
-		
+		FormSubmit submitButton = uifactory.addFormSubmitButton("export.start", formLayout);
+		submitButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 	}
 
 	private boolean isTestWithEssay() {
