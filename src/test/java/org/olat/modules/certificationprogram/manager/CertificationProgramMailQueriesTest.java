@@ -83,14 +83,14 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-mail-test", "", null, null, JunitTestHelper.getDefaultActor());
 		}
 	}
 	
 	@Test
 	public void getExpiredCertificates() {
-		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1-1", defaultUnitTestOrganisation, null);
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1-2", defaultUnitTestOrganisation, null);
 		
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
 		program.setValidityEnabled(true);
@@ -124,10 +124,10 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	
 	@Test
 	public void getRemovedCertificates() {
-		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-2-1", defaultUnitTestOrganisation, null);
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-2-2", defaultUnitTestOrganisation, null);
 		
-		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-2", "Program mailing 2");
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(1);
 		program.setValidityTimelapseUnit(DurationType.week);
@@ -159,11 +159,11 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	
 	@Test
 	public void getRemovedCertificatesWithRecertificationWindow() {
-		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
-		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-3-1", defaultUnitTestOrganisation, null);
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-3-2", defaultUnitTestOrganisation, null);
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-3-3", defaultUnitTestOrganisation, null);
 		
-		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-3", "Program mailing 3");
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(1);
 		program.setValidityTimelapseUnit(DurationType.week);
@@ -204,9 +204,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	
 	@Test
 	public void getUpcomingCertificates() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-4-1", defaultUnitTestOrganisation, null);
 		
-		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-4", "Program mailing 4");
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(1);
 		program.setValidityTimelapseUnit(DurationType.week);
@@ -243,9 +243,53 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.doesNotContain(certificate);
 	}
 	
+	
+	@Test
+	public void getUpcomingCertificatesWithWindow() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-5-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-5", "Program mailing 5");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(1);
+		program.setValidityTimelapseUnit(DurationType.week);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationWindow(1);
+		program.setRecertificationWindowUnit(DurationType.day);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_upcoming;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(2);
+		configuration.setTimeUnit(DurationType.day);
+		configuration  = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+
+		Date now = new Date();
+		certificate = updateCertificate(certificate, DateUtils.addDays(now, 3), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificates = certificationProgramMailQueries.getUpcomingCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.doesNotContain(certificate);
+		
+		certificate = updateCertificate(certificate, DateUtils.addDays(now, -1), program);
+		dbInstance.commit();
+		
+		List<Certificate> remindedCertificates = certificationProgramMailQueries.getUpcomingCertificates(configuration, now);
+		Assertions.assertThat(remindedCertificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(certificate);
+	}
+	
+	
 	@Test
 	public void getOverdueCertificates() {
-		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(1);
 		program.setValidityTimelapseUnit(DurationType.week);
@@ -261,7 +305,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		configuration.setTimeUnit(DurationType.day);
 		configuration = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
 
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6", defaultUnitTestOrganisation, null);
 		dbInstance.commit();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
@@ -296,9 +340,9 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 	
 	@Test
 	public void getOverdueCertificatesWithCreditPoints() {
-		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test mail coins", "CM1", null, null, false, false);
+		CreditPointSystem system = creditPointService.createCreditPointSystem("Unit test mail coins", "CM7", null, null, false, false);
 		
-		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-3", "Program mailing 3");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-7", "Program mailing 7");
 		program.setValidityEnabled(true);
 		program.setValidityTimelapse(1);
 		program.setValidityTimelapseUnit(DurationType.week);
@@ -317,7 +361,7 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 		configuration.setCreditBalanceTooLow(true);
 		configuration = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
 
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-7", defaultUnitTestOrganisation, null);
 		dbInstance.commit();
 		
 		CreditPointWallet wallet = creditPointService.getOrCreateWallet(identity, system);
