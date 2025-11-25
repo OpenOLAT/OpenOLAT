@@ -162,13 +162,13 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 	}
 	
 	public CorrectionIdentityAssessmentItemListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			CorrectionOverviewModel model, Identity assessedIdentity, String title, boolean readOnly) {
+			CorrectionOverviewModel model, Identity assessedIdentity, String title, boolean readOnly, boolean anonymous) {
 		super(ureq, wControl, "correction_identity_assessment_item_list");
 		this.stackPanel = stackPanel;
 		this.model = model;
 		this.title = title;
 		this.readOnly = readOnly;
-		this.anonymous = false;
+		this.anonymous = anonymous;
 		this.assessedIdentity = assessedIdentity;
 		saveEnabled = false;
 

@@ -43,9 +43,9 @@ public class CurriculumPage {
 		OOGraphene.waitElement(curriculumListBy, browser);
 		return this;
 	}
-	
-	public CurriculumPage assertOnCurriculumInTable2(String name) {
-		By curriculumBy = By.xpath("//div[@class='o_sel_curriculum_management']//table//td/a[text()[contains(.,'" + name + "')]]");
+
+	public CurriculumPage assertOnCurriculumInTable(String name) {
+		By curriculumBy = By.xpath("//div[contains(@class,'o_sel_curriculum_management')]//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(curriculumBy, browser);
 		return this;
 	}
@@ -94,7 +94,7 @@ public class CurriculumPage {
 	}
 	
 	public CurriculumPage openCurriculum(String name) {
-		By curriculumBy = By.xpath("//div[@class='o_sel_curriculum_management']//table//td/a[text()[contains(.,'" + name + "')]]");
+		By curriculumBy = By.xpath("//div[contains(@class,'o_sel_curriculum_management')]//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(curriculumBy, browser).click();
 		
 		By titleBy = By.xpath("//div[@class='o_curriculum_dashboard_title']/h2[text()[contains(.,'" + name + "')]]");
