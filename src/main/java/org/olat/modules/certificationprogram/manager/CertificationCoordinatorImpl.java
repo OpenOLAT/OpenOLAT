@@ -108,7 +108,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			if(certificate == null) {
 				//First certificate is free (paid by the course fee)
 				log.info("Generate first certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
-				generateCertificate(identity, certificationProgram, requestMode, doer);
+				generateCertificate(identity, certificationProgram, requestMode, CertificationProgramMailType.certificate_issued, doer);
 				accepted = true;
 			} else {
 				accepted = processRecertificationRequest(identity, certificationProgram, certificate, requestMode, referenceDate, doer);
@@ -150,7 +150,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			}
 		}
 		log.info("Generate paid certificate for {} in certification program {} by {}", identity.getKey(), certificationProgram.getKey(), (doer == null ? null : doer.getKey()));
-		generateCertificate(identity, certificationProgram, requestMode, doer);
+		CertificationProgramMailType mailType = requestMode == RequestMode.COURSE
+				? CertificationProgramMailType.certificate_issued
+				: CertificationProgramMailType.certificate_renewed;
+		generateCertificate(identity, certificationProgram, requestMode, mailType, doer);
 		return true;
 	}
 	
@@ -240,14 +243,10 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	
 	@Override
 	public void generateCertificate(Identity identity, CertificationProgram certificationProgram,
-			RequestMode requestMode, Identity actor) {
+			RequestMode requestMode, CertificationProgramMailType notificationType, Identity actor) {
 		// Archive the last certificate
 		certificatesDao.removeLastFlag(identity, certificationProgram);
 		dbInstance.commit();
-		
-		CertificationProgramMailType mailType = requestMode == RequestMode.COURSE
-				? CertificationProgramMailType.certificate_issued
-				: CertificationProgramMailType.certificate_renewed;
 		
 		// Generate a new certificate
 		// No course informations, only certification program informations
@@ -259,7 +258,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
 				.withSendEmailIdentityRelations(true)
-				.withCertificationProgramMailType(mailType)
+				.withCertificationProgramMailType(notificationType)
 				.build();
 		certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);

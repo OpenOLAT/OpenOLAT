@@ -1213,7 +1213,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Override
 	public Certificate generateCertificate(CertificateInfos infos, CertificationProgram certificationProgram,
 			RepositoryEntry entry, CertificateConfig config) {
-		CertificateTemplate template = certificationProgram.getTemplate();
+		CertificateTemplate template = certificationProgram != null
+				? certificationProgram.getTemplate()
+				: null;
 		Certificate certificate = persistCertificate(infos, entry, template, certificationProgram, config);
 		OLATResource resource = certificationProgram != null
 				? certificationProgram.getResource()

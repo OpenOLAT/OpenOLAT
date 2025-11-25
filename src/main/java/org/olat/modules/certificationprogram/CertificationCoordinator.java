@@ -47,7 +47,8 @@ public interface CertificationCoordinator {
 	boolean processCertificationRequest(Identity identity, CertificationProgram certificationProgram,
 			RequestMode requestMode, Date referenceDate, Identity doer);
 	
-	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode, Identity actor);
+	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode,
+			CertificationProgramMailType notificationType, Identity actor);
 	
 	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
 	

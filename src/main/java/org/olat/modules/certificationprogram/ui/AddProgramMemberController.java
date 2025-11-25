@@ -35,6 +35,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.certificationprogram.CertificationCoordinator;
 import org.olat.modules.certificationprogram.CertificationCoordinator.RequestMode;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -100,7 +101,8 @@ public class AddProgramMemberController extends FormBasicController {
 	}
 	
 	private void doAddMember(Identity member) {
-		certificationCoordinator.generateCertificate(member, certificationProgram, RequestMode.COACH, getIdentity());
+		certificationCoordinator.generateCertificate(member, certificationProgram, RequestMode.COACH,
+				CertificationProgramMailType.certificate_issued, getIdentity());
 		dbInstance.commit();
 	}
 }
