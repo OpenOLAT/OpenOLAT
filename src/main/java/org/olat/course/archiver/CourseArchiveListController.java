@@ -89,7 +89,7 @@ public class CourseArchiveListController extends ExportsListController implement
 	private RepositoryService repositoryService;
 	
 	public CourseArchiveListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,  boolean admin) {
-		super(ureq, wControl, entry, COURSE_ARCHIVE_SUB_IDENT, admin, new ExportsListSettings(false));
+		super(ureq, wControl, entry, COURSE_ARCHIVE_SUB_IDENT, admin, new ExportsListSettings(false), "export_list");
 		this.entry = entry;
 	}
 	
