@@ -90,17 +90,14 @@ public class CertificationProgramMailQueries {
 			log.warn("Upcoming certification reminder need a time: {} ({})", configuration.getTitle(), configuration.getKey());
 			return List.of();
 		}
-		Date to = configuration.getTimeUnit().toDate(referenceDate, configuration.getTime());
-		return getUpcomingCertificates(configuration, referenceDate, to);
-	}
-	
-	protected List<Certificate> getUpcomingCertificates(CertificationProgramMailConfiguration configuration, Date from, Date to) {
+		Date up = configuration.getTimeUnit().toDate(referenceDate, configuration.getTime());
+
 		String query = """
 				select cer from certificate as cer
 				inner join fetch cer.certificationProgram program
 				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
 				where cer.last=true and config.key=:configKey
-				and cer.nextRecertificationDate>=:from and cer.nextRecertificationDate<:to
+				and cer.nextRecertificationDate<:up
 				and not exists (select log from certificationprogramlog as log
 				  inner join log.mailConfiguration as mailConfig
 				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
@@ -113,8 +110,7 @@ public class CertificationProgramMailQueries {
 
 		return dbInstance.getCurrentEntityManager().createQuery(query, Certificate.class)
 				.setParameter("configKey", configuration.getKey())
-				.setParameter("from", from, TemporalType.TIMESTAMP)
-				.setParameter("to", to, TemporalType.TIMESTAMP)
+				.setParameter("up", up, TemporalType.TIMESTAMP)
 				.getResultList();
 	}
 	
