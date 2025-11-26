@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
@@ -35,6 +36,7 @@ import org.olat.modules.certificationprogram.CertificationProgramToCurriculumEle
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
 import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
+import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.OrderBy;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
 import org.olat.modules.certificationprogram.model.CertificationProgramToCurriculumElementImpl;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -217,17 +219,30 @@ public class CertificationProgramToCurriculumElementDAO {
 				: count.get(0).longValue();
 	}
 	
-	public List<Certificate> getCertificates(CertificationProgramMemberSearchParameters searchParams, Date referenceDate) {
+	public List<Certificate> getCertificates(CertificationProgramMemberSearchParameters searchParams, Date referenceDate, int maxResults) {
 		QueryBuilder query = new QueryBuilder();
 		query.append("select cert from certificate as cert")
 		     .append(" inner join fetch cert.identity as ident")
 		     .append(" inner join fetch ident.user as identUser");
 		appendQueryCertificates(query, searchParams);
 		
-		return dbInstance.getCurrentEntityManager().createQuery(query.toString(), Certificate.class)
+		if(searchParams.getOrderBy() != null) {
+			if(searchParams.getOrderBy() == OrderBy.NEXTRECERTIFICATIONDATE) {
+				query.append(" order by cert.nextRecertificationDate").append(" asc", " desc", searchParams.isOrderAsc());
+			} else if(searchParams.getOrderBy() == OrderBy.CREATIONDATE) {
+				query.append(" order by cert.creationDate").append(" asc", " desc", searchParams.isOrderAsc());
+			}
+		}
+		
+		TypedQuery<Certificate> certificatesQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), Certificate.class)
 				.setParameter("programKey", searchParams.getCertificationProgram().getKey())
-				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
-				.getResultList();
+				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP);
+		if(maxResults > 0) {
+			certificatesQuery
+				.setFirstResult(0)
+				.setMaxResults(maxResults);
+		}
+		return certificatesQuery.getResultList();
 	}
 	
 	private void appendQueryCertificates(QueryBuilder query, CertificationProgramMemberSearchParameters searchParams) {
@@ -242,6 +257,12 @@ public class CertificationProgramToCurriculumElementDAO {
 					  or
 					  (cert.nextRecertificationDate<:referenceDate and cert.recertificationWindowDate>=:referenceDate)
 					)""");
+		} else if(searchParams.getType() == Type.CERTIFYING) {
+			// Paused, or valid (before next recertification), expired (after next recertification but in window)
+			query.append(" ").append("""
+					and cert.last=true
+					and cert.nextRecertificationDate<:referenceDate and cert.recertificationWindowDate>=:referenceDate
+					""");
 		} else if(searchParams.getType() == Type.REMOVED) {
 			// After recertification window or without a last certificate (all revoked)
 			query.append(" ").append("""

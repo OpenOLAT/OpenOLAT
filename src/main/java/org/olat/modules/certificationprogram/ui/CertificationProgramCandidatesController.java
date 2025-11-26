@@ -43,7 +43,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
@@ -60,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificationProgramCandidatesController extends FormBasicController {
+public class CertificationProgramCandidatesController extends FormBasicController implements Activateable2 {
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
@@ -157,6 +160,11 @@ public class CertificationProgramCandidatesController extends FormBasicControlle
 	private void filterModel() {
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
 	}
 
 	@Override

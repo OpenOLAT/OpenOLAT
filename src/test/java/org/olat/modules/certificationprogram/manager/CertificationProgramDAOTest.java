@@ -45,6 +45,7 @@ import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
 import org.olat.modules.certificationprogram.CertificationRoles;
 import org.olat.modules.certificationprogram.RecertificationMode;
+import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
 import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.modules.creditpoint.CreditPointService;
@@ -268,6 +269,35 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 			.hasSizeGreaterThanOrEqualTo(1)
 			.filteredOn(statistics -> program.equals(statistics.certificationProgram()))
 			.hasSize(1);
+	}
+	
+	@Test
+	public void loadCertificationProgramsActiveMembersStatistics() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-20");
+		Identity expireSoon = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-21");
+		Identity inRecertification = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-22");
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-4", "Program to curriculum");
+		program.setStatus(CertificationProgramStatusEnum.active);
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(7);
+		program.setValidityTimelapseUnit(DurationType.day);
+		
+
+		Date now = new Date();
+		generateCertificate(participant, program, now, 10, 17);
+		generateCertificate(expireSoon, program, now, 5, 12);
+		generateCertificate(inRecertification, program, now, -3, 4);
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<CertificationProgramActiveMemberStatistics> statisticsList = certificationProgramDao.loadCertificationProgramsActiveMembersStatistics(program, new Date());
+		Assertions.assertThat(statisticsList)
+			.hasSize(1);
+		
+		CertificationProgramActiveMemberStatistics stats = statisticsList.get(0);
+		Assert.assertEquals(2l, stats.certified());
+		Assert.assertEquals(1l, stats.expiringSoon());
+		Assert.assertEquals(1l, stats.inRecertification());
 	}
 	
 	/**

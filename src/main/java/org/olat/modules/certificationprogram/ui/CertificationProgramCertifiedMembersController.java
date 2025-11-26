@@ -50,7 +50,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters.Type;
@@ -64,7 +67,7 @@ import org.olat.modules.certificationprogram.ui.component.WalletBalanceCellRende
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CertificationProgramCertifiedMembersController extends AbstractCertificationProgramMembersController {
+public class CertificationProgramCertifiedMembersController extends AbstractCertificationProgramMembersController implements Activateable2 {
 	
 	protected static final String EXPIRED_TAB_ID = "Expired";
 	protected static final String RECERTIFIED_ID = "Recertified";
@@ -72,6 +75,11 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	protected static final String EXPIRING_SOON_ID = "ExpiringSoon";
 	protected static final String IN_RECERTIFICATION_TAB_ID = "InRecertification";
 	protected static final String INSUFFICIENT_CREDIT_POINTS_ID = "InsufficientCreditPoints";
+
+	private FlexiFiltersTab certifiedTab;
+	private FlexiFiltersTab expiringSoonTab;
+	private FlexiFiltersTab inRecertificationTab;
+	private FlexiFiltersTab creditPointsTab;
 	
 	private FormLink addMemberButton;
 	
@@ -152,26 +160,26 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	@Override
 	protected void initFiltersPresets(List<FlexiFiltersTab> tabs) {
 		if(certificationProgram.isValidityEnabled()) {
-			FlexiFiltersTab validTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CERTIFIED_TAB_ID, translate("filter.certified"),
+			certifiedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CERTIFIED_TAB_ID, translate("filter.certified"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationIdentityStatus.CERTIFIED.name())));
-			tabs.add(validTab);
+			tabs.add(certifiedTab);
 		}
 
 		if(certificationProgram.isRecertificationEnabled()) {
-			FlexiFiltersTab expiredTab = FlexiFiltersTabFactory.tabWithImplicitFilters(IN_RECERTIFICATION_TAB_ID, translate("filter.recertifying"),
+			inRecertificationTab = FlexiFiltersTabFactory.tabWithImplicitFilters(IN_RECERTIFICATION_TAB_ID, translate("filter.recertifying"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationIdentityStatus.RECERTIFYING.name())));
-			tabs.add(expiredTab);
+			tabs.add(inRecertificationTab);
 		}
 		
 		if(certificationProgram.isValidityEnabled()) {
-			FlexiFiltersTab expiringSoonTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRING_SOON_ID, translate("filter.expiring.soon"),
+			expiringSoonTab = FlexiFiltersTabFactory.tabWithImplicitFilters(EXPIRING_SOON_ID, translate("filter.expiring.soon"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, CertificationStatus.VALID.name()),
 							FlexiTableFilterValue.valueOf(FILTER_EXPIRE_SOON, FILTER_EXPIRE_SOON)));
 			tabs.add(expiringSoonTab);
 		}
 		
 		if(certificationProgram.getCreditPointSystem() != null && certificationProgram.getCreditPoints() != null) {
-			FlexiFiltersTab creditPointsTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INSUFFICIENT_CREDIT_POINTS_ID, translate("filter.insufficient.credit.points"),
+			creditPointsTab = FlexiFiltersTabFactory.tabWithImplicitFilters(INSUFFICIENT_CREDIT_POINTS_ID, translate("filter.insufficient.credit.points"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_NOT_ENOUGH_CREDIT_POINTS, FILTER_NOT_ENOUGH_CREDIT_POINTS)));
 			tabs.add(creditPointsTab);
 		}
@@ -184,6 +192,33 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 		return searchParams;
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("All".equalsIgnoreCase(type)) {
+			selectedFilterTab(ureq, allTab);
+		} else if(CERTIFIED_TAB_ID.equalsIgnoreCase(type)) {
+			selectedFilterTab(ureq, certifiedTab);
+		} else if(EXPIRING_SOON_ID.equalsIgnoreCase(type)) {
+			selectedFilterTab(ureq, expiringSoonTab);
+		} else if(IN_RECERTIFICATION_TAB_ID.equals(type)) {
+			selectedFilterTab(ureq, inRecertificationTab);
+		} else if(INSUFFICIENT_CREDIT_POINTS_ID.equalsIgnoreCase(type)) {
+			selectedFilterTab(ureq, creditPointsTab);
+		}
+	}
+	
+	private void selectedFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		if(tab == null) return;
+		
+		if(tableEl.getSelectedFilterTab() != tab) {
+			tableEl.setSelectedFilterTab(ureq, tab);
+		}
+		filterModel();
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(calloutCtrl == source) {

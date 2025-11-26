@@ -127,7 +127,9 @@ public class CertificationProgramDetailsController extends BasicController imple
 	}
 	
 	private void initTabPane(UserRequest ureq) {
-		overviewTab = tabPane.addTab(ureq, translate("certification.program.overview"), uureq -> createDashBoard(uureq).getInitialComponent());
+		overviewTab = tabPane.addTab(ureq, translate("certification.program.overview"), "o_sel_certification_program_dashboard", uureq -> {
+			return createDashBoard(uureq).getInitialComponent();
+		}, true);
 		
 		membersTab = tabPane.addTab(ureq, translate("certification.program.members"), "o_sel_certification_program_members", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
@@ -249,11 +251,15 @@ public class CertificationProgramDetailsController extends BasicController imple
 	}
 	
 	private CertificationProgramDashboardController createDashBoard(UserRequest ureq) {
-		WindowControl subControl = addToHistory(ureq, OresHelper
-				.createOLATResourceableType(CertificationProgramListController.CONTEXT_OVERVIEW), null);
-		overviewCtrl = new CertificationProgramDashboardController(ureq, subControl);
-		listenTo(overviewCtrl);
-		
+		if(overviewCtrl == null) {
+			WindowControl subControl = addToHistory(ureq, OresHelper
+					.createOLATResourceableType(CertificationProgramListController.CONTEXT_OVERVIEW), null);
+			overviewCtrl = new CertificationProgramDashboardController(ureq, subControl, certificationProgram);
+			listenTo(overviewCtrl);
+			overviewCtrl.reload(ureq);
+		} else {
+			overviewCtrl.reload(ureq);
+		}
 		return overviewCtrl;
 	}
 }

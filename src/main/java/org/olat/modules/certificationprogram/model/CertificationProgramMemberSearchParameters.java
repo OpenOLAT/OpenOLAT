@@ -30,6 +30,8 @@ import org.olat.modules.certificationprogram.CertificationProgramRef;
 public class CertificationProgramMemberSearchParameters {
 
 	private Type type;
+	private OrderBy orderBy;
+	private boolean orderAsc;
 	private CertificationProgramRef certificationProgram;
 	
 	public CertificationProgramMemberSearchParameters(CertificationProgramRef certificationProgram) {
@@ -51,10 +53,29 @@ public class CertificationProgramMemberSearchParameters {
 	public void setType(Type type) {
 		this.type = type;
 	}
+	
+	public OrderBy getOrderBy() {
+		return orderBy;
+	}
+
+	public boolean isOrderAsc() {
+		return orderAsc;
+	}
+
+	public void setOrderBy(OrderBy orderBy, boolean orderAsc) {
+		this.orderBy = orderBy;
+		this.orderAsc = orderAsc;
+	}
 
 	public enum Type {
 		CERTIFIED,
+		CERTIFYING,
 		REMOVED
+	}
+	
+	public enum OrderBy {
+		NEXTRECERTIFICATIONDATE,
+		CREATIONDATE
 	}
 
 }

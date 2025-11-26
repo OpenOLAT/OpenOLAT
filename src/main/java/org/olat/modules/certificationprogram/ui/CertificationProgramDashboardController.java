@@ -19,16 +19,13 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.certificationprogram.CertificationProgram;
 
 /**
  * 
@@ -38,25 +35,28 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class CertificationProgramDashboardController extends BasicController {
 
-	private final VelocityContainer mainVC;
+	private final ActiveMembersWidgetController activeMembersCtrl;
 	
-	private final List<String> widgets = new ArrayList<>();
-	
-	public CertificationProgramDashboardController(UserRequest ureq, WindowControl wControl) {
+	public CertificationProgramDashboardController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
 		super(ureq, wControl);
 		
-		mainVC = createVelocityContainer("program_dashboard");
-		mainVC.contextPut("widgets", widgets);
+		VelocityContainer mainVC = createVelocityContainer("program_dashboard");
+		
+		activeMembersCtrl = new ActiveMembersWidgetController(ureq, getWindowControl(), certificationProgram);
+		listenTo(activeMembersCtrl);
+		mainVC.put("courseCoach", activeMembersCtrl.getInitialComponent());
+		
 		putInitialPanel(mainVC);
-	}
-	
-	protected void addWidget(String name, Controller widget) {
-		widgets.add(name);
-		mainVC.put(name, widget.getInitialComponent());
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	public void reload(UserRequest ureq) {
+		if (activeMembersCtrl != null) {
+			activeMembersCtrl.reload(ureq);
+		}
 	}
 }

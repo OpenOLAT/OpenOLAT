@@ -1013,6 +1013,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_certification_status_revoked { @include o-add-icon('ban'); }
 .o_icon_certification_status_archived { @include o-add-icon('box-archive'); }
 
+.o_icon_certification_certified { @include o-add-icon('certificate'); color: $o-base-green-color; };
+.o_icon_certification_certifying { @include o-add-icon('arrow-rotate-right'); color: $o-base-blue-color; };
+
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}
 .o_scorm_item { @include o-add-icon('file', false);}

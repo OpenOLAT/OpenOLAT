@@ -116,7 +116,18 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(CMD_ALUMNI.equalsIgnoreCase(type)) {
+			doOpenRemovedMembersList(ureq);
+		} else if(CMD_CANDIDATES.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenCandidatesList(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if(CMD_ACTIVE.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenCertifiedMembersList(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		}
 	}
 
 	@Override
@@ -150,29 +161,32 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 		scopesEl.setSelectedKey(selectedScope);
 	}
 	
-	private void doOpenCertifiedMembersList(UserRequest ureq) {
+	private CertificationProgramCertifiedMembersController doOpenCertifiedMembersList(UserRequest ureq) {
 		removeAsListenerAndDispose(certifiedMembersCtrl);
 		
 		certifiedMembersCtrl = new CertificationProgramCertifiedMembersController(ureq, getWindowControl(), toolbarPanel,
 				certificationProgram, secCallback);
 		listenTo(certifiedMembersCtrl);
 		mainVC.put("component", certifiedMembersCtrl.getInitialComponent());
+		return certifiedMembersCtrl;
 	}
 	
-	private void doOpenRemovedMembersList(UserRequest ureq) {
+	private CertificationProgramRemovedMembersController doOpenRemovedMembersList(UserRequest ureq) {
 		removeAsListenerAndDispose(removedMembersCtrl);
 		
 		removedMembersCtrl = new CertificationProgramRemovedMembersController(ureq, getWindowControl(), toolbarPanel,
 				certificationProgram, secCallback);
 		listenTo(removedMembersCtrl);
 		mainVC.put("component", removedMembersCtrl.getInitialComponent());
+		return removedMembersCtrl;
 	}
 	
-	private void doOpenCandidatesList(UserRequest ureq) {
+	private CertificationProgramCandidatesController doOpenCandidatesList(UserRequest ureq) {
 		removeAsListenerAndDispose(candidatesCtrl);
 		
 		candidatesCtrl = new CertificationProgramCandidatesController(ureq, getWindowControl(), certificationProgram);
 		listenTo(candidatesCtrl);
 		mainVC.put("component", candidatesCtrl.getInitialComponent());
+		return candidatesCtrl;
 	}
 }

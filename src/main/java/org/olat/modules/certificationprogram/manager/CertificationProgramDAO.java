@@ -34,11 +34,14 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramRef;
 import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.CertificationRoles;
 import org.olat.modules.certificationprogram.RecertificationMode;
+import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
 import org.olat.modules.certificationprogram.model.CertificationProgramImpl;
 import org.olat.modules.certificationprogram.model.CertificationProgramWithStatistics;
 import org.olat.repository.RepositoryEntryRef;
@@ -138,6 +141,36 @@ public class CertificationProgramDAO {
 		
 		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgram.class)
 				.setParameter("organisationsKeys", organisationsKeys)
+				.getResultList();
+	}
+	
+	public List<CertificationProgramActiveMemberStatistics> loadCertificationProgramsActiveMembersStatistics(CertificationProgramRef program, Date referenceDate) {
+		String query = """
+				select new CertificationProgramActiveMemberStatistics(
+				 (select count(certifiedCertificate.key) from certificate as certifiedCertificate
+				  where certifiedCertificate.certificationProgram.key=program.key
+				  and certifiedCertificate.last=true
+				  and (certifiedCertificate.nextRecertificationDate>=:referenceDate or certifiedCertificate.nextRecertificationDate is null)
+				 ) as certifiedCertificates,
+				 (select count(expiringSoonCertificate.key) from certificate as expiringSoonCertificate
+				  where expiringSoonCertificate.certificationProgram.key=program.key
+				  and expiringSoonCertificate.last=true
+				  and expiringSoonCertificate.nextRecertificationDate>=:referenceDate and expiringSoonCertificate.nextRecertificationDate<=:soonDate
+				 ) as expiringSoonCertificates,
+				 (select count(inRecertificationCertificate.key) from certificate as inRecertificationCertificate
+				  where inRecertificationCertificate.certificationProgram.key=program.key
+				  and inRecertificationCertificate.last=true
+				  and inRecertificationCertificate.nextRecertificationDate<:referenceDate and inRecertificationCertificate.recertificationWindowDate>=:referenceDate
+				 ) as inRecertificationCertificates
+				) from certificationprogram as program
+				where program.key = :programKey""";
+		
+		Date soon = DateUtils.getEndOfDay(DateUtils.addDays(referenceDate, 7));
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgramActiveMemberStatistics.class)
+				.setParameter("referenceDate", referenceDate, TemporalType.TIMESTAMP)
+				.setParameter("soonDate", soon, TemporalType.TIMESTAMP)
+				.setParameter("programKey", program.getKey())
 				.getResultList();
 	}
 	

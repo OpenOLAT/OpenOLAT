@@ -222,11 +222,11 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 		return true;
 	}
 	
-	protected void loadModel(UserRequest ureq) {
+	protected final void loadModel(UserRequest ureq) {
 		final Date referenceDate = ureq.getRequestTimestamp();
 		CertificationProgramMemberSearchParameters searchParams = getSearchParams();
 		searchParams.setCertificationProgram(certificationProgram);
-		List<CertificationProgramMemberWithInfos> membersWithInfos = new ArrayList<>(certificationProgramService.getMembers(searchParams, referenceDate));
+		List<CertificationProgramMemberWithInfos> membersWithInfos = new ArrayList<>(certificationProgramService.getMembers(searchParams, referenceDate, -1));
 
 		// Sort last certificates first
 		Collections.sort(membersWithInfos, new CertificationProgramMemberWithInfosCreationComparator());
@@ -248,7 +248,7 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 		tableEl.reset(true, true, true);
 	}
 	
-	protected CertificationProgramMemberRow forgeRow(CertificationProgramMemberWithInfos infos, Date referenceDate) {
+	protected final CertificationProgramMemberRow forgeRow(CertificationProgramMemberWithInfos infos, Date referenceDate) {
 		Certificate certificate = infos.certificate();
 		CertificationStatus certificateStatus = CertificationStatus.evaluate(certificate, referenceDate);
 		CertificationIdentityStatus identityStatus = CertificationIdentityStatus.evaluate(certificate, referenceDate);
@@ -257,7 +257,7 @@ abstract class AbstractCertificationProgramMembersController extends FormBasicCo
 				identityStatus, infos.wallet(), userPropertyHandlers, getLocale());
 	}
 	
-	private void filterModel() {
+	protected final void filterModel() {
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
 	}

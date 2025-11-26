@@ -42,6 +42,7 @@ import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
 import org.olat.modules.certificationprogram.CertificationRoles;
 import org.olat.modules.certificationprogram.model.CertificationCurriculumElementWithInfos;
+import org.olat.modules.certificationprogram.model.CertificationProgramActiveMemberStatistics;
 import org.olat.modules.certificationprogram.model.CertificationProgramCandidate;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberSearchParameters;
 import org.olat.modules.certificationprogram.model.CertificationProgramMemberWithInfos;
@@ -186,6 +187,14 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	public List<CertificationProgramWithStatistics> getCertificationProgramsWithStatistics(IdentityRef identity, Date referenceDate) {
 		return certificationProgramDao.loadCertificationProgramsWithStatistics(identity, referenceDate);
 	}
+	
+	@Override
+	public CertificationProgramActiveMemberStatistics getCertificationProgramActiveMembersStatistics(CertificationProgramRef program, Date referenceDate) {
+		List<CertificationProgramActiveMemberStatistics> statistics = certificationProgramDao.loadCertificationProgramsActiveMembersStatistics(program, referenceDate);
+		return statistics == null || statistics.isEmpty()
+				? new CertificationProgramActiveMemberStatistics(0l, 0l, 0l)
+				: statistics.get(0);
+	}
 
 	@Override
 	public List<CertificationCurriculumElementWithInfos> getCurriculumElementsFor(CertificationProgramRef program, Date referenceDate) {
@@ -239,8 +248,9 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 
 	@Override
-	public List<CertificationProgramMemberWithInfos> getMembers(CertificationProgramMemberSearchParameters searchParams, Date referenceDate) {
-		List<Certificate> certificates = certificationProgramToCurriculumElementDao.getCertificates(searchParams, referenceDate);
+	public List<CertificationProgramMemberWithInfos> getMembers(CertificationProgramMemberSearchParameters searchParams, Date referenceDate,
+			int maxResults) {
+		List<Certificate> certificates = certificationProgramToCurriculumElementDao.getCertificates(searchParams, referenceDate, maxResults);
 		List<CreditPointWallet> wallets = creditPointWalletDao.loadWalletOfCertificationProgram(searchParams.getCertificationProgram());
 		Map<Long,CreditPointWallet> identityKeyToWallet = wallets.stream()
 				.collect(Collectors.toMap(w -> w.getIdentity().getKey(), w -> w, (u, v) -> u));
