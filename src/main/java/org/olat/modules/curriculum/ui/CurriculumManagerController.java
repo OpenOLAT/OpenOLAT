@@ -87,7 +87,7 @@ public class CurriculumManagerController extends BasicController implements Acti
 		rootCtrl = new CurriculumManagerRootController(ureq, getWindowControl(), toolbarPanel,
 				secCallback, lecturesSecCallback, certificationSecCallback);
 		listenTo(rootCtrl);
-		toolbarPanel.pushController(translate("curriculum.overview"), rootCtrl);
+		toolbarPanel.pushController(translate("curriculum.management"), rootCtrl);
 	}
 
 	@Override

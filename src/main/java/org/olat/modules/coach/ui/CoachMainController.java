@@ -58,7 +58,7 @@ public class CoachMainController extends BasicController implements Activateable
 		rootCtrl = new CoachMainRootController(ureq, getWindowControl(), toolbarPanel,
 				coachingSec, gradingSec);
 		listenTo(rootCtrl);
-		toolbarPanel.pushController(translate("coaching.overview"), rootCtrl);
+		toolbarPanel.pushController(translate("coaching.title"), rootCtrl);
 	}
 
 	@Override
