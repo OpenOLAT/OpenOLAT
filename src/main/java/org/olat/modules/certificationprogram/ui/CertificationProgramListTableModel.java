@@ -146,8 +146,9 @@ implements SortableFlexiTableDataModel<CertificationProgramRow>, FilterableFlexi
 			case displayName -> row.getDisplayName();
 			case recertificationMode -> row.getRecertificationMode();
 			case validityPeriod -> row.getValidityPeriod();
-			case usersCertified -> Long.valueOf(row.getCertified());
-			case removed -> Long.valueOf(row.getRemoved());
+			case activeUsers -> Long.valueOf(row.getActiveUsers());
+			case candidates -> Long.valueOf(row.getCandidates());
+			case removedUsers -> Long.valueOf(row.getRemovedUsers());
 			case requiredCreditPoint -> row.getCreditPoints();
 			case programStatus -> row.getStatus();
 			default -> "ERROR";
@@ -167,8 +168,9 @@ implements SortableFlexiTableDataModel<CertificationProgramRow>, FilterableFlexi
 		validityPeriod("table.header.validity.period"),
 		recertificationMode("table.header.recertification.mode"),
 		requiredCreditPoint("table.header.required.credit.point"),
-		usersCertified("table.header.users.certified"),
-		removed("table.header.removed"),
+		activeUsers("table.header.users.active"),
+		candidates("table.header.users.candidates"),
+		removedUsers("table.header.users.removed"),
 		programStatus("table.header.program.status");
 		
 		private final String i18nHeaderKey;

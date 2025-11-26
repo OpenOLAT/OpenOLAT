@@ -96,20 +96,21 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 	private List<Scope> buildScopes(UserRequest ureq) {
 		List<Scope> scopes = new ArrayList<>();
 		Date referenceDate = ureq.getRequestTimestamp();
+		
 		CertificationProgramMemberSearchParameters searchParams = new CertificationProgramMemberSearchParameters(certificationProgram);
 		searchParams.setType(Type.CERTIFIED);
 		long numOfCertified = certificationProgramService.countMembers(searchParams, referenceDate);
 		String certifiedHint = getScopeHint(numOfCertified);
 		scopes.add(ScopeFactory.createScope(CMD_ACTIVE, translate("members.scope.active"), certifiedHint, "o_icon o_icon_activate"));
+		
 		searchParams.setType(Type.REMOVED);
-		long numOfRemoved = certificationProgramService.countMembers(searchParams, referenceDate);
-		String removedHint = getScopeHint(numOfRemoved);
-		scopes.add(ScopeFactory.createScope(CMD_ALUMNI, translate("members.scope.alumni"), removedHint, "o_icon o_icon_qual_exec_future"));
 		long numOfCandidates = certificationProgramService.countCandidates(searchParams);
 		String candidatesHint = getScopeHint(numOfCandidates);
 		scopes.add(ScopeFactory.createScope(CMD_CANDIDATES, translate("members.scope.candidates"), candidatesHint, "o_icon o_icon_candidate"));
 		
-		
+		long numOfRemoved = certificationProgramService.countMembers(searchParams, referenceDate);
+		String removedHint = getScopeHint(numOfRemoved);
+		scopes.add(ScopeFactory.createScope(CMD_ALUMNI, translate("members.scope.alumni"), removedHint, "o_icon o_icon_qual_exec_future"));
 		return scopes;
 	}
 
@@ -136,7 +137,7 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 				} else if(CMD_ALUMNI.equals(se.getSelectedKey())) {
 					doOpenRemovedMembersList(ureq);
 				} else if(CMD_CANDIDATES.equals(se.getSelectedKey())) {
-					doOpenCandiatesList(ureq);
+					doOpenCandidatesList(ureq);
 				}
 			}
 		}
@@ -167,7 +168,7 @@ public class CertificationProgramMembersOverviewController extends BasicControll
 		mainVC.put("component", removedMembersCtrl.getInitialComponent());
 	}
 	
-	private void doOpenCandiatesList(UserRequest ureq) {
+	private void doOpenCandidatesList(UserRequest ureq) {
 		removeAsListenerAndDispose(candidatesCtrl);
 		
 		candidatesCtrl = new CertificationProgramCandidatesController(ureq, getWindowControl(), certificationProgram);

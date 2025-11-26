@@ -34,18 +34,21 @@ import org.olat.modules.creditpoint.CreditPointSystem;
  */
 public class CertificationProgramRow implements CertificationProgramRef {
 
-	private final long removed;
-	private final long certified;
+	private final long activeUsers;
+	private final long candidates;
+	private final long removedUsers;
 	private final String creditPoints;
 	private final CreditPointSystem creditPointSystem;
 	private final CertificationProgram certificationProgram;
 	
-	public CertificationProgramRow(CertificationProgram certificationProgram, long certified, long removed, String creditPoints) {
+	public CertificationProgramRow(CertificationProgram certificationProgram,
+			long activeUsers, long candidates, long removedUsers, String creditPoints) {
 		creditPointSystem = certificationProgram.getCreditPointSystem();
 		this.certificationProgram = certificationProgram;
 		this.creditPoints = creditPoints;
-		this.certified = certified;
-		this.removed = removed;
+		this.candidates = candidates;
+		this.activeUsers = activeUsers;
+		this.removedUsers = removedUsers;
 	}
 	
 	@Override
@@ -75,12 +78,16 @@ public class CertificationProgramRow implements CertificationProgramRef {
 		return certificationProgram.getStatus();
 	}
 	
-	public long getCertified() {
-		return certified;
+	public long getActiveUsers() {
+		return activeUsers;
 	}
 	
-	public long getRemoved() {
-		return removed;
+	public long getCandidates() {
+		return candidates;
+	}
+
+	public long getRemovedUsers() {
+		return removedUsers;
 	}
 	
 	public String getCreditPoints() {

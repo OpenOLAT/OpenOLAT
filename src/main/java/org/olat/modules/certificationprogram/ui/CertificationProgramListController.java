@@ -147,8 +147,9 @@ public class CertificationProgramListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.recertificationMode,
 				new RecertificationModeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.requiredCreditPoint));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.usersCertified));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.removed));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.activeUsers));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.candidates));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.removedUsers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProgramCols.programStatus,
 				new CertificationProgramStatusCellRenderer(getTranslator())));
 		
@@ -209,9 +210,10 @@ public class CertificationProgramListController extends FormBasicController impl
 		for(CertificationProgramWithStatistics program:programs) {
 			CertificationProgram certificationProgram = program.certificationProgram();
 			String creditPoints = CertificationHelper.creditPointsToString(certificationProgram);
-			long certified = program.validCertificates() + program.expiredCertificates();
-			long removed = program.notRenewableCertificates() + program.revokedCertificates();
-			CertificationProgramRow row = new CertificationProgramRow(program.certificationProgram(), certified, removed, creditPoints);
+			long candidates = program.candidates();
+			long activeUsers = program.validCertificates() + program.expiredCertificates();
+			long removedUsers = program.notRenewableCertificates() + program.revokedCertificates();
+			CertificationProgramRow row = new CertificationProgramRow(program.certificationProgram(), activeUsers, candidates, removedUsers, creditPoints);
 			rows.add(row);
 		}
 		tableModel.setObjects(rows);

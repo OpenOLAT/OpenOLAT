@@ -165,7 +165,15 @@ public class CertificationProgramDAO {
 				 ) as userWithCertificates,
 				 (select count(distinct userWithLastCertificate.identity.key) from certificate as userWithLastCertificate
 				  where userWithLastCertificate.certificationProgram.key=program.key and userWithLastCertificate.last=true
-				 ) as userWithLastCertificate
+				 ) as userWithLastCertificate,
+				 (select count(distinct participant.identity.key) from certificationprogramtoelement as rel2prog
+				 	 inner join rel2prog.curriculumElement as progCurEl
+				 	 inner join progCurEl.group as rpGroup
+				 	 inner join rpGroup.members as participant on (participant.role='participant')
+				   where rel2prog.certificationProgram.key=program.key and not exists (select candidateCertificate from certificate as candidateCertificate
+				   	 where candidateCertificate.certificationProgram.key=program.key and candidateCertificate.identity.key=participant.identity.key
+				   ) 
+				 ) as programParticipants
 				) from certificationprogram as program
 				inner join fetch program.group as bGroup
 				left join fetch program.creditPointSystem as system

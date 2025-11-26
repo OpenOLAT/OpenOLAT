@@ -29,7 +29,7 @@ import org.olat.modules.certificationprogram.CertificationProgram;
  */
 public record CertificationProgramWithStatistics(CertificationProgram certificationProgram,
 		long validCertificates, long expiredCertificates, long notRenewableCertificates,
-		long userWithCertificates, long userWithLastCertificate) {
+		long userWithCertificates, long userWithLastCertificate, long candidates) {
 	
 	public long revokedCertificates() {
 		return userWithCertificates - userWithLastCertificate;
