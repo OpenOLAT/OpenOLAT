@@ -41,10 +41,13 @@ var BTinyHelper = {
 	// - relative links: media and links relative to the root folder
 	// - relative-absolute links: media that belong to the framework from the static dir
 	// - absolute links: media an links to external sites
+	// - velocity template variables
 	linkConverter : function (url, node, on_save, name) {
 		let editor = tinymce.activeEditor;
 		if(editor === undefined || editor == null) {
 			//do nothing
+		} else if (url && url.length > 0 && url[0] === "$") {
+			// do nothing (velocity variable)
 		} else {
 			let convertUrls = editor.getParam("convert_urls");
 			let relativeUrls = editor.getParam("relative_urls");
