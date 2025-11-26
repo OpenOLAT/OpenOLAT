@@ -111,7 +111,7 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 		this.score = score;
 	}
 	
-	public void addToScore(Float maxScore, Float score, Long statementKey) {
+	public void addToScore(Float maxScore, Float scoreToAdd, Long statementKey) {
 		if (holdsScore && !addedToScoresIds.contains(statementKey)) {
 			if (scoreMax == null) {
 				scoreMax = maxScore;
@@ -119,15 +119,15 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode,
 				scoreMax += maxScore;
 			}
 			
-			if (score != null) {
-				this.score += score;
+			if (scoreToAdd != null) {
+				this.score += scoreToAdd;
 			}
 			
 			addedToScoresIds.add(statementKey);
 		}
 		
 		if (parent != null) {
-			parent.addToScore(maxScore, score, statementKey);
+			parent.addToScore(maxScore, scoreToAdd, statementKey);
 		}
 	}
 

@@ -36,6 +36,9 @@
 					&ndash; $r.escapeHtml($row.points)
 				#end
 				</span>
+			#elseif(${row.isWithValidity()}) 
+				<strong class="o_card_title">$r.translate("table.header.validity")</strong>
+				<span>${r.formatDate($row.getCreationDate())}#if($r.isNotNull($row.getValidUntil())) &ndash; ${r.formatDate($row.getValidUntil())}#end</span>
 			#else
 				<strong class="o_card_title">$r.translate("table.header.issued.on")</strong>
 				<span>$r.formatDate($row.getCreationDate())</span>

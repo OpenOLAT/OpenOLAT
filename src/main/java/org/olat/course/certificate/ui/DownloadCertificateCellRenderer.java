@@ -82,8 +82,8 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 		sb.append(date);
 	}
 	
-	private void render(StringOutput sb, CertificateLight certificate, IdentityRef identity, Locale locale) {
-		String name = Formatter.getInstance(locale).formatDate(certificate.getCreationDate());
+	private void render(StringOutput sb, CertificateLight certificate, IdentityRef identity, Locale loc) {
+		String name = Formatter.getInstance(loc).formatDate(certificate.getCreationDate());
 		if(CertificateStatus.pending.equals(certificate.getStatus())) {
 			sb.append("<span><i class='o_icon o_icon_pending o_icon-spin'> </i> ").append(name).append(".pdf").append("</span>");
 		} else if(CertificateStatus.error.equals(certificate.getStatus())) {

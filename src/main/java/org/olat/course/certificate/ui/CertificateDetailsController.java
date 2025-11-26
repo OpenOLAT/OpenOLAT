@@ -133,7 +133,7 @@ public class CertificateDetailsController extends BasicController {
 					startRecertificationButton = LinkFactory.createButton("recertification.start", mainVC, this);
 				}
 				mainVC.contextPut("recertificationEnable", Boolean.TRUE);
-				initRecertificationCourse(ureq, certificate, certificateRow.getRecertificationInDays(), certificateConfig);
+				initRecertificationCourse(ureq, certificateRow.getRecertificationInDays(), certificateConfig);
 			}
 		}
 		
@@ -163,7 +163,7 @@ public class CertificateDetailsController extends BasicController {
 		}
 	}
 	
-	private void initRecertificationCourse(UserRequest ureq, Certificate certificate, RecertificationInDays recertificationInDays,
+	private void initRecertificationCourse(UserRequest ureq, RecertificationInDays recertificationInDays,
 			RepositoryEntryCertificateConfiguration certificateConfig) {
 		if((certificateConfig != null && certificateConfig.isValidityEnabled())
 				|| (certificateConfig == null && certificate.getNextRecertificationDate() != null)) {

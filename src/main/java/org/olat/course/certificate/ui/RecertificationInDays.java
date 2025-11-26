@@ -105,7 +105,6 @@ public record RecertificationInDays(Date nextRecertificationDate, Long days,
 				// Check if the certificate can be renewed
 				endOfWindow = program.getRecertificationWindowUnit().toDate(certificate.getNextRecertificationDate(), program.getRecertificationWindow());
 				windowDays = DateUtils.countDays(referenceDate, endOfWindow);
-				windowOpen = null;
 				if(certificate.getNextRecertificationDate().compareTo(referenceDate) <= 0 && endOfWindow.compareTo(referenceDate) >= 0) {
 					windowOpen = Boolean.TRUE;
 				} else if(certificate.getNextRecertificationDate().compareTo(referenceDate) <= 0 && endOfWindow.compareTo(referenceDate) < 0) {

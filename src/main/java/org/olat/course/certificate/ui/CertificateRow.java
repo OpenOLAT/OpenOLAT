@@ -140,6 +140,11 @@ public class CertificateRow {
 				|| (certificateConfig != null && certificateConfig.isRecertificationEnabled()));
 	}
 	
+	public boolean isWithValidity() {
+		return ((certificationProgram != null && certificationProgram.isValidityEnabled())
+				|| (certificateConfig != null && certificateConfig.isValidityEnabled()));
+	}
+	
 	public boolean isWarning() {
 		return recertificationInDays != null && recertificationInDays.isWarning();
 	}
