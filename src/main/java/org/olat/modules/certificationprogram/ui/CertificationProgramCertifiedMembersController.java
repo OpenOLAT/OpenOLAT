@@ -274,7 +274,8 @@ public class CertificationProgramCertifiedMembersController extends AbstractCert
 	
 	private void doAddMember(UserRequest ureq) {
 		List<Long> currentMembers = tableModel.getIdentitiesKeys();
-		addMemberCtrl = new AddProgramMemberController(ureq, getWindowControl(), certificationProgram, currentMembers);
+		CertificationProgram program = certificationProgramService.getCertificationProgram(certificationProgram);
+		addMemberCtrl = new AddProgramMemberController(ureq, getWindowControl(), program, currentMembers);
 		listenTo(addMemberCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addMemberCtrl.getInitialComponent(),
