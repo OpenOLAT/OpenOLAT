@@ -141,7 +141,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderYesOrNoButton(StringOutput sb, RatingComponent rating, String label, String val, boolean selected, URLBuilder ubu, Translator translator) {
-		sb.append("<a class='btn btn-default").append(" btn-primary", selected).append("'");
+		sb.append("<button class='btn btn-default").append(" btn-primary", selected).append(" o_can_have_focus'");
 		// Add onclick
 		renderAction(sb, rating, val, ubu);
 		// Add title
@@ -158,35 +158,35 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			}
 			sb.appendHtmlEscaped(label);
 		}
-		sb.append("</a>");
+		sb.append("</button>");
 	}
 	
 	private void renderYesOrNo(StringOutput sb, RatingComponent rating, String label, String val, boolean selected, URLBuilder ubu, Translator translator) {
-		sb.append("<a class='o_icon ").append(" o_icon-lg", rating.isLargeIcon()).append(" o_icon_rating_")
+		sb.append("<button class='o_icon ").append(" o_icon-lg", rating.isLargeIcon()).append(" o_icon_rating_")
 		  .append(val).append("_on", "_off", selected).append("'");
 		// Add onclick
 		renderAction(sb, rating, val, ubu);
 		// Add title
 		renderTitle(sb, rating, label, translator);
-		sb.append("> </a>");
+		sb.append("> </button>");
 	}
 	
 	private void renderStars(StringOutput sb, RatingComponent rating, List<String> labels, URLBuilder ubu, Translator translator) {
 		for (int i = 0; i < labels.size(); i++) {
 			// Add css class
-			sb.append("<a class='o_icon").append(" o_icon-lg", rating.isLargeIcon());
+			sb.append("<button id='o_c").append(rating.getDispatchID() + "-" + Integer.toString(i+1)).append("' class='o_icon").append(" o_icon-lg", rating.isLargeIcon());
 			if (rating.getCurrentRating() >= i+1) {
 				sb.append(" o_icon_rating_on");			
 			} else {
 				sb.append(" o_icon_rating_off");
 			}								
-			sb.append("'");
+			sb.append(" o_can_have_focus'");
 			renderAction(sb, rating, Integer.toString(i+1), ubu);
 			
 			// Add item label
 			String label = rating.getRatingLabel(i); 
 			renderTitle(sb, rating, label, translator);
-			sb.append("></a>");
+			sb.append("></button>");
 		}
 	}
 
@@ -197,18 +197,20 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			if(rfi == null) {
 				ubu.buildHrefAndOnclick(sb, true, cmd);
 			} else {
-				sb.append(" href=\"javascript:;\" onclick=\"javascript:")
+				sb.append(" onclick=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
+				  .append("; o_info.lastFormFocusEl='o_c").append(rating.getDispatchID() + "-" + val).append("';")
 				  .append("\"");
 			}
 		} else if(rfi != null && rfi.getAction() == FormEvent.ONCLICK) {
 			NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, RatingComponent.CMD_CLICK);
-			sb.append(" href=\"javascript:;\" onclick=\"javascript:")
+			sb.append(" onclick=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
+			  .append("; o_info.lastFormFocusEl='o_c").append(rating.getDispatchID() + "-" + val).append("';")
 			  .append("\"");
 		} else {
 			// Disabled link
-			sb.append(" href=\"javascript:;\" onclick=\"javascript:return false;\"");
+			sb.append(" onclick=\"javascript:return false;\"");
 		}
 	}
 
