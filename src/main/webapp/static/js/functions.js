@@ -2550,8 +2550,8 @@ function o_XHRNFEvent(targetUrl) {
 function o_onXHRError(jqXHR, textStatus, errorThrown, wasFlexiDirtyDirty) {
 	o_afterserver();
 	if(401 == jqXHR.status
-		|| 403 == jqXHR.status // Typical CSRF mismatch
-		|| (200 == jqXHR.status && "parsererror" === textStatus && o_isLoginPage(jqXHR))) {
+			|| 403 == jqXHR.status // Typically CSRF mismatch
+			|| (200 == jqXHR.status && "parsererror" === textStatus && o_isLoginPage(jqXHR))) {
 		let msg = o_info.oo_noresponse.replace("reload.html", window.document.location.href);
 		if(wasFlexiDirtyDirty) {
 			msg += o_info.oo_noresponse_unsaved_data.replace("back.html", "javascript:;");
@@ -2570,15 +2570,13 @@ function o_onXHRError(jqXHR, textStatus, errorThrown, wasFlexiDirtyDirty) {
 
 function o_isLoginPage(jqXHR) {
 	try {
-		if(jqXHR.responseText != null && typeof jqXHR.responseText !== "undefined") {
-			// Check if the response is the login page (session timeout) or the reload HTML fragment of the authenticated dispatcher
-			return jqXHR.responseText.indexOf('o_login_box_wrapper')
-				|| jqXHR.responseText.indexOf(">Reload<");
-		}
+		// Check if the response is the login page (session timeout) or the reload HTML fragment of the authenticated dispatcher
+		return (jqXHR.responseText != null) && (typeof jqXHR.responseText !== "undefined")
+			&& (jqXHR.responseText.indexOf('o_login_box_wrapper') >= 0 || jqXHR.responseText.indexOf(">Reload<") >= 0);
 	} catch(e) {
-		// Do nothing
+		if(window.console) console.log(e);
+		return false;
 	}
-	return false;
 }
 
 function o_pushState(historyPointId, title, url) {
