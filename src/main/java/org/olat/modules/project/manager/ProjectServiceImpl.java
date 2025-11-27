@@ -1426,9 +1426,27 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjFileSearchParams searchParams = new ProjFileSearchParams();
 		searchParams.setFiles(List.of(file));
 		List<ProjFile> files = fileDao.loadFiles(searchParams);
-		return files != null && !files.isEmpty()? files.get(0): null;
+		ProjFile reloadedFile = files != null && !files.isEmpty()? files.get(0): null;
+		if (reloadedFile != null) {
+			loadIdentity(reloadedFile.getArtefact().getCreator());
+			loadIdentity(reloadedFile.getArtefact().getContentModifiedBy());
+			loadIdentity(reloadedFile.getArtefact().getDeletedBy());
+			if (reloadedFile.getVfsMetadata() != null) {
+				loadIdentity(reloadedFile.getVfsMetadata().getFileInitializedBy());
+				loadIdentity(reloadedFile.getVfsMetadata().getFileLastModifiedBy());
+				loadIdentity(reloadedFile.getVfsMetadata().getDeletedBy());
+			}
+		}
+		return reloadedFile;
 	}
 	
+	private void loadIdentity(Identity identity) {
+		// Load the user go avoid HibernateProxy exceptions in activity log
+		if (identity != null) {
+			identity.getUser();
+		}
+	}
+
 	@Override
 	public long getFilesCount(ProjFileSearchParams searchParams) {
 		return fileDao.loadFilesCount(searchParams);
