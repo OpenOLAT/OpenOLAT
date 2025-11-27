@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import net.sf.jazzlib.ZipEntry;
-import net.sf.jazzlib.ZipInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -45,6 +43,9 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import net.sf.jazzlib.ZipEntry;
+import net.sf.jazzlib.ZipInputStream;
 
 /**
  * Initial date: Aug 07, 2023
@@ -90,6 +91,7 @@ public class AddMultipleTasksStepController extends StepFormBasicController {
 		FormLayoutContainer uploadCont = uifactory.addDefaultFormLayout("def.upload.cont", null, formLayout);
 
 		filesUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "wizard.step0.upload", uploadCont);
+		filesUploadEl.setMultiFileUpload(true);
 		filesUploadEl.setMandatory(true, "wizard.step0.upload.empty");
 	}
 
