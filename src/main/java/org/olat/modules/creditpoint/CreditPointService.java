@@ -62,6 +62,15 @@ public interface CreditPointService {
 	
 	List<CreditPointSystem> getCreditPointSystems();
 	
+	/**
+	 * The specified user list of credit point systems which he has at least one
+	 * transaction and in a certification program which use this system.
+	 * 
+	 * @param identity The identity
+	 * @return A list of credit point systems
+	 */
+	List<CreditPointSystem> getCreditPointSystems(IdentityRef identity);
+	
 	List<CreditPointSystem> getCreditPointSystems(Roles roles);
 	
 	List<CreditPointSystemInfos> getCreditPointSystemsWithInfos();

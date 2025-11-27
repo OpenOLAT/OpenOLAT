@@ -74,7 +74,9 @@ public class CreditPointUserController extends BasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.assessedIdentity = assessedIdentity;
-		systems = creditPointService.getCreditPointSystems();
+		systems = secCallback.canSeeAllSystems()
+				? creditPointService.getCreditPointSystems()
+				: creditPointService.getCreditPointSystems(assessedIdentity);
 		
 		List<Scope> systemScopes = new ArrayList<>();
 		for(CreditPointSystem system:systems) {
@@ -86,18 +88,21 @@ public class CreditPointUserController extends BasicController {
 
 		mainVC = createVelocityContainer("user_systems");
 		if(assessedIdentity.equals(ureq.getIdentity())) {
+			mainVC.contextPut("withHeader", Boolean.TRUE);
 			mainVC.contextPut("title", translate("my.credit.point"));
 		} else {
+			mainVC.contextPut("withHeader", Boolean.FALSE);
 			mainVC.contextPut("title", translate("credit.point"));
 		}
 		
 		systemsSelection = ScopeFactory.createScopeSelection("systemsSelection", mainVC, this, systemScopes);
 		putInitialPanel(mainVC);
 		
-		if(systems.isEmpty()) {
+		if(systemScopes.isEmpty()) {
 			initEmptyState();
 		} else {
-			doSelect(ureq, systems.get(0));
+			systemsSelection.setSelectedKey(systemScopes.get(0).getKey());
+			doSelect(ureq, systemsSelection.getSelectedKey());
 		}
 	}
 

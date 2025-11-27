@@ -21,7 +21,6 @@ package org.olat.modules.creditpoint.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -40,10 +39,7 @@ public class CreditPointUserToolController extends BasicController {
 		
 		CreditPointUserController creditPointUserCtrl = new CreditPointUserController(ureq, wControl);
 		listenTo(creditPointUserCtrl);
-		
-		VelocityContainer mainVC = createVelocityContainer("user_tool");
-		mainVC.put("tool", creditPointUserCtrl.getInitialComponent());
-		putInitialPanel(mainVC);
+		putInitialPanel(creditPointUserCtrl.getInitialComponent());
 	}
 
 	@Override

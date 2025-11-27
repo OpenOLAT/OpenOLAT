@@ -20,6 +20,8 @@
  */
 package org.olat.modules.creditpoint.manager;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
@@ -31,11 +33,27 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramToCurriculumElement;
+import org.olat.modules.certificationprogram.manager.CertificationProgramDAO;
+import org.olat.modules.certificationprogram.manager.CertificationProgramToCurriculumElementDAO;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
+import org.olat.modules.creditpoint.CreditPointTransaction;
+import org.olat.modules.creditpoint.CreditPointTransactionType;
 import org.olat.modules.creditpoint.CreditPointWallet;
 import org.olat.modules.creditpoint.model.CreditPointSystemWithWalletInfos;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumDAO;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +69,25 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
 	private CreditPointWalletDAO creditPointWalletDao;
 	@Autowired
 	private CreditPointSystemDAO creditPointSystemDao;
 	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
+	@Autowired
+	private CertificationProgramDAO certificationProgramDao;
+	@Autowired
+	private CreditPointTransactionDAO creditPointTransactionDao;
+	@Autowired
 	private CreditPointSystemToOrganisationDAO creditPointSystemToOrganisationDao;
+	@Autowired
+	private CertificationProgramToCurriculumElementDAO certificationProgramToCurriculumElementDao;
 	
 	private static Organisation defaultUnitTestOrganisation;
 	
@@ -109,6 +139,40 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		Assert.assertEquals(Integer.valueOf(192), reloadedSystem.getDefaultExpiration());
 		Assert.assertTrue(reloadedSystem.isRolesRestrictions());
 		Assert.assertFalse(reloadedSystem.isOrganisationsRestrictions());
+	}
+	
+	@Test
+	public void getCreditPointSystemsWithProgramsAndTransactions() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("coin");
+		
+		// A system
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("Cur. coins", "CC", Integer.valueOf(192), CreditPointExpirationType.DAY, true, false);
+
+		// Curriculum with user as participant
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-program-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element of the prgram",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-1", "Program to curriculum");
+		program.setCreditPoints(new BigDecimal("20"));
+		program.setCreditPointSystem(cpSystem);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramToCurriculumElement relation = certificationProgramToCurriculumElementDao.createRelation(program, element);
+		curriculumService.addMember(element, id, CurriculumRoles.participant, id);
+	
+		// User has at least a transaction
+		CreditPointWallet wallet = creditPointWalletDao.createWallet(id, cpSystem);
+		CreditPointTransaction transaction = creditPointTransactionDao.createTransaction(CreditPointTransactionType.deposit,
+				new BigDecimal("100"), new BigDecimal("100"), null, "Note", id, wallet, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+		Assert.assertNotNull(transaction);
+		
+		List<CreditPointSystem> systems = creditPointSystemDao.getCreditPointSystemsWithProgramsAndTransactions(id);
+		Assertions.assertThat(systems)
+			.hasSize(1)
+			.containsExactly(cpSystem);
 	}
 	
 	@Test

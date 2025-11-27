@@ -25,6 +25,8 @@ import java.util.List;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
@@ -75,6 +77,25 @@ public class CreditPointSystemDAO {
 	public List<CreditPointSystem> loadCreditPointSystems() {
 		String query = "select sys from creditpointsystem sys";
 		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointSystem.class)
+				.getResultList();
+	}
+	
+	public List<CreditPointSystem> getCreditPointSystemsWithProgramsAndTransactions(IdentityRef identity) {
+		String query = """
+				select sys from creditpointsystem sys
+				where exists (select trx.key from creditpointtransaction as trx
+				  inner join trx.wallet as wallet  
+				  where wallet.identity.key=:identityKey and wallet.creditPointSystem.key=sys.key
+				) and exists (select rel.key from certificationprogramtoelement as rel
+				  inner join rel.certificationProgram as program
+				  inner join rel.curriculumElement as el
+				  inner join el.group as baseGroup
+				  inner join baseGroup.members as membership
+				  where membership.identity.key=:identityKey and membership.role=:role and program.creditPointSystem.key=sys.key
+				)""";
+		return dbInstance.getCurrentEntityManager().createQuery(query, CreditPointSystem.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", GroupRoles.participant.name())
 				.getResultList();
 	}
 	

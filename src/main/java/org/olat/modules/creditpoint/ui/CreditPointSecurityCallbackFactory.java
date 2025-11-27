@@ -59,5 +59,10 @@ public class CreditPointSecurityCallbackFactory {
 		public boolean canCancelTransaction() {
 			return admin;
 		}
+		
+		@Override
+		public boolean canSeeAllSystems() {
+			return admin;
+		}
 	}
 }
