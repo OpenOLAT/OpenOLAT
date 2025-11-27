@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -286,13 +287,71 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.containsAnyOf(certificate);
 	}
 	
+	@Test
+	public void getUpcomingCertificatesTwoDays() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-5-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-5", "Program mailing 5");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(2);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(false);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_upcoming;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(2);
+		configuration.setTimeUnit(DurationType.day);
+		configuration  = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+
+		Date now = new Date();
+		List<Certificate> certificates = certificationProgramMailQueries.getUpcomingCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.containsExactly(certificate);
+	}
+	
+	@Test
+	public void getUpcomingCertificatesTwoDaysValidityThreeDays() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-5-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-5", "Program mailing 5");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(3);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(false);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_upcoming;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(2);
+		configuration.setTimeUnit(DurationType.day);
+		configuration  = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+
+		Date now = new Date();
+		List<Certificate> certificates = certificationProgramMailQueries.getUpcomingCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.doesNotContain(certificate);
+	}
+	
 	
 	@Test
 	public void getOverdueCertificates() {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
 		program.setValidityEnabled(true);
-		program.setValidityTimelapse(1);
-		program.setValidityTimelapseUnit(DurationType.week);
+		program.setValidityTimelapse(2);
+		program.setValidityTimelapseUnit(DurationType.day);
 		program.setRecertificationEnabled(true);
 		program.setRecertificationWindowEnabled(true);
 		program.setRecertificationWindow(1);
@@ -322,6 +381,57 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.isEmpty();
 		
 		certificate = updateCertificate(certificate, DateUtils.addDays(now, -27), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificates = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.hasSize(1)
+			.containsExactly(certificate);
+		
+		// Log sending an email
+		certificationProgramLogDao.createMailLog(certificate, configuration);
+		dbInstance.commit();
+		
+		List<Certificate> certificatesAfterMail = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
+		Assertions.assertThat(certificatesAfterMail)
+			.isEmpty();
+	}
+	
+	@Test
+	public void getOverdueCertificatesTwoDays() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-6", "Program mailing 6");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(2);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationEnabled(true);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(2);
+		program.setRecertificationWindowUnit(DurationType.day);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.reminder_overdue;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		configuration.setTime(2);
+		configuration.setTimeUnit(DurationType.day);
+		configuration = certificationProgramMailConfigurationDao.updateConfiguration(configuration);
+
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6", defaultUnitTestOrganisation, null);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(certificate);
+
+		Date now = new Date();
+		certificate = updateCertificate(certificate, DateUtils.addDays(now, 1), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificatesNotYet = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
+		Assertions.assertThat(certificatesNotYet)
+			.isEmpty();
+		
+		certificate = updateCertificate(certificate, now, program);
 		dbInstance.commit();
 		
 		List<Certificate> certificates = certificationProgramMailQueries.getOverdueCertificates(configuration, now);
@@ -398,13 +508,11 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.isEmpty();
 	}
 	
-	
-	
 	private Certificate updateCertificate(Certificate certificate, Date nextCertification, CertificationProgram program) {
-		certificate.setNextRecertificationDate(nextCertification);
+		certificate.setNextRecertificationDate(CalendarUtils.endOfDay(nextCertification));
 		if(program.isRecertificationWindowEnabled()) {
 			Date endOfWindow = program.getRecertificationWindowUnit().toDate(nextCertification, program.getRecertificationWindow());
-			((CertificateImpl)certificate).setRecertificationWindowDate(endOfWindow);
+			((CertificateImpl)certificate).setRecertificationWindowDate(CalendarUtils.endOfDay(endOfWindow));
 		}
 		certificate = certificatesDao.updateCertificate(certificate);
 		dbInstance.commitAndCloseSession();

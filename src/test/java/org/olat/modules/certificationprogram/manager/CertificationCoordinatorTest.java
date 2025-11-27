@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -824,10 +825,10 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	}
 	
 	private Certificate updateCertificate(Certificate certificate, Date nextCertification, CertificationProgram program) {
-		certificate.setNextRecertificationDate(nextCertification);
+		certificate.setNextRecertificationDate(CalendarUtils.endOfDay(nextCertification));
 		if(program.isRecertificationWindowEnabled()) {
 			Date endOfWindow = program.getRecertificationWindowUnit().toDate(nextCertification, program.getRecertificationWindow());
-			((CertificateImpl)certificate).setRecertificationWindowDate(endOfWindow);
+			((CertificateImpl)certificate).setRecertificationWindowDate(CalendarUtils.endOfDay(endOfWindow));
 		}
 		certificate = certificatesDao.updateCertificate(certificate);
 		dbInstance.commitAndCloseSession();

@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.api.Assertions;
@@ -30,10 +31,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
@@ -427,10 +430,26 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		CertificateConfig config = CertificateConfig.builder().build();
 		CertificateInfos certificateInfos = new CertificateInfos(participant, null, null, null, null, "");
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
-		waitMessageAreConsumed();
-		certificate.setNextRecertificationDate(DateUtils.addDays(now, nextRecertification));
-		((CertificateImpl)certificate).setRecertificationWindowDate(DateUtils.addDays(now, window));
+		waitCertificate(certificate.getKey());
+		certificate.setNextRecertificationDate(CalendarUtils.endOfDay(DateUtils.addDays(now, nextRecertification)));
+		((CertificateImpl)certificate).setRecertificationWindowDate(CalendarUtils.endOfDay(DateUtils.addDays(now, window)));
 		certificate = certificatesDao.updateCertificate(certificate);
 		return certificate;
+	}
+	
+	/**
+	 * Wait that the certificate is generated, email sent, and flag last set.
+	 * 
+	 * @param certificateKey The primary key of the certificate
+	 */
+	private void waitCertificate(Long certificateKey) {
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+			}
+		}, 30000);
 	}
 }
