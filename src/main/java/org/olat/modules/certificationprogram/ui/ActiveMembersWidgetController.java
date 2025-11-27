@@ -71,6 +71,7 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 	private static final String CMD_OPEN = "open";
 
 	private IndicatorsItem indicatorsEl;
+	private FormLink showAllLink;
 	private FormLink indicatorActiveLink;
 	private FormLink indicatorCertifiedLink;
 	private FormLink expiringSoonLink;
@@ -79,6 +80,7 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 	private MembersTableModel dataModel;
 	
 	private CertificationProgram certificationProgram;
+	private final String membersAreaBusinessPath;
 	
 	@Autowired
 	private UserManager userManager;
@@ -90,6 +92,7 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 	public ActiveMembersWidgetController(UserRequest ureq, WindowControl wControl, CertificationProgram certificationProgram) {
 		super(ureq, wControl);
 		this.certificationProgram = certificationProgram;
+		membersAreaBusinessPath = "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Members:0]";
 
 		initForm(ureq);
 	}
@@ -109,23 +112,23 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 		indicatorsEl = IndicatorsFactory.createItem("indicators", widgetCont);
 		
 		indicatorActiveLink = IndicatorsFactory.createIndicatorFormLink("active", CMD_OPEN, "", "", widgetCont);
-		setUrl(indicatorActiveLink, "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Members:0][Active:0][All:0]");
+		setUrl(indicatorActiveLink, membersAreaBusinessPath + "[Active:0][All:0]");
 		indicatorsEl.setKeyIndicator(indicatorActiveLink);
 		
 		List<FormItem> focusIndicators = new ArrayList<>(4);
 		indicatorCertifiedLink = IndicatorsFactory.createIndicatorFormLink("certified", CMD_OPEN, "", "", widgetCont);
-		setUrl(indicatorCertifiedLink, "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Members:0][Active:0][Certified:0]");
+		setUrl(indicatorCertifiedLink, membersAreaBusinessPath + "[Active:0][Certified:0]");
 		focusIndicators.add(indicatorCertifiedLink);
 		
 		if(certificationProgram.isValidityEnabled()) {
 			expiringSoonLink = IndicatorsFactory.createIndicatorFormLink("expiring.soon", CMD_OPEN, "", "", widgetCont);
-			setUrl(expiringSoonLink, "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Members:0][Active:0][ExpiringSoon:0]");
+			setUrl(expiringSoonLink, membersAreaBusinessPath + "[Active:0][ExpiringSoon:0]");
 			focusIndicators.add(expiringSoonLink);
 		}
 		
 		if(certificationProgram.isRecertificationEnabled()) {
 			inRecertificationLink = IndicatorsFactory.createIndicatorFormLink("certifying", CMD_OPEN, "", "", widgetCont);
-			setUrl(inRecertificationLink, "[CurriculumAdmin:0][Certification:0][CertificationProgram:" + certificationProgram.getKey() + "][Members:0][Active:0][InRecertification:0]");
+			setUrl(inRecertificationLink, membersAreaBusinessPath + "[Active:0][InRecertification:0]");
 			focusIndicators.add(inRecertificationLink);
 		}
 		
@@ -254,12 +257,16 @@ public class ActiveMembersWidgetController extends TableWidgetController impleme
 
 	@Override
 	protected String createShowAll(FormLayoutContainer widgetCont) {
-		return null;
+		showAllLink = createShowAllLink(widgetCont);
+		setUrl(showAllLink, membersAreaBusinessPath + "[Active:0][All:0]");
+		return showAllLink.getComponent().getComponentName();
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink link) {
+		if(showAllLink == source) {
+			doOpen(ureq, (String)showAllLink.getUserObject());
+		} else if(source instanceof FormLink link) {
 			if (CMD_OPEN.equals(link.getCmd()) && link.getUserObject() instanceof String businessPath) {
 				doOpen(ureq, businessPath);
 			}
