@@ -132,6 +132,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_courselog { @include o-add-icon('file-lines', true);}
 .o_icon_courseplanner { @include o-add-icon('compass-drafting');}
 .o_icon_courserun { @include o-add-icon('cube');}
+.o_icon_comment_sms { @include o-add-icon('comment-sms');}
 .o_icon_comments { @include o-add-icon('comments');}
 .o_icon_comments_none { @include o-add-icon('comment', false);}
 .o_icon_compass { @include o-add-icon('compass', false);}
