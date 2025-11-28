@@ -77,6 +77,6 @@ public interface LearningPathService {
 	
 	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
 	
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
+	public RepositoryEntry migrate(RepositoryEntry courseEntry, String title, String extRef, Identity identity);
 
 }

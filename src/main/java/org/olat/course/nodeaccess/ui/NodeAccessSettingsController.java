@@ -142,7 +142,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 				&& reSecurity.isAdministrativeUser() && hasMatchingOrgRole(ureq)) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
 			formLayout.add(migrationCont);
-			migrateLink = uifactory.addFormLink("settings.convert", migrationCont, Link.BUTTON);
+			migrateLink = uifactory.addFormLink("settings.duplicate.as.learning.path", migrationCont, Link.BUTTON);
 		}
 		
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
@@ -209,7 +209,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
 				cmc.deactivate();
 				cleanUp();
-				doMigrate(ureq, selectedKey);
+				doMigrate(ureq, selectedKey, migrationSelectionCtrl.getTitle(), migrationSelectionCtrl.getExtRef());
 			} else {
 				cmc.deactivate();
 				cleanUp();
@@ -230,11 +230,11 @@ public class NodeAccessSettingsController extends FormBasicController {
 
 	private void doMigrationSelection(UserRequest ureq) {
 		removeAsListenerAndDispose(migrationSelectionCtrl);
-		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), null);
+		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), courseEntry);
 		listenTo(migrationSelectionCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionCtrl.getInitialComponent(),
-				true, translate("migration.selection"));
+				true, translate("settings.duplicate.as.learning.path"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -249,7 +249,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		listenTo(cmc);
 	}
 
-	private void doMigrate(UserRequest ureq, String selectedKey) {
+	private void doMigrate(UserRequest ureq, String selectedKey, String title, String extRef) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
 		if (!unsupportedCourseNodes.isEmpty()) {
@@ -257,7 +257,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 			return;
 		}
 
-		RepositoryEntry lpEntry = learningPathService.migrate(courseEntry, getIdentity());
+		RepositoryEntry lpEntry = learningPathService.migrate(courseEntry, title, extRef, getIdentity());
 		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
 		if (CourseModule.COURSE_TYPE_PROGRESS.equals(selectedKey)) {
 			initProgressCourseConfig(lpEntry);

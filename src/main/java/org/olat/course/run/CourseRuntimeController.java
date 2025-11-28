@@ -961,7 +961,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				Integer index = toolsDropdown.getComponentIndex(copyLink);
 				if(index != null) {
 					convertLearningPathLink = LinkFactory.createToolLink("convert.course.learning.path",
-							translate("tools.convert.course.learning.path"), this, "o_icon o_icon-fw  o_icon_learning_path");
+							translate("tools.duplicate.as.learning.path"), this, "o_icon o_icon-fw  o_icon_learning_path");
 					toolsDropdown.addComponent(index.intValue() + 1, convertLearningPathLink);
 				}
 			}
@@ -1643,7 +1643,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
 				cmc.deactivate();
 				cleanUp();
-				doMigrate(ureq, selectedKey);
+				doMigrate(ureq, selectedKey, migrationSelectionCtrl.getTitle(), migrationSelectionCtrl.getExtRef());
 			} else {
 				cmc.deactivate();
 				cleanUp();
@@ -1747,7 +1747,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		listenTo(cmc);
 	}
 
-	private void doMigrate(UserRequest ureq, String selectedKey) {
+	private void doMigrate(UserRequest ureq, String selectedKey, String title, String extRef) {
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
 		if (!unsupportedCourseNodes.isEmpty()) {
@@ -1755,7 +1755,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			return;
 		}
 
-		RepositoryEntry lpEntry = learningPathService.migrate(getRepositoryEntry(), getIdentity());
+		RepositoryEntry lpEntry = learningPathService.migrate(getRepositoryEntry(), title, extRef, getIdentity());
 		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
 		if (CourseModule.COURSE_TYPE_PROGRESS.equals(selectedKey)) {
 			initProgressCourseConfig(lpEntry);
@@ -2854,11 +2854,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private void doMigrationSelection(UserRequest ureq) {
 		removeAsListenerAndDispose(migrationSelectionCtrl);
-		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), null);
+		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), getRepositoryEntry());
 		listenTo(migrationSelectionCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionCtrl.getInitialComponent(),
-				true, translate("migration.selection"));
+				true, translate("tools.duplicate.as.learning.path"));
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -1205,7 +1205,8 @@ public class AuthorListController extends FormBasicController implements Activat
 				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
 				cmc.deactivate();
 				cleanUp();
-				doMigrate(ureq, selectedKey, migrationSelectionCtrl.getRow());
+				doMigrate(ureq, selectedKey, migrationSelectionCtrl.getRepositoryEntry(), 
+						migrationSelectionCtrl.getTitle(), migrationSelectionCtrl.getExtRef());
 			} else {
 				cmc.deactivate();
 				cleanUp();
@@ -2224,25 +2225,26 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	private void doMigrationSelection(UserRequest ureq, AuthoringEntryRow row) {
 		removeAsListenerAndDispose(migrationSelectionCtrl);
-		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), row);
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		migrationSelectionCtrl = new MigrationSelectionController(ureq, getWindowControl(), entry);
 		listenTo(migrationSelectionCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), migrationSelectionCtrl.getInitialComponent(),
-				true, translate("migration.selection"));
+				true, translate("details.duplicate.as.learning.path"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private void doMigrate(UserRequest ureq, String selectedKey, AuthoringEntryRow row) {
-		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		ICourse course = CourseFactory.loadCourse(entry);
+	private void doMigrate(UserRequest ureq, String selectedKey, RepositoryEntry entry, String title, String extRef) {
+		RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
+		ICourse course = CourseFactory.loadCourse(reloadedEntry);
 		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
 		if (!unsupportedCourseNodes.isEmpty()) {
 			showUnsupportedMessage(ureq, unsupportedCourseNodes);
 			return;
 		}
 
-		RepositoryEntry lpEntry = learningPathService.migrate(entry, getIdentity());
+		RepositoryEntry lpEntry = learningPathService.migrate(reloadedEntry, title, extRef, getIdentity());
 		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
 		if (CourseModule.COURSE_TYPE_PROGRESS.equals(selectedKey)) {
 			initProgressCourseConfig(lpEntry);
@@ -2519,7 +2521,7 @@ public class AuthorListController extends FormBasicController implements Activat
 					addLink("new.course.from.template", "createFromTemplate", "o_icon o_icon-fw o_icon_template", null, links);
 				}
 				if (canConvertLearningPath) {
-					addLink("details.convert.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", null, links);
+					addLink("details.duplicate.as.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", null, links);
 				}
 				if(canDownload) {
 					addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", null, links);
