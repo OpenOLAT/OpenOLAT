@@ -110,7 +110,7 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	private void initCourseTemplateForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("automation.course.templates"));
 		formLayout.setFormInfo(translate("automation.course.templates.infos"));
-		formLayout.setFormInfoHelp("manual_user/area_modules/Curriculum_Management/");
+		formLayout.setFormInfoHelp("manual_user/area_modules/Course_Planner_Implementations/#tab_settings");
 		
 		instantiationEnabledEl = uifactory.addToggleButton("instantiation.enabled", "automation.instantiation.enabled",
 				translate("on"), translate("off"), formLayout);
@@ -128,7 +128,7 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	private void initCourseAccessForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("automation.course.access"));
 		formLayout.setFormInfo(translate("automation.course.access.infos"));
-		formLayout.setFormInfoHelp("manual_user/area_modules/Curriculum_Management/");
+		formLayout.setFormInfoHelp("manual_user/area_modules/Course_Planner_Implementations/#tab_settings");
 		
 		uifactory.addStaticTextElement("automation.auto.changes", "automation.auto.changes", "", formLayout);
 		

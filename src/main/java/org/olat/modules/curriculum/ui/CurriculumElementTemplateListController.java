@@ -126,7 +126,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("curriculum.templates.hint", null);
-		setFormInfoHelp("manual_user/area_modules/Curriculum_Management/");
+		setFormInfoHelp("manual_user/area_modules/Course_Planner_Implementations/#tab_content");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.repoEntry, new TypeRenderer()));
@@ -194,7 +194,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 	int loadModel() {
 		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(curriculumElement);
 		List<CurriculumElementRepositoryRow> rows = templates.stream()
-				.map(template -> forgeRow(template))
+				.map(this::forgeRow)
 				.toList();
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
