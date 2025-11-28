@@ -337,7 +337,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 
 		otpContainer.clearError();
 		if (otpEl.isEmpty()) {
-			otpContainer.setErrorKey("reg.otp.may.not.be.empty", null);
+			otpContainer.setErrorKey("reg.otp.may.not.be.empty");
 			allOk = false;
 		} else if (!isOtpValid()) {
 			setState(State.invalid);

@@ -305,6 +305,16 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	public void setAllowedSubTypes(Set<CurriculumElementTypeToType> allowedSubTypes) {
 		this.allowedSubTypes = allowedSubTypes;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("CurriculumElementType[id=").append(getKey() == null ? "NULL" : getKey().toString())
+		  .append(";displayName=").append(getDisplayName() == null ? "NULL" : getDisplayName())
+		  .append(";identifier=").append(getIdentifier() == null ? "NULL" : getIdentifier())
+		  .append("]");
+		return sb.toString();
+	}
 
 	@Override
 	public int hashCode() {

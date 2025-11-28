@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -40,7 +38,6 @@ import org.olat.core.gui.components.tree.TreePosition;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -54,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 8 déc. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MoveCurriculumElementController extends FormBasicController {
@@ -64,15 +61,11 @@ public class MoveCurriculumElementController extends FormBasicController {
 	
 	private final Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
-	private Set<CurriculumElementType> allowedTypes = new HashSet<>();
-	private Set<CurriculumElementType> allowedSiblingTypes = new HashSet<>();
-	private final List<CurriculumElement> curriculumElementsToMove;
+	private final CurriculumElement implementationElement;
+	private final CurriculumElement curriculumElementToMove;
 	
 	private Predicate<CurriculumElement> admin = c -> true;
 	private Predicate<CurriculumElement> editionOnly = c -> isEditable(c);
-
-	private CloseableModalController cmc;
-	private MoveCurriculumElementChangeTypeController elementTypeCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -80,17 +73,33 @@ public class MoveCurriculumElementController extends FormBasicController {
 	private CurriculumService curriculumService;
 	
 	public MoveCurriculumElementController(UserRequest ureq, WindowControl wControl,
-			List<CurriculumElement> curriculumElementsToMove, Curriculum curriculum,
+			CurriculumElement curriculumElementToMove, Curriculum curriculum,
 			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "move_curriculum_element");
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
-		this.curriculumElementsToMove = List.copyOf(curriculumElementsToMove);
-		curriculumModel = new CurriculumTreeModel(curriculum, curriculumElementsToMove);
-		initAllowedTypes();
+		this.curriculumElementToMove = curriculumElementToMove;
+		implementationElement = curriculumService.getImplementationOf(curriculumElementToMove);
+		
+		Map<CurriculumElementType, List<CurriculumElementType>> mapTypes = getAllowedSubTypes();
+		curriculumModel = new CurriculumTreeModel(implementationElement, curriculumElementToMove, mapTypes);
 		
 		initForm(ureq);
 		loadModel();
+	}
+	
+	private Map<CurriculumElementType, List<CurriculumElementType>> getAllowedSubTypes() {
+		List<CurriculumElementType> allTypes = curriculumService.getCurriculumElementTypes();
+		Map<CurriculumElementType, List<CurriculumElementType>> map = new HashMap<>();
+		for(CurriculumElementType type:allTypes) {
+			Set<CurriculumElementTypeToType> typeToTypes = type.getAllowedSubTypes();
+			List<CurriculumElementType> allowedSubTypes = new ArrayList<>();
+			for(CurriculumElementTypeToType typeToType:typeToTypes) {
+				allowedSubTypes.add(typeToType.getAllowedSubType());
+			}
+			map.put(type, allowedSubTypes);
+		}
+		return map;
 	}
 
 	@Override
@@ -106,98 +115,19 @@ public class MoveCurriculumElementController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<CurriculumElement> allElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
+		List<CurriculumElement> allElements = curriculumService.getCurriculumElementsDescendants(implementationElement);
+		List<CurriculumElement> activeElements = allElements.stream()
+				.filter(el -> CurriculumElementStatus.isInArray(el.getElementStatus(), CurriculumElementStatus.notDeleted()))
+				.toList();
 		Predicate<CurriculumElement> filter = secCallback.canEditCurriculumTree() ? admin : editionOnly;
-		curriculumModel.loadTreeModel(allElements, filter);
-		
-		//remove children of the curriculum element to move
-		for(CurriculumElement elementToMove:curriculumElementsToMove) {
-			TreeNode nodeToMove = curriculumModel
-					.getNodeById(CurriculumTreeModel.nodeKey(elementToMove));
-			nodeToMove.removeAllChildren();
-			if(nodeToMove.getParent() != null) {
-				nodeToMove.getParent().remove(nodeToMove);
-			}
-		}
+		curriculumModel.loadTreeModel(activeElements, filter);
 
-		// remove the elements with incompatible types
 		List<TreeNode> openedNodes = new ArrayList<>();
-		filterByAllowedTypes(curriculumModel.getRootNode(), openedNodes);
-
+		
 		List<String> nodeIds = openedNodes
 				.stream().map(TreeNode::getIdent)
 				.collect(Collectors.toList());
 		curriculumTreeEl.setOpenNodeIds(nodeIds);
-	}
-	
-	private boolean filterByAllowedTypes(TreeNode node, List<TreeNode> openedNodes) {
-		((GenericTreeNode)node).setIconCssClass(null);
-		
-		for(int i=node.getChildCount(); i-->0; ) {
-			boolean ok = filterByAllowedTypes((TreeNode)node.getChildAt(i), openedNodes);
-			if(!ok) {
-				node.remove(node.getChildAt(i));
-			}
-		}
-		
-		boolean ok = false;
-		Object uobject = node.getUserObject();
-		if(uobject instanceof CurriculumElement level) {
-			CurriculumElementType type = level.getType();
-			if(type == null || allowedTypes.contains(type)) {
-				openedNodes.add(node);
-				((GenericTreeNode)node).setIconCssClass("o_icon_node_under o_icon-rotate-180");;
-				ok = true;
-			} else if(allowedSiblingTypes.contains(type)) {
-				openedNodes.add(node);
-				// CSS class used as marker for restrictions on insertion point in tree model
-				((GenericTreeNode)node).setIconCssClass("o_icon_node_up_down");
-				ok = true;
-			} else if(node.getChildCount() > 0) {
-				openedNodes.add(node);
-				ok = true;
-			}
-		} else {
-			openedNodes.add(node);
-			ok = true;
-		}
-
-		return ok;
-	}
-	
-	private void initAllowedTypes() {
-		List<CurriculumElementType> allTypes = new ArrayList<>(curriculumService.getCurriculumElementTypes());
-		Map<CurriculumElementType, Set<CurriculumElementType>> subToParentTypes = new HashMap<>();
-		for(CurriculumElementType type:allTypes) {
-			Set<CurriculumElementTypeToType> typesToTypes = type.getAllowedSubTypes();
-			for(CurriculumElementTypeToType typeToType:typesToTypes) {
-				CurriculumElementType subTyp = typeToType.getAllowedSubType();
-				subToParentTypes
-					.computeIfAbsent(subTyp, t -> new HashSet<>())
-					.add(type);
-			}
-		}
-
-		Set<CurriculumElementType> siblingTypes = new HashSet<>();
-		Set<CurriculumElementType> analyzedTypes = new HashSet<>();
-		for(CurriculumElement element:curriculumElementsToMove) {
-			CurriculumElementType levelType = element.getType();
-			if(levelType != null && !analyzedTypes.contains(levelType)) {
-				analyzedTypes.add(levelType);
-				siblingTypes.add(levelType);
-				
-				Set<CurriculumElementType> allowed = subToParentTypes.get(levelType);
-				if(allowed != null) {
-					allTypes.retainAll(allowed);
-				}
-			}
-		}
-
-		allowedTypes = new HashSet<>(allTypes);
-		allowedSiblingTypes = new HashSet<>();
-		if(siblingTypes.size() == 1) {
-			allowedSiblingTypes.addAll(siblingTypes);
-		}
 	}
 
 	@Override
@@ -220,10 +150,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 	}
 	
 	private boolean isParent() {
-		boolean parent = false;
-		for(CurriculumElement element:curriculumElementsToMove) {
-			parent |= isParent(element);
-		}
+		boolean parent = isParent(curriculumElementToMove);
 		return parent;
 	}
 	
@@ -247,31 +174,6 @@ public class MoveCurriculumElementController extends FormBasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(elementTypeCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doMove(getSelectedPosition(), elementTypeCtrl.getInvalidElements(),
-						elementTypeCtrl.getSelectedCurriculumElementType());
-			}
-			cmc.deactivate();
-			cleanUp();
-			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, event);
-			}
-		} else if(cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(elementTypeCtrl);
-		removeAsListenerAndDispose(cmc);
-		elementTypeCtrl = null;
-		cmc = null;	
-	}
-
-	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
@@ -286,49 +188,18 @@ public class MoveCurriculumElementController extends FormBasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
 			ElementPosition position = getSelectedPosition();
-
-			List<CurriculumElementType> allowTypes = null;
-			List<CurriculumElement> invalidElements = new ArrayList<>();
-			for(CurriculumElement elementToMove:curriculumElementsToMove) {
-				List<CurriculumElementType> elementAllowTypes = curriculumService.getAllowedCurriculumElementType(position.newParent(), elementToMove);
-				if(elementToMove.getType() == null || !elementAllowTypes.contains(elementToMove.getType())) {
-					invalidElements.add(elementToMove);
-					if(allowTypes == null) {
-						allowTypes = new ArrayList<>(elementAllowTypes);
-					} else {
-						allowTypes.retainAll(elementAllowTypes);
-					}
-				}
-			}
-			
-			if(invalidElements.isEmpty()) {
-				doMove(position, List.of(), null);
-				fireEvent(ureq, Event.DONE_EVENT);
+			List<CurriculumElementType> elementAllowTypes = curriculumService.getAllowedCurriculumElementType(position.newParent(), curriculumElementToMove);
+			if(curriculumElementToMove.getType() == null || !elementAllowTypes.contains(curriculumElementToMove.getType())) {
+				// Show error
 			} else {
-				doChooseCurriculumElementType(ureq, invalidElements, allowTypes);
+				doMove(position);
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
 	}
 	
-	private void doChooseCurriculumElementType(UserRequest ureq,
-			List<CurriculumElement> invalidElements, List<CurriculumElementType> allowTypes) {
-		elementTypeCtrl = new MoveCurriculumElementChangeTypeController(ureq, getWindowControl(),
-				invalidElements, allowTypes);
-		listenTo(elementTypeCtrl);
-		
-		String title = translate("move.element.type");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), elementTypeCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doMove(ElementPosition position, List<CurriculumElement> invalidElements, CurriculumElementType type) {
-		for(CurriculumElement elementToMove:curriculumElementsToMove) {
-			if(invalidElements.contains(elementToMove) && type != null) {
-				elementToMove.setType(type);
-			}
-			curriculumService.moveCurriculumElement(elementToMove, position.newParent(), position.siblingBefore(), curriculum);
-		}
+	private void doMove(ElementPosition position) {
+		curriculumService.moveCurriculumElement(curriculumElementToMove, position.newParent(), position.siblingBefore(), curriculum);
 		dbInstance.commitAndCloseSession();
 	}
 	

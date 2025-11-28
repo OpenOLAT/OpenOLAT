@@ -940,8 +940,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			List<CurriculumElement> elementsToMove = Collections.singletonList(element);
-			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum, secCallback);
+			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), element, curriculum, secCallback);
 			listenTo(moveElementCtrl);
 			
 			String title = translate("move.element.title", StringHelper.escapeHtml(row.getDisplayName()));
@@ -1234,7 +1233,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(curriculum != null && secCallback.canEditCurriculumElement(element)) {
 				openSettingsLink = addLink("edit", "o_icon_edit", links);
 				
-				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
+				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move) && element.getParent() != null) {
 					moveLink = addLink("move.element", "o_icon_move", links);
 				}
 			}

@@ -17,9 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
+package org.olat.modules.quality.ui;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -32,35 +31,35 @@ import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.components.tree.InsertionTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.INode;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
  * 
  * Initial date: 11 mai 2018<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel {
+public class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel {
 
 	private static final long serialVersionUID = 2911319509933144413L;
 
 	public static final String LEVEL_PREFIX = "cur-el-lev-";
 	
-	private final CurriculumElement source;
-	private final CurriculumElementType sourceType;
-	private Map<CurriculumElementType, List<CurriculumElementType>> allTypes;
-
-	public CurriculumTreeModel(CurriculumElement rootElement, CurriculumElement source,
-			Map<CurriculumElementType, List<CurriculumElementType>> allTypes) {
+	public CurriculumTreeModel() {
+		this(null);
+	}
+	
+	public CurriculumTreeModel(Curriculum curriculum) {
 		GenericTreeNode root = new GenericTreeNode();
-		root.setTitle(rootElement.getDisplayName());
-		root.setUserObject(rootElement);
-		this.allTypes = allTypes;
-		this.source = source;
-		sourceType = source.getType();
+		String title = curriculum == null ? "ROOT" : curriculum.getDisplayName();
+		root.setTitle(title);
 		setRootNode(root);
+	}
+	
+	public void loadTreeModel(List<CurriculumElement> elements) {
+		loadTreeModel(elements, c -> true);
 	}
 	
 	public void loadTreeModel(List<CurriculumElement> elements, Predicate<CurriculumElement> filter) {
@@ -80,7 +79,7 @@ class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel
 			});
 
 			CurriculumElement parentElement = element.getParent();
-			if(parentElement.equals(getRootNode().getUserObject()) || !filter.test(parentElement)) {
+			if(parentElement == null || !filter.test(parentElement)) {
 				//this is a root
 				getRootNode().addChild(node);
 			} else {
@@ -110,9 +109,6 @@ class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel
 	
 	@Override
 	public boolean isSource(TreeNode node) {
-		if(node instanceof GenericTreeNode gNode) {
-			return gNode.getUserObject() instanceof CurriculumElement &&  gNode.getUserObject().equals(source);
-		}
 		return false;
 	}
 	
@@ -135,30 +131,19 @@ class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel
 
 	@Override
 	public Position[] getInsertionPosition(TreeNode node) {
-		List<Position> positions = new ArrayList<>(5);
-		
-		if(node.getUserObject() instanceof CurriculumElement element) {
-			CurriculumElementType type = element.getType();
-			if(type == null || isAllowed(element)) {
-				positions.add(Position.under);	
-			}
-				
-			if(element.getParent() != null) {
-				CurriculumElementType parentType = element.getParent().getType();
-				if(parentType == null || isAllowed(element.getParent())) {
-					positions.add(Position.up);
-					positions.add(Position.down);
-				}
-			}
+		Position[] positions;
+		if(isSource(node)) {
+			positions = new Position[0];
+		} else if(getRootNode() == node) {
+			positions = new Position[] { Position.under };
+		} else if(isInParentLine(node)) {
+			positions = new Position[0];
+		} else if(isSingleElement(node) || (node.getIconCssClass() != null && node.getIconCssClass().contains("o_icon_node_up_down"))) {
+			positions = new Position[] { Position.up, Position.down };
+		} else {
+			positions = new Position[] { Position.up, Position.down, Position.under };
 		}
-		
-		return positions.toArray(new Position[positions.size()]);
-	}
-	
-	private boolean isAllowed(CurriculumElement parentElement) {
-		final CurriculumElementType type = parentElement.getType();
-		List<CurriculumElementType> subTypes = allTypes.get(type);
-		return subTypes != null && subTypes.contains(sourceType);
+		return positions;
 	}
 
 	public static final String nodeKey(CurriculumElementRef element) {

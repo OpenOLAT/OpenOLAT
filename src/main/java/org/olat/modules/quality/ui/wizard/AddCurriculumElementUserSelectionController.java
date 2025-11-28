@@ -41,7 +41,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
-import org.olat.modules.curriculum.ui.CurriculumTreeModel;
+import org.olat.modules.quality.ui.CurriculumTreeModel;
 import org.olat.modules.quality.ui.ParticipationListController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
