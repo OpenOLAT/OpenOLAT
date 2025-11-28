@@ -88,7 +88,7 @@ public class QuestionPoolAdminPage {
 		numOfReviewEl.clear();
 		numOfReviewEl.sendKeys(Integer.toString(numOfReviews));
 		
-		By numOfStarsBy = By.xpath("//div[contains(@class,'o_rating')]/div[contains(@class,'o_rating_items')]/a[" + numOfStars + "]");
+		By numOfStarsBy = By.xpath("//div[contains(@class,'o_rating')]/div[contains(@class,'o_rating_items')]/button[" + numOfStars + "]");
 		browser.findElement(numOfStarsBy).click();
 		OOGraphene.waitBusy(browser);
 		

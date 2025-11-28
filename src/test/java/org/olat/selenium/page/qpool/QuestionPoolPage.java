@@ -90,7 +90,7 @@ public class QuestionPoolPage {
 		OOGraphene.waitElement(assessmentBy, browser).click();
 		OOGraphene.waitModalDialog(browser);
 		
-		By numOfStarsBy = By.xpath("//fieldset[contains(@class,'o_sel_qpool_review_form')]//div[contains(@class,'o_rating')]/div[contains(@class,'o_rating_items')]/a[" + numOfStars + "]");
+		By numOfStarsBy = By.xpath("//fieldset[contains(@class,'o_sel_qpool_review_form')]//div[contains(@class,'o_rating')]/div[contains(@class,'o_rating_items')]/button[" + numOfStars + "]");
 		OOGraphene.waitElement(numOfStarsBy, browser).click();
 		OOGraphene.waitBusy(browser);
 		
