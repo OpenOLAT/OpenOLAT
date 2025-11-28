@@ -226,6 +226,15 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 				sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
 			}
+			
+			int maxNumFiles = 100; // Limit of Browser / Apache / something else
+			if (!fileElem.isMultiFileUpload()) {
+				maxNumFiles = 1;
+			} else if (fileElem.getMaxUploadFiles() > -1) {
+				maxNumFiles = fileElem.getMaxUploadFiles();
+			}
+			sb.append("\" data-max-num-files=\"").append(maxNumFiles);
+			sb.append("\" data-error-box=\"").append(fileElem.isDragAndDropForm());
 			sb.append("\" class='form-control o_realchooser' tabindex='0' ");
 			if(fileElem.isMultiFileUpload()) {
 				sb.append("multiple ");
@@ -238,7 +247,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			if (onChangePos != -1) {
 				// add file upload change handler
 				sb.append(eventHandlers.substring(0, onChangePos + 10))
-				  .append("b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload);")
+				  .append("if(!b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload)) {return;}")
 				  .append(eventHandlers.substring(onChangePos + 10, eventHandlers.length()));
 			} else {
 				sb.append(eventHandlers)

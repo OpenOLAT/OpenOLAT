@@ -1346,6 +1346,8 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		let errorElementId = fileInputElement.getAttribute('id') + "_validation_error";
 		let errorEl = document.getElementById(errorElementId);
 		let maxSize = fileInputElement.getAttribute('data-max-size');
+		let maxNumFiles = fileInputElement.getAttribute('data-max-num-files');
+		let errorBox = fileInputElement.getAttribute('data-error-box') === 'true';	
 		
 		let fileSize = 0;
 		let folder = false;
@@ -1356,7 +1358,13 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			}
 		}
 		
-		if (maxSize && maxSize > null && fileSize > maxSize) {
+		if (maxNumFiles && maxNumFiles < files.length) {
+			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
+			let errorTitle = trans.translate('file.upload.error.max.num.title');
+			let errorMsg = trans.translate('file.upload.error.max.num') + " (" + trans.translate('file.upload.error.max.num.limit') + ": " + maxNumFiles + ")";
+			showMessageBox('error', errorTitle, errorMsg, undefined);
+			return false;
+		} else if (maxSize && maxSize > null && fileSize > maxSize) {
 			// show a validation error message, reset the fileInputElement and stop processing
 			// to prevent unneeded uploads of potentially really big files
 			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
@@ -1369,8 +1377,11 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		} else if(folder) {
 			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.core.commons.services.folder.ui');
 			let folderWarning = trans.translate('warning.draganddrop.folder');
-			fileErrorElement(fileInputElement, errorElementId, errorEl, folderWarning);
-			showMessageBox('warn', '', folderWarning, undefined);
+			if (errorBox) {
+				showMessageBox('warn', '', folderWarning, undefined);
+			} else {
+				fileErrorElement(fileInputElement, errorElementId, errorEl, folderWarning);
+			}
 			return false;
 		}
 		
@@ -1473,6 +1484,18 @@ function o_handleFileFormatSize(size) {
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
 
 	fileInputElement.setCustomValidity('');
+	
+	if (fileInputElement.hasAttribute('data-max-num-files')) {
+		let maxNumFiles = fileInputElement.getAttribute('data-max-num-files');
+		let files = fileInputElement.files;
+		if (maxNumFiles && maxNumFiles < files.length) {
+			let trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
+			let errorTitle = trans.translate('file.upload.error.max.num.title');
+			let errorMsg = trans.translate('file.upload.error.max.num') + " (" + trans.translate('file.upload.error.max.num.limit') + ": " + maxNumFiles + ")";
+			showMessageBox('error', errorTitle, errorMsg, undefined);
+			return;
+		}
+	}
 
 	let fileSize = formInputFileSize(fileInputElement);
 	if (fileInputElement.hasAttribute('data-max-size')) {
@@ -1542,6 +1565,7 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	if (saveButton) {
 		saveButton.className='o_button_dirty';
 	}
+	return true;
 }
 
 function o_escapeHtml(str) {

@@ -536,6 +536,10 @@ public class FileElementImpl extends FormItemImpl
 		this.i18nErrMaxFiles = i18nErrKey == null ? "form.error.max.files" : i18nErrKey;
 	}
 
+	int getMaxUploadFiles() {
+		return maxUploadFiles;
+	}
+
 	@Override
 	public void setMaxUploadSizeKB(long maxUploadSizeKB, String i18nErrKey, String[] i18nArgs) {
 		this.maxUploadSizeKB = maxUploadSizeKB;
