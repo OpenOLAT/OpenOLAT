@@ -103,7 +103,11 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 		StringBuilder sb = new StringBuilder(100);
 		String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(certificate.getIdentity());
 		String date = Formatter.formatShortDateFilesystem(certificate.getCreationDate());
-		sb.append(fullName).append("_").append(certificate.getCourseTitle()).append("_").append(date);
+		sb.append(fullName).append("_");
+		if(StringHelper.containsNonWhitespace(certificate.getCourseTitle())) {
+			sb.append("_").append(certificate.getCourseTitle());
+		}
+		sb.append("_").append(date);
 		String finalName = StringHelper.transformDisplayNameToFileSystemName(sb.toString());
 		return finalName + ".pdf";
 	}
@@ -127,6 +131,13 @@ public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	public static String getUrl(Certificate certificate) {
 		StringBuilder sb = new StringBuilder(100);
 		sb.append(Settings.getServerContextPath()).append("/certificate/")
+		  .append(certificate.getUuid()).append("/").append(getName(certificate));
+		return sb.toString();
+	}
+	
+	public static String getAbsoluteUrl(Certificate certificate) {
+		StringBuilder sb = new StringBuilder(100);
+		sb.append(Settings.getServerContextPathURI()).append("/certificate/")
 		  .append(certificate.getUuid()).append("/").append(getName(certificate));
 		return sb.toString();
 	}

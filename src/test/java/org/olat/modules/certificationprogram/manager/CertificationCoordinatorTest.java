@@ -346,6 +346,71 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assert.assertNotEquals(currentCertificate, reCertificate);
 	}
 	
+	@Test
+	public void revokeByCertificationProgram() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-3");
+		CertificationProgram program = certificationProgramService.createCertificationProgram("cer-revocation-3", "Revocation", null);
+		dbInstance.commitAndCloseSession();
+
+		boolean courseOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COURSE, new Date(), identity);
+		Assert.assertTrue(courseOk);
+		waitMessageAreConsumed();// Wait certificate is generated
+		
+		// Has a last certificate
+		Certificate certificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNotNull(certificate);
+		
+		Certificate revokedCertificate = certificationCoordinator.revokeRecertification(program, identity, actor);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(revokedCertificate);
+		Assert.assertNotNull(revokedCertificate.getRevocationDate());
+		Assert.assertEquals(CertificateStatus.revoked, revokedCertificate.getStatus());
+		
+		// Hasn't a last certificate
+		Certificate noLastCertificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNull(noLastCertificate);
+		
+		// Check the flags
+		Certificate reloadCertificate = certificatesDao.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadCertificate);
+		Assert.assertNotNull(revokedCertificate.getRevocationDate());
+		Assert.assertFalse(reloadCertificate.isLast());
+		Assert.assertEquals(CertificateStatus.revoked, reloadCertificate.getStatus());
+	}
+	
+	@Test
+	public void sendRemovedNotifications() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-user-program-3");
+		CertificationProgram program = certificationProgramService.createCertificationProgram("cer-removed-3", "Removed from program", null);
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(2);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program = certificationProgramService.updateCertificationProgram(program);
+		// Send notifications if removed from program
+		certificationProgramService.createMailConfigurations(program, CertificationProgramMailType.program_removed);
+		dbInstance.commitAndCloseSession();
+
+		boolean courseOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COURSE, new Date(), identity);
+		Assert.assertTrue(courseOk);
+		waitMessageAreConsumed();// Wait certificate is generated
+		
+		// Has a last certificate
+		Certificate certificate = certificatesDao.getLastCertificate(identity, program);
+		Assert.assertNotNull(certificate);
+		
+		Date now = new Date();
+		certificate = updateCertificate(certificate, DateUtils.addDays(now, -1), program);
+		
+		certificationCoordinator.sendRemovedNotifications(now);
+		
+		Certificate removedCertificate = certificatesDao.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(removedCertificate);
+		Assert.assertNotNull(removedCertificate.getRemovalDate());
+		Assert.assertTrue(removedCertificate.isLast());
+
+	}
+	
 	/**
 	 * Use case 1 @see https://track.frentix.com/issue/OO-9065<br>
 	 * 

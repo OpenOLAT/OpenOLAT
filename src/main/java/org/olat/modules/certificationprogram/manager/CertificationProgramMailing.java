@@ -134,7 +134,8 @@ public class CertificationProgramMailing {
 		private static final String ACTOR_EMAIL = "actorEmail";
 		private static final String ACTOR_FIRSTNAME = "actorFirstname";
 		private static final String ACTOR_LASTNAME = "actorLastname";
-		private static final String CERTIFICATE_URL = "certificatesURL";
+		private static final String CERTIFICATE_URL = "certificateURL";
+		private static final String CERTIFICATES_URL = "certificatesURL";
 		private static final String REQUIRED_CREDIT_POINTS = "requiredCreditpoints";
 		private static final String EXPIRATION_DATE = "expirationDate";
 		private static final String REMOVAL_DATE = "removalDate";
@@ -183,8 +184,11 @@ public class CertificationProgramMailing {
 			final Formatter formatter = Formatter.getInstance(locale);
 			fillContextWithStandardIdentityValues(identity, locale);
 			
+			String homeUrl = Settings.getServerContextPathURI() + "/HomeSite/" + identity.getKey() + "/certificates/0/All/0";
+			putVariablesInMailContext(CERTIFICATES_URL, homeUrl);
+			
 			if(certificate != null) {
-				String url = DownloadCertificateCellRenderer.getUrl(certificate);
+				String url = DownloadCertificateCellRenderer.getAbsoluteUrl(certificate);
 				putVariablesInMailContext(CERTIFICATE_URL, url);
 				
 				if(certificate.getNextRecertificationDate() != null) {
@@ -199,9 +203,6 @@ public class CertificationProgramMailing {
 				if(certificate.getRemovalDate() != null) {
 					putVariablesInMailContext(REMOVAL_DATE, formatter.formatDate(certificate.getRemovalDate()));
 				}
-			} else {
-				String url = Settings.getServerContextPath() + "/HomeSite/" + identity.getKey() + "/certificates/0/All/0";
-				putVariablesInMailContext(CERTIFICATE_URL, url);
 			}
 			
 			if(certificationProgram != null) {

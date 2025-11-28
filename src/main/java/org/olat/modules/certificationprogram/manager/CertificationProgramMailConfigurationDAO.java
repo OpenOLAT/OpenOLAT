@@ -28,6 +28,7 @@ import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.model.CertificationProgramMailConfigurationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,14 +76,15 @@ public class CertificationProgramMailConfigurationDAO {
 	}
 	
 	public List<CertificationProgramMailConfiguration> getConfigurations(CertificationProgramMailType type,
-			CertificationProgramMailConfigurationStatus status) {
+			CertificationProgramMailConfigurationStatus status, CertificationProgramStatusEnum programStatus) {
 		String query = """
 				select config from certificationprogrammailconfiguration as config
 				inner join fetch config.certificationProgram as program
-				where config.type=:type and config.status=:status""";
+				where config.type=:type and config.status=:status and program.status=:programStatus""";
 		return dbInstance.getCurrentEntityManager().createQuery(query, CertificationProgramMailConfiguration.class)
 				.setParameter("type", type)
 				.setParameter("status", status)
+				.setParameter("programStatus", programStatus)
 				.getResultList();
 	}
 	

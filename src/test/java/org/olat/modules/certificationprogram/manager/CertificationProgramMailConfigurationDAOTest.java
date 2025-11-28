@@ -27,7 +27,9 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramMailConfiguration;
+import org.olat.modules.certificationprogram.CertificationProgramMailConfigurationStatus;
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
+import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,8 +78,56 @@ public class CertificationProgramMailConfigurationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getConfigurationByCertificationProgramAndType() {
+	public void getConfigurationByKey() {
 		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-2", "Program mailing 2");
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_issued;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		dbInstance.commitAndCloseSession();
+		
+		CertificationProgramMailConfiguration reloadConfiguration = certificationProgramMailConfigurationDao.getConfiguration(configuration.getKey());
+		Assert.assertNotNull(reloadConfiguration);
+		Assert.assertEquals(configuration, reloadConfiguration);
+	}
+	
+	@Test
+	public void getConfigurationsByType() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-3", "Program mailing 3");
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_revoked;
+		CertificationProgramMailConfiguration activeConfiguration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		CertificationProgramMailConfiguration inactiveConfiguration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		inactiveConfiguration.setStatus(CertificationProgramMailConfigurationStatus.inactive);
+		inactiveConfiguration = certificationProgramMailConfigurationDao.updateConfiguration(inactiveConfiguration);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(activeConfiguration);
+		
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao.getConfigurations(type,
+				CertificationProgramMailConfigurationStatus.active, CertificationProgramStatusEnum.active);
+		Assertions.assertThat(configurations)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(activeConfiguration)
+			.doesNotContain(inactiveConfiguration);
+	}
+	
+	@Test
+	public void getConfigurationsByTypeInactiveProgram() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-3", "Program mailing 3");
+		program.setStatus(CertificationProgramStatusEnum.inactive);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.program_removed;
+		CertificationProgramMailConfiguration activeConfiguration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(activeConfiguration);
+		
+		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao.getConfigurations(type,
+				CertificationProgramMailConfigurationStatus.active, CertificationProgramStatusEnum.active);
+		Assertions.assertThat(configurations)
+			.doesNotContain(activeConfiguration);
+	}
+	
+	@Test
+	public void getConfigurationByCertificationProgramAndType() {
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-4", "Program mailing 4");
 		CertificationProgramMailType type = CertificationProgramMailType.certificate_issued;
 		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
 		dbInstance.commitAndCloseSession();
@@ -87,6 +137,4 @@ public class CertificationProgramMailConfigurationDAOTest extends OlatTestCase {
 				.getConfiguration(program, CertificationProgramMailType.certificate_issued);
 		Assert.assertEquals(configuration, issuedConfiguration);
 	}
-	
-
 }

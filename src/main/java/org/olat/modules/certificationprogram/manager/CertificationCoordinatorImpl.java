@@ -40,6 +40,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateConfig;
@@ -265,20 +266,27 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 	
 	@Override
-	public void revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity actor) {
+	public Certificate revokeRecertification(CertificationProgram certificationProgram, Identity identity, Identity actor) {
 		Certificate certificate = certificatesDao.getLastCertificate(identity, certificationProgram);
-		int revokedCertificates = certificatesDao.revoke(identity, certificationProgram);
-		if(revokedCertificates > 0)
-		
-		log.info("Certificate revoked {} for {} and program {} by {0}", revokedCertificates, identity, certificationProgram, actor);
-		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
-		sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
+		if(certificate instanceof CertificateImpl impl) {
+			impl.setRevocationDate(new Date());
+			impl.setLast(false);
+			impl.setStatus(CertificateStatus.revoked);
+			certificate = certificatesDao.updateCertificate(impl);
+			dbInstance.commit();
+			
+			log.info("Certificate revoked {} for {} and program {} by {0}", certificate, identity, certificationProgram, actor);
+			activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_REVOKED, RequestMode.COACH, actor);
+			sendMail(identity, certificationProgram, certificate, null, CertificationProgramMailType.certificate_revoked, actor);
+		}
+		return certificate;
 	}
 	
 	@Override
 	public void sendExpiredNotifications(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
-				.getConfigurations(CertificationProgramMailType.certificate_expired, CertificationProgramMailConfigurationStatus.active);
+				.getConfigurations(CertificationProgramMailType.certificate_expired,
+						CertificationProgramMailConfigurationStatus.active, CertificationProgramStatusEnum.active);
 		
 		for(CertificationProgramMailConfiguration configuration:configurations) {
 			CertificationProgram program = configuration.getCertificationProgram();
@@ -295,7 +303,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	@Override
 	public void sendRemovedNotifications(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
-				.getConfigurations(CertificationProgramMailType.program_removed, CertificationProgramMailConfigurationStatus.active);
+				.getConfigurations(CertificationProgramMailType.program_removed,
+						CertificationProgramMailConfigurationStatus.active, CertificationProgramStatusEnum.active);
 		
 		for(CertificationProgramMailConfiguration configuration:configurations) {
 			CertificationProgram program = configuration.getCertificationProgram();
@@ -303,16 +312,27 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			dbInstance.commit();
 			for(Certificate certificate:toNotify) {
 				Identity recipient = certificate.getIdentity();
+				if(certificate.getRemovalDate() == null) {
+					((CertificateImpl)certificate).setRemovalDate(referenceDate);
+					certificate = certificatesDao.updateCertificate(certificate);
+					dbInstance.commit();
+					if(certificate.isLast()) {
+						log.info("User {} removed of program {} automatically", recipient, program);
+						activityLog(recipient, program, CertificationLoggingAction.CERTIFICATE_REMOVED, RequestMode.AUTOMATIC, null);
+					}
+				}
+				
 				CreditPointWallet wallet = loadWallet(recipient, program);
 				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
 			}
 		}
 	}
-
+	
 	@Override
 	public void sendUpcomingReminders(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
-				.getConfigurations(CertificationProgramMailType.reminder_upcoming, CertificationProgramMailConfigurationStatus.active);
+				.getConfigurations(CertificationProgramMailType.reminder_upcoming,
+						CertificationProgramMailConfigurationStatus.active, CertificationProgramStatusEnum.active);
 		
 		for(CertificationProgramMailConfiguration configuration:configurations) {
 			CertificationProgram program = configuration.getCertificationProgram();
@@ -329,7 +349,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	@Override
 	public void sendOverdueReminders(Date referenceDate) {
 		List<CertificationProgramMailConfiguration> configurations = certificationProgramMailConfigurationDao
-				.getConfigurations(CertificationProgramMailType.reminder_overdue, CertificationProgramMailConfigurationStatus.active);
+				.getConfigurations(CertificationProgramMailType.reminder_overdue,
+						CertificationProgramMailConfigurationStatus.active, CertificationProgramStatusEnum.active);
 		
 		for(CertificationProgramMailConfiguration configuration:configurations) {
 			CertificationProgram program = configuration.getCertificationProgram();

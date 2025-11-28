@@ -22,6 +22,7 @@ package org.olat.modules.certificationprogram;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.course.certificate.Certificate;
 
 
 /**
@@ -50,7 +51,7 @@ public interface CertificationCoordinator {
 	void generateCertificate(Identity identity, CertificationProgram certificationProgram, RequestMode requestMode,
 			CertificationProgramMailType notificationType, Identity actor);
 	
-	void revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
+	Certificate revokeRecertification(CertificationProgram program, Identity identity, Identity doer);
 	
 	/**
 	 * Send the notifications for certificates which the next recertification date are in the past.
