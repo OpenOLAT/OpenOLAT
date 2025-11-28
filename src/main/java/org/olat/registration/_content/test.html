@@ -1,0 +1,26 @@
+<style>
+	.o_otp_wrapper {
+		display: flex;
+		align-items: center;
+	}
+	
+	input.o_otp_input {
+		all: unset;
+		background: linear-gradient(90deg, red 2.5ch, transparent 0), linear-gradient(90deg, black 0.2ch, transparent 0.2ch 2.3ch, black 2.3ch 2.5ch, transparent 2.5ch), linear-gradient(90deg, #EEE 2.5ch, transparent 0);
+		background-position: 12ch 0, 0 0, 0 0;
+		background-repeat: no-repeat, repeat-x, repeat-x;
+		background-size: 3ch 100%;
+		caret-color: #222;
+		caret-shape: block;
+		clip-path: inset(20% 1ch 20% 0%);
+		font-family: ui-monospace, monospace;
+		font-size: 1.5em;
+		inline-size: 24ch;
+		letter-spacing: 2ch;
+		padding-block: 1ch;
+		padding-inline-start: 0.625ch;
+	}
+</style>
+<div class="o_otp_wrapper">
+	<input type="text" class="form-control o_otp_input" size="35" maxlength="8" value="" autocomplete="one-time-code">
+</div>

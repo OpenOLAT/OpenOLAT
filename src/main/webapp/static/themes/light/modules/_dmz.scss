@@ -357,6 +357,53 @@ body.o_dmz {
 }
 
 /* Registration */
+.o_pw_otp_validation {
+	.o_sel_registration_otp {
+		display: unset;
+		align-items: unset;
+		gap: unset;
+	}
+	
+	&.o_validation {
+		.o_assistance_message {
+			margin-top: 0;
+			margin-bottom: 0;
+		}
+	}
+	
+	&.o_validation_invalid {
+		label.control-label {
+			color: $o-box-error-color;
+		}
+
+		.o_sel_registration_otp {
+			input:not(.o_typing) {
+				&.o_sel_registration_otp {
+					--otp-cell-bg-color: #{$o-box-error-bg};
+					--otp-cell-bg-color-focus: transparent;
+				}
+			}
+			
+			input::selection {
+				background-color: darken($o-box-error-bg, 10%);
+			}
+		}
+	}
+	
+	&.o_validation_valid {
+		.o_sel_registration_otp {
+			input.o_sel_registration_otp {
+				--otp-cell-bg-color: #{$o-box-success-bg};
+				--otp-cell-bg-color-focus: transparent;
+			}
+
+			input::selection {
+				background-color: darken($o-box-success-bg, 10%);
+			}
+		}
+	}
+}
+
 .o_sel_registration_2_form .form-control-static {
 	.o_desc, .o_info, .o_info_with_icon {
 		margin: 0;
@@ -386,6 +433,9 @@ body.o_dmz {
 		/* otp-gap sets the gap between each */
 		--otp-gap: 1.25;
 
+		--otp-cell-bg-color: #EEE;
+		--otp-cell-bg-color-focus: #BBB;
+		
 		/* private consts */
 		--_otp-bgsz: calc(var(--otp-ls) + 1ch);
 		--_otp-digit: 0;
@@ -393,10 +443,10 @@ body.o_dmz {
 		all: unset;
 		background:
 			linear-gradient(90deg,
-							var(--otp-bg, #BBB) calc(var(--otp-gap) * var(--otp-ls)),
+							var(--otp-cell-bg-color-focus, #BBB) calc(var(--otp-gap) * var(--otp-ls)),
 							transparent 0),
 			linear-gradient(90deg,
-							var(--otp-bg, #EEE) calc(var(--otp-gap) * var(--otp-ls)),
+							var(--otp-cell-bg-color, #EEE) calc(var(--otp-gap) * var(--otp-ls)),
 							transparent 0
 			);
 		background-position: calc(var(--_otp-digit) * var(--_otp-bgsz)) 0, 0 0;

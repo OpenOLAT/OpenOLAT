@@ -53,6 +53,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,10 +73,15 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private final Identity recipientIdentity;
 	private TemporaryKey temporaryKey;
 
+	private FormLayoutContainer infoBoxContainer;
+	private FormLayoutContainer otpContainer;
 	private TextElement otpEl;
 	private FormLink resendOtpLink;
 
 	private boolean done = false;
+
+	private enum State { initial, valid, invalid, newCode }
+	private State state = State.initial;
 
 	@Autowired
 	private RegistrationManager registrationManager;
@@ -91,6 +97,8 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private BaseSecurity securityManager;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private UserManager userManager;
 
 	public PwChangeValidationStep01Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -105,27 +113,63 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		sendValidationToken(ureq);
 
 		initForm(ureq);
+		state = State.initial;
+		updateUI();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("validation.title");
-		setFormInfo("validation.desc.pw.change");
+		setFormStyle("o_pw_otp_validation");
 
-		otpEl = uifactory.addTextElement("validation.code", "reg.otp.label", 8, "", formLayout);
+		String infoBoxPage = velocity_root + "/info_box.html";
+		infoBoxContainer = FormLayoutContainer.createCustomFormLayout("info.box", getTranslator(), infoBoxPage);
+		formLayout.add(infoBoxContainer);
+
+		StaticTextElement enterValidation = uifactory.addStaticTextElement("enter.validation", translate("validation.enter"), formLayout);
+		enterValidation.showLabel(false);
+
+		otpContainer = FormLayoutContainer.createVerticalFormLayout("otp.cont", getTranslator());
+		formLayout.add(otpContainer);
+		otpContainer.setMandatory(true);
+		otpContainer.setLabel("reg.otp.label", null);
+		
+		otpEl = uifactory.addTextElement("validation.code", null, 8, "", otpContainer);
 		otpEl.setElementCssClass("o_sel_registration_otp");
 		otpEl.setAutocomplete("one-time-code");
 		otpEl.setOneTimePassword(true);
 
-		StaticTextElement codeNotReceivedStaticText = uifactory.addStaticTextElement("reg.otp.not.received", null, formLayout);
-		codeNotReceivedStaticText.showLabel(true);
-		codeNotReceivedStaticText.setElementCssClass("o_sel_pw_change_code_not_received");
-
-		FormLayoutContainer codeNotReceivedCont = FormLayoutContainer.createHorizontalFormLayout("code_not_received_cont", getTranslator());
-		formLayout.add(codeNotReceivedCont);
-		codeNotReceivedCont.setElementCssClass("o_sel_pw_change_code_not_received");
-
-		resendOtpLink = uifactory.addFormLink("pwchange.otp.resend", codeNotReceivedCont, Link.LINK);
+		uifactory.addStaticTextElement("validation.not.received", null, translate("validation.not.received"), formLayout);
+		
+		resendOtpLink = uifactory.addFormLink("pwchange.otp.resend", formLayout, Link.BUTTON);
+	}
+	
+	private void updateUI() {
+		flc.setElementCssClass("");
+		resendOtpLink.setEnabled(true);
+		switch (state) {
+			case initial -> {
+				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.initial"));
+				infoBoxContainer.getFormItemComponent().contextPut("cssClass", "o_assistance_message o_info_with_icon");
+				flc.setElementCssClass("o_validation o_validation_initial");
+			}
+			case valid -> {
+				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.valid"));
+				infoBoxContainer.getFormItemComponent().contextPut("cssClass", "o_assistance_message o_success_with_icon");
+				flc.setElementCssClass("o_validation o_validation_valid");
+				resendOtpLink.setEnabled(false);
+			}
+			case invalid -> {
+				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.invalid"));
+				infoBoxContainer.getFormItemComponent().contextPut("cssClass", "o_assistance_message o_error_with_icon");
+				flc.setElementCssClass("o_validation o_validation_invalid");
+			}
+			case newCode -> {
+				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.newCode"));
+				infoBoxContainer.getFormItemComponent().contextPut("cssClass", "o_assistance_message o_success_with_icon");
+				flc.setElementCssClass("o_validation o_validation_new_code");
+			}
+		}
 	}
 
 	private void sendValidationToken(UserRequest ureq) {
@@ -176,13 +220,14 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		Locale locale = getUserLocale(recipientIdentity);
 		Translator userTrans = Util.createPackageTranslator(PwChangeController.class, locale);
 
+		String userDisplayName = userManager.getUserDisplayName(recipientIdentity);
 		String userName = getAuthenticationNameOrDefault(recipientIdentity);
 
 		String body;
 		String subject;
 		StringBuilder i18nBody = new StringBuilder(2048);
 		i18nBody.append("<p>")
-				.append(userTrans.translate("pwchange.intro.before"))
+				.append(userTrans.translate("pwchange.intro.greeting.with.name", userDisplayName))
 				.append("</p>");
 
 		if (hasPasskeyAuthentication(recipientIdentity)) {
@@ -290,10 +335,12 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 
 		boolean allOk = super.validateFormLogic(ureq);
 
-		if (otpEl.isEmpty("reg.otp.may.not.be.empty")) {
+		otpContainer.clearError();
+		if (otpEl.isEmpty()) {
+			otpContainer.setErrorKey("reg.otp.may.not.be.empty", null);
 			allOk = false;
 		} else if (!isOtpValid()) {
-			otpEl.setErrorKey("reg.otp.invalid");
+			setState(State.invalid);
 			allOk = false;
 		}
 
@@ -306,12 +353,20 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 			otpEl.clearSuccess();
 			otpEl.clearError();
 			if (isOtpValid()) {
-				otpEl.setSuccessKey("reg.otp.valid");
+				setState(State.valid);
 			} else {
-				otpEl.setErrorKey("reg.otp.invalid");
+				setState(State.invalid);
 			}
 		} else if (source == resendOtpLink) {
 			resendNewOtp(ureq);
+			setState(State.newCode);
+		}
+	}
+
+	private void setState(State state) {
+		if (!this.state.equals(state)) {
+			this.state = state;
+			updateUI();
 		}
 	}
 
