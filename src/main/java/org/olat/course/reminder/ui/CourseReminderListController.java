@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -188,6 +189,12 @@ public class CourseReminderListController extends FormBasicController
 	private void updateUI() {
 		boolean addVisible = reminderProvider.getMainRuleSPITypes() == null || !reminderProvider.getMainRuleSPITypes().isEmpty();
 		addButton.setVisible(addVisible);
+		
+		if (addVisible) {
+			tableEl.setEmptyTableSettings("empty.reminders.message", "empty.reminders.hint", "o_icon o_icon_reminder", "add.reminder", "o_icon o_icon_add", false);
+		} else {
+			tableEl.setEmptyTableSettings("empty.reminders.message", null, "o_icon o_icon_reminder");
+		}
 	}
 	
 	private void updateModel(UserRequest ureq) {
@@ -216,7 +223,6 @@ public class CourseReminderListController extends FormBasicController
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(false, false, true);
-		tableEl.setVisible(!rows.isEmpty());
 	}
 	
 	private boolean isVisible(ReminderInfos reminder) {
@@ -287,6 +293,10 @@ public class CourseReminderListController extends FormBasicController
 			doShowLog(ureq);
 		} else if(previewLink == source) {
 			doShowPreview(ureq);
+		} else if (source == tableEl) {
+			if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doAddReminder(ureq);
+			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
