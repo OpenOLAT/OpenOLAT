@@ -123,6 +123,46 @@ public class CertificationProgramMailQueriesTest extends OlatTestCase {
 			.doesNotContain(certificate2);
 	}
 	
+	/**
+	 * Check that the expired certificate is not found after notification is sent.
+	 */
+	@Test
+	public void getExpiredCertificatesSentNotifications() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1-1", defaultUnitTestOrganisation, null);
+		
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("PM-1", "Program mailing 1");
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(1);
+		program.setValidityTimelapseUnit(DurationType.week);
+		program = certificationProgramDao.updateCertificationProgram(program);
+		
+		CertificationProgramMailType type = CertificationProgramMailType.certificate_expired;
+		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.createConfiguration(program, type);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate expiredCertificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		Assert.assertNotNull(expiredCertificate);
+		
+		Date now = new Date();
+		expiredCertificate = updateCertificate(expiredCertificate, DateUtils.addDays(now, -1), program);
+		dbInstance.commit();
+		
+		List<Certificate> certificates = certificationProgramMailQueries.getExpiredCertificates(configuration, now);
+		Assertions.assertThat(certificates)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.containsAnyOf(expiredCertificate);
+		
+		certificationProgramLogDao.createMailLog(expiredCertificate, configuration);
+		dbInstance.commit();
+		
+		List<Certificate> certificatesAfter = certificationProgramMailQueries.getExpiredCertificates(configuration, now);
+		Assertions.assertThat(certificatesAfter)
+			.hasSizeGreaterThanOrEqualTo(0)
+			.doesNotContain(expiredCertificate);
+	}
+	
 	@Test
 	public void getRemovedCertificates() {
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-2-1", defaultUnitTestOrganisation, null);

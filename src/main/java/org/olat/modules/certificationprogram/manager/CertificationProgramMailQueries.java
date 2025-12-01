@@ -54,13 +54,14 @@ public class CertificationProgramMailQueries {
 				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
 				where cer.last=true and config.key=:configKey
 				and cer.nextRecertificationDate<:from
-				and not exists (select log from certificationprogramlog as log
+				and not exists (select log.key from certificationprogramlog as log
 				  inner join log.mailConfiguration as mailConfig
-				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
+				  where log.certificate.key=cer.key and mailConfig.type=:configType
 				)
 				""";
 
 		return dbInstance.getCurrentEntityManager().createQuery(query, Certificate.class)
+				.setParameter("configType", configuration.getType())
 				.setParameter("configKey", configuration.getKey())
 				.setParameter("from", referenceDate, TemporalType.TIMESTAMP)
 				.getResultList();
@@ -73,13 +74,14 @@ public class CertificationProgramMailQueries {
 				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
 				where cer.last=true and config.key=:configKey
 				and cer.nextRecertificationDate<:from and (cer.recertificationWindowDate is null or cer.recertificationWindowDate<:from)
-				and not exists (select log from certificationprogramlog as log
+				and not exists (select log.key from certificationprogramlog as log
 				  inner join log.mailConfiguration as mailConfig
-				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
+				  where log.certificate.key=cer.key and mailConfig.type=:configType
 				)
 				""";
 
 		return dbInstance.getCurrentEntityManager().createQuery(query, Certificate.class)
+				.setParameter("configType", configuration.getType())
 				.setParameter("configKey", configuration.getKey())
 				.setParameter("from", referenceDate, TemporalType.TIMESTAMP)
 				.getResultList();
@@ -100,7 +102,7 @@ public class CertificationProgramMailQueries {
 				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
 				where cer.last=true and config.key=:configKey
 				and cer.nextRecertificationDate<:up
-				and not exists (select log from certificationprogramlog as log
+				and not exists (select log.key from certificationprogramlog as log
 				  inner join log.mailConfiguration as mailConfig
 				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
 				)
@@ -140,7 +142,7 @@ public class CertificationProgramMailQueries {
 				inner join certificationprogrammailconfiguration as config on (config.certificationProgram.key=program.key)
 				where cer.last=true and config.key=:configKey
 				and cer.recertificationWindowDate>=:from and cer.recertificationWindowDate<:to 
-				and not exists (select log from certificationprogramlog as log
+				and not exists (select log.key from certificationprogramlog as log
 				  inner join log.mailConfiguration as mailConfig
 				  where log.certificate.key=cer.key and log.mailConfiguration.key=:configKey
 				)

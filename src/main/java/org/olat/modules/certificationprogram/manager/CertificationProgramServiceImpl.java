@@ -92,7 +92,7 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 		}
 		
 		for(CertificationProgramMailType notificationType:CertificationProgramMailType.notifications()) {
-			createMailConfigurations(program, notificationType);
+			createMailConfiguration(program, notificationType);
 		}
 		dbInstance.commit();
 		return program;
@@ -147,7 +147,7 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	}
 	
 	@Override
-	public CertificationProgramMailConfiguration createMailConfigurations(CertificationProgram program, CertificationProgramMailType type) {
+	public CertificationProgramMailConfiguration createMailConfiguration(CertificationProgram program, CertificationProgramMailType type) {
 		return certificationProgramMailConfigurationDao.createConfiguration(program, type);
 	}
 

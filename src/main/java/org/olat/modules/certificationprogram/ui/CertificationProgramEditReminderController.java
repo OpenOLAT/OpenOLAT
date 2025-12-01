@@ -205,7 +205,7 @@ public class CertificationProgramEditReminderController extends FormBasicControl
 			CertificationProgramMailType type = recertificationEl.isOneSelected() && KEY_OVERDUE.equals(recertificationEl.getSelectedKey())
 					? CertificationProgramMailType.reminder_overdue
 					: CertificationProgramMailType.reminder_upcoming;
-			configuration = certificationProgramService.createMailConfigurations(certificationProgram, type);
+			configuration = certificationProgramService.createMailConfiguration(certificationProgram, type);
 		}
 		
 		configuration.setTitle(titleEl.getValue());

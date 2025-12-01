@@ -105,7 +105,7 @@ public interface CertificationProgramService {
 	List<Identity> getEligiblesIdentitiesToRecertification(CertificationProgram program, Date referenceDate);
 	
 	
-	CertificationProgramMailConfiguration createMailConfigurations(CertificationProgram program, CertificationProgramMailType type);
+	CertificationProgramMailConfiguration createMailConfiguration(CertificationProgram program, CertificationProgramMailType type);
 	
 	List<CertificationProgramMailConfiguration> getMailConfigurations(CertificationProgram program);
 	

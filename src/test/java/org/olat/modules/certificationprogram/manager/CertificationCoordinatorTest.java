@@ -388,7 +388,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		program.setValidityTimelapseUnit(DurationType.day);
 		program = certificationProgramService.updateCertificationProgram(program);
 		// Send notifications if removed from program
-		certificationProgramService.createMailConfigurations(program, CertificationProgramMailType.program_removed);
+		certificationProgramService.createMailConfiguration(program, CertificationProgramMailType.program_removed);
 		dbInstance.commitAndCloseSession();
 
 		boolean courseOk = certificationCoordinator.processCertificationRequest(identity, program, RequestMode.COURSE, new Date(), identity);
@@ -408,7 +408,6 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 		Assert.assertNotNull(removedCertificate);
 		Assert.assertNotNull(removedCertificate.getRemovalDate());
 		Assert.assertTrue(removedCertificate.isLast());
-
 	}
 	
 	/**
@@ -707,7 +706,7 @@ public class CertificationCoordinatorTest extends OlatTestCase {
 	}
 	
 	/**
-	 * Use case 5 @see https://track.frentix.com/issue/OO-9065<br>
+	 * Use case 6 @see https://track.frentix.com/issue/OO-9065<br>
 	 * 
 	 * Validity: ON<br>
 	 * Recertification: ON (automatic)<br>

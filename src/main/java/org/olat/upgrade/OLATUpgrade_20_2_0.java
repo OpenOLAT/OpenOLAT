@@ -214,7 +214,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 		
 		for(CertificationProgramMailType type: CertificationProgramMailType.notifications()) {
 			if(!currentTypes.contains(type)) {
-				certificationProgramService.createMailConfigurations(program, type);
+				certificationProgramService.createMailConfiguration(program, type);
 			}
 		}
 		dbInstance.commitAndCloseSession();

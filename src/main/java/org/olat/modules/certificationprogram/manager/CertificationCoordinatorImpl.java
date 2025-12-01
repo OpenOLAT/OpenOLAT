@@ -243,7 +243,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 	}
 	
 	@Override
-	public void generateCertificate(Identity identity, CertificationProgram certificationProgram,
+	public Certificate generateCertificate(Identity identity, CertificationProgram certificationProgram,
 			RequestMode requestMode, CertificationProgramMailType notificationType, Identity actor) {
 		// Archive the last certificate
 		certificatesDao.removeLastFlag(identity, certificationProgram);
@@ -261,8 +261,9 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				.withSendEmailIdentityRelations(true)
 				.withCertificationProgramMailType(notificationType)
 				.build();
-		certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, certificationProgram, null, config);
 		activityLog(identity, certificationProgram, CertificationLoggingAction.CERTIFICATE_ISSUED, requestMode, actor);
+		return certificate;
 	}
 	
 	@Override
@@ -295,7 +296,8 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			for(Certificate certificate:toNotify) {
 				Identity recipient = certificate.getIdentity();
 				CreditPointWallet wallet = loadWallet(recipient, program);
-				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+				log.debug("Send certificate expired notification: {} for user {}-{} with configuration {} ({})", program.getKey(), certificate.getKey(), recipient.getKey(), configuration.getKey(), configuration.getType());
+				sendMail(recipient, program, certificate, wallet, configuration, null);
 			}
 		}
 	}
@@ -313,6 +315,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			for(Certificate certificate:toNotify) {
 				Identity recipient = certificate.getIdentity();
 				if(certificate.getRemovalDate() == null) {
+					// Let the last flag for renewing (Use case 5 for example)
 					((CertificateImpl)certificate).setRemovalDate(referenceDate);
 					certificate = certificatesDao.updateCertificate(certificate);
 					dbInstance.commit();
@@ -323,7 +326,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 				}
 				
 				CreditPointWallet wallet = loadWallet(recipient, program);
-				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+				sendMail(recipient, program, certificate, wallet, configuration, null);
 			}
 		}
 	}
@@ -341,7 +344,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			for(Certificate certificate:toNotify) {
 				Identity recipient = certificate.getIdentity();
 				CreditPointWallet wallet = loadWallet(recipient, program);
-				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+				sendMail(recipient, program, certificate, wallet, configuration, null);
 			}
 		}
 	}
@@ -359,7 +362,7 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 			for(Certificate certificate:toNotify) {
 				Identity recipient = certificate.getIdentity();
 				CreditPointWallet wallet = loadWallet(recipient, program);
-				sendMail(recipient, program, certificate, wallet, configuration.getType(), null);
+				sendMail(recipient, program, certificate, wallet, configuration, null);
 			}
 		}
 	}
@@ -385,8 +388,14 @@ public class CertificationCoordinatorImpl implements CertificationCoordinator {
 		CertificationProgramMailConfiguration configuration = certificationProgramMailConfigurationDao.getConfiguration(program, type);
 		if(configuration == null || configuration.getStatus() == CertificationProgramMailConfigurationStatus.inactive) return;
 		
+		sendMail(recipient, program, certificate, wallet, configuration, actor);
+	}
+	
+	private void sendMail(Identity recipient, CertificationProgram program, Certificate certificate, CreditPointWallet wallet,
+			CertificationProgramMailConfiguration configuration, Identity actor) {
+		if(configuration == null || configuration.getStatus() == CertificationProgramMailConfigurationStatus.inactive) return;
+		
 		MailTemplate template = CertificationProgramMailing.getTemplate(program, configuration, recipient, certificate, null, wallet, actor);
-
 		MailerResult result = new MailerResult();
 		MailContext context = new MailContextImpl(null, null, "[HomeSite:" + recipient.getKey() + "][Certificates:0][All:0]");
 		MailBundle bundle = mailService.makeMailBundle(context, recipient, template, actor, null, result);
