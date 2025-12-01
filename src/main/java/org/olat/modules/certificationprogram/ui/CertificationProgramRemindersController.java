@@ -27,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -81,8 +80,6 @@ public class CertificationProgramRemindersController extends AbstractNotificatio
 	private int count = 0;
 
 	private FormLink addReminderButton;
-	private FlexiTableElement tableEl;
-	private CertificationProgramNotificationsTableModel tableModel;
 	
 	private ToolsController toolsCtrl;
 	private ConfirmationController confirmDeleteCtrl;

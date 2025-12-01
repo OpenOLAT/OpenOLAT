@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -52,6 +53,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractNotificationsController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	protected final VelocityContainer detailsVC;
+	protected FlexiTableElement tableEl;
+	protected CertificationProgramNotificationsTableModel tableModel;
 	
 	protected final CertificationProgram certificationProgram;
 	
@@ -72,6 +75,32 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 	}
 	
 	protected abstract void loadModel();
+	
+	/**
+	 * Reopen the details controller after loading the model.
+	 * 
+	 * @param ureq The user request
+	 * @param detailsCtrl The details controller which produces a change event
+	 */
+	private void reloadModel(UserRequest ureq, CertificationProgramNotificationDetailsController detailsCtrl) {
+		CertificationProgramNotificationRow notificationRow = null;
+		if(detailsCtrl != null && detailsCtrl.getNotificationRow().getDetailsController() != null) {
+			notificationRow = detailsCtrl.getNotificationRow();
+			doCloseNotificationDetails(notificationRow);
+		}
+		
+		loadModel();
+		
+		if(notificationRow != null) {
+			int index = tableModel.getIndexByKey(notificationRow.getKey());
+			if(index >= 0) {
+				CertificationProgramNotificationRow detailsRow = tableModel.getObject(index);
+				doOpenNotificationsDetails(ureq, detailsRow);
+				tableEl.expandDetails(index);
+			}
+		}
+		tableEl.reset(false, false, false);
+	}
 	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
@@ -96,6 +125,8 @@ public abstract class AbstractNotificationsController extends FormBasicControlle
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source instanceof CertificationProgramNotificationDetailsController detailsCtrl && event == Event.CHANGED_EVENT) {
+			reloadModel(ureq, detailsCtrl);
 		} else if(cmc == source) {
 			cleanUp();
 		}

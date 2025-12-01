@@ -29,7 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -77,9 +76,6 @@ public class CertificationProgramNotificationsController extends AbstractNotific
 	
 	private int count = 0;
 
-	private FlexiTableElement tableEl;
-	private CertificationProgramNotificationsTableModel tableModel;
-	
 	private ToolsController toolsCtrl;
 	private SingleKeyTranslatorController translatorCtrl;
 	private CloseableCalloutWindowController calloutCtrl;

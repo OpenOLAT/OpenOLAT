@@ -19,6 +19,8 @@
  */
 package org.olat.modules.certificationprogram.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -35,6 +37,16 @@ public class CertificationProgramNotificationsTableModel extends DefaultFlexiTab
 	
 	public CertificationProgramNotificationsTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
+	}
+	
+	public int getIndexByKey(Long notificationKey) {
+		List<CertificationProgramNotificationRow> rows = getObjects();
+		for(int i=0; i<rows.size(); i++) {
+			if(notificationKey.equals(rows.get(i).getKey())) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	@Override

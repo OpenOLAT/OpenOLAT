@@ -79,6 +79,10 @@ public class CertificationProgramNotificationDetailsController extends FormBasic
 		this.certificationProgram = certificationProgram;
 		initForm(ureq);
 	}
+	
+	public CertificationProgramNotificationRow getNotificationRow() {
+		return notificationRow;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
