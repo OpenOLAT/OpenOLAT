@@ -2458,7 +2458,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			
 			boolean isManager = repositoryService.hasRoleExpanded(getIdentity(), entry,
 					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
-			isOwner = isManager || repositoryService.hasRole(getIdentity(), entry, GroupRoles.owner.name());
+			isOwner = isManager || repositoryService.hasRoleExpanded(getIdentity(), entry, GroupRoles.owner.name());
 			isAuthor = isManager || repositoryService.hasRoleExpanded(getIdentity(), entry, OrganisationRoles.author.name());
 			
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
