@@ -63,7 +63,7 @@ public class LoginPasswordForgottenPage {
 		OOGraphene.waitElement(otpBy, browser);
 		browser.findElement(otpBy).sendKeys(otp);
 		
-		By validatedBy = By.cssSelector(".o_sel_registration_otp .o_success_with_icon");
+		By validatedBy = By.cssSelector(".o_validation.o_validation_valid input.o_sel_registration_otp");
 		OOGraphene.waitElement(validatedBy, browser);
 		OOGraphene.nextStep(browser);
 		
