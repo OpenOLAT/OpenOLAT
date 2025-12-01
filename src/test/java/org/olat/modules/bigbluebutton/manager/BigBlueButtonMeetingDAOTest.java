@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
@@ -39,6 +40,8 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -47,13 +50,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 18 mars 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
@@ -361,6 +366,7 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		Assert.assertTrue(concurrentOverlapBefore.isEmpty());
 	}
 	
+	
 	@Test
 	public void getAutoDeleteMeetings() {
 		String externalId = UUID.randomUUID().toString();
@@ -380,9 +386,33 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAutoDeleteMeetings(date(20, 1));
-		assertThat(meetings)
-		.contains(meeting1, meeting2)
-				.doesNotContain(meeting3, meeting4, meeting5);
+		Assertions.assertThat(meetings)
+			.contains(meeting1, meeting2)
+			.doesNotContain(meeting3, meeting4, meeting5);
+	}
+	
+	@Test
+	public void getAutoDeleteMeetingsExcludeOnlineBlock() {
+		String externalId = UUID.randomUUID().toString();
+		BigBlueButtonMeetingTemplate template = bigBlueButtonMeetingTemplateDao.createTemplate("A new template", externalId, false);
+		template = bigBlueButtonMeetingTemplateDao.updateTemplate(template);
+		dbInstance.commit();
+		
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "BBB group", "bbb-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meetingWithLecture = createMeeting(random(), date(-365, 12), 15, date(-365, 14), 15, template, group);
+		BigBlueButtonMeeting meetingToDelete = createMeeting(random(), date(-365, 12), 15, date(-365, 14), 15, template, group);
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setBBBMeeting(meetingWithLecture);
+		lectureBlockDao.update(lectureBlock);
+		dbInstance.commit();
+
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAutoDeleteMeetings(date(20, 1));
+		Assertions.assertThat(meetings)
+			.contains(meetingToDelete)
+			.doesNotContain(meetingWithLecture);
 	}
 	
 	private BigBlueButtonMeeting createMeeting(String name, Date start, int leadTime, Date end, int followupTime,
