@@ -421,9 +421,9 @@ public class CertificationProgramDAOTest extends OlatTestCase {
 		
 		List<Identity> eligibleIdentities = certificationProgramDao.getEligibleForRecertifications(program, now);
 		Assertions.assertThat(eligibleIdentities)
-			.hasSize(1)
-			.containsExactlyInAnyOrder(participant)
-			.doesNotContain(outOfProgramParticipant, notParticipant);
+			.hasSize(2)
+			.containsExactlyInAnyOrder(participant, notParticipant)
+			.doesNotContain(outOfProgramParticipant);
 	}
 	
 	private Certificate generateCertificate(Identity participant, CertificationProgram program, Date now, int nextRecertification, int window) {

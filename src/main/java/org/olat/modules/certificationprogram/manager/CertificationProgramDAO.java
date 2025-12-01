@@ -26,7 +26,6 @@ import java.util.List;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -335,15 +334,6 @@ public class CertificationProgramDAO {
 		if(program.isRecertificationWindowEnabled()) {
 			sb.and().append(" cert.recertificationWindowDate>=:referenceDate");
 		}
-		
-		sb.and().append(" exists (select programRel.key from certificationprogramtoelement as programRel")
-		  .append(" inner join curriculumelement as curEl on (programRel.curriculumElement.key=curEl.key)")
-		  .append(" inner join curEl.group as cGroup")
-		  .append(" inner join cGroup.members as cMember")
-		  .append(" where programRel.certificationProgram.key=program.key and cMember.identity.key=certIdent.key")
-		  .append(" and cMember.role ").in(GroupRoles.participant)
-		  .append(")");
-
 		return sb;
 	}
 	
