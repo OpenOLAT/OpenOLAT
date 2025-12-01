@@ -184,7 +184,7 @@ public class CertificationProgramMailing {
 			final Formatter formatter = Formatter.getInstance(locale);
 			fillContextWithStandardIdentityValues(identity, locale);
 			
-			String homeUrl = Settings.getServerContextPathURI() + "url/HomeSite/" + identity.getKey() + "/certificates/0/All/0";
+			String homeUrl = Settings.getServerContextPathURI() + "/url/HomeSite/" + identity.getKey() + "/certificates/0/All/0";
 			putVariablesInMailContext(CERTIFICATES_URL, homeUrl);
 			
 			if(certificate != null) {
