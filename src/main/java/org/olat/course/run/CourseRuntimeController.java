@@ -1641,9 +1641,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (source == migrationSelectionCtrl) {
 			if (Event.DONE_EVENT.equals(event)) {
 				String selectedKey = migrationSelectionCtrl.getDesignEl().getSelectedKey();
+				String title = migrationSelectionCtrl.getTitle();
+				String extRef = migrationSelectionCtrl.getExtRef();
 				cmc.deactivate();
 				cleanUp();
-				doMigrate(ureq, selectedKey, migrationSelectionCtrl.getTitle(), migrationSelectionCtrl.getExtRef());
+				doMigrate(ureq, selectedKey, title, extRef);
 			} else {
 				cmc.deactivate();
 				cleanUp();
