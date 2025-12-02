@@ -370,7 +370,7 @@ body.o_dmz {
 				position: absolute;
 				margin-left: -1px;
 				margin-right: -1px;
-				width: calc((var(--otp-digits) - 1) * var(--_otp-bgsz) + var(--otp-gap) * var(--otp-ls) + 2px);
+				width: calc((var(--otp-digits) - 1) * var(--_otp-bgsz) + var(--otp-gap) * var(--otp-ls) + 3px); // +3px instead of 2px needed for Safari
 				background:
 						linear-gradient(90deg,
 								var(--otp-border-color, transparent) calc(var(--otp-gap) * var(--otp-ls) + 2px),
@@ -488,7 +488,7 @@ body.o_dmz {
 		clip-path: inset(20% calc(var(--otp-ls) / 2) 20% 0%);
 		font-family: ui-monospace, monospace;
 		font-size: var(--otp-fz, 1.5em);
-		inline-size: calc(var(--otp-digits) * var(--_otp-bgsz));
+		width: calc(var(--otp-digits) * var(--_otp-bgsz));
 		letter-spacing: var(--otp-ls);
 		padding-block: var(--otp-pb, 1ch);
 		padding-inline-start: calc(((var(--otp-ls) - 1ch) / 2) * var(--otp-gap));
