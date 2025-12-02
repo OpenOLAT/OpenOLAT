@@ -129,13 +129,15 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		StaticTextElement enterValidation = uifactory.addStaticTextElement("enter.validation", translate("validation.enter"), formLayout);
 		enterValidation.showLabel(false);
 
-		otpContainer = FormLayoutContainer.createVerticalFormLayout("otp.cont", getTranslator());
+		String otpPage = velocity_root + "/otp_box.html";
+		otpContainer = FormLayoutContainer.createCustomFormLayout("otp.cont", getTranslator(), otpPage);
 		formLayout.add(otpContainer);
 		otpContainer.setMandatory(true);
 		otpContainer.setLabel("reg.otp.label", null);
 		
 		otpEl = uifactory.addTextElement("validation.code", null, 8, "", otpContainer);
 		otpEl.setElementCssClass("o_sel_registration_otp");
+		otpEl.setDomReplacementWrapperRequired(false);
 		otpEl.setAutocomplete("one-time-code");
 		otpEl.setOneTimePassword(true);
 
@@ -147,6 +149,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private void updateUI() {
 		flc.setElementCssClass("");
 		resendOtpLink.setEnabled(true);
+		otpEl.setElementCssClass("o_sel_registration_otp");
 		switch (state) {
 			case initial -> {
 				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.initial"));
@@ -163,6 +166,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.invalid"));
 				infoBoxContainer.getFormItemComponent().contextPut("cssClass", "o_assistance_message o_error_with_icon");
 				flc.setElementCssClass("o_validation o_validation_invalid");
+				otpEl.setElementCssClass("o_sel_registration_otp o_invalid");
 			}
 			case newCode -> {
 				infoBoxContainer.getFormItemComponent().contextPut("text", translate("validation.message.newCode"));

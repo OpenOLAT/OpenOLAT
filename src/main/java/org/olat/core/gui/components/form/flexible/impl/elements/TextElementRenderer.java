@@ -114,12 +114,16 @@ class TextElementRenderer extends DefaultComponentRenderer {
 						.append("\"use strict\";\n")
 						.append("var otpInput = document.querySelector('[autocomplete=one-time-code]');\n")
 						.append("otpInput.addEventListener('input', () => {\n")
-						.append("    otpInput.classList.add('o_typing');\n")
 						.append("    otpInput.style.setProperty('--_otp-digit', otpInput.selectionStart);\n")
 						.append("// Check if 8 digits are entered\n")
 						.append("	if (otpInput.value.length === 8 && /^\\d{8}$/.test(otpInput.value)) {\n")
 						.append(FormJSHelper.getJSFnCallFor(te.getRootForm(), id, te.getAction()))
 						.append("   }\n")
+						.append("});\n")
+						.append("otpInput.addEventListener('keydown', () => {\n")
+						.append("    if (otpInput.value.length === 8 && otpInput.classList.contains('o_invalid')) {\n")
+						.append("        otpInput.value = '';\n")
+						.append("    };\n")
 						.append("});\n")
 						.append("</script>\n");
 			}

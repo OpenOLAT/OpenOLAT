@@ -362,6 +362,28 @@ body.o_dmz {
 		display: unset;
 		align-items: unset;
 		gap: unset;
+		
+		&.o_container {
+			position: relative;
+			
+			.o_background {
+				position: absolute;
+				margin-left: -1px;
+				margin-right: -1px;
+				width: calc((var(--otp-digits) - 1) * var(--_otp-bgsz) + var(--otp-gap) * var(--otp-ls) + 2px);
+				background:
+						linear-gradient(90deg,
+								var(--otp-border-color, transparent) calc(var(--otp-gap) * var(--otp-ls) + 2px),
+								transparent 0);
+				background-position: 0 0;
+				background-repeat: repeat;
+				background-size: var(--_otp-bgsz) 100%;
+				font-family: ui-monospace, monospace;
+				font-size: var(--otp-fz, 1.5em);
+				top: calc(20% - 1px);
+				bottom: calc(20% - 1px);
+			}
+		}
 	}
 	
 	&.o_validation {
@@ -377,28 +399,34 @@ body.o_dmz {
 		}
 
 		.o_sel_registration_otp {
-			input:not(.o_typing) {
-				&.o_sel_registration_otp {
-					--otp-cell-bg-color: #{$o-box-error-bg};
-					--otp-cell-bg-color-focus: transparent;
-				}
+			.o_background {
+				--otp-border-color: #{$o-box-error-color};				
+			}
+
+			input.o_sel_registration_otp {
+				--otp-cell-bg-color: #{$o-box-error-bg};
+				--otp-cell-bg-color-focus: #{darken($o-box-error-bg, 10%)};
 			}
 			
 			input::selection {
-				background-color: darken($o-box-error-bg, 10%);
+				background-color: rgba($o-box-error-color, 0.05);
 			}
 		}
 	}
 	
 	&.o_validation_valid {
 		.o_sel_registration_otp {
+			.o_background {
+				--otp-border-color: #{$o-box-success-color};
+			}
+
 			input.o_sel_registration_otp {
 				--otp-cell-bg-color: #{$o-box-success-bg};
 				--otp-cell-bg-color-focus: transparent;
 			}
 
 			input::selection {
-				background-color: darken($o-box-success-bg, 10%);
+				background-color: rgba($o-box-success-color, 0.05);
 			}
 		}
 	}
@@ -422,22 +450,25 @@ body.o_dmz {
 }
 
 .o_sel_registration_otp {
+	/* The width of an OTP digit */
+	--otp-ls: 2ch;
+
+	/* The width of an OTP digit background */
+	--_otp-bgsz: calc(var(--otp-ls) + 1ch);
+
+	/* The number of OTP digits */
+	--otp-digits: 8;
+
+	/* The OTP background X position where the gap begins (relative to OTP digit width) */
+	--otp-gap: 1.25;
+
 	display: flex !important;
 	align-items: center;
 	gap: 2rem;
 	input.o_sel_registration_otp {
-		/* otp-digits sets the number of "boxes" */
-		--otp-digits: 8;
-		/* otp-ls sets the width of a "box" */
-		--otp-ls: 2ch;
-		/* otp-gap sets the gap between each */
-		--otp-gap: 1.25;
-
 		--otp-cell-bg-color: #EEE;
 		--otp-cell-bg-color-focus: #BBB;
 		
-		/* private consts */
-		--_otp-bgsz: calc(var(--otp-ls) + 1ch);
 		--_otp-digit: 0;
 
 		all: unset;
