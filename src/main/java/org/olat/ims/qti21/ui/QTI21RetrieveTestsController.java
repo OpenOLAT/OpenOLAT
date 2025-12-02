@@ -232,7 +232,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 				? "confirm.stop.text.test"
 				: "confirm.stop.text.tests";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(runningIdentitiesWithExtraTime.size()))));
-		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withChecks", null, customCont,
+		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withExtraTimeChecks", null, customCont,
 				keyValues.keys(), keyValues.values());
 		withExtraTimeEl.setElementCssClass("o_assessment_mode_check");
 		
@@ -243,7 +243,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	private void initDisadvantageCompensations(FormItemContainer formLayout, List<Identity> disadvantageCompensationIdentities) {
 		if(disadvantageCompensationIdentities.isEmpty()) return;
 		
-		String page = velocity_root + "/check_with_list.html";
+		String page = velocity_root + "/check_disadvantages_with_list.html";
 		FormLayoutContainer customCont = uifactory.addCustomFormLayout("withDisadvantages", "confirm.disadvantage.compensations", page, formLayout);
 		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
 		customCont.setLabel(label, null, false);
@@ -253,7 +253,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 				? "confirm.stop.text.test"
 				: "confirm.stop.text.tests";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(disadvantageCompensationIdentities.size()))));
-		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withChecks", null, customCont,
+		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withDisadvantagesChecks", null, customCont,
 				keyValues.keys(), keyValues.values());
 		withDisadvantagesEl.setElementCssClass("o_assessment_mode_check");
 		

@@ -176,7 +176,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 				? "confirm.stop.text.exam"
 				: "confirm.stop.text.exams";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(runningIdentityKeysWithExtraTime.size()))));
-		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withChecks", "confirm.extra.time", customCont,
+		withExtraTimeEl = uifactory.addCheckboxesHorizontal("withExtraTimeChecks", "confirm.extra.time", customCont,
 				keyValues.keys(), keyValues.values());
 		withExtraTimeEl.setElementCssClass("o_assessment_mode_check");
 		
@@ -187,7 +187,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 	private void initDisadvantageCompensations(FormItemContainer formLayout, List<Long> disadvantageCompensationIdentitiesKeys) {
 		if(disadvantageCompensationIdentitiesKeys.isEmpty()) return;
 		
-		String page = velocity_root + "/check_with_list.html";
+		String page = velocity_root + "/check_disadvantages_with_list.html";
 		FormLayoutContainer customCont = uifactory.addCustomFormLayout("withDisadvantages", "confirm.disadvantage.compensations", page, formLayout);
 		String label = "<span><i class='o_icon o_icon-fw o_icon_disadvantage_compensation'> </i> " + translate("confirm.disadvantage.compensations") + "</span>";
 		customCont.setLabel(label, null, false);
@@ -197,7 +197,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 				? "confirm.stop.text.exam"
 				: "confirm.stop.text.exams";
 		keyValues.add(SelectionValues.entry("with", translate(optionKey, Integer.toString(disadvantageCompensationIdentitiesKeys.size()))));
-		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withChecks", null, customCont,
+		withDisadvantagesEl = uifactory.addCheckboxesHorizontal("withDisadvantagesChecks", null, customCont,
 				keyValues.keys(), keyValues.values());
 		withDisadvantagesEl.setElementCssClass("o_assessment_mode_check");
 		
