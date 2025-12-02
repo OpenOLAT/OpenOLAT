@@ -1,8 +1,8 @@
 <fieldset>
 	#if($r.isTrue($withHeader))
-		<h2>$title</h2>
+		<h2><i class="o_icon o_icon-fw o_icon_coins"> </i> $title</h2>
 	#else
-		<legend>$title</legend>
+		<legend><i class="o_icon o_icon-fw o_icon_coins"> </i> $title</legend>
 	#end
 	$r.render("systemsSelection")
 	#if($r.available("transactions"))

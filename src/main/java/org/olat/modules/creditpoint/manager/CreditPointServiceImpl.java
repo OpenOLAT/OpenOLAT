@@ -140,7 +140,7 @@ public class CreditPointServiceImpl implements CreditPointService {
 	
 	@Override
 	public List<CreditPointSystem> getCreditPointSystems(IdentityRef identity) {
-		return creditPointSystemDao.getCreditPointSystemsWithProgramsAndTransactions(identity);
+		return creditPointSystemDao.getCreditPointSystemsWithProgramsOrTransactions(identity);
 	}
 
 	@Override
@@ -195,6 +195,11 @@ public class CreditPointServiceImpl implements CreditPointService {
 			dbInstance.commit();
 		}
 		return wallet;
+	}
+
+	@Override
+	public List<CreditPointWallet> getWallets(IdentityRef identity) {
+		return creditPointWalletDao.getWallets(identity);
 	}
 
 	@Override

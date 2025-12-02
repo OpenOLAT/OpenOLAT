@@ -93,6 +93,21 @@ public class CreditPointWalletDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getWallets() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-2");
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("wall-2b-coin", "W2bC", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		CreditPointWallet wallet = creditPointWalletDao.createWallet(id, cpSystem);
+		dbInstance.commitAndCloseSession();
+		
+		List<CreditPointWallet> loadedWallets = creditPointWalletDao.getWallets(id);
+		Assertions.assertThat(loadedWallets)
+			.hasSize(1)
+			.containsExactly(wallet);
+	}
+	
+	@Test
 	public void getWalletsForBalanceRecalculation() {
 		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-3");
 		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wall-4");

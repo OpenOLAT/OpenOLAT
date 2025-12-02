@@ -37,6 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.creditpoint.CreditPointService;
 import org.olat.modules.creditpoint.CreditPointSystem;
 import org.olat.modules.creditpoint.CreditPointSystemStatus;
@@ -74,15 +75,21 @@ public class CreditPointUserController extends BasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.assessedIdentity = assessedIdentity;
-		systems = secCallback.canSeeAllSystems()
-				? creditPointService.getCreditPointSystems()
-				: creditPointService.getCreditPointSystems(assessedIdentity);
+		systems = creditPointService.getCreditPointSystems(assessedIdentity);
+		List<CreditPointWallet> wallets = creditPointService.getWallets(assessedIdentity);
 		
 		List<Scope> systemScopes = new ArrayList<>();
 		for(CreditPointSystem system:systems) {
 			if(system.getStatus() == CreditPointSystemStatus.active) {
+				CreditPointWallet wallet = wallets.stream()
+						.filter(w -> system.equals(w.getCreditPointSystem()))
+						.findFirst().orElse(null);
+				
+				String hint = wallet == null
+						? StringHelper.escapeHtml(system.getLabel())
+						: StringHelper.escapeHtml(CertificationHelper.creditPointsToString(wallet.getBalance(), system));
 				systemScopes.add(ScopeFactory.createScope(SYSTEM_PREFIX + system.getKey(),
-					StringHelper.escapeHtml(system.getName()), StringHelper.escapeHtml(system.getLabel())));
+					StringHelper.escapeHtml(system.getName()), hint));
 			}
 		}
 

@@ -41,7 +41,5 @@ public interface CreditPointSecurityCallback {
 	 * @return true if allowed to cancel some operations
 	 */
 	boolean canCancelTransaction();
-	
-	boolean canSeeAllSystems();
 
 }

@@ -78,6 +78,8 @@ public interface CreditPointService {
 	
 	CreditPointWallet getOrCreateWallet(Identity identity, CreditPointSystem system);
 	
+	List<CreditPointWallet> getWallets(IdentityRef identity);
+	
 	
 	CreditPointTransactionAndWallet createCreditPointTransaction(CreditPointTransactionType transactionType,
 			BigDecimal amount, Date expirationDate, String note, CreditPointWallet wallet, Identity creator, 
