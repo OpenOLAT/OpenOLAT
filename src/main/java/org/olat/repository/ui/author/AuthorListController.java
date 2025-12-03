@@ -2091,7 +2091,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		lockAndRun(ureq, ores, typeToDownload, true, run);
 	}
 	
-	void doCreateFromTemplate(UserRequest ureq, AuthoringEntryRow row) {
+	void doInstantiateAsCourse(UserRequest ureq, AuthoringEntryRow row) {
 		removeAsListenerAndDispose(createWizard);
 
 		CreateCourseFromTemplateContext context = new CreateCourseFromTemplateContext();
@@ -2100,7 +2100,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		Step start = new CreateCourseFromTemplateStep02(ureq, context);
 		StepRunnerCallback finish = (UserRequest ur, WindowControl wc, StepsRunContext rc) -> StepsMainRunController.DONE_MODIFIED;
 		createWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("new.course.from.template"), "");
+				translate("instantiate.as.course"), "");
 		listenTo(createWizard);
 
 		getWindowControl().pushAsModalDialog(createWizard.getInitialComponent());
@@ -2518,7 +2518,7 @@ public class AuthorListController extends FormBasicController implements Activat
 					}
 				}
 				if (canCreateCourseFromTemplate) {
-					addLink("new.course.from.template", "createFromTemplate", "o_icon o_icon-fw o_icon_template", null, links);
+					addLink("instantiate.as.course", "instantiateAsCourse", "o_icon o_icon-fw o_icon_template", null, links);
 				}
 				if (canConvertLearningPath) {
 					addLink("details.duplicate.as.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", null, links);
@@ -2610,8 +2610,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					doOverrideCloseResource(ureq, row);
 				} else if("delete".equals(cmd)) {
 					doDelete(ureq, Collections.singletonList(row));
-				} else if ("createFromTemplate".equals(cmd)) {
-					doCreateFromTemplate(ureq, row);
+				} else if ("instantiateAsCourse".equals(cmd)) {
+					doInstantiateAsCourse(ureq, row);
 				}
 			}
 		}
