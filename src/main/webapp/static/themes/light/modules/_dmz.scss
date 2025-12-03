@@ -407,10 +407,6 @@ body.o_dmz {
 				--otp-cell-bg-color: #{$o-box-error-bg};
 				--otp-cell-bg-color-focus: #{darken($o-box-error-bg, 10%)};
 			}
-			
-			input::selection {
-				background-color: rgba($o-box-error-color, 0.05);
-			}
 		}
 	}
 	
@@ -423,10 +419,6 @@ body.o_dmz {
 			input.o_sel_registration_otp {
 				--otp-cell-bg-color: #{$o-box-success-bg};
 				--otp-cell-bg-color-focus: transparent;
-			}
-
-			input::selection {
-				background-color: rgba($o-box-success-color, 0.05);
 			}
 		}
 	}
@@ -488,7 +480,7 @@ body.o_dmz {
 		clip-path: inset(20% calc(var(--otp-ls) / 2) 20% 0%);
 		font-family: ui-monospace, monospace;
 		font-size: var(--otp-fz, 1.5em);
-		width: calc(var(--otp-digits) * var(--_otp-bgsz));
+		inline-size: calc(var(--otp-digits) * var(--_otp-bgsz));
 		letter-spacing: var(--otp-ls);
 		padding-block: var(--otp-pb, 1ch);
 		padding-inline-start: calc(((var(--otp-ls) - 1ch) / 2) * var(--otp-gap));
