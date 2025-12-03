@@ -120,6 +120,7 @@ public class DialogFileUploadController extends FormBasicController {
 		fileChooserEl.setEnabled(false);
 
 		selectFileLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
+		selectFileLink.setElementCssClass("input-group-addon");
 		selectFileLink.setCustomEnabledLinkCSS("o_link_plain");
 		selectFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search");
 		String searchLabel = getTranslator().translate("dialog.select.file");
