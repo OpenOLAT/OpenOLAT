@@ -190,7 +190,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private void processSms() {
 		try {
 			sentToken = messageService.generateToken();
-			String msg = translate("sms.token");
+			String msg = translate("sms.token", sentToken);
 			messageService.sendMessage(msg, recipientIdentity);
 		} catch (SimpleMessageException e) {
 			showWarning("warning.message.not.send");
