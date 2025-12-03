@@ -676,7 +676,7 @@ public class LectureBlockRollCallDAO {
 		}
 		
 		Date now = new Date();
-		Set<Long> rollCallKeys = new HashSet<>();
+		Set<RollCallKey> rollCallKeys = new HashSet<>();
 		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -686,14 +686,8 @@ public class LectureBlockRollCallDAO {
 		}
 
 		query.getResultStream().forEach(rawObject -> {
-			int pos = 0;//jump roll call key
-			Long rollCallKey = PersistenceHelper.extractLong(rawObject, pos++);
-			if(rollCallKey != null) {
-				if(rollCallKeys.contains(rollCallKey)) {
-					return;
-				}
-				rollCallKeys.add(rollCallKey);
-			}
+			int pos = 0;
+			pos++;//jump roll call key
 			
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
@@ -717,6 +711,12 @@ public class LectureBlockRollCallDAO {
 			String absenceNoticeType = (String)rawObject[pos++];
 			
 			Long lectureBlockKey = (Long)rawObject[pos++];
+			RollCallKey rollCallKey = new RollCallKey(participantIdentity.getKey(), lectureBlockKey);
+			if(rollCallKeys.contains(rollCallKey)) {
+				return;
+			}
+			rollCallKeys.add(rollCallKey);
+
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
@@ -923,19 +923,13 @@ public class LectureBlockRollCallDAO {
 		}
 
 		Date now = new Date();
-		Set<Long> rollCallKeySet = new HashSet<>();
+		Set<RollCallKey> rollCallKeySet = new HashSet<>();
 		Map<Membership,LectureBlockIdentityStatistics> stats = new HashMap<>();
 		rawQuery.getResultStream().forEach(rawObject -> {
 			int pos = 0;
 			Long identityKey = (Long)rawObject[pos++];
 			String identityName = (String)rawObject[pos++];
-			Long rollCallKey = (Long)rawObject[pos++];
-			if(rollCallKey != null) {
-				if(rollCallKeySet.contains(rollCallKey)) {
-					return;
-				}
-				rollCallKeySet.add(rollCallKey);
-			}
+			pos++;
 			
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
@@ -959,6 +953,12 @@ public class LectureBlockRollCallDAO {
 			String absenceNoticeType = (String)rawObject[pos++];
 
 			Long lectureBlockKey = (Long)rawObject[pos++];
+			RollCallKey rollCallKey = new RollCallKey(identityKey, lectureBlockKey);
+			if(rollCallKeySet.contains(rollCallKey)) {
+				return;
+			}
+			rollCallKeySet.add(rollCallKey);
+			
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
@@ -1179,21 +1179,15 @@ public class LectureBlockRollCallDAO {
 			repoRequiredRate = null;
 		}
 
-		Set<Long> rollCallKeys = new HashSet<>();
+		Set<RollCallKey> rollCallKeys = new HashSet<>();
 		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultStream().forEach(rawObject ->  {
-			int pos = 0;//jump roll call key
+			int pos = 0;
 			Long identityKey = (Long)rawObject[pos++];
-			Long rollCallKey = (Long)rawObject[pos++];
-			if(rollCallKey != null) {
-				if(rollCallKeys.contains(rollCallKey)) {
-					return;
-				}
-				rollCallKeys.add(rollCallKey);
-			}
+			pos++;// Jump roll call key
 			
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
@@ -1217,6 +1211,12 @@ public class LectureBlockRollCallDAO {
 			String absenceNoticeType = (String)rawObject[pos++];
 
 			Long lectureBlockKey = (Long)rawObject[pos++];
+			RollCallKey key = new RollCallKey(identityKey, lectureBlockKey);
+			if(rollCallKeys.contains(key)) {
+				return;
+			}
+			rollCallKeys.add(key);
+			
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
@@ -1473,14 +1473,7 @@ public class LectureBlockRollCallDAO {
 				rate, currentRate);
 	}
 	
-	private static class Membership {
-		private final Long identityKey;
-		private final Long repoEntryKey;
-		
-		public Membership(Long identityKey, Long repoEntryKey) {
-			this.identityKey = identityKey;
-			this.repoEntryKey = repoEntryKey;
-		}
+	private static record Membership(Long identityKey, Long repoEntryKey) {
 
 		@Override
 		public int hashCode() {
@@ -1492,10 +1485,30 @@ public class LectureBlockRollCallDAO {
 			if(this == obj) {
 				return true;
 			}
-			if(obj instanceof Membership) {
-				Membership membership = (Membership)obj;
+			if(obj instanceof Membership membership) {
 				return identityKey != null && identityKey.equals(membership.identityKey)
 						&& repoEntryKey != null && repoEntryKey.equals(membership.repoEntryKey);
+			}
+			return false;
+		}
+	}
+	
+	private static record RollCallKey(Long identityKey, Long lectureBlockKey) {
+
+		@Override
+		public int hashCode() {
+			return (identityKey == null ? 2736478 : identityKey.hashCode())
+					+ (lectureBlockKey == null ? -47859 : lectureBlockKey.hashCode());
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof RollCallKey rollcallKey) {
+				return identityKey != null && identityKey.equals(rollcallKey.identityKey)
+						&& lectureBlockKey != null && lectureBlockKey.equals(rollcallKey.lectureBlockKey);
 			}
 			return false;
 		}
