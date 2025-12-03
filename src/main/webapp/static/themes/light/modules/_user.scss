@@ -374,7 +374,10 @@
 	.o_user_info_divider {
 		border-right: $o-user-info-divider-border;
 		border-bottom: $o-user-info-divider-border;
-		margin: 0px $o-user-info-divider-margin-base;
+		// Did not work in gothenberg
+		//margin: 0px $o-user-info-divider-margin-base;
+		width: calc(100% - 2*$o-user-info-divider-margin-base);
+		margin-left: $o-user-info-divider-margin-base;
 	}
 	
 	.o_user_info_items {
@@ -411,6 +414,7 @@
 			.o_user_info_divider {
 				margin: $o-user-info-divider-margin-base 0px;
 				align-self: stretch;
+				width: unset;
 			}
 			.o_user_info_items {
 				&.o_user_info_items_3cols {
