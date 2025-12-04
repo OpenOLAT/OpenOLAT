@@ -488,7 +488,7 @@ public class GroupController extends BasicController {
 		userToGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("overview.addusers"), "o_sel_secgroup_import_logins_wizard");
 		listenTo(userToGroupWizard);
-		getWindowControl().pushAsModalDialog(userToGroupWizard.getInitialComponent());
+		getWindowControl().pushAsTopModalDialog(userToGroupWizard.getInitialComponent());
 	}
 	
 	private void doIm(UserRequest ureq, Identity identity) {
