@@ -79,6 +79,19 @@ public class CertificationProgramToCurriculumElementDAO {
 		return programs != null && !programs.isEmpty() ? programs.get(0) : null; 
 	}
 	
+	public boolean isInCertificationProgram(CurriculumElementRef curriculumElement) {
+		String query = """
+				select rel.key from certificationprogramtoelement as rel
+				where rel.curriculumElement.key=:elementKey""";
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(query, Long.class)
+				.setParameter("elementKey", curriculumElement.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0; 
+	}
+	
 	/**
 	 * 
 	 * @param curriculumElement The curriculum element

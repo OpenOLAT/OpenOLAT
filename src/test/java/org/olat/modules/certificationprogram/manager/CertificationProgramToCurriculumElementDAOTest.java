@@ -162,6 +162,24 @@ public class CertificationProgramToCurriculumElementDAOTest extends OlatTestCase
 	}
 	
 	@Test
+	public void isInCertificationProgram() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CertificationProgram program = certificationProgramDao.createCertificationProgram("program-to-curriculum-5", "Program to curriculum");
+		CertificationProgramToCurriculumElement relation = certificationProgramToCurriculumElementDao.createRelation(program, element);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(element);
+		Assert.assertNotNull(program);
+		Assert.assertNotNull(relation);
+		
+		boolean in = certificationProgramToCurriculumElementDao.isInCertificationProgram(element);
+		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(in);
+	}
+	
+	@Test
 	public void getRelationsOfCurriculumElement() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",

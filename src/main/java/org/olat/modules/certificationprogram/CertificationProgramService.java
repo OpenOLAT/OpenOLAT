@@ -77,6 +77,8 @@ public interface CertificationProgramService {
 	
 	CertificationProgram getCertificationProgram(CurriculumElementRef element);
 	
+	boolean isInCertificationProgram(CurriculumElementRef element);
+	
 	void addCurriculumElementToCertificationProgram(CertificationProgram program, CurriculumElement element);
 	
 	void removeCurriculumElementToCertificationProgram(CurriculumElement element);

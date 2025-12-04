@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -37,7 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.modules.certificationprogram.CertificationProgram;
 import org.olat.modules.certificationprogram.CertificationProgramService;
-import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -53,7 +51,6 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 	
 	private FormToggle enableEl;
 	private SingleSelection programsEl;
-	private StaticTextElement creditPointsEl;
 	
 	private final boolean canEdit;
 	private final CurriculumElement element;
@@ -109,8 +106,6 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 		} else if(!programsPK.isEmpty()) {
 			programsEl.select(programsPK.keys()[0], true);
 		}
-		
-		creditPointsEl = uifactory.addStaticTextElement("certification.program.credit.points", "certification.program.credit.points", formLayout);
 	}
 
 	@Override
@@ -141,14 +136,6 @@ public class EditCurriculumElementCertificationProgramController extends FormBas
 	private void updateUI() {
 		boolean enabled = enableEl.isOn();
 		programsEl.setVisible(enabled);
-		
-		CertificationProgram selectedProgram = getSelectedProgram();
-		creditPointsEl.setVisible(enabled && selectedProgram != null);
-		String points = "";
-		if(selectedProgram != null) {
-			points = CertificationHelper.creditPointsToString(selectedProgram);
-		}
-		creditPointsEl.setValue(points);
 	}
 
 	@Override

@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.modules.certificationprogram.CertificationModule;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
@@ -89,6 +90,8 @@ public class EditCurriculumElementController extends BasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private CertificationModule certificationProgramModule;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 	
 	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum,
@@ -129,20 +132,25 @@ public class EditCurriculumElementController extends BasicController {
 		optionsLink = LinkFactory.createLink("curriculum.element.options", getTranslator(), this);
 		segmentButtonsCmp.addButton(optionsLink, false);
 
-		if(certificationProgramModule.isEnabled()) {
-			certificationProgramLink = LinkFactory.createLink("curriculum.element.certification.program", getTranslator(), this);
-			segmentButtonsCmp.addButton(certificationProgramLink, false);
-		}
+		certificationProgramLink = LinkFactory.createLink("curriculum.element.certification.program", getTranslator(), this);
+		segmentButtonsCmp.addButton(certificationProgramLink, false);
 		
 		previewButton = LinkFactory.createButton("preview.info", mainVC, this);
 		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
 		previewButton.setVisible(element != null && element.getParent() == null);
 		
+		updateUI();
 		doOpenMetadata(ureq);
 	}
 
 	public CurriculumElement getElement() {
 		return element;
+	}
+	
+	private void updateUI() {
+		boolean isCertificationAvailable = certificationProgramModule.isEnabled() && (element.isSingleCourseImplementation()
+				|| certificationProgramService.isInCertificationProgram(element));
+		certificationProgramLink.setVisible(isCertificationAvailable);
 	}
 
 	@Override
@@ -151,6 +159,7 @@ public class EditCurriculumElementController extends BasicController {
 			if (Event.DONE_EVENT == event) {
 				element = metadataCtrl.getCurriculumElement();
 				exposeToVC();
+				updateUI();
 				fireEvent(ureq, event);
 			}
 		} else if (source == infoCtrl) {

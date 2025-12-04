@@ -205,6 +205,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	public CertificationProgram getCertificationProgram(CurriculumElementRef element) {
 		return certificationProgramToCurriculumElementDao.getCertificationProgram(element);
 	}
+	
+	@Override
+	public boolean isInCertificationProgram(CurriculumElementRef element) {
+		return certificationProgramToCurriculumElementDao.isInCertificationProgram(element);
+	}
 
 	@Override
 	public void addCurriculumElementToCertificationProgram(CertificationProgram program, CurriculumElement element) {
