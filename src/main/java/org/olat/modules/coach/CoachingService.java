@@ -35,6 +35,7 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
@@ -43,8 +44,8 @@ import org.olat.modules.coach.model.ParticipantStatisticsEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.SearchParticipantsStatisticsParams;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -94,7 +95,7 @@ public interface CoachingService {
 	 * @return A list of courses statistics
 	 */
 	public List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role,
-			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);
+			CoursesStatisticsParams coursesStatisticsParams);
 
 	public List<Curriculum> getCoursesCurriculums(Identity identity, GroupRoles role,
 			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup);

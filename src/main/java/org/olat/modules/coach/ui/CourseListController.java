@@ -91,6 +91,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
 import org.olat.modules.coach.ui.ParticipantsTableDataModel.ParticipantCols;
@@ -505,10 +506,10 @@ public class CourseListController extends FormBasicController implements Activat
 				.map(Mark::getOLATResourceable)
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
-
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(runtimeTypesGroup);
 		List<CourseStatEntry> courseStatistics = curriculumElement != null
 				? coachingService.getCoursesStatistics(curriculumElement)
-				: coachingService.getCoursesStatistics(getIdentity(), role, runtimeTypesGroup);
+				: coachingService.getCoursesStatistics(getIdentity(), role, coursesStatisticsParams);
 		List<CourseStatEntryRow> rows = courseStatistics.stream()
 				.map(stats -> forgeRow(stats, markedKeys.contains(stats.getRepoKey())))
 				.collect(Collectors.toList());

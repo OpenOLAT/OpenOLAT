@@ -41,6 +41,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -286,8 +287,10 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getCoursesStatistics() {
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams
+				.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> courseStatEntries = coachingService.getCoursesStatistics(coach10,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assert.assertNotNull(courseStatEntries);
 		List<Long> coachedCourses = coachToCourseMap.get(coach10.getKey());
 		Assert.assertNotNull(coachedCourses);

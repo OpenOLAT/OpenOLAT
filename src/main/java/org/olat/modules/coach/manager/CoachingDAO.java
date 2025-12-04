@@ -52,6 +52,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.modules.coach.model.CompletionStats;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -498,25 +499,33 @@ public class CoachingDAO {
 		
 		Map<Long,CourseStatEntry> map = getCourses(element, null, null, status, runtimeTypes);
 		if(!map.isEmpty()) {
-			loadCoursesStatistics(element, null, null, status, runtimeTypes, map);
+			loadCoursesStatistics(element, null, null, status, runtimeTypes, true, map);
 			loadCoursesStatisticsStatements(element, null, null, status, map);
 			loadCoursesCompletions(element, null, null, status, map);
 		}
 		return new ArrayList<>(map.values());
 	}
 	
-	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role, CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
-		final List<RepositoryEntryRuntimeType> runtimeTypes = runtimeTypesGroup.runtimeTypes();
+	protected List<CourseStatEntry> getCoursesStatistics(Identity identity, GroupRoles role, CoursesStatisticsParams params) {
+		final List<RepositoryEntryRuntimeType> runtimeTypes = params.runtimeTypes();
 		final List<RepositoryEntryStatusEnum> status = role == GroupRoles.owner
 		  		? List.of(RepositoryEntryStatusEnum.preparationToClosed())
 		  		: List.of(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		
 		Map<Long,CourseStatEntry> map = getCourses(null, identity, role, status, runtimeTypes);
-		if(!map.isEmpty() && runtimeTypesGroup.loadStatistics()) {
-			loadCoursesStatistics(null, identity, role, status, runtimeTypes, map);
-			loadCoursesStatisticsStatements(null, identity, role, status, map);
-			loadCoursesCompletions(null, identity, role, status, map);
-			loadCoursesReferences(identity, role, map);
+		if(!map.isEmpty()) {
+			if(params.withStatistics() || params.withCertificates()) {
+				loadCoursesStatistics(null, identity, role, status, runtimeTypes, params.withCertificates(), map);
+			}
+			if(params.withStatements()) {
+				loadCoursesStatisticsStatements(null, identity, role, status, map);
+			}
+			if(params.withCompletions()) {
+				loadCoursesCompletions(null, identity, role, status, map);
+			}
+			if(params.withReferences()) {
+				loadCoursesReferences(identity, role, map);
+			}
 		}
 		return new ArrayList<>(map.values());
 	}
@@ -596,24 +605,30 @@ public class CoachingDAO {
 	}
 	
 	private void loadCoursesStatistics(CurriculumElement element, IdentityRef coach, GroupRoles role,
-			List<RepositoryEntryStatusEnum> status, List<RepositoryEntryRuntimeType> runtimeTypes, Map<Long,CourseStatEntry> map) {
+			List<RepositoryEntryStatusEnum> status, List<RepositoryEntryRuntimeType> runtimeTypes,
+			boolean withCertificates, Map<Long,CourseStatEntry> map) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select v.key,")
 		  .append("  count(distinct participantMembers.identity.key) as numOfParticipants,")
 		  .append("  count(distinct courseInfos.key) as numOfVisited,")
-		  .append("  max(courseInfos.recentLaunch) as lastvisit,")
-		  .append("  sum(case when certificateConfig.automaticCertificationEnabled=true or certificateConfig.manualCertificationEnabled=true then 1 else 0 end) as numOfCoursesWithCertificate,")
-		  .append("  count(certificate.key) as numOfCertificates, ")
-		  .append("  sum(case when certificate.nextRecertificationDate<:now then 1 else 0 end) as numOfInvalidCertificates")
-		  .append(" from repositoryentry v")
+		  .append("  max(courseInfos.recentLaunch) as lastvisit");
+		if(withCertificates) {
+			sb.append(",  sum(case when certificateConfig.automaticCertificationEnabled=true or certificateConfig.manualCertificationEnabled=true then 1 else 0 end) as numOfCoursesWithCertificate,")
+			  .append("  count(certificate.key) as numOfCertificates, ")
+		      .append("  sum(case when certificate.nextRecertificationDate<:now then 1 else 0 end) as numOfInvalidCertificates");
+		}
+		sb.append(" from repositoryentry v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as participantGroup")
 		  .append(" inner join participantGroup.members as participantMembers on (participantMembers.role='participant')")
-		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key and courseInfos.resource.key=res.key)")
-		  .append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key and res.resName='CourseModule')")
-		  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)")
-		  .where()
+		  .append(" left join usercourseinfos as courseInfos on (courseInfos.identity.key=participantMembers.identity.key and courseInfos.resource.key=res.key)");
+		if(withCertificates) { 
+			sb.append(" left join certificateentryconfig as certificateConfig on (certificateConfig.entry.key=v.key and res.resName='CourseModule')")
+			  .append(" left join certificate as certificate on (certificate.identity.key=participantMembers.identity.key and certificate.last=true and certificate.olatResource.key=res.key)");
+		}
+		  
+		sb.where()
 		  .append(" v.status in :status and v.runtimeType in :runtimeTypes")
 		  .and();
 		
@@ -642,8 +657,10 @@ public class CoachingDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("runtimeTypes", runtimeTypesList)
-				.setParameter("status", statusList)
-				.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+				.setParameter("status", statusList);
+		if(withCertificates) {
+			query.setParameter("now", new Date(), TemporalType.TIMESTAMP);
+		}
 		if(element != null) {
 			query.setParameter("elementGroupKey", element.getGroup().getKey());
 		} else {

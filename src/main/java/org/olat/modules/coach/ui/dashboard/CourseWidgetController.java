@@ -59,6 +59,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.ui.CourseListController;
 import org.olat.modules.coach.ui.component.CompletionCellRenderer;
@@ -182,10 +183,11 @@ public class CourseWidgetController extends TableWidgetController implements Fle
 				.map(Mark::getOLATResourceable)
 				.map(OLATResourceable::getResourceableId)
 				.collect(Collectors.toSet());
-		
+
+		CoursesStatisticsParams coursesStatisticsParams = new CoursesStatisticsParams(true, false, true, false, false,
+				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular.runtimeTypes());
 		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity(), GroupRoles.coach,
-				CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
-		
+				coursesStatisticsParams);
 		updateIndicators(courseStatistics, markedKeys);
 		updateTable(courseStatistics, markedKeys);
 	}

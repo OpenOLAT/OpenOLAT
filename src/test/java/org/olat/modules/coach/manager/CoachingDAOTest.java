@@ -55,6 +55,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.coach.CoachingLargeTest;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.ParticipantStatisticsEntry;
@@ -396,8 +397,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		
 		// Courses statistics
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeStats = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(1, nativeStats.size());
 		CourseStatEntry nativeStat = nativeStats.get(0);
@@ -567,8 +569,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Course statistics
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeStats = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assert.assertNotNull(nativeStats);
 		Assert.assertEquals(3, nativeStats.size());
 		CourseStatEntry entryRe1 = getCourseStatEntry(re1, nativeStats);
@@ -748,8 +751,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(5.5f, entryGroup2.getAverageScore(), 0.0001f);
 		
 		// Course statistics
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> coursesStatisticsAsOwner = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.owner, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.owner, coursesStatisticsParams);
 		Assertions.assertThat(coursesStatisticsAsOwner)
 			.hasSize(2);
 		//re 1
@@ -772,7 +776,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(5.5f, entryCourse2.getAverageScore(), 0.0001f);
 		
 		List<CourseStatEntry> coursesStatisticsAsCoach = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assertions.assertThat(coursesStatisticsAsCoach)
 			.hasSize(1);
 		//re 3
@@ -955,8 +959,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 
 		// Course statistics
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> courseCoachCourseStats = coachingDAO.getCoursesStatistics(courseCoach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assert.assertNotNull(courseCoachCourseStats);
 		Assert.assertEquals(1, courseCoachCourseStats.size());
 		CourseStatEntry entryCourse3 = getCourseStatEntry(re3, courseCoachCourseStats);
@@ -970,7 +975,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		// Group coach can see course 3 via group 3
 		List<CourseStatEntry> groupCoachCourseStats = coachingDAO.getCoursesStatistics(groupCoach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assert.assertNotNull(groupCoachCourseStats);
 		Assert.assertEquals(1, groupCoachCourseStats.size());
 		CourseStatEntry entryCourse3g = getCourseStatEntry(re3, groupCoachCourseStats);
@@ -1091,8 +1096,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNull(entryGroup1.getAverageScore());
 		
 		//courses
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeCourseStatsAsOwner = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.owner, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.owner, coursesStatisticsParams);
 		Assertions.assertThat(nativeCourseStatsAsOwner)
 			.hasSize(1);
 		//re 1
@@ -1157,12 +1163,13 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(0, nativeGroupStats.size());
 		
 		//courses (method doesn't return courses without participant)
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> nativeCourseStatsAsCoach = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		Assertions.assertThat(nativeCourseStatsAsCoach)
 			.hasSize(1);
 		List<CourseStatEntry> nativeCourseStatsAsOwner = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.owner, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.owner, coursesStatisticsParams);
 		Assertions.assertThat(nativeCourseStatsAsOwner)
 			.hasSize(1);
 		
@@ -1269,8 +1276,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertNull(statsParticipant2.getAverageCompletion());
 		
 		// Assert average completions of courses
+		CoursesStatisticsParams coursesStatisticsParams = CoursesStatisticsParams.valueOf(CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
 		List<CourseStatEntry> courseCoachCourseStats = coachingDAO.getCoursesStatistics(coach,
-				GroupRoles.coach, CoursesStatisticsRuntimeTypesGroup.standaloneAndCurricular);
+				GroupRoles.coach, coursesStatisticsParams);
 		CourseStatEntry statsCourse1 = getCourseStatEntry(re1, courseCoachCourseStats);
 		Assert.assertNotNull(statsCourse1);
 		Assert.assertEquals(0.7, statsCourse1.getAverageCompletion(), 0.0001f);

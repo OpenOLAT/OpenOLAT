@@ -58,6 +58,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
+import org.olat.modules.coach.model.CoursesStatisticsParams;
 import org.olat.modules.coach.model.CoursesStatisticsRuntimeTypesGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GeneratedReport;
@@ -203,13 +204,12 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role,
-			CoursesStatisticsRuntimeTypesGroup runtimeTypesGroup) {
+	public List<CourseStatEntry> getCoursesStatistics(Identity coach, GroupRoles role, CoursesStatisticsParams params) {
 		if(role != GroupRoles.coach && role != GroupRoles.owner) {
 			log.warn("Search courses in course with illegal role: {}", role);
 			return new ArrayList<>();
 		}
-		return coachingDao.getCoursesStatistics(coach, role, runtimeTypesGroup);
+		return coachingDao.getCoursesStatistics(coach, role, params);
 	}
 
 	@Override
