@@ -40,6 +40,7 @@ import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.ui.CertificationHelper;
 import org.olat.modules.certificationprogram.ui.CertificationProgramNotificationRow;
 import org.olat.modules.certificationprogram.ui.CertificationProgramNotificationsController;
+import org.olat.modules.certificationprogram.ui.component.Duration;
 import org.olat.modules.creditpoint.CreditPointWallet;
 
 /**
@@ -142,6 +143,7 @@ public class CertificationProgramMailing {
 		private static final String REVOCATION_DATE = "revocationDate";
 		private static final String RECERTIFICATION_DEADLINE = "recertificationDeadline";
 		private static final String ACCOUNT_BALANCE = "accountBalance";
+		private static final String VALIDITY_PERIOD = "validityPeriod";
 		
 		private final Identity actor;
 		private final Identity identity;
@@ -175,6 +177,7 @@ public class CertificationProgramMailing {
 			variableNames.add(ACTOR_FIRSTNAME);
 			variableNames.add(ACTOR_LASTNAME);
 			variableNames.add(ACCOUNT_BALANCE);
+			variableNames.add(VALIDITY_PERIOD);
 			return variableNames;
 		}
 
@@ -208,6 +211,12 @@ public class CertificationProgramMailing {
 			if(certificationProgram != null) {
 				putVariablesInMailContext(CERTIFICATION_PROGRAM_TITLE, certificationProgram.getDisplayName());
 				putVariablesInMailContext(CERTIFICATION_PROGRAM_REF, certificationProgram.getIdentifier());
+
+				Duration validityDuration = certificationProgram.getValidityTimelapseDuration();
+				if(certificationProgram.isValidityEnabled() && validityDuration != null) {
+					String duration = validityDuration.unit().toString(certificationProgram.getValidityTimelapse(), translator);
+					putVariablesInMailContext(VALIDITY_PERIOD, duration);
+				}
 				
 				if(certificationProgram.getCreditPointSystem() != null) {
 					String requiredCreditPoints = CertificationHelper.creditPointsToString(certificationProgram);
