@@ -32,6 +32,7 @@ import org.olat.core.gui.components.scope.ScopeEvent;
 import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.scope.ScopeSelection;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -76,8 +77,22 @@ public class CreditPointUserController extends BasicController {
 		this.secCallback = secCallback;
 		this.assessedIdentity = assessedIdentity;
 		systems = creditPointService.getCreditPointSystems(assessedIdentity);
-		List<CreditPointWallet> wallets = creditPointService.getWallets(assessedIdentity);
 		
+		mainVC = createVelocityContainer("user_systems");
+		if(assessedIdentity.equals(ureq.getIdentity())) {
+			mainVC.contextPut("withHeader", Boolean.TRUE);
+			mainVC.contextPut("title", translate("my.credit.point"));
+		} else {
+			mainVC.contextPut("withHeader", Boolean.FALSE);
+			mainVC.contextPut("title", translate("credit.point"));
+		}
+		
+		initScopes(ureq, true);
+		putInitialPanel(mainVC);
+	}
+	
+	private ScopeSelection initScopes(UserRequest ureq, boolean openDetails) {
+		List<CreditPointWallet> wallets = creditPointService.getWallets(assessedIdentity);
 		List<Scope> systemScopes = new ArrayList<>();
 		for(CreditPointSystem system:systems) {
 			if(system.getStatus() == CreditPointSystemStatus.active) {
@@ -92,25 +107,32 @@ public class CreditPointUserController extends BasicController {
 					StringHelper.escapeHtml(system.getName()), hint));
 			}
 		}
-
-		mainVC = createVelocityContainer("user_systems");
-		if(assessedIdentity.equals(ureq.getIdentity())) {
-			mainVC.contextPut("withHeader", Boolean.TRUE);
-			mainVC.contextPut("title", translate("my.credit.point"));
-		} else {
-			mainVC.contextPut("withHeader", Boolean.FALSE);
-			mainVC.contextPut("title", translate("credit.point"));
-		}
 		
+		if(systemsSelection != null) {
+			systemsSelection.removeListener(this);
+		}
 		systemsSelection = ScopeFactory.createScopeSelection("systemsSelection", mainVC, this, systemScopes);
-		putInitialPanel(mainVC);
 		
 		if(systemScopes.isEmpty()) {
 			initEmptyState();
 		} else {
 			systemsSelection.setSelectedKey(systemScopes.get(0).getKey());
-			doSelect(ureq, systemsSelection.getSelectedKey());
+			if(openDetails) {
+				doSelect(ureq, systemsSelection.getSelectedKey());
+			}
 		}
+		
+		return systemsSelection;
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(transactionsCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				initScopes(ureq, false);
+			}
+		}
+		
 	}
 
 	@Override

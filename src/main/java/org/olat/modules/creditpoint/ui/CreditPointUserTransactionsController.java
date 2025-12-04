@@ -139,6 +139,14 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		initForm(ureq);
 		loadModel();
 	}
+	
+	public CreditPointWallet getWallet() {
+		return wallet;
+	}
+	
+	public CreditPointSystem getCreditPointSystem() {
+		return system;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -320,6 +328,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 				wallet = addTransactionCtrl.getWallet();
 				loadModel();
 				updateWalletUI(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -328,6 +337,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 				wallet = removeTransactionCtrl.getWallet();
 				loadModel();
 				updateWalletUI(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -336,6 +346,7 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 				wallet = confirmCancelTransactionCtrl.getWallet();
 				loadModel();
 				updateWalletUI(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
