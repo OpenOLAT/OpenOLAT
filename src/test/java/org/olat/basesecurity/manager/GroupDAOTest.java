@@ -217,7 +217,7 @@ public class GroupDAOTest extends OlatTestCase {
 	
 
 	@Test
-	public void hasRole() {
+	public void hasRoleByGroup() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-2-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-2b-");
 		Group group = groupDao.createGroup();
@@ -234,6 +234,20 @@ public class GroupDAOTest extends OlatTestCase {
 		Assert.assertFalse(hasNotRole);
 		boolean id2_hasNotRole = groupDao.hasRole(group, id2, "author");
 		Assert.assertFalse(id2_hasNotRole);
+	}
+	
+	@Test
+	public void hasRoleInAnyGroup() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-2-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "pilot");
+		dbInstance.commit();
+		
+		Assert.assertNotNull(membership);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasNotRole = groupDao.hasRole(group, id, "pilot");
+		Assert.assertTrue(hasNotRole);
 	}
 	
 	@Test

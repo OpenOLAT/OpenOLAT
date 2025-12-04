@@ -112,14 +112,17 @@ public class CurriculumManagerRootController extends BasicController implements 
 		curriculumsLink = LinkFactory.createLink("curriculum.browser", "curriculums", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		curriculumsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum");
 		curriculumsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_browser");
+		curriculumsLink.setVisible(secCallback.canViewCurriculums());
 		
 		implementationsLink = LinkFactory.createLink("curriculum.implementations", "implementations", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		implementationsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum_implementations");
 		implementationsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_implementations");
+		implementationsLink.setVisible(secCallback.canViewImplementations());
 		
 		lecturesBlocksLink = LinkFactory.createLink("curriculum.lectures", "lecturesblocks", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
 		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
+		lecturesBlocksLink.setVisible(lecturesSecCallback.viewAs() != null);
 		
 		reportsLink = LinkFactory.createLink("curriculum.reports", "reports", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");

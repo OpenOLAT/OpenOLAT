@@ -22,14 +22,19 @@ package org.olat.modules.curriculum;
 /**
  * 
  * Initial date: 15 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public interface CurriculumSecurityCallback {
+
+	boolean canViewCurriculums();
 	
-	public boolean canNewCurriculum();
+	boolean canViewImplementations();
 	
-	public boolean canEditCurriculum(Curriculum curriculum);
+	boolean canNewCurriculum();
+	
+	boolean canEditCurriculum(Curriculum curriculum);
+	
 	
 	public boolean canDeleteCurriculum();
 	

@@ -75,7 +75,9 @@ public class CurriculumManagerController extends BasicController implements Acti
 		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
 		Roles roles = usess.getRoles();
 		secCallback = CurriculumSecurityCallbackFactory.createCallback(roles, ownedCurriculums);
-		lecturesSecCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
+		lecturesSecCallback = roles.isLectureManager() || roles.isAdministrator() || roles.isCurriculumManager() || roles.isLearnResourceManager()
+				? LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager)
+				: LecturesSecurityCallbackFactory.getSecurityCallback(false, false, false, null);
 		certificationSecCallback = CertificationProgramSecurityCallbackFactory.getSecurityCallback(roles);
 
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);

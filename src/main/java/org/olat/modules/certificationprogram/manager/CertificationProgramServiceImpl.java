@@ -170,6 +170,11 @@ public class CertificationProgramServiceImpl implements CertificationProgramServ
 	public List<Identity> getCertificationProgramOwners(CertificationProgram program) {
 		return groupDao.getMembers(program.getGroup(), CertificationRoles.programowner.name());
 	}
+	
+	@Override
+	public boolean isCertificationProgramOwner(IdentityRef identity) {
+		return groupDao.hasRole(identity, CertificationRoles.programowner.name());
+	}
 
 	@Override
 	public void addCertificationProgramOwner(CertificationProgram program, Identity identity) {

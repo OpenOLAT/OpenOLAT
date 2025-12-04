@@ -21,8 +21,10 @@ package org.olat.modules.curriculum.site;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.CurriculumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +32,7 @@ import org.springframework.stereotype.Service;
 /**
  * 
  * Initial date: 12 févr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service("curriculumManagerSiteSecurityCallback")
@@ -38,14 +40,19 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
 		if(usess == null ) return false;
-		
 		Roles roles = usess.getRoles();
+		if(roles == null || roles.isGuestOnly()) return false;
+		
+		Identity id = ureq.getIdentity();
 		return roles != null && (roles.isAdministrator() || roles.isCurriculumManager()
-				|| curriculumService.isCurriculumOwner(ureq.getIdentity()));
+				|| curriculumService.isCurriculumOwner(id)
+				|| certificationProgramService.isCertificationProgramOwner(id));
 	}
 }

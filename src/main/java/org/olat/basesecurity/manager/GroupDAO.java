@@ -207,7 +207,7 @@ public class GroupDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
-	public boolean hasRole(Group group, Identity identity, String role) {
+	public boolean hasRole(Group group, IdentityRef identity, String role) {
 		Number count = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("hasRoleByGroupIdentityAndRole", Number.class)
 			.setParameter("groupKey", group.getKey())
@@ -215,6 +215,20 @@ public class GroupDAO {
 			.setParameter("role", role)
 			.getSingleResult();
 		return count != null && count.longValue() > 0;
+	}
+	
+	public boolean hasRole(IdentityRef identity, String role) {
+		String query = """
+				select membership.key from bgroupmember as membership
+				where membership.identity.key=:identityKey and membership.role=:role""";
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("identityKey", identity.getKey())
+			.setParameter("role", role)
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
 	}
 	
 	public List<Identity> getMembers(Group group, String role) {

@@ -3,12 +3,20 @@
 	$r.contextHelpWithWrapper("manual_user/area_modules/Course_Planner/")
 </h2>
 $r.render("searchField")
-<ul class="o_mega_buttons #if($r.visible("curriculum.reports")) o_mega_buttons_5_centered #else o_mega_buttons_4_centered #end">
+<ul class="o_mega_buttons o_mega_buttons_centered #if($r.visible("curriculum.reports")) o_mega_buttons_5_centered #else o_mega_buttons_4_centered #end">
 	<li aria-hidden="true"></li>
+	#if($r.visible("curriculum.browser"))
 	<li>$r.render("curriculum.browser")</li>
+	#end
+	#if($r.visible("curriculum.implementations"))
 	<li>$r.render("curriculum.implementations")</li>
+	#end
+	#if($r.visible("curriculum.lectures"))
 	<li>$r.render("curriculum.lectures")</li>
+	#end
+	#if($r.visible("certification.programs"))
 	<li>$r.render("certification.programs")</li>
+	#end
 	#if($r.visible("curriculum.reports"))
 	<li>$r.render("curriculum.reports")</li>
 	#end

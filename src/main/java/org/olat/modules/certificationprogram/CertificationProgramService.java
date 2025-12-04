@@ -68,6 +68,12 @@ public interface CertificationProgramService {
 	
 	List<Identity> getCertificationProgramOwners(CertificationProgram program);
 	
+	/**
+	 * @param identity The identity
+	 * @return true if the identity is owner of at least one certification program
+	 */
+	boolean isCertificationProgramOwner(IdentityRef identity);
+	
 	void addCertificationProgramOwner(CertificationProgram program, Identity identity);
 	
 	void removeCertificationProgramOwner(CertificationProgram program, Identity identity);
