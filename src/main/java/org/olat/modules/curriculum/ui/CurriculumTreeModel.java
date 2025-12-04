@@ -155,6 +155,12 @@ class CurriculumTreeModel extends GenericTreeModel implements InsertionTreeModel
 		return positions.toArray(new Position[positions.size()]);
 	}
 	
+	public List<CurriculumElementType> getAllowedSubTypes(CurriculumElement parentElement) {
+		final CurriculumElementType type = parentElement.getType();
+		List<CurriculumElementType> subTypes = allTypes.get(type);
+		return subTypes == null ? List.of() : subTypes;
+	}
+	
 	private boolean isAllowed(CurriculumElement parentElement) {
 		final CurriculumElementType type = parentElement.getType();
 		List<CurriculumElementType> subTypes = allTypes.get(type);

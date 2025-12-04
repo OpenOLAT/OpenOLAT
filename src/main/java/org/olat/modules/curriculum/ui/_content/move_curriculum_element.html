@@ -1,4 +1,9 @@
 $r.render("elements", "minimal")
+
+#if($r.isNotEmpty($warning))
+	<div class="o_warning_with_icon">$warning</div>
+#end
+
 <div class="o_button_group">
 	$r.render("move.element")
 	$r.render("cancel")
