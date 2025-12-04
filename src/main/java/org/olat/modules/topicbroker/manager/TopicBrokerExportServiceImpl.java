@@ -84,11 +84,13 @@ public class TopicBrokerExportServiceImpl implements TopicBrokerExportService {
 			return;
 		}
 		
-		definitionsExport.getDefinitions().forEach(export -> {
-			TBCustomFieldDefinition definition = topicBrokerService.createCustomFieldDefinition(doer, broker);
-			topicBrokerService.updateCustomFieldDefinition(doer, definition, export.getIdentifier(), export.getName(),
-					export.getType(), export.isDisplayInTable());
-		});
+		definitionsExport.getDefinitions().stream()
+				.sorted((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()))
+				.forEach(export -> {
+					TBCustomFieldDefinition definition = topicBrokerService.createCustomFieldDefinition(doer, broker);
+					topicBrokerService.updateCustomFieldDefinition(doer, definition, export.getIdentifier(),
+							export.getName(), export.getType(), export.isDisplayInTable());
+				});
 	}
 
 	@Override

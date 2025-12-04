@@ -237,6 +237,7 @@ public class TBTopicEditController extends FormBasicController {
 					.collect(Collectors.toMap(customField -> customField.getDefinition().getKey(), Function.identity()));
 		}
 		
+		definitions.sort((d1, d2) -> Integer.compare(d1.getSortOrder(), d2.getSortOrder()));
 		for (TBCustomFieldDefinition definition : definitions) {
 			TBCustomField customField = definitionKeyToCustomFields.get(definition.getKey());
 			if (TBCustomFieldType.text == definition.getType()) {
