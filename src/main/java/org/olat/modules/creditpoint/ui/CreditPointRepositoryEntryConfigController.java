@@ -100,7 +100,6 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 
 		initForm(ureq);
 		updateUI();
-		updateOverrideExpirationUI();
 	}
 
 	@Override
@@ -173,29 +172,22 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 	
 	private void updateUI() {
 		boolean enabled = enabledEl.isOn();
-		
 		systemEl.setVisible(enabled);
 		creditPointEl.setVisible(enabled);
-		overrideExpirationEl.setVisible(enabled);
 		
-		String overrideExpiration = overrideExpirationEl.isOneSelected()
-				? overrideExpirationEl.getSelectedKey()
-				: DEFAULT_KEY;
-		boolean defaultExpiration = DEFAULT_KEY.equals(overrideExpiration);
-		expirationEl.setVisible(enabled && !defaultExpiration);
-	}
-	
-	private void updateOverrideExpirationUI() {
-		CreditPointSystem system = getSelectedSystem();
-		SelectionValues overridePK = getOverrideExpirationPK(system);
+		CreditPointSystem selectedSystem = getSelectedSystem();
+		boolean expirationEnabled = enabled && selectedSystem != null && selectedSystem.getDefaultExpiration() != null;
+		
+		SelectionValues overridePK = getOverrideExpirationPK(selectedSystem);
 		String overrideExpiration = overrideExpirationEl.isOneSelected()
 				? overrideExpirationEl.getSelectedKey()
 				: DEFAULT_KEY;
 		overrideExpirationEl.setKeysAndValues(overridePK.keys(), overridePK.values(), null);
 		overrideExpirationEl.select(overrideExpiration, true);
+		overrideExpirationEl.setVisible(expirationEnabled);
 		
 		boolean defaultExpiration = DEFAULT_KEY.equals(overrideExpiration);
-		expirationEl.setVisible(enabledEl.isOn() && !defaultExpiration);
+		expirationEl.setVisible(expirationEnabled && !defaultExpiration);
 	}
 	
 	private SelectionValues getOverrideExpirationPK(CreditPointSystem system) {
@@ -260,11 +252,9 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabledEl == source) {
+		if(enabledEl == source || overrideExpirationEl == source || systemEl == source) {
 			updateUI();
-		} else if(overrideExpirationEl == source || systemEl == source) {
-			updateOverrideExpirationUI();
-		} 
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -279,7 +269,7 @@ public class CreditPointRepositoryEntryConfigController extends FormBasicControl
 			BigDecimal points = new BigDecimal(creditPointEl.getValue());
 			creditPointConfig.setCreditPoints(points);
 			
-			if(DEFAULT_KEY.equals(overrideExpirationEl.getSelectedKey())) {
+			if(!overrideExpirationEl.isVisible() || DEFAULT_KEY.equals(overrideExpirationEl.getSelectedKey())) {
 				creditPointConfig.setExpiration(null);
 				creditPointConfig.setExpirationType(CreditPointExpirationType.DEFAULT);
 			} else {

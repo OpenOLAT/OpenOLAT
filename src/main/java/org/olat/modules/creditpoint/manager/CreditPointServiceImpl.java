@@ -459,7 +459,7 @@ public class CreditPointServiceImpl implements CreditPointService {
 				case DAY: expirationDate = DateUtils.addDays(referenceDate, value.intValue()); break;
 				case MONTH: expirationDate = DateUtils.addMonth(referenceDate, value.intValue()); break;
 				case YEAR: expirationDate = DateUtils.addYears(referenceDate, value.intValue()); break;
-				default: expirationDate = null; break;
+				default: break;
 			}
 		}
 		if(expirationDate != null) {
