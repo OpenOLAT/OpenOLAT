@@ -90,7 +90,9 @@ public class CertificateVO {
 		if(certificate instanceof CertificateImpl impl) {
 			vo.setRecertificationCount(impl.getRecertificationCount());
 			vo.setRecertificationWindowDate(impl.getRecertificationWindowDate());
-			vo.setCertificationProgramKey(impl.getCertificationProgram().getKey());
+			if(impl.getCertificationProgram() != null) {
+				vo.setCertificationProgramKey(impl.getCertificationProgram().getKey());
+			}
 		}
 		vo.setUuid(certificate.getUuid());
 		vo.setExternalId(certificate.getExternalId());
