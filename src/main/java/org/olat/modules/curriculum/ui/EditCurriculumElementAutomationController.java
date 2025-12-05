@@ -80,8 +80,8 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		
 		unitPK.add(SelectionValues.entry(AutomationUnit.SAME_DAY.name(), translate("same.day")));
 		unitPK.add(SelectionValues.entry(AutomationUnit.DAYS.name(), translate("unit.days")));
-		unitPK.add(SelectionValues.entry(AutomationUnit.WEEKS.name(), translate("unit.months")));
-		unitPK.add(SelectionValues.entry(AutomationUnit.MONTHS.name(), translate("unit.weeks")));
+		unitPK.add(SelectionValues.entry(AutomationUnit.WEEKS.name(), translate("unit.weeks")));
+		unitPK.add(SelectionValues.entry(AutomationUnit.MONTHS.name(), translate("unit.months")));
 		unitPK.add(SelectionValues.entry(AutomationUnit.YEARS.name(), translate("unit.years")));
 		
 		initForm(ureq);
