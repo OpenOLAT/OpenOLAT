@@ -137,7 +137,12 @@ public class CreditPointServiceImpl implements CreditPointService {
 	public List<CreditPointSystem> getCreditPointSystems() {
 		return creditPointSystemDao.loadCreditPointSystems();
 	}
-	
+
+	@Override
+	public List<CreditPointSystem> getActiveCreditPointSystems() {
+		return creditPointSystemDao.loadActiveCreditPointSystems();
+	}
+
 	@Override
 	public List<CreditPointSystem> getCreditPointSystems(IdentityRef identity) {
 		return creditPointSystemDao.getCreditPointSystemsWithProgramsOrTransactions(identity);

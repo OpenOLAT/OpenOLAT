@@ -62,6 +62,8 @@ public interface CreditPointService {
 	
 	List<CreditPointSystem> getCreditPointSystems();
 	
+	List<CreditPointSystem> getActiveCreditPointSystems();
+	
 	/**
 	 * The specified user list of credit point systems which he has at least one
 	 * transaction and in a certification program which use this system.

@@ -41,6 +41,7 @@ import org.olat.modules.certificationprogram.CertificationProgramStatusEnum;
 import org.olat.modules.certificationprogram.manager.CertificationProgramDAO;
 import org.olat.modules.creditpoint.CreditPointExpirationType;
 import org.olat.modules.creditpoint.CreditPointSystem;
+import org.olat.modules.creditpoint.CreditPointSystemStatus;
 import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
 import org.olat.modules.creditpoint.CreditPointTransaction;
 import org.olat.modules.creditpoint.CreditPointTransactionType;
@@ -107,6 +108,21 @@ public class CreditPointSystemDAOTest extends OlatTestCase {
 		
 		List<CreditPointSystem> allCpSystems = creditPointSystemDao.loadCreditPointSystems();
 		Assertions.assertThat(allCpSystems)
+			.containsAnyOf(cpSystem);
+	}
+	
+	@Test
+	public void loadActiveCreditPointSystems() {
+		CreditPointSystem cpSystem = creditPointSystemDao.createSystem("OpenOlat coin three", "OOC", Integer.valueOf(180), CreditPointExpirationType.DAY, false, false);
+	
+		CreditPointSystem devaluatedSystem = creditPointSystemDao.createSystem("Devaluated system", "DC", null, null, false, false);
+		devaluatedSystem.setStatus(CreditPointSystemStatus.inactive);
+		devaluatedSystem = creditPointSystemDao.updateSystem(devaluatedSystem);
+		dbInstance.commitAndCloseSession();
+		
+		List<CreditPointSystem> allCpSystems = creditPointSystemDao.loadActiveCreditPointSystems();
+		Assertions.assertThat(allCpSystems)
+			.doesNotContain(devaluatedSystem)
 			.containsAnyOf(cpSystem);
 	}
 	

@@ -617,7 +617,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if (creditPointModule.isEnabled() && (isAdminOf || isPrincipalOf || isUserManagerOf || isRolesManagerOf)) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_CREDITPOINT), uureq -> {
 				CreditPointSecurityCallback secCallback = CreditPointSecurityCallbackFactory.createSecurityCallback(managerRoles);
-				Controller creditPointCtr = new CreditPointUserController(uureq, getWindowControl(), identity, secCallback);
+				Controller creditPointCtr = new CreditPointUserController(uureq, getWindowControl(), identity, true, secCallback);
 				listenTo(creditPointCtr);
 				return creditPointCtr.getInitialComponent();
 			});

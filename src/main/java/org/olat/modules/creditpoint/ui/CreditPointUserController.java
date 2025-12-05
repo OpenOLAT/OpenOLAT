@@ -68,15 +68,17 @@ public class CreditPointUserController extends BasicController {
 	private CreditPointService creditPointService;
 	
 	public CreditPointUserController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getIdentity(), CreditPointSecurityCallbackFactory.userToolSecurityCallback());
+		this(ureq, wControl, ureq.getIdentity(), false, CreditPointSecurityCallbackFactory.userToolSecurityCallback());
 	}
 	
 	public CreditPointUserController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, CreditPointSecurityCallback secCallback) {
+			Identity assessedIdentity, boolean showAllSystems, CreditPointSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.assessedIdentity = assessedIdentity;
-		systems = creditPointService.getCreditPointSystems(assessedIdentity);
+		systems = showAllSystems
+				? creditPointService.getActiveCreditPointSystems()
+				: creditPointService.getCreditPointSystems(assessedIdentity);
 		
 		mainVC = createVelocityContainer("user_systems");
 		if(assessedIdentity.equals(ureq.getIdentity())) {

@@ -79,6 +79,12 @@ public class CreditPointSystemDAO {
 				.getResultList();
 	}
 	
+	public List<CreditPointSystem> loadActiveCreditPointSystems() {
+		return dbInstance.getCurrentEntityManager().createNamedQuery("allActiveCreditPointSystems", CreditPointSystem.class)
+				.setParameter("status", CreditPointSystemStatus.active)
+				.getResultList();
+	}
+	
 	public List<CreditPointSystem> getCreditPointSystemsWithProgramsOrTransactions(IdentityRef identity) {
 		String query = """
 				select sys from creditpointsystem sys

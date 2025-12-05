@@ -31,6 +31,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -50,6 +51,7 @@ import org.olat.modules.creditpoint.CreditPointSystemToOrganisation;
  */
 @Entity(name="creditpointsystem")
 @Table(name="o_cp_system")
+@NamedQuery(name="allActiveCreditPointSystems", query="select sys from creditpointsystem sys where sys.status=:status")
 public class CreditPointSystemImpl implements Persistable, CreditPointSystem {
 	
 	private static final long serialVersionUID = 3761521926928378887L;
