@@ -175,8 +175,11 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		
 		balanceWidget = WidgetFactory.createTextWidget("balance", null, translate("credit.point.balance"), "o_icon_coins");
 		widgetGroup.add(balanceWidget);
-		nextExpiredWidget = WidgetFactory.createTextWidget("balance", null, translate("credit.point.next.expired"), "o_icon_timelimit_half");
-		widgetGroup.add(nextExpiredWidget);
+		
+		if(system.getDefaultExpiration() != null && system.getDefaultExpiration().intValue() > 0) {
+			nextExpiredWidget = WidgetFactory.createTextWidget("balance", null, translate("credit.point.next.expired"), "o_icon_timelimit_half");
+			widgetGroup.add(nextExpiredWidget);
+		}
 
 		widgetGroupItem = new ComponentWrapperElement(widgetGroup);
 		formLayout.add("widgets", widgetGroupItem);
@@ -294,31 +297,33 @@ public class CreditPointUserTransactionsController extends FormBasicController {
 		String formattedBalance = CreditPointFormat.format(wallet.getBalance(), system);
 		balanceWidget.setValue(StringHelper.escapeHtml(formattedBalance));
 		
-		CreditPointTransaction nextExpiringTransaction = creditPointService.nextExpiringCreditPointTransactions(wallet, ureq.getRequestTimestamp());
-		if(nextExpiringTransaction == null) {
-			String nextExpiringValue = CreditPointFormat.format(BigDecimal.ZERO , system);
-			nextExpiredWidget.setValue(StringHelper.escapeHtml(nextExpiringValue));
-			nextExpiredWidget.setAdditionalText("");
-		} else {
-			String nextExpiringValue = CreditPointFormat.format(nextExpiringTransaction.getAmount() , system);
-			nextExpiredWidget.setValue(StringHelper.escapeHtml(nextExpiringValue));
-			Date expirationDate = nextExpiringTransaction.getExpirationDate();
-			long days = DateUtils.countDays(ureq.getRequestTimestamp(), expirationDate);
-			String[] args = new String[] {
-				Long.toString(days),
-				Formatter.getInstance(getLocale()).formatDate(expirationDate)
-			};
-			
-			String msg;
-			if(days == 1) {
-				msg = translate("warning.expire.one.day", args);
-			} else if(days > 1) {
-				msg = translate("warning.expire.days", args);
+		if(nextExpiredWidget != null) {
+			CreditPointTransaction nextExpiringTransaction = creditPointService.nextExpiringCreditPointTransactions(wallet, ureq.getRequestTimestamp());
+			if(nextExpiringTransaction == null) {
+				String nextExpiringValue = CreditPointFormat.format(BigDecimal.ZERO , system);
+				nextExpiredWidget.setValue(StringHelper.escapeHtml(nextExpiringValue));
+				nextExpiredWidget.setAdditionalText("");
 			} else {
-				msg = translate("warning.expire.today", args);
+				String nextExpiringValue = CreditPointFormat.format(nextExpiringTransaction.getAmount() , system);
+				nextExpiredWidget.setValue(StringHelper.escapeHtml(nextExpiringValue));
+				Date expirationDate = nextExpiringTransaction.getExpirationDate();
+				long days = DateUtils.countDays(ureq.getRequestTimestamp(), expirationDate);
+				String[] args = new String[] {
+					Long.toString(days),
+					Formatter.getInstance(getLocale()).formatDate(expirationDate)
+				};
+				
+				String msg;
+				if(days == 1) {
+					msg = translate("warning.expire.one.day", args);
+				} else if(days > 1) {
+					msg = translate("warning.expire.days", args);
+				} else {
+					msg = translate("warning.expire.today", args);
+				}
+				nextExpiredWidget.setAdditionalText(msg);
 			}
-			nextExpiredWidget.setAdditionalText(msg);
-		}	
+		}
 	}
 	
 	@Override
