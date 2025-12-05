@@ -444,7 +444,7 @@ public class GroupController extends BasicController {
 
 		} else if (sourceController == userToGroupWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				getWindowControl().pop();
+				getWindowControl().removeTopModalDialog(userToGroupWizard.getInitialComponent());
 				removeAsListenerAndDispose(userToGroupWizard);
 				userToGroupWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
