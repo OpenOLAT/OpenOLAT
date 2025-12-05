@@ -40,6 +40,7 @@ import org.olat.modules.certificationprogram.CertificationProgramMailConfigurati
 import org.olat.modules.certificationprogram.CertificationProgramMailType;
 import org.olat.modules.certificationprogram.CertificationProgramService;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
@@ -63,6 +64,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 	private static final String MIGRATE_CURRICULUM_MANAGERS = "MIGRATE CURRICULUM MANAGERS";
 	private static final String MIGRATE_CERTIFICATION_PROGRAMS_MAIL_CONFIGURATION = "MIGRATE CERTIFICATION PROGRAMS MAIL CONFIGURATION";
 	private static final String INIT_QM_TODO_ACCESS = "INIT QM TODO ACCESS";
+	private static final String MIGRATE_CURRICULUM_ELEMENT_TYPE = "MIGRATE CURRICULUM ELEMENT TYPE";
 
 	@Autowired
 	private DB dbInstance;
@@ -92,6 +94,7 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 		allOk &= migrateCurriculumManagers(upgradeManager, uhd);
 		allOk &= migrateCertificationProgramsMailConfiguration(upgradeManager, uhd);
 		allOk &= initQMToDoAccess(upgradeManager, uhd);
+		allOk &= migrateCurriculumElementType(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -263,5 +266,49 @@ public class OLATUpgrade_20_2_0 extends OLATUpgrade {
 				.createQuery(sb, QualityReportAccess.class)
 				.getResultList();
 	}
-	
+
+	private boolean migrateCurriculumElementType(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(MIGRATE_CURRICULUM_ELEMENT_TYPE)) {
+			try {
+				log.info("Start migration of curriculum element types");
+				
+				List<CurriculumElementType> curriculumElementTypes = getCurriculumElementTypesToMigrate();
+				for (int i = 0; i < curriculumElementTypes.size(); i++) {
+					CurriculumElementType curriculumElementType = curriculumElementTypes.get(i);
+					
+					curriculumElementType.setType(curriculumElementType.isAllowedAsRootElement() ? 
+							CurriculumElementType.Type.mixed : CurriculumElementType.Type.element);
+					dbInstance.getCurrentEntityManager().merge(curriculumElementType);
+					
+					dbInstance.commitAndCloseSession();
+					if (i % 25 == 0) {
+						log.info(Tracing.M_AUDIT, "Processed {} / {} curriculum element types", i,  
+								curriculumElementTypes.size());
+					}
+				}
+				
+				log.info("End migration of curriculum element types");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_CURRICULUM_ELEMENT_TYPE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
+	}
+
+	private List<CurriculumElementType> getCurriculumElementTypesToMigrate() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cet from curriculumelementtype cet ");
+		sb.append("where cet.type is null ");
+		sb.append("order by cet.key asc").toString();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElementType.class)
+				.getResultList();
+	}
 }
