@@ -966,7 +966,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return null;
 	}
 	
-	private Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateProgram) {
+	@Override
+	public Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateProgram) {
 		DurationType durationUnit = certificateProgram.getRecertificationWindowUnit();
 		int duration = certificateProgram.getRecertificationWindow();
 		if(nextCertificationDate != null && durationUnit != null && duration > 0) {

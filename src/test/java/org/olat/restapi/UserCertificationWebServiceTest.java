@@ -29,17 +29,20 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -59,6 +62,10 @@ import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.restapi.CertificateVO;
 import org.olat.course.certificate.restapi.CertificateVOes;
+import org.olat.modules.certificationprogram.CertificationProgram;
+import org.olat.modules.certificationprogram.CertificationProgramService;
+import org.olat.modules.certificationprogram.RecertificationMode;
+import org.olat.modules.certificationprogram.ui.component.DurationType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.test.JunitTestHelper;
@@ -77,6 +84,8 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	private DB dbInstance;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private CertificationProgramService certificationProgramService;
 	
 	@Test
 	public void getUserCertificatesInformations() throws IOException, URISyntaxException {
@@ -93,8 +102,6 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		sleep(1000);
-		
 		//wait until the certificate is created
 		waitCertificate(certificate.getKey());
 		
@@ -226,8 +233,6 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
-		sleep(1000);
-		
 		//wait until the certificate is created
 		waitCertificate(certificate.getKey());
 		
@@ -401,6 +406,65 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 		conn.shutdown();
 	}
 	
+	@Test
+	public void updateCertificate() throws IOException, URISyntaxException {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("prog-participant-4", Locale.ENGLISH);
+		CertificationProgram program = certificationProgramService.createCertificationProgram("program-to-curriculum-5", "CP5", null);
+		program.setRecertificationEnabled(true);
+		program.setValidityEnabled(true);
+		program.setValidityTimelapse(7);
+		program.setValidityTimelapseUnit(DurationType.day);
+		program.setRecertificationMode(RecertificationMode.automatic);
+		program.setRecertificationWindowEnabled(true);
+		program.setRecertificationWindow(7);
+		program.setRecertificationWindowUnit(DurationType.day);
+		certificationProgramService.updateCertificationProgram(program);
+		dbInstance.commit();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(participant, 2.0f, Float.valueOf(10), true,
+				Double.valueOf(0.2), "");
+		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, program, null, config);
+		dbInstance.commitAndCloseSession();
+		//wait until the certificate is created
+		waitCertificate(certificate.getKey());
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
+				.path(participant.getKey().toString())
+				.path("certificates").path(certificate.getKey().toString()).build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		CertificateVO certificateVo = conn.parse(response, CertificateVO.class);
+		
+		Assert.assertNotNull(certificateVo);
+		Assert.assertEquals(program.getKey(), certificateVo.getCertificationProgramKey());
+		Assert.assertNotNull(certificateVo.getNextCertificationDate());
+		Assert.assertNotNull(certificateVo.getRecertificationWindowDate());
+		
+		certificateVo.setExternalId("controlled-certificate");
+		certificateVo.setNextCertificationDate(DateUtils.addDays(certificateVo.getNextCertificationDate(), -21));
+		// Let it recalculate the time frame
+		certificateVo.setRecertificationWindowDate(null);
+		
+		URI updateUri = UriBuilder.fromUri(getContextURI()).path("users")
+				.path(participant.getKey().toString())
+				.path("certificates").build();
+		HttpPut putMethod = conn.createPut(updateUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(putMethod, certificateVo);
+		HttpResponse putResponse = conn.execute(putMethod);
+		Assert.assertEquals(200, putResponse.getStatusLine().getStatusCode());
+		CertificateVO updatedCertificateVo = conn.parse(putResponse, CertificateVO.class);
+		Assert.assertNotNull(updatedCertificateVo);
+		Assert.assertEquals(program.getKey(), updatedCertificateVo.getCertificationProgramKey());
+		Assert.assertNotNull(updatedCertificateVo.getNextCertificationDate());
+		Assert.assertNotNull(updatedCertificateVo.getRecertificationWindowDate());
+		// Make sure the dates are pushed in the past
+		Assert.assertTrue(updatedCertificateVo.getNextCertificationDate().before(new Date()));
+		Assert.assertTrue(updatedCertificateVo.getRecertificationWindowDate().before(new Date()));
+	}
 	
 	private void waitCertificate(Long certificateKey) {
 		//wait until the certificate is created

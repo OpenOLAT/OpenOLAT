@@ -33,6 +33,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -55,6 +56,7 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.manager.CertificatesDAO;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -86,6 +88,8 @@ public class UserCertificationWebService {
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private CertificatesDAO certificatesDao;
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
@@ -347,6 +351,91 @@ public class UserCertificationWebService {
 		}
 	}
 	
+	/**
+	 * Update a certificate.
+	 * 
+	 * @param identityKey The owner of the certificate
+	 * @param certificate The certificate metadata.
+	 * @param request The request
+	 * @return The updated certificate
+	 */
+	@POST
+	@Path("")
+	@Operation(summary = "Update an existing certificate", description = "Update an existing certificate.")
+	@ApiResponse(responseCode = "200", description = "if the certificate was updated")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response postCertificateMetadata(@PathParam("identityKey") Long identityKey, CertificateVO certificate,
+			@Context HttpServletRequest request) {
+		if(!isAdministrator(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		return updateCertificateMetadata(identityKey, certificate);
+	}
+	
+	/**
+	 * Update a certificate.
+	 * 
+	 * @param identityKey The owner of the certificate
+	 * @param certificate The certificate metadata.
+	 * @param request The request
+	 * @return The updated certificate
+	 */
+	@PUT
+	@Path("")
+	@Operation(summary = "Update an existing certificate", description = "Update an existing certificate.")
+	@ApiResponse(responseCode = "200", description = "if the certificate was updated")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The owner or the certificate cannot be found")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response putCertificateMetadata(@PathParam("identityKey") Long identityKey, CertificateVO certificate,
+			@Context HttpServletRequest request) {
+		if(!isAdministrator(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		return updateCertificateMetadata(identityKey, certificate);
+	}
+	
+	public Response updateCertificateMetadata(Long identityKey, CertificateVO certificateVo) {
+		Certificate certificate = certificatesManager.getCertificateById(certificateVo.getKey());
+		if(certificate == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!certificate.getIdentity().getKey().equals(identityKey)) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		
+		if(certificateVo.getNextCertificationDate() != null) {
+			certificate.setNextRecertificationDate(certificateVo.getNextCertificationDate());
+		}
+		
+		if(certificate instanceof CertificateImpl impl) {
+			if(certificateVo.getExternalId() != null) {
+				impl.setExternalId(certificateVo.getExternalId());
+			}
+			if(certificateVo.getManagedFlags() != null) {
+				impl.setManagedFlagsString(certificateVo.getManagedFlags());
+			}
+			if(impl.getCertificationProgram() != null
+				&& impl.getCertificationProgram().isRecertificationEnabled()
+				&& impl.getCertificationProgram().isRecertificationWindowEnabled()) {
+				if(certificateVo.getRecertificationWindowDate() != null) {
+					impl.setRecertificationWindowDate(certificateVo.getRecertificationWindowDate());
+				} else if(certificate.getNextRecertificationDate() != null) {
+					Date nextCertificationDate = certificateVo.getNextCertificationDate();
+					Date windowDate = certificatesManager.getDateWindowRecertification(nextCertificationDate, impl.getCertificationProgram());
+					impl.setRecertificationWindowDate(windowDate);
+				}
+			}
+		}
+		
+		Certificate mergedCertificate = certificatesDao.updateCertificate(certificate);
+		CertificateVO mergedCertificateVo = CertificateVO.valueOf(mergedCertificate);
+		return Response.ok(mergedCertificateVo).build();
+	}
 	
 	private boolean isAdminOf(Identity assessedIdentity, HttpServletRequest httpRequest) {
 		Roles managerRoles = getRoles(httpRequest);
@@ -355,5 +444,14 @@ public class UserCertificationWebService {
 		}
 		Roles identityRoles = securityManager.getRoles(assessedIdentity);
 		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
+	}
+	
+	private boolean isAdministrator(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isAdministrator() || roles.isLearnResourceManager());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

@@ -255,6 +255,7 @@ public interface CertificatesManager {
 	
 	public Date nextRecertificationWindow(Date nextCertificationDate, RepositoryEntryCertificateConfiguration certificateConfig);
 	
+	public Date getDateWindowRecertification(Date nextCertificationDate, CertificationProgram certificateProgram);
 	
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
 

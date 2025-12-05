@@ -45,10 +45,16 @@ public interface CertificateLight extends CreateInfo {
 
 	Date getNextRecertificationDate();
 	
+	Long getRecertificationCount();
+
+	Date getRecertificationWindowDate();
+	
 	String getCourseTitle();
 	
 	Long getIdentityKey();
 	
 	Long getOlatResourceKey();
+	
+	Long getCertificationProgramKey();
 
 }

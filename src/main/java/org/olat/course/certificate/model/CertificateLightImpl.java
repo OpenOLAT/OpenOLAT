@@ -77,6 +77,10 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	private String uuid;
 	@Column(name="c_next_recertification", nullable=true, insertable=true, updatable=true)
 	private Date nextRecertificationDate;
+	@Column(name="c_recertification_count", nullable=true, insertable=true, updatable=true)
+	private Long recertificationCount;
+	@Column(name="c_recertification_win_date", nullable=true, insertable=true, updatable=true)
+	private Date recertificationWindowDate;
 	
 	@Column(name="c_path", nullable=true, insertable=true, updatable=true)
 	private String path;
@@ -155,6 +159,24 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	}
 
 	@Override
+	public Long getRecertificationCount() {
+		return recertificationCount;
+	}
+
+	public void setRecertificationCount(Long recertificationCount) {
+		this.recertificationCount = recertificationCount;
+	}
+
+	@Override
+	public Date getRecertificationWindowDate() {
+		return recertificationWindowDate;
+	}
+
+	public void setRecertificationWindowDate(Date recertificationWindowDate) {
+		this.recertificationWindowDate = recertificationWindowDate;
+	}
+
+	@Override
 	public String getUuid() {
 		return uuid;
 	}
@@ -199,6 +221,7 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 		this.identityKey = identityKey;
 	}
 
+	@Override
 	public Long getCertificationProgramKey() {
 		return certificationProgramKey;
 	}

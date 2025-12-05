@@ -28,6 +28,10 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
+import org.olat.course.certificate.model.CertificateImpl;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode;
 
 /**
  * 
@@ -44,7 +48,12 @@ public class CertificateVO {
 	private Long identityKey;
 	private String courseTitle;
 	private Long courseResourceKey;
+	private Long certificationProgramKey;
 	private Date nextCertificationDate;
+	@Schema(accessMode = AccessMode.READ_ONLY, description = "The count is increment automatically")
+	private Long recertificationCount;
+	@Schema(accessMode = AccessMode.READ_WRITE, description = "If recertification is enabled, and field null, it will recalculated from the settings of the program")
+	private Date recertificationWindowDate;
 	private String uuid;
 	private String externalId;
 	private String managedFlags;
@@ -58,9 +67,12 @@ public class CertificateVO {
 		vo.setKey(certificate.getKey());
 		vo.setCreationDate(certificate.getCreationDate());
 		vo.setNextCertificationDate(certificate.getNextRecertificationDate());
+		vo.setRecertificationCount(certificate.getRecertificationCount());
+		vo.setRecertificationWindowDate(certificate.getRecertificationWindowDate());
 		vo.setIdentityKey(certificate.getIdentityKey());
 		vo.setCourseTitle(certificate.getCourseTitle());
 		vo.setCourseResourceKey(certificate.getOlatResourceKey());
+		vo.setCertificationProgramKey(certificate.getCertificationProgramKey());
 		vo.setUuid(certificate.getUuid());
 		vo.setExternalId(certificate.getExternalId());
 		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
@@ -75,6 +87,11 @@ public class CertificateVO {
 		vo.setIdentityKey(certificate.getIdentity().getKey());
 		vo.setCourseTitle(certificate.getCourseTitle());
 		vo.setCourseResourceKey(certificate.getArchivedResourceKey());
+		if(certificate instanceof CertificateImpl impl) {
+			vo.setRecertificationCount(impl.getRecertificationCount());
+			vo.setRecertificationWindowDate(impl.getRecertificationWindowDate());
+			vo.setCertificationProgramKey(impl.getCertificationProgram().getKey());
+		}
 		vo.setUuid(certificate.getUuid());
 		vo.setExternalId(certificate.getExternalId());
 		vo.setManagedFlags(CertificateManagedFlag.toString(certificate.getManagedFlags()));
@@ -105,6 +122,22 @@ public class CertificateVO {
 		this.nextCertificationDate = nextCertificationDate;
 	}
 
+	public Long getRecertificationCount() {
+		return recertificationCount;
+	}
+
+	public void setRecertificationCount(Long recertificationCount) {
+		this.recertificationCount = recertificationCount;
+	}
+
+	public Date getRecertificationWindowDate() {
+		return recertificationWindowDate;
+	}
+
+	public void setRecertificationWindowDate(Date recertificationWindowDate) {
+		this.recertificationWindowDate = recertificationWindowDate;
+	}
+
 	public Long getIdentityKey() {
 		return identityKey;
 	}
@@ -129,6 +162,14 @@ public class CertificateVO {
 		this.courseTitle = courseTitle;
 	}
 
+	public Long getCertificationProgramKey() {
+		return certificationProgramKey;
+	}
+
+	public void setCertificationProgramKey(Long certificationProgramKey) {
+		this.certificationProgramKey = certificationProgramKey;
+	}
+
 	public String getUuid() {
 		return uuid;
 	}
@@ -151,5 +192,21 @@ public class CertificateVO {
 
 	public void setManagedFlags(String managedFlags) {
 		this.managedFlags = managedFlags;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 236489 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CertificateVO cert) {
+			return getKey() != null && getKey().equals(cert.getKey());
+		}
+		return false;
 	}
 }
