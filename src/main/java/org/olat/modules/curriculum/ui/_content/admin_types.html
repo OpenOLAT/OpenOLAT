@@ -1,6 +1,7 @@
-#if($r.available("add.root.type"))
+#if($r.available("add.new.implementation.type") && $r.available("add.new.element.type"))
 <div class="o_button_group o_button_group_right">
-	$r.render("add.root.type")
+	$r.render("add.new.implementation.type")
+	$r.render("add.new.element.type")
 </div>
 #end
 $r.render("types")
